@@ -1,63 +1,150 @@
-import trimesh
-import sys
+import re
+import os
+import logging
+from typing import Dict, Any, Optional
+from config import settings
 
-def calcola_volumi(volume_totale, superficie, wall_line_width=0.4, wall_line_count=3,
-                   layer_height=0.2, infill_percentage=0.15):
-    # Volume perimetrale stimato = superficie * spessore parete
-    spessore_parete = wall_line_width * wall_line_count
-    volume_pareti = superficie * spessore_parete
+logger = logging.getLogger(__name__)
 
-    # Volume interno (infill)
-    volume_infill = (volume_totale - volume_pareti) * infill_percentage
-    volume_effettivo = volume_pareti + max(volume_infill, 0)
+class GCodeParser:
+    @staticmethod
+    def parse_metadata(gcode_path: str) -> Dict[str, Any]:
+        """
+        Parses the G-code to extract estimated time and material usage.
+        Scans both the beginning (header) and end (footer) of the file.
+        """
+        stats = {
+            "print_time_seconds": 0,
+            "filament_length_mm": 0,
+            "filament_volume_mm3": 0,
+            "filament_weight_g": 0,
+            "slicer_estimated_cost": 0
+        }
 
-    return volume_effettivo, volume_pareti, max(volume_infill, 0)
+        if not os.path.exists(gcode_path):
+            logger.warning(f"GCode file not found for parsing: {gcode_path}")
+            return stats
 
-def calcola_peso(volume_mm3, densita_g_cm3=1.24):
-    densita_g_mm3 = densita_g_cm3 / 1000
-    return volume_mm3 * densita_g_mm3
+        try:
+            with open(gcode_path, 'r', encoding='utf-8', errors='ignore') as f:
+                # Read header (first 500 lines)
+                header_lines = [f.readline().strip() for _ in range(500) if f]
 
-def calcola_costo(peso_g, prezzo_kg=20.0):
-    return round((peso_g / 1000) * prezzo_kg, 2)
+                # Read footer (last 20KB)
+                f.seek(0, 2)
+                file_size = f.tell()
+                read_len = min(file_size, 20480)
+                f.seek(file_size - read_len)
+                footer_lines = f.read().splitlines()
 
-def stima_tempo(volume_mm3 ):
-    velocita_mm3_min = 0.4 *0.2 * 100 *60 # mm/s * mm * 60 s/min
-    tempo_minuti = volume_mm3 / velocita_mm3_min
-    return round(tempo_minuti, 1)
+                all_lines = header_lines + footer_lines
 
-def main(percorso_stl):
-    try:
-        mesh = trimesh.load(percorso_stl)
-        volume_modello = mesh.volume
-        superficie = mesh.area
+                for line in all_lines:
+                    line = line.strip()
+                    if not line.startswith(";"): 
+                        continue
+                    
+                    GCodeParser._parse_line(line, stats)
 
-        volume_stampa, volume_pareti, volume_infill = calcola_volumi(
-            volume_totale=volume_modello,
-            superficie=superficie,
-            wall_line_width=0.4,
-            wall_line_count=3,
-            layer_height=0.2,
-            infill_percentage=0.15
-        )
+                # Fallback calculation
+                if stats["filament_weight_g"] == 0 and stats["filament_length_mm"] > 0:
+                    GCodeParser._calculate_weight_fallback(stats)
+                    
+        except Exception as e:
+            logger.error(f"Error parsing G-code: {e}")
 
-        peso = calcola_peso(volume_stampa)
-        costo = calcola_costo(peso)
-        tempo = stima_tempo(volume_stampa)
+        return stats
 
-        print(f"Volume STL: {volume_modello:.2f} mm³")
-        print(f"Superficie esterna: {superficie:.2f} mm²")
-        print(f"Volume stimato pareti: {volume_pareti:.2f} mm³")
-        print(f"Volume stimato infill: {volume_infill:.2f} mm³")
-        print(f"Volume totale da stampare: {volume_stampa:.2f} mm³")
-        print(f"Peso stimato: {peso:.2f} g")
-        print(f"Costo stimato: CHF {costo}")
-        print(f"Tempo stimato: {tempo} min")
+    @staticmethod
+    def _parse_line(line: str, stats: Dict[str, Any]):
+        # Parse Time
+        if "estimated printing time =" in line: # Header
+            time_str = line.split("=")[1].strip()
+            stats["print_time_seconds"] = GCodeParser._parse_time_string(time_str)
+        elif "total estimated time:" in line: # Footer
+            parts = line.split("total estimated time:")
+            if len(parts) > 1:
+                stats["print_time_seconds"] = GCodeParser._parse_time_string(parts[1].strip())
 
-    except Exception as e:
-        print("Errore durante l'elaborazione:", e)
+        # Parse Filament info
+        if "filament used [g] =" in line:
+            try:
+                stats["filament_weight_g"] = float(line.split("=")[1].strip())
+            except ValueError: pass
+        
+        if "filament used [mm] =" in line:
+            try:
+                stats["filament_length_mm"] = float(line.split("=")[1].strip())
+            except ValueError: pass
 
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Uso: python calcolatore_stl.py modello.stl")
-    else:
-        main(sys.argv[1])
+        if "filament used [cm3] =" in line:
+            try:
+                 # cm3 to mm3
+                stats["filament_volume_mm3"] = float(line.split("=")[1].strip()) * 1000
+            except ValueError: pass
+
+    @staticmethod
+    def _calculate_weight_fallback(stats: Dict[str, Any]):
+        # Assumes 1.75mm diameter and PLA density 1.24
+        radius = 1.75 / 2
+        volume_mm3 = 3.14159 * (radius ** 2) * stats["filament_length_mm"]
+        volume_cm3 = volume_mm3 / 1000.0
+        stats["filament_weight_g"] = volume_cm3 * 1.24
+
+    @staticmethod
+    def _parse_time_string(time_str: str) -> int:
+        """
+        Converts '1d 2h 3m 4s' to seconds.
+        """
+        total_seconds = 0
+        days = re.search(r'(\d+)d', time_str)
+        hours = re.search(r'(\d+)h', time_str)
+        mins = re.search(r'(\d+)m', time_str)
+        secs = re.search(r'(\d+)s', time_str)
+
+        if days: total_seconds += int(days.group(1)) * 86400
+        if hours: total_seconds += int(hours.group(1)) * 3600
+        if mins: total_seconds += int(mins.group(1)) * 60
+        if secs: total_seconds += int(secs.group(1))
+        
+        return total_seconds
+
+
+class QuoteCalculator:
+    @staticmethod
+    def calculate(stats: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Calculates the final quote based on parsed stats and settings.
+        """
+        # 1. Material Cost
+        # Cost per gram = (Cost per kg / 1000)
+        material_cost = (stats["filament_weight_g"] / 1000.0) * settings.FILAMENT_COST_PER_KG
+
+        # 2. Machine Time Cost
+        # Cost per second = (Cost per hour / 3600)
+        print_time_hours = stats["print_time_seconds"] / 3600.0
+        machine_cost = print_time_hours * settings.MACHINE_COST_PER_HOUR
+
+        # 3. Energy Cost
+        # kWh = (Watts / 1000) * hours
+        kwh_used = (settings.PRINTER_POWER_WATTS / 1000.0) * print_time_hours
+        energy_cost = kwh_used * settings.ENERGY_COST_PER_KWH
+
+        # Subtotal
+        subtotal = material_cost + machine_cost + energy_cost
+
+        # 4. Markup
+        markup_factor = 1.0 + (settings.MARKUP_PERCENT / 100.0)
+        total_price = subtotal * markup_factor
+
+        return {
+            "breakdown": {
+                "material_cost": round(material_cost, 2),
+                "machine_cost": round(machine_cost, 2),
+                "energy_cost": round(energy_cost, 2),
+                "subtotal": round(subtotal, 2),
+                "markup_amount": round(total_price - subtotal, 2)
+            },
+            "total_price": round(total_price, 2),
+            "currency": "EUR"
+        }

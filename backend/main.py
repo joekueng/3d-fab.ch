@@ -1,10 +1,23 @@
-import io
-import trimesh
+import os
+import shutil
+import uuid
+import logging
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
-app = FastAPI()
+# Import custom modules
+from config import settings
+from slicer import slicer_service
+from calculator import GCodeParser, QuoteCalculator
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("api")
+
+app = FastAPI(title="Print Calculator API")
+
+# CORS Setup
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -13,60 +26,87 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-def calculate_volumes(total_volume_mm3: float,
-                      surface_area_mm2: float,
-                      nozzle_width_mm: float = 0.4,
-                      wall_line_count: int = 3,
-                      layer_height_mm: float = 0.2,
-                      infill_fraction: float = 0.15):
-    wall_thickness_mm = nozzle_width_mm * wall_line_count
-    wall_volume_mm3 = surface_area_mm2 * wall_thickness_mm
-    infill_volume_mm3 = max(total_volume_mm3 - wall_volume_mm3, 0) * infill_fraction
-    total_print_volume_mm3 = wall_volume_mm3 + infill_volume_mm3
-    return total_print_volume_mm3, wall_volume_mm3, infill_volume_mm3
+# Ensure directories exist
+os.makedirs(settings.TEMP_DIR, exist_ok=True)
 
-def calculate_weight(volume_mm3: float, density_g_cm3: float = 1.24):
-    density_g_mm3 = density_g_cm3 / 1000.0
-    return volume_mm3 * density_g_mm3
+class QuoteResponse(BaseModel):
+    printer: str
+    print_time_seconds: int
+    print_time_formatted: str
+    material_grams: float
+    cost: dict
+    notes: list[str] = []
 
-def calculate_cost(weight_g: float, price_per_kg: float = 20.0):
-    return round((weight_g / 1000.0) * price_per_kg, 2)
+def cleanup_files(files: list):
+    for f in files:
+        try:
+            if os.path.exists(f):
+                os.remove(f)
+        except Exception as e:
+            logger.warning(f"Failed to delete temp file {f}: {e}")
 
-def estimate_time(volume_mm3: float,
-                  nozzle_width_mm: float = 0.4,
-                  layer_height_mm: float = 0.2,
-                  print_speed_mm_per_s: float = 100.0):
-    volumetric_speed_mm3_per_min = nozzle_width_mm * layer_height_mm * print_speed_mm_per_s * 60.0
-    return round(volume_mm3 / volumetric_speed_mm3_per_min, 1)
+def format_time(seconds: int) -> str:
+    m, s = divmod(seconds, 60)
+    h, m = divmod(m, 60)
+    if h > 0:
+        return f"{int(h)}h {int(m)}m"
+    return f"{int(m)}m {int(s)}s"
 
-@app.post("/calculate/stl")
+@app.post("/calculate/stl", response_model=QuoteResponse)
 async def calculate_from_stl(file: UploadFile = File(...)):
     if not file.filename.lower().endswith(".stl"):
-        raise HTTPException(status_code=400, detail="Please upload an STL file.")
+        raise HTTPException(status_code=400, detail="Only .stl files are supported.")
+
+    # Unique ID for this request
+    req_id = str(uuid.uuid4())
+    input_filename = f"{req_id}.stl"
+    output_filename = f"{req_id}.gcode"
+    
+    input_path = os.path.join(settings.TEMP_DIR, input_filename)
+    output_path = os.path.join(settings.TEMP_DIR, output_filename)
+
     try:
-        contents = await file.read()
-        mesh = trimesh.load(io.BytesIO(contents), file_type="stl")
-        model_volume_mm3 = mesh.volume
-        model_surface_area_mm2 = mesh.area
+        # 1. Save Uploaded File
+        with open(input_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        # 2. Slice
+        # slicer_service methods raise exceptions on failure
+        slicer_service.slice_stl(input_path, output_path)
 
-        print_volume, wall_volume, infill_volume = calculate_volumes(
-            total_volume_mm3=model_volume_mm3,
-            surface_area_mm2=model_surface_area_mm2
-        )
+        # 3. Parse Results
+        stats = GCodeParser.parse_metadata(output_path)
+        
+        if stats["print_time_seconds"] == 0 and stats["filament_weight_g"] == 0:
+            # Slicing likely failed or produced empty output without throwing error
+            raise HTTPException(status_code=500, detail="Slicing completed but no stats found. Check mesh validity.")
 
-        weight_g = calculate_weight(print_volume)
-        cost_chf = calculate_cost(weight_g)
-        time_min = estimate_time(print_volume)
+        # 4. Calculate Costs
+        quote = QuoteCalculator.calculate(stats)
 
         return {
-            "stl_volume_mm3": round(model_volume_mm3, 2),
-            "surface_area_mm2": round(model_surface_area_mm2, 2),
-            "wall_volume_mm3": round(wall_volume, 2),
-            "infill_volume_mm3": round(infill_volume, 2),
-            "print_volume_mm3": round(print_volume, 2),
-            "weight_g": round(weight_g, 2),
-            "cost_chf": cost_chf,
-            "time_min": time_min
+            "printer": "BambuLab A1 (Estimated)",
+            "print_time_seconds": stats["print_time_seconds"],
+            "print_time_formatted": format_time(stats["print_time_seconds"]),
+            "material_grams": stats["filament_weight_g"],
+            "cost": {
+                "material": quote["breakdown"]["material_cost"],
+                "machine": quote["breakdown"]["machine_cost"],
+                "energy": quote["breakdown"]["energy_cost"],
+                "markup": quote["breakdown"]["markup_amount"],
+                "total": quote["total_price"]
+            },
+            "notes": ["Estimation generated using OrcaSlicer headless."]
         }
+
     except Exception as e:
+        logger.error(f"Error processing request: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+    
+    finally:
+        # Cleanup
+        cleanup_files([input_path, output_path])
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok", "slicer": settings.SLICER_PATH}

@@ -1,4 +1,3 @@
-# start.sh
 #!/bin/bash
-(cd backend && source venv/bin/activate && uvicorn main:app --reload) &
-(cd frontend && ng serve)
+echo "Starting Print Calculator with Docker Compose..."
+docker-compose up --build

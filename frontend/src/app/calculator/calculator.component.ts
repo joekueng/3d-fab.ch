@@ -4,9 +4,21 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+
+interface QuoteResponse {
+  printer: string;
+  print_time_formatted: string;
+  material_grams: number;
+  cost: {
+    material: number;
+    machine: number;
+    energy: number;
+    markup: number;
+    total: number;
+  };
+}
 
 @Component({
   selector: 'app-calculator',
@@ -15,7 +27,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     CommonModule,
     FormsModule,
     MatCardModule,
-    MatFormFieldModule,
     MatButtonModule,
     MatProgressSpinnerModule
   ],
@@ -24,7 +35,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 })
 export class CalculatorComponent {
   file: File | null = null;
-  results: any = null;
+  results: QuoteResponse | null = null;
   error = '';
   loading = false;
 
@@ -41,20 +52,24 @@ export class CalculatorComponent {
 
   uploadAndCalculate(): void {
     if (!this.file) {
-      this.error = 'Seleziona un file STL prima di procedere.';
+      this.error = 'Please select a file first.';
       return;
     }
     const formData = new FormData();
     formData.append('file', this.file);
     this.loading = true;
-    this.http.post<any>('http://localhost:8000/calculate/stl', formData)
+    this.error = '';
+    this.results = null;
+
+    this.http.post<QuoteResponse>('http://localhost:8000/calculate/stl', formData)
       .subscribe({
         next: res => {
           this.results = res;
           this.loading = false;
         },
         error: err => {
-          this.error = err.error?.detail || err.message;
+          console.error(err);
+          this.error = err.error?.detail || "An error occurred during calculation.";
           this.loading = false;
         }
       });
