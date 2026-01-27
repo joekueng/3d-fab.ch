@@ -60,11 +60,14 @@ class GCodeParser:
         # Parse Time
         if "estimated printing time =" in line: # Header
             time_str = line.split("=")[1].strip()
+            logger.info(f"Parsing time string (Header): '{time_str}'")
             stats["print_time_seconds"] = GCodeParser._parse_time_string(time_str)
         elif "total estimated time:" in line: # Footer
             parts = line.split("total estimated time:")
             if len(parts) > 1:
-                stats["print_time_seconds"] = GCodeParser._parse_time_string(parts[1].strip())
+                time_str = parts[1].strip()
+                logger.info(f"Parsing time string (Footer): '{time_str}'")
+                stats["print_time_seconds"] = GCodeParser._parse_time_string(time_str)
 
         # Parse Filament info
         if "filament used [g] =" in line:
@@ -94,9 +97,21 @@ class GCodeParser:
     @staticmethod
     def _parse_time_string(time_str: str) -> int:
         """
-        Converts '1d 2h 3m 4s' to seconds.
+        Converts '1d 2h 3m 4s' or 'HH:MM:SS' to seconds.
         """
         total_seconds = 0
+        
+        # Try HH:MM:SS or MM:SS format
+        if ':' in time_str:
+            parts = time_str.split(':')
+            parts = [int(p) for p in parts]
+            if len(parts) == 3: # HH:MM:SS
+                total_seconds = parts[0] * 3600 + parts[1] * 60 + parts[2]
+            elif len(parts) == 2: # MM:SS
+                total_seconds = parts[0] * 60 + parts[1]
+            return total_seconds
+
+        # Original regex parsing for "1h 2m 3s"
         days = re.search(r'(\d+)d', time_str)
         hours = re.search(r'(\d+)h', time_str)
         mins = re.search(r'(\d+)m', time_str)
@@ -136,6 +151,13 @@ class QuoteCalculator:
         # 4. Markup
         markup_factor = 1.0 + (settings.MARKUP_PERCENT / 100.0)
         total_price = subtotal * markup_factor
+
+        logger.info("Cost Calculation:")
+        logger.info(f"  - Use: {stats['filament_weight_g']:.2f}g @ {settings.FILAMENT_COST_PER_KG}€/kg = {material_cost:.2f}€")
+        logger.info(f"  - Time: {print_time_hours:.4f}h @ {settings.MACHINE_COST_PER_HOUR}€/h = {machine_cost:.2f}€")
+        logger.info(f"  - Power: {kwh_used:.4f}kWh @ {settings.ENERGY_COST_PER_KWH}€/kWh = {energy_cost:.2f}€")
+        logger.info(f"  - Subtotal: {subtotal:.2f}€")
+        logger.info(f"  - Total (Markup {settings.MARKUP_PERCENT}%): {total_price:.2f}€")
 
         return {
             "breakdown": {

@@ -1,0 +1,152 @@
+<div class="container fade-in">
+  <header class="section-header">
+    <a routerLink="/" class="back-link">
+      <span class="material-icons">arrow_back</span> Back
+    </a>
+    <h1>Advanced Quote</h1>
+    <p>Configure detailed print parameters for your project.</p>
+  </header>
+
+  <div class="grid-2 quote-layout">
+    <!-- Left: Inputs -->
+    <div class="card p-0 overflow-hidden">
+      <!-- Upload Area -->
+      <div class="upload-area small" 
+           [class.drag-over]="isDragOver"
+           [class.has-file]="selectedFile"
+           (dragover)="onDragOver($event)"
+           (dragleave)="onDragLeave($event)"
+           (drop)="onDrop($event)">
+        
+        <input #fileInput type="file" hidden (change)="onFileSelected($event)" accept=".stl">
+        
+        <!-- Empty State -->
+        <div class="empty-state" *ngIf="!selectedFile" (click)="fileInput.click()">
+          <span class="material-icons">cloud_upload</span>
+          <p>Click or Drop STL here</p>
+        </div>
+
+        <!-- Selected State -->
+        <div *ngIf="selectedFile">
+            <div class="viewer-wrapper">
+                <app-stl-viewer [file]="selectedFile"></app-stl-viewer>
+            </div>
+            <div class="file-action-bar border-top">
+                <div class="file-info">
+                    <span class="material-icons">description</span>
+                    <span class="file-name">{{ selectedFile.name }}</span>
+                </div>
+                <button class="btn-icon danger" (click)="removeFile($event)" title="Remove">
+                    <span class="material-icons">delete</span>
+                </button>
+            </div>
+        </div>
+      </div>
+
+      <!-- Parameters Form -->
+      <div class="params-form">
+        <h3>Print Settings</h3>
+        
+        <div class="form-group">
+          <label>Layer Height (mm)</label>
+          <select [(ngModel)]="params.layerHeight">
+            <option value="0.12">0.12 (High Quality)</option>
+            <option value="0.16">0.16 (Quality)</option>
+            <option value="0.20">0.20 (Standard)</option>
+            <option value="0.24">0.24 (Draft)</option>
+            <option value="0.28">0.28 (Extra Draft)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Infill Density (%)</label>
+          <div class="range-wrapper">
+            <input type="range" [(ngModel)]="params.infill" min="0" max="100" step="5">
+            <span>{{ params.infill }}%</span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Wall Loops</label>
+            <input type="number" [(ngModel)]="params.walls" min="1" max="10">
+          </div>
+          <div class="form-group">
+            <label>Top/Bottom Shells</label>
+            <input type="number" [(ngModel)]="params.topBottom" min="1" max="10">
+          </div>
+        </div>
+
+        <div class="form-group">
+            <label>Material</label>
+            <select [(ngModel)]="params.material">
+              <option value="PLA">PLA</option>
+              <option value="PETG">PETG</option>
+              <option value="ABS">ABS</option>
+              <option value="TPU">TPU</option>
+            </select>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary btn-block" 
+                [disabled]="!selectedFile || isCalculating"
+                (click)="calculate()">
+          <span *ngIf="!isCalculating">Calculate Price</span>
+          <span *ngIf="isCalculating">Calculating...</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Right: Results -->
+    <div class="results-area" *ngIf="quoteResult">
+      <div class="card result-card">
+        <h2>Estimated Cost</h2>
+        <div class="price-big">
+          {{ quoteResult.cost.total | currency:'EUR' }}
+        </div>
+        
+        <div class="specs-list">
+          <div class="spec-item">
+            <span>Print Time</span>
+            <strong>{{ quoteResult.print_time_formatted }}</strong>
+          </div>
+          <div class="spec-item">
+            <span>Material Weight</span>
+            <strong>{{ quoteResult.material_grams | number:'1.0-0' }}g</strong>
+          </div>
+          <div class="spec-item">
+            <span>Printer</span>
+            <strong>{{ quoteResult.printer }}</strong>
+          </div>
+        </div>
+
+        <!-- Param Summary (Future Proofing) -->
+        <div class="specs-list secondary">
+            <div class="spec-header">Request Specs</div>
+            <div class="spec-item compact">
+                <span>Infill</span>
+                <span>{{ params.infill }}%</span>
+            </div>
+            <div class="spec-item compact">
+                <span>Layer Height</span>
+                <span>{{ params.layerHeight }}mm</span>
+            </div>
+        </div>
+
+        <div class="note-box">
+          <p>Note: Advanced parameters are saved for review but estimation currently uses standard profile benchmarks.</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Empty State -->
+    <div class="results-area empty" *ngIf="!quoteResult">
+      <div class="card placeholder-card">
+        <span class="material-icons">science</span>
+        <h3>Advanced Quote</h3>
+        <p>Configure settings and calculate.</p>
+      </div>
+    </div>
+  </div>
+</div>

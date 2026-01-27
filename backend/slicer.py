@@ -23,6 +23,9 @@ class SlicerService:
         """
         Runs OrcaSlicer in headless mode to slice the STL file.
         """
+        if not os.path.exists(settings.SLICER_PATH):
+             raise RuntimeError(f"Slicer executable not found at: {settings.SLICER_PATH}. Please install OrcaSlicer.")
+
         if not os.path.exists(input_stl_path):
             raise FileNotFoundError(f"STL file not found: {input_stl_path}")
 
@@ -32,6 +35,9 @@ class SlicerService:
         # Prepare command
         command = self._build_slicer_command(input_stl_path, output_dir, override_path)
         
+        logger.info(f"Slicing Command: {' '.join(command)}")
+        logger.info(f"Using Profiles provided in command settings argument.")
+        
         logger.info(f"Starting slicing for {input_stl_path}...")
         try:
             self._run_command(command)
@@ -39,8 +45,9 @@ class SlicerService:
             logger.info("Slicing completed successfully.")
             return True
         except subprocess.CalledProcessError as e:
-            logger.error(f"Slicing failed: {e.stderr}")
-            raise RuntimeError(f"Slicing failed: {e.stderr}")
+            msg = f"Slicing failed. Return code: {e.returncode}\nSTDOUT:\n{e.stdout}\nSTDERR:\n{e.stderr}"
+            logger.error(msg)
+            raise RuntimeError(f"Slicing failed: {e.stderr if e.stderr else e.stdout}")
 
     def _create_override_machine_config(self, output_dir: str) -> str:
         """
@@ -99,13 +106,17 @@ class SlicerService:
         ]
 
     def _run_command(self, command: list):
-        subprocess.run(
+        result = subprocess.run(
             command,
             check=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True
         )
+        if result.stdout:
+            logger.info(f"Slicer STDOUT:\n{result.stdout[:2000]}...") # Log first 2000 chars to avoid explosion
+        if result.stderr:
+            logger.warning(f"Slicer STDERR:\n{result.stderr}")
 
     def _finalize_output(self, output_dir: str, input_path: str, target_path: str):
         """

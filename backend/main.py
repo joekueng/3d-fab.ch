@@ -67,6 +67,7 @@ async def calculate_from_stl(file: UploadFile = File(...)):
 
     try:
         # 1. Save Uploaded File
+        logger.info(f"Received request {req_id} for file: {file.filename}")
         with open(input_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
         

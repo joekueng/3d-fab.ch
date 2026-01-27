@@ -1,0 +1,50 @@
+<div class="container fade-in">
+    <header class="section-header">
+      <a routerLink="/" class="back-link">
+        <span class="material-icons">arrow_back</span> Back
+      </a>
+      <h1>Contact Me</h1>
+      <p>Have a special project? Let's talk.</p>
+    </header>
+  
+    <div class="contact-card card">
+        <div class="contact-info">
+            <div class="info-item">
+                <span class="material-icons">email</span>
+                <div>
+                    <h3>Email</h3>
+                    <p>joe&#64;example.com</p>
+                </div>
+            </div>
+            
+            <div class="info-item">
+                <span class="material-icons">location_on</span>
+                <div>
+                    <h3>Location</h3>
+                    <p>Milan, Italy</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <form class="contact-form" (submit)="onSubmit($event)">
+            <div class="form-group">
+                <label>Your Name</label>
+                <input type="text" placeholder="John Doe">
+            </div>
+            
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" placeholder="john@example.com">
+            </div>
+            
+            <div class="form-group">
+                <label>Message</label>
+                <textarea rows="5" placeholder="Tell me about your project..."></textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-secondary btn-block">Send Message</button>
+        </form>
+    </div>
+  </div>

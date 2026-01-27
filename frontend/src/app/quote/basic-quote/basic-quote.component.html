@@ -1,0 +1,133 @@
+<div class="container fade-in">
+  <header class="section-header">
+    <a routerLink="/" class="back-link">
+      <span class="material-icons">arrow_back</span> Back
+    </a>
+    <h1>Quick Quote</h1>
+    <p>Upload your 3D model and choose a strength level.</p>
+  </header>
+
+  <div class="grid-2 quote-layout">
+    <!-- Left: Inputs -->
+    <div class="card p-0 overflow-hidden">
+      <!-- Upload Area -->
+      <div class="upload-area" 
+           [class.drag-over]="isDragOver"
+           [class.has-file]="selectedFile"
+           (dragover)="onDragOver($event)"
+           (dragleave)="onDragLeave($event)"
+           (drop)="onDrop($event)">
+        
+        <input #fileInput type="file" hidden (change)="onFileSelected($event)" accept=".stl">
+        
+        <!-- Empty State (Clickable) -->
+        <div class="empty-state" *ngIf="!selectedFile" (click)="fileInput.click()">
+          <span class="material-icons upload-icon">cloud_upload</span>
+          <h3>Drop your STL file here</h3>
+          <p>or click to browse</p>
+        </div>
+
+        <!-- Selected State (Viewer + Actions) -->
+        <div *ngIf="selectedFile" class="selected-state">
+          <div class="viewer-wrapper">
+             <app-stl-viewer [file]="selectedFile"></app-stl-viewer>
+          </div>
+          <div class="file-action-bar">
+             <div class="file-info">
+               <span class="material-icons">description</span>
+               <span class="file-name">{{ selectedFile.name }}</span>
+             </div>
+             <div class="file-actions">
+               <button class="btn-icon danger" (click)="removeFile($event)" title="Remove File">
+                 <span class="material-icons">delete</span>
+               </button>
+             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Strength Selection -->
+      <div class="strength-selector">
+        <h3>Select Strength</h3>
+        <div class="strength-options">
+          <div class="strength-card" 
+               [class.active]="selectedStrength === 'fragile'"
+               (click)="selectStrength('fragile')">
+            <span class="emoji">🥚</span>
+            <div class="info">
+              <h4>Standard</h4>
+              <p>For decorative parts</p>
+            </div>
+          </div>
+
+          <div class="strength-card" 
+               [class.active]="selectedStrength === 'medium'"
+               (click)="selectStrength('medium')">
+            <span class="emoji">🧱</span>
+            <div class="info">
+              <h4>Strong</h4>
+              <p>For functional parts</p>
+            </div>
+          </div>
+
+          <div class="strength-card" 
+               [class.active]="selectedStrength === 'resistant'"
+               (click)="selectStrength('resistant')">
+            <span class="emoji">🦾</span>
+            <div class="info">
+              <h4>Ultra</h4>
+              <p>Max strength & durability</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary btn-block" 
+                [disabled]="!selectedFile || isCalculating"
+                (click)="calculate()">
+          <span *ngIf="!isCalculating">Calculate Price</span>
+          <span *ngIf="isCalculating">Calculating...</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Right: Results -->
+    <div class="results-area" *ngIf="quoteResult">
+      <div class="card result-card">
+        <h2>Estimated Cost</h2>
+        <div class="price-big">
+          {{ quoteResult.cost.total | currency:'EUR' }}
+        </div>
+        
+        <div class="specs-list">
+          <div class="spec-item">
+            <span>Print Time</span>
+            <strong>{{ quoteResult.print_time_formatted }}</strong>
+          </div>
+          <div class="spec-item">
+            <span>Material</span>
+            <strong>{{ quoteResult.material_grams | number:'1.0-0' }}g</strong>
+          </div>
+          <div class="spec-item">
+            <span>Printer</span>
+            <strong>{{ quoteResult.printer }}</strong>
+          </div>
+        </div>
+
+        <div class="note-box">
+          <p>Note: This is an estimation. Final price may vary slightly.</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Empty State -->
+    <div class="results-area empty" *ngIf="!quoteResult">
+      <div class="card placeholder-card">
+        <span class="material-icons">receipt_long</span>
+        <h3>Your Quote</h3>
+        <p>Results will appear here after calculation.</p>
+      </div>
+    </div>
+  </div>
+</div>
