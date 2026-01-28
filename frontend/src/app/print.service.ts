@@ -15,9 +15,18 @@ export class PrintService {
     
     // Append extra params if meant for backend
     if (params) {
-        // for key in params...
+        Object.keys(params).forEach(key => {
+            if (params[key] !== null && params[key] !== undefined) {
+                formData.append(key, params[key]);
+            }
+        });
     }
 
-    return this.http.post(`${this.apiUrl}/calculate/stl`, formData);
+    return this.http.post(`${this.apiUrl}/api/quote`, formData);
+  }
+
+  getProfiles(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/api/profiles/available`);
   }
 }
+

@@ -137,6 +137,8 @@ class QuoteCalculator:
 
         # 2. Machine Time Cost
         # Cost per second = (Cost per hour / 3600)
+        print("ciaooo")
+        print(stats["print_time_seconds"])
         print_time_hours = stats["print_time_seconds"] / 3600.0
         machine_cost = print_time_hours * settings.MACHINE_COST_PER_HOUR
 

@@ -48,43 +48,32 @@
         <h3>Print Settings</h3>
         
         <div class="form-group">
-          <label>Layer Height (mm)</label>
-          <select [(ngModel)]="params.layerHeight">
-            <option value="0.12">0.12 (High Quality)</option>
-            <option value="0.16">0.16 (Quality)</option>
-            <option value="0.20">0.20 (Standard)</option>
-            <option value="0.24">0.24 (Draft)</option>
-            <option value="0.28">0.28 (Extra Draft)</option>
+          <label>Machine</label>
+          <select [(ngModel)]="params.machine">
+            <option *ngFor="let m of machines" [value]="m">{{ m }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Material</label>
+          <select [(ngModel)]="params.filament">
+            <option *ngFor="let f of filaments" [value]="f">{{ f }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Quality / Process</label>
+          <select [(ngModel)]="params.quality">
+            <option *ngFor="let q of qualities" [value]="q">{{ q }}</option>
           </select>
         </div>
 
         <div class="form-group">
           <label>Infill Density (%)</label>
           <div class="range-wrapper">
-            <input type="range" [(ngModel)]="params.infill" min="0" max="100" step="5">
-            <span>{{ params.infill }}%</span>
+            <input type="range" [(ngModel)]="params.infill_density" min="0" max="100" step="5">
+            <span>{{ params.infill_density }}%</span>
           </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Wall Loops</label>
-            <input type="number" [(ngModel)]="params.walls" min="1" max="10">
-          </div>
-          <div class="form-group">
-            <label>Top/Bottom Shells</label>
-            <input type="number" [(ngModel)]="params.topBottom" min="1" max="10">
-          </div>
-        </div>
-
-        <div class="form-group">
-            <label>Material</label>
-            <select [(ngModel)]="params.material">
-              <option value="PLA">PLA</option>
-              <option value="PETG">PETG</option>
-              <option value="ABS">ABS</option>
-              <option value="TPU">TPU</option>
-            </select>
         </div>
       </div>
 
@@ -103,21 +92,21 @@
       <div class="card result-card">
         <h2>Estimated Cost</h2>
         <div class="price-big">
-          {{ quoteResult.cost.total | currency:'EUR' }}
+          {{ quoteResult?.cost?.total | currency:'EUR' }}
         </div>
         
         <div class="specs-list">
           <div class="spec-item">
             <span>Print Time</span>
-            <strong>{{ quoteResult.print_time_formatted }}</strong>
+            <strong>{{ quoteResult?.print_time_formatted }}</strong>
           </div>
           <div class="spec-item">
             <span>Material Weight</span>
-            <strong>{{ quoteResult.material_grams | number:'1.0-0' }}g</strong>
+            <strong>{{ quoteResult?.material_grams | number:'1.0-0' }}g</strong>
           </div>
           <div class="spec-item">
             <span>Printer</span>
-            <strong>{{ quoteResult.printer }}</strong>
+            <strong>{{ quoteResult?.printer }}</strong>
           </div>
         </div>
 
@@ -126,11 +115,11 @@
             <div class="spec-header">Request Specs</div>
             <div class="spec-item compact">
                 <span>Infill</span>
-                <span>{{ params.infill }}%</span>
+                <span>{{ params.infill_density }}%</span>
             </div>
             <div class="spec-item compact">
                 <span>Layer Height</span>
-                <span>{{ params.layerHeight }}mm</span>
+                <span>{{ params.layer_height || 'Standard' }}</span>
             </div>
         </div>
 

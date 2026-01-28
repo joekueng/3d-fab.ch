@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -12,7 +12,7 @@ import { StlViewerComponent } from '../../common/stl-viewer/stl-viewer.component
   templateUrl: './advanced-quote.component.html',
   styleUrls: ['./advanced-quote.component.scss']
 })
-export class AdvancedQuoteComponent {
+export class AdvancedQuoteComponent implements OnInit {
   printService = inject(PrintService);
   
   selectedFile: File | null = null;
@@ -20,14 +20,28 @@ export class AdvancedQuoteComponent {
   isCalculating = false;
   quoteResult: any = null;
 
+  // Available Profiles
+  machines: string[] = [];
+  filaments: string[] = [];
+  qualities: string[] = [];
+
   // Parameters
   params = {
-    layerHeight: '0.20',
-    infill: 15,
-    walls: 2,
-    topBottom: 3,
-    material: 'PLA'
+    machine: 'bambu_a1',
+    filament: 'pla_basic',
+    quality: 'standard',
+    layer_height: null,
+    infill_density: 15,
+    support_enabled: false
   };
+
+  ngOnInit() {
+    this.printService.getProfiles().subscribe(data => {
+      this.machines = data.machines;
+      this.filaments = data.filaments;
+      this.qualities = data.processes;
+    });
+  }
 
   onDragOver(event: DragEvent) {
     event.preventDefault();
@@ -77,10 +91,25 @@ export class AdvancedQuoteComponent {
     this.isCalculating = true;
 
     // Use PrintService
-    this.printService.calculateQuote(this.selectedFile, this.params)
+    this.printService.calculateQuote(this.selectedFile, {
+        machine: this.params.machine,
+        filament: this.params.filament,
+        quality: this.params.quality,
+        infill_density: this.params.infill_density,
+        // Optional mappings if user selected overrides
+        // layer_height: this.params.layer_height, 
+        // support_enabled: this.params.support_enabled
+    })
       .subscribe({
         next: (res) => {
-          this.quoteResult = res;
+          console.log('API Response:', res);
+          if (res.success) {
+            this.quoteResult = res.data;
+            console.log('Quote Result set to:', this.quoteResult);
+          } else {
+             console.error('API succeeded but returned error flag:', res.error);
+             alert('Error: ' + res.error);
+          }
           this.isCalculating = false;
         },
         error: (err) => {
