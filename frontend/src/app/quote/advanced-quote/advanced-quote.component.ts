@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -12,7 +12,7 @@ import { StlViewerComponent } from '../../common/stl-viewer/stl-viewer.component
   templateUrl: './advanced-quote.component.html',
   styleUrls: ['./advanced-quote.component.scss']
 })
-export class AdvancedQuoteComponent implements OnInit {
+export class AdvancedQuoteComponent {
   printService = inject(PrintService);
   
   selectedFile: File | null = null;
@@ -20,27 +20,56 @@ export class AdvancedQuoteComponent implements OnInit {
   isCalculating = false;
   quoteResult: any = null;
 
-  // Available Profiles
-  machines: string[] = [];
-  filaments: string[] = [];
-  qualities: string[] = [];
+  // Selectable options (mapped to backend profile ids where needed)
+  readonly materialOptions = [
+    { value: 'pla_basic', label: 'PLA' },
+    { value: 'petg_basic', label: 'PETG' },
+    { value: 'abs_basic', label: 'ABS' },
+    { value: 'tpu_95a', label: 'TPU 95A' }
+  ];
+  readonly colorOptions = [
+    'Black',
+    'White',
+    'Gray',
+    'Red',
+    'Blue',
+    'Green',
+    'Yellow'
+  ];
+  readonly qualityOptions = [
+    { value: 'draft', label: 'Draft' },
+    { value: 'standard', label: 'Standard' },
+    { value: 'fine', label: 'Fine' }
+  ];
+  readonly infillPatternOptions = [
+    { value: 'grid', label: 'Grid' },
+    { value: 'gyroid', label: 'Gyroid' },
+    { value: 'cubic', label: 'Cubic' },
+    { value: 'triangles', label: 'Triangles' },
+    { value: 'rectilinear', label: 'Rectilinear' },
+    { value: 'crosshatch', label: 'Crosshatch' },
+    { value: 'zig-zag', label: 'Zig-zag' },
+    { value: 'alignedrectilinear', label: 'Aligned Rectilinear' }
+  ];
 
   // Parameters
   params = {
-    machine: 'bambu_a1',
     filament: 'pla_basic',
+    material_color: 'Black',
     quality: 'standard',
-    layer_height: null,
     infill_density: 15,
+    infill_pattern: 'grid',
     support_enabled: false
   };
 
-  ngOnInit() {
-    this.printService.getProfiles().subscribe(data => {
-      this.machines = data.machines;
-      this.filaments = data.filaments;
-      this.qualities = data.processes;
-    });
+  get materialLabel(): string {
+    const match = this.materialOptions.find(option => option.value === this.params.filament);
+    return match ? match.label : this.params.filament;
+  }
+
+  get infillPatternLabel(): string {
+    const match = this.infillPatternOptions.find(option => option.value === this.params.infill_pattern);
+    return match ? match.label : this.params.infill_pattern;
   }
 
   onDragOver(event: DragEvent) {
@@ -92,10 +121,10 @@ export class AdvancedQuoteComponent implements OnInit {
 
     // Use PrintService
     this.printService.calculateQuote(this.selectedFile, {
-        machine: this.params.machine,
         filament: this.params.filament,
         quality: this.params.quality,
         infill_density: this.params.infill_density,
+        infill_pattern: this.params.infill_pattern,
         // Optional mappings if user selected overrides
         // layer_height: this.params.layer_height, 
         // support_enabled: this.params.support_enabled

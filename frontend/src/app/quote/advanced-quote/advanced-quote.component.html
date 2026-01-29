@@ -48,23 +48,23 @@
         <h3>Print Settings</h3>
         
         <div class="form-group">
-          <label>Machine</label>
-          <select [(ngModel)]="params.machine">
-            <option *ngFor="let m of machines" [value]="m">{{ m }}</option>
-          </select>
-        </div>
-
-        <div class="form-group">
           <label>Material</label>
           <select [(ngModel)]="params.filament">
-            <option *ngFor="let f of filaments" [value]="f">{{ f }}</option>
+            <option *ngFor="let m of materialOptions" [value]="m.value">{{ m.label }}</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label>Quality / Process</label>
+          <label>Color</label>
+          <select [(ngModel)]="params.material_color">
+            <option *ngFor="let c of colorOptions" [value]="c">{{ c }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Quality</label>
           <select [(ngModel)]="params.quality">
-            <option *ngFor="let q of qualities" [value]="q">{{ q }}</option>
+            <option *ngFor="let q of qualityOptions" [value]="q.value">{{ q.label }}</option>
           </select>
         </div>
 
@@ -74,6 +74,13 @@
             <input type="range" [(ngModel)]="params.infill_density" min="0" max="100" step="5">
             <span>{{ params.infill_density }}%</span>
           </div>
+        </div>
+
+        <div class="form-group">
+          <label>Infill Pattern</label>
+          <select [(ngModel)]="params.infill_pattern">
+            <option *ngFor="let p of infillPatternOptions" [value]="p.value">{{ p.label }}</option>
+          </select>
         </div>
       </div>
 
@@ -92,7 +99,7 @@
       <div class="card result-card">
         <h2>Estimated Cost</h2>
         <div class="price-big">
-          {{ quoteResult?.cost?.total | currency:'EUR' }}
+          {{ quoteResult?.cost?.total | currency:'CHF' }}
         </div>
         
         <div class="specs-list">
@@ -104,10 +111,6 @@
             <span>Material Weight</span>
             <strong>{{ quoteResult?.material_grams | number:'1.0-0' }}g</strong>
           </div>
-          <div class="spec-item">
-            <span>Printer</span>
-            <strong>{{ quoteResult?.printer }}</strong>
-          </div>
         </div>
 
         <!-- Param Summary (Future Proofing) -->
@@ -118,13 +121,21 @@
                 <span>{{ params.infill_density }}%</span>
             </div>
             <div class="spec-item compact">
-                <span>Layer Height</span>
-                <span>{{ params.layer_height || 'Standard' }}</span>
+                <span>Infill Pattern</span>
+                <span>{{ infillPatternLabel }}</span>
+            </div>
+            <div class="spec-item compact">
+                <span>Material</span>
+                <span>{{ materialLabel }}</span>
+            </div>
+            <div class="spec-item compact">
+                <span>Color</span>
+                <span>{{ params.material_color }}</span>
             </div>
         </div>
 
         <div class="note-box">
-          <p>Note: Advanced parameters are saved for review but estimation currently uses standard profile benchmarks.</p>
+          <p>Note: Color does not affect the estimate. Printer is fixed to Bambu Lab A1.</p>
         </div>
       </div>
     </div>

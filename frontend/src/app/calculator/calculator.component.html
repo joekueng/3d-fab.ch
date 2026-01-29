@@ -30,17 +30,17 @@
 
       <div *ngIf="results" class="results-section">
         <div class="total-price">
-          <h3>Total Estimate: € {{ results.cost.total | number:'1.2-2' }}</h3>
+          <h3>Total Estimate: {{ results?.cost?.total | currency:'CHF' }}</h3>
         </div>
 
         <div class="details-grid">
           <div class="detail-item">
             <span class="label">Print Time:</span>
-            <span class="value">{{ results.print_time_formatted }}</span>
+            <span class="value">{{ results?.print_time_formatted }}</span>
           </div>
           <div class="detail-item">
             <span class="label">Material Used:</span>
-            <span class="value">{{ results.material_grams | number:'1.1-1' }} g</span>
+            <span class="value">{{ results?.material_grams | number:'1.1-1' }} g</span>
           </div>
         </div>
 
@@ -48,19 +48,19 @@
         <ul class="breakdown-list">
           <li>
             <span>Material</span>
-            <span>€ {{ results.cost.material | number:'1.2-2' }}</span>
+            <span>{{ results?.cost?.material | currency:'CHF' }}</span>
           </li>
           <li>
             <span>Machine Time</span>
-            <span>€ {{ results.cost.machine | number:'1.2-2' }}</span>
+            <span>{{ results?.cost?.machine | currency:'CHF' }}</span>
           </li>
           <li>
             <span>Energy</span>
-            <span>€ {{ results.cost.energy | number:'1.2-2' }}</span>
+            <span>{{ results?.cost?.energy | currency:'CHF' }}</span>
           </li>
            <li>
             <span>Service/Markup</span>
-            <span>€ {{ results.cost.markup | number:'1.2-2' }}</span>
+            <span>{{ results?.cost?.markup | currency:'CHF' }}</span>
           </li>
         </ul>
       </div>

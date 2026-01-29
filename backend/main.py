@@ -58,7 +58,6 @@ async def legacy_calculate(file: UploadFile = File(...)):
     # Map Check response to old format
     data = resp.data
     return {
-        "printer": data.get("printer", "Unknown"),
         "print_time_seconds": data.get("print_time_seconds", 0),
         "print_time_formatted": data.get("print_time_formatted", ""),
         "material_grams": data.get("material_grams", 0.0),

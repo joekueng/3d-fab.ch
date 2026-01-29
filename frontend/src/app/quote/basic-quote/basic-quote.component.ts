@@ -15,10 +15,15 @@ export class BasicQuoteComponent {
   printService = inject(PrintService);
   
   selectedFile: File | null = null;
-  selectedStrength: 'fragile' | 'medium' | 'resistant' = 'medium';
+  selectedStrength: 'standard' | 'strong' | 'ultra' = 'standard';
   isDragOver = false;
   isCalculating = false;
   quoteResult: any = null;
+  private strengthToSettings: Record<'standard' | 'strong' | 'ultra', { infill_density: number; quality: 'draft' | 'standard' | 'fine' }> = {
+    standard: { infill_density: 15, quality: 'standard' },
+    strong: { infill_density: 30, quality: 'standard' },
+    ultra: { infill_density: 50, quality: 'standard' }
+  };
 
   onDragOver(event: DragEvent) {
     event.preventDefault();
@@ -62,7 +67,7 @@ export class BasicQuoteComponent {
     this.quoteResult = null;
   }
 
-  selectStrength(strength: 'fragile' | 'medium' | 'resistant') {
+  selectStrength(strength: 'standard' | 'strong' | 'ultra') {
     this.selectedStrength = strength;
   }
 
@@ -71,10 +76,21 @@ export class BasicQuoteComponent {
 
     this.isCalculating = true;
     
-    this.printService.calculateQuote(this.selectedFile, { strength: this.selectedStrength })
+    const settings = this.strengthToSettings[this.selectedStrength];
+
+    this.printService.calculateQuote(this.selectedFile, {
+      quality: settings.quality,
+      infill_density: settings.infill_density
+    })
       .subscribe({
         next: (res) => {
-          this.quoteResult = res;
+          if (res?.success) {
+            this.quoteResult = res.data;
+          } else {
+            console.error('Quote API returned error:', res?.error);
+            alert('Calculation failed: ' + (res?.error || 'Unknown error'));
+            this.quoteResult = null;
+          }
           this.isCalculating = false;
         },
         error: (err) => {
