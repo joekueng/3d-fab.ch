@@ -34,7 +34,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set TAG
+      - name: Set TAG + OWNER lowercase
         shell: bash
         run: |
           if [[ "${{ gitea.ref }}" == "refs/heads/main" ]]; then
@@ -44,6 +44,8 @@ jobs:
           else
             echo "TAG=dev" >> "$GITHUB_ENV"
           fi
+
+          echo "OWNER_LOWER=$(echo '${{ gitea.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
 
       - name: Ensure docker CLI exists
         shell: bash
@@ -57,20 +59,21 @@ jobs:
       - name: Login to Gitea Registry
         shell: bash
         run: |
-          echo "${{ secrets.REGISTRY_TOKEN }}" | docker login "${{ secrets.REGISTRY_URL }}" \
+          set -euo pipefail
+          printf '%s' "${{ secrets.REGISTRY_TOKEN }}" | docker login "${{ secrets.REGISTRY_URL }}" \
             -u "${{ secrets.REGISTRY_USER }}" --password-stdin
 
       - name: Build & Push Backend
         shell: bash
         run: |
-          BACKEND_IMAGE="${{ secrets.REGISTRY_URL }}/${{ gitea.repository_owner }}/print-calculator-backend:${{ env.TAG }}"
+          BACKEND_IMAGE="${{ secrets.REGISTRY_URL }}/${{ env.OWNER_LOWER }}/print-calculator-backend:${{ env.TAG }}"
           docker build -t "$BACKEND_IMAGE" ./backend
           docker push "$BACKEND_IMAGE"
 
       - name: Build & Push Frontend
         shell: bash
         run: |
-          FRONTEND_IMAGE="${{ secrets.REGISTRY_URL }}/${{ gitea.repository_owner }}/print-calculator-frontend:${{ env.TAG }}"
+          FRONTEND_IMAGE="${{ secrets.REGISTRY_URL }}/${{ env.OWNER_LOWER }}/print-calculator-frontend:${{ env.TAG }}"
           docker build -t "$FRONTEND_IMAGE" ./frontend
           docker push "$FRONTEND_IMAGE"
 
@@ -78,9 +81,6 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout (serve per avere compose + env nel workspace)
-        uses: actions/checkout@v4
-
       - name: Set ENV
         shell: bash
         run: |
@@ -92,47 +92,24 @@ jobs:
             echo "ENV=dev" >> "$GITHUB_ENV"
           fi
 
-      - name: Create Remote Directory
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: mkdir -p /mnt/user/appdata/print-calculator/${{ env.ENV }}/
+      - name: Trigger deploy on Unraid (forced command key)
+        shell: bash
+        run: |
+          set -euo pipefail
 
-      - name: Copy Compose File to Server
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "docker-compose.deploy.yml"
-          target: "/mnt/user/appdata/print-calculator/${{ env.ENV }}/"
+          # Assicura ssh client
+          apt-get update
+          apt-get install -y --no-install-recommends openssh-client
 
-      - name: Copy Env File to Server
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "deploy/envs/${{ env.ENV }}.env"
-          target: "/mnt/user/appdata/print-calculator/${{ env.ENV }}/"
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
 
-      - name: Execute Remote Deployment
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            set -e
-            cd /mnt/user/appdata/print-calculator/${{ env.ENV }}/
+          # Scrive la chiave privata (multi-line) dal secret
+          printf '%s' "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
 
-            # il file copiato si chiama "dev.env"/"int.env"/"prod.env"
-            mv "${{ env.ENV }}.env" .env
+          # Aggiunge l'host key (evita prompt interattivi)
+          ssh-keyscan -H "${{ secrets.SERVER_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
 
-            echo "${{ secrets.REGISTRY_TOKEN }}" | docker login "${{ secrets.REGISTRY_URL }}" \
-              -u "${{ secrets.REGISTRY_USER }}" --password-stdin
-
-            docker compose --env-file .env -f docker-compose.deploy.yml pull
-            docker compose --env-file .env -f docker-compose.deploy.yml up -d --remove-orphans
+          # Invia SOLO "prod/int/dev" come comando (finisce in SSH_ORIGINAL_COMMAND sul server)
+          ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" "${{ env.ENV }}"
