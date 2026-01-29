@@ -1,0 +1,24 @@
+{
+  "quality_to_process": {
+    "draft": "0.28mm Extra Draft @BBL A1",
+    "standard": "0.20mm Standard @BBL A1",
+    "fine": "0.12mm Fine @BBL A1"
+  },
+  "filament_costs": {
+    "pla_basic": 20.0,
+    "petg_basic": 25.0,
+    "abs_basic": 22.0,
+    "tpu_95a": 35.0
+  },
+  "filament_to_profile": {
+    "pla_basic": "Bambu PLA Basic @BBL A1",
+    "petg_basic": "Bambu PETG Basic @BBL A1",
+    "abs_basic": "Bambu ABS @BBL A1",
+    "tpu_95a": "Bambu TPU 95A @BBL A1"
+  },
+  "machine_to_profile": {
+    "bambu_a1": "Bambu Lab A1 0.4 nozzle",
+    "bambu_x1": "Bambu Lab X1 Carbon 0.4 nozzle",
+    "bambu_p1s": "Bambu Lab P1S 0.4 nozzle"
+  }
+}

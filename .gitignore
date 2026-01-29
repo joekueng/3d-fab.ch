@@ -24,3 +24,14 @@ hs_err_pid*
 replay_pid*
 /frontend/.vscode/
 /backend/venv/
+
+# IDEs and editors
+.idea/
+*.iml
+.vscode/
+.vs/
+.fleet/
+.project
+.classpath
+.settings/
+.DS_Store
