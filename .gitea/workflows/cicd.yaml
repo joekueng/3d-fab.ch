@@ -1,0 +1,137 @@
+name: Build, Test and Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - int
+      - dev
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install -r backend/requirements.txt
+          pip install pytest httpx
+
+      - name: Run Backend Tests
+        run: |
+          export PYTHONPATH=$PYTHONPATH:$(pwd)/backend
+          pytest backend/tests
+
+  build-and-push:
+    needs: test-backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set Environment Variables
+        run: |
+          if [[ "${{ gitea.ref }}" == "refs/heads/main" ]]; then
+            echo "TAG=prod" >> $GITHUB_ENV
+          elif [[ "${{ gitea.ref }}" == "refs/heads/int" ]]; then
+            echo "TAG=int" >> $GITHUB_ENV
+          else
+            echo "TAG=dev" >> $GITHUB_ENV
+          fi
+
+      - name: Login to Gitea Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ secrets.REGISTRY_URL }}
+          username: ${{ secrets.GITEA_USER }}
+          password: ${{ secrets.GITEA_TOKEN }}
+
+      - name: Build and Push Backend
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend
+          push: true
+          tags: ${{ secrets.REGISTRY_URL }}/${{ gitea.repository_owner }}/print-calculator-backend:${{ env.TAG }}
+
+      - name: Build and Push Frontend
+        uses: docker/build-push-action@v4
+        with:
+          context: ./frontend
+          push: true
+          tags: ${{ secrets.REGISTRY_URL }}/${{ gitea.repository_owner }}/print-calculator-frontend:${{ env.TAG }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set Deployment Vars
+        run: |
+          if [[ "${{ gitea.ref }}" == "refs/heads/main" ]]; then
+            echo "ENV=prod" >> $GITHUB_ENV
+            echo "TAG=prod" >> $GITHUB_ENV
+          elif [[ "${{ gitea.ref }}" == "refs/heads/int" ]]; then
+            echo "ENV=int" >> $GITHUB_ENV
+            echo "TAG=int" >> $GITHUB_ENV
+          else
+            echo "ENV=dev" >> $GITHUB_ENV
+            echo "TAG=dev" >> $GITHUB_ENV
+          fi
+
+      - name: Create Remote Directory
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: mkdir -p /mnt/user/appdata/print-calculator/${{ env.ENV }}/
+
+      - name: Copy Compose File to Server
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "docker-compose.deploy.yml"
+          target: "/mnt/user/appdata/print-calculator/${{ env.ENV }}/"
+
+      - name: Copy Env File to Server
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "deploy/envs/${{ env.ENV }}.env"
+          target: "/mnt/user/appdata/print-calculator/${{ env.ENV }}/.env"
+
+      - name: Execute Remote Deployment
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /mnt/user/appdata/print-calculator/${{ env.ENV }}/
+            
+            # Rename the copied env file to strictly '.env' so docker compose picks it up automatically
+            mv ${{ env.ENV }}.env .env
+            
+            # Login to registry
+            echo ${{ secrets.GITEA_TOKEN }} | docker login ${{ secrets.REGISTRY_URL }} -u ${{ secrets.GITEA_USER }} --password-stdin
+            
+            # Pull new images
+            # We force reading from .env just to be safe, though default behavior does it too.
+            docker compose --env-file .env -f docker-compose.deploy.yml pull
+            
+            # Start/Update services
+            # TAG is inside .env now, so we don't even need to pass it explicitly!
+            docker compose --env-file .env -f docker-compose.deploy.yml up -d --remove-orphans
