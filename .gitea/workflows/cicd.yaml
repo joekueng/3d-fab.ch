@@ -120,6 +120,9 @@ jobs:
           # 5) Validazione: se fallisce qui, la chiave NON è valida/corrotta
           ssh-keygen -y -f ~/.ssh/id_ed25519 >/dev/null
 
+          # ... (resto del codice uguale)
           ssh-keyscan -H "${{ secrets.SERVER_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
 
+          # Aggiungiamo le opzioni di verbosità se dovesse fallire ancora, 
+          # e assicuriamoci che l'input sia pulito
           ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" "${{ env.ENV }}"
