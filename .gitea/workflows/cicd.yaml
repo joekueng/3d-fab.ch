@@ -96,20 +96,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
-          # Assicura ssh client
+          
           apt-get update
-          apt-get install -y --no-install-recommends openssh-client
-
+          apt-get install -y --no-install-recommends openssh-client ca-certificates
+          
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-
-          # Scrive la chiave privata (multi-line) dal secret
-          printf '%s' "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_ed25519
+          
+          printf '%s' "${{ secrets.SSH_PRIVATE_KEY_B64 }}" | base64 -d > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-
-          # Aggiunge l'host key (evita prompt interattivi)
+          
+          # Debug sicuro: stampa solo la prima riga (non rivela la chiave)
+          head -n 1 ~/.ssh/id_ed25519
+          
           ssh-keyscan -H "${{ secrets.SERVER_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
-
-          # Invia SOLO "prod/int/dev" come comando (finisce in SSH_ORIGINAL_COMMAND sul server)
+          
           ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" "${{ env.ENV }}"
