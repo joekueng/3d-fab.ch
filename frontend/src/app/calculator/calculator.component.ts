@@ -20,6 +20,8 @@ interface QuoteResponse {
   };
 }
 
+import { environment } from '../../environments/environment';
+
 @Component({
   selector: 'app-calculator',
   standalone: true,
@@ -61,7 +63,7 @@ export class CalculatorComponent {
     this.error = '';
     this.results = null;
 
-    this.http.post<QuoteResponse>('http://localhost:8000/calculate/stl', formData)
+    this.http.post<QuoteResponse>(`${environment.apiUrl}/calculate/stl`, formData)
       .subscribe({
         next: res => {
           this.results = res;
