@@ -25,7 +25,7 @@ jobs:
       - name: Run Tests with Maven
         run: |
           cd backend
-          mvn test
+          mvn -B test
 
   build-and-push:
     needs: test-backend
