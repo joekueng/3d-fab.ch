@@ -1,5 +1,5 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8000',
-  basicAuth: '' // Format: 'username:password'
+  apiUrl: 'https://dev.3d-fab.ch',
+  basicAuth: 'fab:0presura' // Format: 'username:password'
 };
