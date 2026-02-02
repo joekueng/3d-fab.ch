@@ -5,7 +5,10 @@ export const routes: Routes = [
     path: '',
     loadComponent: () => import('./core/layout/layout.component').then(m => m.LayoutComponent),
     children: [
-      { path: '', redirectTo: 'cal', pathMatch: 'full' },
+      { 
+        path: '', 
+        loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent)
+      },
       { 
         path: 'cal', 
         loadChildren: () => import('./features/calculator/calculator.routes').then(m => m.CALCULATOR_ROUTES) 
