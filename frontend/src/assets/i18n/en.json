@@ -1,0 +1,43 @@
+{
+  "NAV": {
+    "CALCULATOR": "Calculator",
+    "SHOP": "Shop",
+    "ABOUT": "About"
+  },
+  "FOOTER": {
+    "PRIVACY": "Privacy",
+    "TERMS": "Terms & Conditions",
+    "CONTACT": "Contact Us"
+  },
+  "CALC": {
+    "TITLE": "3D Print Calculator",
+    "SUBTITLE": "Upload your STL file and get an instant estimate of printing costs and time.",
+    "CTA_START": "Start Now",
+    "BUSINESS": "Business",
+    "PRIVATE": "Private",
+    "MODE_EASY": "Easy",
+    "MODE_ADVANCED": "Advanced",
+    "UPLOAD_LABEL": "Drag your STL file here",
+    "UPLOAD_SUB": "Supports STL, OBJ up to 50MB",
+    "MATERIAL": "Material",
+    "QUALITY": "Quality",
+    "QUANTITY": "Quantity",
+    "NOTES": "Additional Notes",
+    "CALCULATE": "Calculate Quote",
+    "RESULT": "Estimated Quote",
+    "TIME": "Print Time",
+    "COST": "Total Cost",
+    "ORDER": "Order Now",
+    "CONSULT": "Request Consultation"
+  },
+  "SHOP": {
+    "TITLE": "Filaments & Accessories",
+    "ADD_CART": "Add to Cart",
+    "BACK": "Back to Shop"
+  },
+  "ABOUT": {
+    "TITLE": "About Us",
+    "CONTACT_US": "Contact Us",
+    "SEND": "Send Message"
+  }
+}

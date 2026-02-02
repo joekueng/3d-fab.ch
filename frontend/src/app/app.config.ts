@@ -1,28 +1,23 @@
-import { ApplicationConfig, LOCALE_ID, provideZoneChangeDetection } from '@angular/core';
-import { provideRouter } from '@angular/router';
-
+import { ApplicationConfig, provideZoneChangeDetection, importProvidersFrom } from '@angular/core';
+import { provideRouter, withComponentInputBinding, withViewTransitions } from '@angular/router';
 import { routes } from './app.routes';
 import { provideHttpClient } from '@angular/common/http';
-
-const resolveLocale = () => {
-  if (typeof navigator === 'undefined') {
-    return 'de-CH';
-  }
-  const languages = navigator.languages ?? [];
-  if (navigator.language === 'it-CH' || languages.includes('it-CH')) {
-    return 'it-CH';
-  }
-  if (navigator.language === 'de-CH' || languages.includes('de-CH')) {
-    return 'de-CH';
-  }
-  return 'de-CH';
-};
+import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes),
+    provideRouter(routes, withComponentInputBinding(), withViewTransitions()),
     provideHttpClient(),
-    { provide: LOCALE_ID, useFactory: resolveLocale }
+    provideTranslateHttpLoader({
+      prefix: './assets/i18n/',
+      suffix: '.json'
+    }),
+    importProvidersFrom(
+      TranslateModule.forRoot({
+        defaultLanguage: 'it'
+      })
+    )
   ]
 };

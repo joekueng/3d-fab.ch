@@ -1,0 +1,43 @@
+{
+  "NAV": {
+    "CALCULATOR": "Calcolatore",
+    "SHOP": "Shop",
+    "ABOUT": "Chi Siamo"
+  },
+  "FOOTER": {
+    "PRIVACY": "Privacy",
+    "TERMS": "Termini & Condizioni",
+    "CONTACT": "Contattaci"
+  },
+  "CALC": {
+    "TITLE": "Calcola Preventivo 3D",
+    "SUBTITLE": "Carica il tuo file STL e ricevi una stima immediata dei costi e tempi di stampa.",
+    "CTA_START": "Inizia Ora",
+    "BUSINESS": "Aziende",
+    "PRIVATE": "Privati",
+    "MODE_EASY": "Easy",
+    "MODE_ADVANCED": "Advanced",
+    "UPLOAD_LABEL": "Trascina il tuo file STL qui",
+    "UPLOAD_SUB": "Supportiamo STL, OBJ fino a 50MB",
+    "MATERIAL": "Materiale",
+    "QUALITY": "Qualità",
+    "QUANTITY": "Quantità",
+    "NOTES": "Note aggiuntive",
+    "CALCULATE": "Calcola Preventivo",
+    "RESULT": "Preventivo Stimato",
+    "TIME": "Tempo Stampa",
+    "COST": "Costo Totale",
+    "ORDER": "Ordina Ora",
+    "CONSULT": "Richiedi Consulenza"
+  },
+  "SHOP": {
+    "TITLE": "Filamenti & Accessori",
+    "ADD_CART": "Aggiungi al Carrello",
+    "BACK": "Torna allo Shop"
+  },
+  "ABOUT": {
+    "TITLE": "Chi Siamo",
+    "CONTACT_US": "Contattaci",
+    "SEND": "Invia Messaggio"
+  }
+}
