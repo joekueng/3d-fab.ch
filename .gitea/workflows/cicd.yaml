@@ -23,6 +23,8 @@ jobs:
 
       - name: Run Tests with Maven
         run: |
+          echo "Installing Maven..."
+          apt-get update && apt-get install -y maven
           echo "Starting Maven Build..."
           cd backend
           mvn -B test
