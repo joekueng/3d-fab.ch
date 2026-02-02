@@ -67,6 +67,33 @@ import { QuoteRequest } from '../../services/quote-estimator.service';
       ></app-input>
 
       @if (mode() === 'advanced') {
+        <div class="grid">
+             <app-select
+              formControlName="color"
+              [label]="'CALC.COLOR' | translate"
+              [options]="colors"
+            ></app-select>
+            
+            <app-select
+              formControlName="infillPattern"
+              [label]="'CALC.PATTERN' | translate"
+              [options]="infillPatterns"
+            ></app-select>
+        </div>
+
+        <div class="grid">
+            <app-input
+              formControlName="infillDensity"
+              type="number"
+              [label]="'CALC.INFILL' | translate"
+            ></app-input>
+            
+            <div class="checkbox-row">
+                <input type="checkbox" formControlName="supportEnabled" id="support">
+                <label for="support">{{ 'CALC.SUPPORT' | translate }}</label>
+            </div>
+        </div>
+
         <app-input
           formControlName="notes"
           [label]="'CALC.NOTES' | translate"
@@ -127,6 +154,24 @@ import { QuoteRequest } from '../../services/quote-estimator.service';
             font-weight: 600;
         }
     }
+    
+    .checkbox-row {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        height: 100%;
+        padding-top: var(--space-4);
+        
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--color-brand);
+        }
+        label {
+            font-weight: 500;
+            cursor: pointer;
+        }
+    }
   `]
 })
 export class UploadFormComponent {
@@ -146,10 +191,27 @@ export class UploadFormComponent {
   ];
 
   qualities = [
-    { label: 'Bozza (Veloce)', value: 'Draft' },
+    { label: 'Bozza (Fast)', value: 'Draft' },
     { label: 'Standard', value: 'Standard' },
     { label: 'Alta definizione', value: 'High' }
   ];
+  
+  colors = [
+      { label: 'Black', value: 'Black' },
+      { label: 'White', value: 'White' },
+      { label: 'Gray', value: 'Gray' },
+      { label: 'Red', value: 'Red' },
+      { label: 'Blue', value: 'Blue' },
+      { label: 'Green', value: 'Green' },
+      { label: 'Yellow', value: 'Yellow' }
+  ];
+  infillPatterns = [
+      { label: 'Grid', value: 'grid' },
+      { label: 'Gyroid', value: 'gyroid' },
+      { label: 'Cubic', value: 'cubic' },
+      { label: 'Triangles', value: 'triangles' }
+  ];
+  
   acceptedFormats = '.stl,.3mf,.step,.stp,.obj,.amf,.ply,.igs,.iges';
 
   constructor(private fb: FormBuilder) {
@@ -158,7 +220,12 @@ export class UploadFormComponent {
       material: ['PLA', Validators.required],
       quality: ['Standard', Validators.required],
       quantity: [1, [Validators.required, Validators.min(1)]],
-      notes: ['']
+      notes: [''],
+      // Advanced fields
+      color: ['Black'],
+      infillDensity: [20, [Validators.min(0), Validators.max(100)]],
+      infillPattern: ['grid'],
+      supportEnabled: [false]
     });
   }
 

@@ -1,0 +1,11 @@
+/Users/joe/IdeaProjects/print-calculator/backend/src/main/java/com/printcalculator/BackendApplication.java
+/Users/joe/IdeaProjects/print-calculator/backend/src/main/java/com/printcalculator/config/AppProperties.java
+/Users/joe/IdeaProjects/print-calculator/backend/src/main/java/com/printcalculator/config/SlicerConfig.java
+/Users/joe/IdeaProjects/print-calculator/backend/src/main/java/com/printcalculator/controller/QuoteController.java
+/Users/joe/IdeaProjects/print-calculator/backend/src/main/java/com/printcalculator/model/CostBreakdown.java
+/Users/joe/IdeaProjects/print-calculator/backend/src/main/java/com/printcalculator/model/PrintStats.java
+/Users/joe/IdeaProjects/print-calculator/backend/src/main/java/com/printcalculator/model/QuoteResult.java
+/Users/joe/IdeaProjects/print-calculator/backend/src/main/java/com/printcalculator/service/GCodeParser.java
+/Users/joe/IdeaProjects/print-calculator/backend/src/main/java/com/printcalculator/service/ProfileManager.java
+/Users/joe/IdeaProjects/print-calculator/backend/src/main/java/com/printcalculator/service/QuoteCalculator.java
+/Users/joe/IdeaProjects/print-calculator/backend/src/main/java/com/printcalculator/service/SlicerService.java

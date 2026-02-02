@@ -10,6 +10,10 @@ export interface QuoteRequest {
   quality: string;
   quantity: number;
   notes?: string;
+  color?: string;
+  infillDensity?: number;
+  infillPattern?: string;
+  supportEnabled?: boolean;
   mode: 'easy' | 'advanced';
 }
 
@@ -47,6 +51,13 @@ export class QuoteEstimatorService {
       formData.append('filament', this.mapMaterial(request.material));
       formData.append('quality', this.mapQuality(request.quality));
       
+      if (request.mode === 'advanced') {
+          if (request.color) formData.append('material_color', request.color);
+          if (request.infillDensity) formData.append('infill_density', request.infillDensity.toString());
+          if (request.infillPattern) formData.append('infill_pattern', request.infillPattern);
+          if (request.supportEnabled) formData.append('support_enabled', 'true');
+      }
+
       const headers: any = {};
       // @ts-ignore
       if (environment.basicAuth) {

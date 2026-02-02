@@ -1,0 +1,11 @@
+com/printcalculator/controller/QuoteController.class
+com/printcalculator/service/GCodeParser.class
+com/printcalculator/service/QuoteCalculator.class
+com/printcalculator/config/SlicerConfig.class
+com/printcalculator/BackendApplication.class
+com/printcalculator/model/PrintStats.class
+com/printcalculator/model/CostBreakdown.class
+com/printcalculator/service/ProfileManager.class
+com/printcalculator/service/SlicerService.class
+com/printcalculator/model/QuoteResult.class
+com/printcalculator/config/AppProperties.class
