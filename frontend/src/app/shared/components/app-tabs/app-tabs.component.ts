@@ -1,10 +1,11 @@
 import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-tabs',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   template: `
     <div class="tabs">
       @for (tab of tabs(); track tab.value) {
@@ -12,7 +13,7 @@ import { CommonModule } from '@angular/common';
           class="tab" 
           [class.active]="activeTab() === tab.value"
           (click)="selectTab(tab.value)">
-          {{ tab.label }}
+          {{ tab.label | translate }}
         </button>
       }
     </div>

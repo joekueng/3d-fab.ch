@@ -11,7 +11,7 @@ import { ProductCardComponent } from './components/product-card/product-card.com
   template: `
     <div class="container hero">
       <h1>{{ 'SHOP.TITLE' | translate }}</h1>
-      <p class="subtitle">Componenti e materiali selezionati per la tua stampa 3D.</p>
+      <p class="subtitle">{{ 'SHOP.SUBTITLE' | translate }}</p>
     </div>
 
     <div class="container">

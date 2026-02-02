@@ -11,17 +11,17 @@ import { AppButtonComponent } from '../../../../shared/components/app-button/app
   imports: [CommonModule, ReactiveFormsModule, TranslateModule, AppInputComponent, AppButtonComponent],
   template: `
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
-      <app-input formControlName="name" label="Name" placeholder="Your Name"></app-input>
-      <app-input formControlName="email" type="email" label="Email" placeholder="your@email.com"></app-input>
+      <app-input formControlName="name" label="Nome" placeholder="Il tuo nome"></app-input>
+      <app-input formControlName="email" type="email" label="Email" placeholder="tuo@email.com"></app-input>
       
       <div class="form-group">
-        <label>Message</label>
+        <label>Messaggio</label>
         <textarea formControlName="message" class="form-control" rows="4"></textarea>
       </div>
 
       <div class="actions">
         <app-button type="submit" [disabled]="form.invalid || sent()">
-          {{ sent() ? 'Sent!' : ('ABOUT.SEND' | translate) }}
+          {{ sent() ? 'Inviato!' : ('ABOUT.SEND' | translate) }}
         </app-button>
       </div>
     </form>

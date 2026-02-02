@@ -10,8 +10,8 @@ import { RouterLink } from '@angular/router';
     <footer class="footer">
       <div class="container footer-inner">
         <div class="col">
-          <span class="brand">PrintCalc</span>
-          <p class="copyright">&copy; 2026 Print Calculator Inc.</p>
+          <span class="brand">3D fab</span>
+          <p class="copyright">&copy; 2026 3D fab.</p>
         </div>
         
         <div class="col links">

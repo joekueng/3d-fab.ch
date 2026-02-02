@@ -14,7 +14,7 @@ import { CommonModule } from '@angular/common';
       (drop)="onDrop($event)"
       (click)="fileInput.click()"
     >
-      <input #fileInput type="file" (change)="onFileSelected($event)" hidden [accept]="accept()">
+      <input #fileInput type="file" (change)="onFileSelected($event)" hidden [accept]="accept()" [multiple]="multiple()">
       
       <div class="content">
         <div class="icon">
@@ -22,9 +22,12 @@ import { CommonModule } from '@angular/common';
         </div>
         <p class="text">{{ label() }}</p>
         <p class="subtext">{{ subtext() }}</p>
-        @if (fileName()) {
-            <div class="file-badge">
-                {{ fileName() }}
+        
+        @if (fileNames().length > 0) {
+            <div class="file-badges">
+                @for (name of fileNames(); track name) {
+                    <div class="file-badge">{{ name }}</div>
+                }
             </div>
         }
       </div>
@@ -48,26 +51,33 @@ import { CommonModule } from '@angular/common';
     .icon { color: var(--color-brand); margin-bottom: var(--space-4); }
     .text { font-weight: 600; margin-bottom: var(--space-2); }
     .subtext { font-size: 0.875rem; color: var(--color-text-muted); }
-    .file-badge {
+    .file-badges {
         margin-top: var(--space-4);
-        display: inline-block;
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+        justify-content: center;
+    }
+    .file-badge {
         padding: var(--space-2) var(--space-4);
         background: var(--color-neutral-200);
         border-radius: var(--radius-md);
         font-weight: 600;
         color: var(--color-primary-700);
+        font-size: 0.85rem;
     }
   `]
 })
 export class AppDropzoneComponent {
-  label = input<string>('Drop file here or click to upload');
+  label = input<string>('Drop files here or click to upload');
   subtext = input<string>('Supports .stl, .obj');
   accept = input<string>('.stl,.obj');
+  multiple = input<boolean>(true);
   
-  fileDropped = output<File>();
+  filesDropped = output<File[]>();
   
   isDragOver = signal(false);
-  fileName = signal<string | null>(null);
+  fileNames = signal<string[]>([]);
 
   onDragOver(e: Event) {
     e.preventDefault();
@@ -82,23 +92,26 @@ export class AppDropzoneComponent {
   }
 
   onDrop(e: DragEvent) {
+    console.log('Drop event', e);
     e.preventDefault();
     e.stopPropagation();
     this.isDragOver.set(false);
     if (e.dataTransfer?.files.length) {
-      this.handleFile(e.dataTransfer.files[0]);
+      this.handleFiles(Array.from(e.dataTransfer.files));
     }
   }
 
   onFileSelected(e: Event) {
+    console.log('File selected', e);
     const input = e.target as HTMLInputElement;
     if (input.files?.length) {
-      this.handleFile(input.files[0]);
+      this.handleFiles(Array.from(input.files));
     }
   }
 
-  handleFile(file: File) {
-    this.fileName.set(file.name);
-    this.fileDropped.emit(file);
+  handleFiles(files: File[]) {
+    const newNames = files.map(f => f.name);
+    this.fileNames.update(current => [...current, ...newNames]);
+    this.filesDropped.emit(files);
   }
 }

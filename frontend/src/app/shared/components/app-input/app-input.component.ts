@@ -40,7 +40,7 @@ import { CommonModule } from '@angular/common';
       width: 100%;
       background: var(--color-bg-card);
       color: var(--color-text);
-      &:focus { outline: none; border-color: var(--color-brand); box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
+      &:focus { outline: none; border-color: var(--color-brand); box-shadow: 0 0 0 2px rgba(250, 207, 10, 0.25); }
       &:disabled { background: var(--color-neutral-100); cursor: not-allowed; }
     }
     .error-text { color: var(--color-danger-500); font-size: 0.75rem; margin-top: var(--space-1); }

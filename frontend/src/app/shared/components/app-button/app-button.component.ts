@@ -23,7 +23,7 @@ import { CommonModule } from '@angular/common';
       border-radius: var(--radius-md);
       font-weight: 500;
       cursor: pointer;
-      transition: background-color 0.2s, color 0.2s;
+      transition: background-color 0.2s, color 0.2s, border-color 0.2s;
       border: 1px solid transparent;
       font-family: inherit;
       font-size: 1rem;
@@ -37,7 +37,7 @@ import { CommonModule } from '@angular/common';
 
     .btn-primary {
       background-color: var(--color-brand);
-      color: white;
+      color: var(--color-neutral-900);
       &:hover:not(:disabled) { background-color: var(--color-brand-hover); }
     }
 
@@ -53,7 +53,8 @@ import { CommonModule } from '@angular/common';
       color: var(--color-text);
       &:hover:not(:disabled) { 
         border-color: var(--color-brand); 
-        color: var(--color-brand);
+        color: var(--color-neutral-900);
+        background-color: rgba(250, 207, 10, 0.1); /* Low opacity brand color */
       }
     }
 

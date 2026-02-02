@@ -17,7 +17,7 @@ import { Product } from '../../services/shop.service';
         </h3>
         <div class="footer">
           <span class="price">{{ product().price | currency:'EUR' }}</span>
-          <a [routerLink]="['/shop', product().id]" class="view-btn">View</a>
+          <a [routerLink]="['/shop', product().id]" class="view-btn">Dettagli</a>
         </div>
       </div>
     </div>

@@ -6,23 +6,43 @@ import { AppInputComponent } from '../../../../shared/components/app-input/app-i
 import { AppSelectComponent } from '../../../../shared/components/app-select/app-select.component';
 import { AppDropzoneComponent } from '../../../../shared/components/app-dropzone/app-dropzone.component';
 import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
+import { StlViewerComponent } from '../../../../shared/components/stl-viewer/stl-viewer.component';
 import { QuoteRequest } from '../../services/quote-estimator.service';
 
 @Component({
   selector: 'app-upload-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, AppInputComponent, AppSelectComponent, AppDropzoneComponent, AppButtonComponent],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, AppInputComponent, AppSelectComponent, AppDropzoneComponent, AppButtonComponent, StlViewerComponent],
   template: `
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
       
       <div class="section">
-        <app-dropzone 
-          [label]="'CALC.UPLOAD_LABEL' | translate" 
-          [subtext]="'CALC.UPLOAD_SUB' | translate"
-          (fileDropped)="onFileDropped($event)">
-        </app-dropzone>
-        @if (form.get('file')?.invalid && form.get('file')?.touched) {
-          <div class="error-msg">File required</div>
+        @if (selectedFile()) {
+          <div class="viewer-wrapper">
+             <app-stl-viewer [file]="selectedFile()"></app-stl-viewer>
+             <button type="button" class="btn-clear" (click)="clearFiles()">
+                X
+             </button>
+          </div>
+          <div class="file-list">
+             @for (f of files(); track f.name) {
+                <div class="file-item" [class.active]="f === selectedFile()" (click)="selectFile(f)">
+                   {{ f.name }}
+                </div>
+             }
+          </div>
+        } @else {
+            <app-dropzone 
+            [label]="'CALC.UPLOAD_LABEL' | translate" 
+            [subtext]="'CALC.UPLOAD_SUB' | translate"
+            [accept]="acceptedFormats"
+            [multiple]="true"
+            (filesDropped)="onFilesDropped($event)">
+            </app-dropzone>
+        }
+        
+        @if (form.get('files')?.invalid && form.get('files')?.touched) {
+          <div class="error-msg">{{ 'CALC.ERR_FILE_REQUIRED' | translate }}</div>
         }
       </div>
 
@@ -50,7 +70,7 @@ import { QuoteRequest } from '../../services/quote-estimator.service';
         <app-input
           formControlName="notes"
           [label]="'CALC.NOTES' | translate"
-          placeholder="Specific instructions..."
+          placeholder="Istruzioni specifiche..."
         ></app-input>
       }
 
@@ -69,31 +89,72 @@ import { QuoteRequest } from '../../services/quote-estimator.service';
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
     .actions { margin-top: var(--space-6); }
     .error-msg { color: var(--color-danger-500); font-size: 0.875rem; margin-top: var(--space-2); text-align: center; }
+    
+    .viewer-wrapper { position: relative; margin-bottom: var(--space-4); }
+    .btn-clear {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(0,0,0,0.5);
+        color: white;
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        z-index: 10;
+        &:hover { background: rgba(0,0,0,0.7); }
+    }
+    
+    .file-list {
+        display: flex;
+        gap: var(--space-2);
+        overflow-x: auto;
+        padding-bottom: var(--space-2);
+    }
+    .file-item {
+        padding: 0.5rem 1rem;
+        background: var(--color-neutral-100);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        font-size: 0.85rem;
+        cursor: pointer;
+        white-space: nowrap;
+        &:hover { background: var(--color-neutral-200); }
+        &.active { 
+            border-color: var(--color-brand); 
+            background: rgba(250, 207, 10, 0.1); 
+            font-weight: 600;
+        }
+    }
   `]
 })
 export class UploadFormComponent {
-  clientType = input<'business' | 'private'>('private');
   mode = input<'easy' | 'advanced'>('easy');
   loading = input<boolean>(false);
   submitRequest = output<QuoteRequest>();
 
   form: FormGroup;
   
+  files = signal<File[]>([]);
+  selectedFile = signal<File | null>(null);
+
   materials = [
     { label: 'PLA (Standard)', value: 'PLA' },
-    { label: 'PETG (Durable)', value: 'PETG' },
-    { label: 'TPU (Flexible)', value: 'TPU' }
+    { label: 'PETG (Resistente)', value: 'PETG' },
+    { label: 'TPU (Flessibile)', value: 'TPU' }
   ];
 
   qualities = [
-    { label: 'Draft (Fast)', value: 'Draft' },
+    { label: 'Bozza (Veloce)', value: 'Draft' },
     { label: 'Standard', value: 'Standard' },
-    { label: 'High Detail', value: 'High' }
+    { label: 'Alta definizione', value: 'High' }
   ];
+  acceptedFormats = '.stl,.3mf,.step,.stp,.obj,.amf,.ply,.igs,.iges';
 
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({
-      file: [null, Validators.required],
+      files: [[], Validators.required],
       material: ['PLA', Validators.required],
       quality: ['Standard', Validators.required],
       quantity: [1, [Validators.required, Validators.min(1)]],
@@ -101,16 +162,31 @@ export class UploadFormComponent {
     });
   }
 
-  onFileDropped(file: File) {
-    this.form.patchValue({ file });
-    this.form.get('file')?.markAsTouched();
+  onFilesDropped(newFiles: File[]) {
+    this.files.update(current => [...current, ...newFiles]);
+    this.form.patchValue({ files: this.files() });
+    this.form.get('files')?.markAsTouched();
+    
+    // Select the last added file by default if none selected
+    if (newFiles.length > 0) {
+        this.selectedFile.set(newFiles[newFiles.length - 1]);
+    }
+  }
+
+  selectFile(file: File) {
+      this.selectedFile.set(file);
+  }
+
+  clearFiles() {
+      this.files.set([]);
+      this.selectedFile.set(null);
+      this.form.patchValue({ files: [] });
   }
 
   onSubmit() {
     if (this.form.valid) {
       this.submitRequest.emit({
         ...this.form.value,
-        clientType: this.clientType(),
         mode: this.mode()
       });
     } else {

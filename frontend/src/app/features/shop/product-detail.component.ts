@@ -32,7 +32,7 @@ import { AppButtonComponent } from '../../shared/components/app-button/app-butto
           </div>
         </div>
       } @else {
-        <p>Product not found.</p>
+        <p>Prodotto non trovato.</p>
       }
     </div>
   `,
@@ -75,6 +75,6 @@ export class ProductDetailComponent {
   }
 
   addToCart() {
-    alert('Added to cart (Mock)');
+    alert('Aggiunto al carrello (Mock)');
   }
 }

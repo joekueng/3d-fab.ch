@@ -23,12 +23,6 @@ import { QuoteEstimatorService, QuoteRequest, QuoteResult } from './services/quo
       <div class="col-input">
         <app-card>
           <div class="tabs-wrapper">
-             <app-tabs 
-               [tabs]="clientTabs" 
-               [activeTab]="clientType()" 
-               (tabChange)="clientType.set($event)">
-             </app-tabs>
-             
              <div class="sub-tabs">
                 <span 
                   class="mode-switch" 
@@ -47,7 +41,6 @@ import { QuoteEstimatorService, QuoteRequest, QuoteResult } from './services/quo
           </div>
 
           <app-upload-form
-            [clientType]="clientType()"
             [mode]="mode()"
             [loading]="loading()"
             (submitRequest)="onCalculate($event)"
@@ -58,18 +51,18 @@ import { QuoteEstimatorService, QuoteRequest, QuoteResult } from './services/quo
       <!-- Right Column: Result or Info -->
       <div class="col-result">
         @if (error()) {
-          <app-alert type="error">An error occurred while calculating quote.</app-alert>
+          <app-alert type="error">Si è verificato un errore durante il calcolo del preventivo.</app-alert>
         }
 
         @if (result()) {
           <app-quote-result [result]="result()!"></app-quote-result>
         } @else {
           <app-card>
-            <h3>Why choose PrintCalc?</h3>
+            <h3>{{ 'CALC.BENEFITS_TITLE' | translate }}</h3>
             <ul class="benefits">
-               <li>Instant AI-powered quotes</li>
-               <li>Industrial grade materials</li>
-               <li>Fast shipping worldwide</li>
+               <li>{{ 'CALC.BENEFITS_1' | translate }}</li>
+               <li>{{ 'CALC.BENEFITS_2' | translate }}</li>
+               <li>{{ 'CALC.BENEFITS_3' | translate }}</li>
             </ul>
           </app-card>
         }
@@ -107,16 +100,10 @@ import { QuoteEstimatorService, QuoteRequest, QuoteResult } from './services/quo
   `]
 })
 export class CalculatorPageComponent {
-  clientType = signal<any>('private');
   mode = signal<any>('easy');
   loading = signal(false);
   result = signal<QuoteResult | null>(null);
   error = signal<boolean>(false);
-
-  clientTabs = [
-    { label: 'Private', value: 'private' },
-    { label: 'Business', value: 'business' }
-  ];
 
   constructor(private estimator: QuoteEstimatorService) {}
 

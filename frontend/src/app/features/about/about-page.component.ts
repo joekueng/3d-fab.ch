@@ -8,26 +8,35 @@ import { AppCardComponent } from '../../shared/components/app-card/app-card.comp
   standalone: true,
   imports: [TranslateModule, ContactFormComponent, AppCardComponent],
   template: `
-    <div class="container hero">
-      <h1>{{ 'ABOUT.TITLE' | translate }}</h1>
-    </div>
+    <section class="about-hero">
+      <div class="container">
+        <p class="eyebrow">{{ 'ABOUT.EYEBROW' | translate }}</p>
+        <h1>{{ 'ABOUT.TITLE' | translate }}</h1>
+        <p class="subtitle">{{ 'ABOUT.SUBTITLE' | translate }}</p>
+      </div>
+    </section>
 
     <div class="container content">
       <div class="info">
-        <h2>Our Mission</h2>
-        <p>
-          We make high-quality 3D printing accessible to everyone. 
-          Whether you are a hobbyist or an industrial designer, 
-          PrintCalc provides instant quotes and professional production.
-        </p>
+        <h2>{{ 'ABOUT.HOW_TITLE' | translate }}</h2>
+        <p>{{ 'ABOUT.HOW_TEXT' | translate }}</p>
 
-        <h3>How it Works</h3>
-        <ol class="steps">
-          <li>Upload your STL file</li>
-          <li>Choose material & quality</li>
-          <li>Get instant quote</li>
-          <li>We print & ship</li>
-        </ol>
+        <div class="pill-list">
+          <span>{{ 'ABOUT.PILL_1' | translate }}</span>
+          <span>{{ 'ABOUT.PILL_2' | translate }}</span>
+          <span>{{ 'ABOUT.PILL_3' | translate }}</span>
+        </div>
+
+        <h3>{{ 'ABOUT.SERVICES_TITLE' | translate }}</h3>
+        <ul class="steps">
+          <li>{{ 'ABOUT.SERVICE_1' | translate }}</li>
+          <li>{{ 'ABOUT.SERVICE_2' | translate }}</li>
+          <li>{{ 'ABOUT.SERVICE_3' | translate }}</li>
+          <li>{{ 'ABOUT.SERVICE_4' | translate }}</li>
+        </ul>
+
+        <h3>{{ 'ABOUT.TARGET_TITLE' | translate }}</h3>
+        <p class="text-muted">{{ 'ABOUT.TARGET_TEXT' | translate }}</p>
       </div>
 
       <div class="contact">
@@ -39,16 +48,49 @@ import { AppCardComponent } from '../../shared/components/app-card/app-card.comp
     </div>
   `,
   styles: [`
-    .hero { padding: var(--space-8) 0; text-align: center; }
+    .about-hero {
+      padding: 5rem 0 3.5rem;
+      background: var(--color-bg);
+      text-align: center;
+    }
+    .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 0.75rem;
+      color: var(--color-secondary-600);
+      font-weight: 600;
+      margin-bottom: var(--space-3);
+    }
+    .subtitle {
+      color: var(--color-text-muted);
+      max-width: 640px;
+      margin: var(--space-3) auto 0;
+    }
     .content {
       display: grid;
       gap: var(--space-12);
+      padding: 3rem 0 5rem;
       @media(min-width: 768px) { grid-template-columns: 1fr 1fr; }
     }
     .steps {
       padding-left: var(--space-4);
       li { margin-bottom: var(--space-2); color: var(--color-text-muted); }
     }
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin: var(--space-4) 0 var(--space-6);
+    }
+    .pill-list span {
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      background: var(--color-neutral-100);
+      border: 1px solid var(--color-border);
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .text-muted { color: var(--color-text-muted); }
   `]
 })
 export class AboutPageComponent {}

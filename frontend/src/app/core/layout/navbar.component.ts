@@ -11,7 +11,7 @@ import { AppButtonComponent } from '../../shared/components/app-button/app-butto
   template: `
     <header class="navbar">
       <div class="container navbar-inner">
-        <a routerLink="/" class="brand">Print<span class="highlight">Calc</span></a>
+        <a routerLink="/" class="brand">3D <span class="highlight">fab</span></a>
         
         <nav class="nav-links">
           <a routerLink="/cal" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}">{{ 'NAV.CALCULATOR' | translate }}</a>

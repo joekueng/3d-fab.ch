@@ -1,14 +1,15 @@
-import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, forkJoin, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
+import { environment } from '../../../../environments/environment';
 
 export interface QuoteRequest {
-  file: File;
+  files: File[];
   material: string;
   quality: string;
   quantity: number;
   notes?: string;
-  clientType: 'business' | 'private';
   mode: 'easy' | 'advanced';
 }
 
@@ -20,25 +21,94 @@ export interface QuoteResult {
   setupCost: number;
 }
 
+interface BackendResponse {
+  success: boolean;
+  data: {
+    print_time_seconds: number;
+    material_grams: number;
+    cost: {
+      total: number;
+    };
+  };
+  error?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class QuoteEstimatorService {
+  private http = inject(HttpClient);
   
   calculate(request: QuoteRequest): Observable<QuoteResult> {
-    // Mock logic
-    const basePrice = request.clientType === 'business' ? 50 : 20;
-    const materialCost = request.material === 'PETG' ? 1.5 : (request.material === 'TPU' ? 2 : 1);
-    const qualityMult = request.quality === 'High' ? 1.5 : (request.quality === 'Draft' ? 0.8 : 1);
-    
-    const estimatedPrice = (basePrice * materialCost * qualityMult * request.quantity) + 10; // +10 setup
-    
-    return of({
-      price: Math.round(estimatedPrice * 100) / 100,
-      currency: 'EUR',
-      printTimeHours: Math.floor(Math.random() * 24) + 2,
-      materialUsageGrams: Math.floor(Math.random() * 500) + 50,
-      setupCost: 10
-    }).pipe(delay(1500)); // Simulate network latency
+    const requests: Observable<BackendResponse>[] = request.files.map(file => {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('machine', 'bambu_a1'); // Hardcoded for now
+      formData.append('filament', this.mapMaterial(request.material));
+      formData.append('quality', this.mapQuality(request.quality));
+      
+      console.log(`Sending file: ${file.name} to ${environment.apiUrl}/api/quote`);
+      return this.http.post<BackendResponse>(`${environment.apiUrl}/api/quote`, formData).pipe(
+        map(res => {
+             console.log('Response for', file.name, res);
+             return res;
+        }),
+        catchError(err => {
+            console.error('Error calculating quote for', file.name, err);
+            return of({ success: false, data: { print_time_seconds: 0, material_grams: 0, cost: { total: 0 } }, error: err.message });
+        })
+      );
+    });
+
+    return forkJoin(requests).pipe(
+      map(responses => {
+        console.log('All responses:', responses);
+        
+        const validResponses = responses.filter(r => r.success);
+        if (validResponses.length === 0 && responses.length > 0) {
+            throw new Error('All calculations failed. Check backend connection.');
+        }
+
+        let totalPrice = 0;
+        let totalTime = 0;
+        let totalWeight = 0;
+        let setupCost = 10; // Base setup
+
+        validResponses.forEach(res => {
+            totalPrice += res.data.cost.total;
+            totalTime += res.data.print_time_seconds;
+            totalWeight += res.data.material_grams;
+        });
+
+        // Apply quantity multiplier
+        totalPrice = (totalPrice * request.quantity) + setupCost;
+        totalWeight = totalWeight * request.quantity;
+        // Total time usually parallel if we have multiple printers, but let's sum for now
+        totalTime = totalTime * request.quantity;
+
+        return {
+          price: Math.round(totalPrice * 100) / 100,
+          currency: 'EUR',
+          printTimeHours: Math.ceil(totalTime / 3600), // Ceil hours
+          materialUsageGrams: Math.ceil(totalWeight),
+          setupCost
+        };
+      })
+    );
+  }
+
+  private mapMaterial(mat: string): string {
+    const m = mat.toUpperCase();
+    if (m.includes('PLA')) return 'pla_basic';
+    if (m.includes('PETG')) return 'petg_basic';
+    if (m.includes('TPU')) return 'tpu_95a';
+    return 'pla_basic';
+  }
+
+  private mapQuality(qual: string): string {
+    const q = qual.toLowerCase();
+    if (q.includes('draft')) return 'draft';
+    if (q.includes('high')) return 'extra_fine';
+    return 'standard';
   }
 }
