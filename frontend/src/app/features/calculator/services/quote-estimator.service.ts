@@ -47,8 +47,15 @@ export class QuoteEstimatorService {
       formData.append('filament', this.mapMaterial(request.material));
       formData.append('quality', this.mapQuality(request.quality));
       
+      const headers: any = {};
+      // @ts-ignore
+      if (environment.basicAuth) {
+          // @ts-ignore
+          headers['Authorization'] = 'Basic ' + btoa(environment.basicAuth);
+      }
+      
       console.log(`Sending file: ${file.name} to ${environment.apiUrl}/api/quote`);
-      return this.http.post<BackendResponse>(`${environment.apiUrl}/api/quote`, formData).pipe(
+      return this.http.post<BackendResponse>(`${environment.apiUrl}/api/quote`, formData, { headers }).pipe(
         map(res => {
              console.log('Response for', file.name, res);
              return res;
