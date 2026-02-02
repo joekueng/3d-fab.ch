@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { AppTabsComponent } from '../../shared/components/app-tabs/app-tabs.component';
+
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
 import { AppAlertComponent } from '../../shared/components/app-alert/app-alert.component';
 import { UploadFormComponent } from './components/upload-form/upload-form.component';
@@ -11,7 +11,7 @@ import { QuoteEstimatorService, QuoteRequest, QuoteResult } from './services/quo
 @Component({
   selector: 'app-calculator-page',
   standalone: true,
-  imports: [CommonModule, TranslateModule, AppTabsComponent, AppCardComponent, AppAlertComponent, UploadFormComponent, QuoteResultComponent],
+  imports: [CommonModule, TranslateModule, AppCardComponent, AppAlertComponent, UploadFormComponent, QuoteResultComponent],
   template: `
     <div class="container hero">
       <h1>{{ 'CALC.TITLE' | translate }}</h1>

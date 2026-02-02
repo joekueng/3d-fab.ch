@@ -2,9 +2,9 @@ import { Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, ViewChild, 
 import { CommonModule } from '@angular/common';
 import * as THREE from 'three';
 // @ts-ignore
-import { STLLoader } from 'three/examples/jsm/loaders/STLLoader';
+import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 // @ts-ignore
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 @Component({
   selector: 'app-stl-viewer',
