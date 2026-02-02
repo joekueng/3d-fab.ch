@@ -35,20 +35,10 @@ import { AppCardComponent } from '../../shared/components/app-card/app-card.comp
           </div>
 
           <div class="hero-panel">
-            <app-card class="focus-card">
-              <p class="quote-eyebrow">Approccio consulenziale</p>
-              <h3 class="quote-title">Dall'idea al file 3D</h3>
-              <p class="text-muted">
-                Se non hai il modello, ti supportiamo nella progettazione e nella scelta delle soluzioni
-                più adatte al tuo prodotto.
-              </p>
-              <ul class="focus-list">
-                <li>Consulenza tecnica rapida</li>
-                <li>Ottimizzazione file per stampa</li>
-                <li>Verifica fattibilità e costi</li>
-              </ul>
-              <app-button variant="outline" [fullWidth]="true" routerLink="/about">Richiedi consulenza</app-button>
-            </app-card>
+            <!-- Video background placeholder -->
+            <div class="video-placeholder">
+               <!-- Future video implementation -->
+            </div>
           </div>
         </div>
       </section>
