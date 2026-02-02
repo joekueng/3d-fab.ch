@@ -1,0 +1,162 @@
+    <main class="home-page">
+      <section class="hero">
+        <div class="container hero-grid">
+          <div class="hero-copy">
+            <p class="eyebrow">Stampa 3D tecnica per aziende, freelance e maker</p>
+            <h1 class="hero-title">
+              Prezzo e tempi in pochi secondi.<br>
+              Dal file 3D al pezzo finito.
+            </h1>
+            <p class="hero-subtitle">
+              Lavoriamo con trasparenza su costi, qualità e tempi. Produciamo prototipi, pezzi personalizzati
+              e piccole serie con supporto tecnico reale.
+            </p>
+            <div class="hero-actions">
+              <app-button variant="primary" routerLink="/about">Parla con noi</app-button>
+              <app-button variant="outline" routerLink="/shop">Vai allo shop</app-button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section calculator">
+        <div class="container calculator-grid">
+          <div class="calculator-copy">
+            <h2 class="section-title">Preventivo immediato</h2>
+            <p class="section-subtitle">
+              Carica il file 3D e ottieni subito costo e tempo di stampa. Nessuna registrazione.
+            </p>
+            <ul class="calculator-list">
+              <li>Formati supportati: STL, 3MF, STEP, OBJ</li>
+              <li>Materiali disponibili: PLA, PETG, TPU</li>
+              <li>Qualità: bozza, standard, alta definizione</li>
+            </ul>
+          </div>
+          <app-card class="quote-card">
+            <div class="quote-header">
+              <div>
+                <p class="quote-eyebrow">Calcolo automatico</p>
+                <h3 class="quote-title">Prezzo e tempi in un click</h3>
+              </div>
+              <span class="quote-tag">Senza registrazione</span>
+            </div>
+            <ul class="quote-steps">
+              <li>Carica il file 3D</li>
+              <li>Scegli materiale e qualità</li>
+              <li>Ricevi subito costo e tempo</li>
+            </ul>
+            <div class="quote-meta">
+              <div>
+                <span class="meta-label">Modalità</span>
+                <span class="meta-value">Rapida / Avanzata</span>
+              </div>
+              <div>
+                <span class="meta-label">Output</span>
+                <span class="meta-value">Ordina o richiedi consulenza</span>
+              </div>
+            </div>
+            <div class="quote-actions">
+              <app-button variant="primary" [fullWidth]="true" routerLink="/cal">Apri calcolatore</app-button>
+              <app-button variant="outline" [fullWidth]="true" routerLink="/about">Parla con noi</app-button>
+            </div>
+          </app-card>
+        </div>
+      </section>
+
+      <section class="section capabilities">
+        <div class="capabilities-bg"></div>
+        <div class="container">
+          <div class="section-head">
+            <h2 class="section-title">Cosa puoi ottenere</h2>
+            <p class="section-subtitle">
+              Produzione su misura per prototipi, piccole serie e pezzi personalizzati.
+            </p>
+          </div>
+          <div class="cap-cards">
+            <app-card>
+              <h3>Prototipazione veloce</h3>
+              <p class="text-muted">Valida idee e funzioni in pochi giorni con preventivo immediato.</p>
+            </app-card>
+            <app-card>
+              <h3>Pezzi personalizzati</h3>
+              <p class="text-muted">Componenti unici o in mini serie per clienti, macchine e prodotti.</p>
+            </app-card>
+            <app-card>
+              <h3>Piccole serie</h3>
+              <p class="text-muted">Produzione controllata fino a 500 pezzi con qualità costante.</p>
+            </app-card>
+            <app-card>
+              <h3>Consulenza e CAD</h3>
+              <p class="text-muted">Supporto tecnico per progettazione, modifiche e ottimizzazione.</p>
+            </app-card>
+          </div>
+        </div>
+      </section>
+
+      <section class="section shop">
+        <div class="container split">
+          <div class="shop-copy">
+            <h2 class="section-title">Shop di soluzioni tecniche pronte</h2>
+            <p>
+              Prodotti selezionati, testati in laboratorio e pronti all'uso. Risolvono problemi reali con
+              funzionalità concrete.
+            </p>
+            <ul class="shop-list">
+              <li>Accessori funzionali per officine e laboratori</li>
+              <li>Ricambi e componenti difficili da reperire</li>
+              <li>Supporti e organizzatori per migliorare i flussi di lavoro</li>
+            </ul>
+            <div class="shop-actions">
+              <app-button variant="primary" routerLink="/shop">Scopri i prodotti</app-button>
+              <app-button variant="outline" routerLink="/about">Richiedi una soluzione</app-button>
+            </div>
+          </div>
+          <div class="shop-cards">
+            <app-card>
+              <h3>Best seller tecnici</h3>
+              <p class="text-muted">Soluzioni provate sul campo e già pronte alla spedizione.</p>
+            </app-card>
+            <app-card>
+              <h3>Kit pronti all'uso</h3>
+              <p class="text-muted">Componenti compatibili e facili da montare senza sorprese.</p>
+            </app-card>
+            <app-card>
+              <h3>Su richiesta</h3>
+              <p class="text-muted">Non trovi quello che serve? Lo progettiamo e lo produciamo per te.</p>
+            </app-card>
+          </div>
+        </div>
+      </section>
+
+      <section class="section about">
+        <div class="container about-grid">
+          <div class="about-copy">
+            <h2 class="section-title">Su di noi</h2>
+            <p>
+              3D fab è un laboratorio tecnico di stampa 3D. Seguiamo progetti dalla consulenza iniziale
+              alla produzione, con tempi chiari e supporto diretto.
+            </p>
+            <p class="text-muted">
+              Qui puoi inserire descrizioni più dettagliate del team, del laboratorio e dei progetti in corso.
+            </p>
+            <app-button variant="outline" routerLink="/about">Contattaci</app-button>
+          </div>
+          <div class="about-media">
+            <div class="media-grid">
+              <div class="media-tile">
+                <div class="media-photo"></div>
+                <p>Foto laboratorio / stampanti</p>
+              </div>
+              <div class="media-tile">
+                <div class="media-photo"></div>
+                <p>Dettagli qualità e finiture</p>
+              </div>
+              <div class="media-tile">
+                <div class="media-photo"></div>
+                <p>Team, prototipi o casi studio</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>

@@ -51,3 +51,19 @@
         radial-gradient(circle at 100% 100%, transparent 47%, $color 48%, $color 50%, transparent 51%);
     background-size: $size $size;
 }
+
+// 6. Cross Hatch (45deg Grid)
+// Intersecting diagonal lines
+@mixin pattern-cross-hatch($color, $size: 24px, $weight: 1px) {
+  background-image:
+    repeating-linear-gradient(45deg, $color 0, $color $weight, transparent $weight, transparent 50%),
+    repeating-linear-gradient(-45deg, $color 0, $color $weight, transparent $weight, transparent 50%);
+  background-size: $size $size;
+}
+
+// 7. Rectilinear (Alternating Lines)
+// Simulating a raster scan path or simple linear infill
+@mixin pattern-rectilinear($color, $size: 20px, $weight: 1px) {
+  background-image: repeating-linear-gradient(90deg, $color 0, $color $weight, transparent $weight, transparent $size);
+  background-size: $size $size;
+}
