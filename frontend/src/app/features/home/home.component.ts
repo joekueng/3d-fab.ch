@@ -33,13 +33,6 @@ import { AppCardComponent } from '../../shared/components/app-card/app-card.comp
               <span>Progettazione CAD e post-processing su richiesta</span>
             </div>
           </div>
-
-          <div class="hero-panel">
-            <!-- Video background placeholder -->
-            <div class="video-placeholder">
-               <!-- Future video implementation -->
-            </div>
-          </div>
         </div>
       </section>
 
@@ -191,6 +184,8 @@ import { AppCardComponent } from '../../shared/components/app-card/app-card.comp
     </main>
   `,
   styles: [`
+    @use '../../../styles/patterns';
+
     .home-page {
       background: var(--color-bg);
     }
@@ -200,7 +195,20 @@ import { AppCardComponent } from '../../shared/components/app-card/app-card.comp
       padding: 6rem 0 5rem;
       overflow: hidden;
       background: var(--color-bg);
+      // Enhanced Grid Pattern
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        @include patterns.pattern-grid(var(--color-neutral-900), 40px, 1px);
+        opacity: 0.12;
+        z-index: 0;
+        pointer-events: none;
+        mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+      }
     }
+    
+    // Keep the accent blob
     .hero::before {
       content: '';
       position: absolute;
@@ -213,18 +221,7 @@ import { AppCardComponent } from '../../shared/components/app-card/app-card.comp
       z-index: 0;
       animation: floatGlow 12s ease-in-out infinite;
     }
-    .hero::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(16, 24, 32, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(16, 24, 32, 0.05) 1px, transparent 1px);
-      background-size: 32px 32px;
-      opacity: 0.25;
-      z-index: 0;
-      pointer-events: none;
-    }
+    
     .hero-grid {
       display: grid;
       gap: var(--space-12);
@@ -374,11 +371,23 @@ import { AppCardComponent } from '../../shared/components/app-card/app-card.comp
       background: var(--color-neutral-50);
       border-top: 1px solid var(--color-border);
       border-bottom: 1px solid var(--color-border);
+      position: relative;
+      // Honeycomb/Gyroid Pattern
+      &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        @include patterns.pattern-gyroid(var(--color-neutral-900), 60px);
+        opacity: 0.03;
+        pointer-events: none;
+      }
     }
     .calculator-grid {
       display: grid;
       gap: var(--space-10);
       align-items: center;
+      position: relative; 
+      z-index: 1;
     }
     .calculator-list {
       padding-left: var(--space-4);
@@ -393,11 +402,23 @@ import { AppCardComponent } from '../../shared/components/app-card/app-card.comp
 
     .shop {
       background: var(--color-neutral-50);
+      position: relative;
+      // Triangular/Isogrid Pattern
+      &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        @include patterns.pattern-triangular(var(--color-neutral-900), 40px);
+        opacity: 0.03;
+        pointer-events: none;
+      }
     }
     .split {
       display: grid;
       gap: var(--space-10);
       align-items: center;
+      position: relative;
+      z-index: 1;
     }
     .shop-list {
       padding-left: var(--space-4);

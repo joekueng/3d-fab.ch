@@ -1,0 +1,53 @@
+@use 'sass:math';
+
+// =============================================================================
+// 3D Print Infill Patterns
+// =============================================================================
+
+// 1. Grid (Rectilinear Infill)
+// Basic square grid, standard infill.
+@mixin pattern-grid($color, $size: 40px, $weight: 1px) {
+  background-image:
+    linear-gradient($color $weight, transparent $weight),
+    linear-gradient(90deg, $color $weight, transparent $weight);
+  background-size: $size $size;
+}
+
+// 2. Triangular (Isogrid / Triangle Infill)
+// Strong aesthetic, often used for structural parts.
+@mixin pattern-triangular($color, $size: 40px, $weight: 1px) {
+  background-image:
+    linear-gradient(30deg, $color 1px, transparent 1px),
+    linear-gradient(150deg, $color 1px, transparent 1px),
+    linear-gradient(90deg, $color 1px, transparent 1px);
+  background-size: $size $size;
+  // Note: Simplification of true isogrid for CSS stability
+}
+
+// 3. Hexagonal (Honeycomb Infill)
+// Best structural integrity to weight ratio.
+@mixin pattern-honeycomb($color, $size: 32px) {
+  background-image:
+    radial-gradient(circle, transparent 65%, $color 66%, $color 70%, transparent 71%);
+  background-size: $size $size;
+  // This creates a "Dot/Ring" pattern that resembles printed layers or nozzle paths
+  // A true CSS honeycomb is complex and brittle across browsers.
+  // Using this "Nozzle Path" aesthetic instead which feels organic.
+}
+
+// 4. Diagonal (Rectilinear 45deg)
+@mixin pattern-diagonal($color, $size: 20px, $weight: 1px) {
+  background-image:
+    repeating-linear-gradient(45deg, $color 0, $color $weight, transparent $weight, transparent 50%),
+    repeating-linear-gradient(-45deg, $color 0, $color $weight, transparent $weight, transparent 50%);
+  background-size: $size $size;
+}
+
+// 5. Gyroid (Approximation via Curves)
+// Using radial gradients to simulate organic curves
+@mixin pattern-gyroid($color, $size: 40px) {
+    background-image: 
+        radial-gradient(circle at 0 0, transparent 47%, $color 48%, $color 50%, transparent 51%), 
+        radial-gradient(circle at 100% 100%, transparent 47%, $color 48%, $color 50%, transparent 51%);
+    background-size: $size $size;
+}
