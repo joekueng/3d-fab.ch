@@ -21,13 +21,11 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Run Tests with Maven
+      - name: Run Tests with Gradle
         run: |
-          echo "Installing Maven..."
-          apt-get update && apt-get install -y maven
-          echo "Starting Maven Build..."
           cd backend
-          mvn -B test
+          chmod +x gradlew
+          ./gradlew test
 
   build-and-push:
     needs: test-backend

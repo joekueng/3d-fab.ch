@@ -106,7 +106,7 @@ export class QuoteEstimatorService {
 
         return {
           price: Math.round(totalPrice * 100) / 100,
-          currency: 'EUR',
+          currency: 'CHF',
           printTimeHours: Math.ceil(totalTime / 3600), // Ceil hours
           materialUsageGrams: Math.ceil(totalWeight),
           setupCost

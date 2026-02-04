@@ -45,7 +45,7 @@
   },
   "SHOP": {
     "TITLE": "Soluzioni tecniche",
-    "SUBTITLE": "Prodotti pronti che risolvono problemi pratici, niente decorazioni inutili.",
+    "SUBTITLE": "Prodotti pronti che risolvono problemi pratici",
     "ADD_CART": "Aggiungi al Carrello",
     "BACK": "Torna allo Shop"
   },
@@ -71,6 +71,8 @@
     "TITLE": "Contattaci",
     "SEND": "Invia Messaggio",
     "REQ_TYPE_LABEL": "Tipo di Richiesta",
+    "TYPE_PRIVATE": "Privato",
+    "TYPE_COMPANY": "Azienda",
     "REQ_TYPE_CUSTOM": "Preventivo Personalizzato",
     "REQ_TYPE_SERIES": "Stampa in Serie",
     "REQ_TYPE_CONSULT": "Consulenza",

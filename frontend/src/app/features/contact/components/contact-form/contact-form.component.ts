@@ -28,22 +28,27 @@ interface FilePreview {
       </div>
 
       <div class="row">
-        <!-- Email -->
+        <!-- Phone -->
         <app-input formControlName="email" type="email" label="Email *" placeholder="tuo@email.com" class="col"></app-input>
         <!-- Phone -->
-        <app-input formControlName="phone" type="tel" [label]="('CONTACT.PHONE' | translate)" placeholder="+39 000 000 0000" class="col"></app-input>
+        <app-input formControlName="phone" type="tel" [label]="('CONTACT.PHONE' | translate)" placeholder="+41 00 000 00 00" class="col"></app-input>
       </div>
 
-      <!-- Name (Always Required) -->
-      <app-input formControlName="name" label="Nome *" placeholder="Il tuo nome"></app-input>
-
-      <!-- Company Toggle & Fields -->
-      <div class="form-group checkbox-group">
-        <input type="checkbox" formControlName="isCompany" id="isCompany">
-        <label for="isCompany">{{ 'CONTACT.IS_COMPANY' | translate }}</label>
+      <!-- User Type Selector (Segmented Control) -->
+      <div class="user-type-selector">
+        <div class="type-option" [class.selected]="!isCompany" (click)="setCompanyMode(false)">
+          {{ 'CONTACT.TYPE_PRIVATE' | translate }}
+        </div>
+        <div class="type-option" [class.selected]="isCompany" (click)="setCompanyMode(true)">
+          {{ 'CONTACT.TYPE_COMPANY' | translate }}
+        </div>
       </div>
 
-      <div *ngIf="form.get('isCompany')?.value" class="company-fields">
+      <!-- Personal Name (Only if NOT Company) -->
+      <app-input *ngIf="!isCompany" formControlName="name" label="Nome *" placeholder="Il tuo nome"></app-input>
+
+      <!-- Company Fields (Only if Company) -->
+      <div *ngIf="isCompany" class="company-fields">
         <app-input formControlName="companyName" [label]="('CONTACT.COMPANY_NAME' | translate) + ' *'" placeholder="Nome Azienda"></app-input>
         <app-input formControlName="referencePerson" [label]="('CONTACT.REF_PERSON' | translate) + ' *'" placeholder="Persona di Riferimento"></app-input>
       </div>
@@ -114,32 +119,54 @@ interface FilePreview {
       flex-direction: column;
       gap: var(--space-4);
       margin-bottom: var(--space-4);
-      
       @media(min-width: 768px) {
         flex-direction: row;
         .col { flex: 1; margin-bottom: 0; }
       }
     }
     
-    /* Modify direct app-input child of row if possible or target host */
-    app-input.col {
-      width: 100%;
-    }
+    app-input.col { width: 100%; }
 
-    .checkbox-group {
-      flex-direction: row;
-      align-items: center;
-      gap: var(--space-2);
-      input[type="checkbox"] { width: auto; margin: 0; }
-      label { margin: 0; }
+    /* User Type Selector Styles */
+    .user-type-selector {
+      display: inline-flex;
+      background-color: var(--color-neutral-100);
+      border-radius: var(--radius-md);
+      padding: 4px;
+      margin-bottom: var(--space-4);
+      gap: 4px;
+    }
+    
+    .type-option {
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--color-text-muted);
+      transition: all 0.2s ease;
+      user-select: none;
+      
+      &:hover { color: var(--color-text); }
+      
+      &.selected {
+        background-color: var(--color-brand);
+        color: #000; /* Assuming brand color is light/yellow, black text is safer. Adjust if brand is dark. */
+        font-weight: 600;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      }
     }
 
     .company-fields {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
       padding-left: var(--space-4);
       border-left: 2px solid var(--color-border);
       margin-bottom: var(--space-4);
     }
 
+    /* File Upload Styles */
     .drop-zone {
       border: 2px dashed var(--color-border);
       border-radius: var(--radius-md);
@@ -200,6 +227,10 @@ export class ContactFormComponent {
   sent = signal(false);
   files = signal<FilePreview[]>([]);
   
+  get isCompany(): boolean {
+    return this.form.get('isCompany')?.value;
+  }
+  
   requestTypes = [
     { value: 'custom', label: 'CONTACT.REQ_TYPE_CUSTOM' },
     { value: 'series', label: 'CONTACT.REQ_TYPE_SERIES' },
@@ -221,19 +252,33 @@ export class ContactFormComponent {
 
     // Handle conditional validation for Company fields
     this.form.get('isCompany')?.valueChanges.subscribe(isCompany => {
+      const nameControl = this.form.get('name');
       const companyNameControl = this.form.get('companyName');
       const refPersonControl = this.form.get('referencePerson');
 
       if (isCompany) {
+        // Company Mode: Name not required / cleared, Company defaults required
+        nameControl?.clearValidators();
+        nameControl?.setValue(''); // Optional: clear value
+        
         companyNameControl?.setValidators([Validators.required]);
         refPersonControl?.setValidators([Validators.required]);
       } else {
+        // Private Mode: Name required
+        nameControl?.setValidators([Validators.required]);
+        
         companyNameControl?.clearValidators();
         refPersonControl?.clearValidators();
       }
+      
+      nameControl?.updateValueAndValidity();
       companyNameControl?.updateValueAndValidity();
       refPersonControl?.updateValueAndValidity();
     });
+  }
+
+  setCompanyMode(isCompany: boolean) {
+    this.form.patchValue({ isCompany });
   }
 
   onFileSelected(event: Event) {

@@ -1,11 +1,12 @@
 # Stage 1: Build Java JAR
-FROM maven:3.9-eclipse-temurin-21 AS build
+FROM eclipse-temurin:21-jdk-jammy AS build
 WORKDIR /app
-COPY pom.xml .
+COPY gradle gradle
+COPY gradlew build.gradle settings.gradle ./
 # Download dependencies first to cache them
-RUN mvn dependency:go-offline
+RUN ./gradlew dependencies --no-daemon
 COPY src ./src
-RUN mvn clean package -DskipTests
+RUN ./gradlew bootJar -x test --no-daemon
 
 # Stage 2: Runtime Environment
 FROM eclipse-temurin:21-jre-jammy
@@ -34,7 +35,7 @@ ENV SLICER_PATH="/opt/orcaslicer/AppRun"
 
 WORKDIR /app
 # Copy JAR from build stage
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /app/build/libs/*.jar app.jar
 # Copy profiles
 COPY profiles ./profiles
 

@@ -40,7 +40,7 @@
   },
   "SHOP": {
     "TITLE": "Technical solutions",
-    "SUBTITLE": "Ready-made products solving practical problems, no useless decorations.",
+    "SUBTITLE": "Ready-made products solving practical problems",
     "ADD_CART": "Add to Cart",
     "BACK": "Back to Shop"
   },
@@ -66,6 +66,8 @@
     "TITLE": "Contact Us",
     "SEND": "Send Message",
     "REQ_TYPE_LABEL": "Type of Request",
+    "TYPE_PRIVATE": "Private",
+    "TYPE_COMPANY": "Business",
     "REQ_TYPE_CUSTOM": "Custom Quote",
     "REQ_TYPE_SERIES": "Series Production",
     "REQ_TYPE_CONSULT": "Consultation",

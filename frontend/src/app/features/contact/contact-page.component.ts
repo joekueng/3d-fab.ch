@@ -24,7 +24,7 @@ import { AppCardComponent } from '../../shared/components/app-card/app-card.comp
   `,
   styles: [`
     .contact-hero {
-      padding: 5rem 0 3.5rem;
+      padding: 3rem 0 2rem;
       background: var(--color-bg);
       text-align: center;
     }
@@ -34,7 +34,7 @@ import { AppCardComponent } from '../../shared/components/app-card/app-card.comp
       margin: var(--space-3) auto 0;
     }
     .content {
-      padding: 3rem 0 5rem;
+      padding: 2rem 0 5rem;
       max-width: 800px;
     }
   `]
