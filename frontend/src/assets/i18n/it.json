@@ -1,8 +1,10 @@
 {
   "NAV": {
+    "HOME": "Home",
     "CALCULATOR": "Calcolatore",
     "SHOP": "Shop",
-    "ABOUT": "Chi Siamo"
+    "ABOUT": "Chi Siamo",
+    "CONTACT": "Contattaci"
   },
   "FOOTER": {
     "PRIVACY": "Privacy",
@@ -63,7 +65,22 @@
     "SERVICE_4": "Verifica file e ottimizzazione per la stampa",
     "TARGET_TITLE": "Per chi è",
     "TARGET_TEXT": "Piccole aziende, freelance, smanettoni e clienti che cercano un prodotto già pronto dallo shop.",
-    "CONTACT_US": "Contattaci",
-    "SEND": "Invia Messaggio"
+    "TEAM_TITLE": "Il Nostro Team"
+  },
+  "CONTACT": {
+    "TITLE": "Contattaci",
+    "SEND": "Invia Messaggio",
+    "REQ_TYPE_LABEL": "Tipo di Richiesta",
+    "REQ_TYPE_CUSTOM": "Preventivo Personalizzato",
+    "REQ_TYPE_SERIES": "Stampa in Serie",
+    "REQ_TYPE_CONSULT": "Consulenza",
+    "REQ_TYPE_QUESTION": "Domande Generali",
+    "PHONE": "Telefono",
+    "IS_COMPANY": "Sei un'azienda?",
+    "COMPANY_NAME": "Ragione Sociale",
+    "REF_PERSON": "Persona di Riferimento",
+    "UPLOAD_LABEL": "Allegati",
+    "UPLOAD_HINT": "Max 15 file. Supportati: Immagini, PDF, STL, STEP, 3MF, OBJ",
+    "DROP_FILES": "Trascina qui i file o clicca per caricare"
   }
 }

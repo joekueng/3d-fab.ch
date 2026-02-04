@@ -1,12 +1,11 @@
 import { Component } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
-import { ContactFormComponent } from './components/contact-form/contact-form.component';
-import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
+
 
 @Component({
   selector: 'app-about-page',
   standalone: true,
-  imports: [TranslateModule, ContactFormComponent, AppCardComponent],
+  imports: [TranslateModule],
   template: `
     <section class="about-hero">
       <div class="container">
@@ -37,14 +36,25 @@ import { AppCardComponent } from '../../shared/components/app-card/app-card.comp
 
         <h3>{{ 'ABOUT.TARGET_TITLE' | translate }}</h3>
         <p class="text-muted">{{ 'ABOUT.TARGET_TEXT' | translate }}</p>
+
+        <h3>{{ 'ABOUT.TEAM_TITLE' | translate }}</h3>
+        <div class="team-grid">
+          <div class="team-member">
+            <div class="placeholder-img"></div>
+            <p>Member 1</p>
+          </div>
+          <div class="team-member">
+            <div class="placeholder-img"></div>
+            <p>Member 2</p>
+          </div>
+          <div class="team-member">
+            <div class="placeholder-img"></div>
+            <p>Member 3</p>
+          </div>
+        </div>
       </div>
 
-      <div class="contact">
-        <app-card>
-          <h2>{{ 'ABOUT.CONTACT_US' | translate }}</h2>
-          <app-contact-form></app-contact-form>
-        </app-card>
-      </div>
+
     </div>
   `,
   styles: [`
@@ -91,6 +101,22 @@ import { AppCardComponent } from '../../shared/components/app-card/app-card.comp
       font-weight: 600;
     }
     .text-muted { color: var(--color-text-muted); }
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: var(--space-4);
+      margin-top: var(--space-4);
+    }
+    .team-member {
+      text-align: center;
+    }
+    .placeholder-img {
+      width: 100%;
+      aspect-ratio: 1;
+      background: var(--color-neutral-100);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-2);
+    }
   `]
 })
 export class AboutPageComponent {}
