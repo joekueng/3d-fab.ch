@@ -71,7 +71,7 @@
     "REQ_TYPE_CUSTOM": "Custom Quote",
     "REQ_TYPE_SERIES": "Series Production",
     "REQ_TYPE_CONSULT": "Consultation",
-    "REQ_TYPE_QUESTION": "General Questions",
+    "REQ_TYPE_QUESTION": "Questions",
     "PHONE": "Phone",
     "IS_COMPANY": "Are you a company?",
     "COMPANY_NAME": "Company Name",

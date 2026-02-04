@@ -12,10 +12,20 @@ import { AppButtonComponent } from '../../shared/components/app-button/app-butto
   styleUrls: ['./navbar.component.scss']
 })
 export class NavbarComponent {
+  isMenuOpen = false;
+
   constructor(public langService: LanguageService) {}
 
   toggleLang() {
     const newLang = this.langService.currentLang() === 'it' ? 'en' : 'it';
     this.langService.switchLang(newLang);
+  }
+
+  toggleMenu() {
+    this.isMenuOpen = !this.isMenuOpen;
+  }
+
+  closeMenu() {
+    this.isMenuOpen = false;
   }
 }

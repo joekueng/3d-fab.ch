@@ -64,16 +64,18 @@ import { TranslateModule } from '@ngx-translate/core';
       grid-template-columns: 1fr;
       gap: 4rem;
       align-items: center;
+      text-align: center; /* Center on mobile */
       
       @media(min-width: 992px) {
         grid-template-columns: 1fr 1fr;
         gap: 6rem;
+        text-align: left; /* Reset to left on desktop */
       }
     }
 
     /* Left Column */
     .text-content {
-      text-align: left;
+      /* text-align: left; Removed to inherit from parent */
     }
 
     .eyebrow {
@@ -106,6 +108,14 @@ import { TranslateModule } from '@ngx-translate/core';
       background: var(--color-primary-500);
       border-radius: 2px;
       margin-bottom: var(--space-6);
+      /* Center divider on mobile */
+      margin-left: auto;
+      margin-right: auto;
+
+      @media(min-width: 992px) {
+        margin-left: 0;
+        margin-right: 0;
+      }
     }
 
     .description {
@@ -119,6 +129,11 @@ import { TranslateModule } from '@ngx-translate/core';
       display: flex;
       flex-wrap: wrap;
       gap: 0.75rem;
+      justify-content: center; /* Center tags on mobile */
+      
+      @media(min-width: 992px) {
+        justify-content: flex-start;
+      }
     }
 
     .tag {
@@ -145,6 +160,17 @@ import { TranslateModule } from '@ngx-translate/core';
       display: flex;
       justify-content: center;
       gap: 2rem;
+      align-items: center;
+      
+      /* Mobile: Stacked */
+      flex-direction: column;
+      
+      /* Desktop: Side-by-side */
+      @media(min-width: 768px) {
+        flex-direction: row;
+        flex-wrap: wrap; /* Wrap if necessary but try row */
+        align-items: flex-start;
+      }
     }
 
     .photo-card {

@@ -129,15 +129,19 @@ interface FilePreview {
 
     /* User Type Selector Styles */
     .user-type-selector {
-      display: inline-flex;
+      display: flex;
       background-color: var(--color-neutral-100);
       border-radius: var(--radius-md);
       padding: 4px;
       margin-bottom: var(--space-4);
       gap: 4px;
+      width: 100%; /* Full width */
+      max-width: 400px; /* Limit on desktop */
     }
     
     .type-option {
+      flex: 1; /* Equal width */
+      text-align: center;
       padding: 8px 16px;
       border-radius: var(--radius-sm);
       cursor: pointer;
@@ -151,7 +155,7 @@ interface FilePreview {
       
       &.selected {
         background-color: var(--color-brand);
-        color: #000; /* Assuming brand color is light/yellow, black text is safer. Adjust if brand is dark. */
+        color: #000;
         font-weight: 600;
         box-shadow: 0 1px 2px rgba(0,0,0,0.05);
       }
