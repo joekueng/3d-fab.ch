@@ -158,18 +158,16 @@ import { TranslateModule } from '@ngx-translate/core';
     /* Right Column */
     .visual-content {
       display: flex;
-      justify-content: center;
-      gap: 2rem;
-      align-items: center;
-      
-      /* Mobile: Stacked */
       flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 2rem;
       
-      /* Desktop: Side-by-side */
       @media(min-width: 768px) {
-        flex-direction: row;
-        flex-wrap: wrap; /* Wrap if necessary but try row */
-        align-items: flex-start;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        align-items: start;
+        justify-items: center;
       }
     }
 
@@ -178,7 +176,8 @@ import { TranslateModule } from '@ngx-translate/core';
       padding: 1rem;
       border-radius: var(--radius-lg);
       box-shadow: var(--shadow-lg);
-      width: 260px;
+      width: 100%;
+      max-width: 260px;
       position: relative;
     }
 

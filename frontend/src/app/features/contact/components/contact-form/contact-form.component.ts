@@ -29,9 +29,9 @@ interface FilePreview {
 
       <div class="row">
         <!-- Phone -->
-        <app-input formControlName="email" type="email" label="Email *" placeholder="tuo@email.com" class="col"></app-input>
+        <app-input formControlName="email" type="email" label="Email *" [placeholder]="'CONTACT.PLACEHOLDER_EMAIL' | translate" class="col"></app-input>
         <!-- Phone -->
-        <app-input formControlName="phone" type="tel" [label]="('CONTACT.PHONE' | translate)" placeholder="+41 00 000 00 00" class="col"></app-input>
+        <app-input formControlName="phone" type="tel" [label]="('CONTACT.PHONE' | translate)" [placeholder]="'CONTACT.PLACEHOLDER_PHONE' | translate" class="col"></app-input>
       </div>
 
       <!-- User Type Selector (Segmented Control) -->
@@ -45,16 +45,16 @@ interface FilePreview {
       </div>
 
       <!-- Personal Name (Only if NOT Company) -->
-      <app-input *ngIf="!isCompany" formControlName="name" label="Nome *" placeholder="Il tuo nome"></app-input>
+      <app-input *ngIf="!isCompany" formControlName="name" label="Nome *" [placeholder]="'CONTACT.PLACEHOLDER_NAME' | translate"></app-input>
 
       <!-- Company Fields (Only if Company) -->
       <div *ngIf="isCompany" class="company-fields">
-        <app-input formControlName="companyName" [label]="('CONTACT.COMPANY_NAME' | translate) + ' *'" placeholder="Nome Azienda"></app-input>
-        <app-input formControlName="referencePerson" [label]="('CONTACT.REF_PERSON' | translate) + ' *'" placeholder="Persona di Riferimento"></app-input>
+        <app-input formControlName="companyName" [label]="('CONTACT.COMPANY_NAME' | translate) + ' *'" [placeholder]="'CONTACT.PLACEHOLDER_COMPANY' | translate"></app-input>
+        <app-input formControlName="referencePerson" [label]="('CONTACT.REF_PERSON' | translate) + ' *'" [placeholder]="'CONTACT.PLACEHOLDER_REF_PERSON' | translate"></app-input>
       </div>
       
       <div class="form-group">
-        <label>Messaggio *</label>
+        <label>{{ 'CONTACT.LABEL_MESSAGE' | translate }}</label>
         <textarea formControlName="message" class="form-control" rows="4"></textarea>
       </div>
 
@@ -85,7 +85,7 @@ interface FilePreview {
 
       <div class="actions">
         <app-button type="submit" [disabled]="form.invalid || sent()">
-          {{ sent() ? 'Inviato!' : ('CONTACT.SEND' | translate) }}
+          {{ sent() ? ('CONTACT.MSG_SENT' | translate) : ('CONTACT.SEND' | translate) }}
         </app-button>
       </div>
     </form>

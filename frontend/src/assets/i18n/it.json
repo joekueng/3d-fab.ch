@@ -83,6 +83,14 @@
     "REF_PERSON": "Persona di Riferimento",
     "UPLOAD_LABEL": "Allegati",
     "UPLOAD_HINT": "Max 15 file. Supportati: Immagini, PDF, STL, STEP, 3MF, OBJ",
-    "DROP_FILES": "Trascina qui i file o clicca per caricare"
+    "DROP_FILES": "Trascina qui i file o clicca per caricare",
+    "PLACEHOLDER_NAME": "Il tuo nome",
+    "PLACEHOLDER_EMAIL": "tuo@email.com",
+    "PLACEHOLDER_PHONE": "+41 00 000 00 00",
+    "PLACEHOLDER_COMPANY": "Nome Azienda",
+    "PLACEHOLDER_REF_PERSON": "Persona di Riferimento",
+    "LABEL_MESSAGE": "Messaggio *",
+    "MSG_SENT": "Inviato!",
+    "ERR_MAX_FILES": "Limite massimo di 15 file raggiunto."
   }
 }
