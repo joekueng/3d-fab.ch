@@ -2,8 +2,8 @@ import { ApplicationConfig, provideZoneChangeDetection, importProvidersFrom } fr
 import { provideRouter, withComponentInputBinding, withViewTransitions } from '@angular/router';
 import { routes } from './app.routes';
 import { provideHttpClient } from '@angular/common/http';
-import { TranslateModule } from '@ngx-translate/core';
-import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
+import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
+import { provideTranslateHttpLoader, TranslateHttpLoader } from '@ngx-translate/http-loader';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -16,7 +16,11 @@ export const appConfig: ApplicationConfig = {
     }),
     importProvidersFrom(
       TranslateModule.forRoot({
-        defaultLanguage: 'it'
+        defaultLanguage: 'it',
+        loader: {
+          provide: TranslateLoader,
+          useClass: TranslateHttpLoader
+        }
       })
     )
   ]

@@ -90,6 +90,8 @@
     "PLACEHOLDER_COMPANY": "Nome Azienda",
     "PLACEHOLDER_REF_PERSON": "Persona di Riferimento",
     "LABEL_MESSAGE": "Messaggio *",
+    "LABEL_EMAIL": "Email *",
+    "LABEL_NAME": "Nome *",
     "MSG_SENT": "Inviato!",
     "ERR_MAX_FILES": "Limite massimo di 15 file raggiunto."
   }

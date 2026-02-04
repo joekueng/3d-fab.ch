@@ -1,7 +1,7 @@
 import { Component, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AppInputComponent } from '../../../../shared/components/app-input/app-input.component';
 import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
 
@@ -29,7 +29,7 @@ interface FilePreview {
 
       <div class="row">
         <!-- Phone -->
-        <app-input formControlName="email" type="email" label="Email *" [placeholder]="'CONTACT.PLACEHOLDER_EMAIL' | translate" class="col"></app-input>
+        <app-input formControlName="email" type="email" [label]="'CONTACT.LABEL_EMAIL' | translate" [placeholder]="'CONTACT.PLACEHOLDER_EMAIL' | translate" class="col"></app-input>
         <!-- Phone -->
         <app-input formControlName="phone" type="tel" [label]="('CONTACT.PHONE' | translate)" [placeholder]="'CONTACT.PLACEHOLDER_PHONE' | translate" class="col"></app-input>
       </div>
@@ -45,7 +45,7 @@ interface FilePreview {
       </div>
 
       <!-- Personal Name (Only if NOT Company) -->
-      <app-input *ngIf="!isCompany" formControlName="name" label="Nome *" [placeholder]="'CONTACT.PLACEHOLDER_NAME' | translate"></app-input>
+      <app-input *ngIf="!isCompany" formControlName="name" [label]="'CONTACT.LABEL_NAME' | translate" [placeholder]="'CONTACT.PLACEHOLDER_NAME' | translate"></app-input>
 
       <!-- Company Fields (Only if Company) -->
       <div *ngIf="isCompany" class="company-fields">
@@ -242,7 +242,7 @@ export class ContactFormComponent {
     { value: 'question', label: 'CONTACT.REQ_TYPE_QUESTION' }
   ];
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private translate: TranslateService) {
     this.form = this.fb.group({
       requestType: ['custom', Validators.required],
       name: ['', Validators.required],
@@ -302,7 +302,7 @@ export class ContactFormComponent {
   handleFiles(newFiles: File[]) {
     const currentFiles = this.files();
     if (currentFiles.length + newFiles.length > 15) {
-      alert("Max 15 files limit reached.");
+      alert(this.translate.instant('CONTACT.ERR_MAX_FILES'));
       return;
     }
 
