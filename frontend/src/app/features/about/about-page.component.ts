@@ -7,116 +7,183 @@ import { TranslateModule } from '@ngx-translate/core';
   standalone: true,
   imports: [TranslateModule],
   template: `
-    <section class="about-hero">
-      <div class="container">
-        <p class="eyebrow">{{ 'ABOUT.EYEBROW' | translate }}</p>
-        <h1>{{ 'ABOUT.TITLE' | translate }}</h1>
-        <p class="subtitle">{{ 'ABOUT.SUBTITLE' | translate }}</p>
+    <section class="about-section">
+      <div class="container split-layout">
+        
+        <!-- Left Column: Content -->
+        <div class="text-content">
+          <p class="eyebrow">{{ 'ABOUT.EYEBROW' | translate }}</p>
+          <h1>{{ 'ABOUT.TITLE' | translate }}</h1>
+          <p class="subtitle">{{ 'ABOUT.SUBTITLE' | translate }}</p>
+          
+          <div class="divider"></div>
+
+          <p class="description">{{ 'ABOUT.HOW_TEXT' | translate }}</p>
+
+          <div class="tags-container">
+            <span class="tag">{{ 'ABOUT.PILL_1' | translate }}</span>
+            <span class="tag">{{ 'ABOUT.PILL_2' | translate }}</span>
+            <span class="tag">{{ 'ABOUT.PILL_3' | translate }}</span>
+            <span class="tag">{{ 'ABOUT.SERVICE_1' | translate }}</span>
+            <span class="tag">{{ 'ABOUT.SERVICE_2' | translate }}</span>
+          </div>
+        </div>
+
+        <!-- Right Column: Visuals -->
+        <div class="visual-content">
+          <div class="photo-card card-1">
+            <div class="placeholder-img"></div>
+            <div class="member-info">
+              <span class="member-name">Member 1</span>
+              <span class="member-role">Founder</span>
+            </div>
+          </div>
+          <div class="photo-card card-2">
+            <div class="placeholder-img"></div>
+            <div class="member-info">
+              <span class="member-name">Member 2</span>
+              <span class="member-role">Co-Founder</span>
+            </div>
+          </div>
+        </div>
+
       </div>
     </section>
-
-    <div class="container content">
-      <div class="info">
-        <h2>{{ 'ABOUT.HOW_TITLE' | translate }}</h2>
-        <p>{{ 'ABOUT.HOW_TEXT' | translate }}</p>
-
-        <div class="pill-list">
-          <span>{{ 'ABOUT.PILL_1' | translate }}</span>
-          <span>{{ 'ABOUT.PILL_2' | translate }}</span>
-          <span>{{ 'ABOUT.PILL_3' | translate }}</span>
-        </div>
-
-        <h3>{{ 'ABOUT.SERVICES_TITLE' | translate }}</h3>
-        <ul class="steps">
-          <li>{{ 'ABOUT.SERVICE_1' | translate }}</li>
-          <li>{{ 'ABOUT.SERVICE_2' | translate }}</li>
-          <li>{{ 'ABOUT.SERVICE_3' | translate }}</li>
-          <li>{{ 'ABOUT.SERVICE_4' | translate }}</li>
-        </ul>
-
-        <h3>{{ 'ABOUT.TARGET_TITLE' | translate }}</h3>
-        <p class="text-muted">{{ 'ABOUT.TARGET_TEXT' | translate }}</p>
-
-        <h3>{{ 'ABOUT.TEAM_TITLE' | translate }}</h3>
-        <div class="team-grid">
-          <div class="team-member">
-            <div class="placeholder-img"></div>
-            <p>Member 1</p>
-          </div>
-          <div class="team-member">
-            <div class="placeholder-img"></div>
-            <p>Member 2</p>
-          </div>
-          <div class="team-member">
-            <div class="placeholder-img"></div>
-            <p>Member 3</p>
-          </div>
-        </div>
-      </div>
-
-
-    </div>
   `,
   styles: [`
-    .about-hero {
-      padding: 5rem 0 3.5rem;
+    .about-section {
+      padding: 6rem 0;
       background: var(--color-bg);
-      text-align: center;
+      min-height: 80vh;
+      display: flex;
+      align-items: center;
     }
+
+    .split-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 4rem;
+      align-items: center;
+      
+      @media(min-width: 992px) {
+        grid-template-columns: 1fr 1fr;
+        gap: 6rem;
+      }
+    }
+
+    /* Left Column */
+    .text-content {
+      text-align: left;
+    }
+
     .eyebrow {
       text-transform: uppercase;
-      letter-spacing: 0.12em;
-      font-size: 0.75rem;
-      color: var(--color-secondary-600);
-      font-weight: 600;
-      margin-bottom: var(--space-3);
+      letter-spacing: 0.15em;
+      font-size: 0.875rem;
+      color: var(--color-primary-500);
+      font-weight: 700;
+      margin-bottom: var(--space-2);
+      display: block;
     }
+
+    h1 {
+      font-size: 3rem;
+      line-height: 1.1;
+      margin-bottom: var(--space-4);
+      color: var(--color-text-main);
+    }
+
     .subtitle {
+      font-size: 1.25rem;
       color: var(--color-text-muted);
-      max-width: 640px;
-      margin: var(--space-3) auto 0;
+      margin-bottom: var(--space-6);
+      font-weight: 300;
     }
-    .content {
-      display: grid;
-      gap: var(--space-12);
-      padding: 3rem 0 5rem;
-      @media(min-width: 768px) { grid-template-columns: 1fr 1fr; }
+
+    .divider {
+      height: 4px;
+      width: 60px;
+      background: var(--color-primary-500);
+      border-radius: 2px;
+      margin-bottom: var(--space-6);
     }
-    .steps {
-      padding-left: var(--space-4);
-      li { margin-bottom: var(--space-2); color: var(--color-text-muted); }
+
+    .description {
+      font-size: 1.1rem;
+      line-height: 1.7;
+      color: var(--color-text-main);
+      margin-bottom: var(--space-8);
     }
-    .pill-list {
+
+    .tags-container {
       display: flex;
       flex-wrap: wrap;
-      gap: var(--space-2);
-      margin: var(--space-4) 0 var(--space-6);
+      gap: 0.75rem;
     }
-    .pill-list span {
-      padding: 0.35rem 0.75rem;
-      border-radius: 999px;
-      background: var(--color-neutral-100);
+
+    .tag {
+      padding: 0.5rem 1rem;
+      border-radius: 99px;
+      background: var(--color-surface-card);
       border: 1px solid var(--color-border);
-      font-size: 0.85rem;
-      font-weight: 600;
+      color: var(--color-text-main);
+      font-weight: 500;
+      font-size: 0.9rem;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
     }
-    .text-muted { color: var(--color-text-muted); }
-    .team-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: var(--space-4);
-      margin-top: var(--space-4);
+
+    .tag:hover {
+      transform: translateY(-2px);
+      border-color: var(--color-primary-500);
+      color: var(--color-primary-500);
+      box-shadow: var(--shadow-md);
     }
-    .team-member {
-      text-align: center;
+
+    /* Right Column */
+    .visual-content {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
     }
+
+    .photo-card {
+      background: var(--color-surface-card);
+      padding: 1rem;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      width: 260px;
+      position: relative;
+    }
+
     .placeholder-img {
       width: 100%;
-      aspect-ratio: 1;
-      background: var(--color-neutral-100);
+      aspect-ratio: 3/4;
+      background: linear-gradient(45deg, var(--color-neutral-200), var(--color-neutral-100));
       border-radius: var(--radius-md);
-      margin-bottom: var(--space-2);
+      margin-bottom: 1rem;
+    }
+
+    .member-info {
+      text-align: center;
+    }
+
+    .member-name {
+      display: block;
+      font-weight: 700;
+      color: var(--color-text-main);
+      font-size: 1.1rem;
+    }
+
+    .member-role {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 0.25rem;
     }
   `]
 })
 export class AboutPageComponent {}
+
