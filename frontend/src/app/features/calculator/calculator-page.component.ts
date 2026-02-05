@@ -52,9 +52,11 @@ import { Router } from '@angular/router';
 
         @if (loading()) {
             <app-card class="loading-state">
-                <div class="spinner"></div>
-                <p>Analisi geometria e slicing in corso...</p>
-                <small class="text-muted">Potrebbe richiedere qualche secondo.</small>
+                <div class="loader-content">
+                    <div class="spinner"></div>
+                    <h3 class="loading-title">Analisi in corso...</h3>
+                    <p class="loading-text">Stiamo analizzando la geometria e calcolando il percorso utensile.</p>
+                </div>
             </app-card>
         } @else if (result()) {
           <app-quote-result [result]="result()!" (consult)="onConsult()"></app-quote-result>
@@ -120,19 +122,39 @@ import { Router } from '@angular/router';
     .benefits { padding-left: var(--space-4); color: var(--color-text-muted); line-height: 2; }
     
     .loading-state {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 300px; /* Match typical result height */
+    }
+    
+    .loader-content {
         text-align: center;
-        padding: var(--space-8);
+        max-width: 300px;
+        margin: 0 auto;
+    }
+    
+    .loading-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: var(--space-4) 0 var(--space-2);
+        color: var(--color-text);
+    }
+    
+    .loading-text {
+        font-size: 0.9rem;
         color: var(--color-text-muted);
+        line-height: 1.5;
+    }
         
-        .spinner {
-            border: 3px solid rgba(0, 0, 0, 0.1);
-            border-left-color: var(--color-brand);
-            border-radius: 50%;
-            width: 32px;
-            height: 32px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto var(--space-4);
-        }
+    .spinner {
+        border: 3px solid var(--color-neutral-200);
+        border-left-color: var(--color-brand);
+        border-radius: 50%;
+        width: 48px;
+        height: 48px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
     }
     
     @keyframes spin {

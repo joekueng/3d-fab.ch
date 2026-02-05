@@ -101,25 +101,22 @@ import { QuoteRequest } from '../../services/quote-estimator.service';
         ></app-input>
       }
 
-      @if (loading()) {
-        <div class="progress-container">
-            <div class="progress-bar">
-                <div class="progress-fill"></div>
-            </div>
-            <p class="progress-text">Uploading & Analyzing...</p>
-        </div>
-      }
-
       <div class="actions">
+        <!-- Progress Bar (Only when loading) -->
+        @if (loading()) {
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                <!-- <p class="progress-text">Uploading & Analyzing...</p> -->
+            </div>
+        }
+
         <app-button 
           type="submit" 
           [disabled]="form.invalid || loading()" 
           [fullWidth]="true">
-          @if (loading()) {
-            Slicing in progress...
-          } @else {
-            {{ 'CALC.CALCULATE' | translate }}
-          }
+          {{ loading() ? 'Processing...' : ('CALC.CALCULATE' | translate) }}
         </app-button>
       </div>
     </form>
@@ -188,19 +185,21 @@ import { QuoteRequest } from '../../services/quote-estimator.service';
 
     /* Progress Bar */
     .progress-container {
-        margin-top: var(--space-4);
-        padding: var(--space-4);
-        background: var(--color-neutral-100);
-        border-radius: var(--radius-md);
+        margin-bottom: var(--space-3);
+        /* padding: var(--space-2); */
+        /* background: var(--color-neutral-100); */
+        /* border-radius: var(--radius-md); */
         text-align: center;
+        width: 100%;
     }
     .progress-bar {
-        height: 6px;
+        height: 4px;
         background: var(--color-border);
-        border-radius: 3px;
+        border-radius: 2px;
         overflow: hidden;
-        margin-bottom: var(--space-2);
+        margin-bottom: 0;
         position: relative;
+        width: 100%;
     }
     .progress-fill {
         height: 100%;
