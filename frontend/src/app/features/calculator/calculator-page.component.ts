@@ -7,6 +7,7 @@ import { AppAlertComponent } from '../../shared/components/app-alert/app-alert.c
 import { UploadFormComponent } from './components/upload-form/upload-form.component';
 import { QuoteResultComponent } from './components/quote-result/quote-result.component';
 import { QuoteEstimatorService, QuoteRequest, QuoteResult } from './services/quote-estimator.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-calculator-page',
@@ -56,7 +57,7 @@ import { QuoteEstimatorService, QuoteRequest, QuoteResult } from './services/quo
                 <small class="text-muted">Potrebbe richiedere qualche secondo.</small>
             </app-card>
         } @else if (result()) {
-          <app-quote-result [result]="result()!"></app-quote-result>
+          <app-quote-result [result]="result()!" (consult)="onConsult()"></app-quote-result>
         } @else {
           <app-card>
             <h3>{{ 'CALC.BENEFITS_TITLE' | translate }}</h3>
@@ -146,9 +147,10 @@ export class CalculatorPageComponent {
   result = signal<QuoteResult | null>(null);
   error = signal<boolean>(false);
 
-  constructor(private estimator: QuoteEstimatorService) {}
+  constructor(private estimator: QuoteEstimatorService, private router: Router) {}
 
   onCalculate(req: QuoteRequest) {
+    this.currentRequest = req; // Store request for consultation
     this.loading.set(true);
     this.error.set(false);
     this.result.set(null);
@@ -163,5 +165,31 @@ export class CalculatorPageComponent {
         this.loading.set(false);
       }
     });
+  }
+
+  private currentRequest: QuoteRequest | null = null;
+
+  onConsult() {
+    if (!this.currentRequest) return;
+    
+    const req = this.currentRequest;
+    let details = `Richiesta Preventivo:\n`;
+    details += `- Materiale: ${req.material}\n`;
+    details += `- Qualità: ${req.quality}\n`;
+    details += `- Quantità: ${req.quantity}\n`;
+    
+    if (req.mode === 'advanced') {
+       if (req.color) details += `- Colore: ${req.color}\n`;
+       if (req.infillDensity) details += `- Infill: ${req.infillDensity}%\n`;
+    }
+    
+    if (req.notes) details += `\nNote: ${req.notes}`;
+
+    this.estimator.setPendingConsultation({
+      files: req.files,
+      message: details
+    });
+    
+    this.router.navigate(['/contact']);
   }
 }

@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AppInputComponent } from '../../../../shared/components/app-input/app-input.component';
 import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
+import { QuoteEstimatorService } from '../../../calculator/services/quote-estimator.service';
 
 interface FilePreview {
   file: File;
@@ -242,7 +243,11 @@ export class ContactFormComponent {
     { value: 'question', label: 'CONTACT.REQ_TYPE_QUESTION' }
   ];
 
-  constructor(private fb: FormBuilder, private translate: TranslateService) {
+  constructor(
+      private fb: FormBuilder, 
+      private translate: TranslateService,
+      private estimator: QuoteEstimatorService
+  ) {
     this.form = this.fb.group({
       requestType: ['custom', Validators.required],
       name: ['', Validators.required],
@@ -279,6 +284,27 @@ export class ContactFormComponent {
       companyNameControl?.updateValueAndValidity();
       refPersonControl?.updateValueAndValidity();
     });
+    
+    // Check for pending consultation data
+    effect(() => {
+        // Use timeout or run in constructor to ensure dependency availability? 
+        // Actually best in constructor or ngOnInit. Let's stick to constructor logic but executed immediately.
+    });
+    
+    const pending = this.estimator.getPendingConsultation();
+    if (pending) {
+        this.form.patchValue({
+            requestType: 'consult',
+            message: pending.message
+        });
+        
+        // Process files
+        const filePreviews: FilePreview[] = [];
+        pending.files.forEach(f => {
+            filePreviews.push({ file: f, type: this.getFileType(f) });
+        });
+        this.files.set(filePreviews);
+    }
   }
 
   setCompanyMode(isCompany: boolean) {

@@ -34,7 +34,7 @@ import { QuoteResult } from '../../services/quote-estimator.service';
 
       <div class="actions">
         <app-button variant="primary" [fullWidth]="true">{{ 'CALC.ORDER' | translate }}</app-button>
-        <app-button variant="outline" [fullWidth]="true">{{ 'CALC.CONSULT' | translate }}</app-button>
+        <app-button variant="outline" [fullWidth]="true" (click)="consult.emit()">{{ 'CALC.CONSULT' | translate }}</app-button>
       </div>
     </app-card>
   `,
@@ -53,4 +53,5 @@ import { QuoteResult } from '../../services/quote-estimator.service';
 })
 export class QuoteResultComponent {
   result = input.required<QuoteResult>();
+  consult = output<void>();
 }

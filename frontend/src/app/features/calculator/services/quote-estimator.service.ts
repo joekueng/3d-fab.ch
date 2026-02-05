@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, forkJoin, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
@@ -133,5 +133,18 @@ export class QuoteEstimatorService {
     if (q.includes('draft')) return 'draft';
     if (q.includes('high')) return 'extra_fine';
     return 'standard';
+  }
+
+  // Consultation Data Transfer
+  private pendingConsultation = signal<{files: File[], message: string} | null>(null);
+
+  setPendingConsultation(data: {files: File[], message: string}) {
+      this.pendingConsultation.set(data);
+  }
+
+  getPendingConsultation() {
+      const data = this.pendingConsultation();
+      this.pendingConsultation.set(null); // Clear after reading
+      return data;
   }
 }
