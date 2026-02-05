@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -37,6 +37,7 @@ import { Router } from '@angular/router';
           </div>
 
           <app-upload-form
+            #uploadForm
             [mode]="mode()"
             [loading]="loading()"
             [uploadProgress]="uploadProgress()"
@@ -60,7 +61,11 @@ import { Router } from '@angular/router';
                 </div>
             </app-card>
         } @else if (result()) {
-          <app-quote-result [result]="result()!" (consult)="onConsult()"></app-quote-result>
+          <app-quote-result 
+            [result]="result()!" 
+            (consult)="onConsult()"
+            (itemChange)="uploadForm.updateItemQuantityByName($event.fileName, $event.quantity)"
+          ></app-quote-result>
         } @else {
           <app-card>
             <h3>{{ 'CALC.BENEFITS_TITLE' | translate }}</h3>
@@ -177,6 +182,8 @@ export class CalculatorPageComponent {
   uploadProgress = signal(0);
   result = signal<QuoteResult | null>(null);
   error = signal<boolean>(false);
+  
+  @ViewChild('uploadForm') uploadForm!: UploadFormComponent;
 
   constructor(private estimator: QuoteEstimatorService, private router: Router) {}
 

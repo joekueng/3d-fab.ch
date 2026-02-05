@@ -31,15 +31,16 @@ interface FormItem {
           </div>
         }
         
-        <!-- Dropzone always available if we want to add more, or hide if list not empty? -->
-        <!-- User wants to "add more", so dropzone should remain or be available -->
-        <app-dropzone 
-            [label]="'CALC.UPLOAD_LABEL' | translate" 
-            [subtext]="'CALC.UPLOAD_SUB' | translate"
-            [accept]="acceptedFormats"
-            [multiple]="true"
-            (filesDropped)="onFilesDropped($event)">
-        </app-dropzone>
+        <!-- Initial Dropzone (Visible only when no files) -->
+        @if (items().length === 0) {
+            <app-dropzone 
+                [label]="'CALC.UPLOAD_LABEL' | translate" 
+                [subtext]="'CALC.UPLOAD_SUB' | translate"
+                [accept]="acceptedFormats"
+                [multiple]="true"
+                (filesDropped)="onFilesDropped($event)">
+            </app-dropzone>
+        }
 
         <!-- New File List with Details -->
         @if (items().length > 0) {
@@ -68,6 +69,14 @@ interface FormItem {
                         </div>
                     </div>
                 }
+            </div>
+            
+            <!-- "Add Files" Button (Visible only when files exist) -->
+            <div class="add-more-container">
+                <input #additionalInput type="file" [accept]="acceptedFormats" multiple hidden (change)="onAdditionalFilesSelected($event)">
+                <app-button variant="outline" [fullWidth]="true" (click)="additionalInput.click()">
+                    + {{ 'CALC.ADD_FILES' | translate }}
+                </app-button>
             </div>
         }
         
@@ -361,6 +370,26 @@ export class UploadFormComponent {
         // Auto select last added
         this.selectedFile.set(validItems[validItems.length - 1].file);
     }
+  }
+
+  onAdditionalFilesSelected(event: Event) {
+      const input = event.target as HTMLInputElement;
+      if (input.files && input.files.length > 0) {
+          this.onFilesDropped(Array.from(input.files));
+          // Reset input so same files can be selected again if needed
+          input.value = '';
+      }
+  }
+
+  updateItemQuantityByName(fileName: string, quantity: number) {
+      this.items.update(current => {
+          return current.map(item => {
+              if (item.file.name === fileName) {
+                  return { ...item, quantity };
+              }
+              return item;
+          });
+      });
   }
 
   selectFile(file: File) {

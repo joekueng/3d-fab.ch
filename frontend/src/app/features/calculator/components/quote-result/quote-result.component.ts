@@ -15,7 +15,32 @@ import { QuoteResult, QuoteItem } from '../../services/quote-estimator.service';
     <app-card>
       <h3 class="title">{{ 'CALC.RESULT' | translate }}</h3>
       
-      <!-- Detailed Items List -->
+      <!-- Summary Grid (NOW ON TOP) -->
+      <div class="result-grid">
+        <app-summary-card 
+          class="item full-width" 
+          [label]="'CALC.COST' | translate" 
+          [large]="true" 
+          [highlight]="true">
+          {{ totals().price | currency:result().currency }}
+        </app-summary-card>
+
+        <app-summary-card [label]="'CALC.TIME' | translate">
+          {{ totals().hours }}h {{ totals().minutes }}m
+        </app-summary-card>
+
+        <app-summary-card [label]="'CALC.MATERIAL' | translate">
+          {{ totals().weight }}g
+        </app-summary-card>
+      </div>
+
+      <div class="setup-note">
+        <small>* Include {{ result().setupCost | currency:result().currency }} Setup Cost</small>
+      </div>
+
+      <div class="divider"></div>
+      
+      <!-- Detailed Items List (NOW ON BOTTOM) -->
       <div class="items-list">
         @for (item of items(); track item.fileName; let i = $index) {
           <div class="item-row">
@@ -42,31 +67,6 @@ import { QuoteResult, QuoteItem } from '../../services/quote-estimator.service';
             </div>
           </div>
         }
-      </div>
-
-      <div class="divider"></div>
-      
-      <!-- Summary Grid -->
-      <div class="result-grid">
-        <app-summary-card 
-          class="item full-width" 
-          [label]="'CALC.COST' | translate" 
-          [large]="true" 
-          [highlight]="true">
-          {{ totals().price | currency:result().currency }}
-        </app-summary-card>
-
-        <app-summary-card [label]="'CALC.TIME' | translate">
-          {{ totals().hours }}h {{ totals().minutes }}m
-        </app-summary-card>
-
-        <app-summary-card [label]="'CALC.MATERIAL' | translate">
-          {{ totals().weight }}g
-        </app-summary-card>
-      </div>
-      
-      <div class="setup-note">
-        <small>* Include {{ result().setupCost | currency:result().currency }} Setup Cost</small>
       </div>
 
       <div class="actions">
@@ -159,6 +159,7 @@ import { QuoteResult, QuoteItem } from '../../services/quote-estimator.service';
 export class QuoteResultComponent {
   result = input.required<QuoteResult>();
   consult = output<void>();
+  itemChange = output<{fileName: string, quantity: number}>();
 
   // Local mutable state for items to handle quantity changes
   items = signal<QuoteItem[]>([]);
@@ -179,6 +180,11 @@ export class QuoteResultComponent {
           const updated = [...current];
           updated[index] = { ...updated[index], quantity: qty };
           return updated;
+      });
+      
+      this.itemChange.emit({
+          fileName: this.items()[index].fileName,
+          quantity: qty
       });
   }
 
