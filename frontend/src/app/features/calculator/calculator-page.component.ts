@@ -214,7 +214,11 @@ export class CalculatorPageComponent {
     let details = `Richiesta Preventivo:\n`;
     details += `- Materiale: ${req.material}\n`;
     details += `- Qualità: ${req.quality}\n`;
-    details += `- Quantità: ${req.quantity}\n`;
+    
+    details += `- File:\n`;
+    req.items.forEach(item => {
+        details += `  * ${item.file.name} (Qtà: ${item.quantity})\n`;
+    });
 
     if (req.mode === 'advanced') {
        if (req.color) details += `- Colore: ${req.color}\n`;
@@ -224,7 +228,7 @@ export class CalculatorPageComponent {
     if (req.notes) details += `\nNote: ${req.notes}`;
 
     this.estimator.setPendingConsultation({
-      files: req.files,
+      files: req.items.map(i => i.file),
       message: details
     });
 
