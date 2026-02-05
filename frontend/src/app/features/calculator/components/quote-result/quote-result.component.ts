@@ -24,7 +24,7 @@ import { QuoteResult } from '../../services/quote-estimator.service';
         </app-summary-card>
 
         <app-summary-card [label]="'CALC.TIME' | translate">
-          {{ result().printTimeHours }}h
+          {{ result().printTimeHours }}h {{ result().printTimeMinutes }}m
         </app-summary-card>
 
         <app-summary-card [label]="'CALC.MATERIAL' | translate">

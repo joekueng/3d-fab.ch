@@ -101,12 +101,25 @@ import { QuoteRequest } from '../../services/quote-estimator.service';
         ></app-input>
       }
 
+      @if (loading()) {
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+            <p class="progress-text">Uploading & Analyzing...</p>
+        </div>
+      }
+
       <div class="actions">
         <app-button 
           type="submit" 
           [disabled]="form.invalid || loading()" 
           [fullWidth]="true">
-          {{ loading() ? '...' : ('CALC.CALCULATE' | translate) }}
+          @if (loading()) {
+            Slicing in progress...
+          } @else {
+            {{ 'CALC.CALCULATE' | translate }}
+          }
         </app-button>
       </div>
     </form>
@@ -172,6 +185,36 @@ import { QuoteRequest } from '../../services/quote-estimator.service';
             cursor: pointer;
         }
     }
+
+    /* Progress Bar */
+    .progress-container {
+        margin-top: var(--space-4);
+        padding: var(--space-4);
+        background: var(--color-neutral-100);
+        border-radius: var(--radius-md);
+        text-align: center;
+    }
+    .progress-bar {
+        height: 6px;
+        background: var(--color-border);
+        border-radius: 3px;
+        overflow: hidden;
+        margin-bottom: var(--space-2);
+        position: relative;
+    }
+    .progress-fill {
+        height: 100%;
+        background: var(--color-brand);
+        width: 0%;
+        animation: progress 2s ease-in-out infinite;
+    }
+    .progress-text { font-size: 0.875rem; color: var(--color-text-muted); }
+    
+    @keyframes progress {
+        0% { width: 0%; transform: translateX(-100%); }
+        50% { width: 100%; transform: translateX(0); }
+        100% { width: 100%; transform: translateX(100%); }
+    }
   `]
 })
 export class UploadFormComponent {
@@ -230,13 +273,27 @@ export class UploadFormComponent {
   }
 
   onFilesDropped(newFiles: File[]) {
-    this.files.update(current => [...current, ...newFiles]);
-    this.form.patchValue({ files: this.files() });
-    this.form.get('files')?.markAsTouched();
-    
-    // Select the last added file by default if none selected
-    if (newFiles.length > 0) {
-        this.selectedFile.set(newFiles[newFiles.length - 1]);
+    const MAX_SIZE = 200 * 1024 * 1024; // 200MB
+    const validFiles: File[] = [];
+    let hasError = false;
+
+    for (const file of newFiles) {
+        if (file.size > MAX_SIZE) {
+            hasError = true;
+        } else {
+            validFiles.push(file);
+        }
+    }
+
+    if (hasError) {
+        alert("Alcuni file superano il limite di 200MB e non sono stati aggiunti.");
+    }
+
+    if (validFiles.length > 0) {
+        this.files.update(current => [...current, ...validFiles]);
+        this.form.patchValue({ files: this.files() });
+        this.form.get('files')?.markAsTouched();
+        this.selectedFile.set(validFiles[validFiles.length - 1]);
     }
   }
 

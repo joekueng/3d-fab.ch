@@ -18,6 +18,11 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
           <span>Loading 3D Model...</span>
         </div>
       }
+      @if (file && !loading) {
+        <div class="dims-overlay">
+           {{ dimensions.x }} x {{ dimensions.y }} x {{ dimensions.z }} mm
+        </div>
+      }
     </div>
   `,
   styles: [`
@@ -52,6 +57,18 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
     }
     @keyframes spin {
       to { transform: rotate(360deg); }
+    }
+    .dims-overlay {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        background: rgba(0,0,0,0.6);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-family: monospace;
+        pointer-events: none;
     }
   `]
 })
@@ -125,6 +142,8 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
     resizeObserver.observe(this.rendererContainer.nativeElement);
   }
 
+  dimensions = { x: 0, y: 0, z: 0 };
+
   private loadFile(file: File) {
     this.loading = true;
     const reader = new FileReader();
@@ -150,22 +169,33 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
         geometry.computeBoundingBox();
         geometry.center();
 
+        // Get Dimensions
+        const boundingBox = geometry.boundingBox!;
+        const size = new THREE.Vector3();
+        boundingBox.getSize(size);
+        
+        this.dimensions = {
+            x: Math.round(size.x * 10) / 10,
+            y: Math.round(size.y * 10) / 10,
+            z: Math.round(size.z * 10) / 10
+        };
+
         // Rotate to stand upright (usually necessary for STLs)
         this.currentMesh.rotation.x = -Math.PI / 2;
 
         this.scene.add(this.currentMesh);
 
         // Adjust camera to fit object
-        const boundingBox = geometry.boundingBox!;
-        const size = new THREE.Vector3();
-        boundingBox.getSize(size);
         const maxDim = Math.max(size.x, size.y, size.z);
         const fov = this.camera.fov * (Math.PI / 180);
-        let cameraZ = Math.abs(maxDim / 2 * Math.tan(fov * 2)); // Basic fit
-        cameraZ *= 2.5; // Zoom out a bit
+        
+        // Calculate distance towards camera (z-axis)
+        let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
+        cameraZ *= 1.5; // Tighter zoom (reduced from 2.5)
         
         this.camera.position.z = cameraZ;
         this.camera.updateProjectionMatrix();
+        this.controls.update();
         
       } catch (err) {
         console.error('Error loading STL:', err);

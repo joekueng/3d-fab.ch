@@ -21,6 +21,7 @@ export interface QuoteResult {
   price: number;
   currency: string;
   printTimeHours: number;
+  printTimeMinutes: number;
   materialUsageGrams: number;
   setupCost: number;
 }
@@ -104,10 +105,14 @@ export class QuoteEstimatorService {
         // Total time usually parallel if we have multiple printers, but let's sum for now
         totalTime = totalTime * request.quantity;
 
+        const totalHours = Math.floor(totalTime / 3600);
+        const totalMinutes = Math.ceil((totalTime % 3600) / 60);
+
         return {
-          price: Math.round(totalPrice * 100) / 100,
+          price: Math.round(totalPrice * 100) / 100, // Keep 2 decimals
           currency: 'CHF',
-          printTimeHours: Math.ceil(totalTime / 3600), // Ceil hours
+          printTimeHours: totalHours,
+          printTimeMinutes: totalMinutes,
           materialUsageGrams: Math.ceil(totalWeight),
           setupCost
         };

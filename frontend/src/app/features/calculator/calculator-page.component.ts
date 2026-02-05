@@ -22,22 +22,17 @@ import { QuoteEstimatorService, QuoteRequest, QuoteResult } from './services/quo
       <!-- Left Column: Input -->
       <div class="col-input">
         <app-card>
-          <div class="tabs-wrapper">
-             <div class="sub-tabs">
-                <span 
-                  class="mode-switch" 
-                  [class.active]="mode() === 'easy'"
-                  (click)="mode.set('easy')">
-                  {{ 'CALC.MODE_EASY' | translate }}
-                </span>
-                <span class="divider">/</span>
-                <span 
-                  class="mode-switch" 
-                  [class.active]="mode() === 'advanced'"
-                  (click)="mode.set('advanced')">
-                  {{ 'CALC.MODE_ADVANCED' | translate }}
-                </span>
-             </div>
+          <div class="mode-selector">
+            <div class="mode-option" 
+                 [class.active]="mode() === 'easy'"
+                 (click)="mode.set('easy')">
+              {{ 'CALC.MODE_EASY' | translate }}
+            </div>
+            <div class="mode-option" 
+                 [class.active]="mode() === 'advanced'"
+                 (click)="mode.set('advanced')">
+              {{ 'CALC.MODE_ADVANCED' | translate }}
+            </div>
           </div>
 
           <app-upload-form
@@ -54,7 +49,13 @@ import { QuoteEstimatorService, QuoteRequest, QuoteResult } from './services/quo
           <app-alert type="error">Si è verificato un errore durante il calcolo del preventivo.</app-alert>
         }
 
-        @if (result()) {
+        @if (loading()) {
+            <app-card class="loading-state">
+                <div class="spinner"></div>
+                <p>Analisi geometria e slicing in corso...</p>
+                <small class="text-muted">Potrebbe richiedere qualche secondo.</small>
+            </app-card>
+        } @else if (result()) {
           <app-quote-result [result]="result()!"></app-quote-result>
         } @else {
           <app-card>
@@ -82,21 +83,61 @@ import { QuoteEstimatorService, QuoteRequest, QuoteResult } from './services/quo
       }
     }
 
-    .tabs-wrapper {
+    /* Mode Selector (Segmented Control style) */
+    .mode-selector {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      background-color: var(--color-neutral-100);
+      border-radius: var(--radius-md);
+      padding: 4px;
       margin-bottom: var(--space-6);
-      border-bottom: 1px solid var(--color-border);
-      padding-bottom: var(--space-2);
+      gap: 4px;
+      width: 100%;
     }
     
-    .sub-tabs { font-size: 0.875rem; color: var(--color-text-muted); }
-    .mode-switch { cursor: pointer; &:hover { color: var(--color-text); } }
-    .mode-switch.active { font-weight: 700; color: var(--color-brand); }
-    .divider { margin: 0 var(--space-2); }
+    .mode-option {
+      flex: 1;
+      text-align: center;
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--color-text-muted);
+      transition: all 0.2s ease;
+      user-select: none;
+      
+      &:hover { color: var(--color-text); }
+      
+      &.active {
+        background-color: var(--color-brand);
+        color: #000;
+        font-weight: 600;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      }
+    }
 
     .benefits { padding-left: var(--space-4); color: var(--color-text-muted); line-height: 2; }
+    
+    .loading-state {
+        text-align: center;
+        padding: var(--space-8);
+        color: var(--color-text-muted);
+        
+        .spinner {
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-left-color: var(--color-brand);
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto var(--space-4);
+        }
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
   `]
 })
 export class CalculatorPageComponent {
