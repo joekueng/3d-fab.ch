@@ -1,0 +1,23 @@
+/* src/styles/theme.scss */
+@use 'tokens';
+
+:root {
+  /* Semantic Colors - Theming Layer */
+  --color-bg: #ffffff;
+  --color-bg-card: #ffffff;
+  --color-text: var(--color-neutral-900);
+  --color-text-muted: var(--color-secondary-500);
+  
+  --color-brand: var(--color-primary-500);
+  --color-brand-hover: var(--color-primary-600);
+  
+  --color-border: var(--color-neutral-200);
+
+  --color-success: var(--color-success-500);
+  --color-warning: var(--color-warning-500);
+  --color-error: var(--color-danger-500);
+  
+  /* Font */
+  --font-family-sans: 'IBM Plex Sans', 'Space Grotesk', sans-serif;
+  --font-family-display: 'Space Grotesk', 'IBM Plex Sans', sans-serif;
+}

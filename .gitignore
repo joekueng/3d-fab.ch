@@ -35,3 +35,9 @@ replay_pid*
 .classpath
 .settings/
 .DS_Store
+
+# Build Results
+target/
+build/
+.gradle/
+.mvn/

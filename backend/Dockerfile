@@ -1,6 +1,17 @@
-FROM --platform=linux/amd64 python:3.10-slim-bookworm
+# Stage 1: Build Java JAR
+FROM eclipse-temurin:21-jdk-jammy AS build
+WORKDIR /app
+COPY gradle gradle
+COPY gradlew build.gradle settings.gradle ./
+# Download dependencies first to cache them
+RUN ./gradlew dependencies --no-daemon
+COPY src ./src
+RUN ./gradlew bootJar -x test --no-daemon
 
-# Install system dependencies for OrcaSlicer (AppImage)
+# Stage 2: Runtime Environment
+FROM eclipse-temurin:21-jre-jammy
+
+# Install system dependencies for OrcaSlicer (same as before)
 RUN apt-get update && apt-get install -y \
     wget \
     p7zip-full \
@@ -9,35 +20,25 @@ RUN apt-get update && apt-get install -y \
     libgtk-3-0 \
     libdbus-1-3 \
     libwebkit2gtk-4.1-0 \
-    libwebkit2gtk-4.0-37 \
     && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
-WORKDIR /app
-
-# Download and extract OrcaSlicer
-# Using v2.2.0 as a stable recent release
-# We extract the AppImage to run it without FUSE
+# Install OrcaSlicer
+WORKDIR /opt
 RUN wget -q https://github.com/SoftFever/OrcaSlicer/releases/download/v2.2.0/OrcaSlicer_Linux_V2.2.0.AppImage -O OrcaSlicer.AppImage \
     && 7z x OrcaSlicer.AppImage -o/opt/orcaslicer \
     && chmod -R +x /opt/orcaslicer \
     && rm OrcaSlicer.AppImage
 
-# Add OrcaSlicer to PATH
 ENV PATH="/opt/orcaslicer/usr/bin:${PATH}"
+# Set Slicer Path env variable for Java app
+ENV SLICER_PATH="/opt/orcaslicer/AppRun"
 
-# Install Python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+WORKDIR /app
+# Copy JAR from build stage
+COPY --from=build /app/build/libs/*.jar app.jar
+# Copy profiles
+COPY profiles ./profiles
 
-# Create directories for app and temp files
-RUN mkdir -p /app/temp /app/profiles
+EXPOSE 8080
 
-# Copy application code
-COPY . .
-
-# Expose port
-EXPOSE 8000
-
-# Run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["java", "-jar", "app.jar"]
