@@ -24,12 +24,12 @@ import { Router } from '@angular/router';
       <div class="col-input">
         <app-card>
           <div class="mode-selector">
-            <div class="mode-option" 
+            <div class="mode-option"
                  [class.active]="mode() === 'easy'"
                  (click)="mode.set('easy')">
               {{ 'CALC.MODE_EASY' | translate }}
             </div>
-            <div class="mode-option" 
+            <div class="mode-option"
                  [class.active]="mode() === 'advanced'"
                  (click)="mode.set('advanced')">
               {{ 'CALC.MODE_ADVANCED' | translate }}
@@ -46,7 +46,7 @@ import { Router } from '@angular/router';
       </div>
 
       <!-- Right Column: Result or Info -->
-      <div class="col-result centered-col">
+      <div class="col-result">
         @if (error()) {
           <app-alert type="error">Si è verificato un errore durante il calcolo del preventivo.</app-alert>
         }
@@ -77,7 +77,7 @@ import { Router } from '@angular/router';
   styles: [`
     .hero { padding: var(--space-12) 0; text-align: center; }
     .subtitle { font-size: 1.25rem; color: var(--color-text-muted); max-width: 600px; margin: 0 auto; }
-    
+
     .content-grid {
       display: grid;
       grid-template-columns: 1fr;
@@ -93,7 +93,7 @@ import { Router } from '@angular/router';
             align-self: center;
         }
     }
-    
+
     /* Mode Selector (Segmented Control style) */
     .mode-selector {
       display: flex;
@@ -104,7 +104,7 @@ import { Router } from '@angular/router';
       gap: 4px;
       width: 100%;
     }
-    
+
     .mode-option {
       flex: 1;
       text-align: center;
@@ -116,9 +116,9 @@ import { Router } from '@angular/router';
       color: var(--color-text-muted);
       transition: all 0.2s ease;
       user-select: none;
-      
+
       &:hover { color: var(--color-text); }
-      
+
       &.active {
         background-color: var(--color-brand);
         color: #000;
@@ -128,33 +128,33 @@ import { Router } from '@angular/router';
     }
 
     .benefits { padding-left: var(--space-4); color: var(--color-text-muted); line-height: 2; }
-    
+
     .loading-state {
         display: flex;
         align-items: center;
         justify-content: center;
         min-height: 300px; /* Match typical result height */
     }
-    
+
     .loader-content {
         text-align: center;
         max-width: 300px;
         margin: 0 auto;
     }
-    
+
     .loading-title {
         font-size: 1.1rem;
         font-weight: 600;
         margin: var(--space-4) 0 var(--space-2);
         color: var(--color-text);
     }
-    
+
     .loading-text {
         font-size: 0.9rem;
         color: var(--color-text-muted);
         line-height: 1.5;
     }
-        
+
     .spinner {
         border: 3px solid var(--color-neutral-200);
         border-left-color: var(--color-brand);
@@ -164,7 +164,7 @@ import { Router } from '@angular/router';
         animation: spin 1s linear infinite;
         margin: 0 auto;
     }
-    
+
     @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
@@ -186,7 +186,7 @@ export class CalculatorPageComponent {
     this.uploadProgress.set(0);
     this.error.set(false);
     this.result.set(null);
-    
+
     this.estimator.calculate(req).subscribe({
       next: (event) => {
         if (typeof event === 'number') {
@@ -209,25 +209,25 @@ export class CalculatorPageComponent {
 
   onConsult() {
     if (!this.currentRequest) return;
-    
+
     const req = this.currentRequest;
     let details = `Richiesta Preventivo:\n`;
     details += `- Materiale: ${req.material}\n`;
     details += `- Qualità: ${req.quality}\n`;
     details += `- Quantità: ${req.quantity}\n`;
-    
+
     if (req.mode === 'advanced') {
        if (req.color) details += `- Colore: ${req.color}\n`;
        if (req.infillDensity) details += `- Infill: ${req.infillDensity}%\n`;
     }
-    
+
     if (req.notes) details += `\nNote: ${req.notes}`;
 
     this.estimator.setPendingConsultation({
       files: req.files,
       message: details
     });
-    
+
     this.router.navigate(['/contact']);
   }
 }
