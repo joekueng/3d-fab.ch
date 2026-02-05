@@ -102,13 +102,12 @@ import { QuoteRequest } from '../../services/quote-estimator.service';
       }
 
       <div class="actions">
-        <!-- Progress Bar (Only when loading) -->
-        @if (loading()) {
+        <!-- Progress Bar (Only when uploading i.e. progress < 100) -->
+        @if (loading() && uploadProgress() < 100) {
             <div class="progress-container">
                 <div class="progress-bar">
-                    <div class="progress-fill"></div>
+                    <div class="progress-fill" [style.width.%]="uploadProgress()"></div>
                 </div>
-                <!-- <p class="progress-text">Uploading & Analyzing...</p> -->
             </div>
         }
 
@@ -116,7 +115,7 @@ import { QuoteRequest } from '../../services/quote-estimator.service';
           type="submit" 
           [disabled]="form.invalid || loading()" 
           [fullWidth]="true">
-          {{ loading() ? 'Processing...' : ('CALC.CALCULATE' | translate) }}
+          {{ loading() ? (uploadProgress() < 100 ? 'Uploading...' : 'Processing...') : ('CALC.CALCULATE' | translate) }}
         </app-button>
       </div>
     </form>
@@ -205,20 +204,15 @@ import { QuoteRequest } from '../../services/quote-estimator.service';
         height: 100%;
         background: var(--color-brand);
         width: 0%;
-        animation: progress 2s ease-in-out infinite;
+        transition: width 0.2s ease-out;
     }
     .progress-text { font-size: 0.875rem; color: var(--color-text-muted); }
-    
-    @keyframes progress {
-        0% { width: 0%; transform: translateX(-100%); }
-        50% { width: 100%; transform: translateX(0); }
-        100% { width: 100%; transform: translateX(100%); }
-    }
   `]
 })
 export class UploadFormComponent {
   mode = input<'easy' | 'advanced'>('easy');
   loading = input<boolean>(false);
+  uploadProgress = input<number>(0);
   submitRequest = output<QuoteRequest>();
 
   form: FormGroup;

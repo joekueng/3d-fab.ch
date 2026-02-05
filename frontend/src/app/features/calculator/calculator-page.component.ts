@@ -39,13 +39,14 @@ import { Router } from '@angular/router';
           <app-upload-form
             [mode]="mode()"
             [loading]="loading()"
+            [uploadProgress]="uploadProgress()"
             (submitRequest)="onCalculate($event)"
           ></app-upload-form>
         </app-card>
       </div>
 
       <!-- Right Column: Result or Info -->
-      <div class="col-result">
+      <div class="col-result centered-col">
         @if (error()) {
           <app-alert type="error">Si è verificato un errore durante il calcolo del preventivo.</app-alert>
         }
@@ -86,6 +87,13 @@ import { Router } from '@angular/router';
       }
     }
 
+    .centered-col {
+        align-self: flex-start; /* Default */
+        @media(min-width: 768px) {
+            align-self: center;
+        }
+    }
+    
     /* Mode Selector (Segmented Control style) */
     .mode-selector {
       display: flex;
@@ -166,21 +174,29 @@ import { Router } from '@angular/router';
 export class CalculatorPageComponent {
   mode = signal<any>('easy');
   loading = signal(false);
+  uploadProgress = signal(0);
   result = signal<QuoteResult | null>(null);
   error = signal<boolean>(false);
 
   constructor(private estimator: QuoteEstimatorService, private router: Router) {}
 
   onCalculate(req: QuoteRequest) {
-    this.currentRequest = req; // Store request for consultation
+    this.currentRequest = req;
     this.loading.set(true);
+    this.uploadProgress.set(0);
     this.error.set(false);
     this.result.set(null);
     
     this.estimator.calculate(req).subscribe({
-      next: (res) => {
-        this.result.set(res);
-        this.loading.set(false);
+      next: (event) => {
+        if (typeof event === 'number') {
+            this.uploadProgress.set(event);
+        } else {
+            // It's the result
+            this.result.set(event as QuoteResult);
+            this.loading.set(false);
+            this.uploadProgress.set(100);
+        }
       },
       error: () => {
         this.error.set(true);
