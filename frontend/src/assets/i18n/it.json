@@ -52,9 +52,9 @@
   "ABOUT": {
     "TITLE": "Chi Siamo",
     "EYEBROW": "Laboratorio di stampa 3D",
-    "SUBTITLE": "Trasparenza su prezzo, qualità e tempi. Consulenza tecnica e CAD per aziende e privati.",
+    "SUBTITLE": "Trasparenza su prezzo, qualità e tempi. Un servizio tecnico di stampa 3D e supporto CAD per aziende e privati.",
     "HOW_TITLE": "Come lavoriamo",
-    "HOW_TEXT": "Offriamo un preventivo automatico per chi ha già il file 3D, e un percorso di consulenza per chi deve progettare o ottimizzare il modello.",
+    "HOW_TEXT": "Offriamo un preventivo immediato per chi ha già un file 3D pronto, oppure un percorso di consulenza per chi deve progettare o ottimizzare un modello. Questo progetto nasce dalla nostra passione per la stampa 3D e dalla volontà di fare esperienza, imparare e realizzare soluzioni utili in modo serio e curato.",
     "PILL_1": "Preventivo immediato",
     "PILL_2": "Consulenza tecnica",
     "PILL_3": "Piccole serie fino a 500 pz",
@@ -64,7 +64,7 @@
     "SERVICE_3": "Supporto CAD e post-processing",
     "SERVICE_4": "Verifica file e ottimizzazione per la stampa",
     "TARGET_TITLE": "Per chi è",
-    "TARGET_TEXT": "Piccole aziende, freelance, smanettoni e clienti che cercano un prodotto già pronto dallo shop.",
+    "TARGET_TEXT": "Piccole aziende, freelance, appassionati e clienti che cercano un prodotto già pronto disponibile nello shop.",
     "TEAM_TITLE": "Il Nostro Team"
   },
   "CONTACT": {
