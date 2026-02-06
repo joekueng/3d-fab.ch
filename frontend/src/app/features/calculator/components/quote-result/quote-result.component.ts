@@ -104,9 +104,11 @@ import { QuoteResult, QuoteItem } from '../../services/quote-estimator.service';
     .item-info {
         display: flex;
         flex-direction: column;
+        min-width: 0;
+        flex: 1; /* Ensure it takes available space */
     }
     
-    .file-name { font-weight: 500; font-size: 0.9rem; color: var(--color-text); }
+    .file-name { font-weight: 500; font-size: 0.9rem; color: var(--color-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .file-details { font-size: 0.8rem; color: var(--color-text-muted); }
 
     .item-controls {
@@ -140,9 +142,14 @@ import { QuoteResult, QuoteItem } from '../../services/quote-estimator.service';
 
     .result-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: var(--space-4);
+      grid-template-columns: 1fr;
+      gap: var(--space-3);
       margin-bottom: var(--space-2);
+      
+      @media(min-width: 500px) {
+          grid-template-columns: 1fr 1fr;
+          gap: var(--space-4);
+      }
     }
     .full-width { grid-column: span 2; }
     

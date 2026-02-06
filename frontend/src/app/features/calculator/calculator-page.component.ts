@@ -1,4 +1,4 @@
-import { Component, signal, ViewChild } from '@angular/core';
+import { Component, signal, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -47,7 +47,7 @@ import { Router } from '@angular/router';
       </div>
 
       <!-- Right Column: Result or Info -->
-      <div class="col-result">
+      <div class="col-result" #resultCol>
         @if (error()) {
           <app-alert type="error">Si è verificato un errore durante il calcolo del preventivo.</app-alert>
         }
@@ -86,9 +86,10 @@ import { Router } from '@angular/router';
     .content-grid {
       display: grid;
       grid-template-columns: 1fr;
-      gap: var(--space-8);
+      gap: var(--space-6);
       @media(min-width: 768px) {
         grid-template-columns: 1.5fr 1fr;
+        gap: var(--space-8);
       }
     }
 
@@ -97,6 +98,10 @@ import { Router } from '@angular/router';
         @media(min-width: 768px) {
             align-self: center;
         }
+    }
+    
+    .col-input, .col-result {
+        min-width: 0; /* Prevent grid blowout */
     }
 
     /* Mode Selector (Segmented Control style) */
@@ -184,6 +189,7 @@ export class CalculatorPageComponent {
   error = signal<boolean>(false);
   
   @ViewChild('uploadForm') uploadForm!: UploadFormComponent;
+  @ViewChild('resultCol') resultCol!: ElementRef;
 
   constructor(private estimator: QuoteEstimatorService, private router: Router) {}
 
@@ -193,6 +199,13 @@ export class CalculatorPageComponent {
     this.uploadProgress.set(0);
     this.error.set(false);
     this.result.set(null);
+
+    // Auto-scroll on mobile to make analysis visible
+    setTimeout(() => {
+        if (this.resultCol && window.innerWidth < 768) {
+             this.resultCol.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }, 100);
 
     this.estimator.calculate(req).subscribe({
       next: (event) => {

@@ -25,9 +25,7 @@ interface FormItem {
         @if (selectedFile()) {
           <div class="viewer-wrapper">
              <app-stl-viewer [file]="selectedFile()"></app-stl-viewer>
-             <button type="button" class="btn-clear-viewer" (click)="selectedFile.set(null)">
-                Close Viewer
-             </button>
+             <!-- Close button removed as requested -->
           </div>
         }
         
@@ -44,26 +42,26 @@ interface FormItem {
 
         <!-- New File List with Details -->
         @if (items().length > 0) {
-            <div class="items-list">
+            <div class="items-grid">
                 @for (item of items(); track item.file.name; let i = $index) {
-                    <div class="file-row" [class.active]="item.file === selectedFile()">
-                        <div class="file-info" (click)="selectFile(item.file)">
-                            <span class="file-name">{{ item.file.name }}</span>
-                            <span class="file-size">{{ (item.file.size / 1024 / 1024) | number:'1.1-2' }} MB</span>
+                    <div class="file-card" [class.active]="item.file === selectedFile()" (click)="selectFile(item.file)">
+                        <div class="card-header">
+                            <span class="file-name" [title]="item.file.name">{{ item.file.name }}</span>
                         </div>
                         
-                        <div class="file-actions">
-                            <div class="qty-control">
+                        <div class="card-body">
+                             <div class="qty-group">
                                 <label>Qtà</label>
                                 <input 
                                     type="number" 
                                     min="1" 
                                     [value]="item.quantity"
                                     (change)="updateItemQuantity(i, $event)"
-                                    class="qty-input">
+                                    class="qty-input"
+                                    (click)="$event.stopPropagation()">
                             </div>
                             
-                            <button type="button" class="btn-remove" (click)="removeItem(i)" title="Remove file">
+                            <button type="button" class="btn-remove" (click)="removeItem(i); $event.stopPropagation()" title="Remove file">
                                 X
                             </button>
                         </div>
@@ -74,9 +72,10 @@ interface FormItem {
             <!-- "Add Files" Button (Visible only when files exist) -->
             <div class="add-more-container">
                 <input #additionalInput type="file" [accept]="acceptedFormats" multiple hidden (change)="onAdditionalFilesSelected($event)">
-                <app-button variant="outline" [fullWidth]="true" (click)="additionalInput.click()">
+                
+                <button type="button" class="btn-add-more" (click)="additionalInput.click()">
                     + {{ 'CALC.ADD_FILES' | translate }}
-                </app-button>
+                </button>
             </div>
         }
         
@@ -102,38 +101,7 @@ interface FormItem {
       <!-- Global quantity removed, now per item -->
 
       @if (mode() === 'advanced') {
-        <div class="grid">
-             <app-select
-              formControlName="color"
-              [label]="'CALC.COLOR' | translate"
-              [options]="colors"
-            ></app-select>
-            
-            <app-select
-              formControlName="infillPattern"
-              [label]="'CALC.PATTERN' | translate"
-              [options]="infillPatterns"
-            ></app-select>
-        </div>
-
-        <div class="grid">
-            <app-input
-              formControlName="infillDensity"
-              type="number"
-              [label]="'CALC.INFILL' | translate"
-            ></app-input>
-            
-            <div class="checkbox-row">
-                <input type="checkbox" formControlName="supportEnabled" id="support">
-                <label for="support">{{ 'CALC.SUPPORT' | translate }}</label>
-            </div>
-        </div>
-
-        <app-input
-          formControlName="notes"
-          [label]="'CALC.NOTES' | translate"
-          placeholder="Istruzioni specifiche..."
-        ></app-input>
+<!-- ... existing code ... -->
       }
 
       <div class="actions">
@@ -157,98 +125,138 @@ interface FormItem {
   `,
   styles: [`
     .section { margin-bottom: var(--space-6); }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+    .grid { 
+        display: grid; 
+        grid-template-columns: 1fr; 
+        gap: var(--space-4); 
+        
+        @media(min-width: 640px) {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
     .actions { margin-top: var(--space-6); }
     .error-msg { color: var(--color-danger-500); font-size: 0.875rem; margin-top: var(--space-2); text-align: center; }
     
     .viewer-wrapper { position: relative; margin-bottom: var(--space-4); }
-    .btn-clear-viewer {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: rgba(0,0,0,0.5);
-        color: white;
-        border: none;
-        padding: 4px 8px;
-        border-radius: 4px;
-        cursor: pointer;
-        z-index: 10;
-        &:hover { background: rgba(0,0,0,0.7); }
-    }
     
-    .items-list {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-2);
+    /* Grid Layout for Files */
+    .items-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--space-3);
         margin-top: var(--space-4);
+        margin-bottom: var(--space-4);
+        
+        @media(min-width: 640px) {
+            grid-template-columns: 1fr 1fr;
+        }
     }
     
-    .file-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+    .file-card {
         padding: var(--space-3);
         background: var(--color-neutral-100);
         border: 1px solid var(--color-border);
         border-radius: var(--radius-md);
         transition: all 0.2s;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
         
+        &:hover { border-color: var(--color-neutral-300); }
         &.active {
              border-color: var(--color-brand);
              background: rgba(250, 207, 10, 0.05);
+             box-shadow: 0 0 0 1px var(--color-brand);
         }
     }
     
-    .file-info {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        cursor: pointer;
+    .card-header {
+        overflow: hidden;
     }
-    .file-name { font-weight: 500; font-size: 0.9rem; color: var(--color-text); }
-    .file-size { font-size: 0.75rem; color: var(--color-text-muted); }
     
-    .file-actions {
+    .file-name { 
+        font-weight: 500; 
+        font-size: 0.85rem; 
+        color: var(--color-text);
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .card-body {
         display: flex;
+        justify-content: space-between;
         align-items: center;
-        gap: var(--space-3);
     }
     
-    .qty-control {
+    .qty-group {
         display: flex;
         align-items: center;
         gap: var(--space-2);
-        label { font-size: 0.8rem; color: var(--color-text-muted); }
+        label { font-size: 0.75rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
     }
     
     .qty-input {
-        width: 50px;
-        padding: 4px;
+        width: 40px;
+        padding: 2px 4px;
         border: 1px solid var(--color-border);
         border-radius: var(--radius-sm);
         text-align: center;
         font-size: 0.9rem;
+        background: white;
         &:focus { outline: none; border-color: var(--color-brand); }
     }
     
     .btn-remove {
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        border: none;
-        background: transparent; // var(--color-neutral-200);
-        color: var(--color-text-muted); // var(--color-danger-500);
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+        border: 1px solid transparent; // var(--color-border);
+        background: transparent; // white;
+        color: var(--color-text-muted);
         font-weight: bold;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
         transition: all 0.2s;
+        font-size: 0.9rem;
         
         &:hover { 
             background: var(--color-danger-100); 
             color: var(--color-danger-500);
+            border-color: var(--color-danger-200);
         }
+    }
+
+    /* Prominent Add Button */
+    .add-more-container {
+        margin-top: var(--space-2);
+    }
+    
+    .btn-add-more {
+        width: 100%;
+        padding: var(--space-3);
+        background: var(--color-neutral-800);
+        color: white;
+        border: none;
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-2);
+        
+        &:hover {
+            background: var(--color-neutral-900);
+            transform: translateY(-1px);
+        }
+        &:active { transform: translateY(0); }
     }
 
     .checkbox-row {
