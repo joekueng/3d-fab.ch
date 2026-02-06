@@ -46,12 +46,27 @@ export class UploadFormComponent {
     { label: 'Standard', value: 'Standard' },
     { label: 'Alta definizione', value: 'High' }
   ];
+
+  printSpeeds = [
+     { label: 'Slow (High Quality)', value: 'Slow' },
+     { label: 'Standard', value: 'Standard' },
+     { label: 'Fast (Draft)', value: 'Fast' }
+  ];
   
   infillPatterns = [
       { label: 'Grid', value: 'grid' },
       { label: 'Gyroid', value: 'gyroid' },
       { label: 'Cubic', value: 'cubic' },
       { label: 'Triangles', value: 'triangles' }
+  ];
+
+  layerHeights = [
+      { label: '0.08 mm', value: 0.08 },
+      { label: '0.12 mm (High Quality - Slow)', value: 0.12 },
+      { label: '0.16 mm', value: 0.16 },
+      { label: '0.20 mm (Standard)', value: 0.20 },
+      { label: '0.24 mm', value: 0.24 },
+      { label: '0.28 mm (Draft - Fast)', value: 0.28 }
   ];
   
   acceptedFormats = '.stl,.3mf,.step,.stp,.obj,.amf,.ply,.igs,.iges';
@@ -61,10 +76,12 @@ export class UploadFormComponent {
       itemsTouched: [false], // Hack to track touched state for custom items list
       material: ['PLA', Validators.required],
       quality: ['Standard', Validators.required],
+      printSpeed: ['Standard', Validators.required],
       notes: [''],
       // Advanced fields
       // Color removed from global form
       infillDensity: [20, [Validators.min(0), Validators.max(100)]],
+      layerHeight: [0.2, [Validators.min(0.05), Validators.max(1.0)]],
       infillPattern: ['grid'],
       supportEnabled: [false]
     });

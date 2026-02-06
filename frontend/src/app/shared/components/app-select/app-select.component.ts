@@ -1,11 +1,11 @@
 import { Component, input, output, forwardRef } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-select',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -33,9 +33,8 @@ export class AppSelectComponent implements ControlValueAccessor {
   registerOnTouched(fn: any): void { this.onTouched = fn; }
   setDisabledState(isDisabled: boolean): void { this.disabled = isDisabled; }
   
-  onSelect(event: Event) {
-    const val = (event.target as HTMLSelectElement).value;
-    this.value = val;
-    this.onChange(val);
+  onModelChange(val: any) {
+      this.value = val;
+      this.onChange(val);
   }
 }

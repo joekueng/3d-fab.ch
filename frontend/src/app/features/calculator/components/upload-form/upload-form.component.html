@@ -83,11 +83,19 @@
       [options]="materials"
     ></app-select>
 
-    <app-select
-      formControlName="quality"
-      [label]="'CALC.QUALITY' | translate"
-      [options]="qualities"
-    ></app-select>
+    @if (mode() === 'easy') {
+        <app-select
+          formControlName="quality"
+          [label]="'CALC.QUALITY' | translate"
+          [options]="qualities"
+        ></app-select>
+    } @else {
+        <app-select
+          formControlName="printSpeed"
+          [label]="'CALC.PRINT_SPEED' | translate"
+          [options]="printSpeeds"
+        ></app-select>
+    }
   </div>
   
   <!-- Global quantity removed, now per item -->
@@ -98,6 +106,12 @@
           formControlName="infillPattern"
           [label]="'CALC.PATTERN' | translate"
           [options]="infillPatterns"
+        ></app-select>
+
+        <app-select
+          formControlName="layerHeight"
+          [label]="'CALC.LAYER_HEIGHT' | translate"
+          [options]="layerHeights"
         ></app-select>
     </div>
 

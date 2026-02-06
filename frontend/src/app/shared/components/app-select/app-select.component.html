@@ -2,14 +2,14 @@
   @if (label()) { <label [for]="id()">{{ label() }}</label> }
   <select
     [id]="id()"
-    [value]="value"
-    (change)="onSelect($event)"
+    [ngModel]="value"
+    (ngModelChange)="onModelChange($event)"
     (blur)="onTouched()"
     [disabled]="disabled"
     class="form-control"
   >
-    @for (opt of options(); track opt.value) {
-      <option [value]="opt.value">{{ opt.label }}</option>
+    @for (opt of options(); track opt.label) {
+      <option [ngValue]="opt.value">{{ opt.label }}</option>
     }
   </select>
   @if (error()) { <span class="error-text">{{ error() }}</span> }
