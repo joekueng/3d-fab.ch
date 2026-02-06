@@ -13,38 +13,8 @@ import { CommonModule } from '@angular/common';
       multi: true
     }
   ],
-  template: `
-    <div class="form-group">
-      @if (label()) { <label [for]="id()">{{ label() }}</label> }
-      <input
-        [id]="id()"
-        [type]="type()"
-        [placeholder]="placeholder()"
-        [value]="value"
-        (input)="onInput($event)"
-        (blur)="onTouched()"
-        [disabled]="disabled"
-        class="form-control"
-      />
-      @if (error()) { <span class="error-text">{{ error() }}</span> }
-    </div>
-  `,
-  styles: [`
-    .form-group { display: flex; flex-direction: column; margin-bottom: var(--space-4); }
-    label { font-size: 0.875rem; font-weight: 500; margin-bottom: var(--space-2); color: var(--color-text); }
-    .form-control {
-      padding: 0.5rem 0.75rem;
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-md);
-      font-size: 1rem;
-      width: 100%;
-      background: var(--color-bg-card);
-      color: var(--color-text);
-      &:focus { outline: none; border-color: var(--color-brand); box-shadow: 0 0 0 2px rgba(250, 207, 10, 0.25); }
-      &:disabled { background: var(--color-neutral-100); cursor: not-allowed; }
-    }
-    .error-text { color: var(--color-danger-500); font-size: 0.75rem; margin-top: var(--space-1); }
-  `]
+  templateUrl: './app-input.component.html',
+  styleUrl: './app-input.component.scss'
 })
 export class AppInputComponent implements ControlValueAccessor {
   label = input<string>('');
