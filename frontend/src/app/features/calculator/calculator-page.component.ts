@@ -72,11 +72,14 @@ export class CalculatorPageComponent {
     
     details += `- File:\n`;
     req.items.forEach(item => {
-        details += `  * ${item.file.name} (Qtà: ${item.quantity})\n`;
+        details += `  * ${item.file.name} (Qtà: ${item.quantity}`;
+        if (item.color) {
+            details += `, Colore: ${item.color}`;
+        }
+        details += `)\n`;
     });
 
     if (req.mode === 'advanced') {
-       if (req.color) details += `- Colore: ${req.color}\n`;
        if (req.infillDensity) details += `- Infill: ${req.infillDensity}%\n`;
     }
 

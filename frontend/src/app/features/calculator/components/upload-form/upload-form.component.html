@@ -3,7 +3,10 @@
   <div class="section">
     @if (selectedFile()) {
       <div class="viewer-wrapper">
-         <app-stl-viewer [file]="selectedFile()"></app-stl-viewer>
+         <app-stl-viewer 
+            [file]="selectedFile()"
+            [color]="getSelectedFileColor()">
+         </app-stl-viewer>
          <!-- Close button removed as requested -->
       </div>
     }
@@ -29,15 +32,25 @@
                     </div>
                     
                     <div class="card-body">
-                         <div class="qty-group">
-                            <label>Qtà</label>
-                            <input 
-                                type="number" 
-                                min="1" 
-                                [value]="item.quantity"
-                                (change)="updateItemQuantity(i, $event)"
-                                class="qty-input"
-                                (click)="$event.stopPropagation()">
+                        <div class="card-controls">
+                             <div class="qty-group">
+                                <label>QTÀ</label>
+                                <input 
+                                    type="number" 
+                                    min="1" 
+                                    [value]="item.quantity"
+                                    (change)="updateItemQuantity(i, $event)"
+                                    class="qty-input"
+                                    (click)="$event.stopPropagation()">
+                            </div>
+
+                            <div class="color-group">
+                                <label>COLORE</label>
+                                <app-color-selector 
+                                    [selectedColor]="item.color" 
+                                    (colorSelected)="updateItemColor(i, $event)">
+                                </app-color-selector>
+                            </div>
                         </div>
                         
                         <button type="button" class="btn-remove" (click)="removeItem(i); $event.stopPropagation()" title="Remove file">
@@ -81,12 +94,6 @@
 
   @if (mode() === 'advanced') {
     <div class="grid">
-         <app-select
-          formControlName="color"
-          [label]="'CALC.COLOR' | translate"
-          [options]="colors"
-        ></app-select>
-        
         <app-select
           formControlName="infillPattern"
           [label]="'CALC.PATTERN' | translate"

@@ -15,6 +15,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 })
 export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
   @Input() file: File | null = null;
+  @Input() color: string = '#facf0a'; // Default Brand Color
+
   @ViewChild('rendererContainer', { static: true }) rendererContainer!: ElementRef;
 
   private scene!: THREE.Scene;
@@ -33,6 +35,12 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     if (changes['file'] && this.file) {
       this.loadFile(this.file);
+    }
+    
+    if (changes['color'] && this.currentMesh && !changes['file']) {
+        // Update existing mesh color if only color changed
+        const mat = this.currentMesh.material as THREE.MeshPhongMaterial;
+        mat.color.set(this.color);
     }
   }
 
@@ -99,7 +107,7 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
         }
 
         const material = new THREE.MeshPhongMaterial({ 
-          color: 0xFACF0A, // Brand color
+          color: this.color, 
           specular: 0x111111,
           shininess: 200 
         });

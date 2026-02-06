@@ -7,17 +7,20 @@ import { AppSelectComponent } from '../../../../shared/components/app-select/app
 import { AppDropzoneComponent } from '../../../../shared/components/app-dropzone/app-dropzone.component';
 import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
 import { StlViewerComponent } from '../../../../shared/components/stl-viewer/stl-viewer.component';
+import { ColorSelectorComponent } from '../../../../shared/components/color-selector/color-selector.component';
 import { QuoteRequest } from '../../services/quote-estimator.service';
+import { getColorHex } from '../../../../core/constants/colors.const';
 
 interface FormItem {
     file: File;
     quantity: number;
+    color: string;
 }
 
 @Component({
   selector: 'app-upload-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, AppInputComponent, AppSelectComponent, AppDropzoneComponent, AppButtonComponent, StlViewerComponent],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, AppInputComponent, AppSelectComponent, AppDropzoneComponent, AppButtonComponent, StlViewerComponent, ColorSelectorComponent],
   templateUrl: './upload-form.component.html',
   styleUrl: './upload-form.component.scss'
 })
@@ -44,15 +47,6 @@ export class UploadFormComponent {
     { label: 'Alta definizione', value: 'High' }
   ];
   
-  colors = [
-      { label: 'Black', value: 'Black' },
-      { label: 'White', value: 'White' },
-      { label: 'Gray', value: 'Gray' },
-      { label: 'Red', value: 'Red' },
-      { label: 'Blue', value: 'Blue' },
-      { label: 'Green', value: 'Green' },
-      { label: 'Yellow', value: 'Yellow' }
-  ];
   infillPatterns = [
       { label: 'Grid', value: 'grid' },
       { label: 'Gyroid', value: 'gyroid' },
@@ -69,7 +63,7 @@ export class UploadFormComponent {
       quality: ['Standard', Validators.required],
       notes: [''],
       // Advanced fields
-      color: ['Black'],
+      // Color removed from global form
       infillDensity: [20, [Validators.min(0), Validators.max(100)]],
       infillPattern: ['grid'],
       supportEnabled: [false]
@@ -85,7 +79,8 @@ export class UploadFormComponent {
         if (file.size > MAX_SIZE) {
             hasError = true;
         } else {
-            validItems.push({ file, quantity: 1 });
+            // Default color is Black
+            validItems.push({ file, quantity: 1, color: 'Black' });
         }
     }
 
@@ -129,6 +124,18 @@ export class UploadFormComponent {
       }
   }
 
+  // Helper to get color of currently selected file
+  getSelectedFileColor(): string {
+      const file = this.selectedFile();
+      if (!file) return '#facf0a'; // Default
+      
+      const item = this.items().find(i => i.file === file);
+      if (item) {
+          return getColorHex(item.color);
+      }
+      return '#facf0a';
+  }
+
   updateItemQuantity(index: number, event: Event) {
       const input = event.target as HTMLInputElement;
       let val = parseInt(input.value, 10);
@@ -137,6 +144,14 @@ export class UploadFormComponent {
       this.items.update(current => {
           const updated = [...current];
           updated[index] = { ...updated[index], quantity: val };
+          return updated;
+      });
+  }
+
+  updateItemColor(index: number, newColor: string) {
+      this.items.update(current => {
+          const updated = [...current];
+          updated[index] = { ...updated[index], color: newColor };
           return updated;
       });
   }
@@ -155,7 +170,7 @@ export class UploadFormComponent {
   onSubmit() {
     if (this.form.valid && this.items().length > 0) {
       this.submitRequest.emit({
-        items: this.items(), // Pass the items array
+        items: this.items(), // Pass the items array including colors
         ...this.form.value,
         mode: this.mode()
       });

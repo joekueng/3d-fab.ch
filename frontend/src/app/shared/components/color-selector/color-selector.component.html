@@ -1,0 +1,39 @@
+<div class="color-selector-container">
+  @if (isOpen()) {
+      <div class="backdrop" (click)="close()"></div>
+  }
+
+  <div 
+    class="color-circle trigger" 
+    [style.background-color]="getCurrentHex()"
+    [title]="selectedColor()"
+    (click)="toggleOpen()">
+  </div>
+
+  @if (isOpen()) {
+    <div class="color-popup">
+      @for (category of categories; track category.name) {
+        <div class="category">
+          <div class="category-name">{{ category.name }}</div>
+          <div class="colors-grid">
+            @for (color of category.colors; track color.value) {
+              <div 
+                class="color-item" 
+                (click)="selectColor(color)"
+                [class.disabled]="color.outOfStock">
+                
+                <div class="selection-ring" 
+                     [class.active]="selectedColor() === color.value"
+                     [class.out-of-stock]="color.outOfStock">
+                     <div class="color-circle small" [style.background-color]="color.hex"></div>
+                </div>
+                
+                <span class="color-name">{{ color.label }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

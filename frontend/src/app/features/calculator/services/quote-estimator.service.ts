@@ -5,11 +5,11 @@ import { map, catchError } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 
 export interface QuoteRequest {
-  items: { file: File, quantity: number }[];
+  items: { file: File, quantity: number, color?: string }[];
   material: string;
   quality: string;
   notes?: string;
-  color?: string;
+  // color removed from global scope
   infillDensity?: number;
   infillPattern?: string;
   supportEnabled?: boolean;
@@ -69,8 +69,11 @@ export class QuoteEstimatorService {
              formData.append('machine', 'bambu_a1'); 
              formData.append('filament', this.mapMaterial(request.material));
              formData.append('quality', this.mapQuality(request.quality));
+             
+             // Send color for both modes if present, defaulting to Black
+             formData.append('material_color', item.color || 'Black');
+
              if (request.mode === 'advanced') {
-                if (request.color) formData.append('material_color', request.color);
                 if (request.infillDensity) formData.append('infill_density', request.infillDensity.toString());
                 if (request.infillPattern) formData.append('infill_pattern', request.infillPattern);
                 if (request.supportEnabled) formData.append('support_enabled', 'true');
