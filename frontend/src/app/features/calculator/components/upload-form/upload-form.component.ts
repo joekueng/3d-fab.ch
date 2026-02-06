@@ -101,7 +101,38 @@ interface FormItem {
       <!-- Global quantity removed, now per item -->
 
       @if (mode() === 'advanced') {
-<!-- ... existing code ... -->
+        <div class="grid">
+             <app-select
+              formControlName="color"
+              [label]="'CALC.COLOR' | translate"
+              [options]="colors"
+            ></app-select>
+            
+            <app-select
+              formControlName="infillPattern"
+              [label]="'CALC.PATTERN' | translate"
+              [options]="infillPatterns"
+            ></app-select>
+        </div>
+
+        <div class="grid">
+            <app-input
+              formControlName="infillDensity"
+              type="number"
+              [label]="'CALC.INFILL' | translate"
+            ></app-input>
+            
+            <div class="checkbox-row">
+                <input type="checkbox" formControlName="supportEnabled" id="support">
+                <label for="support">{{ 'CALC.SUPPORT' | translate }}</label>
+            </div>
+        </div>
+
+        <app-input
+          formControlName="notes"
+          [label]="'CALC.NOTES' | translate"
+          placeholder="Istruzioni specifiche..."
+        ></app-input>
       }
 
       <div class="actions">
