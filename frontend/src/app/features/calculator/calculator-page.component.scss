@@ -18,8 +18,19 @@
     }
 }
 
-.col-input, .col-result {
-    min-width: 0; /* Prevent grid blowout */
+.col-input {
+    min-width: 0;
+}
+
+.col-result {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+
+    /* Make children (specifically app-card) stretch */
+    > * {
+        flex: 1;
+    }
 }
 
 /* Mode Selector (Segmented Control style) */
@@ -57,17 +68,17 @@
 
 .benefits { padding-left: var(--space-4); color: var(--color-text-muted); line-height: 2; }
 
-.loading-state {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 300px; /* Match typical result height */
-}
 
 .loader-content {
     text-align: center;
     max-width: 300px;
     margin: 0 auto;
+    
+    /* Center content vertically within the stretched card */
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .loading-title {

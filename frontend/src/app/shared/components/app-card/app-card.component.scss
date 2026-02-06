@@ -1,3 +1,8 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
 .card {
   background-color: var(--color-bg-card);
   border-radius: var(--radius-lg);
@@ -5,6 +10,8 @@
   box-shadow: var(--shadow-sm);
   padding: var(--space-6);
   transition: box-shadow 0.2s;
+  height: 100%;
+  box-sizing: border-box;
   
   &:hover {
     box-shadow: var(--shadow-md);
