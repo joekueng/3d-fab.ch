@@ -7,13 +7,17 @@
               Prezzo e tempi in pochi secondi.<br>
               Dal file 3D al pezzo finito.
             </h1>
+            <p class="hero-lead">
+              Il calcolatore più avanzato per le tue stampe 3D: precisione assoluta e zero sorprese.
+            </p>
             <p class="hero-subtitle">
-              Lavoriamo con trasparenza su costi, qualità e tempi. Produciamo prototipi, pezzi personalizzati
-              e piccole serie con supporto tecnico reale.
+              Realizziamo pezzi unici e produzioni in serie. Se hai il file, il preventivo è istantaneo. 
+              Se devi ancora crearlo, il nostro team di design lo progetterà per te.
             </p>
             <div class="hero-actions">
-              <app-button variant="primary" routerLink="/about">Parla con noi</app-button>
+              <app-button variant="primary" routerLink="/cal">Calcola Preventivo</app-button>
               <app-button variant="outline" routerLink="/shop">Vai allo shop</app-button>
+              <app-button variant="text" routerLink="/contact">Parla con noi</app-button>
             </div>
           </div>
         </div>
@@ -22,13 +26,12 @@
       <section class="section calculator">
         <div class="container calculator-grid">
           <div class="calculator-copy">
-            <h2 class="section-title">Preventivo immediato</h2>
+            <h2 class="section-title">Preventivo immediato in pochi secondi</h2>
             <p class="section-subtitle">
-              Carica il file 3D e ottieni subito costo e tempo di stampa. Nessuna registrazione.
+              Nessuna registrazione necessaria. Non salviamo il tuo file fino al momento dell'ordine e la stima è effettuata tramite vero slicing.
             </p>
             <ul class="calculator-list">
               <li>Formati supportati: STL, 3MF, STEP, OBJ</li>
-              <li>Materiali disponibili: PLA, PETG, TPU</li>
               <li>Qualità: bozza, standard, alta definizione</li>
             </ul>
           </div>
@@ -45,19 +48,9 @@
               <li>Scegli materiale e qualità</li>
               <li>Ricevi subito costo e tempo</li>
             </ul>
-            <div class="quote-meta">
-              <div>
-                <span class="meta-label">Modalità</span>
-                <span class="meta-value">Rapida / Avanzata</span>
-              </div>
-              <div>
-                <span class="meta-label">Output</span>
-                <span class="meta-value">Ordina o richiedi consulenza</span>
-              </div>
-            </div>
             <div class="quote-actions">
               <app-button variant="primary" [fullWidth]="true" routerLink="/cal">Apri calcolatore</app-button>
-              <app-button variant="outline" [fullWidth]="true" routerLink="/about">Parla con noi</app-button>
+              <app-button variant="outline" [fullWidth]="true" routerLink="/contact">Parla con noi</app-button>
             </div>
           </app-card>
         </div>
@@ -74,20 +67,32 @@
           </div>
           <div class="cap-cards">
             <app-card>
+              <div class="card-image-placeholder">
+                  <!-- <img src="..." alt="..."> -->
+              </div>
               <h3>Prototipazione veloce</h3>
-              <p class="text-muted">Valida idee e funzioni in pochi giorni con preventivo immediato.</p>
+              <p class="text-muted">Dal file digitale al modello fisico in 24/48 ore. Verifica ergonomia, incastri e funzionamento prima dello stampo definitivo.</p>
             </app-card>
             <app-card>
+              <div class="card-image-placeholder">
+                  <!-- <img src="..." alt="..."> -->
+              </div>
               <h3>Pezzi personalizzati</h3>
-              <p class="text-muted">Componenti unici o in mini serie per clienti, macchine e prodotti.</p>
+              <p class="text-muted">Componenti unici impossibili da trovare in commercio. Riproduciamo parti rotte o creiamo adattamenti su misura.</p>
             </app-card>
             <app-card>
+              <div class="card-image-placeholder">
+                  <!-- <img src="..." alt="..."> -->
+              </div>
               <h3>Piccole serie</h3>
-              <p class="text-muted">Produzione controllata fino a 500 pezzi con qualità costante.</p>
+              <p class="text-muted">Produzione ponte o serie limitate (10-500 pezzi) con qualità ripetibile. Ideale per validazione di mercato.</p>
             </app-card>
             <app-card>
+              <div class="card-image-placeholder">
+                  <!-- <img src="..." alt="..."> -->
+              </div>
               <h3>Consulenza e CAD</h3>
-              <p class="text-muted">Supporto tecnico per progettazione, modifiche e ottimizzazione.</p>
+              <p class="text-muted">Non hai il file 3D? Ti aiutiamo a progettarlo, ottimizzarlo per la stampa e scegliere il materiale giusto.</p>
             </app-card>
           </div>
         </div>
@@ -108,7 +113,7 @@
             </ul>
             <div class="shop-actions">
               <app-button variant="primary" routerLink="/shop">Scopri i prodotti</app-button>
-              <app-button variant="outline" routerLink="/about">Richiedi una soluzione</app-button>
+              <app-button variant="outline" routerLink="/contact">Richiedi una soluzione</app-button>
             </div>
           </div>
           <div class="shop-cards">
@@ -136,25 +141,12 @@
               3D fab è un laboratorio tecnico di stampa 3D. Seguiamo progetti dalla consulenza iniziale
               alla produzione, con tempi chiari e supporto diretto.
             </p>
-            <p class="text-muted">
-              Qui puoi inserire descrizioni più dettagliate del team, del laboratorio e dei progetti in corso.
-            </p>
-            <app-button variant="outline" routerLink="/about">Contattaci</app-button>
+            <app-button variant="outline" routerLink="/contact">Contattaci</app-button>
           </div>
           <div class="about-media">
-            <div class="media-grid">
-              <div class="media-tile">
-                <div class="media-photo"></div>
-                <p>Foto laboratorio / stampanti</p>
-              </div>
-              <div class="media-tile">
-                <div class="media-photo"></div>
-                <p>Dettagli qualità e finiture</p>
-              </div>
-              <div class="media-tile">
-                <div class="media-photo"></div>
-                <p>Team, prototipi o casi studio</p>
-              </div>
+            <div class="about-feature-image">
+              <!-- Foto founders -->
+              <span class="text-sm">Foto Founders</span>
             </div>
           </div>
         </div>

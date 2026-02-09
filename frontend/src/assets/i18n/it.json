@@ -70,6 +70,15 @@
     "TARGET_TEXT": "Piccole aziende, freelance, smanettoni e clienti che cercano un prodotto già pronto dallo shop.",
     "TEAM_TITLE": "Il Nostro Team"
   },
+  "LOCATIONS": {
+    "TITLE": "Le Nostre Sedi",
+    "SUBTITLE": "Siamo presenti in due sedi per coprire meglio il territorio. Seleziona la sede per vedere i dettagli.",
+    "TICINO": "Ticino",
+    "BIENNE": "Bienne",
+    "ADDRESS_TICINO": "Sede Ticino, Svizzera",
+    "ADDRESS_BIENNE": "Sede Bienne, Svizzera",
+    "CONTACT_US": "Contattaci"
+  },
   "CONTACT": {
     "TITLE": "Contattaci",
     "SEND": "Invia Messaggio",

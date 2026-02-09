@@ -68,6 +68,15 @@
     "TARGET_TEXT": "Small businesses, freelancers, makers and customers looking for a ready-made product from the shop.",
     "TEAM_TITLE": "Our Team"
   },
+  "LOCATIONS": {
+    "TITLE": "Our Locations",
+    "SUBTITLE": "We have two locations to serve you better. Select a location to see details.",
+    "TICINO": "Ticino",
+    "BIENNE": "Bienne",
+    "ADDRESS_TICINO": "Ticino Office, Switzerland",
+    "ADDRESS_BIENNE": "Bienne Office, Switzerland",
+    "CONTACT_US": "Contact Us"
+  },
   "CONTACT": {
     "TITLE": "Contact Us",
     "SEND": "Send Message",

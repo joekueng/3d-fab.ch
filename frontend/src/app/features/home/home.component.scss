@@ -15,10 +15,10 @@
         position: absolute;
         inset: 0;
         @include patterns.pattern-grid(var(--color-neutral-900), 40px, 1px);
-        opacity: 0.12;
+        opacity: 0.06;
         z-index: 0;
         pointer-events: none;
-        mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+        mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
       }
     }
 
@@ -43,6 +43,7 @@
       position: relative;
       z-index: 1;
     }
+    
     .hero-copy { animation: fadeUp 0.8s ease both; }
     .hero-panel { animation: fadeUp 0.8s ease 0.15s both; }
 
@@ -61,10 +62,18 @@
       letter-spacing: -0.02em;
       margin-bottom: var(--space-4);
     }
+    .hero-lead {
+      font-size: 1.35rem;
+      font-weight: 500;
+      color: var(--color-neutral-900);
+      margin-bottom: var(--space-3);
+      max-width: 600px;
+    }
     .hero-subtitle {
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       color: var(--color-text-muted);
       max-width: 560px;
+      line-height: 1.6;
     }
     .hero-actions {
       display: flex;
@@ -135,6 +144,9 @@
       padding: 0.35rem 0.75rem;
       font-size: 0.8rem;
       font-weight: 600;
+      color: var(--color-brand-600);
+      background: var(--color-brand-50);
+      border-color: var(--color-brand-200);
     }
     .quote-steps {
       list-style: none;
@@ -177,14 +189,10 @@
 
     .capabilities {
       position: relative;
+      border-bottom: 1px solid var(--color-border);
     }
     .capabilities-bg {
-      position: absolute;
-      inset: 0;
-      @include patterns.pattern-rectilinear(var(--color-neutral-900), 24px, 1px);
-      opacity: 0.05;
-      pointer-events: none;
-      z-index: 0;
+      display: none;
     }
     
     .section { padding: 5.5rem 0; position: relative; }
@@ -194,24 +202,13 @@
     .text-muted { color: var(--color-text-muted); }
 
     .calculator {
-      background: var(--color-neutral-50);
-      border-top: 1px solid var(--color-border);
-      border-bottom: 1px solid var(--color-border);
       position: relative;
-      // Honeycomb Pattern
-      &::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        @include patterns.pattern-honeycomb(var(--color-neutral-900), 24px);
-        opacity: 0.04;
-        pointer-events: none;
-      }
+      border-bottom: 1px solid var(--color-border);
     }
     .calculator-grid {
       display: grid;
       gap: var(--space-10);
-      align-items: center;
+      align-items: start;
       position: relative;
       z-index: 1;
     }
@@ -224,6 +221,19 @@
       display: grid;
       gap: var(--space-4);
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+    
+    .card-image-placeholder {
+        width: 100%;
+        height: 160px;
+        background: var(--color-neutral-100);
+        margin: -1.5rem -1.5rem 1.5rem -1.5rem; /* Negative margins to bleed to edge */
+        width: calc(100% + 3rem);
+        border-bottom: 1px solid var(--color-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-neutral-400);
     }
 
     .shop {
@@ -282,24 +292,21 @@
       align-items: center;
     }
     .about-media {
-      display: grid;
-      gap: var(--space-4);
+      position: relative;
     }
-    .media-grid {
-      display: grid;
-      gap: var(--space-4);
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    }
-    .media-tile {
-      display: grid;
-      gap: var(--space-2);
-    }
-    .media-photo {
+    
+    .about-feature-image {
       width: 100%;
-      aspect-ratio: 4 / 3;
+      height: 100%;
+      min-height: 320px;
+      object-fit: cover;
       border-radius: var(--radius-lg);
       background: var(--color-neutral-100);
       border: 1px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-text-muted);
     }
     .media-tile p {
       margin: 0;
@@ -312,6 +319,7 @@
 
     @media (min-width: 960px) {
       .hero-grid { grid-template-columns: 1.1fr 0.9fr; }
+      .calculator-grid { grid-template-columns: 1.1fr 0.9fr; }
       .calculator-grid { grid-template-columns: 1.1fr 0.9fr; }
       .split { grid-template-columns: 1.1fr 0.9fr; }
       .about-grid { grid-template-columns: 1.1fr 0.9fr; }
