@@ -105,6 +105,9 @@
     "LABEL_EMAIL": "Email *",
     "LABEL_NAME": "Nome *",
     "MSG_SENT": "Inviato!",
-    "ERR_MAX_FILES": "Limite massimo di 15 file raggiunto."
+    "ERR_MAX_FILES": "Limite massimo di 15 file raggiunto.",
+    "SUCCESS_TITLE": "Messaggio Inviato con Successo",
+    "SUCCESS_DESC": "Grazie per averci contattato. Abbiamo ricevuto il tuo messaggio e ti invieremo una email di riepilogo a breve.",
+    "SEND_ANOTHER": "Invia un altro messaggio"
   }
 }

@@ -126,6 +126,9 @@
     "LABEL_EMAIL": "Email *",
     "LABEL_NAME": "Name *",
     "MSG_SENT": "Sent!",
-    "ERR_MAX_FILES": "Max 15 files limit reached."
+    "ERR_MAX_FILES": "Max 15 files limit reached.",
+    "SUCCESS_TITLE": "Message Sent Successfully",
+    "SUCCESS_DESC": "Thank you for contacting us. We have received your message and will send you a recap email shortly.",
+    "SEND_ANOTHER": "Send Another Message"
   }
 }

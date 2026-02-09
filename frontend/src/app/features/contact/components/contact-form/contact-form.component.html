@@ -1,73 +1,87 @@
-<form [formGroup]="form" (ngSubmit)="onSubmit()">
-  <!-- Request Type -->
-  <div class="form-group">
-    <label>{{ 'CONTACT.REQ_TYPE_LABEL' | translate }} *</label>
-    <select formControlName="requestType" class="form-control">
-      <option *ngFor="let type of requestTypes" [value]="type.value">
-        {{ type.label | translate }}
-      </option>
-    </select>
-  </div>
-
-  <div class="row">
-    <!-- Phone -->
-    <app-input formControlName="email" type="email" [label]="'CONTACT.LABEL_EMAIL' | translate" [placeholder]="'CONTACT.PLACEHOLDER_EMAIL' | translate" class="col"></app-input>
-    <!-- Phone -->
-    <app-input formControlName="phone" type="tel" [label]="('CONTACT.PHONE' | translate)" [placeholder]="'CONTACT.PLACEHOLDER_PHONE' | translate" class="col"></app-input>
-  </div>
-
-  <!-- User Type Selector (Segmented Control) -->
-  <div class="user-type-selector">
-    <div class="type-option" [class.selected]="!isCompany" (click)="setCompanyMode(false)">
-      {{ 'CONTACT.TYPE_PRIVATE' | translate }}
+@if (sent()) {
+  <div class="success-state">
+    <div class="success-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
     </div>
-    <div class="type-option" [class.selected]="isCompany" (click)="setCompanyMode(true)">
-      {{ 'CONTACT.TYPE_COMPANY' | translate }}
-    </div>
+    <h3>{{ 'CONTACT.SUCCESS_TITLE' | translate }}</h3>
+    <p>{{ 'CONTACT.SUCCESS_DESC' | translate }}</p>
+    <app-button (click)="resetForm()">{{ 'CONTACT.SEND_ANOTHER' | translate }}</app-button>
   </div>
-
-  <!-- Personal Name (Only if NOT Company) -->
-  <app-input *ngIf="!isCompany" formControlName="name" [label]="'CONTACT.LABEL_NAME' | translate" [placeholder]="'CONTACT.PLACEHOLDER_NAME' | translate"></app-input>
-
-  <!-- Company Fields (Only if Company) -->
-  <div *ngIf="isCompany" class="company-fields">
-    <app-input formControlName="companyName" [label]="('CONTACT.COMPANY_NAME' | translate) + ' *'" [placeholder]="'CONTACT.PLACEHOLDER_COMPANY' | translate"></app-input>
-    <app-input formControlName="referencePerson" [label]="('CONTACT.REF_PERSON' | translate) + ' *'" [placeholder]="'CONTACT.PLACEHOLDER_REF_PERSON' | translate"></app-input>
-  </div>
-  
-  <div class="form-group">
-    <label>{{ 'CONTACT.LABEL_MESSAGE' | translate }}</label>
-    <textarea formControlName="message" class="form-control" rows="4"></textarea>
-  </div>
-
-  <!-- File Upload Section -->
-  <div class="form-group">
-    <label>{{ 'CONTACT.UPLOAD_LABEL' | translate }}</label>
-    <p class="hint">{{ 'CONTACT.UPLOAD_HINT' | translate }}</p>
-    
-    <div class="drop-zone" (click)="fileInput.click()" 
-         (dragover)="onDragOver($event)" (drop)="onDrop($event)">
-      <input #fileInput type="file" multiple (change)="onFileSelected($event)" hidden 
-             accept=".jpg,.jpeg,.png,.pdf,.stl,.step,.stp,.3mf,.obj">
-      <p>{{ 'CONTACT.DROP_FILES' | translate }}</p>
+} @else {
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <!-- Request Type -->
+    <div class="form-group">
+      <label>{{ 'CONTACT.REQ_TYPE_LABEL' | translate }} *</label>
+      <select formControlName="requestType" class="form-control">
+        <option *ngFor="let type of requestTypes" [value]="type.value">
+          {{ type.label | translate }}
+        </option>
+      </select>
     </div>
 
-    <div class="file-grid" *ngIf="files().length > 0">
-      <div class="file-item" *ngFor="let file of files(); let i = index">
-        <button type="button" class="remove-btn" (click)="removeFile(i)">×</button>
-        <img *ngIf="file.type === 'image'" [src]="file.url" class="preview-img">
-        <div *ngIf="file.type !== 'image'" class="file-icon">
-          <span *ngIf="file.type === 'pdf'">PDF</span>
-          <span *ngIf="file.type === '3d'">3D</span>
-        </div>
-        <div class="file-name" [title]="file.file.name">{{ file.file.name }}</div>
+    <div class="row">
+      <!-- Phone -->
+      <app-input formControlName="email" type="email" [label]="'CONTACT.LABEL_EMAIL' | translate" [placeholder]="'CONTACT.PLACEHOLDER_EMAIL' | translate" class="col"></app-input>
+      <!-- Phone -->
+      <app-input formControlName="phone" type="tel" [label]="('CONTACT.PHONE' | translate)" [placeholder]="'CONTACT.PLACEHOLDER_PHONE' | translate" class="col"></app-input>
+    </div>
+
+    <!-- User Type Selector (Segmented Control) -->
+    <div class="user-type-selector">
+      <div class="type-option" [class.selected]="!isCompany" (click)="setCompanyMode(false)">
+        {{ 'CONTACT.TYPE_PRIVATE' | translate }}
+      </div>
+      <div class="type-option" [class.selected]="isCompany" (click)="setCompanyMode(true)">
+        {{ 'CONTACT.TYPE_COMPANY' | translate }}
       </div>
     </div>
-  </div>
 
-  <div class="actions">
-    <app-button type="submit" [disabled]="form.invalid || sent()">
-      {{ sent() ? ('CONTACT.MSG_SENT' | translate) : ('CONTACT.SEND' | translate) }}
-    </app-button>
-  </div>
-</form>
+    <!-- Personal Name (Only if NOT Company) -->
+    <app-input *ngIf="!isCompany" formControlName="name" [label]="'CONTACT.LABEL_NAME' | translate" [placeholder]="'CONTACT.PLACEHOLDER_NAME' | translate"></app-input>
+
+    <!-- Company Fields (Only if Company) -->
+    <div *ngIf="isCompany" class="company-fields">
+      <app-input formControlName="companyName" [label]="('CONTACT.COMPANY_NAME' | translate) + ' *'" [placeholder]="'CONTACT.PLACEHOLDER_COMPANY' | translate"></app-input>
+      <app-input formControlName="referencePerson" [label]="('CONTACT.REF_PERSON' | translate) + ' *'" [placeholder]="'CONTACT.PLACEHOLDER_REF_PERSON' | translate"></app-input>
+    </div>
+    
+    <div class="form-group">
+      <label>{{ 'CONTACT.LABEL_MESSAGE' | translate }}</label>
+      <textarea formControlName="message" class="form-control" rows="4"></textarea>
+    </div>
+
+    <!-- File Upload Section -->
+    <div class="form-group">
+      <label>{{ 'CONTACT.UPLOAD_LABEL' | translate }}</label>
+      <p class="hint">{{ 'CONTACT.UPLOAD_HINT' | translate }}</p>
+      
+      <div class="drop-zone" (click)="fileInput.click()" 
+           (dragover)="onDragOver($event)" (drop)="onDrop($event)">
+        <input #fileInput type="file" multiple (change)="onFileSelected($event)" hidden 
+               accept=".jpg,.jpeg,.png,.pdf,.stl,.step,.stp,.3mf,.obj">
+        <p>{{ 'CONTACT.DROP_FILES' | translate }}</p>
+      </div>
+
+      <div class="file-grid" *ngIf="files().length > 0">
+        <div class="file-item" *ngFor="let file of files(); let i = index">
+          <button type="button" class="remove-btn" (click)="removeFile(i)">×</button>
+          <img *ngIf="file.type === 'image'" [src]="file.url" class="preview-img">
+          <div *ngIf="file.type !== 'image'" class="file-icon">
+            <span *ngIf="file.type === 'pdf'">PDF</span>
+            <span *ngIf="file.type === '3d'">3D</span>
+          </div>
+          <div class="file-name" [title]="file.file.name">{{ file.file.name }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <app-button type="submit" [disabled]="form.invalid || sent()">
+        {{ sent() ? ('CONTACT.MSG_SENT' | translate) : ('CONTACT.SEND' | translate) }}
+      </app-button>
+    </div>
+  </form>
+}

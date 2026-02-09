@@ -161,13 +161,14 @@ export class ContactFormComponent {
       console.log('Form Submit:', formData);
       
       this.sent.set(true);
-      setTimeout(() => {
-        this.sent.set(false);
-        this.form.reset({ requestType: 'custom', isCompany: false });
-        this.files.set([]);
-      }, 3000);
     } else {
       this.form.markAllAsTouched();
     }
+  }
+
+  resetForm() {
+    this.sent.set(false);
+    this.form.reset({ requestType: 'custom', isCompany: false });
+    this.files.set([]);
   }
 }
