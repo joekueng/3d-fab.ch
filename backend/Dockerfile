@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     libgtk-3-0 \
     libdbus-1-3 \
-    libwebkit2gtk-4.1-0 \
+    libwebkit2gtk-4.0-37 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install OrcaSlicer

@@ -103,6 +103,21 @@
     "ADDRESS_BIENNE": "Bienne Office, Switzerland",
     "CONTACT_US": "Contact Us"
   },
+  "LEGAL": {
+    "PRIVACY_TITLE": "Privacy Policy",
+    "TERMS_TITLE": "Terms and Conditions",
+    "LAST_UPDATE": "Last update",
+    "PRIVACY": {
+      "SECTION_1": "1. Data Collection",
+      "SECTION_2": "2. Purpose of Processing",
+      "SECTION_3": "3. Cookies and Tracking"
+    },
+    "TERMS": {
+      "SECTION_1": "1. Terms of Use",
+      "SECTION_2": "2. Orders and Payments",
+      "SECTION_3": "3. Refunds and Returns"
+    }
+  },
   "CONTACT": {
     "TITLE": "Contact Us",
     "SEND": "Send Message",

@@ -55,12 +55,16 @@ public class SlicerService {
 
             // 3. Build Command
             // --load-settings "machine.json;process.json" --load-filaments "filament.json"
-            String settingsArg = mFile.getAbsolutePath() + ";" + pFile.getAbsolutePath();
-            
             List<String> command = new ArrayList<>();
             command.add(slicerPath);
+            
+            // Load machine settings
             command.add("--load-settings");
-            command.add(settingsArg);
+            command.add(mFile.getAbsolutePath());
+            
+            // Load process settings
+            command.add("--load-settings");
+            command.add(pFile.getAbsolutePath());
             command.add("--load-filaments");
             command.add(fFile.getAbsolutePath());
             command.add("--ensure-on-bed");

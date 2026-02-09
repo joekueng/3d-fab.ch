@@ -14,6 +14,8 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
+import java.util.Map;
+import java.util.HashMap;
 
 @Service
 public class ProfileManager {
@@ -22,9 +24,31 @@ public class ProfileManager {
     private final String profilesRoot;
     private final ObjectMapper mapper;
 
+    private final Map<String, String> profileAliases;
+
     public ProfileManager(@Value("${profiles.root:profiles}") String profilesRoot, ObjectMapper mapper) {
         this.profilesRoot = profilesRoot;
         this.mapper = mapper;
+        this.profileAliases = new HashMap<>();
+        initializeAliases();
+    }
+
+    private void initializeAliases() {
+        // Machine Aliases
+        profileAliases.put("bambu_a1", "Bambu Lab A1 0.4 nozzle");
+        
+        // Material Aliases
+        profileAliases.put("pla_basic", "Bambu PLA Basic @BBL A1");
+        profileAliases.put("petg_basic", "Bambu PETG Basic @BBL A1");
+        profileAliases.put("tpu_95a", "Bambu TPU 95A @BBL A1");
+        
+        // Quality/Process Aliases
+        profileAliases.put("draft", "0.24mm Draft @BBL A1");
+        profileAliases.put("standard", "0.20mm Standard @BBL A1"); // or 0.20mm Standard @BBL A1
+        profileAliases.put("extra_fine", "0.08mm High Quality @BBL A1");
+        
+        // Additional aliases from error logs
+        profileAliases.put("Bambu_Process_0.20_Standard", "0.20mm Standard @BBL A1");
     }
 
     public ObjectNode getMergedProfile(String profileName, String type) throws IOException {
@@ -36,9 +60,12 @@ public class ProfileManager {
     }
 
     private Path findProfileFile(String name, String type) {
+        // Check aliases first
+        String resolvedName = profileAliases.getOrDefault(name, name);
+        
         // Simple search: look for name.json in the profiles_root recursively
         // Type could be "machine", "process", "filament" to narrow down, but for now global search
-        String filename = name.endsWith(".json") ? name : name + ".json";
+        String filename = resolvedName.endsWith(".json") ? resolvedName : resolvedName + ".json";
         
         try (Stream<Path> stream = Files.walk(Paths.get(profilesRoot))) {
             Optional<Path> found = stream
