@@ -12,10 +12,12 @@ interface FilePreview {
   type: 'image' | 'pdf' | '3d' | 'other';
 }
 
+import { SuccessStateComponent } from '../../../../shared/components/success-state/success-state.component';
+
 @Component({
   selector: 'app-contact-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, AppInputComponent, AppButtonComponent],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, AppInputComponent, AppButtonComponent, SuccessStateComponent],
   templateUrl: './contact-form.component.html',
   styleUrl: './contact-form.component.scss'
 })

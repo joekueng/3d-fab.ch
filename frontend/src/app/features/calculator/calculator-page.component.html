@@ -2,15 +2,16 @@
   <h1>{{ 'CALC.TITLE' | translate }}</h1>
   <p class="subtitle">{{ 'CALC.SUBTITLE' | translate }}</p>
 
-  @if (orderSuccess()) {
-    <app-alert type="success">{{ 'USER_DETAILS.ORDER_SUCCESS' | translate }}</app-alert>
-  }
   @if (error()) {
     <app-alert type="error">{{ 'CALC.ERROR_GENERIC' | translate }}</app-alert>
   }
 </div>
 
-@if (step() === 'details' && result()) {
+@if (step() === 'success') {
+    <div class="container hero">
+        <app-success-state context="calc" (action)="onNewQuote()"></app-success-state>
+    </div>
+} @else if (step() === 'details' && result()) {
     <div class="container">
         <app-user-details
             [quote]="result()!"

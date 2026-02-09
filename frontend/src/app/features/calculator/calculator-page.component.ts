@@ -6,20 +6,21 @@ import { AppCardComponent } from '../../shared/components/app-card/app-card.comp
 import { AppAlertComponent } from '../../shared/components/app-alert/app-alert.component';
 import { UploadFormComponent } from './components/upload-form/upload-form.component';
 import { QuoteResultComponent } from './components/quote-result/quote-result.component';
+import { QuoteRequest, QuoteResult, QuoteEstimatorService } from './services/quote-estimator.service';
 import { UserDetailsComponent } from './components/user-details/user-details.component';
-import { QuoteEstimatorService, QuoteRequest, QuoteResult } from './services/quote-estimator.service';
+import { SuccessStateComponent } from '../../shared/components/success-state/success-state.component';
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-calculator-page',
   standalone: true,
-  imports: [CommonModule, TranslateModule, AppCardComponent, AppAlertComponent, UploadFormComponent, QuoteResultComponent, UserDetailsComponent],
+  imports: [CommonModule, TranslateModule, AppCardComponent, AppAlertComponent, UploadFormComponent, QuoteResultComponent, UserDetailsComponent, SuccessStateComponent],
   templateUrl: './calculator-page.component.html',
   styleUrl: './calculator-page.component.scss'
 })
 export class CalculatorPageComponent {
   mode = signal<any>('easy');
-  step = signal<'upload' | 'quote' | 'details'>('upload');
+  step = signal<'upload' | 'quote' | 'details' | 'success'>('upload');
   
   loading = signal(false);
   uploadProgress = signal(0);
@@ -34,6 +35,7 @@ export class CalculatorPageComponent {
   constructor(private estimator: QuoteEstimatorService, private router: Router) {}
 
   onCalculate(req: QuoteRequest) {
+    // ... (logic remains the same, simplified for diff)
     this.currentRequest = req;
     this.loading.set(true);
     this.uploadProgress.set(0);
@@ -78,12 +80,14 @@ export class CalculatorPageComponent {
   onSubmitOrder(orderData: any) {
     console.log('Order Submitted:', orderData);
     this.orderSuccess.set(true);
-    this.step.set('upload'); // Reset to start, or show success page?
-    // For now, let's show success message and reset
-    setTimeout(() => {
-        this.orderSuccess.set(false);
-    }, 5000);
-    this.result.set(null);
+    this.step.set('success'); 
+  }
+  
+  onNewQuote() {
+      this.step.set('upload');
+      this.result.set(null);
+      this.orderSuccess.set(false);
+      this.mode.set('easy'); // Reset to default
   }
 
   private currentRequest: QuoteRequest | null = null;

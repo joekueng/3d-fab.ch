@@ -132,40 +132,4 @@ app-input.col { width: 100%; }
   &:hover { background: red; }
 }
 
-/* Success State */
-.success-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: var(--space-8) var(--space-4);
-  gap: var(--space-4);
-  min-height: 300px; /* Ensure visual balance */
-
-  .success-icon {
-    width: 64px;
-    height: 64px;
-    color: var(--color-success, #10b981);
-    margin-bottom: var(--space-2);
-    
-    svg {
-      width: 100%;
-      height: 100%;
-    }
-  }
-
-  h3 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--color-text);
-    margin: 0;
-  }
-
-  p {
-    color: var(--color-text-muted);
-    max-width: 400px;
-    margin-bottom: var(--space-4);
-    line-height: 1.5;
-  }
-}
+/* Success State styles moved to shared component */
