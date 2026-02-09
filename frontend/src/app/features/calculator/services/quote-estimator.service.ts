@@ -13,6 +13,8 @@ export interface QuoteRequest {
   infillDensity?: number;
   infillPattern?: string;
   supportEnabled?: boolean;
+  layerHeight?: number;
+  nozzleDiameter?: number;
   mode: 'easy' | 'advanced';
 }
 
@@ -77,6 +79,8 @@ export class QuoteEstimatorService {
                 if (request.infillDensity) formData.append('infill_density', request.infillDensity.toString());
                 if (request.infillPattern) formData.append('infill_pattern', request.infillPattern);
                 if (request.supportEnabled) formData.append('support_enabled', 'true');
+                if (request.layerHeight) formData.append('layer_height', request.layerHeight.toString());
+                if (request.nozzleDiameter) formData.append('nozzle_diameter', request.nozzleDiameter.toString());
              }
              
              const headers: any = {};
@@ -123,7 +127,13 @@ export class QuoteEstimatorService {
                             observer.next(100); 
                             
                             // Calculate Results
-                            const setupCost = 10;
+                            // Base setup cost
+                            let setupCost = 10;
+                            
+                            // Surcharge for non-standard nozzle
+                            if (request.nozzleDiameter && request.nozzleDiameter !== 0.4) {
+                                setupCost += 2;
+                            }
                             
                             const items: QuoteItem[] = [];
                             

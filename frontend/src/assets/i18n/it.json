@@ -30,6 +30,7 @@
     "INFILL": "Riempimento (%)",
     "PATTERN": "Pattern di riempimento",
     "LAYER_HEIGHT": "Altezza Layer",
+    "NOZZLE": "Diametro Ugello",
     "SUPPORT": "Supporti",
     "SUPPORT_DESC": "Abilita supporti per sporgenze",
     "CALCULATE": "Calcola Preventivo",
