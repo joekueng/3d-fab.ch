@@ -11,6 +11,7 @@
                 formControlName="name"
                 label="USER_DETAILS.NAME" 
                 placeholder="USER_DETAILS.NAME_PLACEHOLDER"
+                [required]="true"
                 [error]="form.get('name')?.invalid && form.get('name')?.touched ? ('COMMON.REQUIRED' | translate) : null">
               </app-input>
             </div>
@@ -19,6 +20,7 @@
                 formControlName="surname"
                 label="USER_DETAILS.SURNAME" 
                 placeholder="USER_DETAILS.SURNAME_PLACEHOLDER"
+                [required]="true"
                 [error]="form.get('surname')?.invalid && form.get('surname')?.touched ? ('COMMON.REQUIRED' | translate) : null">
               </app-input>
             </div>
@@ -32,6 +34,7 @@
                 label="USER_DETAILS.EMAIL" 
                 type="email"
                 placeholder="USER_DETAILS.EMAIL_PLACEHOLDER"
+                [required]="true"
                 [error]="form.get('email')?.invalid && form.get('email')?.touched ? ('COMMON.INVALID_EMAIL' | translate) : null">
               </app-input>
             </div>
@@ -41,6 +44,7 @@
                 label="USER_DETAILS.PHONE" 
                 type="tel"
                 placeholder="USER_DETAILS.PHONE_PLACEHOLDER"
+                [required]="true"
                 [error]="form.get('phone')?.invalid && form.get('phone')?.touched ? ('COMMON.REQUIRED' | translate) : null">
               </app-input>
             </div>
@@ -51,6 +55,7 @@
             formControlName="address"
             label="USER_DETAILS.ADDRESS" 
             placeholder="USER_DETAILS.ADDRESS_PLACEHOLDER"
+            [required]="true"
             [error]="form.get('address')?.invalid && form.get('address')?.touched ? ('COMMON.REQUIRED' | translate) : null">
           </app-input>
 
@@ -61,6 +66,7 @@
                 formControlName="zip"
                 label="USER_DETAILS.ZIP" 
                 placeholder="USER_DETAILS.ZIP_PLACEHOLDER"
+                [required]="true"
                 [error]="form.get('zip')?.invalid && form.get('zip')?.touched ? ('COMMON.REQUIRED' | translate) : null">
               </app-input>
             </div>
@@ -69,6 +75,7 @@
                 formControlName="city"
                 label="USER_DETAILS.CITY" 
                 placeholder="USER_DETAILS.CITY_PLACEHOLDER"
+                [required]="true"
                 [error]="form.get('city')?.invalid && form.get('city')?.touched ? ('COMMON.REQUIRED' | translate) : null">
               </app-input>
             </div>
