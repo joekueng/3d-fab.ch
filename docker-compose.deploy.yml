@@ -15,7 +15,7 @@ services:
       - MARKUP_PERCENT=${MARKUP_PERCENT}
       - TEMP_DIR=/app/temp
       - PROFILES_DIR=/app/profiles
-    restart: unless-stopped
+    restart: always
     volumes:
       - backend_profiles_${ENV}:/app/profiles
 
@@ -26,7 +26,7 @@ services:
       - "${FRONTEND_PORT}:8008"
     depends_on:
       - backend
-    restart: unless-stopped
+    restart: always
 
 volumes:
   backend_profiles_prod:
