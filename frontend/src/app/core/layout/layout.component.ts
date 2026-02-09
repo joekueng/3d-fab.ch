@@ -7,25 +7,7 @@ import { FooterComponent } from './footer.component';
   selector: 'app-layout',
   standalone: true,
   imports: [RouterOutlet, NavbarComponent, FooterComponent],
-  template: `
-    <div class="layout-wrapper">
-      <app-navbar></app-navbar>
-      <main class="main-content">
-        <router-outlet></router-outlet>
-      </main>
-      <app-footer></app-footer>
-    </div>
-  `,
-  styles: [`
-    .layout-wrapper {
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-    .main-content {
-      flex: 1;
-      padding-bottom: var(--space-12);
-    }
-  `]
+  templateUrl: './layout.component.html',
+  styleUrl: './layout.component.scss'
 })
 export class LayoutComponent {}

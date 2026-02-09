@@ -10,70 +10,13 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
   selector: 'app-stl-viewer',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <div class="viewer-container" #rendererContainer>
-      @if (loading) {
-        <div class="loading-overlay">
-          <div class="spinner"></div>
-          <span>Loading 3D Model...</span>
-        </div>
-      }
-      @if (file && !loading) {
-        <div class="dims-overlay">
-           {{ dimensions.x }} x {{ dimensions.y }} x {{ dimensions.z }} mm
-        </div>
-      }
-    </div>
-  `,
-  styles: [`
-    .viewer-container {
-      width: 100%;
-      height: 300px;
-      background: var(--color-neutral-50);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--color-border);
-      overflow: hidden;
-      position: relative;
-    }
-    .loading-overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(255, 255, 255, 0.8);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 1rem;
-      z-index: 10;
-      color: var(--color-text-muted);
-    }
-    .spinner {
-      width: 32px;
-      height: 32px;
-      border: 3px solid var(--color-neutral-200);
-      border-top-color: var(--color-brand);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    .dims-overlay {
-        position: absolute;
-        bottom: 8px;
-        right: 8px;
-        background: rgba(0,0,0,0.6);
-        color: white;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 0.75rem;
-        font-family: monospace;
-        pointer-events: none;
-    }
-  `]
+  templateUrl: './stl-viewer.component.html',
+  styleUrl: './stl-viewer.component.scss'
 })
 export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
   @Input() file: File | null = null;
+  @Input() color: string = '#facf0a'; // Default Brand Color
+
   @ViewChild('rendererContainer', { static: true }) rendererContainer!: ElementRef;
 
   private scene!: THREE.Scene;
@@ -92,6 +35,12 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     if (changes['file'] && this.file) {
       this.loadFile(this.file);
+    }
+    
+    if (changes['color'] && this.currentMesh && !changes['file']) {
+        // Update existing mesh color if only color changed
+        const mat = this.currentMesh.material as THREE.MeshPhongMaterial;
+        mat.color.set(this.color);
     }
   }
 
@@ -158,7 +107,7 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
         }
 
         const material = new THREE.MeshPhongMaterial({ 
-          color: 0xFACF0A, // Brand color
+          color: this.color, 
           specular: 0x111111,
           shininess: 200 
         });

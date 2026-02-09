@@ -1,0 +1,16 @@
+<div class="form-group">
+  @if (label()) { <label [for]="id()">{{ label() }}</label> }
+  <select
+    [id]="id()"
+    [ngModel]="value"
+    (ngModelChange)="onModelChange($event)"
+    (blur)="onTouched()"
+    [disabled]="disabled"
+    class="form-control"
+  >
+    @for (opt of options(); track opt.label) {
+      <option [ngValue]="opt.value">{{ opt.label }}</option>
+    }
+  </select>
+  @if (error()) { <span class="error-text">{{ error() }}</span> }
+</div>

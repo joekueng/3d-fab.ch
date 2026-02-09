@@ -1,4 +1,4 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, input, output, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -7,207 +7,22 @@ import { AppSelectComponent } from '../../../../shared/components/app-select/app
 import { AppDropzoneComponent } from '../../../../shared/components/app-dropzone/app-dropzone.component';
 import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
 import { StlViewerComponent } from '../../../../shared/components/stl-viewer/stl-viewer.component';
+import { ColorSelectorComponent } from '../../../../shared/components/color-selector/color-selector.component';
 import { QuoteRequest } from '../../services/quote-estimator.service';
+import { getColorHex } from '../../../../core/constants/colors.const';
+
+interface FormItem {
+    file: File;
+    quantity: number;
+    color: string;
+}
 
 @Component({
   selector: 'app-upload-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, AppInputComponent, AppSelectComponent, AppDropzoneComponent, AppButtonComponent, StlViewerComponent],
-  template: `
-    <form [formGroup]="form" (ngSubmit)="onSubmit()">
-      
-      <div class="section">
-        @if (selectedFile()) {
-          <div class="viewer-wrapper">
-             <app-stl-viewer [file]="selectedFile()"></app-stl-viewer>
-             <button type="button" class="btn-clear" (click)="clearFiles()">
-                X
-             </button>
-          </div>
-          <div class="file-list">
-             @for (f of files(); track f.name) {
-                <div class="file-item" [class.active]="f === selectedFile()" (click)="selectFile(f)">
-                   {{ f.name }}
-                </div>
-             }
-          </div>
-        } @else {
-            <app-dropzone 
-            [label]="'CALC.UPLOAD_LABEL' | translate" 
-            [subtext]="'CALC.UPLOAD_SUB' | translate"
-            [accept]="acceptedFormats"
-            [multiple]="true"
-            (filesDropped)="onFilesDropped($event)">
-            </app-dropzone>
-        }
-        
-        @if (form.get('files')?.invalid && form.get('files')?.touched) {
-          <div class="error-msg">{{ 'CALC.ERR_FILE_REQUIRED' | translate }}</div>
-        }
-      </div>
-
-      <div class="grid">
-        <app-select
-          formControlName="material"
-          [label]="'CALC.MATERIAL' | translate"
-          [options]="materials"
-        ></app-select>
-
-        <app-select
-          formControlName="quality"
-          [label]="'CALC.QUALITY' | translate"
-          [options]="qualities"
-        ></app-select>
-      </div>
-
-      <app-input
-        formControlName="quantity"
-        type="number"
-        [label]="'CALC.QUANTITY' | translate"
-      ></app-input>
-
-      @if (mode() === 'advanced') {
-        <div class="grid">
-             <app-select
-              formControlName="color"
-              [label]="'CALC.COLOR' | translate"
-              [options]="colors"
-            ></app-select>
-            
-            <app-select
-              formControlName="infillPattern"
-              [label]="'CALC.PATTERN' | translate"
-              [options]="infillPatterns"
-            ></app-select>
-        </div>
-
-        <div class="grid">
-            <app-input
-              formControlName="infillDensity"
-              type="number"
-              [label]="'CALC.INFILL' | translate"
-            ></app-input>
-            
-            <div class="checkbox-row">
-                <input type="checkbox" formControlName="supportEnabled" id="support">
-                <label for="support">{{ 'CALC.SUPPORT' | translate }}</label>
-            </div>
-        </div>
-
-        <app-input
-          formControlName="notes"
-          [label]="'CALC.NOTES' | translate"
-          placeholder="Istruzioni specifiche..."
-        ></app-input>
-      }
-
-      <div class="actions">
-        <!-- Progress Bar (Only when uploading i.e. progress < 100) -->
-        @if (loading() && uploadProgress() < 100) {
-            <div class="progress-container">
-                <div class="progress-bar">
-                    <div class="progress-fill" [style.width.%]="uploadProgress()"></div>
-                </div>
-            </div>
-        }
-
-        <app-button 
-          type="submit" 
-          [disabled]="form.invalid || loading()" 
-          [fullWidth]="true">
-          {{ loading() ? (uploadProgress() < 100 ? 'Uploading...' : 'Processing...') : ('CALC.CALCULATE' | translate) }}
-        </app-button>
-      </div>
-    </form>
-  `,
-  styles: [`
-    .section { margin-bottom: var(--space-6); }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
-    .actions { margin-top: var(--space-6); }
-    .error-msg { color: var(--color-danger-500); font-size: 0.875rem; margin-top: var(--space-2); text-align: center; }
-    
-    .viewer-wrapper { position: relative; margin-bottom: var(--space-4); }
-    .btn-clear {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: rgba(0,0,0,0.5);
-        color: white;
-        border: none;
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        cursor: pointer;
-        z-index: 10;
-        &:hover { background: rgba(0,0,0,0.7); }
-    }
-    
-    .file-list {
-        display: flex;
-        gap: var(--space-2);
-        overflow-x: auto;
-        padding-bottom: var(--space-2);
-    }
-    .file-item {
-        padding: 0.5rem 1rem;
-        background: var(--color-neutral-100);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-md);
-        font-size: 0.85rem;
-        cursor: pointer;
-        white-space: nowrap;
-        &:hover { background: var(--color-neutral-200); }
-        &.active { 
-            border-color: var(--color-brand); 
-            background: rgba(250, 207, 10, 0.1); 
-            font-weight: 600;
-        }
-    }
-    
-    .checkbox-row {
-        display: flex;
-        align-items: center;
-        gap: var(--space-3);
-        height: 100%;
-        padding-top: var(--space-4);
-        
-        input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            accent-color: var(--color-brand);
-        }
-        label {
-            font-weight: 500;
-            cursor: pointer;
-        }
-    }
-
-    /* Progress Bar */
-    .progress-container {
-        margin-bottom: var(--space-3);
-        /* padding: var(--space-2); */
-        /* background: var(--color-neutral-100); */
-        /* border-radius: var(--radius-md); */
-        text-align: center;
-        width: 100%;
-    }
-    .progress-bar {
-        height: 4px;
-        background: var(--color-border);
-        border-radius: 2px;
-        overflow: hidden;
-        margin-bottom: 0;
-        position: relative;
-        width: 100%;
-    }
-    .progress-fill {
-        height: 100%;
-        background: var(--color-brand);
-        width: 0%;
-        transition: width 0.2s ease-out;
-    }
-    .progress-text { font-size: 0.875rem; color: var(--color-text-muted); }
-  `]
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, AppInputComponent, AppSelectComponent, AppDropzoneComponent, AppButtonComponent, StlViewerComponent, ColorSelectorComponent],
+  templateUrl: './upload-form.component.html',
+  styleUrl: './upload-form.component.scss'
 })
 export class UploadFormComponent {
   mode = input<'easy' | 'advanced'>('easy');
@@ -217,7 +32,7 @@ export class UploadFormComponent {
 
   form: FormGroup;
   
-  files = signal<File[]>([]);
+  items = signal<FormItem[]>([]);
   selectedFile = signal<File | null>(null);
 
   materials = [
@@ -231,35 +46,44 @@ export class UploadFormComponent {
     { label: 'Standard', value: 'Standard' },
     { label: 'Alta definizione', value: 'High' }
   ];
-  
-  colors = [
-      { label: 'Black', value: 'Black' },
-      { label: 'White', value: 'White' },
-      { label: 'Gray', value: 'Gray' },
-      { label: 'Red', value: 'Red' },
-      { label: 'Blue', value: 'Blue' },
-      { label: 'Green', value: 'Green' },
-      { label: 'Yellow', value: 'Yellow' }
+
+  nozzleDiameters = [
+      { label: '0.2 mm (+2 CHF)', value: 0.2 },
+      { label: '0.4 mm (Standard)', value: 0.4 },
+      { label: '0.6 mm (+2 CHF)', value: 0.6 },
+      { label: '0.8 mm (+2 CHF)', value: 0.8 }
   ];
+  
   infillPatterns = [
       { label: 'Grid', value: 'grid' },
       { label: 'Gyroid', value: 'gyroid' },
       { label: 'Cubic', value: 'cubic' },
       { label: 'Triangles', value: 'triangles' }
   ];
+
+  layerHeights = [
+      { label: '0.08 mm', value: 0.08 },
+      { label: '0.12 mm (High Quality - Slow)', value: 0.12 },
+      { label: '0.16 mm', value: 0.16 },
+      { label: '0.20 mm (Standard)', value: 0.20 },
+      { label: '0.24 mm', value: 0.24 },
+      { label: '0.28 mm', value: 0.28 }
+  ];
   
   acceptedFormats = '.stl,.3mf,.step,.stp,.obj,.amf,.ply,.igs,.iges';
 
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({
-      files: [[], Validators.required],
+      itemsTouched: [false], // Hack to track touched state for custom items list
       material: ['PLA', Validators.required],
       quality: ['Standard', Validators.required],
-      quantity: [1, [Validators.required, Validators.min(1)]],
+      // Print Speed removed
       notes: [''],
       // Advanced fields
-      color: ['Black'],
+      // Color removed from global form
       infillDensity: [20, [Validators.min(0), Validators.max(100)]],
+      layerHeight: [0.2, [Validators.min(0.05), Validators.max(1.0)]],
+      nozzleDiameter: [0.4, Validators.required],
       infillPattern: ['grid'],
       supportEnabled: [false]
     });
@@ -267,14 +91,15 @@ export class UploadFormComponent {
 
   onFilesDropped(newFiles: File[]) {
     const MAX_SIZE = 200 * 1024 * 1024; // 200MB
-    const validFiles: File[] = [];
+    const validItems: FormItem[] = [];
     let hasError = false;
 
     for (const file of newFiles) {
         if (file.size > MAX_SIZE) {
             hasError = true;
         } else {
-            validFiles.push(file);
+            // Default color is Black
+            validItems.push({ file, quantity: 1, color: 'Black' });
         }
     }
 
@@ -282,32 +107,95 @@ export class UploadFormComponent {
         alert("Alcuni file superano il limite di 200MB e non sono stati aggiunti.");
     }
 
-    if (validFiles.length > 0) {
-        this.files.update(current => [...current, ...validFiles]);
-        this.form.patchValue({ files: this.files() });
-        this.form.get('files')?.markAsTouched();
-        this.selectedFile.set(validFiles[validFiles.length - 1]);
+    if (validItems.length > 0) {
+        this.items.update(current => [...current, ...validItems]);
+        this.form.get('itemsTouched')?.setValue(true);
+        // Auto select last added
+        this.selectedFile.set(validItems[validItems.length - 1].file);
     }
   }
 
-  selectFile(file: File) {
-      this.selectedFile.set(file);
+  onAdditionalFilesSelected(event: Event) {
+      const input = event.target as HTMLInputElement;
+      if (input.files && input.files.length > 0) {
+          this.onFilesDropped(Array.from(input.files));
+          // Reset input so same files can be selected again if needed
+          input.value = '';
+      }
   }
 
-  clearFiles() {
-      this.files.set([]);
-      this.selectedFile.set(null);
-      this.form.patchValue({ files: [] });
+  updateItemQuantityByName(fileName: string, quantity: number) {
+      this.items.update(current => {
+          return current.map(item => {
+              if (item.file.name === fileName) {
+                  return { ...item, quantity };
+              }
+              return item;
+          });
+      });
+  }
+
+  selectFile(file: File) {
+      if (this.selectedFile() === file) {
+          // toggle off? no, keep active
+      } else {
+          this.selectedFile.set(file);
+      }
+  }
+
+  // Helper to get color of currently selected file
+  getSelectedFileColor(): string {
+      const file = this.selectedFile();
+      if (!file) return '#facf0a'; // Default
+      
+      const item = this.items().find(i => i.file === file);
+      if (item) {
+          return getColorHex(item.color);
+      }
+      return '#facf0a';
+  }
+
+  updateItemQuantity(index: number, event: Event) {
+      const input = event.target as HTMLInputElement;
+      let val = parseInt(input.value, 10);
+      if (isNaN(val) || val < 1) val = 1;
+      
+      this.items.update(current => {
+          const updated = [...current];
+          updated[index] = { ...updated[index], quantity: val };
+          return updated;
+      });
+  }
+
+  updateItemColor(index: number, newColor: string) {
+      this.items.update(current => {
+          const updated = [...current];
+          updated[index] = { ...updated[index], color: newColor };
+          return updated;
+      });
+  }
+
+  removeItem(index: number) {
+      this.items.update(current => {
+          const updated = [...current];
+          const removed = updated.splice(index, 1)[0];
+          if (this.selectedFile() === removed.file) {
+              this.selectedFile.set(null);
+          }
+          return updated;
+      });
   }
 
   onSubmit() {
-    if (this.form.valid) {
+    if (this.form.valid && this.items().length > 0) {
       this.submitRequest.emit({
+        items: this.items(), // Pass the items array including colors
         ...this.form.value,
         mode: this.mode()
       });
     } else {
       this.form.markAllAsTouched();
+      this.form.get('itemsTouched')?.setValue(true);
     }
   }
 }

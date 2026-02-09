@@ -36,3 +36,7 @@ Questo file serve a dare contesto all'AI (Antigravity/Gemini) sulla struttura e 
 - Per eseguire il backend serve `uvicorn`.
 - Il frontend richiede `npm install` al primo avvio.
 - Le configurazioni di stampa (layer height, wall thickness, infill) sono attualmente hardcoded o con valori di default nel backend, ma potrebbero essere esposte come parametri API in futuro.
+
+## AI Agent Rules
+- **No Inline Code**: Tutti i componenti Angular DEVONO usare file separati per HTML (`templateUrl`) e SCSS (`styleUrl`). È vietato usare `template` o `styles` inline nel decoratore `@Component`.
+

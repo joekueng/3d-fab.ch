@@ -1,0 +1,13 @@
+<div class="product-card">
+  <div class="image-placeholder"></div>
+  <div class="content">
+    <span class="category">{{ product().category }}</span>
+    <h3 class="name">
+        <a [routerLink]="['/shop', product().id]">{{ product().name }}</a>
+    </h3>
+    <div class="footer">
+      <span class="price">{{ product().price | currency:'EUR' }}</span>
+      <a [routerLink]="['/shop', product().id]" class="view-btn">Dettagli</a>
+    </div>
+  </div>
+</div>

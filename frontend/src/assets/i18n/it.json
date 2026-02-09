@@ -17,17 +17,20 @@
     "CTA_START": "Inizia Ora",
     "BUSINESS": "Aziende",
     "PRIVATE": "Privati",
-    "MODE_EASY": "Rapida",
+    "MODE_EASY": "Base",
     "MODE_ADVANCED": "Avanzata",
     "UPLOAD_LABEL": "Trascina il tuo file 3D qui",
     "UPLOAD_SUB": "Supportiamo STL, 3MF, STEP, OBJ fino a 50MB",
     "MATERIAL": "Materiale",
     "QUALITY": "Qualità",
+    "PRINT_SPEED": "Velocità di Stampa",
     "QUANTITY": "Quantità",
     "NOTES": "Note aggiuntive",
     "COLOR": "Colore",
     "INFILL": "Riempimento (%)",
     "PATTERN": "Pattern di riempimento",
+    "LAYER_HEIGHT": "Altezza Layer",
+    "NOZZLE": "Diametro Ugello",
     "SUPPORT": "Supporti",
     "SUPPORT_DESC": "Abilita supporti per sporgenze",
     "CALCULATE": "Calcola Preventivo",
@@ -37,6 +40,9 @@
     "ORDER": "Ordina Ora",
     "CONSULT": "Richiedi Consulenza",
     "ERROR_GENERIC": "Si è verificato un errore durante il calcolo del preventivo.",
+    "NEW_QUOTE": "Calcola Nuovo Preventivo",
+    "ORDER_SUCCESS_TITLE": "Ordine Inviato con Successo",
+    "ORDER_SUCCESS_DESC": "Abbiamo ricevuto i dettagli del tuo ordine. Riceverai a breve una email di conferma con i dettagli per il pagamento.",
     "BENEFITS_TITLE": "Perché scegliere noi?",
     "BENEFITS_1": "Preventivo automatico con costo e tempo immediati",
     "BENEFITS_2": "Materiali selezionati e qualità controllata",
@@ -67,6 +73,15 @@
     "TARGET_TEXT": "Piccole aziende, freelance, smanettoni e clienti che cercano un prodotto già pronto dallo shop.",
     "TEAM_TITLE": "Il Nostro Team"
   },
+  "LOCATIONS": {
+    "TITLE": "Le Nostre Sedi",
+    "SUBTITLE": "Siamo presenti in due sedi per coprire meglio il territorio. Seleziona la sede per vedere i dettagli.",
+    "TICINO": "Ticino",
+    "BIENNE": "Bienne",
+    "ADDRESS_TICINO": "Sede Ticino, Svizzera",
+    "ADDRESS_BIENNE": "Sede Bienne, Svizzera",
+    "CONTACT_US": "Contattaci"
+  },
   "CONTACT": {
     "TITLE": "Contattaci",
     "SEND": "Invia Messaggio",
@@ -93,6 +108,9 @@
     "LABEL_EMAIL": "Email *",
     "LABEL_NAME": "Nome *",
     "MSG_SENT": "Inviato!",
-    "ERR_MAX_FILES": "Limite massimo di 15 file raggiunto."
+    "ERR_MAX_FILES": "Limite massimo di 15 file raggiunto.",
+    "SUCCESS_TITLE": "Messaggio Inviato con Successo",
+    "SUCCESS_DESC": "Grazie per averci contattato. Abbiamo ricevuto il tuo messaggio e ti invieremo una email di riepilogo a breve.",
+    "SEND_ANOTHER": "Invia un altro messaggio"
   }
 }

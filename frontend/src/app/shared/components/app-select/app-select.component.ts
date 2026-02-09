@@ -1,11 +1,11 @@
 import { Component, input, output, forwardRef } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-select',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -13,39 +13,8 @@ import { CommonModule } from '@angular/common';
       multi: true
     }
   ],
-  template: `
-    <div class="form-group">
-      @if (label()) { <label [for]="id()">{{ label() }}</label> }
-      <select
-        [id]="id()"
-        [value]="value"
-        (change)="onSelect($event)"
-        (blur)="onTouched()"
-        [disabled]="disabled"
-        class="form-control"
-      >
-        @for (opt of options(); track opt.value) {
-          <option [value]="opt.value">{{ opt.label }}</option>
-        }
-      </select>
-      @if (error()) { <span class="error-text">{{ error() }}</span> }
-    </div>
-  `,
-  styles: [`
-    .form-group { display: flex; flex-direction: column; margin-bottom: var(--space-4); }
-    label { font-size: 0.875rem; font-weight: 500; margin-bottom: var(--space-2); color: var(--color-text); }
-    .form-control {
-      padding: 0.5rem 0.75rem;
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-md);
-      font-size: 1rem;
-      width: 100%;
-      background: var(--color-bg-card);
-      color: var(--color-text);
-      &:focus { outline: none; border-color: var(--color-brand); }
-    }
-    .error-text { color: var(--color-danger-500); font-size: 0.75rem; margin-top: var(--space-1); }
-  `]
+  templateUrl: './app-select.component.html',
+  styleUrl: './app-select.component.scss'
 })
 export class AppSelectComponent implements ControlValueAccessor {
   label = input<string>('');
@@ -64,9 +33,8 @@ export class AppSelectComponent implements ControlValueAccessor {
   registerOnTouched(fn: any): void { this.onTouched = fn; }
   setDisabledState(isDisabled: boolean): void { this.disabled = isDisabled; }
   
-  onSelect(event: Event) {
-    const val = (event.target as HTMLSelectElement).value;
-    this.value = val;
-    this.onChange(val);
+  onModelChange(val: any) {
+      this.value = val;
+      this.onChange(val);
   }
 }
