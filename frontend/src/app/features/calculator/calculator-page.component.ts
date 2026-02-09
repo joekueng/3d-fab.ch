@@ -6,22 +6,27 @@ import { AppCardComponent } from '../../shared/components/app-card/app-card.comp
 import { AppAlertComponent } from '../../shared/components/app-alert/app-alert.component';
 import { UploadFormComponent } from './components/upload-form/upload-form.component';
 import { QuoteResultComponent } from './components/quote-result/quote-result.component';
+import { UserDetailsComponent } from './components/user-details/user-details.component';
 import { QuoteEstimatorService, QuoteRequest, QuoteResult } from './services/quote-estimator.service';
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-calculator-page',
   standalone: true,
-  imports: [CommonModule, TranslateModule, AppCardComponent, AppAlertComponent, UploadFormComponent, QuoteResultComponent],
+  imports: [CommonModule, TranslateModule, AppCardComponent, AppAlertComponent, UploadFormComponent, QuoteResultComponent, UserDetailsComponent],
   templateUrl: './calculator-page.component.html',
   styleUrl: './calculator-page.component.scss'
 })
 export class CalculatorPageComponent {
   mode = signal<any>('easy');
+  step = signal<'upload' | 'quote' | 'details'>('upload');
+  
   loading = signal(false);
   uploadProgress = signal(0);
   result = signal<QuoteResult | null>(null);
   error = signal<boolean>(false);
+  
+  orderSuccess = signal(false);
   
   @ViewChild('uploadForm') uploadForm!: UploadFormComponent;
   @ViewChild('resultCol') resultCol!: ElementRef;
@@ -34,6 +39,7 @@ export class CalculatorPageComponent {
     this.uploadProgress.set(0);
     this.error.set(false);
     this.result.set(null);
+    this.orderSuccess.set(false);
 
     // Auto-scroll on mobile to make analysis visible
     setTimeout(() => {
@@ -51,6 +57,7 @@ export class CalculatorPageComponent {
             this.result.set(event as QuoteResult);
             this.loading.set(false);
             this.uploadProgress.set(100);
+            this.step.set('quote');
         }
       },
       error: () => {
@@ -58,6 +65,25 @@ export class CalculatorPageComponent {
         this.loading.set(false);
       }
     });
+  }
+
+  onProceed() {
+    this.step.set('details');
+  }
+
+  onCancelDetails() {
+    this.step.set('quote');
+  }
+
+  onSubmitOrder(orderData: any) {
+    console.log('Order Submitted:', orderData);
+    this.orderSuccess.set(true);
+    this.step.set('upload'); // Reset to start, or show success page?
+    // For now, let's show success message and reset
+    setTimeout(() => {
+        this.orderSuccess.set(false);
+    }, 5000);
+    this.result.set(null);
   }
 
   private currentRequest: QuoteRequest | null = null;

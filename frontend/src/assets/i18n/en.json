@@ -2,9 +2,32 @@
   "NAV": {
     "HOME": "Home",
     "CALCULATOR": "Calculator",
-    "SHOP": "Shop",
-    "ABOUT": "About",
-    "CONTACT": "Contact Us"
+    "SHOP": "Shop"
+  },
+  "QUOTE": {
+    "CONSULT": "Request Consultation",
+    "PROCEED_ORDER": "Proceed to Order",
+    "TOTAL": "Total Estimate"
+  },
+  "USER_DETAILS": {
+    "TITLE": "Shipping Details",
+    "SUMMARY_TITLE": "Order Summary",
+    "NAME": "First Name",
+    "NAME_PLACEHOLDER": "Enter your first name",
+    "SURNAME": "Last Name",
+    "SURNAME_PLACEHOLDER": "Enter your last name",
+    "EMAIL": "Email",
+    "EMAIL_PLACEHOLDER": "your@email.com",
+    "PHONE": "Phone",
+    "PHONE_PLACEHOLDER": "+41 79 123 45 67",
+    "ADDRESS": "Address",
+    "ADDRESS_PLACEHOLDER": "Street and Number",
+    "ZIP": "ZIP",
+    "ZIP_PLACEHOLDER": "8000",
+    "CITY": "City",
+    "CITY_PLACEHOLDER": "Zurich",
+    "SUBMIT": "Submit Order",
+    "ORDER_SUCCESS": "Order submitted successfully! We will contact you shortly."
   },
   "FOOTER": {
     "PRIVACY": "Privacy",

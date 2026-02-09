@@ -24,6 +24,8 @@ export interface QuoteItem {
   unitTime: number; // seconds
   unitWeight: number; // grams
   quantity: number;
+  material?: string;
+  color?: string;
   // Computed values for UI convenience (optional, can be done in component)
 }
 
@@ -37,114 +39,21 @@ export interface QuoteResult {
   totalTimeMinutes: number;
   totalWeight: number;
 }
-
-interface BackendResponse {
-  success: boolean;
-  data: {
-    print_time_seconds: number;
-    material_grams: number;
-    cost: {
-      total: number;
-    };
-  };
-  error?: string;
-}
-
-@Injectable({
-  providedIn: 'root'
-})
-export class QuoteEstimatorService {
-  private http = inject(HttpClient);
-  
-  calculate(request: QuoteRequest): Observable<number | QuoteResult> {
-    if (request.items.length === 0) return of();
-    
-    return new Observable(observer => {
-        const totalItems = request.items.length;
-        const allProgress: number[] = new Array(totalItems).fill(0);
-        const finalResponses: any[] = [];
-        let completedRequests = 0;
-
-        const uploads = request.items.map((item, index) => {
-             const formData = new FormData();
-             formData.append('file', item.file);
-             formData.append('machine', 'bambu_a1'); 
-             formData.append('filament', this.mapMaterial(request.material));
-             formData.append('quality', this.mapQuality(request.quality));
-             
-             // Send color for both modes if present, defaulting to Black
-             formData.append('material_color', item.color || 'Black');
-
-             if (request.mode === 'advanced') {
-                if (request.infillDensity) formData.append('infill_density', request.infillDensity.toString());
-                if (request.infillPattern) formData.append('infill_pattern', request.infillPattern);
-                if (request.supportEnabled) formData.append('support_enabled', 'true');
-                if (request.layerHeight) formData.append('layer_height', request.layerHeight.toString());
-                if (request.nozzleDiameter) formData.append('nozzle_diameter', request.nozzleDiameter.toString());
-             }
-             
-             const headers: any = {};
-             // @ts-ignore
-             if (environment.basicAuth) headers['Authorization'] = 'Basic ' + btoa(environment.basicAuth);
-
-             return this.http.post<BackendResponse>(`${environment.apiUrl}/api/quote`, formData, { 
-                 headers,
-                 reportProgress: true,
-                 observe: 'events'
-             }).pipe(
-                 map(event => ({ item, event, index })),
-                 catchError(err => of({ item, error: err, index }))
-             );
-        });
-
-        // Subscribe to all
-        uploads.forEach((obs) => {
-            obs.subscribe({
-                next: (wrapper: any) => {
-                    const idx = wrapper.index;
-                    
-                    if (wrapper.error) {
-                        finalResponses[idx] = { success: false, fileName: wrapper.item.file.name };
-                        return;
-                    }
-
-                    const event = wrapper.event;
-                    if (event.type === 1) { // HttpEventType.UploadProgress
-                        if (event.total) {
-                            const percent = Math.round((100 * event.loaded) / event.total);
-                            allProgress[idx] = percent;
-                            // Emit average progress
-                            const avg = Math.round(allProgress.reduce((a, b) => a + b, 0) / totalItems);
-                            observer.next(avg); 
-                        }
-                    } else if (event.type === 4) { // HttpEventType.Response
-                        allProgress[idx] = 100;
-                        finalResponses[idx] = { ...event.body, fileName: wrapper.item.file.name, originalQty: wrapper.item.quantity };
-                        completedRequests++;
-                        
-                        if (completedRequests === totalItems) {
-                            // All done
-                            observer.next(100); 
-                            
-                            // Calculate Results
-                            // Base setup cost
-                            let setupCost = 10;
-                            
-                            // Surcharge for non-standard nozzle
-                            if (request.nozzleDiameter && request.nozzleDiameter !== 0.4) {
-                                setupCost += 2;
-                            }
-                            
-                            const items: QuoteItem[] = [];
-                            
-                            finalResponses.forEach(res => {
+// ... (skip down to calculate logic)
+                            finalResponses.forEach((res, idx) => {
                                 if (res && res.success) {
+                                    // Find original item to get color
+                                    const originalItem = request.items[idx]; 
+                                    // Note: responses and request.items are index-aligned because we mapped them
+                                    
                                     items.push({
                                         fileName: res.fileName,
                                         unitPrice: res.data.cost.total,
                                         unitTime: res.data.print_time_seconds,
                                         unitWeight: res.data.material_grams,
-                                        quantity: res.originalQty // Use the requested quantity
+                                        quantity: res.originalQty,
+                                        material: request.material,
+                                        color: originalItem.color || 'Default'
                                     });
                                 }
                             });

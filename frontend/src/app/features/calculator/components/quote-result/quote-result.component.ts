@@ -17,6 +17,7 @@ import { QuoteResult, QuoteItem } from '../../services/quote-estimator.service';
 export class QuoteResultComponent {
   result = input.required<QuoteResult>();
   consult = output<void>();
+  proceed = output<void>();
   itemChange = output<{fileName: string, quantity: number}>();
 
   // Local mutable state for items to handle quantity changes

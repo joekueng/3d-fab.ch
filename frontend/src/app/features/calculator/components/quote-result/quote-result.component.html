@@ -56,7 +56,12 @@
   </div>
 
   <div class="actions">
-    <app-button variant="primary" [fullWidth]="true">{{ 'CALC.ORDER' | translate }}</app-button>
-    <app-button variant="outline" [fullWidth]="true" (click)="consult.emit()">{{ 'CALC.CONSULT' | translate }}</app-button>
+    <app-button variant="outline" (click)="consult.emit()">
+      {{ 'QUOTE.CONSULT' | translate }}
+    </app-button>
+    
+    <app-button (click)="proceed.emit()">
+        {{ 'QUOTE.PROCEED_ORDER' | translate }}
+    </app-button>
   </div>
 </app-card>
