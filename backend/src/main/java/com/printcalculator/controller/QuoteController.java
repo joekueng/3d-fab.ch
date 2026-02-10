@@ -1,13 +1,17 @@
 package com.printcalculator.controller;
 
+import com.printcalculator.entity.PrinterMachine;
 import com.printcalculator.model.PrintStats;
 import com.printcalculator.model.QuoteResult;
+import com.printcalculator.repository.PrinterMachineRepository;
 import com.printcalculator.service.QuoteCalculator;
 import com.printcalculator.service.SlicerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Map;
+import java.util.HashMap;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,28 +21,33 @@ public class QuoteController {
 
     private final SlicerService slicerService;
     private final QuoteCalculator quoteCalculator;
+    private final PrinterMachineRepository machineRepo;
 
     // Defaults (using aliases defined in ProfileManager)
-    private static final String DEFAULT_MACHINE = "bambu_a1";
     private static final String DEFAULT_FILAMENT = "pla_basic";
     private static final String DEFAULT_PROCESS = "standard";
 
-    public QuoteController(SlicerService slicerService, QuoteCalculator quoteCalculator) {
+    public QuoteController(SlicerService slicerService, QuoteCalculator quoteCalculator, PrinterMachineRepository machineRepo) {
         this.slicerService = slicerService;
         this.quoteCalculator = quoteCalculator;
+        this.machineRepo = machineRepo;
     }
 
     @PostMapping("/api/quote")
     public ResponseEntity<QuoteResult> calculateQuote(
             @RequestParam("file") MultipartFile file,
-            @RequestParam(value = "machine", required = false, defaultValue = DEFAULT_MACHINE) String machine,
             @RequestParam(value = "filament", required = false, defaultValue = DEFAULT_FILAMENT) String filament,
             @RequestParam(value = "process", required = false) String process,
-            @RequestParam(value = "quality", required = false) String quality
+            @RequestParam(value = "quality", required = false) String quality,
+            // Advanced Options
+            @RequestParam(value = "infill_density", required = false) Integer infillDensity,
+            @RequestParam(value = "infill_pattern", required = false) String infillPattern,
+            @RequestParam(value = "layer_height", required = false) Double layerHeight,
+            @RequestParam(value = "nozzle_diameter", required = false) Double nozzleDiameter,
+            @RequestParam(value = "support_enabled", required = false) Boolean supportEnabled
             ) throws IOException {
 
-        // Frontend sends 'quality', backend expects 'process'.
-        // If process is missing, try quality. If both missing, use default.
+        // ... process selection logic ...
         String actualProcess = process;
         if (actualProcess == null || actualProcess.isEmpty()) {
             if (quality != null && !quality.isEmpty()) {
@@ -48,7 +57,31 @@ public class QuoteController {
             }
         }
 
-        return processRequest(file, machine, filament, actualProcess);
+        // Prepare Overrides
+        Map<String, String> processOverrides = new HashMap<>();
+        Map<String, String> machineOverrides = new HashMap<>();
+
+        if (infillDensity != null) {
+            processOverrides.put("sparse_infill_density", infillDensity + "%");
+        }
+        if (infillPattern != null && !infillPattern.isEmpty()) {
+            processOverrides.put("sparse_infill_pattern", infillPattern);
+        }
+        if (layerHeight != null) {
+            processOverrides.put("layer_height", String.valueOf(layerHeight));
+        }
+        if (supportEnabled != null) {
+            processOverrides.put("enable_support", supportEnabled ? "1" : "0");
+        }
+
+        if (nozzleDiameter != null) {
+            machineOverrides.put("nozzle_diameter", String.valueOf(nozzleDiameter));
+            // Also need to ensure the printer profile is compatible or just override?
+            // Usually nozzle diameter changes require a different printer profile or deep overrides.
+            // For now, we trust the override key works on the base profile.
+        }
+
+        return processRequest(file, filament, actualProcess, machineOverrides, processOverrides);
     }
 
     @PostMapping("/calculate/stl")
@@ -56,30 +89,37 @@ public class QuoteController {
             @RequestParam("file") MultipartFile file
     ) throws IOException {
         // Legacy endpoint uses defaults
-        return processRequest(file, DEFAULT_MACHINE, DEFAULT_FILAMENT, DEFAULT_PROCESS);
+        return processRequest(file, DEFAULT_FILAMENT, DEFAULT_PROCESS, null, null);
     }
 
-    private ResponseEntity<QuoteResult> processRequest(MultipartFile file, String machine, String filament, String process) throws IOException {
+    private ResponseEntity<QuoteResult> processRequest(MultipartFile file, String filament, String process,
+                                                       Map<String, String> machineOverrides,
+                                                       Map<String, String> processOverrides) throws IOException {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
+
+        // Fetch Default Active Machine
+        PrinterMachine machine = machineRepo.findFirstByIsActiveTrue()
+                .orElseThrow(() -> new IOException("No active printer found in database"));
 
         // Save uploaded file temporarily
         Path tempInput = Files.createTempFile("upload_", "_" + file.getOriginalFilename());
         try {
             file.transferTo(tempInput.toFile());
 
-            // Slice
-            PrintStats stats = slicerService.slice(tempInput.toFile(), machine, filament, process);
+            String slicerMachineProfile = "bambu_a1"; // TODO: Add to PrinterMachine entity
+
+            PrintStats stats = slicerService.slice(tempInput.toFile(), slicerMachineProfile, filament, process, machineOverrides, processOverrides);
             
-            // Calculate Quote
-            QuoteResult result = quoteCalculator.calculate(stats);
+            // Calculate Quote (Pass machine display name for pricing lookup)
+            QuoteResult result = quoteCalculator.calculate(stats, machine.getPrinterDisplayName(), filament);
             
             return ResponseEntity.ok(result);
 
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.internalServerError().build(); // Simplify error handling for now
+            return ResponseEntity.internalServerError().build();
         } finally {
             Files.deleteIfExists(tempInput);
         }

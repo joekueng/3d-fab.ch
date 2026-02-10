@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpEventType } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { map, catchError, tap } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 
 export interface QuoteRequest {
@@ -49,14 +49,70 @@ interface BackendResponse {
   error?: string;
 }
 
+// Options Interfaces
+export interface MaterialOption {
+    code: string;
+    label: string;
+    variants: VariantOption[];
+}
+export interface VariantOption {
+    name: string;
+    colorName: string;
+    hexColor: string;
+    isOutOfStock: boolean;
+}
+export interface QualityOption {
+    id: string;
+    label: string;
+}
+export interface InfillOption {
+    id: string;
+    label: string;
+}
+export interface NumericOption {
+    value: number;
+    label: string;
+}
+
+export interface OptionsResponse {
+    materials: MaterialOption[];
+    qualities: QualityOption[];
+    infillPatterns: InfillOption[];
+    layerHeights: NumericOption[];
+    nozzleDiameters: NumericOption[];
+}
+
+// UI Option for Select Component
+export interface SimpleOption {
+    value: string | number;
+    label: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class QuoteEstimatorService {
   private http = inject(HttpClient);
   
+  getOptions(): Observable<OptionsResponse> {
+      console.log('QuoteEstimatorService: Requesting options...');
+      const headers: any = {};
+      // @ts-ignore
+      if (environment.basicAuth) headers['Authorization'] = 'Basic ' + btoa(environment.basicAuth);
+      return this.http.get<OptionsResponse>(`${environment.apiUrl}/api/calculator/options`, { headers }).pipe(
+          tap({
+              next: (res) => console.log('QuoteEstimatorService: Options loaded', res),
+              error: (err) => console.error('QuoteEstimatorService: Options failed', err)
+          })
+      );
+  }
+  
   calculate(request: QuoteRequest): Observable<number | QuoteResult> {
-    if (request.items.length === 0) return of();
+    console.log('QuoteEstimatorService: Calculating quote...', request);
+    if (request.items.length === 0) {
+        console.warn('QuoteEstimatorService: No items to calculate');
+        return of();
+    }
     
     return new Observable(observer => {
         const totalItems = request.items.length;
@@ -67,7 +123,24 @@ export class QuoteEstimatorService {
         const uploads = request.items.map((item, index) => {
              const formData = new FormData();
              formData.append('file', item.file);
-             formData.append('machine', 'bambu_a1'); 
+             // machine param removed - backend uses default active
+             
+             // Map material? Or trust frontend to send correct code?
+             // Since we fetch options now, we should send the code directly.
+             // But for backward compat/safety/mapping logic in mapMaterial, let's keep it or update it.
+             // If frontend sends 'PLA', mapMaterial returns 'pla_basic'.
+             // We should check if request.material is already a code from options.
+             // For now, let's assume request.material IS the code if it matches our new options,
+             // or fallback to mapper if it's old legacy string.
+             // Let's keep mapMaterial but update it to be smarter if needed, or rely on UploadForm to send correct codes.
+             // For now, let's use mapMaterial as safety, assuming frontend sends short codes 'PLA'.
+             // Wait, if we use dynamic options, the 'value' in select will be the 'code' from backend (e.g. 'PLA').
+             // Backend expects 'pla_basic' or just 'PLA'? 
+             // QuoteController -> processRequest -> SlicerService.slice -> assumes 'filament' is a profile name like 'pla_basic'.
+             // So we MUST map 'PLA' to 'pla_basic' UNLESS backend options return 'pla_basic' as code.
+             // Backend OptionsController returns type.getMaterialCode() which is 'PLA'.
+             // So we still need mapping to slicer profile names.
+             
              formData.append('filament', this.mapMaterial(request.material));
              formData.append('quality', this.mapQuality(request.quality));
              
@@ -104,9 +177,6 @@ export class QuoteEstimatorService {
                     
                     if (wrapper.error) {
                         finalResponses[idx] = { success: false, fileName: wrapper.item.file.name };
-                         // Even if error, we count as complete
-                         // But we need to handle completion logic carefully.
-                         // For simplicity, let's treat it as complete but check later.
                     }
 
                     const event = wrapper.event;
@@ -159,8 +229,6 @@ export class QuoteEstimatorService {
                             });
 
                             if (items.length === 0) {
-                                // If at least one failed? Or all? 
-                                // For now if NO items succeeded, error.
                                 observer.error('All calculations failed.');
                                 return;
                             }
@@ -196,7 +264,6 @@ export class QuoteEstimatorService {
                 },
                 error: (err) => {
                     console.error('Error in request subscription', err);
-                    // Should be caught by inner pipe, but safety net
                     completedRequests++;
                      if (completedRequests === totalItems) {
                          observer.error('Requests failed');

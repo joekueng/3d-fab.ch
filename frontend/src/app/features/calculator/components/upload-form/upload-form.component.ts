@@ -1,4 +1,4 @@
-import { Component, input, output, signal, effect } from '@angular/core';
+import { Component, input, output, signal, effect, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -8,7 +8,7 @@ import { AppDropzoneComponent } from '../../../../shared/components/app-dropzone
 import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
 import { StlViewerComponent } from '../../../../shared/components/stl-viewer/stl-viewer.component';
 import { ColorSelectorComponent } from '../../../../shared/components/color-selector/color-selector.component';
-import { QuoteRequest } from '../../services/quote-estimator.service';
+import { QuoteRequest, QuoteEstimatorService, OptionsResponse, SimpleOption, MaterialOption, VariantOption } from '../../services/quote-estimator.service';
 import { getColorHex } from '../../../../core/constants/colors.const';
 
 interface FormItem {
@@ -24,69 +24,110 @@ interface FormItem {
   templateUrl: './upload-form.component.html',
   styleUrl: './upload-form.component.scss'
 })
-export class UploadFormComponent {
+export class UploadFormComponent implements OnInit {
   mode = input<'easy' | 'advanced'>('easy');
   loading = input<boolean>(false);
   uploadProgress = input<number>(0);
   submitRequest = output<QuoteRequest>();
+
+  private estimator = inject(QuoteEstimatorService);
+  private fb = inject(FormBuilder);
 
   form: FormGroup;
   
   items = signal<FormItem[]>([]);
   selectedFile = signal<File | null>(null);
 
-  materials = [
-    { label: 'PLA (Standard)', value: 'PLA' },
-    { label: 'PETG (Resistente)', value: 'PETG' },
-    { label: 'TPU (Flessibile)', value: 'TPU' }
-  ];
-
-  qualities = [
-    { label: 'Bozza (Fast)', value: 'Draft' },
-    { label: 'Standard', value: 'Standard' },
-    { label: 'Alta definizione', value: 'High' }
-  ];
-
-  nozzleDiameters = [
-      { label: '0.2 mm (+2 CHF)', value: 0.2 },
-      { label: '0.4 mm (Standard)', value: 0.4 },
-      { label: '0.6 mm (+2 CHF)', value: 0.6 },
-      { label: '0.8 mm (+2 CHF)', value: 0.8 }
-  ];
+  // Dynamic Options
+  materials = signal<SimpleOption[]>([]);
+  qualities = signal<SimpleOption[]>([]);
+  nozzleDiameters = signal<SimpleOption[]>([]);
+  infillPatterns = signal<SimpleOption[]>([]);
+  layerHeights = signal<SimpleOption[]>([]);
   
-  infillPatterns = [
-      { label: 'Grid', value: 'grid' },
-      { label: 'Gyroid', value: 'gyroid' },
-      { label: 'Cubic', value: 'cubic' },
-      { label: 'Triangles', value: 'triangles' }
-  ];
-
-  layerHeights = [
-      { label: '0.08 mm', value: 0.08 },
-      { label: '0.12 mm (High Quality - Slow)', value: 0.12 },
-      { label: '0.16 mm', value: 0.16 },
-      { label: '0.20 mm (Standard)', value: 0.20 },
-      { label: '0.24 mm', value: 0.24 },
-      { label: '0.28 mm', value: 0.28 }
-  ];
+  // Store full material options to lookup variants/colors if needed later
+  private fullMaterialOptions: MaterialOption[] = [];
   
+  // Computed variants for valid material
+  currentMaterialVariants = signal<VariantOption[]>([]);
+  
+  private updateVariants() {
+      const matCode = this.form.get('material')?.value;
+      if (matCode && this.fullMaterialOptions.length > 0) {
+          const found = this.fullMaterialOptions.find(m => m.code === matCode);
+          this.currentMaterialVariants.set(found ? found.variants : []);
+      } else {
+          this.currentMaterialVariants.set([]);
+      }
+  }
+
   acceptedFormats = '.stl,.3mf,.step,.stp,.obj,.amf,.ply,.igs,.iges';
 
-  constructor(private fb: FormBuilder) {
+  constructor() {
     this.form = this.fb.group({
       itemsTouched: [false], // Hack to track touched state for custom items list
-      material: ['PLA', Validators.required],
-      quality: ['Standard', Validators.required],
-      // Print Speed removed
+      material: ['', Validators.required],
+      quality: ['', Validators.required],
+      items: [[]], // Track items in form for validation if needed
       notes: [''],
       // Advanced fields
-      // Color removed from global form
       infillDensity: [20, [Validators.min(0), Validators.max(100)]],
       layerHeight: [0.2, [Validators.min(0.05), Validators.max(1.0)]],
       nozzleDiameter: [0.4, Validators.required],
       infillPattern: ['grid'],
       supportEnabled: [false]
     });
+    
+    // Listen to material changes to update variants
+    this.form.get('material')?.valueChanges.subscribe(() => {
+        this.updateVariants();
+    });
+  }
+
+  ngOnInit() {
+      this.estimator.getOptions().subscribe({
+          next: (options: OptionsResponse) => {
+              this.fullMaterialOptions = options.materials;
+              this.updateVariants(); // Trigger initial update
+              
+              this.materials.set(options.materials.map(m => ({ label: m.label, value: m.code })));
+              this.qualities.set(options.qualities.map(q => ({ label: q.label, value: q.id })));
+              this.infillPatterns.set(options.infillPatterns.map(p => ({ label: p.label, value: p.id })));
+              this.layerHeights.set(options.layerHeights.map(l => ({ label: l.label, value: l.value })));
+              this.nozzleDiameters.set(options.nozzleDiameters.map(n => ({ label: n.label, value: n.value })));
+
+              this.setDefaults();
+          },
+          error: (err) => {
+              console.error('Failed to load options', err);
+              // Fallback for debugging/offline dev
+              this.materials.set([{ label: 'PLA (Fallback)', value: 'PLA' }]);
+              this.qualities.set([{ label: 'Standard', value: 'standard' }]);
+              this.nozzleDiameters.set([{ label: '0.4 mm', value: 0.4 }]);
+              this.setDefaults();
+          }
+      });
+  }
+
+  private setDefaults() {
+      // Set Defaults if available
+      if (this.materials().length > 0 && !this.form.get('material')?.value) {
+           this.form.get('material')?.setValue(this.materials()[0].value);
+      }
+      if (this.qualities().length > 0 && !this.form.get('quality')?.value) {
+          // Try to find 'standard' or use first
+          const std = this.qualities().find(q => q.value === 'standard');
+          this.form.get('quality')?.setValue(std ? std.value : this.qualities()[0].value);
+      }
+      if (this.nozzleDiameters().length > 0 && !this.form.get('nozzleDiameter')?.value) {
+           this.form.get('nozzleDiameter')?.setValue(0.4); // Prefer 0.4
+      }
+      if (this.layerHeights().length > 0 && !this.form.get('layerHeight')?.value) {
+           this.form.get('layerHeight')?.setValue(0.2); // Prefer 0.2
+      }
+      if (this.infillPatterns().length > 0 && !this.form.get('infillPattern')?.value) {
+           this.form.get('infillPattern')?.setValue(this.infillPatterns()[0].value);
+      }
   }
 
   onFilesDropped(newFiles: File[]) {
@@ -187,13 +228,25 @@ export class UploadFormComponent {
   }
 
   onSubmit() {
+    console.log('UploadFormComponent: onSubmit triggered');
+    console.log('Form Valid:', this.form.valid, 'Items:', this.items().length);
+    
     if (this.form.valid && this.items().length > 0) {
+      console.log('UploadFormComponent: Emitting submitRequest', this.form.value);
       this.submitRequest.emit({
-        items: this.items(), // Pass the items array including colors
         ...this.form.value,
+        items: this.items(), // Pass the items array explicitly AFTER form value to prevent overwrite
         mode: this.mode()
       });
     } else {
+      console.warn('UploadFormComponent: Form Invalid or No Items');
+      console.log('Form Errors:', this.form.errors);
+      Object.keys(this.form.controls).forEach(key => {
+          const control = this.form.get(key);
+          if (control?.invalid) {
+              console.log('Invalid Control:', key, control.errors, 'Value:', control.value);
+          }
+      });
       this.form.markAllAsTouched();
       this.form.get('itemsTouched')?.setValue(true);
     }

@@ -9,6 +9,10 @@ services:
     ports:
       - "8000:8000"
     environment:
+      - DB_URL=jdbc:postgresql://db:5432/printcalc
+      - DB_USERNAME=printcalc
+      - DB_PASSWORD=printcalc_secret
+      - SPRING_PROFILES_ACTIVE=local
       - FILAMENT_COST_PER_KG=22.0
       - MACHINE_COST_PER_HOUR=2.50
       - ENERGY_COST_PER_KWH=0.30
@@ -16,10 +20,14 @@ services:
       - MARKUP_PERCENT=20
       - TEMP_DIR=/app/temp
       - PROFILES_DIR=/app/profiles
+    depends_on:
+      - db
     restart: unless-stopped
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
     container_name: print-calculator-frontend
     ports:
       - "80:80"

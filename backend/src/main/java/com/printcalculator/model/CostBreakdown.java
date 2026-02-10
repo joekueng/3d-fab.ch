@@ -7,5 +7,5 @@ public record CostBreakdown(
     BigDecimal machineCost,
     BigDecimal energyCost,
     BigDecimal subtotal,
-    BigDecimal markupAmount
+    BigDecimal markup
 ) {}

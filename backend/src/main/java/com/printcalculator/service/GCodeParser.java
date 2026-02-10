@@ -17,7 +17,7 @@ public class GCodeParser {
     // ; estimated printing time = 1h 2m 3s
     // ; filament used [g] = 12.34
     // ; filament used [mm] = 1234.56
-    private static final Pattern TIME_PATTERN = Pattern.compile(";\\s*estimated printing time\\s*=\\s*(.*)");
+    private static final Pattern TIME_PATTERN = Pattern.compile(";\\s*estimated printing time.*=\\s*(.*)", Pattern.CASE_INSENSITIVE);
     private static final Pattern FILAMENT_G_PATTERN = Pattern.compile(";\\s*filament used \\[g\\]\\s*=\\s*(.*)");
     private static final Pattern FILAMENT_MM_PATTERN = Pattern.compile(";\\s*filament used \\[mm\\]\\s*=\\s*(.*)");
 
@@ -29,25 +29,32 @@ public class GCodeParser {
 
         try (BufferedReader reader = new BufferedReader(new FileReader(gcodeFile))) {
             String line;
-            // Scan first 5000 lines for efficiency (metadata might be further down)
-            int count = 0;
-            while ((line = reader.readLine()) != null && count < 5000) {
+
+            // Scan entire file as metadata is often at the end
+            while ((line = reader.readLine()) != null) {
                 line = line.trim();
+                
+                // OrcaSlicer comments start with ;
                 if (!line.startsWith(";")) {
-                    count++;
                     continue;
+                }
+
+                if (line.toLowerCase().contains("estimated printing time")) {
+                    System.out.println("DEBUG: Found potential time line: '" + line + "'");
                 }
 
                 Matcher timeMatcher = TIME_PATTERN.matcher(line);
                 if (timeMatcher.find()) {
                     timeFormatted = timeMatcher.group(1).trim();
                     seconds = parseTimeString(timeFormatted);
+                    System.out.println("GCodeParser: Found time: " + timeFormatted + " (" + seconds + "s)");
                 }
 
                 Matcher weightMatcher = FILAMENT_G_PATTERN.matcher(line);
                 if (weightMatcher.find()) {
                     try {
                         weightG = Double.parseDouble(weightMatcher.group(1).trim());
+                         System.out.println("GCodeParser: Found weight: " + weightG + "g");
                     } catch (NumberFormatException ignored) {}
                 }
                 
@@ -55,9 +62,9 @@ public class GCodeParser {
                 if (lengthMatcher.find()) {
                     try {
                         lengthMm = Double.parseDouble(lengthMatcher.group(1).trim());
+                         System.out.println("GCodeParser: Found length: " + lengthMm + "mm");
                     } catch (NumberFormatException ignored) {}
                 }
-                count++;
             }
         }
         
