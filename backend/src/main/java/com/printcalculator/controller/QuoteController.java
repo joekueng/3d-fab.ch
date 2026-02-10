@@ -13,16 +13,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 @RestController
-@CrossOrigin(origins = "*") // Allow all for development
 public class QuoteController {
 
     private final SlicerService slicerService;
     private final QuoteCalculator quoteCalculator;
 
-    // Defaults
-    private static final String DEFAULT_MACHINE = "Bambu_Lab_A1_machine";
-    private static final String DEFAULT_FILAMENT = "Bambu_PLA_Basic";
-    private static final String DEFAULT_PROCESS = "Bambu_Process_0.20_Standard";
+    // Defaults (using aliases defined in ProfileManager)
+    private static final String DEFAULT_MACHINE = "bambu_a1";
+    private static final String DEFAULT_FILAMENT = "pla_basic";
+    private static final String DEFAULT_PROCESS = "standard";
 
     public QuoteController(SlicerService slicerService, QuoteCalculator quoteCalculator) {
         this.slicerService = slicerService;
@@ -32,12 +31,24 @@ public class QuoteController {
     @PostMapping("/api/quote")
     public ResponseEntity<QuoteResult> calculateQuote(
             @RequestParam("file") MultipartFile file,
-            @RequestParam(value = "machine", defaultValue = DEFAULT_MACHINE) String machine,
-            @RequestParam(value = "filament", defaultValue = DEFAULT_FILAMENT) String filament,
-            @RequestParam(value = "process", defaultValue = DEFAULT_PROCESS) String process
+            @RequestParam(value = "machine", required = false, defaultValue = DEFAULT_MACHINE) String machine,
+            @RequestParam(value = "filament", required = false, defaultValue = DEFAULT_FILAMENT) String filament,
+            @RequestParam(value = "process", required = false) String process,
+            @RequestParam(value = "quality", required = false) String quality
             ) throws IOException {
 
-        return processRequest(file, machine, filament, process);
+        // Frontend sends 'quality', backend expects 'process'.
+        // If process is missing, try quality. If both missing, use default.
+        String actualProcess = process;
+        if (actualProcess == null || actualProcess.isEmpty()) {
+            if (quality != null && !quality.isEmpty()) {
+                actualProcess = quality;
+            } else {
+                actualProcess = DEFAULT_PROCESS;
+            }
+        }
+
+        return processRequest(file, machine, filament, actualProcess);
     }
 
     @PostMapping("/calculate/stl")

@@ -82,6 +82,21 @@
     "ADDRESS_BIENNE": "Sede Bienne, Svizzera",
     "CONTACT_US": "Contattaci"
   },
+  "LEGAL": {
+    "PRIVACY_TITLE": "Privacy Policy",
+    "TERMS_TITLE": "Termini e Condizioni",
+    "LAST_UPDATE": "Ultimo aggiornamento",
+    "PRIVACY": {
+      "SECTION_1": "1. Raccolta dei Dati",
+      "SECTION_2": "2. Finalità del Trattamento",
+      "SECTION_3": "3. Cookie e Tracciamento"
+    },
+    "TERMS": {
+      "SECTION_1": "1. Condizioni d'Uso",
+      "SECTION_2": "2. Ordini e Pagamenti",
+      "SECTION_3": "3. Rimborsi e Resi"
+    }
+  },
   "CONTACT": {
     "TITLE": "Contattaci",
     "SEND": "Invia Messaggio",

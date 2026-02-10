@@ -52,8 +52,8 @@ public class QuoteCalculator {
         );
         
         List<String> notes = new ArrayList<>();
-        notes.add("Generated via Dynamic Slicer (Java Backend)");
+        // notes.add("Generated via Dynamic Slicer (Java Backend)");
 
-        return new QuoteResult(totalPrice, "EUR", stats, breakdown, notes);
+        return new QuoteResult(totalPrice, "CHF", stats, breakdown, notes);
     }
 }

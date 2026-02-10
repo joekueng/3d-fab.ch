@@ -22,6 +22,7 @@ export class AppInputComponent implements ControlValueAccessor {
   type = input<string>('text');
   placeholder = input<string>('');
   error = input<string | null>(null);
+  required = input<boolean>(false);
 
   value: string = '';
   disabled = false;

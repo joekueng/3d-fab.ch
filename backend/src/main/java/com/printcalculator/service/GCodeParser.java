@@ -13,9 +13,13 @@ import java.util.regex.Pattern;
 @Service
 public class GCodeParser {
 
-    private static final Pattern TIME_PATTERN = Pattern.compile("estimated printing time = (.*)");
-    private static final Pattern FILAMENT_G_PATTERN = Pattern.compile("filament used \\[g\\] = (.*)");
-    private static final Pattern FILAMENT_MM_PATTERN = Pattern.compile("filament used \\[mm\\] = (.*)");
+    // OrcaSlicer/BambuStudio format
+    // ; estimated printing time = 1h 2m 3s
+    // ; filament used [g] = 12.34
+    // ; filament used [mm] = 1234.56
+    private static final Pattern TIME_PATTERN = Pattern.compile(";\\s*estimated printing time\\s*=\\s*(.*)");
+    private static final Pattern FILAMENT_G_PATTERN = Pattern.compile(";\\s*filament used \\[g\\]\\s*=\\s*(.*)");
+    private static final Pattern FILAMENT_MM_PATTERN = Pattern.compile(";\\s*filament used \\[mm\\]\\s*=\\s*(.*)");
 
     public PrintStats parse(File gcodeFile) throws IOException {
         long seconds = 0;
@@ -25,9 +29,9 @@ public class GCodeParser {
 
         try (BufferedReader reader = new BufferedReader(new FileReader(gcodeFile))) {
             String line;
-            // Scan first 500 lines for efficiency
+            // Scan first 5000 lines for efficiency (metadata might be further down)
             int count = 0;
-            while ((line = reader.readLine()) != null && count < 500) {
+            while ((line = reader.readLine()) != null && count < 5000) {
                 line = line.trim();
                 if (!line.startsWith(";")) {
                     count++;

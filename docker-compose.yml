@@ -25,4 +25,21 @@ services:
       - "80:80"
     depends_on:
       - backend
+      - db
     restart: unless-stopped
+
+  db:
+    image: postgres:15-alpine
+    container_name: print-calculator-db
+    environment:
+      - POSTGRES_USER=printcalc
+      - POSTGRES_PASSWORD=printcalc_secret
+      - POSTGRES_DB=printcalc
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
