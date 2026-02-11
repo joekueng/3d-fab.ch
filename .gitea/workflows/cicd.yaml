@@ -132,9 +132,13 @@ jobs:
 
           ssh-keyscan -H "${{ secrets.SERVER_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
 
-      - name: Write DB env on server
+      - name: Write env to server
         shell: bash
         run: |
+          # 1. Start with the static env file content
+          cat "deploy/envs/${{ env.ENV }}.env" > /tmp/full_env.env
+
+          # 2. Determine DB credentials
           if [[ "${{ env.ENV }}" == "prod" ]]; then
             DB_URL="${{ secrets.DB_URL_PROD }}"
             DB_USER="${{ secrets.DB_USERNAME_PROD }}"
@@ -149,11 +153,17 @@ jobs:
             DB_PASS="${{ secrets.DB_PASSWORD_DEV }}"
           fi
 
-          printf 'DB_URL=%s\nDB_USERNAME=%s\nDB_PASSWORD=%s\n' \
-            "$DB_URL" "$DB_USER" "$DB_PASS" > /tmp/pc.env
+          # 3. Append DB credentials
+          printf '\nDB_URL=%s\nDB_USERNAME=%s\nDB_PASSWORD=%s\n' \
+            "$DB_URL" "$DB_USER" "$DB_PASS" >> /tmp/full_env.env
 
+          # 4. Debug: print content (for debug purposes)
+          echo "Preparing to send env file with variables:"
+          grep -v "PASSWORD" /tmp/full_env.env || true
+
+          # 5. Send to server
           ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" \
-            "setenv ${{ env.ENV }}" < /tmp/pc.env
+            "setenv ${{ env.ENV }}" < /tmp/full_env.env
 
       - name: Trigger deploy on Unraid (forced command key)
         shell: bash
