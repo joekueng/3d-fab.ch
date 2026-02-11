@@ -8,10 +8,9 @@ services:
     ports:
       - "${BACKEND_PORT}:8000"
     environment:
-
-      - SPRING_DATASOURCE_URL=${DB_URL}
-      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
-      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - DB_URL=${DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
       - TEMP_DIR=/app/temp
       - PROFILES_DIR=/app/profiles
     restart: always
