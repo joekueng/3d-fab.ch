@@ -49,6 +49,18 @@ interface BackendResponse {
   error?: string;
 }
 
+interface BackendQuoteResult {
+  totalPrice: number;
+  currency: string;
+  setupCost: number;
+  stats: {
+    printTimeSeconds: number;
+    printTimeFormatted: string;
+    filamentWeightGrams: number;
+    filamentLengthMm: number;
+  };
+}
+
 // Options Interfaces
 export interface MaterialOption {
     code: string;
@@ -159,7 +171,7 @@ export class QuoteEstimatorService {
              // @ts-ignore
              if (environment.basicAuth) headers['Authorization'] = 'Basic ' + btoa(environment.basicAuth);
 
-             return this.http.post<BackendResponse>(`${environment.apiUrl}/api/quote`, formData, { 
+             return this.http.post<BackendResponse | BackendQuoteResult>(`${environment.apiUrl}/api/quote`, formData, { 
                  headers,
                  reportProgress: true,
                  observe: 'events'
@@ -206,7 +218,9 @@ export class QuoteEstimatorService {
                             
                             // Calculate Results
                             let setupCost = 10;
-                            
+                            let setupCostFromBackend: number | null = null;
+                            let currencyFromBackend: string | null = null;
+
                             if (request.nozzleDiameter && request.nozzleDiameter !== 0.4) {
                                 setupCost += 2;
                             }
@@ -214,18 +228,27 @@ export class QuoteEstimatorService {
                             const items: QuoteItem[] = [];
                             
                             finalResponses.forEach((res, idx) => {
-                                if (res && res.success) {
-                                    const originalItem = request.items[idx];
-                                    items.push({
-                                        fileName: res.fileName,
-                                        unitPrice: res.data.cost.total,
-                                        unitTime: res.data.print_time_seconds,
-                                        unitWeight: res.data.material_grams,
-                                        quantity: res.originalQty, // Use the requested quantity
-                                        material: request.material,
-                                        color: originalItem.color || 'Default'
-                                    });
+                                if (!res) return;
+                                const originalItem = request.items[idx];
+                                const normalized = this.normalizeResponse(res);
+                                if (!normalized.success) return;
+
+                                if (normalized.currency && currencyFromBackend == null) {
+                                    currencyFromBackend = normalized.currency;
                                 }
+                                if (normalized.setupCost != null && setupCostFromBackend == null) {
+                                    setupCostFromBackend = normalized.setupCost;
+                                }
+
+                                items.push({
+                                    fileName: res.fileName,
+                                    unitPrice: normalized.unitPrice,
+                                    unitTime: normalized.unitTime,
+                                    unitWeight: normalized.unitWeight,
+                                    quantity: res.originalQty, // Use the requested quantity
+                                    material: request.material,
+                                    color: originalItem.color || 'Default'
+                                });
                             });
 
                             if (items.length === 0) {
@@ -234,7 +257,8 @@ export class QuoteEstimatorService {
                             }
                             
                             // Initial Aggregation
-                            let grandTotal = setupCost;
+                            const useBackendSetup = setupCostFromBackend != null;
+                            let grandTotal = useBackendSetup ? 0 : setupCost;
                             let totalTime = 0;
                             let totalWeight = 0;
                             
@@ -249,8 +273,8 @@ export class QuoteEstimatorService {
 
                             const result: QuoteResult = {
                                 items,
-                                setupCost,
-                                currency: 'CHF',
+                                setupCost: useBackendSetup ? setupCostFromBackend! : setupCost,
+                                currency: currencyFromBackend || 'CHF',
                                 totalPrice: Math.round(grandTotal * 100) / 100,
                                 totalTimeHours: totalHours,
                                 totalTimeMinutes: totalMinutes,
@@ -272,6 +296,31 @@ export class QuoteEstimatorService {
             });
         });
     });
+  }
+
+  private normalizeResponse(res: any): { success: boolean; unitPrice: number; unitTime: number; unitWeight: number; setupCost?: number; currency?: string } {
+    if (res && typeof res.totalPrice === 'number' && res.stats && typeof res.stats.printTimeSeconds === 'number') {
+      return {
+        success: true,
+        unitPrice: res.totalPrice,
+        unitTime: res.stats.printTimeSeconds,
+        unitWeight: res.stats.filamentWeightGrams,
+        setupCost: res.setupCost,
+        currency: res.currency
+      };
+    }
+
+    if (res && res.success && res.data) {
+      return {
+        success: true,
+        unitPrice: res.data.cost.total,
+        unitTime: res.data.print_time_seconds,
+        unitWeight: res.data.material_grams,
+        currency: 'CHF'
+      };
+    }
+
+    return { success: false, unitPrice: 0, unitTime: 0, unitWeight: 0 };
   }
 
   private mapMaterial(mat: string): string {

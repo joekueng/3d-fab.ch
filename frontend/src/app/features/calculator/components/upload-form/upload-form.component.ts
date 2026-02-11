@@ -191,6 +191,11 @@ export class UploadFormComponent implements OnInit {
       
       const item = this.items().find(i => i.file === file);
       if (item) {
+          const vars = this.currentMaterialVariants();
+          if (vars && vars.length > 0) {
+              const found = vars.find(v => v.colorName === item.color);
+              if (found) return found.hexColor;
+          }
           return getColorHex(item.color);
       }
       return '#facf0a';

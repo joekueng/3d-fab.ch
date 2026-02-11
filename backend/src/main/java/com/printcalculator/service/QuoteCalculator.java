@@ -6,7 +6,6 @@ import com.printcalculator.entity.FilamentVariant;
 import com.printcalculator.entity.PricingPolicy;
 import com.printcalculator.entity.PricingPolicyMachineHourTier;
 import com.printcalculator.entity.PrinterMachine;
-import com.printcalculator.model.CostBreakdown;
 import com.printcalculator.model.PrintStats;
 import com.printcalculator.model.QuoteResult;
 import com.printcalculator.repository.FilamentMaterialTypeRepository;
@@ -18,10 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class QuoteCalculator {
@@ -101,22 +97,7 @@ public class QuoteCalculator {
         BigDecimal markupFactor = BigDecimal.ONE.add(policy.getMarkupPercent().divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP));
         BigDecimal totalPrice = subtotal.multiply(markupFactor).setScale(2, RoundingMode.HALF_UP);
 
-        BigDecimal markupAmount = totalPrice.subtract(subtotal);
-
-        CostBreakdown breakdown = new CostBreakdown(
-                materialCost.setScale(2, RoundingMode.HALF_UP),
-                machineCost.setScale(2, RoundingMode.HALF_UP),
-                energyCost.setScale(2, RoundingMode.HALF_UP),
-                subtotal.setScale(2, RoundingMode.HALF_UP),
-                markupAmount.setScale(2, RoundingMode.HALF_UP)
-        );
-
-        List<String> notes = new ArrayList<>();
-        notes.add("Policy: " + policy.getPolicyName());
-        notes.add("Machine: " + machine.getPrinterDisplayName());
-        notes.add("Material: " + variant.getVariantDisplayName());
-
-        return new QuoteResult(totalPrice.doubleValue(), "CHF", stats, breakdown, notes, fixedFee.doubleValue());
+        return new QuoteResult(totalPrice.doubleValue(), "CHF", stats, fixedFee.doubleValue());
     }
 
     private BigDecimal calculateMachineCost(PricingPolicy policy, BigDecimal hours) {

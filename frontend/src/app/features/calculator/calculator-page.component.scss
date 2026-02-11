@@ -26,11 +26,11 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
+}
 
-    /* Make children (specifically app-card) stretch */
-    > * {
-        flex: 1;
-    }
+/* Stretch only the loading card so the spinner stays centered */
+.col-result > .loading-state {
+    flex: 1;
 }
 
 /* Mode Selector (Segmented Control style) */

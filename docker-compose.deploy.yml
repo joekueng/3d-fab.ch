@@ -13,6 +13,9 @@ services:
       - ENERGY_COST_PER_KWH=${ENERGY_COST_PER_KWH}
       - PRINTER_POWER_WATTS=${PRINTER_POWER_WATTS}
       - MARKUP_PERCENT=${MARKUP_PERCENT}
+      - DB_URL=${DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
       - TEMP_DIR=/app/temp
       - PROFILES_DIR=/app/profiles
     restart: always

@@ -92,7 +92,7 @@ jobs:
             echo "ENV=dev" >> "$GITHUB_ENV"
           fi
 
-      - name: Trigger deploy on Unraid (forced command key)
+      - name: Setup SSH key
         shell: bash
         run: |
           set -euo pipefail
@@ -120,9 +120,39 @@ jobs:
           # 5) Validazione: se fallisce qui, la chiave NON è valida/corrotta
           ssh-keygen -y -f ~/.ssh/id_ed25519 >/dev/null
 
-          # ... (resto del codice uguale)
           ssh-keyscan -H "${{ secrets.SERVER_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Write DB env on server
+        shell: bash
+        run: |
+          if [[ "${{ env.ENV }}" == "prod" ]]; then
+            DB_URL="${{ secrets.DB_URL_PROD }}"
+            DB_USER="${{ secrets.DB_USERNAME_PROD }}"
+            DB_PASS="${{ secrets.DB_PASSWORD_PROD }}"
+          elif [[ "${{ env.ENV }}" == "int" ]]; then
+            DB_URL="${{ secrets.DB_URL_INT }}"
+            DB_USER="${{ secrets.DB_USERNAME_INT }}"
+            DB_PASS="${{ secrets.DB_PASSWORD_INT }}"
+          else
+            DB_URL="${{ secrets.DB_URL_DEV }}"
+            DB_USER="${{ secrets.DB_USERNAME_DEV }}"
+            DB_PASS="${{ secrets.DB_PASSWORD_DEV }}"
+          fi
+
+          cat > /tmp/pc.env <<EOF
+DB_URL=${DB_URL}
+DB_USERNAME=${DB_USER}
+DB_PASSWORD=${DB_PASS}
+EOF
+
+          ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" \
+            "setenv ${{ env.ENV }}" < /tmp/pc.env
+
+      - name: Trigger deploy on Unraid (forced command key)
+        shell: bash
+        run: |
+          set -euo pipefail
 
           # Aggiungiamo le opzioni di verbosità se dovesse fallire ancora, 
           # e assicuriamoci che l'input sia pulito
-          ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" "${{ env.ENV }}"
+          ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" "deploy ${{ env.ENV }}"
