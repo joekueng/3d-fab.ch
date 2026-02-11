@@ -139,11 +139,8 @@ jobs:
             DB_PASS="${{ secrets.DB_PASSWORD_DEV }}"
           fi
 
-          cat > /tmp/pc.env <<EOF
-DB_URL=${DB_URL}
-DB_USERNAME=${DB_USER}
-DB_PASSWORD=${DB_PASS}
-EOF
+          printf 'DB_URL=%s\nDB_USERNAME=%s\nDB_PASSWORD=%s\n' \
+            "$DB_URL" "$DB_USER" "$DB_PASS" > /tmp/pc.env
 
           ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" \
             "setenv ${{ env.ENV }}" < /tmp/pc.env
