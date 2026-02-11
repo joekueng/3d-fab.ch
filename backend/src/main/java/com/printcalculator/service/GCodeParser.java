@@ -24,7 +24,7 @@ public class GCodeParser {
             ";\\s*.*model\\s+printing\\s+time\\s*[:=]\\s*([^;]+)",
             Pattern.CASE_INSENSITIVE);
     private static final Pattern TIME_PATTERN = Pattern.compile(
-            ";\\s*(?:estimated\\s+printing\\s+time|estimated\\s+print\\s+time|print\\s+time).*[:=]\\s*(.*)",
+            ";\\s*(?:estimated\\s+printing\\s+time|estimated\\s+print\\s+time|print\\s+time).*?[:=]\\s*(.*)",
             Pattern.CASE_INSENSITIVE);
     private static final Pattern FILAMENT_G_PATTERN = Pattern.compile(";\\s*filament used \\[g\\]\\s*=\\s*(.*)");
     private static final Pattern FILAMENT_MM_PATTERN = Pattern.compile(";\\s*filament used \\[mm\\]\\s*=\\s*(.*)");
