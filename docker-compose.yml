@@ -20,7 +20,7 @@ services:
       - MARKUP_PERCENT=20
       - TEMP_DIR=/app/temp
       - PROFILES_DIR=/app/profiles
-      - CLAMAV_HOST=clamav
+      - CLAMAV_HOST=192.168.1.147
       - CLAMAV_PORT=3310
     depends_on:
       - db

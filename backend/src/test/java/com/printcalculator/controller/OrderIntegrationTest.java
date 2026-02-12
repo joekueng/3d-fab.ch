@@ -31,9 +31,17 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import org.springframework.boot.test.mock.mockito.MockBean;
+import com.printcalculator.service.ClamAVService;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
 @SpringBootTest
 @AutoConfigureMockMvc
 class OrderIntegrationTest {
+
+    @MockBean
+    private ClamAVService clamAVService;
 
     @Autowired
     private MockMvc mockMvc;
@@ -56,6 +64,9 @@ class OrderIntegrationTest {
 
     @BeforeEach
     void setup() throws Exception {
+        // Mock ClamAV to always return true (safe)
+        when(clamAVService.scan(any())).thenReturn(true);
+
         // 1. Create Quote Session
         QuoteSession session = new QuoteSession();
         session.setStatus("ACTIVE");

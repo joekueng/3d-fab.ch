@@ -23,7 +23,14 @@ public class ClamAVService {
             @Value("${clamav.port:3310}") int port
     ) {
         logger.info("Initializing ClamAV client at {}:{}", host, port);
-        this.clamavClient = new ClamavClient(host, port);
+        try {
+            this.clamavClient = new ClamavClient(host, port);
+        } catch (Exception e) {
+            logger.error("Failed to initialize ClamAV client: " + e.getMessage());
+            // We don't throw exception here to allow app to start even if ClamAV is down/unreachable
+            // scan() method will handle null client or failure
+            throw new RuntimeException("ClamAV initialization failed", e);
+        }
     }
 
     public boolean scan(InputStream inputStream) {
