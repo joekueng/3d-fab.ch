@@ -21,7 +21,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/orders")
-@CrossOrigin(origins = "*")
 public class OrderController {
 
     private final OrderRepository orderRepo;
@@ -45,38 +44,13 @@ public class OrderController {
         this.customerRepo = customerRepo;
     }
 
-    // DTOs
-    public static class CreateOrderRequest {
-        public CustomerDto customer;
-        public AddressDto billingAddress;
-        public AddressDto shippingAddress;
-        public boolean shippingSameAsBilling;
-    }
-
-    public static class CustomerDto {
-        public String email;
-        public String phone;
-        public String customerType; // "PRIVATE", "BUSINESS"
-    }
-
-    public static class AddressDto {
-        public String firstName;
-        public String lastName;
-        public String companyName;
-        public String contactPerson;
-        public String addressLine1;
-        public String addressLine2;
-        public String zip;
-        public String city;
-        public String countryCode;
-    }
 
     // 1. Create Order from Quote
     @PostMapping("/from-quote/{quoteSessionId}")
     @Transactional
     public ResponseEntity<Order> createOrderFromQuote(
             @PathVariable UUID quoteSessionId,
-            @RequestBody CreateOrderRequest request
+            @RequestBody com.printcalculator.dto.CreateOrderRequest request
     ) {
         // 1. Fetch Quote Session
         QuoteSession session = quoteSessionRepo.findById(quoteSessionId)
@@ -91,16 +65,16 @@ public class OrderController {
         }
 
         // 2. Handle Customer (Find or Create)
-        Customer customer = customerRepo.findByEmail(request.customer.email)
+        Customer customer = customerRepo.findByEmail(request.getCustomer().getEmail())
                 .orElseGet(() -> {
                     Customer newC = new Customer();
-                    newC.setEmail(request.customer.email);
+                    newC.setEmail(request.getCustomer().getEmail());
                     newC.setCreatedAt(OffsetDateTime.now());
                     return customerRepo.save(newC);
                 });
         // Update customer details?
-        customer.setPhone(request.customer.phone);
-        customer.setCustomerType(request.customer.customerType);
+        customer.setPhone(request.getCustomer().getPhone());
+        customer.setCustomerType(request.getCustomer().getCustomerType());
         customer.setUpdatedAt(OffsetDateTime.now());
         customerRepo.save(customer);
 
@@ -108,39 +82,39 @@ public class OrderController {
         Order order = new Order();
         order.setSourceQuoteSession(session);
         order.setCustomer(customer);
-        order.setCustomerEmail(request.customer.email);
-        order.setCustomerPhone(request.customer.phone);
+        order.setCustomerEmail(request.getCustomer().getEmail());
+        order.setCustomerPhone(request.getCustomer().getPhone());
         order.setStatus("PENDING_PAYMENT");
         order.setCreatedAt(OffsetDateTime.now());
         order.setUpdatedAt(OffsetDateTime.now());
         order.setCurrency("CHF");
 
         // Billing
-        order.setBillingCustomerType(request.customer.customerType);
-        if (request.billingAddress != null) {
-            order.setBillingFirstName(request.billingAddress.firstName);
-            order.setBillingLastName(request.billingAddress.lastName);
-            order.setBillingCompanyName(request.billingAddress.companyName);
-            order.setBillingContactPerson(request.billingAddress.contactPerson);
-            order.setBillingAddressLine1(request.billingAddress.addressLine1);
-            order.setBillingAddressLine2(request.billingAddress.addressLine2);
-            order.setBillingZip(request.billingAddress.zip);
-            order.setBillingCity(request.billingAddress.city);
-            order.setBillingCountryCode(request.billingAddress.countryCode != null ? request.billingAddress.countryCode : "CH");
+        order.setBillingCustomerType(request.getCustomer().getCustomerType());
+        if (request.getBillingAddress() != null) {
+            order.setBillingFirstName(request.getBillingAddress().getFirstName());
+            order.setBillingLastName(request.getBillingAddress().getLastName());
+            order.setBillingCompanyName(request.getBillingAddress().getCompanyName());
+            order.setBillingContactPerson(request.getBillingAddress().getContactPerson());
+            order.setBillingAddressLine1(request.getBillingAddress().getAddressLine1());
+            order.setBillingAddressLine2(request.getBillingAddress().getAddressLine2());
+            order.setBillingZip(request.getBillingAddress().getZip());
+            order.setBillingCity(request.getBillingAddress().getCity());
+            order.setBillingCountryCode(request.getBillingAddress().getCountryCode() != null ? request.getBillingAddress().getCountryCode() : "CH");
         }
 
         // Shipping
-        order.setShippingSameAsBilling(request.shippingSameAsBilling);
-        if (!request.shippingSameAsBilling && request.shippingAddress != null) {
-             order.setShippingFirstName(request.shippingAddress.firstName);
-             order.setShippingLastName(request.shippingAddress.lastName);
-             order.setShippingCompanyName(request.shippingAddress.companyName);
-             order.setShippingContactPerson(request.shippingAddress.contactPerson);
-             order.setShippingAddressLine1(request.shippingAddress.addressLine1);
-             order.setShippingAddressLine2(request.shippingAddress.addressLine2);
-             order.setShippingZip(request.shippingAddress.zip);
-             order.setShippingCity(request.shippingAddress.city);
-             order.setShippingCountryCode(request.shippingAddress.countryCode != null ? request.shippingAddress.countryCode : "CH");
+        order.setShippingSameAsBilling(request.isShippingSameAsBilling());
+        if (!request.isShippingSameAsBilling() && request.getShippingAddress() != null) {
+             order.setShippingFirstName(request.getShippingAddress().getFirstName());
+             order.setShippingLastName(request.getShippingAddress().getLastName());
+             order.setShippingCompanyName(request.getShippingAddress().getCompanyName());
+             order.setShippingContactPerson(request.getShippingAddress().getContactPerson());
+             order.setShippingAddressLine1(request.getShippingAddress().getAddressLine1());
+             order.setShippingAddressLine2(request.getShippingAddress().getAddressLine2());
+             order.setShippingZip(request.getShippingAddress().getZip());
+             order.setShippingCity(request.getShippingAddress().getCity());
+             order.setShippingCountryCode(request.getShippingAddress().getCountryCode() != null ? request.getShippingAddress().getCountryCode() : "CH");
         } else {
             // Copy billing to shipping? Or leave empty and rely on flag?
             // Usually explicit copy is safer for queries
@@ -185,14 +159,6 @@ public class OrderController {
             String ext = getExtension(qItem.getOriginalFilename());
             String storedFilename = fileUuid.toString() + "." + ext;
             
-            // Note: We don't have the orderItemId yet because we haven't saved it. 
-            // We can pre-generate ID or save order item then update path?
-            // GeneratedValue strategy AUTO might not let us set ID easily?
-            // Let's save item first with temporary path, then update?
-            // OR use a path structure that doesn't depend on ItemId? "orders/{orderId}/3d-files/{uuid}.ext" is also fine?
-            // User requested: "orders/{orderId}/3d-files/{orderItemId}/{uuid}.{ext}"
-            // So we need OrderItemId.
-            
             oItem.setStoredFilename(storedFilename);
             oItem.setStoredRelativePath("PENDING"); // Placeholder
             oItem.setMimeType("application/octet-stream"); // specific type if known
@@ -202,6 +168,24 @@ public class OrderController {
             // Update Path now that we have ID
             String relativePath = "orders/" + order.getId() + "/3d-files/" + oItem.getId() + "/" + storedFilename;
             oItem.setStoredRelativePath(relativePath);
+            
+            // COPY FILE from Quote to Order
+            if (qItem.getStoredPath() != null) {
+                try {
+                    Path sourcePath = Paths.get(qItem.getStoredPath());
+                    if (Files.exists(sourcePath)) {
+                        Path targetPath = Paths.get(STORAGE_ROOT, relativePath);
+                        Files.createDirectories(targetPath.getParent());
+                        Files.copy(sourcePath, targetPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                        
+                        oItem.setFileSizeBytes(Files.size(targetPath));
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace(); // Log error but allow order creation? Or fail?
+                    // Ideally fail or mark as error
+                }
+            }
+            
             orderItemRepo.save(oItem);
             
             subtotal = subtotal.add(oItem.getLineTotalChf());

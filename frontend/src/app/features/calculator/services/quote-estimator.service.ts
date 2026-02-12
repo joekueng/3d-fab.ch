@@ -18,6 +18,7 @@ export interface QuoteRequest {
 }
 
 export interface QuoteItem {
+  id?: string;
   fileName: string;
   unitPrice: number;
   unitTime: number; // seconds
@@ -28,6 +29,7 @@ export interface QuoteItem {
 }
 
 export interface QuoteResult {
+  sessionId?: string;
   items: QuoteItem[];
   setupCost: number;
   currency: string;
@@ -119,6 +121,29 @@ export class QuoteEstimatorService {
           })
       );
   }
+
+  // NEW METHODS for Order Flow
+  
+  getQuoteSession(sessionId: string): Observable<any> {
+      const headers: any = {};
+      // @ts-ignore
+      if (environment.basicAuth) headers['Authorization'] = 'Basic ' + btoa(environment.basicAuth);
+      return this.http.get(`${environment.apiUrl}/api/quote-sessions/${sessionId}`, { headers });
+  }
+
+  updateLineItem(lineItemId: string, changes: any): Observable<any> {
+      const headers: any = {};
+      // @ts-ignore
+      if (environment.basicAuth) headers['Authorization'] = 'Basic ' + btoa(environment.basicAuth);
+      return this.http.patch(`${environment.apiUrl}/api/quote-sessions/line-items/${lineItemId}`, changes, { headers });
+  }
+
+  createOrder(sessionId: string, orderDetails: any): Observable<any> {
+      const headers: any = {};
+      // @ts-ignore
+      if (environment.basicAuth) headers['Authorization'] = 'Basic ' + btoa(environment.basicAuth);
+      return this.http.post(`${environment.apiUrl}/api/orders/from-quote/${sessionId}`, orderDetails, { headers });
+  }
   
   calculate(request: QuoteRequest): Observable<number | QuoteResult> {
     console.log('QuoteEstimatorService: Calculating quote...', request);
@@ -149,7 +174,7 @@ export class QuoteEstimatorService {
                      observer.next(avg);
                      
                      if (completedRequests === totalItems) {
-                         finalize(finalResponses, sessionSetupCost);
+                         finalize(finalResponses, sessionSetupCost, sessionId);
                      }
                 };
 
@@ -203,7 +228,7 @@ export class QuoteEstimatorService {
             }
         });
 
-        const finalize = (responses: any[], setupCost: number) => {
+        const finalize = (responses: any[], setupCost: number, sessionId: string) => {
              observer.next(100); 
              const items: QuoteItem[] = [];
              let grandTotal = 0;
@@ -219,6 +244,7 @@ export class QuoteEstimatorService {
                  const quantity = res.originalQty || 1;
                  
                  items.push({
+                     id: res.id,
                      fileName: res.fileName,
                      unitPrice: unitPrice,
                      unitTime: res.printTimeSeconds || 0,
@@ -226,6 +252,8 @@ export class QuoteEstimatorService {
                      quantity: quantity,
                      material: request.material,
                      color: res.originalItem.color || 'Default'
+                     // Store ID if needed for updates? QuoteItem interface might need update
+                     // or we map it in component
                  });
                  
                  grandTotal += unitPrice * quantity;
@@ -241,6 +269,7 @@ export class QuoteEstimatorService {
              grandTotal += setupCost;
 
              const result: QuoteResult = {
+                 sessionId: sessionId,
                  items,
                  setupCost: setupCost,
                  currency: 'CHF',

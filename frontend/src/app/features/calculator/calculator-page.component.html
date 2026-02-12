@@ -11,14 +11,6 @@
     <div class="container hero">
         <app-success-state context="calc" (action)="onNewQuote()"></app-success-state>
     </div>
-} @else if (step() === 'details' && result()) {
-    <div class="container">
-        <app-user-details
-            [quote]="result()!"
-            (submitOrder)="onSubmitOrder($event)"
-            (cancel)="onCancelDetails()">
-        </app-user-details>
-    </div>
 } @else {
     <div class="container content-grid">
       <!-- Left Column: Input -->
@@ -63,7 +55,7 @@
             [result]="result()!" 
             (consult)="onConsult()"
             (proceed)="onProceed()"
-            (itemChange)="uploadForm.updateItemQuantityByName($event.fileName, $event.quantity)"
+            (itemChange)="onItemChange($event)"
           ></app-quote-result>
         } @else {
           <app-card>

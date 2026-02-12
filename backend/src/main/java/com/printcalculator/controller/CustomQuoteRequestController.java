@@ -21,7 +21,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/custom-quote-requests")
-@CrossOrigin(origins = "*")
 public class CustomQuoteRequestController {
 
     private final CustomQuoteRequestRepository requestRepo;

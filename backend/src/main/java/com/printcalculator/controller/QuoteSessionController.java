@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -96,9 +97,21 @@ public class QuoteSessionController {
     private QuoteLineItem addItemToSession(QuoteSession session, MultipartFile file, com.printcalculator.dto.PrintSettingsDto settings) throws IOException {
         if (file.isEmpty()) throw new IOException("File is empty");
 
-        // 1. Save file temporarily
-        Path tempInput = Files.createTempFile("upload_", "_" + file.getOriginalFilename());
-        file.transferTo(tempInput.toFile());
+        // 1. Define Persistent Storage Path
+        // Structure: storage_quotes/{sessionId}/{uuid}.{ext}
+        String storageDir = "storage_quotes/" + session.getId();
+        Files.createDirectories(Paths.get(storageDir));
+        
+        String originalFilename = file.getOriginalFilename();
+        String ext = originalFilename != null && originalFilename.contains(".") 
+                     ? originalFilename.substring(originalFilename.lastIndexOf(".")) 
+                     : ".stl";
+        
+        String storedFilename = UUID.randomUUID() + ext;
+        Path persistentPath = Paths.get(storageDir, storedFilename);
+        
+        // Save file
+        Files.copy(file.getInputStream(), persistentPath);
 
         try {
             // Apply Basic/Advanced Logic
@@ -142,9 +155,9 @@ public class QuoteSessionController {
             if (settings.getInfillDensity() != null) processOverrides.put("sparse_infill_density", settings.getInfillDensity() + "%");
             if (settings.getInfillPattern() != null) processOverrides.put("sparse_infill_pattern", settings.getInfillPattern());
             
-            // 3. Slice
+            // 3. Slice (Use persistent path)
             PrintStats stats = slicerService.slice(
-                tempInput.toFile(), 
+                persistentPath.toFile(), 
                 machineProfile, 
                 filamentProfile, 
                 processProfile, 
@@ -159,6 +172,7 @@ public class QuoteSessionController {
             QuoteLineItem item = new QuoteLineItem();
             item.setQuoteSession(session);
             item.setOriginalFilename(file.getOriginalFilename());
+            item.setStoredPath(persistentPath.toString()); // SAVE PATH
             item.setQuantity(1);
             item.setColorCode(settings.getColor() != null ? settings.getColor() : "#FFFFFF");
             item.setStatus("READY"); // or CALCULATED
@@ -188,8 +202,10 @@ public class QuoteSessionController {
             
             return lineItemRepo.save(item);
 
-        } finally {
-            Files.deleteIfExists(tempInput);
+        } catch (Exception e) {
+            // Cleanup if failed
+            Files.deleteIfExists(persistentPath);
+            throw e;
         }
     }
 

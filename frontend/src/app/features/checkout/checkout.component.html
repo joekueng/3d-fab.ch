@@ -1,0 +1,151 @@
+<div class="checkout-page">
+  <h2 class="section-title">Checkout</h2>
+  
+  <div class="checkout-layout">
+    
+    <!-- LEFT COLUMN: Form -->
+    <div class="checkout-form-section">
+      <!-- Error Message -->
+      <div *ngIf="error" class="error-message">
+        {{ error }}
+      </div>
+
+      <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()" *ngIf="!error">
+        
+        <!-- Contact Info Card -->
+        <div class="form-card">
+          <div class="card-header">
+            <h3>Contact Information</h3>
+          </div>
+          <div class="card-content">
+            
+            <!-- User Type Selector -->
+            <div class="user-type-selector">
+              <div class="type-option" [class.selected]="!isCompany" (click)="setCustomerType(false)">
+                Private
+              </div>
+              <div class="type-option" [class.selected]="isCompany" (click)="setCustomerType(true)">
+                Company
+              </div>
+            </div>
+
+            <div class="form-row">
+              <app-input formControlName="email" type="email" label="Email" [required]="true" [error]="checkoutForm.get('email')?.hasError('email') ? 'Invalid email' : null"></app-input>
+              <app-input formControlName="phone" type="tel" label="Phone" [required]="true"></app-input>
+            </div>
+          </div>
+        </div>
+
+        <!-- Billing Address Card -->
+        <div class="form-card">
+          <div class="card-header">
+            <h3>Billing Address</h3>
+          </div>
+          <div class="card-content" formGroupName="billingAddress">
+            <div class="form-row">
+              <app-input formControlName="firstName" label="First Name" [required]="true"></app-input>
+              <app-input formControlName="lastName" label="Last Name" [required]="true"></app-input>
+            </div>
+            
+            <!-- Company Name (Conditional) -->
+            <app-input *ngIf="isCompany" formControlName="companyName" label="Company Name" [required]="true"></app-input>
+            
+            <app-input formControlName="addressLine1" label="Address Line 1" [required]="true"></app-input>
+            <app-input formControlName="addressLine2" label="Address Line 2 (Optional)"></app-input>
+
+            <div class="form-row three-cols">
+              <app-input formControlName="zip" label="ZIP Code" [required]="true"></app-input>
+              <app-input formControlName="city" label="City" class="city-field" [required]="true"></app-input>
+              <app-input formControlName="countryCode" label="Country" [disabled]="true" [required]="true"></app-input>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shipping Option -->
+        <div class="shipping-option">
+          <label class="checkbox-container">
+            <input type="checkbox" formControlName="shippingSameAsBilling">
+            <span class="checkmark"></span>
+            Shipping address same as billing
+          </label>
+        </div>
+
+        <!-- Shipping Address Card (Conditional) -->
+        <div class="form-card" *ngIf="!checkoutForm.get('shippingSameAsBilling')?.value">
+           <div class="card-header">
+            <h3>Shipping Address</h3>
+          </div>
+          <div class="card-content" formGroupName="shippingAddress">
+             <div class="form-row">
+              <app-input formControlName="firstName" label="First Name"></app-input>
+              <app-input formControlName="lastName" label="Last Name"></app-input>
+            </div>
+            
+            <app-input formControlName="companyName" label="Company (Optional)"></app-input>
+            <app-input formControlName="addressLine1" label="Address Line 1"></app-input>
+            <app-input formControlName="zip" label="ZIP Code"></app-input>
+            
+            <div class="form-row three-cols">
+              <app-input formControlName="zip" label="ZIP Code"></app-input>
+              <app-input formControlName="city" label="City" class="city-field"></app-input>
+              <app-input formControlName="countryCode" label="Country" [disabled]="true"></app-input>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <app-button type="submit" [disabled]="checkoutForm.invalid || isSubmitting()" [fullWidth]="true">
+            {{ isSubmitting() ? 'Processing...' : 'Place Order' }}
+          </app-button>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- RIGHT COLUMN: Order Summary -->
+    <div class="checkout-summary-section">
+      <div class="form-card sticky-card">
+        <div class="card-header">
+          <h3>Order Summary</h3>
+        </div>
+        
+        <div class="card-content">
+          <div class="summary-items" *ngIf="quoteSession() as session">
+             <div class="summary-item" *ngFor="let item of session.items">
+               <div class="item-details">
+                 <span class="item-name">{{ item.originalFilename }}</span>
+                 <div class="item-specs">
+                   <span>Qty: {{ item.quantity }}</span> 
+                   <span *ngIf="item.colorCode" class="color-dot" [style.background-color]="item.colorCode"></span>
+                 </div>
+                 <div class="item-specs-sub">
+                   {{ (item.printTimeSeconds / 3600) | number:'1.1-1' }}h | {{ item.materialGrams | number:'1.0-0' }}g
+                 </div>
+               </div>
+               <div class="item-price">
+                 {{ (item.unitPriceChf * item.quantity) | currency:'CHF' }}
+               </div>
+             </div>
+          </div>
+  
+          <div class="summary-totals" *ngIf="quoteSession() as session">
+            <div class="total-row">
+              <span>Subtotal</span>
+              <span>{{ (session.totalPrice - session.setupCostChf) | currency:'CHF' }}</span>
+            </div>
+            <div class="total-row">
+              <span>Setup Fee</span>
+              <span>{{ session.setupCostChf | currency:'CHF' }}</span>
+            </div>
+            <div class="divider"></div>
+            <div class="total-row grand-total">
+              <span>Total</span>
+              <span>{{ session.totalPrice | currency:'CHF' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

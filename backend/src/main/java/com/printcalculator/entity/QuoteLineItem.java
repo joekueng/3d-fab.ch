@@ -24,6 +24,7 @@ public class QuoteLineItem {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "quote_session_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private QuoteSession quoteSession;
 
     @Column(name = "status", nullable = false, length = Integer.MAX_VALUE)
@@ -63,6 +64,9 @@ public class QuoteLineItem {
 
     @Column(name = "error_message", length = Integer.MAX_VALUE)
     private String errorMessage;
+
+    @Column(name = "stored_path", length = Integer.MAX_VALUE)
+    private String storedPath;
 
     @ColumnDefault("now()")
     @Column(name = "created_at", nullable = false)
@@ -182,6 +186,14 @@ public class QuoteLineItem {
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    public String getStoredPath() {
+        return storedPath;
+    }
+
+    public void setStoredPath(String storedPath) {
+        this.storedPath = storedPath;
     }
 
     public OffsetDateTime getCreatedAt() {

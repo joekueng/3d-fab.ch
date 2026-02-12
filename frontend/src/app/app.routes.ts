@@ -26,6 +26,10 @@ export const routes: Routes = [
         loadChildren: () => import('./features/contact/contact.routes').then(m => m.CONTACT_ROUTES) 
       },
       {
+        path: 'checkout',
+        loadComponent: () => import('./features/checkout/checkout.component').then(m => m.CheckoutComponent)
+      },
+      {
         path: 'payment/:orderId',
         loadComponent: () => import('./features/payment/payment.component').then(m => m.PaymentComponent)
       },

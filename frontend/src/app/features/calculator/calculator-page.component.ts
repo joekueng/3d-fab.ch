@@ -7,14 +7,13 @@ import { AppAlertComponent } from '../../shared/components/app-alert/app-alert.c
 import { UploadFormComponent } from './components/upload-form/upload-form.component';
 import { QuoteResultComponent } from './components/quote-result/quote-result.component';
 import { QuoteRequest, QuoteResult, QuoteEstimatorService } from './services/quote-estimator.service';
-import { UserDetailsComponent } from './components/user-details/user-details.component';
 import { SuccessStateComponent } from '../../shared/components/success-state/success-state.component';
 import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-calculator-page',
   standalone: true,
-  imports: [CommonModule, TranslateModule, AppCardComponent, AppAlertComponent, UploadFormComponent, QuoteResultComponent, UserDetailsComponent, SuccessStateComponent],
+  imports: [CommonModule, TranslateModule, AppCardComponent, AppAlertComponent, UploadFormComponent, QuoteResultComponent, SuccessStateComponent],
   templateUrl: './calculator-page.component.html',
   styleUrl: './calculator-page.component.scss'
 })
@@ -82,11 +81,32 @@ export class CalculatorPageComponent implements OnInit {
   }
 
   onProceed() {
-    this.step.set('details');
+    const res = this.result();
+    if (res && res.sessionId) {
+      this.router.navigate(['/checkout'], { queryParams: { session: res.sessionId } });
+    } else {
+      console.error('No session ID found in quote result');
+      // Fallback or error handling
+    }
   }
 
   onCancelDetails() {
     this.step.set('quote');
+  }
+
+  onItemChange(event: {id?: string, fileName: string, quantity: number}) {
+      // 1. Update local form for consistency (UI feedback)
+      if (this.uploadForm) {
+          this.uploadForm.updateItemQuantityByName(event.fileName, event.quantity);
+      }
+      
+      // 2. Update backend session if ID exists
+      if (event.id) {
+          this.estimator.updateLineItem(event.id, { quantity: event.quantity }).subscribe({
+              next: (res) => console.log('Line item updated', res),
+              error: (err) => console.error('Failed to update line item', err)
+          });
+      }
   }
 
   onSubmitOrder(orderData: any) {
