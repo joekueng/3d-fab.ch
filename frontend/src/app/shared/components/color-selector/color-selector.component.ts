@@ -1,7 +1,8 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, input, output, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { PRODUCT_COLORS, getColorHex, ColorCategory, ColorOption } from '../../../core/constants/colors.const';
+import { VariantOption } from '../../../features/calculator/services/quote-estimator.service';
 
 @Component({
   selector: 'app-color-selector',
@@ -12,11 +13,28 @@ import { PRODUCT_COLORS, getColorHex, ColorCategory, ColorOption } from '../../.
 })
 export class ColorSelectorComponent {
   selectedColor = input<string>('Black');
+  variants = input<VariantOption[]>([]);
   colorSelected = output<string>();
 
   isOpen = signal(false);
 
-  categories: ColorCategory[] = PRODUCT_COLORS;
+  categories = computed(() => {
+      const vars = this.variants();
+      if (vars && vars.length > 0) {
+          // Flatten variants into a single category for now
+          // We could try to group by extracting words, but "Colors" is fine.
+          return [{
+              name: 'Available Colors',
+              colors: vars.map(v => ({
+                  label: v.colorName, // Display "Red"
+                  value: v.colorName, // Send "Red" to backend
+                  hex: v.hexColor,
+                  outOfStock: v.isOutOfStock
+              }))
+          }] as ColorCategory[];
+      }
+      return PRODUCT_COLORS;
+  });
 
   toggleOpen() {
     this.isOpen.update(v => !v);
@@ -31,6 +49,13 @@ export class ColorSelectorComponent {
 
   // Helper to find hex for the current selected value
   getCurrentHex(): string {
+     // Check in dynamic variants first
+     const vars = this.variants();
+     if (vars && vars.length > 0) {
+         const found = vars.find(v => v.colorName === this.selectedColor());
+         if (found) return found.hexColor;
+     }
+
     return getColorHex(this.selectedColor());
   }
 

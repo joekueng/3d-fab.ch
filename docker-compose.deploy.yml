@@ -7,23 +7,24 @@ services:
     container_name: print-calculator-backend-${ENV}
     ports:
       - "${BACKEND_PORT}:8000"
+    env_file:
+      - .env
     environment:
-      - FILAMENT_COST_PER_KG=${FILAMENT_COST_PER_KG}
-      - MACHINE_COST_PER_HOUR=${MACHINE_COST_PER_HOUR}
-      - ENERGY_COST_PER_KWH=${ENERGY_COST_PER_KWH}
-      - PRINTER_POWER_WATTS=${PRINTER_POWER_WATTS}
-      - MARKUP_PERCENT=${MARKUP_PERCENT}
+      - DB_URL=${DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
       - TEMP_DIR=/app/temp
       - PROFILES_DIR=/app/profiles
     restart: always
     volumes:
       - backend_profiles_${ENV}:/app/profiles
 
+
   frontend:
     image: ${REGISTRY_URL}/${REPO_OWNER}/print-calculator-frontend:${TAG}
     container_name: print-calculator-frontend-${ENV}
     ports:
-      - "${FRONTEND_PORT}:8008"
+      - "${FRONTEND_PORT}:80"
     depends_on:
       - backend
     restart: always

@@ -41,4 +41,6 @@ COPY profiles ./profiles
 
 EXPOSE 8080
 
-CMD ["java", "-jar", "app.jar"]
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
+ENTRYPOINT ["./entrypoint.sh"]

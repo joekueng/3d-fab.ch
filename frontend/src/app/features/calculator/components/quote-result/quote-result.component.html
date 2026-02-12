@@ -24,6 +24,13 @@
     <small>* Include {{ result().setupCost | currency:result().currency }} Setup Cost</small>
   </div>
 
+  @if (result().notes) {
+    <div class="notes-section">
+        <label>{{ 'CALC.NOTES' | translate }}:</label>
+        <p>{{ result().notes }}</p>
+    </div>
+  }
+
   <div class="divider"></div>
   
   <!-- Detailed Items List (NOW ON BOTTOM) -->

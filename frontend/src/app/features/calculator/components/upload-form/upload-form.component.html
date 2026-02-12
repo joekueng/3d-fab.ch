@@ -48,6 +48,7 @@
                                 <label>COLORE</label>
                                 <app-color-selector 
                                     [selectedColor]="item.color" 
+                                    [variants]="currentMaterialVariants()"
                                     (colorSelected)="updateItemColor(i, $event)">
                                 </app-color-selector>
                             </div>
@@ -80,20 +81,20 @@
     <app-select
       formControlName="material"
       [label]="'CALC.MATERIAL' | translate"
-      [options]="materials"
+      [options]="materials()"
     ></app-select>
 
     @if (mode() === 'easy') {
         <app-select
           formControlName="quality"
           [label]="'CALC.QUALITY' | translate"
-          [options]="qualities"
+          [options]="qualities()"
         ></app-select>
     } @else {
         <app-select
           formControlName="nozzleDiameter"
           [label]="'CALC.NOZZLE' | translate"
-          [options]="nozzleDiameters"
+          [options]="nozzleDiameters()"
         ></app-select>
     }
   </div>
@@ -105,13 +106,13 @@
         <app-select
           formControlName="infillPattern"
           [label]="'CALC.PATTERN' | translate"
-          [options]="infillPatterns"
+          [options]="infillPatterns()"
         ></app-select>
 
         <app-select
           formControlName="layerHeight"
           [label]="'CALC.LAYER_HEIGHT' | translate"
-          [options]="layerHeights"
+          [options]="layerHeights()"
         ></app-select>
     </div>
 
@@ -128,12 +129,13 @@
         </div>
     </div>
 
-    <app-input
-      formControlName="notes"
-      [label]="'CALC.NOTES' | translate"
-      placeholder="Istruzioni specifiche..."
-    ></app-input>
   }
+
+  <app-input
+    formControlName="notes"
+    [label]="'CALC.NOTES' | translate"
+    placeholder="Istruzioni specifiche..."
+  ></app-input>
 
   <div class="actions">
     <!-- Progress Bar (Only when uploading i.e. progress < 100) -->
@@ -147,7 +149,7 @@
 
     <app-button 
       type="submit" 
-      [disabled]="form.invalid || items().length === 0 || loading()" 
+      [disabled]="items().length === 0 || loading()" 
       [fullWidth]="true">
       {{ loading() ? (uploadProgress() < 100 ? 'Uploading...' : 'Processing...') : ('CALC.CALCULATE' | translate) }}
     </app-button>

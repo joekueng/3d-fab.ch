@@ -10,7 +10,7 @@ export const routes: Routes = [
         loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent)
       },
       { 
-        path: 'cal', 
+        path: 'calculator', 
         loadChildren: () => import('./features/calculator/calculator.routes').then(m => m.CALCULATOR_ROUTES) 
       },
       { 

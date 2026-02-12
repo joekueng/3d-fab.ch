@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -36,11 +37,20 @@ public class SlicerService {
         this.mapper = mapper;
     }
 
-    public PrintStats slice(File inputStl, String machineName, String filamentName, String processName) throws IOException {
+    public PrintStats slice(File inputStl, String machineName, String filamentName, String processName,
+                            Map<String, String> machineOverrides, Map<String, String> processOverrides) throws IOException {
         // 1. Prepare Profiles
         ObjectNode machineProfile = profileManager.getMergedProfile(machineName, "machine");
         ObjectNode filamentProfile = profileManager.getMergedProfile(filamentName, "filament");
         ObjectNode processProfile = profileManager.getMergedProfile(processName, "process");
+
+        // Apply Overrides
+        if (machineOverrides != null) {
+            machineOverrides.forEach(machineProfile::put);
+        }
+        if (processOverrides != null) {
+            processOverrides.forEach(processProfile::put);
+        }
 
         // 2. Create Temp Dir
         Path tempDir = Files.createTempDirectory("slicer_job_");
