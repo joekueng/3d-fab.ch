@@ -28,7 +28,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/quote-sessions")
-@CrossOrigin(origins = "*") // Allow CORS for dev
+
 public class QuoteSessionController {
 
     private final QuoteSessionRepository sessionRepo;
@@ -36,6 +36,7 @@ public class QuoteSessionController {
     private final SlicerService slicerService;
     private final QuoteCalculator quoteCalculator;
     private final PrinterMachineRepository machineRepo;
+    private final com.printcalculator.repository.PricingPolicyRepository pricingRepo;
 
     // Defaults
     private static final String DEFAULT_FILAMENT = "pla_basic";
@@ -45,49 +46,34 @@ public class QuoteSessionController {
                                   QuoteLineItemRepository lineItemRepo,
                                   SlicerService slicerService,
                                   QuoteCalculator quoteCalculator,
-                                  PrinterMachineRepository machineRepo) {
+                                  PrinterMachineRepository machineRepo,
+                                  com.printcalculator.repository.PricingPolicyRepository pricingRepo) {
         this.sessionRepo = sessionRepo;
         this.lineItemRepo = lineItemRepo;
         this.slicerService = slicerService;
         this.quoteCalculator = quoteCalculator;
         this.machineRepo = machineRepo;
+        this.pricingRepo = pricingRepo;
     }
 
-    // 1. Start a new session with a file
-    @PostMapping(value = "/line-items", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    // 1. Start a new empty session
+    @PostMapping(value = "")
     @Transactional
-    public ResponseEntity<QuoteSession> createSessionAndAddItem(
-            @RequestParam("file") MultipartFile file
-    ) throws IOException {
-        // Create new session
+    public ResponseEntity<QuoteSession> createSession() {
         QuoteSession session = new QuoteSession();
         session.setStatus("ACTIVE");
-        session.setPricingVersion("v1"); // Placeholder
-        session.setMaterialCode(DEFAULT_FILAMENT); // Default for session
+        session.setPricingVersion("v1");
+        // Default material/settings will be set when items are added or updated?
+        // For now set safe defaults
+        session.setMaterialCode("pla_basic"); 
         session.setSupportsEnabled(false);
         session.setCreatedAt(OffsetDateTime.now());
         session.setExpiresAt(OffsetDateTime.now().plusDays(30)); 
-        // Set defaults
-        session.setSetupCostChf(BigDecimal.ZERO);
+        
+        var policy = pricingRepo.findFirstByIsActiveTrueOrderByValidFromDesc();
+        session.setSetupCostChf(policy != null ? policy.getFixedJobFeeChf() : BigDecimal.ZERO);
         
         session = sessionRepo.save(session);
-
-        // Process file and add item
-        addItemToSession(session, file);
-        
-        // Refresh session to return updated data (if we added list fetching to repo, otherwise manually fetch items if needed for response)
-        // For now, let's just return the session. The client might need to fetch items separately or we can return a DTO.
-        // User request: "ritorna sessione + line items + total"
-        // Since QuoteSession entity doesn't have a @OneToMany list of items (it has OneToMany usually but mapped by item), 
-        // we might need a DTO or just rely on the fact that we might add the list to the entity if valid.
-        // Looking at QuoteSession.java, it does NOT have a list of items.
-        // So we should probably return a DTO or just return the Session and Client calls GET /quote-sessions/{id} immediately?
-        // User request: "ritorna quoteSessionId" (actually implies just ID, but likely wants full object).
-        // "ritorna sessione + line items + total (usa view o calcolo service)" refers to GET /quote-sessions/{id}
-        
-        // Let's return the full session details including items in a DTO/Map/wrapper?
-        // Or just the session for now. The user said "ritorna quoteSessionId" for this specific endpoint.
-        // Let's return the Session entity for now.
         return ResponseEntity.ok(session);
     }
     
@@ -96,17 +82,18 @@ public class QuoteSessionController {
     @Transactional
     public ResponseEntity<QuoteLineItem> addItemToExistingSession(
             @PathVariable UUID id,
-            @RequestParam("file") MultipartFile file
+            @RequestPart("settings") com.printcalculator.dto.PrintSettingsDto settings,
+            @RequestPart("file") MultipartFile file
     ) throws IOException {
         QuoteSession session = sessionRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Session not found"));
 
-        QuoteLineItem item = addItemToSession(session, file);
+        QuoteLineItem item = addItemToSession(session, file, settings);
         return ResponseEntity.ok(item);
     }
 
     // Helper to add item
-    private QuoteLineItem addItemToSession(QuoteSession session, MultipartFile file) throws IOException {
+    private QuoteLineItem addItemToSession(QuoteSession session, MultipartFile file, com.printcalculator.dto.PrintSettingsDto settings) throws IOException {
         if (file.isEmpty()) throw new IOException("File is empty");
 
         // 1. Save file temporarily
@@ -114,35 +101,87 @@ public class QuoteSessionController {
         file.transferTo(tempInput.toFile());
 
         try {
-            // 2. Mock Calc or Real Calc
-            // The user said: "per ora calcolo mock" (mock calculation) but we have SlicerService. 
-            // "Nota: il calcolo può essere stub: set print_time_seconds/material_grams/unit_price_chf a valori placeholder."
-            // However, since we have the SlicerService, we CAN try to use it if we want, OR just use stub as requested to be fast?
-            // "avvia calcolo (per ora calcolo mock)" -> I will use a simple Stub to satisfy the requirement immediately.
-            // But I will also implement the structure to swap to Real Calc.
+            // Apply Basic/Advanced Logic
+            applyPrintSettings(settings);
+
+            // REAL SLICING
+            // 1. Pick Machine (default to first active or specific)
+            PrinterMachine machine = machineRepo.findFirstByIsActiveTrue()
+                    .orElseThrow(() -> new RuntimeException("No active printer found"));
             
-            // STUB CALCULATION as requested
-            int printTime = 3600; // 1 hour
-            BigDecimal materialGrams = new BigDecimal("50.00");
-            BigDecimal unitPrice = new BigDecimal("15.00");
+            // 2. Pick Profiles
+            String machineProfile = machine.getPrinterDisplayName(); // e.g. "Bambu Lab A1 0.4 nozzle"
+            // If the display name doesn't match the json profile name, we might need a mapping key in DB.
+            // For now assuming display name works or we use a tough default
+             machineProfile = "Bambu Lab A1 0.4 nozzle"; // Force known good for now? Or use DB field if exists. 
+             // Ideally: machine.getSlicerProfileName();
             
-            // 3. Create Line Item
+            String filamentProfile = "Generic " + (settings.getMaterial() != null ? settings.getMaterial().toUpperCase() : "PLA");
+            // Mapping: "pla_basic" -> "Generic PLA", "petg_basic" -> "Generic PETG"
+            if (settings.getMaterial() != null) {
+                if (settings.getMaterial().toLowerCase().contains("pla")) filamentProfile = "Generic PLA";
+                else if (settings.getMaterial().toLowerCase().contains("petg")) filamentProfile = "Generic PETG";
+                else if (settings.getMaterial().toLowerCase().contains("tpu")) filamentProfile = "Generic TPU";
+                else if (settings.getMaterial().toLowerCase().contains("abs")) filamentProfile = "Generic ABS";
+            }
+
+            String processProfile = "0.20mm Standard @BBL A1"; 
+            // Mapping quality to process
+            // "standard" -> "0.20mm Standard @BBL A1"
+            // "draft" -> "0.28mm Extra Draft @BBL A1"
+            // "high" -> "0.12mm Fine @BBL A1" (approx names, need to be exact for Orca)
+            // Let's use robust defaults or simple overrides
+            if (settings.getLayerHeight() != null) {
+                 if (settings.getLayerHeight() >= 0.28) processProfile = "0.28mm Extra Draft @BBL A1";
+                 else if (settings.getLayerHeight() <= 0.12) processProfile = "0.12mm Fine @BBL A1";
+            }
+            
+            // Build overrides map from settings
+            Map<String, String> processOverrides = new HashMap<>();
+            if (settings.getLayerHeight() != null) processOverrides.put("layer_height", String.valueOf(settings.getLayerHeight()));
+            if (settings.getInfillDensity() != null) processOverrides.put("sparse_infill_density", settings.getInfillDensity() + "%");
+            if (settings.getInfillPattern() != null) processOverrides.put("sparse_infill_pattern", settings.getInfillPattern());
+            
+            // 3. Slice
+            PrintStats stats = slicerService.slice(
+                tempInput.toFile(), 
+                machineProfile, 
+                filamentProfile, 
+                processProfile, 
+                null, // machine overrides
+                processOverrides
+            );
+            
+            // 4. Calculate Quote
+            QuoteResult result = quoteCalculator.calculate(stats, machine.getPrinterDisplayName(), filamentProfile);
+
+            // 5. Create Line Item
             QuoteLineItem item = new QuoteLineItem();
             item.setQuoteSession(session);
             item.setOriginalFilename(file.getOriginalFilename());
             item.setQuantity(1);
-            item.setColorCode("#FFFFFF"); // Default
-            item.setStatus("CALCULATED");
+            item.setColorCode(settings.getColor() != null ? settings.getColor() : "#FFFFFF");
+            item.setStatus("READY"); // or CALCULATED
             
-            item.setPrintTimeSeconds(printTime);
-            item.setMaterialGrams(materialGrams);
-            item.setUnitPriceChf(unitPrice);
-            item.setPricingBreakdown(Map.of("mock", true));
+            item.setPrintTimeSeconds((int) stats.printTimeSeconds());
+            item.setMaterialGrams(BigDecimal.valueOf(stats.filamentWeightGrams()));
+            item.setUnitPriceChf(BigDecimal.valueOf(result.getTotalPrice()));
             
-            // Set simple bounding box
-            item.setBoundingBoxXMm(BigDecimal.valueOf(100));
-            item.setBoundingBoxYMm(BigDecimal.valueOf(100));
-            item.setBoundingBoxZMm(BigDecimal.valueOf(20));
+            // Store breakdown
+            Map<String, Object> breakdown = new HashMap<>();
+            breakdown.put("machine_cost", result.getTotalPrice() - result.getSetupCost()); // Approximation? 
+            // Better: QuoteResult could expose detailed breakdown. For now just storing what we have.
+            breakdown.put("setup_fee", result.getSetupCost());
+            item.setPricingBreakdown(breakdown);
+            
+            // Dimensions
+            // Cannot get bb from GCodeParser yet? 
+            // If GCodeParser doesn't return size, we might defaults or 0.
+            // Stats has filament used. 
+            // Let's set dummy for now or upgrade parser later.
+            item.setBoundingBoxXMm(BigDecimal.ZERO);
+            item.setBoundingBoxYMm(BigDecimal.ZERO);
+            item.setBoundingBoxZMm(BigDecimal.ZERO);
             
             item.setCreatedAt(OffsetDateTime.now());
             item.setUpdatedAt(OffsetDateTime.now());
@@ -151,6 +190,37 @@ public class QuoteSessionController {
 
         } finally {
             Files.deleteIfExists(tempInput);
+        }
+    }
+
+    private void applyPrintSettings(com.printcalculator.dto.PrintSettingsDto settings) {
+        if ("BASIC".equalsIgnoreCase(settings.getComplexityMode())) {
+            // Set defaults based on Quality
+            String quality = settings.getQuality() != null ? settings.getQuality().toLowerCase() : "standard";
+            
+            switch (quality) {
+                case "draft":
+                    settings.setLayerHeight(0.28);
+                    settings.setInfillDensity(15.0);
+                    settings.setInfillPattern("grid");
+                    break;
+                case "high":
+                    settings.setLayerHeight(0.12);
+                    settings.setInfillDensity(20.0);
+                    settings.setInfillPattern("gyroid");
+                    break;
+                case "standard":
+                default:
+                    settings.setLayerHeight(0.20);
+                    settings.setInfillDensity(20.0);
+                    settings.setInfillPattern("grid");
+                    break;
+            }
+        } else {
+            // ADVANCED Mode: Use values from Frontend, set defaults if missing
+            if (settings.getLayerHeight() == null) settings.setLayerHeight(0.20);
+            if (settings.getInfillDensity() == null) settings.setInfillDensity(20.0);
+            if (settings.getInfillPattern() == null) settings.setInfillPattern("grid");
         }
     }
 

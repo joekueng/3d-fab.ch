@@ -1,10 +1,11 @@
-import { Component, signal, effect } from '@angular/core';
+import { Component, signal, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AppInputComponent } from '../../../../shared/components/app-input/app-input.component';
 import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
 import { QuoteEstimatorService } from '../../../calculator/services/quote-estimator.service';
+import { QuoteRequestService } from '../../../../core/services/quote-request.service';
 
 interface FilePreview {
   file: File;
@@ -36,6 +37,8 @@ export class ContactFormComponent {
     { value: 'consult', label: 'CONTACT.REQ_TYPE_CONSULT' },
     { value: 'question', label: 'CONTACT.REQ_TYPE_QUESTION' }
   ];
+
+  private quoteRequestService = inject(QuoteRequestService);
 
   constructor(
       private fb: FormBuilder, 
@@ -156,13 +159,34 @@ export class ContactFormComponent {
 
   onSubmit() {
     if (this.form.valid) {
-      const formData = {
-        ...this.form.value,
-        files: this.files().map(f => f.file)
-      };
-      console.log('Form Submit:', formData);
+      const formVal = this.form.value;
+      const isCompany = formVal.isCompany;
       
-      this.sent.set(true);
+      const requestDto: any = {
+        requestType: formVal.requestType,
+        customerType: isCompany ? 'BUSINESS' : 'PRIVATE',
+        email: formVal.email,
+        phone: formVal.phone,
+        message: formVal.message
+      };
+
+      if (isCompany) {
+        requestDto.companyName = formVal.companyName;
+        requestDto.contactPerson = formVal.referencePerson;
+      } else {
+        requestDto.name = formVal.name;
+      }
+
+      this.quoteRequestService.createRequest(requestDto, this.files().map(f => f.file)).subscribe({
+        next: () => {
+          this.sent.set(true);
+        },
+        error: (err) => {
+          console.error('Submission failed', err);
+          alert('Error submitting request. Please try again.');
+        }
+      });
+      
     } else {
       this.form.markAllAsTouched();
     }

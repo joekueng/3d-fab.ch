@@ -128,201 +128,133 @@ export class QuoteEstimatorService {
     }
     
     return new Observable(observer => {
-        const totalItems = request.items.length;
-        const allProgress: number[] = new Array(totalItems).fill(0);
-        const finalResponses: any[] = [];
-        let completedRequests = 0;
+        // 1. Create Session first
+        const headers: any = {};
+        // @ts-ignore
+        if (environment.basicAuth) headers['Authorization'] = 'Basic ' + btoa(environment.basicAuth);
 
-        const uploads = request.items.map((item, index) => {
-             const formData = new FormData();
-             formData.append('file', item.file);
-             // machine param removed - backend uses default active
-             
-             // Map material? Or trust frontend to send correct code?
-             // Since we fetch options now, we should send the code directly.
-             // But for backward compat/safety/mapping logic in mapMaterial, let's keep it or update it.
-             // If frontend sends 'PLA', mapMaterial returns 'pla_basic'.
-             // We should check if request.material is already a code from options.
-             // For now, let's assume request.material IS the code if it matches our new options,
-             // or fallback to mapper if it's old legacy string.
-             // Let's keep mapMaterial but update it to be smarter if needed, or rely on UploadForm to send correct codes.
-             // For now, let's use mapMaterial as safety, assuming frontend sends short codes 'PLA'.
-             // Wait, if we use dynamic options, the 'value' in select will be the 'code' from backend (e.g. 'PLA').
-             // Backend expects 'pla_basic' or just 'PLA'? 
-             // QuoteController -> processRequest -> SlicerService.slice -> assumes 'filament' is a profile name like 'pla_basic'.
-             // So we MUST map 'PLA' to 'pla_basic' UNLESS backend options return 'pla_basic' as code.
-             // Backend OptionsController returns type.getMaterialCode() which is 'PLA'.
-             // So we still need mapping to slicer profile names.
-             
-             formData.append('filament', this.mapMaterial(request.material));
-             formData.append('quality', this.mapQuality(request.quality));
-             
-             // Send color for both modes if present, defaulting to Black
-             formData.append('material_color', item.color || 'Black');
+        this.http.post<any>(`${environment.apiUrl}/api/quote-sessions`, {}, { headers }).subscribe({
+            next: (sessionRes) => {
+                const sessionId = sessionRes.id;
+                const sessionSetupCost = sessionRes.setupCostChf || 0;
+                
+                // 2. Upload files to this session
+                const totalItems = request.items.length;
+                const allProgress: number[] = new Array(totalItems).fill(0);
+                const finalResponses: any[] = []; 
+                let completedRequests = 0;
 
-             if (request.mode === 'advanced') {
-                if (request.infillDensity) formData.append('infill_density', request.infillDensity.toString());
-                if (request.infillPattern) formData.append('infill_pattern', request.infillPattern);
-                if (request.supportEnabled) formData.append('support_enabled', 'true');
-                if (request.layerHeight) formData.append('layer_height', request.layerHeight.toString());
-                if (request.nozzleDiameter) formData.append('nozzle_diameter', request.nozzleDiameter.toString());
+                const checkCompletion = () => {
+                     const avg = Math.round(allProgress.reduce((a, b) => a + b, 0) / totalItems);
+                     observer.next(avg);
+                     
+                     if (completedRequests === totalItems) {
+                         finalize(finalResponses, sessionSetupCost);
+                     }
+                };
+
+                request.items.forEach((item, index) => {
+                     const formData = new FormData();
+                     formData.append('file', item.file);
+                     
+                     const settings = {
+                         complexityMode: request.mode.toUpperCase(),
+                         material: this.mapMaterial(request.material),
+                         quality: request.quality,
+                         supportsEnabled: request.supportEnabled,
+                         color: item.color || '#FFFFFF',
+                         layerHeight: request.mode === 'advanced' ? request.layerHeight : null,
+                         infillDensity: request.mode === 'advanced' ? request.infillDensity : null,
+                         infillPattern: request.mode === 'advanced' ? request.infillPattern : null,
+                         nozzleDiameter: request.mode === 'advanced' ? request.nozzleDiameter : null
+                     };
+        
+                     const settingsBlob = new Blob([JSON.stringify(settings)], { type: 'application/json' });
+                     formData.append('settings', settingsBlob);
+
+                     this.http.post<any>(`${environment.apiUrl}/api/quote-sessions/${sessionId}/line-items`, formData, { 
+                         headers,
+                         reportProgress: true,
+                         observe: 'events'
+                     }).subscribe({
+                        next: (event) => {
+                            if (event.type === HttpEventType.UploadProgress && event.total) {
+                                allProgress[index] = Math.round((100 * event.loaded) / event.total);
+                                checkCompletion();
+                            } else if (event.type === HttpEventType.Response) { 
+                                 allProgress[index] = 100;
+                                 finalResponses[index] = { ...event.body, success: true, fileName: item.file.name, originalQty: item.quantity, originalItem: item };
+                                 completedRequests++;
+                                 checkCompletion();
+                            }
+                        },
+                        error: (err) => {
+                            console.error('Item upload failed', err);
+                            finalResponses[index] = { success: false, fileName: item.file.name };
+                            completedRequests++;
+                            checkCompletion();
+                        }
+                    });
+                });
+            },
+            error: (err) => {
+                console.error('Failed to create session', err);
+                observer.error('Could not initialize quote session');
+            }
+        });
+
+        const finalize = (responses: any[], setupCost: number) => {
+             observer.next(100); 
+             const items: QuoteItem[] = [];
+             let grandTotal = 0;
+             let totalTime = 0;
+             let totalWeight = 0;
+             let validCount = 0;
+
+             responses.forEach((res, idx) => {
+                 if (!res || !res.success) return;
+                 validCount++;
+                 
+                 const unitPrice = res.unitPriceChf || 0;
+                 const quantity = res.originalQty || 1;
+                 
+                 items.push({
+                     fileName: res.fileName,
+                     unitPrice: unitPrice,
+                     unitTime: res.printTimeSeconds || 0,
+                     unitWeight: res.materialGrams || 0,
+                     quantity: quantity,
+                     material: request.material,
+                     color: res.originalItem.color || 'Default'
+                 });
+                 
+                 grandTotal += unitPrice * quantity;
+                 totalTime += (res.printTimeSeconds || 0) * quantity;
+                 totalWeight += (res.materialGrams || 0) * quantity;
+             });
+
+             if (validCount === 0) {
+                 observer.error('All calculations failed.');
+                 return;
              }
              
-             const headers: any = {};
-             // @ts-ignore
-             if (environment.basicAuth) headers['Authorization'] = 'Basic ' + btoa(environment.basicAuth);
+             grandTotal += setupCost;
 
-             return this.http.post<BackendResponse | BackendQuoteResult>(`${environment.apiUrl}/api/quote`, formData, { 
-                 headers,
-                 reportProgress: true,
-                 observe: 'events'
-             }).pipe(
-                 map(event => ({ item, event, index })),
-                 catchError(err => of({ item, error: err, index }))
-             );
-        });
-
-        // Subscribe to all
-        uploads.forEach((obs) => {
-            obs.subscribe({
-                next: (wrapper: any) => {
-                    const idx = wrapper.index;
-                    
-                    if (wrapper.error) {
-                        finalResponses[idx] = { success: false, fileName: wrapper.item.file.name };
-                    }
-
-                    const event = wrapper.event;
-                    if (event && event.type === HttpEventType.UploadProgress) {
-                        if (event.total) {
-                            const percent = Math.round((100 * event.loaded) / event.total);
-                            allProgress[idx] = percent;
-                            // Emit average progress
-                            const avg = Math.round(allProgress.reduce((a, b) => a + b, 0) / totalItems);
-                            observer.next(avg); 
-                        }
-                    } else if ((event && event.type === HttpEventType.Response) || wrapper.error) { 
-                        // It's done (either response or error caught above)
-                        if (!finalResponses[idx]) { // only if not already set by error
-                             allProgress[idx] = 100;
-                             if (wrapper.error) {
-                                 finalResponses[idx] = { success: false, fileName: wrapper.item.file.name };
-                             } else {
-                                finalResponses[idx] = { ...event.body, fileName: wrapper.item.file.name, originalQty: wrapper.item.quantity };
-                             }
-                             completedRequests++;
-                        }
-                        
-                        if (completedRequests === totalItems) {
-                            // All done
-                            observer.next(100); 
-                            
-                            // Calculate Results
-                            let setupCost = 10;
-                            let setupCostFromBackend: number | null = null;
-                            let currencyFromBackend: string | null = null;
-
-                            if (request.nozzleDiameter && request.nozzleDiameter !== 0.4) {
-                                setupCost += 2;
-                            }
-                            
-                            const items: QuoteItem[] = [];
-                            
-                            finalResponses.forEach((res, idx) => {
-                                if (!res) return;
-                                const originalItem = request.items[idx];
-                                const normalized = this.normalizeResponse(res);
-                                if (!normalized.success) return;
-
-                                if (normalized.currency && currencyFromBackend == null) {
-                                    currencyFromBackend = normalized.currency;
-                                }
-                                if (normalized.setupCost != null && setupCostFromBackend == null) {
-                                    setupCostFromBackend = normalized.setupCost;
-                                }
-
-                                items.push({
-                                    fileName: res.fileName,
-                                    unitPrice: normalized.unitPrice,
-                                    unitTime: normalized.unitTime,
-                                    unitWeight: normalized.unitWeight,
-                                    quantity: res.originalQty, // Use the requested quantity
-                                    material: request.material,
-                                    color: originalItem.color || 'Default'
-                                });
-                            });
-
-                            if (items.length === 0) {
-                                observer.error('All calculations failed.');
-                                return;
-                            }
-                            
-                            // Initial Aggregation
-                            const useBackendSetup = setupCostFromBackend != null;
-                            let grandTotal = useBackendSetup ? 0 : setupCost;
-                            let totalTime = 0;
-                            let totalWeight = 0;
-                            
-                            items.forEach(item => {
-                                grandTotal += item.unitPrice * item.quantity;
-                                totalTime += item.unitTime * item.quantity;
-                                totalWeight += item.unitWeight * item.quantity;
-                            });
-
-                            const totalHours = Math.floor(totalTime / 3600);
-                            const totalMinutes = Math.ceil((totalTime % 3600) / 60);
-
-                            const result: QuoteResult = {
-                                items,
-                                setupCost: useBackendSetup ? setupCostFromBackend! : setupCost,
-                                currency: currencyFromBackend || 'CHF',
-                                totalPrice: Math.round(grandTotal * 100) / 100,
-                                totalTimeHours: totalHours,
-                                totalTimeMinutes: totalMinutes,
-                                totalWeight: Math.ceil(totalWeight),
-                                notes: request.notes
-                            };
-                            
-                            observer.next(result);
-                            observer.complete();
-                        }
-                    }
-                },
-                error: (err) => {
-                    console.error('Error in request subscription', err);
-                    completedRequests++;
-                     if (completedRequests === totalItems) {
-                         observer.error('Requests failed');
-                    }
-                }
-            });
-        });
+             const result: QuoteResult = {
+                 items,
+                 setupCost: setupCost,
+                 currency: 'CHF',
+                 totalPrice: Math.round(grandTotal * 100) / 100,
+                 totalTimeHours: Math.floor(totalTime / 3600),
+                 totalTimeMinutes: Math.ceil((totalTime % 3600) / 60),
+                 totalWeight: Math.ceil(totalWeight),
+                 notes: request.notes
+             };
+             
+             observer.next(result);
+             observer.complete();
+        };
     });
-  }
-
-  private normalizeResponse(res: any): { success: boolean; unitPrice: number; unitTime: number; unitWeight: number; setupCost?: number; currency?: string } {
-    if (res && typeof res.totalPrice === 'number' && res.stats && typeof res.stats.printTimeSeconds === 'number') {
-      return {
-        success: true,
-        unitPrice: res.totalPrice,
-        unitTime: res.stats.printTimeSeconds,
-        unitWeight: res.stats.filamentWeightGrams,
-        setupCost: res.setupCost,
-        currency: res.currency
-      };
-    }
-
-    if (res && res.success && res.data) {
-      return {
-        success: true,
-        unitPrice: res.data.cost.total,
-        unitTime: res.data.print_time_seconds,
-        unitWeight: res.data.material_grams,
-        currency: 'CHF'
-      };
-    }
-
-    return { success: false, unitPrice: 0, unitTime: 0, unitWeight: 0 };
   }
 
   private mapMaterial(mat: string): string {
@@ -331,13 +263,6 @@ export class QuoteEstimatorService {
     if (m.includes('PETG')) return 'petg_basic';
     if (m.includes('TPU')) return 'tpu_95a';
     return 'pla_basic';
-  }
-
-  private mapQuality(qual: string): string {
-    const q = qual.toLowerCase();
-    if (q.includes('draft')) return 'draft';
-    if (q.includes('high')) return 'extra_fine';
-    return 'standard';
   }
 
   // Consultation Data Transfer

@@ -17,9 +17,10 @@ public class CorsConfig implements WebMvcConfigurer {
                         "http://localhost:80",
                         "http://127.0.0.1",
                         "https://dev.3d-fab.ch",
+                        "https://int.3d-fab.ch",
                         "https://3d-fab.ch"
                 )
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
                 .allowedHeaders("*")
                 .allowCredentials(true);
     }

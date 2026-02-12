@@ -40,29 +40,20 @@ public class CustomQuoteRequestController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Transactional
     public ResponseEntity<CustomQuoteRequest> createCustomQuoteRequest(
-            // Form fields
-            @RequestParam("requestType") String requestType,
-            @RequestParam("customerType") String customerType,
-            @RequestParam("email") String email,
-            @RequestParam(value = "phone", required = false) String phone,
-            @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "companyName", required = false) String companyName,
-            @RequestParam(value = "contactPerson", required = false) String contactPerson,
-            @RequestParam("message") String message,
-            // Files (Max 15)
-            @RequestParam(value = "files", required = false) List<MultipartFile> files
+            @RequestPart("request") com.printcalculator.dto.QuoteRequestDto requestDto,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files
     ) throws IOException {
         
         // 1. Create Request
         CustomQuoteRequest request = new CustomQuoteRequest();
-        request.setRequestType(requestType);
-        request.setCustomerType(customerType);
-        request.setEmail(email);
-        request.setPhone(phone);
-        request.setName(name);
-        request.setCompanyName(companyName);
-        request.setContactPerson(contactPerson);
-        request.setMessage(message);
+        request.setRequestType(requestDto.getRequestType());
+        request.setCustomerType(requestDto.getCustomerType());
+        request.setEmail(requestDto.getEmail());
+        request.setPhone(requestDto.getPhone());
+        request.setName(requestDto.getName());
+        request.setCompanyName(requestDto.getCompanyName());
+        request.setContactPerson(requestDto.getContactPerson());
+        request.setMessage(requestDto.getMessage());
         request.setStatus("PENDING");
         request.setCreatedAt(OffsetDateTime.now());
         request.setUpdatedAt(OffsetDateTime.now());
