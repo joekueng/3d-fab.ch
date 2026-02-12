@@ -167,6 +167,8 @@ jobs:
           # 5. Send to server
           ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" \
             "setenv ${{ env.ENV }}" < /tmp/full_env.env
+            
+
 
       - name: Trigger deploy on Unraid (forced command key)
         shell: bash

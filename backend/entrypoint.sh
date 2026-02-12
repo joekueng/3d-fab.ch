@@ -4,6 +4,8 @@ echo "Starting Backend Application"
 echo "DB_URL: $DB_URL"
 echo "DB_USERNAME: $DB_USERNAME"
 echo "SLICER_PATH: $SLICER_PATH"
+echo "--- ALL ENV VARS ---"
+env
 echo "----------------------------------------------------------------"
 
 # Exec java with explicit properties from env
