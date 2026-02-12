@@ -24,7 +24,7 @@ services:
     image: ${REGISTRY_URL}/${REPO_OWNER}/print-calculator-frontend:${TAG}
     container_name: print-calculator-frontend-${ENV}
     ports:
-      - "${FRONTEND_PORT}:8008"
+      - "${FRONTEND_PORT}:80"
     depends_on:
       - backend
     restart: always
