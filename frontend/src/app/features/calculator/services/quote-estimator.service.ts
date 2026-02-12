@@ -306,4 +306,45 @@ export class QuoteEstimatorService {
       this.pendingConsultation.set(null); // Clear after reading
       return data;
   }
+
+  // Session File Retrieval
+  getLineItemContent(sessionId: string, lineItemId: string): Observable<Blob> {
+      const headers: any = {};
+      // @ts-ignore
+      if (environment.basicAuth) headers['Authorization'] = 'Basic ' + btoa(environment.basicAuth);
+      return this.http.get(`${environment.apiUrl}/api/quote-sessions/${sessionId}/line-items/${lineItemId}/content`, {
+          headers,
+          responseType: 'blob'
+      });
+  }
+
+  mapSessionToQuoteResult(sessionData: any): QuoteResult {
+      const session = sessionData.session;
+      const items = sessionData.items || [];
+      const totalTime = items.reduce((acc: number, item: any) => acc + (item.printTimeSeconds || 0) * item.quantity, 0);
+      const totalWeight = items.reduce((acc: number, item: any) => acc + (item.materialGrams || 0) * item.quantity, 0);
+
+      return {
+          sessionId: session.id,
+          items: items.map((item: any) => ({
+              id: item.id,
+              fileName: item.originalFilename,
+              unitPrice: item.unitPriceChf,
+              unitTime: item.printTimeSeconds,
+              unitWeight: item.materialGrams,
+              quantity: item.quantity,
+              material: session.materialCode, // Assumption: session has one material for all? or items have it? 
+              // Backend model QuoteSession has materialCode. 
+              // But line items might have different colors. 
+              color: item.colorCode
+          })),
+          setupCost: session.setupCostChf,
+          currency: 'CHF', // Fixed for now
+          totalPrice: sessionData.grandTotalChf,
+          totalTimeHours: Math.floor(totalTime / 3600),
+          totalTimeMinutes: Math.ceil((totalTime % 3600) / 60),
+          totalWeight: Math.ceil(totalWeight),
+          notes: session.notes
+      };
+  }
 }

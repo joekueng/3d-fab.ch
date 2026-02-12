@@ -1,6 +1,8 @@
 import { Component, signal, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
+import { forkJoin } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
 import { AppAlertComponent } from '../../shared/components/app-alert/app-alert.component';
@@ -43,6 +45,95 @@ export class CalculatorPageComponent implements OnInit {
         this.mode.set(data['mode']);
       }
     });
+
+    this.route.queryParams.subscribe(params => {
+        const sessionId = params['session'];
+        if (sessionId) {
+            this.loadSession(sessionId);
+        }
+    });
+  }
+
+  loadSession(sessionId: string) {
+      this.loading.set(true);
+      this.estimator.getQuoteSession(sessionId).subscribe({
+          next: (data) => {
+              // 1. Map to Result
+              const result = this.estimator.mapSessionToQuoteResult(data);
+              this.result.set(result);
+              this.step.set('quote');
+              
+              // 2. Determine Mode (Heuristic)
+              // If we have custom settings, maybe Advanced? 
+              // For now, let's stick to current mode or infer from URL if possible.
+              // Actually, we can check if settings deviate from Easy defaults. 
+              // But let's leave it as is or default to Advanced if not sure.
+              // data.session.materialCode etc.
+              
+              // 3. Download Files & Restore Form
+              this.restoreFilesAndSettings(data.session, data.items);
+          },
+          error: (err) => {
+              console.error('Failed to load session', err);
+              this.error.set(true);
+              this.loading.set(false);
+          }
+      });
+  }
+
+  restoreFilesAndSettings(session: any, items: any[]) {
+      if (!items || items.length === 0) {
+           this.loading.set(false);
+           return;
+      }
+
+      // Download all files
+      const downloads = items.map(item => 
+          this.estimator.getLineItemContent(session.id, item.id).pipe(
+              map((blob: Blob) => {
+                  return { 
+                      blob, 
+                      fileName: item.originalFilename,
+                      // We need to match the file object to the item so we can set colors ideally.
+                      // UploadForm.setFiles takes File[]. 
+                      // We might need to handle matching but UploadForm just pushes them.
+                      // If order is preserved, we are good. items from backend are list.
+                  };
+              })
+          )
+      );
+      
+      forkJoin(downloads).subscribe({
+          next: (results: any[]) => {
+              const files = results.map(res => new File([res.blob], res.fileName, { type: 'application/octet-stream' }));
+              
+              if (this.uploadForm) {
+                  this.uploadForm.setFiles(files);
+                  this.uploadForm.patchSettings(session);
+                  
+                  // Also restore colors? 
+                  // setFiles inits with 'Black'. We need to update them if they differ.
+                  // items has colorCode.
+                  setTimeout(() => {
+                      if (this.uploadForm) {
+                           items.forEach((item, index) => {
+                               // Assuming index matches. 
+                               // Need to be careful if items order changed, but usually ID sort or insert order.
+                               if (item.colorCode) {
+                                   this.uploadForm.updateItemColor(index, item.colorCode);
+                               }
+                           });
+                      }
+                  });
+              }
+              this.loading.set(false);
+          },
+          error: (err: any) => {
+              console.error('Failed to download files', err);
+              this.loading.set(false);
+              // Still show result? Yes.
+          }
+      });
   }
 
   onCalculate(req: QuoteRequest) {
@@ -67,10 +158,21 @@ export class CalculatorPageComponent implements OnInit {
             this.uploadProgress.set(event);
         } else {
             // It's the result
-            this.result.set(event as QuoteResult);
+            const res = event as QuoteResult;
+            this.result.set(res);
             this.loading.set(false);
             this.uploadProgress.set(100);
             this.step.set('quote');
+
+            // Update URL with session ID without reloading
+            if (res.sessionId) {
+                this.router.navigate([], {
+                    relativeTo: this.route,
+                    queryParams: { session: res.sessionId },
+                    queryParamsHandling: 'merge', // merge with existing params like 'mode' if any
+                    replaceUrl: true // prevent cluttering history, or false if we want back button to work. replaceUrl seems safer for "state update"
+                });
+            }
         }
       },
       error: () => {

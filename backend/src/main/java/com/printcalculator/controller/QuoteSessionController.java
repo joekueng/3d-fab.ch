@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 
 @RestController
 @RequestMapping("/api/quote-sessions")
@@ -308,5 +310,35 @@ public class QuoteSessionController {
         response.put("grandTotalChf", grandTotal);
         
         return ResponseEntity.ok(response);
+    }
+
+    // 6. Download Line Item Content
+    @GetMapping(value = "/{sessionId}/line-items/{lineItemId}/content")
+    public ResponseEntity<org.springframework.core.io.Resource> downloadLineItemContent(
+            @PathVariable UUID sessionId,
+            @PathVariable UUID lineItemId
+    ) throws IOException {
+        QuoteLineItem item = lineItemRepo.findById(lineItemId)
+                .orElseThrow(() -> new RuntimeException("Item not found"));
+
+        if (!item.getQuoteSession().getId().equals(sessionId)) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        if (item.getStoredPath() == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Path path = Paths.get(item.getStoredPath());
+        if (!Files.exists(path)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        org.springframework.core.io.Resource resource = new org.springframework.core.io.UrlResource(path.toUri());
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + item.getOriginalFilename() + "\"")
+                .body(resource);
     }
 }

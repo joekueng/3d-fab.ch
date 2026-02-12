@@ -232,6 +232,59 @@ export class UploadFormComponent implements OnInit {
       });
   }
 
+  setFiles(files: File[]) {
+      const validItems: FormItem[] = [];
+      for (const file of files) {
+          // Default color is Black or derive from somewhere if possible, but here we just init
+          validItems.push({ file, quantity: 1, color: 'Black' });
+      }
+
+      if (validItems.length > 0) {
+          this.items.set(validItems);
+          this.form.get('itemsTouched')?.setValue(true);
+          // Auto select last added
+          this.selectedFile.set(validItems[validItems.length - 1].file);
+      }
+  }
+
+  patchSettings(settings: any) {
+      if (!settings) return;
+      // settings object matches keys in our form? 
+      // Session has: materialCode, etc. derived from QuoteSession entity properties
+      // We need to map them if names differ.
+      
+      const patch: any = {};
+      if (settings.materialCode) patch.material = settings.materialCode;
+      
+      // Heuristic for Quality if not explicitly stored as "draft/standard/high"
+      // But we stored it in session creation? 
+      // QuoteSession entity does NOT store "quality" string directly, only layerHeight/infill.
+      // So we might need to deduce it or just set Custom/Advanced.
+      // But for Easy mode, we want to show "Standard" etc.
+      
+      // Actually, let's look at what we have in QuoteSession.
+      // layerHeightMm, infillPercent, etc. 
+      // If we are in Easy mode, we might just set the "quality" dropdown to match approx?
+      // Or if we stored "quality" in notes or separate field? We didn't.
+      
+      // Let's try to reverse map or defaults.
+      if (settings.layerHeightMm) {
+          if (settings.layerHeightMm >= 0.28) patch.quality = 'draft';
+          else if (settings.layerHeightMm <= 0.12) patch.quality = 'high';
+          else patch.quality = 'standard';
+          
+          patch.layerHeight = settings.layerHeightMm;
+      }
+      
+      if (settings.nozzleDiameterMm) patch.nozzleDiameter = settings.nozzleDiameterMm;
+      if (settings.infillPercent) patch.infillDensity = settings.infillPercent;
+      if (settings.infillPattern) patch.infillPattern = settings.infillPattern;
+      if (settings.supportsEnabled !== undefined) patch.supportEnabled = settings.supportsEnabled;
+      if (settings.notes) patch.notes = settings.notes;
+
+      this.form.patchValue(patch);
+  }
+
   onSubmit() {
     console.log('UploadFormComponent: onSubmit triggered');
     console.log('Form Valid:', this.form.valid, 'Items:', this.items().length);
