@@ -1,4 +1,4 @@
-import { Component, signal, ViewChild, ElementRef } from '@angular/core';
+import { Component, signal, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -9,7 +9,7 @@ import { QuoteResultComponent } from './components/quote-result/quote-result.com
 import { QuoteRequest, QuoteResult, QuoteEstimatorService } from './services/quote-estimator.service';
 import { UserDetailsComponent } from './components/user-details/user-details.component';
 import { SuccessStateComponent } from '../../shared/components/success-state/success-state.component';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-calculator-page',
@@ -18,7 +18,7 @@ import { Router } from '@angular/router';
   templateUrl: './calculator-page.component.html',
   styleUrl: './calculator-page.component.scss'
 })
-export class CalculatorPageComponent {
+export class CalculatorPageComponent implements OnInit {
   mode = signal<any>('easy');
   step = signal<'upload' | 'quote' | 'details' | 'success'>('upload');
   
@@ -32,7 +32,19 @@ export class CalculatorPageComponent {
   @ViewChild('uploadForm') uploadForm!: UploadFormComponent;
   @ViewChild('resultCol') resultCol!: ElementRef;
 
-  constructor(private estimator: QuoteEstimatorService, private router: Router) {}
+  constructor(
+    private estimator: QuoteEstimatorService, 
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
+
+  ngOnInit() {
+    this.route.data.subscribe(data => {
+      if (data['mode']) {
+        this.mode.set(data['mode']);
+      }
+    });
+  }
 
   onCalculate(req: QuoteRequest) {
     // ... (logic remains the same, simplified for diff)

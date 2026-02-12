@@ -10,7 +10,7 @@
 
         <nav class="nav-links" [class.open]="isMenuOpen">
           <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">{{ 'NAV.HOME' | translate }}</a>
-          <a routerLink="/cal" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}" (click)="closeMenu()">{{ 'NAV.CALCULATOR' | translate }}</a>
+          <a routerLink="/calculator/basic" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}" (click)="closeMenu()">{{ 'NAV.CALCULATOR' | translate }}</a>
           <a routerLink="/shop" routerLinkActive="active" (click)="closeMenu()">{{ 'NAV.SHOP' | translate }}</a>
           <a routerLink="/about" routerLinkActive="active" (click)="closeMenu()">{{ 'NAV.ABOUT' | translate }}</a>
           <a routerLink="/contact" routerLinkActive="active" (click)="closeMenu()">{{ 'NAV.CONTACT' | translate }}</a>
