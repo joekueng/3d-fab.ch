@@ -35,6 +35,7 @@ export interface QuoteResult {
   totalTimeHours: number;
   totalTimeMinutes: number;
   totalWeight: number;
+  notes?: string;
 }
 
 interface BackendResponse {
@@ -278,7 +279,8 @@ export class QuoteEstimatorService {
                                 totalPrice: Math.round(grandTotal * 100) / 100,
                                 totalTimeHours: totalHours,
                                 totalTimeMinutes: totalMinutes,
-                                totalWeight: Math.ceil(totalWeight)
+                                totalWeight: Math.ceil(totalWeight),
+                                notes: request.notes
                             };
                             
                             observer.next(result);

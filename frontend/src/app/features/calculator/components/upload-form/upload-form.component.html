@@ -129,12 +129,13 @@
         </div>
     </div>
 
-    <app-input
-      formControlName="notes"
-      [label]="'CALC.NOTES' | translate"
-      placeholder="Istruzioni specifiche..."
-    ></app-input>
   }
+
+  <app-input
+    formControlName="notes"
+    [label]="'CALC.NOTES' | translate"
+    placeholder="Istruzioni specifiche..."
+  ></app-input>
 
   <div class="actions">
     <!-- Progress Bar (Only when uploading i.e. progress < 100) -->
