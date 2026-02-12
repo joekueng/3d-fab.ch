@@ -28,20 +28,23 @@ public class OrderController {
     private final QuoteSessionRepository quoteSessionRepo;
     private final QuoteLineItemRepository quoteLineItemRepo;
     private final CustomerRepository customerRepo;
+    private final com.printcalculator.service.StorageService storageService;
 
     // TODO: Inject Storage Service or use a base path property
-    private static final String STORAGE_ROOT = "storage_orders"; 
+    // private static final String STORAGE_ROOT = "storage_orders"; 
 
     public OrderController(OrderRepository orderRepo,
                            OrderItemRepository orderItemRepo,
                            QuoteSessionRepository quoteSessionRepo,
                            QuoteLineItemRepository quoteLineItemRepo,
-                           CustomerRepository customerRepo) {
+                           CustomerRepository customerRepo,
+                           com.printcalculator.service.StorageService storageService) {
         this.orderRepo = orderRepo;
         this.orderItemRepo = orderItemRepo;
         this.quoteSessionRepo = quoteSessionRepo;
         this.quoteLineItemRepo = quoteLineItemRepo;
         this.customerRepo = customerRepo;
+        this.storageService = storageService;
     }
 
 
@@ -69,7 +72,9 @@ public class OrderController {
                 .orElseGet(() -> {
                     Customer newC = new Customer();
                     newC.setEmail(request.getCustomer().getEmail());
+                    newC.setCustomerType(request.getCustomer().getCustomerType());
                     newC.setCreatedAt(OffsetDateTime.now());
+                    newC.setUpdatedAt(OffsetDateTime.now());
                     return customerRepo.save(newC);
                 });
         // Update customer details?
@@ -135,6 +140,13 @@ public class OrderController {
         
         BigDecimal subtotal = BigDecimal.ZERO;
         
+        // Initialize financial fields to defaults to satisfy DB constraints
+        order.setSubtotalChf(BigDecimal.ZERO);
+        order.setTotalChf(BigDecimal.ZERO);
+        order.setDiscountChf(BigDecimal.ZERO);
+        order.setSetupCostChf(session.getSetupCostChf()); // Or 0 if null, but session has it
+        order.setShippingCostChf(BigDecimal.valueOf(9.00)); // Default
+
         // Save Order first to get ID
         order = orderRepo.save(order);
 
@@ -162,6 +174,7 @@ public class OrderController {
             oItem.setStoredFilename(storedFilename);
             oItem.setStoredRelativePath("PENDING"); // Placeholder
             oItem.setMimeType("application/octet-stream"); // specific type if known
+            oItem.setCreatedAt(OffsetDateTime.now());
             
             oItem = orderItemRepo.save(oItem);
             
@@ -174,11 +187,9 @@ public class OrderController {
                 try {
                     Path sourcePath = Paths.get(qItem.getStoredPath());
                     if (Files.exists(sourcePath)) {
-                        Path targetPath = Paths.get(STORAGE_ROOT, relativePath);
-                        Files.createDirectories(targetPath.getParent());
-                        Files.copy(sourcePath, targetPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                        storageService.store(sourcePath, Paths.get(relativePath));
                         
-                        oItem.setFileSizeBytes(Files.size(targetPath));
+                        oItem.setFileSizeBytes(Files.size(sourcePath));
                     }
                 } catch (IOException e) {
                     e.printStackTrace(); // Log error but allow order creation? Or fail?
@@ -195,6 +206,7 @@ public class OrderController {
         order.setSubtotalChf(subtotal);
         order.setSetupCostChf(session.getSetupCostChf());
         order.setShippingCostChf(BigDecimal.valueOf(9.00)); // Default shipping? or 0?
+        order.setDiscountChf(BigDecimal.ZERO);
         // TODO: Calc implementation for shipping
         
         BigDecimal total = subtotal.add(order.getSetupCostChf()).add(order.getShippingCostChf()).subtract(order.getDiscountChf() != null ? order.getDiscountChf() : BigDecimal.ZERO);
@@ -239,14 +251,7 @@ public class OrderController {
         }
         
         // Save file to disk
-        Path absolutePath = Paths.get(STORAGE_ROOT, relativePath);
-        Files.createDirectories(absolutePath.getParent());
-        
-        if (Files.exists(absolutePath)) {
-            Files.delete(absolutePath); // Overwrite?
-        }
-        
-        Files.copy(file.getInputStream(), absolutePath);
+        storageService.store(file, Paths.get(relativePath));
         
         item.setFileSizeBytes(file.getSize());
         item.setMimeType(file.getContentType());

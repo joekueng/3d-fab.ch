@@ -40,6 +40,7 @@ public class QuoteSessionController {
     private final QuoteCalculator quoteCalculator;
     private final PrinterMachineRepository machineRepo;
     private final com.printcalculator.repository.PricingPolicyRepository pricingRepo;
+    private final com.printcalculator.service.StorageService storageService;
 
     // Defaults
     private static final String DEFAULT_FILAMENT = "pla_basic";
@@ -50,13 +51,15 @@ public class QuoteSessionController {
                                   SlicerService slicerService,
                                   QuoteCalculator quoteCalculator,
                                   PrinterMachineRepository machineRepo,
-                                  com.printcalculator.repository.PricingPolicyRepository pricingRepo) {
+                                  com.printcalculator.repository.PricingPolicyRepository pricingRepo,
+                                  com.printcalculator.service.StorageService storageService) {
         this.sessionRepo = sessionRepo;
         this.lineItemRepo = lineItemRepo;
         this.slicerService = slicerService;
         this.quoteCalculator = quoteCalculator;
         this.machineRepo = machineRepo;
         this.pricingRepo = pricingRepo;
+        this.storageService = storageService;
     }
 
     // 1. Start a new empty session
@@ -100,9 +103,7 @@ public class QuoteSessionController {
         if (file.isEmpty()) throw new IOException("File is empty");
 
         // 1. Define Persistent Storage Path
-        // Structure: storage_quotes/{sessionId}/{uuid}.{ext}
-        String storageDir = "storage_quotes/" + session.getId();
-        Files.createDirectories(Paths.get(storageDir));
+        // Structure: quotes/{sessionId}/{uuid}.{ext} (inside storage root)
         
         String originalFilename = file.getOriginalFilename();
         String ext = originalFilename != null && originalFilename.contains(".") 
@@ -110,10 +111,13 @@ public class QuoteSessionController {
                      : ".stl";
         
         String storedFilename = UUID.randomUUID() + ext;
-        Path persistentPath = Paths.get(storageDir, storedFilename);
+        Path relativePath = Paths.get("quotes", session.getId().toString(), storedFilename);
         
         // Save file
-        Files.copy(file.getInputStream(), persistentPath);
+        storageService.store(file, relativePath);
+        
+        // Resolve absolute path for slicing and storage usage
+        Path persistentPath = storageService.loadAsResource(relativePath).getFile().toPath();
 
         try {
             // Apply Basic/Advanced Logic
@@ -206,7 +210,9 @@ public class QuoteSessionController {
 
         } catch (Exception e) {
             // Cleanup if failed
-            Files.deleteIfExists(persistentPath);
+            try {
+                storageService.delete(Paths.get("quotes", session.getId().toString(), storedFilename));
+            } catch (Exception ignored) {}
             throw e;
         }
     }
@@ -330,6 +336,24 @@ public class QuoteSessionController {
         }
 
         Path path = Paths.get(item.getStoredPath());
+        // Since storedPath is absolute, we can't directly use loadAsResource with it unless we resolve relative.
+        // But loadAsResource expects relative path?
+        // Actually FileSystemStorageService.loadAsResource uses rootLocation.resolve(path).
+        // If path is absolute, resolve might fail or behave weirdly.
+        // But wait, we stored absolute path in DB: item.setStoredPath(persistentPath.toString());
+        // If we want to use storageService.loadAsResource, we need the relative path.
+        // Or we just access the file directly if we trust the absolute path.
+        // But we want to use StorageService abstraction.
+        
+        // Option 1: Reconstruct relative path.
+        // We know structure: quotes/{sessionId}/{filename}... 
+        // But filename is UUID+ext. We don't have storedFilename in QuoteLineItem easily?
+        // QuoteLineItem doesn't seem to have storedFilename field, only storedPath.
+        
+        // If we trust the file is on disk, we can use UrlResource directly here as before,
+        // relying on the fact that storedPath is the absolute path to the file.
+        // But we should verify it exists.
+        
         if (!Files.exists(path)) {
             return ResponseEntity.notFound().build();
         }
