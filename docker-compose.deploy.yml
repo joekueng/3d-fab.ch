@@ -18,6 +18,8 @@ services:
     restart: always
     volumes:
       - backend_profiles_${ENV}:/app/profiles
+      - /mnt/cache/appdata/print-calculator/${ENV}/storage_quotes:/app/storage_quotes
+      - /mnt/cache/appdata/print-calculator/${ENV}/storage_orders:/app/storage_orders
 
 
   frontend:
