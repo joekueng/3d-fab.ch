@@ -116,4 +116,6 @@ public class CustomQuoteRequestAttachment {
         this.createdAt = createdAt;
     }
 
+    public void setCustomQuoteRequest(CustomQuoteRequest request) {
+    }
 }

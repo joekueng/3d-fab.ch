@@ -1,0 +1,21 @@
+<div class="payment-container">
+  <mat-card class="payment-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>payment</mat-icon>
+      <mat-card-title>Payment Integration</mat-card-title>
+      <mat-card-subtitle>Order #{{ orderId }}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="coming-soon">
+        <h3>Coming Soon</h3>
+        <p>The online payment system is currently under development.</p>
+        <p>Your order has been saved. Please contact us to arrange payment.</p>
+      </div>
+    </mat-card-content>
+    <mat-card-actions align="end">
+      <button mat-raised-button color="primary" (click)="completeOrder()">
+        Simulate Payment Completion
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>
