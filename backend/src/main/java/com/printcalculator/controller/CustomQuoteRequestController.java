@@ -26,13 +26,14 @@ public class CustomQuoteRequestController {
     private final CustomQuoteRequestRepository requestRepo;
     private final CustomQuoteRequestAttachmentRepository attachmentRepo;
     
-    // TODO: Inject Storage Service
-    private static final String STORAGE_ROOT = "storage_requests";
+    private final com.printcalculator.service.StorageService storageService;
 
     public CustomQuoteRequestController(CustomQuoteRequestRepository requestRepo,
-                                        CustomQuoteRequestAttachmentRepository attachmentRepo) {
+                                        CustomQuoteRequestAttachmentRepository attachmentRepo,
+                                        com.printcalculator.service.StorageService storageService) {
         this.requestRepo = requestRepo;
         this.attachmentRepo = attachmentRepo;
+        this.storageService = storageService;
     }
 
     // 1. Create Custom Quote Request
@@ -91,10 +92,8 @@ public class CustomQuoteRequestController {
                 attachment.setStoredRelativePath(relativePath);
                 attachmentRepo.save(attachment);
                 
-                // Save file to disk
-                Path absolutePath = Paths.get(STORAGE_ROOT, relativePath);
-                Files.createDirectories(absolutePath.getParent());
-                Files.copy(file.getInputStream(), absolutePath);
+                // Save file to disk via StorageService
+                storageService.store(file, Paths.get(relativePath));
             }
         }
         

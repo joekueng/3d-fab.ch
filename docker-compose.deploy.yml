@@ -15,13 +15,16 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - TEMP_DIR=/app/temp
       - PROFILES_DIR=/app/profiles
-      - CLAMAV_HOST=192.168.1.147
+      - CLAMAV_HOST=host.docker.internal
       - CLAMAV_PORT=3310
+      - STORAGE_LOCATION=/app/storage
     restart: always
     volumes:
       - backend_profiles_${ENV}:/app/profiles
-      - /mnt/cache/appdata/print-calculator/${ENV}/storage_quotes:/app/storage_quotes
-      - /mnt/cache/appdata/print-calculator/${ENV}/storage_orders:/app/storage_orders
+      - /mnt/cache/appdata/print-calculator/${ENV}/storage_quotes:/app/storage/quotes
+      - /mnt/cache/appdata/print-calculator/${ENV}/storage_orders:/app/storage/orders
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 
   frontend:

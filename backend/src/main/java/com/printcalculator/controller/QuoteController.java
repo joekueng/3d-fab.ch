@@ -108,7 +108,11 @@ public class QuoteController {
         try {
             file.transferTo(tempInput.toFile());
 
-            String slicerMachineProfile = "bambu_a1"; // TODO: Add to PrinterMachine entity
+            // Use profile from machine or fallback
+            String slicerMachineProfile = machine.getSlicerMachineProfile();
+            if (slicerMachineProfile == null || slicerMachineProfile.isEmpty()) {
+                slicerMachineProfile = "bambu_a1"; 
+            }
 
             PrintStats stats = slicerService.slice(tempInput.toFile(), slicerMachineProfile, filament, process, machineOverrides, processOverrides);
             

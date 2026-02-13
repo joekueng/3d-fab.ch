@@ -40,7 +40,7 @@ public class ClamAVService {
                 return true;
             } else if (result instanceof ScanResult.VirusFound) {
                 Map<String, Collection<String>> viruses = ((ScanResult.VirusFound) result).getFoundViruses();
-                logger.warn("Virus found: {}", viruses);
+                logger.warn("VIRUS DETECTED: {}", viruses);
                 return false;
             } else {
                 logger.warn("Unknown scan result: {}", result);

@@ -2,7 +2,9 @@
   <h1>{{ 'CALC.TITLE' | translate }}</h1>
   <p class="subtitle">{{ 'CALC.SUBTITLE' | translate }}</p>
 
-  @if (error()) {
+  @if (error() === 'VIRUS_DETECTED') {
+    <app-alert type="error">{{ 'CALC.ERROR_VIRUS' | translate }}</app-alert>
+  } @else if (error()) {
     <app-alert type="error">{{ 'CALC.ERROR_GENERIC' | translate }}</app-alert>
   }
 </div>

@@ -41,6 +41,9 @@ public class PrinterMachine {
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
+    @Column(name = "slicer_machine_profile")
+    private String slicerMachineProfile;
+
     public Long getId() {
         return id;
     }
@@ -55,6 +58,14 @@ public class PrinterMachine {
 
     public void setPrinterDisplayName(String printerDisplayName) {
         this.printerDisplayName = printerDisplayName;
+    }
+
+    public String getSlicerMachineProfile() {
+        return slicerMachineProfile;
+    }
+
+    public void setSlicerMachineProfile(String slicerMachineProfile) {
+        this.slicerMachineProfile = slicerMachineProfile;
     }
 
     public Integer getBuildVolumeXMm() {

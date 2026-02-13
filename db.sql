@@ -12,6 +12,7 @@ create table printer_machine
     fleet_weight         numeric(6, 3) not null default 1.000,
 
     is_active            boolean       not null default true,
+    slicer_machine_profile varchar(255),
     created_at           timestamptz   not null default now()
 );
 

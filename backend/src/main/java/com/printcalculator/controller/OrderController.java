@@ -30,8 +30,6 @@ public class OrderController {
     private final CustomerRepository customerRepo;
     private final com.printcalculator.service.StorageService storageService;
 
-    // TODO: Inject Storage Service or use a base path property
-    // private static final String STORAGE_ROOT = "storage_orders"; 
 
     public OrderController(OrderRepository orderRepo,
                            OrderItemRepository orderItemRepo,
@@ -207,7 +205,11 @@ public class OrderController {
         order.setSetupCostChf(session.getSetupCostChf());
         order.setShippingCostChf(BigDecimal.valueOf(9.00)); // Default shipping? or 0?
         order.setDiscountChf(BigDecimal.ZERO);
-        // TODO: Calc implementation for shipping
+        // Calculate Shipping (Basic implementation: Flat rate 9.00 if not pickup)
+        // Future: Check delivery method from request if available
+        if (order.getShippingCostChf() == null) {
+             order.setShippingCostChf(BigDecimal.valueOf(9.00));
+        }
         
         BigDecimal total = subtotal.add(order.getSetupCostChf()).add(order.getShippingCostChf()).subtract(order.getDiscountChf() != null ? order.getDiscountChf() : BigDecimal.ZERO);
         order.setTotalChf(total);

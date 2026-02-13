@@ -89,26 +89,15 @@ public class SlicerService {
             
             command.add(inputStl.getAbsolutePath());
 
-            logger.info("Executing Slicer: " + String.join(" ", command));
+            logger.info("Slicing file: " + inputStl.getAbsolutePath() + " (Size: " + inputStl.length() + " bytes)");
+            if (!inputStl.exists()) {
+                throw new IOException("Input file not found: " + inputStl.getAbsolutePath());
+            }
 
             // 4. Run Process
-            ProcessBuilder pb = new ProcessBuilder(command);
-            pb.directory(tempDir.toFile());
-            // pb.inheritIO(); // Useful for debugging, but maybe capture instead?
-            
-            Process process = pb.start();
-            boolean finished = process.waitFor(5, TimeUnit.MINUTES);
-            
-            if (!finished) {
-                process.destroy();
-                throw new IOException("Slicer timed out");
-            }
-            
-            if (process.exitValue() != 0) {
-                // Read stderr
-                String error = new String(process.getErrorStream().readAllBytes());
-                throw new IOException("Slicer failed with exit code " + process.exitValue() + ": " + error);
-            }
+            runSlicerCommand(command, tempDir);
+
+            // 5. Find Output GCode
 
             // 5. Find Output GCode
             // Usually [basename].gcode or plate_1.gcode
@@ -131,9 +120,6 @@ public class SlicerService {
             // 6. Parse Results
             return gCodeParser.parse(gcodeFile);
 
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IOException("Interrupted during slicing", e);
         } finally {
             // Cleanup temp dir
             // In production we should delete, for debugging we might want to keep?
@@ -141,6 +127,32 @@ public class SlicerService {
             // recursiveDelete(tempDir);
             // Leaving it effectively "leaks" temp, but safer for persistent debugging?
             // Implementation detail: Use a utility to clean up.
+        }
+    }
+    protected void runSlicerCommand(List<String> command, Path tempDir) throws IOException {
+        ProcessBuilder pb = new ProcessBuilder(command);
+        pb.directory(tempDir.toFile());
+        
+        try {
+            Process process = pb.start();
+            boolean finished = process.waitFor(5, TimeUnit.MINUTES);
+            
+            if (!finished) {
+                process.destroy();
+                throw new IOException("Slicer timed out");
+            }
+            
+            if (process.exitValue() != 0) {
+                // Read stderr and stdout
+                String stderr = new String(process.getErrorStream().readAllBytes());
+                String stdout = new String(process.getInputStream().readAllBytes()); // STDOUT
+                throw new IOException("Slicer failed with exit code " + process.exitValue() + 
+                    "\nSTDERR: " + stderr + 
+                    "\nSTDOUT: " + stdout);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Interrupted during slicing", e);
         }
     }
 }

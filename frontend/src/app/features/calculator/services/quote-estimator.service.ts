@@ -215,7 +215,8 @@ export class QuoteEstimatorService {
                         },
                         error: (err) => {
                             console.error('Item upload failed', err);
-                            finalResponses[index] = { success: false, fileName: item.file.name };
+                            const errorMsg = err.error?.code === 'VIRUS_DETECTED' ? 'VIRUS_DETECTED' : 'UPLOAD_FAILED';
+                            finalResponses[index] = { success: false, fileName: item.file.name, error: errorMsg };
                             completedRequests++;
                             checkCompletion();
                         }
@@ -262,7 +263,13 @@ export class QuoteEstimatorService {
              });
 
              if (validCount === 0) {
-                 observer.error('All calculations failed.');
+                 // Check if any failed due to virus
+                 const virusError = responses.find(r => r.error === 'VIRUS_DETECTED');
+                 if (virusError) {
+                     observer.error('VIRUS_DETECTED');
+                 } else {
+                     observer.error('All calculations failed.');
+                 }
                  return;
              }
              

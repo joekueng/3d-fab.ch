@@ -26,7 +26,7 @@ export class CalculatorPageComponent implements OnInit {
   loading = signal(false);
   uploadProgress = signal(0);
   result = signal<QuoteResult | null>(null);
-  error = signal<boolean>(false);
+  error = signal<string | null>(null);
   
   orderSuccess = signal(false);
   
@@ -141,7 +141,7 @@ export class CalculatorPageComponent implements OnInit {
     this.currentRequest = req;
     this.loading.set(true);
     this.uploadProgress.set(0);
-    this.error.set(false);
+    this.error.set(null);
     this.result.set(null);
     this.orderSuccess.set(false);
 
@@ -175,8 +175,12 @@ export class CalculatorPageComponent implements OnInit {
             }
         }
       },
-      error: () => {
-        this.error.set(true);
+      error: (err) => {
+        if (typeof err === 'string') {
+             this.error.set(err);
+        } else {
+             this.error.set('GENERIC');
+        }
         this.loading.set(false);
       }
     });
