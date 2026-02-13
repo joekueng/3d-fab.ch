@@ -2,12 +2,13 @@ package com.printcalculator.controller;
 
 import com.printcalculator.entity.*;
 import com.printcalculator.repository.*;
+import com.printcalculator.service.InvoicePdfRenderingService;
+import com.printcalculator.service.StorageService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -15,9 +16,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
-import java.util.Optional;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -28,7 +32,8 @@ public class OrderController {
     private final QuoteSessionRepository quoteSessionRepo;
     private final QuoteLineItemRepository quoteLineItemRepo;
     private final CustomerRepository customerRepo;
-    private final com.printcalculator.service.StorageService storageService;
+    private final StorageService storageService;
+    private final InvoicePdfRenderingService invoiceService;
 
 
     public OrderController(OrderRepository orderRepo,
@@ -36,13 +41,15 @@ public class OrderController {
                            QuoteSessionRepository quoteSessionRepo,
                            QuoteLineItemRepository quoteLineItemRepo,
                            CustomerRepository customerRepo,
-                           com.printcalculator.service.StorageService storageService) {
+                           StorageService storageService,
+                           InvoicePdfRenderingService invoiceService) {
         this.orderRepo = orderRepo;
         this.orderItemRepo = orderItemRepo;
         this.quoteSessionRepo = quoteSessionRepo;
         this.quoteLineItemRepo = quoteLineItemRepo;
         this.customerRepo = customerRepo;
         this.storageService = storageService;
+        this.invoiceService = invoiceService;
     }
 
 
@@ -53,19 +60,13 @@ public class OrderController {
             @PathVariable UUID quoteSessionId,
             @RequestBody com.printcalculator.dto.CreateOrderRequest request
     ) {
-        // 1. Fetch Quote Session
         QuoteSession session = quoteSessionRepo.findById(quoteSessionId)
                 .orElseThrow(() -> new RuntimeException("Quote Session not found"));
 
-        if (!"ACTIVE".equals(session.getStatus())) {
-             // Allow converting only active sessions? Or check if not already converted?
-             // checking convertedOrderId might be better
-        }
         if (session.getConvertedOrderId() != null) {
-            return ResponseEntity.badRequest().body(null); // Already converted
+            return ResponseEntity.badRequest().body(null); 
         }
 
-        // 2. Handle Customer (Find or Create)
         Customer customer = customerRepo.findByEmail(request.getCustomer().getEmail())
                 .orElseGet(() -> {
                     Customer newC = new Customer();
@@ -75,13 +76,12 @@ public class OrderController {
                     newC.setUpdatedAt(OffsetDateTime.now());
                     return customerRepo.save(newC);
                 });
-        // Update customer details?
+        
         customer.setPhone(request.getCustomer().getPhone());
         customer.setCustomerType(request.getCustomer().getCustomerType());
         customer.setUpdatedAt(OffsetDateTime.now());
         customerRepo.save(customer);
 
-        // 3. Create Order
         Order order = new Order();
         order.setSourceQuoteSession(session);
         order.setCustomer(customer);
@@ -92,7 +92,6 @@ public class OrderController {
         order.setUpdatedAt(OffsetDateTime.now());
         order.setCurrency("CHF");
 
-        // Billing
         order.setBillingCustomerType(request.getCustomer().getCustomerType());
         if (request.getBillingAddress() != null) {
             order.setBillingFirstName(request.getBillingAddress().getFirstName());
@@ -106,7 +105,6 @@ public class OrderController {
             order.setBillingCountryCode(request.getBillingAddress().getCountryCode() != null ? request.getBillingAddress().getCountryCode() : "CH");
         }
 
-        // Shipping
         order.setShippingSameAsBilling(request.isShippingSameAsBilling());
         if (!request.isShippingSameAsBilling() && request.getShippingAddress() != null) {
              order.setShippingFirstName(request.getShippingAddress().getFirstName());
@@ -119,8 +117,6 @@ public class OrderController {
              order.setShippingCity(request.getShippingAddress().getCity());
              order.setShippingCountryCode(request.getShippingAddress().getCountryCode() != null ? request.getShippingAddress().getCountryCode() : "CH");
         } else {
-            // Copy billing to shipping? Or leave empty and rely on flag?
-            // Usually explicit copy is safer for queries
             order.setShippingFirstName(order.getBillingFirstName());
             order.setShippingLastName(order.getBillingLastName());
             order.setShippingCompanyName(order.getBillingCompanyName());
@@ -132,81 +128,61 @@ public class OrderController {
             order.setShippingCountryCode(order.getBillingCountryCode());
         }
 
-        // Financials from Session (Assuming mocked/calculated in session)
-        // We re-calculate totals from line items to be safe
         List<QuoteLineItem> quoteItems = quoteLineItemRepo.findByQuoteSessionId(quoteSessionId);
         
         BigDecimal subtotal = BigDecimal.ZERO;
-        
-        // Initialize financial fields to defaults to satisfy DB constraints
         order.setSubtotalChf(BigDecimal.ZERO);
         order.setTotalChf(BigDecimal.ZERO);
         order.setDiscountChf(BigDecimal.ZERO);
-        order.setSetupCostChf(session.getSetupCostChf()); // Or 0 if null, but session has it
-        order.setShippingCostChf(BigDecimal.valueOf(9.00)); // Default
+        order.setSetupCostChf(session.getSetupCostChf() != null ? session.getSetupCostChf() : BigDecimal.ZERO); 
+        order.setShippingCostChf(BigDecimal.valueOf(9.00)); 
 
-        // Save Order first to get ID
         order = orderRepo.save(order);
 
-        // 4. Create Order Items
         for (QuoteLineItem qItem : quoteItems) {
             OrderItem oItem = new OrderItem();
             oItem.setOrder(order);
             oItem.setOriginalFilename(qItem.getOriginalFilename());
             oItem.setQuantity(qItem.getQuantity());
             oItem.setColorCode(qItem.getColorCode());
-            oItem.setMaterialCode(session.getMaterialCode()); // Or per item if supported
+            oItem.setMaterialCode(session.getMaterialCode());
             
-            // Pricing
             oItem.setUnitPriceChf(qItem.getUnitPriceChf());
             oItem.setLineTotalChf(qItem.getUnitPriceChf().multiply(BigDecimal.valueOf(qItem.getQuantity())));
             oItem.setPrintTimeSeconds(qItem.getPrintTimeSeconds());
             oItem.setMaterialGrams(qItem.getMaterialGrams());
             
-            // File Handling Check
-            // "orders/{orderId}/3d-files/{orderItemId}/{uuid}.{ext}"
             UUID fileUuid = UUID.randomUUID();
             String ext = getExtension(qItem.getOriginalFilename());
             String storedFilename = fileUuid.toString() + "." + ext;
             
             oItem.setStoredFilename(storedFilename);
-            oItem.setStoredRelativePath("PENDING"); // Placeholder
-            oItem.setMimeType("application/octet-stream"); // specific type if known
+            oItem.setStoredRelativePath("PENDING"); 
+            oItem.setMimeType("application/octet-stream"); 
             oItem.setCreatedAt(OffsetDateTime.now());
             
             oItem = orderItemRepo.save(oItem);
             
-            // Update Path now that we have ID
             String relativePath = "orders/" + order.getId() + "/3d-files/" + oItem.getId() + "/" + storedFilename;
             oItem.setStoredRelativePath(relativePath);
             
-            // COPY FILE from Quote to Order
             if (qItem.getStoredPath() != null) {
                 try {
                     Path sourcePath = Paths.get(qItem.getStoredPath());
                     if (Files.exists(sourcePath)) {
                         storageService.store(sourcePath, Paths.get(relativePath));
-                        
                         oItem.setFileSizeBytes(Files.size(sourcePath));
                     }
                 } catch (IOException e) {
-                    e.printStackTrace(); // Log error but allow order creation? Or fail?
-                    // Ideally fail or mark as error
+                    e.printStackTrace();
                 }
             }
             
             orderItemRepo.save(oItem);
-            
             subtotal = subtotal.add(oItem.getLineTotalChf());
         }
 
-        // Update Order Totals
         order.setSubtotalChf(subtotal);
-        order.setSetupCostChf(session.getSetupCostChf());
-        order.setShippingCostChf(BigDecimal.valueOf(9.00)); // Default shipping? or 0?
-        order.setDiscountChf(BigDecimal.ZERO);
-        // Calculate Shipping (Basic implementation: Flat rate 9.00 if not pickup)
-        // Future: Check delivery method from request if available
         if (order.getShippingCostChf() == null) {
              order.setShippingCostChf(BigDecimal.valueOf(9.00));
         }
@@ -214,15 +190,13 @@ public class OrderController {
         BigDecimal total = subtotal.add(order.getSetupCostChf()).add(order.getShippingCostChf()).subtract(order.getDiscountChf() != null ? order.getDiscountChf() : BigDecimal.ZERO);
         order.setTotalChf(total);
         
-        // Link session
         session.setConvertedOrderId(order.getId());
-        session.setStatus("CONVERTED"); // or CLOSED
+        session.setStatus("CONVERTED"); 
         quoteSessionRepo.save(session);
         
         return ResponseEntity.ok(orderRepo.save(order));
     }
     
-    // 2. Upload file for Order Item
     @PostMapping(value = "/{orderId}/items/{orderItemId}/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Transactional
     public ResponseEntity<Void> uploadOrderItemFile(
@@ -238,30 +212,91 @@ public class OrderController {
             return ResponseEntity.badRequest().build();
         }
         
-        // Ensure path logic
         String relativePath = item.getStoredRelativePath();
         if (relativePath == null || relativePath.equals("PENDING")) {
-             // Should verify consistency
-             // If we used the logic above, it should have a path.
-             // If it's "PENDING", regen it.
              String ext = getExtension(file.getOriginalFilename());
              String storedFilename = UUID.randomUUID().toString() + "." + ext;
              relativePath = "orders/" + orderId + "/3d-files/" + orderItemId + "/" + storedFilename;
              item.setStoredRelativePath(relativePath);
              item.setStoredFilename(storedFilename);
-             // Update item
         }
         
-        // Save file to disk
         storageService.store(file, Paths.get(relativePath));
-        
         item.setFileSizeBytes(file.getSize());
         item.setMimeType(file.getContentType());
-        // Calculate SHA256? (Optional)
-        
         orderItemRepo.save(item);
         
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{orderId}")
+    public ResponseEntity<Order> getOrder(@PathVariable UUID orderId) {
+        return orderRepo.findById(orderId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/{orderId}/invoice")
+    public ResponseEntity<byte[]> getInvoice(@PathVariable UUID orderId) {
+        Order order = orderRepo.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        List<OrderItem> items = orderItemRepo.findByOrder_Id(orderId);
+
+        Map<String, Object> vars = new HashMap<>();
+        vars.put("sellerDisplayName", "3D Fab Switzerland");
+        vars.put("sellerAddressLine1", "Sede Ticino, Svizzera");
+        vars.put("sellerAddressLine2", "Sede Bienne, Svizzera");
+        vars.put("sellerEmail", "info@3dfab.ch");
+
+        vars.put("invoiceNumber", "INV-" + order.getId().toString().substring(0, 8).toUpperCase());
+        vars.put("invoiceDate", order.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE));
+        vars.put("dueDate", order.getCreatedAt().plusDays(7).format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        String buyerName = order.getBillingCustomerType().equals("BUSINESS") 
+            ? order.getBillingCompanyName() 
+            : order.getBillingFirstName() + " " + order.getBillingLastName();
+        vars.put("buyerDisplayName", buyerName);
+        vars.put("buyerAddressLine1", order.getBillingAddressLine1());
+        vars.put("buyerAddressLine2", order.getBillingZip() + " " + order.getBillingCity() + ", " + order.getBillingCountryCode());
+
+        List<Map<String, Object>> invoiceLineItems = items.stream().map(i -> {
+            Map<String, Object> line = new HashMap<>();
+            line.put("description", "Stampa 3D: " + i.getOriginalFilename());
+            line.put("quantity", i.getQuantity());
+            line.put("unitPriceFormatted", String.format("CHF %.2f", i.getUnitPriceChf()));
+            line.put("lineTotalFormatted", String.format("CHF %.2f", i.getLineTotalChf()));
+            return line;
+        }).collect(Collectors.toList());
+
+        // Add Setup and Shipping as line items too? Or separate in template?
+        // Template has invoiceLineItems loop. Let's add them there for simplicity or separate.
+        // Let's add them to the list.
+        Map<String, Object> setupLine = new HashMap<>();
+        setupLine.put("description", "Costo Setup");
+        setupLine.put("quantity", 1);
+        setupLine.put("unitPriceFormatted", String.format("CHF %.2f", order.getSetupCostChf()));
+        setupLine.put("lineTotalFormatted", String.format("CHF %.2f", order.getSetupCostChf()));
+        invoiceLineItems.add(setupLine);
+
+        Map<String, Object> shippingLine = new HashMap<>();
+        shippingLine.put("description", "Spedizione");
+        shippingLine.put("quantity", 1);
+        shippingLine.put("unitPriceFormatted", String.format("CHF %.2f", order.getShippingCostChf()));
+        shippingLine.put("lineTotalFormatted", String.format("CHF %.2f", order.getShippingCostChf()));
+        invoiceLineItems.add(shippingLine);
+
+        vars.put("invoiceLineItems", invoiceLineItems);
+        vars.put("subtotalFormatted", String.format("CHF %.2f", order.getSubtotalChf()));
+        vars.put("grandTotalFormatted", String.format("CHF %.2f", order.getTotalChf()));
+        vars.put("paymentTermsText", "Pagamento entro 7 giorni via Bonifico o TWINT. Grazie.");
+
+        byte[] pdf = invoiceService.generateInvoicePdfBytesFromTemplate(vars);
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"invoice-" + orderId + ".pdf\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
     }
     
     private String getExtension(String filename) {

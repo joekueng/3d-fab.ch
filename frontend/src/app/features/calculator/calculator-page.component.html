@@ -21,12 +21,12 @@
           <div class="mode-selector">
             <div class="mode-option"
                  [class.active]="mode() === 'easy'"
-                 (click)="mode.set('easy')">
+                 (click)="setMode('easy')">
               {{ 'CALC.MODE_EASY' | translate }}
             </div>
             <div class="mode-option"
                  [class.active]="mode() === 'advanced'"
-                 (click)="mode.set('advanced')">
+                 (click)="setMode('advanced')">
               {{ 'CALC.MODE_ADVANCED' | translate }}
             </div>
           </div>

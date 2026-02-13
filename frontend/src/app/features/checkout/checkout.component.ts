@@ -2,9 +2,11 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { QuoteEstimatorService } from '../calculator/services/quote-estimator.service';
 import { AppInputComponent } from '../../shared/components/app-input/app-input.component';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
+import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
 
 @Component({
   selector: 'app-checkout',
@@ -12,11 +14,13 @@ import { AppButtonComponent } from '../../shared/components/app-button/app-butto
   imports: [
     CommonModule, 
     ReactiveFormsModule, 
+    TranslateModule,
     AppInputComponent,
-    AppButtonComponent
+    AppButtonComponent,
+    AppCardComponent
   ],
   templateUrl: './checkout.component.html',
-  styleUrls: ['./checkout.component.scss']
+  styleUrl: './checkout.component.scss'
 })
 export class CheckoutComponent implements OnInit {
   private fb = inject(FormBuilder);

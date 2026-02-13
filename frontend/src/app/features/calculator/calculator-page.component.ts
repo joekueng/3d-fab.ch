@@ -260,4 +260,12 @@ export class CalculatorPageComponent implements OnInit {
 
     this.router.navigate(['/contact']);
   }
+
+  setMode(mode: 'easy' | 'advanced') {
+    const path = mode === 'easy' ? 'basic' : 'advanced';
+    this.router.navigate(['../', path], { 
+      relativeTo: this.route,
+      queryParamsHandling: 'merge'
+    });
+  }
 }
