@@ -142,7 +142,24 @@ public class QuoteSessionController {
                 else if (settings.getMaterial().toLowerCase().contains("petg")) filamentProfile = "Generic PETG";
                 else if (settings.getMaterial().toLowerCase().contains("tpu")) filamentProfile = "Generic TPU";
                 else if (settings.getMaterial().toLowerCase().contains("abs")) filamentProfile = "Generic ABS";
+                
+                // Update Session Material
+                session.setMaterialCode(settings.getMaterial());
+            } else {
+                 // Fallback if null?
+                 session.setMaterialCode("pla_basic");
             }
+            
+            // Update Session Settings for Persistence
+            if (settings.getNozzleDiameter() != null) session.setNozzleDiameterMm(BigDecimal.valueOf(settings.getNozzleDiameter()));
+            if (settings.getLayerHeight() != null) session.setLayerHeightMm(BigDecimal.valueOf(settings.getLayerHeight()));
+            if (settings.getInfillDensity() != null) session.setInfillPercent(settings.getInfillDensity().intValue());
+            if (settings.getInfillPattern() != null) session.setInfillPattern(settings.getInfillPattern());
+            if (settings.getSupportsEnabled() != null) session.setSupportsEnabled(settings.getSupportsEnabled());
+            if (settings.getNotes() != null) session.setNotes(settings.getNotes());
+            
+            // Save session updates
+            sessionRepo.save(session);
 
             String processProfile = "0.20mm Standard @BBL A1"; 
             // Mapping quality to process
@@ -156,18 +173,25 @@ public class QuoteSessionController {
             }
             
             // Build overrides map from settings
+            // Build overrides map from settings
             Map<String, String> processOverrides = new HashMap<>();
             if (settings.getLayerHeight() != null) processOverrides.put("layer_height", String.valueOf(settings.getLayerHeight()));
             if (settings.getInfillDensity() != null) processOverrides.put("sparse_infill_density", settings.getInfillDensity() + "%");
             if (settings.getInfillPattern() != null) processOverrides.put("sparse_infill_pattern", settings.getInfillPattern());
+            if (Boolean.TRUE.equals(settings.getSupportsEnabled())) processOverrides.put("enable_support", "1");
             
+            Map<String, String> machineOverrides = new HashMap<>();
+            if (settings.getNozzleDiameter() != null) {
+                machineOverrides.put("nozzle_diameter", String.valueOf(settings.getNozzleDiameter()));
+            }
+
             // 3. Slice (Use persistent path)
             PrintStats stats = slicerService.slice(
                 persistentPath.toFile(), 
                 machineProfile, 
                 filamentProfile, 
                 processProfile, 
-                null, // machine overrides
+                machineOverrides, // machine overrides
                 processOverrides
             );
             
@@ -227,17 +251,20 @@ public class QuoteSessionController {
                     settings.setLayerHeight(0.28);
                     settings.setInfillDensity(15.0);
                     settings.setInfillPattern("grid");
+                    if (settings.getNozzleDiameter() == null) settings.setNozzleDiameter(0.4);
                     break;
                 case "high":
                     settings.setLayerHeight(0.12);
                     settings.setInfillDensity(20.0);
                     settings.setInfillPattern("gyroid");
+                    if (settings.getNozzleDiameter() == null) settings.setNozzleDiameter(0.4);
                     break;
                 case "standard":
                 default:
                     settings.setLayerHeight(0.20);
                     settings.setInfillDensity(20.0);
                     settings.setInfillPattern("grid");
+                    if (settings.getNozzleDiameter() == null) settings.setNozzleDiameter(0.4);
                     break;
             }
         } else {
@@ -245,6 +272,8 @@ public class QuoteSessionController {
             if (settings.getLayerHeight() == null) settings.setLayerHeight(0.20);
             if (settings.getInfillDensity() == null) settings.setInfillDensity(20.0);
             if (settings.getInfillPattern() == null) settings.setInfillPattern("grid");
+            if (settings.getNozzleDiameter() == null) settings.setNozzleDiameter(0.4);
+            if (settings.getSupportsEnabled() == null) settings.setSupportsEnabled(false);
         }
     }
 
