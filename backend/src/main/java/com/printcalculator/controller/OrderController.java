@@ -1,5 +1,6 @@
 package com.printcalculator.controller;
 
+import com.printcalculator.dto.*;
 import com.printcalculator.entity.*;
 import com.printcalculator.repository.*;
 import com.printcalculator.service.InvoicePdfRenderingService;
@@ -56,7 +57,7 @@ public class OrderController {
     // 1. Create Order from Quote
     @PostMapping("/from-quote/{quoteSessionId}")
     @Transactional
-    public ResponseEntity<Order> createOrderFromQuote(
+    public ResponseEntity<OrderDto> createOrderFromQuote(
             @PathVariable UUID quoteSessionId,
             @RequestBody com.printcalculator.dto.CreateOrderRequest request
     ) {
@@ -194,7 +195,10 @@ public class OrderController {
         session.setStatus("CONVERTED"); 
         quoteSessionRepo.save(session);
         
-        return ResponseEntity.ok(orderRepo.save(order));
+        order = orderRepo.save(order);
+        List<OrderItem> finalItems = orderItemRepo.findByOrder_Id(order.getId());
+        
+        return ResponseEntity.ok(convertToDto(order, finalItems));
     }
     
     @PostMapping(value = "/{orderId}/items/{orderItemId}/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -230,9 +234,12 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
-    public ResponseEntity<Order> getOrder(@PathVariable UUID orderId) {
+    public ResponseEntity<OrderDto> getOrder(@PathVariable UUID orderId) {
         return orderRepo.findById(orderId)
-                .map(ResponseEntity::ok)
+                .map(o -> {
+                    List<OrderItem> items = orderItemRepo.findByOrder_Id(o.getId());
+                    return ResponseEntity.ok(convertToDto(o, items));
+                })
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -269,9 +276,6 @@ public class OrderController {
             return line;
         }).collect(Collectors.toList());
 
-        // Add Setup and Shipping as line items too? Or separate in template?
-        // Template has invoiceLineItems loop. Let's add them there for simplicity or separate.
-        // Let's add them to the list.
         Map<String, Object> setupLine = new HashMap<>();
         setupLine.put("description", "Costo Setup");
         setupLine.put("quantity", 1);
@@ -306,6 +310,66 @@ public class OrderController {
             return filename.substring(i + 1);
         }
         return "stl";
+    }
+
+    private OrderDto convertToDto(Order order, List<OrderItem> items) {
+        OrderDto dto = new OrderDto();
+        dto.setId(order.getId());
+        dto.setStatus(order.getStatus());
+        dto.setCustomerEmail(order.getCustomerEmail());
+        dto.setCustomerPhone(order.getCustomerPhone());
+        dto.setBillingCustomerType(order.getBillingCustomerType());
+        dto.setCurrency(order.getCurrency());
+        dto.setSetupCostChf(order.getSetupCostChf());
+        dto.setShippingCostChf(order.getShippingCostChf());
+        dto.setDiscountChf(order.getDiscountChf());
+        dto.setSubtotalChf(order.getSubtotalChf());
+        dto.setTotalChf(order.getTotalChf());
+        dto.setCreatedAt(order.getCreatedAt());
+        dto.setShippingSameAsBilling(order.getShippingSameAsBilling());
+
+        AddressDto billing = new AddressDto();
+        billing.setFirstName(order.getBillingFirstName());
+        billing.setLastName(order.getBillingLastName());
+        billing.setCompanyName(order.getBillingCompanyName());
+        billing.setContactPerson(order.getBillingContactPerson());
+        billing.setAddressLine1(order.getBillingAddressLine1());
+        billing.setAddressLine2(order.getBillingAddressLine2());
+        billing.setZip(order.getBillingZip());
+        billing.setCity(order.getBillingCity());
+        billing.setCountryCode(order.getBillingCountryCode());
+        dto.setBillingAddress(billing);
+
+        if (!order.getShippingSameAsBilling()) {
+            AddressDto shipping = new AddressDto();
+            shipping.setFirstName(order.getShippingFirstName());
+            shipping.setLastName(order.getShippingLastName());
+            shipping.setCompanyName(order.getShippingCompanyName());
+            shipping.setContactPerson(order.getShippingContactPerson());
+            shipping.setAddressLine1(order.getShippingAddressLine1());
+            shipping.setAddressLine2(order.getShippingAddressLine2());
+            shipping.setZip(order.getShippingZip());
+            shipping.setCity(order.getShippingCity());
+            shipping.setCountryCode(order.getShippingCountryCode());
+            dto.setShippingAddress(shipping);
+        }
+
+        List<OrderItemDto> itemDtos = items.stream().map(i -> {
+            OrderItemDto idto = new OrderItemDto();
+            idto.setId(i.getId());
+            idto.setOriginalFilename(i.getOriginalFilename());
+            idto.setMaterialCode(i.getMaterialCode());
+            idto.setColorCode(i.getColorCode());
+            idto.setQuantity(i.getQuantity());
+            idto.setPrintTimeSeconds(i.getPrintTimeSeconds());
+            idto.setMaterialGrams(i.getMaterialGrams());
+            idto.setUnitPriceChf(i.getUnitPriceChf());
+            idto.setLineTotalChf(i.getLineTotalChf());
+            return idto;
+        }).collect(Collectors.toList());
+        dto.setItems(itemDtos);
+
+        return dto;
     }
 
 }
