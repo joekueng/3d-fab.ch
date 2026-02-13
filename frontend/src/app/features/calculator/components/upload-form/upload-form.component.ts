@@ -112,7 +112,9 @@ export class UploadFormComponent implements OnInit {
   private setDefaults() {
       // Set Defaults if available
       if (this.materials().length > 0 && !this.form.get('material')?.value) {
-           this.form.get('material')?.setValue(this.materials()[0].value);
+           // Prefer PLA Basic, otherwise first available
+           const pla = this.materials().find(m => m.value === 'pla_basic');
+           this.form.get('material')?.setValue(pla ? pla.value : this.materials()[0].value);
       }
       if (this.qualities().length > 0 && !this.form.get('quality')?.value) {
           // Try to find 'standard' or use first

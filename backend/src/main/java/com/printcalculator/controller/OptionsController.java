@@ -64,6 +64,20 @@ public class OptionsController {
                 })
                 .filter(m -> m != null)
                 .collect(Collectors.toList());
+        
+        // Sort: PLA first, then PETG, then others alphabetically
+        materialOptions.sort((a, b) -> {
+            String codeA = a.code();
+            String codeB = b.code();
+            
+            if (codeA.equals("pla_basic")) return -1;
+            if (codeB.equals("pla_basic")) return 1;
+            
+            if (codeA.equals("petg_basic")) return -1;
+            if (codeB.equals("petg_basic")) return 1;
+            
+            return codeA.compareTo(codeB);
+        });
 
         // 2. Qualities (Static as per user request)
         List<OptionsResponse.QualityOption> qualities = List.of(
