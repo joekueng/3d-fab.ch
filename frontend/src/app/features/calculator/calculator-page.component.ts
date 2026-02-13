@@ -75,7 +75,7 @@ export class CalculatorPageComponent implements OnInit {
           },
           error: (err) => {
               console.error('Failed to load session', err);
-              this.error.set(true);
+              this.error.set('Failed to load session');
               this.loading.set(false);
           }
       });
