@@ -132,15 +132,19 @@
         <div class="summary-totals" *ngIf="quoteSession() as session">
           <div class="total-row">
             <span>{{ 'CHECKOUT.SUBTOTAL' | translate }}</span>
-            <span>{{ (session.totalPrice - session.setupCostChf) | currency:'CHF' }}</span>
+            <span>{{ session.itemsTotalChf | currency:'CHF' }}</span>
           </div>
           <div class="total-row">
             <span>{{ 'CHECKOUT.SETUP_FEE' | translate }}</span>
-            <span>{{ session.setupCostChf | currency:'CHF' }}</span>
+            <span>{{ session.session.setupCostChf | currency:'CHF' }}</span>
+          </div>
+          <div class="total-row">
+            <span>{{ 'CHECKOUT.SHIPPING' | translate }}</span>
+            <span>{{ 9.0 | currency:'CHF' }}</span>
           </div>
           <div class="grand-total-row">
             <span>{{ 'CHECKOUT.TOTAL' | translate }}</span>
-            <span>{{ session.totalPrice | currency:'CHF' }}</span>
+            <span>{{ (session.grandTotalChf + 9.0) | currency:'CHF' }}</span>
           </div>
         </div>
       </app-card>
