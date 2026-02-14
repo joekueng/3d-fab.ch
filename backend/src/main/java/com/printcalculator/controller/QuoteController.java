@@ -44,7 +44,7 @@ public class QuoteController {
             @RequestParam(value = "infill_pattern", required = false) String infillPattern,
             @RequestParam(value = "layer_height", required = false) Double layerHeight,
             @RequestParam(value = "nozzle_diameter", required = false) Double nozzleDiameter,
-            @RequestParam(value = "support_enabled", required = false) Boolean supportEnabled
+            @RequestParam(value = "support_enabled", required = false, defaultValue = "true") Boolean supportEnabled
             ) throws IOException {
 
         // ... process selection logic ...
@@ -72,6 +72,9 @@ public class QuoteController {
         }
         if (supportEnabled != null) {
             processOverrides.put("enable_support", supportEnabled ? "1" : "0");
+            if (supportEnabled) {
+                processOverrides.put("support_threshold_angle", "45");
+            }
         }
 
         if (nozzleDiameter != null) {

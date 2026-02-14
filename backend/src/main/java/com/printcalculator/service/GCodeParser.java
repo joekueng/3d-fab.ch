@@ -26,13 +26,15 @@ public class GCodeParser {
     private static final Pattern TIME_PATTERN = Pattern.compile(
             ";\\s*(?:estimated\\s+printing\\s+time|estimated\\s+print\\s+time|print\\s+time).*?[:=]\\s*(.*)",
             Pattern.CASE_INSENSITIVE);
-    private static final Pattern FILAMENT_G_PATTERN = Pattern.compile(";\\s*filament used \\[g\\]\\s*=\\s*(.*)");
+    private static final Pattern FILAMENT_G_PATTERN = Pattern.compile(";\\s*filament used \\[g\\]\\s*=\\s*([^;\\(\\n\\r]+)(?:\\s*\\(([^,]+) model,\\s*([^ ]+) support\\))?");
     private static final Pattern FILAMENT_MM_PATTERN = Pattern.compile(";\\s*filament used \\[mm\\]\\s*=\\s*(.*)");
 
     public PrintStats parse(File gcodeFile) throws IOException {
         long seconds = 0;
         double weightG = 0;
         double lengthMm = 0;
+        Double modelWeightG = null;
+        Double supportWeightG = null;
         String timeFormatted = "";
 
         try (BufferedReader reader = new BufferedReader(new FileReader(gcodeFile))) {
@@ -78,7 +80,14 @@ public class GCodeParser {
                 if (weightMatcher.find()) {
                     try {
                         weightG = Double.parseDouble(weightMatcher.group(1).trim());
-                         System.out.println("GCodeParser: Found weight: " + weightG + "g");
+                        System.out.println("GCodeParser: Found total weight: " + weightG + "g");
+                        
+                        // Check if we have groups 2 and 3 for breakdown
+                        if (weightMatcher.groupCount() >= 3 && weightMatcher.group(2) != null) {
+                            modelWeightG = Double.parseDouble(weightMatcher.group(2).trim());
+                            supportWeightG = Double.parseDouble(weightMatcher.group(3).trim());
+                            System.out.println("GCodeParser: Found breakdown - Model: " + modelWeightG + "g, Support: " + supportWeightG + "g");
+                        }
                     } catch (NumberFormatException ignored) {}
                 }
                 
@@ -92,7 +101,14 @@ public class GCodeParser {
             }
         }
         
-        return new PrintStats(seconds, timeFormatted, weightG, lengthMm);
+        return PrintStats.builder()
+                .printTimeSeconds(seconds)
+                .printTimeFormatted(timeFormatted)
+                .filamentWeightGrams(weightG)
+                .filamentLengthMm(lengthMm)
+                .modelWeightGrams(modelWeightG)
+                .supportWeightGrams(supportWeightG)
+                .build();
     }
 
     private long parseTimeString(String timeStr) {

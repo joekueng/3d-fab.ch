@@ -76,11 +76,21 @@ public class QuoteCalculator {
         // --- CALCULATIONS ---
 
         // Material Cost: (weight / 1000) * costPerKg
-        BigDecimal weightKg = BigDecimal.valueOf(stats.filamentWeightGrams()).divide(BigDecimal.valueOf(1000), 4, RoundingMode.HALF_UP);
+        // DISCOUNTED Support material to avoid penalizing users for default supports
+        BigDecimal weightToCharge;
+        if (stats.getModelWeightGrams() != null && stats.getSupportWeightGrams() != null) {
+            // Charge 100% for model + 20% for support
+            weightToCharge = BigDecimal.valueOf(stats.getModelWeightGrams())
+                    .add(BigDecimal.valueOf(stats.getSupportWeightGrams()).multiply(BigDecimal.valueOf(0.2)));
+        } else {
+            weightToCharge = BigDecimal.valueOf(stats.getFilamentWeightGrams());
+        }
+
+        BigDecimal weightKg = weightToCharge.divide(BigDecimal.valueOf(1000), 4, RoundingMode.HALF_UP);
         BigDecimal materialCost = weightKg.multiply(variant.getCostChfPerKg());
 
         // Machine Cost: Tiered
-        BigDecimal totalHours = BigDecimal.valueOf(stats.printTimeSeconds()).divide(BigDecimal.valueOf(3600), 4, RoundingMode.HALF_UP);
+        BigDecimal totalHours = BigDecimal.valueOf(stats.getPrintTimeSeconds()).divide(BigDecimal.valueOf(3600), 4, RoundingMode.HALF_UP);
         BigDecimal machineCost = calculateMachineCost(policy, totalHours);
 
         // Energy Cost: (watts / 1000) * hours * costPerKwh

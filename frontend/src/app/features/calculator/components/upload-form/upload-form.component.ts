@@ -75,7 +75,7 @@ export class UploadFormComponent implements OnInit {
       layerHeight: [0.2, [Validators.min(0.05), Validators.max(1.0)]],
       nozzleDiameter: [0.4, Validators.required],
       infillPattern: ['grid'],
-      supportEnabled: [false]
+      supportEnabled: [true]
     });
     
     // Listen to material changes to update variants

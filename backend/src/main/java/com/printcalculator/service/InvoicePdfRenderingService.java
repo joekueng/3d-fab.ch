@@ -20,10 +20,11 @@ public class InvoicePdfRenderingService {
         this.thymeleafTemplateEngine = thymeleafTemplateEngine;
     }
 
-    public byte[] generateInvoicePdfBytesFromTemplate(Map<String, Object> invoiceTemplateVariables) {
+    public byte[] generateInvoicePdfBytesFromTemplate(Map<String, Object> invoiceTemplateVariables, String qrBillSvg) {
         try {
             Context thymeleafContextWithInvoiceData = new Context(Locale.ITALY);
             thymeleafContextWithInvoiceData.setVariables(invoiceTemplateVariables);
+            thymeleafContextWithInvoiceData.setVariable("qrBillSvg", qrBillSvg);
 
             String renderedInvoiceHtml = thymeleafTemplateEngine.process("invoice", thymeleafContextWithInvoiceData);
 

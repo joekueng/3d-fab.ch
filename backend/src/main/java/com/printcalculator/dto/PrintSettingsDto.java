@@ -18,7 +18,7 @@ public class PrintSettingsDto {
     private Double layerHeight;
     private Double infillDensity;
     private String infillPattern;
-    private Boolean supportsEnabled;
+    private Boolean supportsEnabled = true;
     private Double nozzleDiameter;
     private String notes;
 }

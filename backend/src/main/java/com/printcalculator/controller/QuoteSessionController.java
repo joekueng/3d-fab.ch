@@ -72,7 +72,7 @@ public class QuoteSessionController {
         // Default material/settings will be set when items are added or updated?
         // For now set safe defaults
         session.setMaterialCode("pla_basic"); 
-        session.setSupportsEnabled(false);
+        session.setSupportsEnabled(true);
         session.setCreatedAt(OffsetDateTime.now());
         session.setExpiresAt(OffsetDateTime.now().plusDays(30)); 
         
@@ -178,7 +178,14 @@ public class QuoteSessionController {
             if (settings.getLayerHeight() != null) processOverrides.put("layer_height", String.valueOf(settings.getLayerHeight()));
             if (settings.getInfillDensity() != null) processOverrides.put("sparse_infill_density", settings.getInfillDensity() + "%");
             if (settings.getInfillPattern() != null) processOverrides.put("sparse_infill_pattern", settings.getInfillPattern());
-            if (Boolean.TRUE.equals(settings.getSupportsEnabled())) processOverrides.put("enable_support", "1");
+            if (settings.getSupportsEnabled() != null) {
+                processOverrides.put("enable_support", settings.getSupportsEnabled() ? "1" : "0");
+                // If enabled, use a more permissive threshold (45 deg) by default
+                // to avoid expensive supports on things that don't strictly need them
+                if (settings.getSupportsEnabled()) {
+                    processOverrides.put("support_threshold_angle", "45");
+                }
+            }
             
             Map<String, String> machineOverrides = new HashMap<>();
             if (settings.getNozzleDiameter() != null) {
@@ -207,8 +214,8 @@ public class QuoteSessionController {
             item.setColorCode(settings.getColor() != null ? settings.getColor() : "#FFFFFF");
             item.setStatus("READY"); // or CALCULATED
             
-            item.setPrintTimeSeconds((int) stats.printTimeSeconds());
-            item.setMaterialGrams(BigDecimal.valueOf(stats.filamentWeightGrams()));
+            item.setPrintTimeSeconds((int) stats.getPrintTimeSeconds());
+            item.setMaterialGrams(BigDecimal.valueOf(stats.getFilamentWeightGrams()));
             item.setUnitPriceChf(BigDecimal.valueOf(result.getTotalPrice()));
             
             // Store breakdown
@@ -267,13 +274,14 @@ public class QuoteSessionController {
                     if (settings.getNozzleDiameter() == null) settings.setNozzleDiameter(0.4);
                     break;
             }
+            if (settings.getSupportsEnabled() == null) settings.setSupportsEnabled(true);
         } else {
             // ADVANCED Mode: Use values from Frontend, set defaults if missing
             if (settings.getLayerHeight() == null) settings.setLayerHeight(0.20);
             if (settings.getInfillDensity() == null) settings.setInfillDensity(20.0);
             if (settings.getInfillPattern() == null) settings.setInfillPattern("grid");
             if (settings.getNozzleDiameter() == null) settings.setNozzleDiameter(0.4);
-            if (settings.getSupportsEnabled() == null) settings.setSupportsEnabled(false);
+            if (settings.getSupportsEnabled() == null) settings.setSupportsEnabled(true);
         }
     }
 

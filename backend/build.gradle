@@ -35,6 +35,10 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	implementation 'io.github.openhtmltopdf:openhtmltopdf-pdfbox:1.1.37'
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	implementation 'net.codecrete.qrbill:qrbill-generator:3.4.0'
+
+
+
 }
 
 tasks.named('test') {
