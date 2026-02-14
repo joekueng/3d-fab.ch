@@ -168,7 +168,16 @@ public class OrderController {
         vars.put("grandTotalFormatted", String.format("CHF %.2f", order.getTotalChf()));
         vars.put("paymentTermsText", "Pagamento entro 7 giorni via Bonifico o TWINT. Grazie.");
 
-        String qrBillSvg = new String(qrBillService.generateQrBillSvg(order));
+        String qrBillSvg = new String(qrBillService.generateQrBillSvg(order), java.nio.charset.StandardCharsets.UTF_8);
+        
+        // Strip XML declaration and DOCTYPE if present, as they validity break the embedding HTML page
+        if (qrBillSvg.contains("<?xml")) {
+            int svgStartIndex = qrBillSvg.indexOf("<svg");
+            if (svgStartIndex != -1) {
+                qrBillSvg = qrBillSvg.substring(svgStartIndex);
+            }
+        }
+        
         byte[] pdf = invoiceService.generateInvoicePdfBytesFromTemplate(vars, qrBillSvg);
 
         return ResponseEntity.ok()

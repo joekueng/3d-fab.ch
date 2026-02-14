@@ -203,6 +203,14 @@ public class OrderService {
             // 1. Generate QR Bill
             byte[] qrBillSvgBytes = qrBillService.generateQrBillSvg(order);
             String qrBillSvg = new String(qrBillSvgBytes, StandardCharsets.UTF_8);
+
+            // Strip XML declaration and DOCTYPE if present, as they validity break the embedding HTML page
+            if (qrBillSvg.contains("<?xml")) {
+                int svgStartIndex = qrBillSvg.indexOf("<svg");
+                if (svgStartIndex != -1) {
+                    qrBillSvg = qrBillSvg.substring(svgStartIndex);
+                }
+            }
             
             // Save QR Bill SVG
             String qrRelativePath = "orders/" + order.getId() + "/documents/qr-bill.svg";
