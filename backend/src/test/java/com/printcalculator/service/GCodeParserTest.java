@@ -27,10 +27,10 @@ class GCodeParserTest {
         PrintStats stats = parser.parse(tempFile);
 
         // Assert
-        assertEquals(3723, stats.printTimeSeconds()); // 3600 + 120 + 3
-        assertEquals("1h 2m 3s", stats.printTimeFormatted());
-        assertEquals(10.5, stats.filamentWeightGrams(), 0.001);
-        assertEquals(3000.0, stats.filamentLengthMm(), 0.001);
+        assertEquals(3723L, stats.getPrintTimeSeconds()); // 3600 + 120 + 3
+        assertEquals("1h 2m 3s", stats.getPrintTimeFormatted());
+        assertEquals(10.5, stats.getFilamentWeightGrams(), 0.001);
+        assertEquals(3000.0, stats.getFilamentLengthMm(), 0.001);
 
         tempFile.delete();
     }
@@ -49,8 +49,8 @@ class GCodeParserTest {
         GCodeParser parser = new GCodeParser();
         PrintStats stats = parser.parse(tempFile);
 
-        assertEquals(750, stats.printTimeSeconds()); // 12*60 + 30
-        assertEquals(5.0, stats.filamentWeightGrams(), 0.001);
+        assertEquals(750L, stats.getPrintTimeSeconds()); // 12*60 + 30
+        assertEquals(5.0, stats.getFilamentWeightGrams(), 0.001);
 
         tempFile.delete();
     }
@@ -69,8 +69,8 @@ class GCodeParserTest {
         GCodeParser parser = new GCodeParser();
         PrintStats stats = parser.parse(tempFile);
 
-        assertEquals(3723L, stats.printTimeSeconds()); 
-        assertEquals("1h 2m 3s", stats.printTimeFormatted());
+        assertEquals(3723L, stats.getPrintTimeSeconds()); 
+        assertEquals("1h 2m 3s", stats.getPrintTimeFormatted());
 
         tempFile.delete();
     }
@@ -87,8 +87,8 @@ class GCodeParserTest {
         GCodeParser parser = new GCodeParser();
         PrintStats stats = parser.parse(tempFile);
 
-        assertEquals(3723L, stats.printTimeSeconds());
-        assertEquals("01:02:03", stats.printTimeFormatted());
+        assertEquals(3723L, stats.getPrintTimeSeconds());
+        assertEquals("01:02:03", stats.getPrintTimeFormatted());
 
         tempFile.delete();
     }
@@ -105,8 +105,8 @@ class GCodeParserTest {
         GCodeParser parser = new GCodeParser();
         PrintStats stats = parser.parse(tempFile);
 
-        assertEquals(321L, stats.printTimeSeconds());
-        assertEquals("5m 21s", stats.printTimeFormatted());
+        assertEquals(321L, stats.getPrintTimeSeconds());
+        assertEquals("5m 21s", stats.getPrintTimeFormatted());
 
         tempFile.delete();
     }
