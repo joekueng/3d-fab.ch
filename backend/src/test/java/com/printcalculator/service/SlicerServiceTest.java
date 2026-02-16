@@ -49,7 +49,7 @@ class SlicerServiceTest {
         // Subclass to override runSlicerCommand
         slicerService = new SlicerService("orca-slicer", profileManager, gCodeParser, mapper) {
             @Override
-            protected void runSlicerCommand(List<String> command, Path tempDir) throws IOException {
+            protected void runSlicerCommand(List<String> command, Path tempDir) throws IOException, InterruptedException {
                 lastCommand = command;
                 lastTempDir = tempDir;
                 // Don't run actual process.

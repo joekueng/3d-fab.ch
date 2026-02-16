@@ -85,22 +85,7 @@ public class SlicerService {
 
             logger.info("Executing Slicer: " + String.join(" ", command));
 
-            ProcessBuilder pb = new ProcessBuilder(command);
-            pb.directory(tempDir.toFile());
-            pb.environment().put("HOME", "/tmp");
-            pb.environment().put("QT_QPA_PLATFORM", "offscreen");
-            
-            Process process = pb.start();
-            if (!process.waitFor(5, TimeUnit.MINUTES)) {
-                process.destroy();
-                throw new IOException("Slicer timeout");
-            }
-
-            if (process.exitValue() != 0) {
-                String out = new String(process.getInputStream().readAllBytes());
-                String err = new String(process.getErrorStream().readAllBytes());
-                throw new IOException("Slicer failed with exit code " + process.exitValue() + "\nERR: " + err + "\nOUT: " + out);
-            }
+            runSlicerCommand(command, tempDir);
 
             // Find any .gcode file
             try (Stream<Path> s = Files.list(tempDir)) {
@@ -112,6 +97,25 @@ public class SlicerService {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IOException(e);
+        }
+    }
+
+    protected void runSlicerCommand(List<String> command, Path tempDir) throws IOException, InterruptedException {
+        ProcessBuilder pb = new ProcessBuilder(command);
+        pb.directory(tempDir.toFile());
+        pb.environment().put("HOME", "/tmp");
+        pb.environment().put("QT_QPA_PLATFORM", "offscreen");
+        
+        Process process = pb.start();
+        if (!process.waitFor(5, TimeUnit.MINUTES)) {
+            process.destroy();
+            throw new IOException("Slicer timeout");
+        }
+
+        if (process.exitValue() != 0) {
+            String out = new String(process.getInputStream().readAllBytes());
+            String err = new String(process.getErrorStream().readAllBytes());
+            throw new IOException("Slicer failed with exit code " + process.exitValue() + "\nERR: " + err + "\nOUT: " + out);
         }
     }
 }
