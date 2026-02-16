@@ -10,9 +10,11 @@ import com.printcalculator.repository.PrinterMachineRepository;
 import com.printcalculator.service.SlicerService;
 import com.printcalculator.service.QuoteCalculator;
 import com.printcalculator.service.StorageService;
+import com.printcalculator.service.StlService;
 import com.printcalculator.model.PrintStats;
 import com.printcalculator.model.QuoteResult;
 import com.printcalculator.entity.PrinterMachine;
+import com.printcalculator.model.StlBounds;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +58,9 @@ public class ManualSessionPersistenceTest {
 
     @MockitoBean
     private StorageService storageService;
+
+    @MockitoBean
+    private StlService stlService;
     
     @MockitoBean
     private QuoteCalculator quoteCalculator;
@@ -95,11 +100,15 @@ public class ManualSessionPersistenceTest {
         when(machineRepo.findFirstByIsActiveTrue()).thenReturn(Optional.of(new PrinterMachine(){{
             setPrinterDisplayName("TestPrinter");
             setSlicerMachineProfile("TestProfile");
+            setBuildVolumeXMm(256);
+            setBuildVolumeYMm(256);
+            setBuildVolumeZMm(256);
         }}));
         when(slicerService.slice(any(), any(), any(), any(), any(), any())).thenReturn(new PrintStats(100, "1m", 10.0, 100));
         when(quoteCalculator.calculate(any(), any(), any())).thenReturn(
             new QuoteResult(10.0, "CHF", new PrintStats(100, "1m", 10.0, 100), 0.0)
         );
+        when(stlService.readBounds(any())).thenReturn(new StlBounds(0, 0, 0, 10, 10, 10));
         when(storageService.loadAsResource(any())).thenReturn(new org.springframework.core.io.ByteArrayResource("dummy".getBytes()){
             @Override
             public File getFile() { return new File("dummy"); }
