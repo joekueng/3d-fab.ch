@@ -18,9 +18,12 @@ import java.util.HashMap;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.logging.Logger;
 
 @RestController
 public class QuoteController {
+
+    private static final Logger logger = Logger.getLogger(QuoteController.class.getName());
 
     private final SlicerService slicerService;
     private final StlService stlService;
@@ -113,6 +116,7 @@ public class QuoteController {
 
         // Save uploaded file temporarily
         Path tempInput = Files.createTempFile("upload_", "_" + file.getOriginalFilename());
+        com.printcalculator.model.StlShiftResult shift = null;
         try {
             file.transferTo(tempInput.toFile());
 
@@ -123,9 +127,23 @@ public class QuoteController {
             }
 
             // Validate model size against machine volume
-            validateModelSize(tempInput.toFile(), machine);
+            StlBounds bounds = validateModelSize(tempInput.toFile(), machine);
 
-            PrintStats stats = slicerService.slice(tempInput.toFile(), slicerMachineProfile, filament, process, machineOverrides, processOverrides);
+            // Auto-center if needed
+            shift = stlService.shiftToFitIfNeeded(
+                    tempInput.toFile(),
+                    bounds,
+                    machine.getBuildVolumeXMm(),
+                    machine.getBuildVolumeYMm(),
+                    machine.getBuildVolumeZMm()
+            );
+            java.io.File sliceInput = shift.shifted() ? shift.shiftedPath().toFile() : tempInput.toFile();
+            if (shift.shifted()) {
+                logger.info(String.format("Auto-centered STL by offset (mm): x=%.3f y=%.3f z=%.3f",
+                        shift.offsetX(), shift.offsetY(), shift.offsetZ()));
+            }
+
+            PrintStats stats = slicerService.slice(sliceInput, slicerMachineProfile, filament, process, machineOverrides, processOverrides);
             
             // Calculate Quote (Pass machine display name for pricing lookup)
             QuoteResult result = quoteCalculator.calculate(stats, machine.getPrinterDisplayName(), filament);
@@ -133,10 +151,15 @@ public class QuoteController {
             return ResponseEntity.ok(result);
         } finally {
             Files.deleteIfExists(tempInput);
+            if (shift != null && shift.shifted()) {
+                try {
+                    Files.deleteIfExists(shift.shiftedPath());
+                } catch (Exception ignored) {}
+            }
         }
     }
 
-    private void validateModelSize(java.io.File stlFile, PrinterMachine machine) throws IOException {
+    private StlBounds validateModelSize(java.io.File stlFile, PrinterMachine machine) throws IOException {
         StlBounds bounds = stlService.readBounds(stlFile);
         double x = bounds.sizeX();
         double y = bounds.sizeY();
@@ -146,6 +169,13 @@ public class QuoteController {
         int by = machine.getBuildVolumeYMm();
         int bz = machine.getBuildVolumeZMm();
 
+        logger.info(String.format(
+                "STL bounds (mm): min(%.3f,%.3f,%.3f) max(%.3f,%.3f,%.3f) size(%.3f,%.3f,%.3f) bed(%d,%d,%d)",
+                bounds.minX(), bounds.minY(), bounds.minZ(),
+                bounds.maxX(), bounds.maxY(), bounds.maxZ(),
+                x, y, z, bx, by, bz
+        ));
+
         double eps = 0.01;
         boolean fits = (x <= bx + eps && y <= by + eps && z <= bz + eps)
                 || (y <= bx + eps && x <= by + eps && z <= bz + eps);
@@ -153,5 +183,6 @@ public class QuoteController {
         if (!fits) {
             throw new ModelTooLargeException(x, y, z, bx, by, bz);
         }
+        return bounds;
     }
 }

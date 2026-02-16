@@ -15,6 +15,7 @@ import com.printcalculator.model.PrintStats;
 import com.printcalculator.model.QuoteResult;
 import com.printcalculator.entity.PrinterMachine;
 import com.printcalculator.model.StlBounds;
+import com.printcalculator.model.StlShiftResult;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.junit.jupiter.api.Assertions.*;
@@ -109,6 +111,8 @@ public class ManualSessionPersistenceTest {
             new QuoteResult(10.0, "CHF", new PrintStats(100, "1m", 10.0, 100), 0.0)
         );
         when(stlService.readBounds(any())).thenReturn(new StlBounds(0, 0, 0, 10, 10, 10));
+        when(stlService.shiftToFitIfNeeded(any(), any(), anyInt(), anyInt(), anyInt()))
+                .thenReturn(new StlShiftResult(null, 0, 0, 0, false));
         when(storageService.loadAsResource(any())).thenReturn(new org.springframework.core.io.ByteArrayResource("dummy".getBytes()){
             @Override
             public File getFile() { return new File("dummy"); }

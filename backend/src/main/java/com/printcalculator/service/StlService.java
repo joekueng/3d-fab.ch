@@ -1,14 +1,20 @@
 package com.printcalculator.service;
 
 import com.printcalculator.model.StlBounds;
+import com.printcalculator.model.StlShiftResult;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Locale;
 
 @Service
 public class StlService {
@@ -19,6 +25,30 @@ public class StlService {
             return readBinaryBounds(stlFile);
         }
         return readAsciiBounds(stlFile);
+    }
+
+    public StlShiftResult shiftToFitIfNeeded(File stlFile, StlBounds bounds,
+                                             int bedX, int bedY, int bedZ) throws IOException {
+        double sizeX = bounds.sizeX();
+        double sizeY = bounds.sizeY();
+        double sizeZ = bounds.sizeZ();
+
+        double targetMinX = (bedX - sizeX) / 2.0;
+        double targetMinY = (bedY - sizeY) / 2.0;
+        double targetMinZ = 0.0;
+
+        double offsetX = targetMinX - bounds.minX();
+        double offsetY = targetMinY - bounds.minY();
+        double offsetZ = targetMinZ - bounds.minZ();
+
+        boolean needsShift = Math.abs(offsetX) > 1e-6 || Math.abs(offsetY) > 1e-6 || Math.abs(offsetZ) > 1e-6;
+        if (!needsShift) {
+            return new StlShiftResult(null, offsetX, offsetY, offsetZ, false);
+        }
+
+        Path shiftedPath = Files.createTempFile("stl_shifted_", ".stl");
+        writeShifted(stlFile, shiftedPath.toFile(), offsetX, offsetY, offsetZ);
+        return new StlShiftResult(shiftedPath, offsetX, offsetY, offsetZ, true);
     }
 
     private boolean isBinaryStl(File stlFile, long size) throws IOException {
@@ -71,6 +101,82 @@ public class StlService {
         return acc.toBounds();
     }
 
+    private void writeShifted(File input, File output, double offsetX, double offsetY, double offsetZ) throws IOException {
+        long size = input.length();
+        if (size >= 84 && isBinaryStl(input, size)) {
+            writeShiftedBinary(input, output, offsetX, offsetY, offsetZ);
+        } else {
+            writeShiftedAscii(input, output, offsetX, offsetY, offsetZ);
+        }
+    }
+
+    private void writeShiftedAscii(File input, File output, double offsetX, double offsetY, double offsetZ) throws IOException {
+        try (BufferedReader reader = Files.newBufferedReader(input.toPath(), StandardCharsets.US_ASCII);
+             BufferedWriter writer = Files.newBufferedWriter(output.toPath(), StandardCharsets.US_ASCII)) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String trimmed = line.trim();
+                if (!trimmed.startsWith("vertex")) {
+                    writer.write(line);
+                    writer.newLine();
+                    continue;
+                }
+                String[] parts = trimmed.split("\\s+");
+                if (parts.length < 4) {
+                    writer.write(line);
+                    writer.newLine();
+                    continue;
+                }
+                double x = Double.parseDouble(parts[1]) + offsetX;
+                double y = Double.parseDouble(parts[2]) + offsetY;
+                double z = Double.parseDouble(parts[3]) + offsetZ;
+                int idx = line.indexOf("vertex");
+                String indent = idx > 0 ? line.substring(0, idx) : "";
+                writer.write(indent + String.format(Locale.US, "vertex %.6f %.6f %.6f", x, y, z));
+                writer.newLine();
+            }
+        }
+    }
+
+    private void writeShiftedBinary(File input, File output, double offsetX, double offsetY, double offsetZ) throws IOException {
+        try (RandomAccessFile raf = new RandomAccessFile(input, "r");
+             OutputStream out = new FileOutputStream(output)) {
+            byte[] header = new byte[80];
+            raf.readFully(header);
+            out.write(header);
+
+            long triangleCount = readLEUInt32(raf);
+            writeLEUInt32(out, triangleCount);
+
+            for (long i = 0; i < triangleCount; i++) {
+                // normal
+                writeLEFloat(out, readLEFloat(raf));
+                writeLEFloat(out, readLEFloat(raf));
+                writeLEFloat(out, readLEFloat(raf));
+
+                // vertices
+                writeLEFloat(out, (float) (readLEFloat(raf) + offsetX));
+                writeLEFloat(out, (float) (readLEFloat(raf) + offsetY));
+                writeLEFloat(out, (float) (readLEFloat(raf) + offsetZ));
+
+                writeLEFloat(out, (float) (readLEFloat(raf) + offsetX));
+                writeLEFloat(out, (float) (readLEFloat(raf) + offsetY));
+                writeLEFloat(out, (float) (readLEFloat(raf) + offsetZ));
+
+                writeLEFloat(out, (float) (readLEFloat(raf) + offsetX));
+                writeLEFloat(out, (float) (readLEFloat(raf) + offsetY));
+                writeLEFloat(out, (float) (readLEFloat(raf) + offsetZ));
+
+                // attribute byte count
+                int b1 = raf.read();
+                int b2 = raf.read();
+                if ((b1 | b2) < 0) throw new IOException("Unexpected EOF while reading STL");
+                out.write(b1);
+                out.write(b2);
+            }
+        }
+    }
+
     private long readLEUInt32(RandomAccessFile raf) throws IOException {
         int b1 = raf.read();
         int b2 = raf.read();
@@ -97,6 +203,21 @@ public class StlService {
 
     private float readLEFloat(RandomAccessFile raf) throws IOException {
         return Float.intBitsToFloat(readLEInt(raf));
+    }
+
+    private void writeLEUInt32(OutputStream out, long value) throws IOException {
+        out.write((int) (value & 0xFF));
+        out.write((int) ((value >> 8) & 0xFF));
+        out.write((int) ((value >> 16) & 0xFF));
+        out.write((int) ((value >> 24) & 0xFF));
+    }
+
+    private void writeLEFloat(OutputStream out, float value) throws IOException {
+        int bits = Float.floatToIntBits(value);
+        out.write(bits & 0xFF);
+        out.write((bits >> 8) & 0xFF);
+        out.write((bits >> 16) & 0xFF);
+        out.write((bits >> 24) & 0xFF);
     }
 
     private static class BoundsAccumulator {

@@ -31,11 +31,14 @@ import java.util.Map;
 import java.util.UUID;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import java.util.logging.Logger;
 
 @RestController
 @RequestMapping("/api/quote-sessions")
 
 public class QuoteSessionController {
+
+    private static final Logger logger = Logger.getLogger(QuoteSessionController.class.getName());
 
     private final QuoteSessionRepository sessionRepo;
     private final QuoteLineItemRepository lineItemRepo;
@@ -125,6 +128,7 @@ public class QuoteSessionController {
         // Resolve absolute path for slicing and storage usage
         Path persistentPath = storageService.loadAsResource(relativePath).getFile().toPath();
 
+        com.printcalculator.model.StlShiftResult shift = null;
         try {
             // Apply Basic/Advanced Logic
             applyPrintSettings(settings);
@@ -136,6 +140,20 @@ public class QuoteSessionController {
 
             // 2. Validate model size against machine volume
             StlBounds bounds = validateModelSize(persistentPath.toFile(), machine);
+
+            // 2b. Auto-center if needed (keeps the stored STL unchanged)
+            shift = stlService.shiftToFitIfNeeded(
+                    persistentPath.toFile(),
+                    bounds,
+                    machine.getBuildVolumeXMm(),
+                    machine.getBuildVolumeYMm(),
+                    machine.getBuildVolumeZMm()
+            );
+            java.io.File sliceInput = shift.shifted() ? shift.shiftedPath().toFile() : persistentPath.toFile();
+            if (shift.shifted()) {
+                logger.info(String.format("Auto-centered STL by offset (mm): x=%.3f y=%.3f z=%.3f",
+                        shift.offsetX(), shift.offsetY(), shift.offsetZ()));
+            }
             
             // 3. Pick Profiles
             String machineProfile = machine.getSlicerMachineProfile();
@@ -205,7 +223,7 @@ public class QuoteSessionController {
 
             // 4. Slice (Use persistent path)
             PrintStats stats = slicerService.slice(
-                persistentPath.toFile(), 
+                sliceInput, 
                 machineProfile, 
                 filamentProfile, 
                 processProfile, 
@@ -252,6 +270,12 @@ public class QuoteSessionController {
                 storageService.delete(Paths.get("quotes", session.getId().toString(), storedFilename));
             } catch (Exception ignored) {}
             throw e;
+        } finally {
+            if (shift != null && shift.shifted()) {
+                try {
+                    Files.deleteIfExists(shift.shiftedPath());
+                } catch (Exception ignored) {}
+            }
         }
     }
 
@@ -264,6 +288,13 @@ public class QuoteSessionController {
         int bx = machine.getBuildVolumeXMm();
         int by = machine.getBuildVolumeYMm();
         int bz = machine.getBuildVolumeZMm();
+
+        logger.info(String.format(
+                "STL bounds (mm): min(%.3f,%.3f,%.3f) max(%.3f,%.3f,%.3f) size(%.3f,%.3f,%.3f) bed(%d,%d,%d)",
+                bounds.minX(), bounds.minY(), bounds.minZ(),
+                bounds.maxX(), bounds.maxY(), bounds.maxZ(),
+                x, y, z, bx, by, bz
+        ));
 
         double eps = 0.01;
         boolean fits = (x <= bx + eps && y <= by + eps && z <= bz + eps)
