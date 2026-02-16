@@ -97,11 +97,8 @@ public class SlicerService {
             command.add("--outputdir");
             command.add(tempDir.toAbsolutePath().toString());
             
-            // Forza il posizionamento automatico: indispensabile per pezzi grandi che potrebbero
-            // essere salvati con coordinate fuori dal centro piatto
-            command.add("--arrange");
-            command.add("1"); 
-            command.add("--ensure-on-bed");
+            // Posizionamento gestito a monte (auto-center), evitiamo l'arrange CLI che
+            // in alcuni casi porta a "Nothing to be sliced"
             
             command.add("--slice");
             command.add("0");
