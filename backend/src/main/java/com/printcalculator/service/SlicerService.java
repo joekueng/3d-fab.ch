@@ -64,29 +64,29 @@ public class SlicerService {
             mapper.writeValue(pFile, processProfile);
 
             // 3. Build Command
-            // --load-settings "machine.json;process.json" --load-filaments "filament.json"
             List<String> command = new ArrayList<>();
             command.add(slicerPath);
+            command.add("--headless");
             
-            // Load machine settings
+            // Output directory
+            command.add("--outputdir");
+            command.add(tempDir.toAbsolutePath().toString());
+
+            // Load all settings
             command.add("--load-settings");
             command.add(mFile.getAbsolutePath());
-            
-            // Load process settings
             command.add("--load-settings");
             command.add(pFile.getAbsolutePath());
             command.add("--load-filaments");
             command.add(fFile.getAbsolutePath());
+            
+            // Placement and Slicing
             command.add("--ensure-on-bed");
             command.add("--arrange");
-            command.add("1"); // force arrange
             command.add("--slice");
-            command.add("0"); // slice plate 0
-            command.add("--outputdir");
-            command.add(tempDir.toAbsolutePath().toString());
-            // Need to handle Mac structure for console if needed? 
-            // Usually the binary at Contents/MacOS/OrcaSlicer works fine as console app.
+            command.add("1"); // Plates are 1-indexed in CLI
             
+            // Input file MUST be last in many versions
             command.add(inputStl.getAbsolutePath());
 
             logger.info("Slicing file: " + inputStl.getAbsolutePath() + " (Size: " + inputStl.length() + " bytes)");
