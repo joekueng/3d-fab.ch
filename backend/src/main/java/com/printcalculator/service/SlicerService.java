@@ -43,9 +43,6 @@ public class SlicerService {
     public PrintStats slice(File inputStl, String machineName, String filamentName, String processName,
                             Map<String, String> machineOverrides, Map<String, String> processOverrides) throws IOException {
         
-        // Log version once for diagnostics
-        try { runVersionCheck(); } catch (Exception e) {}
-
         ObjectNode machineProfile = profileManager.getMergedProfile(machineName, "machine");
         ObjectNode filamentProfile = profileManager.getMergedProfile(filamentName, "filament");
         ObjectNode processProfile = profileManager.getMergedProfile(processName, "process");
@@ -53,8 +50,18 @@ public class SlicerService {
         if (machineOverrides != null) machineOverrides.forEach(machineProfile::put);
         if (processOverrides != null) processOverrides.forEach(processProfile::put);
         
-        // Pulizia radicale per rendere la macchina "anonima" ed evitare crash geometrici su zone di esclusione
-        makeMachineGeneric(machineProfile);
+        // MANTENIAMO L'IDENTITÀ BAMBU LAB A1
+        // Ma puliamo solo i riferimenti a mesh esterne che causano il crash grafico (Unable to create exclude triangles)
+        machineProfile.put("printer_model", "Bambu Lab A1");
+        
+        // Impostiamo aree di esclusione vuote esplicitamente per evitare che lo slicer tenti di caricarle dai suoi interni
+        machineProfile.putArray("bed_exclude_area");
+        machineProfile.putArray("head_wrap_detect_zone");
+        
+        // Rimuoviamo i modelli 3D del piatto che richiedono caricamento di mesh STL/OBJ interne
+        machineProfile.remove("bed_custom_model");
+        machineProfile.remove("bed_custom_texture");
+        machineProfile.remove("thumbnail");
 
         Path baseTempPath = Paths.get("/app/temp");
         if (!Files.exists(baseTempPath)) Files.createDirectories(baseTempPath);
@@ -75,7 +82,6 @@ public class SlicerService {
             List<String> command = new ArrayList<>();
             command.add(slicerPath); 
             
-            // Ordine ottimizzato per OrcaSlicer 1.9+
             command.add("--load-settings");
             command.add(mFile.getAbsolutePath());
             command.add("--load-settings");
@@ -86,20 +92,21 @@ public class SlicerService {
             command.add("--outputdir");
             command.add(tempDir.toAbsolutePath().toString());
             
+            // Forza il posizionamento automatico: indispensabile per pezzi grandi che potrebbero
+            // essere salvati con coordinate fuori dal centro piatto
             command.add("--arrange");
-            command.add("1");
+            command.add("1"); 
             command.add("--ensure-on-bed");
             
             command.add("--slice");
-            command.add("0");
+            command.add("1"); 
 
             command.add(localStl.getAbsolutePath());
 
-            logger.info("Executing Slicer on file: " + localStl.getAbsolutePath() + " (Size: " + localStl.length() + " bytes)");
+            logger.info("Executing Slicer for Bambu Lab A1 on: " + localStl.getAbsolutePath());
 
             runSlicerCommand(command, tempDir);
 
-            // Cerca il file G-code prodotto
             try (Stream<Path> s = Files.list(tempDir)) {
                 Optional<Path> found = s.filter(p -> p.toString().endsWith(".gcode")).findFirst();
                 if (found.isPresent()) return gCodeParser.parse(found.get().toFile());
@@ -110,37 +117,6 @@ public class SlicerService {
             Thread.currentThread().interrupt();
             throw new IOException(e);
         }
-    }
-
-    private void makeMachineGeneric(ObjectNode profile) {
-        // Forza l'identità della stampante per usare i parametri di accelerazione/velocità della A1
-        profile.put("printer_model", "Bambu Lab A1");
-        
-        // Rimuove l'ereditarietà e gli ID per evitare che lo slicer cerchi di ricaricare asset di sistema (mesh/texture)
-        profile.remove("inherits");
-        profile.remove("setting_id");
-        profile.remove("printer_settings_id");
-        
-        // Rimuove zone di esclusione e modelli complessi che richiedono calcoli grafici pesanti (CAUSA CRASH IN HEADLESS)
-        profile.remove("bed_exclude_area");
-        profile.remove("head_wrap_detect_zone");
-        profile.remove("bed_custom_model");
-        profile.remove("bed_custom_texture");
-        profile.remove("thumbnail");
-        profile.remove("thumbnails");
-
-        // Forza un'area di stampa standard 256x256x256 (Bambu A1)
-        try {
-            profile.set("printable_area", mapper.readTree("[\"0x0\",\"256x0\",\"256x256\",\"0x256\"]"));
-            profile.put("printable_height", "256");
-        } catch (Exception ignored) {}
-    }
-
-    private void runVersionCheck() throws IOException, InterruptedException {
-        Process p = new ProcessBuilder(slicerPath, "--version").start();
-        p.waitFor();
-        String ver = new String(p.getInputStream().readAllBytes()).trim();
-        logger.info("OrcaSlicer Version on server: " + ver);
     }
 
     protected void runSlicerCommand(List<String> command, Path tempDir) throws IOException, InterruptedException {
