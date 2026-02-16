@@ -76,9 +76,9 @@
   Pagamento entro 7 giorni. Grazie.
 </div>
 
-<!-- Pagina dedicata alla QR-bill -->
-<div class="page-break"></div>
-<div th:utext="${qrBillSvg}" style="width: 210mm; height: 105mm; position: absolute; bottom: 0; left: 0;"></div>
+<div style="page-break-before: always;"></div>
+<div style="position: absolute; bottom: 0; left: 0; width: 210mm; height: 105mm;" th:utext="${qrBillSvg}">
+</div>
 
 </body>
 </html>

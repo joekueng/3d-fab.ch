@@ -1,6 +1,7 @@
 package com.printcalculator.service;
 
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+import com.openhtmltopdf.svgsupport.BatikSVGDrawer;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
@@ -34,6 +35,7 @@ public class InvoicePdfRenderingService {
 
             PdfRendererBuilder openHtmlToPdfRendererBuilder = new PdfRendererBuilder();
             openHtmlToPdfRendererBuilder.useFastMode();
+            openHtmlToPdfRendererBuilder.useSVGDrawer(new BatikSVGDrawer());
             openHtmlToPdfRendererBuilder.withHtmlContent(renderedInvoiceHtml, classpathBaseUrlForHtmlResources);
             openHtmlToPdfRendererBuilder.toStream(generatedPdfByteArrayOutputStream);
             openHtmlToPdfRendererBuilder.run();

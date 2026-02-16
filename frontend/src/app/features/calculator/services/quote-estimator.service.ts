@@ -180,26 +180,24 @@ export class QuoteEstimatorService {
                 const sessionId = sessionRes.id;
                 const sessionSetupCost = sessionRes.setupCostChf || 0;
                 
-                // 2. Upload files to this session
+                // 2. Process items SEQUENTIALLY to avoid timeouts/overload
                 const totalItems = request.items.length;
                 const allProgress: number[] = new Array(totalItems).fill(0);
                 const finalResponses: any[] = []; 
-                let completedRequests = 0;
+                let completedCount = 0;
 
-                const checkCompletion = () => {
-                     const avg = Math.round(allProgress.reduce((a, b) => a + b, 0) / totalItems);
-                     observer.next(avg);
-                     
-                     if (completedRequests === totalItems) {
-                         finalize(finalResponses, sessionSetupCost, sessionId);
-                     }
-                };
+                const processNextItem = (index: number) => {
+                    if (index >= totalItems) {
+                        // All done
+                        finalize(finalResponses, sessionSetupCost, sessionId);
+                        return;
+                    }
 
-                request.items.forEach((item, index) => {
-                     const formData = new FormData();
-                     formData.append('file', item.file);
-                     
-                     const settings = {
+                    const item = request.items[index];
+                    const formData = new FormData();
+                    formData.append('file', item.file);
+                    
+                    const settings = {
                          complexityMode: request.mode.toUpperCase(),
                          material: this.mapMaterial(request.material),
                          quality: request.quality,
@@ -209,36 +207,48 @@ export class QuoteEstimatorService {
                          infillDensity: request.mode === 'advanced' ? request.infillDensity : null,
                          infillPattern: request.mode === 'advanced' ? request.infillPattern : null,
                          nozzleDiameter: request.mode === 'advanced' ? request.nozzleDiameter : null
-                     };
-        
-                     const settingsBlob = new Blob([JSON.stringify(settings)], { type: 'application/json' });
-                     formData.append('settings', settingsBlob);
+                    };
 
-                     this.http.post<any>(`${environment.apiUrl}/api/quote-sessions/${sessionId}/line-items`, formData, { 
-                         headers,
-                         reportProgress: true,
-                         observe: 'events'
-                     }).subscribe({
+                    const settingsBlob = new Blob([JSON.stringify(settings)], { type: 'application/json' });
+                    formData.append('settings', settingsBlob);
+
+                    this.http.post<any>(`${environment.apiUrl}/api/quote-sessions/${sessionId}/line-items`, formData, { 
+                        headers,
+                        reportProgress: true,
+                        observe: 'events'
+                    }).subscribe({
                         next: (event) => {
                             if (event.type === HttpEventType.UploadProgress && event.total) {
                                 allProgress[index] = Math.round((100 * event.loaded) / event.total);
-                                checkCompletion();
+                                reportProgress();
                             } else if (event.type === HttpEventType.Response) { 
-                                 allProgress[index] = 100;
-                                 finalResponses[index] = { ...event.body, success: true, fileName: item.file.name, originalQty: item.quantity, originalItem: item };
-                                 completedRequests++;
-                                 checkCompletion();
+                                allProgress[index] = 100;
+                                finalResponses[index] = { ...event.body, success: true, fileName: item.file.name, originalQty: item.quantity, originalItem: item };
+                                completedCount++;
+                                reportProgress();
+                                // Next
+                                processNextItem(index + 1);
                             }
                         },
                         error: (err) => {
                             console.error('Item upload failed', err);
                             const errorMsg = err.error?.code === 'VIRUS_DETECTED' ? 'VIRUS_DETECTED' : 'UPLOAD_FAILED';
                             finalResponses[index] = { success: false, fileName: item.file.name, error: errorMsg };
-                            completedRequests++;
-                            checkCompletion();
+                            completedCount++;
+                            reportProgress();
+                            // Next even if error
+                            processNextItem(index + 1);
                         }
                     });
-                });
+                };
+
+                const reportProgress = () => {
+                     const avg = Math.round(allProgress.reduce((a, b) => a + b, 0) / totalItems);
+                     observer.next(avg);
+                };
+
+                // Start first item
+                processNextItem(0);
             },
             error: (err) => {
                 console.error('Failed to create session', err);
@@ -268,10 +278,8 @@ export class QuoteEstimatorService {
                      unitTime: res.printTimeSeconds || 0,
                      unitWeight: res.materialGrams || 0,
                      quantity: quantity,
-                     material: request.material,
+                     material: this.mapMaterial(request.material), // Uses session material
                      color: res.originalItem.color || 'Default'
-                     // Store ID if needed for updates? QuoteItem interface might need update
-                     // or we map it in component
                  });
                  
                  grandTotal += unitPrice * quantity;
@@ -280,7 +288,6 @@ export class QuoteEstimatorService {
              });
 
              if (validCount === 0) {
-                 // Check if any failed due to virus
                  const virusError = responses.find(r => r.error === 'VIRUS_DETECTED');
                  if (virusError) {
                      observer.error('VIRUS_DETECTED');

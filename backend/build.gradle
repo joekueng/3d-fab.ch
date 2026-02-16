@@ -34,6 +34,7 @@ dependencies {
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	implementation 'io.github.openhtmltopdf:openhtmltopdf-pdfbox:1.1.37'
+	implementation 'io.github.openhtmltopdf:openhtmltopdf-svg-support:1.1.37'
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'net.codecrete.qrbill:qrbill-generator:3.4.0'
 
