@@ -55,6 +55,12 @@ public class SlicerService {
         if (machineProfile.has("bed_custom_texture")) machineProfile.put("bed_custom_texture", "");
         machineProfile.remove("thumbnail");
 
+        // OrcaSlicer si aspetta almeno un valore per bed_exclude_area.
+        // Alcuni profili BBL la sovrascrivono con [] e causano "Unable to create exclude triangles".
+        if (!machineProfile.has("bed_exclude_area") || machineProfile.get("bed_exclude_area").isEmpty()) {
+            machineProfile.putArray("bed_exclude_area").add("0x0");
+        }
+
         Path baseTempPath = Paths.get("/app/temp");
         if (!Files.exists(baseTempPath)) Files.createDirectories(baseTempPath);
         Path tempDir = Files.createTempDirectory(baseTempPath, "job_");
