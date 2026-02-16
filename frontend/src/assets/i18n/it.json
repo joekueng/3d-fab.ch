@@ -40,7 +40,7 @@
     "ORDER": "Ordina Ora",
     "CONSULT": "Richiedi Consulenza",
     "ERROR_GENERIC": "Si è verificato un errore durante il calcolo del preventivo.",
-    "ERROR_UPLOAD_FAILED": "Calcolo fallito",
+    "ERROR_UPLOAD_FAILED": "Caricamento file fallito. Riprova.",
     "ERROR_VIRUS_DETECTED": "File rimosso (virus rilevato)",
     "ERROR_SLICING_FAILED": "Errore slicing (geometria complessa?)",
     "NEW_QUOTE": "Calcola Nuovo Preventivo",

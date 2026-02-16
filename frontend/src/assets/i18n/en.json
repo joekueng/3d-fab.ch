@@ -61,7 +61,7 @@
     "ORDER": "Order Now",
     "CONSULT": "Request Consultation",
     "ERROR_GENERIC": "An error occurred while calculating the quote.",
-    "ERROR_UPLOAD_FAILED": "Calculation failed",
+    "ERROR_UPLOAD_FAILED": "File upload failed. Please try again.",
     "ERROR_VIRUS_DETECTED": "File removed (virus detected)",
     "ERROR_SLICING_FAILED": "Slicing error (complex geometry?)",
     "NEW_QUOTE": "Calculate New Quote",

@@ -23,17 +23,20 @@ public class ClamAVService {
             @Value("${clamav.port:3310}") int port
     ) {
         logger.info("Initializing ClamAV client at {}:{}", host, port);
+        ClamavClient client = null;
         try {
-            this.clamavClient = new ClamavClient(host, port);
+            client = new ClamavClient(host, port);
         } catch (Exception e) {
             logger.error("Failed to initialize ClamAV client: " + e.getMessage());
-            // We don't throw exception here to allow app to start even if ClamAV is down/unreachable
-            // scan() method will handle null client or failure
-            throw new RuntimeException("ClamAV initialization failed", e);
         }
+        this.clamavClient = client;
     }
 
     public boolean scan(InputStream inputStream) {
+        if (clamavClient == null) {
+            logger.warn("ClamAV client not initialized, skipping scan (FAIL-OPEN)");
+            return true;
+        }
         try {
             ScanResult result = clamavClient.scan(inputStream);
             if (result instanceof ScanResult.OK) {
@@ -43,15 +46,12 @@ public class ClamAVService {
                 logger.warn("VIRUS DETECTED: {}", viruses);
                 return false;
             } else {
-                logger.warn("Unknown scan result: {}", result);
-                return false;
+                logger.warn("Unknown scan result: {}. Allowing file (FAIL-OPEN)", result);
+                return true;
             }
         } catch (Exception e) {
-            logger.error("Error scanning file with ClamAV", e);
-            // Fail safe? Or fail secure? 
-            // Usually if scanner fails, we should probably reject to be safe, or allow with warning depending on policy.
-            // For now, let's reject to be safe.
-            return false;
+            logger.error("Error scanning file with ClamAV. Allowing file (FAIL-OPEN)", e);
+            return true;
         }
     }
 }
