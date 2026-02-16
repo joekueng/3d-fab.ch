@@ -11,7 +11,7 @@ RUN ./gradlew bootJar -x test --no-daemon
 # Stage 2: Runtime Environment
 FROM eclipse-temurin:21-jre-jammy
 
-# Install system dependencies for OrcaSlicer (same as before)
+# Install system dependencies for OrcaSlicer
 RUN apt-get update && apt-get install -y \
     wget \
     p7zip-full \
@@ -20,6 +20,14 @@ RUN apt-get update && apt-get install -y \
     libgtk-3-0 \
     libdbus-1-3 \
     libwebkit2gtk-4.0-37 \
+    libx11-xcb1 \
+    libxcb-dri3-0 \
+    libxtst6 \
+    libnss3 \
+    libatk-bridge2.0-0 \
+    libxss1 \
+    libasound2 \
+    libgbm1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install OrcaSlicer
