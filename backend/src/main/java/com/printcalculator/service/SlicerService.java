@@ -99,7 +99,7 @@ public class SlicerService {
             command.add("--ensure-on-bed");
             
             command.add("--slice");
-            command.add("1"); 
+            command.add("0");
 
             command.add(localStl.getAbsolutePath());
 
