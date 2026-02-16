@@ -61,9 +61,11 @@ export class QuoteResultComponent {
       let weight = 0;
       
       currentItems.forEach(i => {
-          price += i.unitPrice * i.quantity;
-          time += i.unitTime * i.quantity;
-          weight += i.unitWeight * i.quantity;
+          if (i.status === 'done' && !i.error) {
+            price += i.unitPrice * i.quantity;
+            time += i.unitTime * i.quantity;
+            weight += i.unitWeight * i.quantity;
+          }
       });
       
       const hours = Math.floor(time / 3600);

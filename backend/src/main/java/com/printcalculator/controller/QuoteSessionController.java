@@ -3,13 +3,16 @@ package com.printcalculator.controller;
 import com.printcalculator.entity.PrinterMachine;
 import com.printcalculator.entity.QuoteLineItem;
 import com.printcalculator.entity.QuoteSession;
+import com.printcalculator.exception.ModelTooLargeException;
 import com.printcalculator.model.PrintStats;
 import com.printcalculator.model.QuoteResult;
+import com.printcalculator.model.StlBounds;
 import com.printcalculator.repository.PrinterMachineRepository;
 import com.printcalculator.repository.QuoteLineItemRepository;
 import com.printcalculator.repository.QuoteSessionRepository;
 import com.printcalculator.service.QuoteCalculator;
 import com.printcalculator.service.SlicerService;
+import com.printcalculator.service.StlService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +40,7 @@ public class QuoteSessionController {
     private final QuoteSessionRepository sessionRepo;
     private final QuoteLineItemRepository lineItemRepo;
     private final SlicerService slicerService;
+    private final StlService stlService;
     private final QuoteCalculator quoteCalculator;
     private final PrinterMachineRepository machineRepo;
     private final com.printcalculator.repository.PricingPolicyRepository pricingRepo;
@@ -49,6 +53,7 @@ public class QuoteSessionController {
     public QuoteSessionController(QuoteSessionRepository sessionRepo,
                                   QuoteLineItemRepository lineItemRepo,
                                   SlicerService slicerService,
+                                  StlService stlService,
                                   QuoteCalculator quoteCalculator,
                                   PrinterMachineRepository machineRepo,
                                   com.printcalculator.repository.PricingPolicyRepository pricingRepo,
@@ -56,6 +61,7 @@ public class QuoteSessionController {
         this.sessionRepo = sessionRepo;
         this.lineItemRepo = lineItemRepo;
         this.slicerService = slicerService;
+        this.stlService = stlService;
         this.quoteCalculator = quoteCalculator;
         this.machineRepo = machineRepo;
         this.pricingRepo = pricingRepo;
@@ -127,8 +133,11 @@ public class QuoteSessionController {
             // 1. Pick Machine (default to first active or specific)
             PrinterMachine machine = machineRepo.findFirstByIsActiveTrue()
                     .orElseThrow(() -> new RuntimeException("No active printer found"));
+
+            // 2. Validate model size against machine volume
+            StlBounds bounds = validateModelSize(persistentPath.toFile(), machine);
             
-            // 2. Pick Profiles
+            // 3. Pick Profiles
             String machineProfile = machine.getSlicerMachineProfile();
             if (machineProfile == null || machineProfile.isBlank()) {
                 machineProfile = machine.getPrinterDisplayName(); // e.g. "Bambu Lab A1 0.4 nozzle"
@@ -194,7 +203,7 @@ public class QuoteSessionController {
                 machineOverrides.put("nozzle_diameter", String.valueOf(settings.getNozzleDiameter()));
             }
 
-            // 3. Slice (Use persistent path)
+            // 4. Slice (Use persistent path)
             PrintStats stats = slicerService.slice(
                 persistentPath.toFile(), 
                 machineProfile, 
@@ -204,10 +213,10 @@ public class QuoteSessionController {
                 processOverrides
             );
             
-            // 4. Calculate Quote
+            // 5. Calculate Quote
             QuoteResult result = quoteCalculator.calculate(stats, machine.getPrinterDisplayName(), filamentProfile);
 
-            // 5. Create Line Item
+            // 6. Create Line Item
             QuoteLineItem item = new QuoteLineItem();
             item.setQuoteSession(session);
             item.setOriginalFilename(file.getOriginalFilename());
@@ -227,14 +236,10 @@ public class QuoteSessionController {
             breakdown.put("setup_fee", result.getSetupCost());
             item.setPricingBreakdown(breakdown);
             
-            // Dimensions
-            // Cannot get bb from GCodeParser yet? 
-            // If GCodeParser doesn't return size, we might defaults or 0.
-            // Stats has filament used. 
-            // Let's set dummy for now or upgrade parser later.
-            item.setBoundingBoxXMm(BigDecimal.ZERO);
-            item.setBoundingBoxYMm(BigDecimal.ZERO);
-            item.setBoundingBoxZMm(BigDecimal.ZERO);
+            // Dimensions from STL
+            item.setBoundingBoxXMm(BigDecimal.valueOf(bounds.sizeX()));
+            item.setBoundingBoxYMm(BigDecimal.valueOf(bounds.sizeY()));
+            item.setBoundingBoxZMm(BigDecimal.valueOf(bounds.sizeZ()));
             
             item.setCreatedAt(OffsetDateTime.now());
             item.setUpdatedAt(OffsetDateTime.now());
@@ -248,6 +253,26 @@ public class QuoteSessionController {
             } catch (Exception ignored) {}
             throw e;
         }
+    }
+
+    private StlBounds validateModelSize(java.io.File stlFile, PrinterMachine machine) throws IOException {
+        StlBounds bounds = stlService.readBounds(stlFile);
+        double x = bounds.sizeX();
+        double y = bounds.sizeY();
+        double z = bounds.sizeZ();
+
+        int bx = machine.getBuildVolumeXMm();
+        int by = machine.getBuildVolumeYMm();
+        int bz = machine.getBuildVolumeZMm();
+
+        double eps = 0.01;
+        boolean fits = (x <= bx + eps && y <= by + eps && z <= bz + eps)
+                || (y <= bx + eps && x <= by + eps && z <= bz + eps);
+
+        if (!fits) {
+            throw new ModelTooLargeException(x, y, z, bx, by, bz);
+        }
+        return bounds;
     }
 
     private void applyPrintSettings(com.printcalculator.dto.PrintSettingsDto settings) {

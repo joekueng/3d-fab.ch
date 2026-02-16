@@ -1,11 +1,14 @@
 package com.printcalculator.controller;
 
 import com.printcalculator.entity.PrinterMachine;
+import com.printcalculator.exception.ModelTooLargeException;
 import com.printcalculator.model.PrintStats;
 import com.printcalculator.model.QuoteResult;
+import com.printcalculator.model.StlBounds;
 import com.printcalculator.repository.PrinterMachineRepository;
 import com.printcalculator.service.QuoteCalculator;
 import com.printcalculator.service.SlicerService;
+import com.printcalculator.service.StlService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +23,7 @@ import java.nio.file.Path;
 public class QuoteController {
 
     private final SlicerService slicerService;
+    private final StlService stlService;
     private final QuoteCalculator quoteCalculator;
     private final PrinterMachineRepository machineRepo;
 
@@ -27,8 +31,9 @@ public class QuoteController {
     private static final String DEFAULT_FILAMENT = "pla_basic";
     private static final String DEFAULT_PROCESS = "standard";
 
-    public QuoteController(SlicerService slicerService, QuoteCalculator quoteCalculator, PrinterMachineRepository machineRepo) {
+    public QuoteController(SlicerService slicerService, StlService stlService, QuoteCalculator quoteCalculator, PrinterMachineRepository machineRepo) {
         this.slicerService = slicerService;
+        this.stlService = stlService;
         this.quoteCalculator = quoteCalculator;
         this.machineRepo = machineRepo;
     }
@@ -117,18 +122,36 @@ public class QuoteController {
                 slicerMachineProfile = "bambu_a1"; 
             }
 
+            // Validate model size against machine volume
+            validateModelSize(tempInput.toFile(), machine);
+
             PrintStats stats = slicerService.slice(tempInput.toFile(), slicerMachineProfile, filament, process, machineOverrides, processOverrides);
             
             // Calculate Quote (Pass machine display name for pricing lookup)
             QuoteResult result = quoteCalculator.calculate(stats, machine.getPrinterDisplayName(), filament);
             
             return ResponseEntity.ok(result);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().build();
         } finally {
             Files.deleteIfExists(tempInput);
+        }
+    }
+
+    private void validateModelSize(java.io.File stlFile, PrinterMachine machine) throws IOException {
+        StlBounds bounds = stlService.readBounds(stlFile);
+        double x = bounds.sizeX();
+        double y = bounds.sizeY();
+        double z = bounds.sizeZ();
+
+        int bx = machine.getBuildVolumeXMm();
+        int by = machine.getBuildVolumeYMm();
+        int bz = machine.getBuildVolumeZMm();
+
+        double eps = 0.01;
+        boolean fits = (x <= bx + eps && y <= by + eps && z <= bz + eps)
+                || (y <= bx + eps && x <= by + eps && z <= bz + eps);
+
+        if (!fits) {
+            throw new ModelTooLargeException(x, y, z, bx, by, bz);
         }
     }
 }

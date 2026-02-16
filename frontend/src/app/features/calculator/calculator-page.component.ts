@@ -161,12 +161,14 @@ export class CalculatorPageComponent implements OnInit {
         if (typeof event === 'number') {
             this.uploadProgress.set(event);
         } else {
-            // It's the result
+            // It's the result (partial or final)
             const res = event as QuoteResult;
             this.result.set(res);
-            this.loading.set(false);
-            this.uploadProgress.set(100);
-            this.step.set('quote');
+            
+            // Show result immediately if not already showing
+            if (this.step() !== 'quote') {
+                this.step.set('quote');
+            }
 
             // Sync IDs back to upload form for future updates
             if (this.uploadForm) {
@@ -175,14 +177,22 @@ export class CalculatorPageComponent implements OnInit {
 
             // Update URL with session ID without reloading
             if (res.sessionId) {
-                this.router.navigate([], {
-                    relativeTo: this.route,
-                    queryParams: { session: res.sessionId },
-                    queryParamsHandling: 'merge', // merge with existing params like 'mode' if any
-                    replaceUrl: true // prevent cluttering history, or false if we want back button to work. replaceUrl seems safer for "state update"
-                });
+                // Check if we need to update URL to avoid redundant navigations
+                const currentSession = this.route.snapshot.queryParamMap.get('session');
+                if (currentSession !== res.sessionId) {
+                    this.router.navigate([], {
+                        relativeTo: this.route,
+                        queryParams: { session: res.sessionId },
+                        queryParamsHandling: 'merge', 
+                        replaceUrl: true
+                    });
+                }
             }
         }
+      },
+      complete: () => {
+          this.loading.set(false);
+          this.uploadProgress.set(100);
       },
       error: (err) => {
         if (typeof err === 'string') {

@@ -41,6 +41,10 @@
           <span class="file-name">{{ item.fileName }}</span>
           @if (item.error) {
             <span class="file-error">{{ 'CALC.ERROR_' + item.error | translate }}</span>
+          } @else if (item.status === 'pending') {
+            <span class="file-details pending">
+                <div class="spinner-mini"></div> Analisi...
+            </span>
           } @else {
             <span class="file-details">
                 <span class="color-badge" [title]="item.color" [style.background-color]="getColorHex(item.color!)"></span>
@@ -63,6 +67,10 @@
                 <div class="item-price">
                     {{ (item.unitPrice * item.quantity) | currency:result().currency }}
                 </div>
+            } @else if (item.status === 'pending') {
+                 <div class="item-price pending">
+                    <div class="spinner-mini"></div>
+                 </div>
             } @else {
                 <div class="item-price error">-</div>
             }

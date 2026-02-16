@@ -50,17 +50,9 @@ public class SlicerService {
         if (machineOverrides != null) machineOverrides.forEach(machineProfile::put);
         if (processOverrides != null) processOverrides.forEach(processProfile::put);
         
-        // MANTENIAMO L'IDENTITÀ BAMBU LAB A1
-        // Ma puliamo solo i riferimenti a mesh esterne che causano il crash grafico (Unable to create exclude triangles)
-        machineProfile.put("printer_model", "Bambu Lab A1");
-        
-        // Impostiamo aree di esclusione vuote esplicitamente per evitare che lo slicer tenti di caricarle dai suoi interni
-        machineProfile.putArray("bed_exclude_area");
-        machineProfile.putArray("head_wrap_detect_zone");
-        
-        // Rimuoviamo i modelli 3D del piatto che richiedono caricamento di mesh STL/OBJ interne
-        machineProfile.remove("bed_custom_model");
-        machineProfile.remove("bed_custom_texture");
+        // Evitiamo solo asset grafici opzionali che potrebbero richiedere file esterni
+        if (machineProfile.has("bed_custom_model")) machineProfile.put("bed_custom_model", "");
+        if (machineProfile.has("bed_custom_texture")) machineProfile.put("bed_custom_texture", "");
         machineProfile.remove("thumbnail");
 
         Path baseTempPath = Paths.get("/app/temp");

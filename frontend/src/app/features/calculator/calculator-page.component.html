@@ -45,7 +45,8 @@
       <!-- Right Column: Result or Info -->
       <div class="col-result" #resultCol>
     
-        @if (loading()) {
+        @if (loading() && !result()) {
+            <!-- Initial Loading State (before first result) -->
             <app-card class="loading-state">
                 <div class="loader-content">
                     <div class="spinner"></div>
@@ -54,6 +55,15 @@
                 </div>
             </app-card>
         } @else if (result()) {
+          <!-- Result State (Active or Finished) -->
+          @if (loading()) {
+               <!-- Small loader indicator when refining results -->
+               <div class="analyzing-bar">
+                   <div class="spinner-small"></div>
+                   <span>Analisi in corso... ({{ uploadProgress() }}%)</span>
+               </div>
+          }
+          
           <app-quote-result 
             [result]="result()!" 
             (consult)="onConsult()"

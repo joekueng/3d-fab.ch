@@ -27,6 +27,7 @@ export interface QuoteItem {
   material?: string;
   color?: string;
   error?: string;
+  status: 'pending' | 'done' | 'error';
 }
 
 export interface QuoteResult {
@@ -188,18 +189,74 @@ export class QuoteEstimatorService {
                 const sessionId = sessionRes.id;
                 const sessionSetupCost = sessionRes.setupCostChf || 0;
                 
+                // Initialize items in pending state
+                const currentItems: QuoteItem[] = request.items.map(item => ({
+                    fileName: item.file.name,
+                    unitPrice: 0,
+                    unitTime: 0,
+                    unitWeight: 0,
+                    quantity: item.quantity,
+                    status: 'pending',
+                    color: item.color || 'White' // Default color for UI
+                }));
+
+                // Emit initial state
+                const initialResult: QuoteResult = {
+                    sessionId: sessionId,
+                    items: [...currentItems],
+                    setupCost: sessionSetupCost,
+                    currency: 'CHF',
+                    totalPrice: 0, // Will be calculated dynamically
+                    totalTimeHours: 0,
+                    totalTimeMinutes: 0,
+                    totalWeight: 0,
+                    notes: request.notes
+                };
+                observer.next(initialResult);
+                
                 // 2. Upload files to this session
                 const totalItems = request.items.length;
                 const allProgress: number[] = new Array(totalItems).fill(0);
-                const finalResponses: any[] = []; 
                 let completedRequests = 0;
 
-                const checkCompletion = () => {
+                const emitUpdate = () => {
                      const avg = Math.round(allProgress.reduce((a, b) => a + b, 0) / totalItems);
                      observer.next(avg);
                      
+                     // Helper to calculate totals for current items
+                     let grandTotal = 0;
+                     let totalTime = 0;
+                     let totalWeight = 0;
+                     let validCount = 0;
+                     
+                     currentItems.forEach(item => {
+                         if (item.status === 'done') {
+                             grandTotal += item.unitPrice * item.quantity;
+                             totalTime += item.unitTime * item.quantity;
+                             totalWeight += item.unitWeight * item.quantity;
+                             validCount++;
+                         }
+                     });
+
+                     if (validCount > 0) {
+                         grandTotal += sessionSetupCost;
+                     }
+
+                     const result: QuoteResult = {
+                         sessionId: sessionId,
+                         items: [...currentItems], // Create copy to trigger change detection
+                         setupCost: sessionSetupCost,
+                         currency: 'CHF',
+                         totalPrice: Math.round(grandTotal * 100) / 100,
+                         totalTimeHours: Math.floor(totalTime / 3600),
+                         totalTimeMinutes: Math.ceil((totalTime % 3600) / 60),
+                         totalWeight: Math.ceil(totalWeight),
+                         notes: request.notes
+                     };
+                     observer.next(result);
+
                      if (completedRequests === totalItems) {
-                         finalize(finalResponses, sessionSetupCost, sessionId);
+                         observer.complete();
                      }
                 };
 
@@ -229,21 +286,42 @@ export class QuoteEstimatorService {
                      }).subscribe({
                         next: (event) => {
                             if (event.type === HttpEventType.UploadProgress && event.total) {
-                                allProgress[index] = Math.round((100 * event.loaded) / event.total);
-                                checkCompletion();
+                                allProgress[index] = Math.round((70 * event.loaded) / event.total); // Upload is 70% of "progress" for user perception
+                                emitUpdate();
                             } else if (event.type === HttpEventType.Response) { 
                                  allProgress[index] = 100;
-                                 finalResponses[index] = { ...event.body, success: true, fileName: item.file.name, originalQty: item.quantity, originalItem: item };
+                                 const resBody = event.body as any;
+                                 
+                                 // Update item in list
+                                 currentItems[index] = {
+                                     id: resBody.id,
+                                     fileName: resBody.originalFilename, // use returned filename
+                                     unitPrice: resBody.unitPriceChf || 0,
+                                     unitTime: resBody.printTimeSeconds || 0,
+                                     unitWeight: resBody.materialGrams || 0,
+                                     quantity: item.quantity, // Keep original quantity
+                                     material: request.material, 
+                                     color: item.color || 'White',
+                                     status: 'done'
+                                 };
+
                                  completedRequests++;
-                                 checkCompletion();
+                                 emitUpdate();
                             }
                         },
                         error: (err) => {
                             console.error('Item upload failed', err);
                             const errorMsg = err.error?.code === 'VIRUS_DETECTED' ? 'VIRUS_DETECTED' : 'UPLOAD_FAILED';
-                            finalResponses[index] = { success: false, fileName: item.file.name, error: errorMsg };
+                            
+                            currentItems[index] = {
+                                ...currentItems[index],
+                                status: 'error',
+                                error: errorMsg
+                            };
+                            
+                            allProgress[index] = 100; // Mark as done despite error
                             completedRequests++;
-                            checkCompletion();
+                            emitUpdate();
                         }
                     });
                 });
@@ -253,77 +331,6 @@ export class QuoteEstimatorService {
                 observer.error('Could not initialize quote session');
             }
         });
-
-        const finalize = (responses: any[], setupCost: number, sessionId: string) => {
-             observer.next(100); 
-             const items: QuoteItem[] = [];
-             let grandTotal = 0;
-             let totalTime = 0;
-             let totalWeight = 0;
-             let validCount = 0;
-
-             responses.forEach((res, idx) => {
-                 const quantity = res?.originalQty || request.items[idx].quantity || 1;
-                 
-                 if (!res || !res.success) {
-                     items.push({
-                         fileName: request.items[idx].file.name,
-                         unitPrice: 0,
-                         unitTime: 0,
-                         unitWeight: 0,
-                         quantity: quantity,
-                         error: res?.error || 'UPLOAD_FAILED'
-                     });
-                     return;
-                 }
-                 
-                 validCount++;
-                 const unitPrice = res.unitPriceChf || 0;
-                 
-                 items.push({
-                     id: res.id,
-                     fileName: res.fileName,
-                     unitPrice: unitPrice,
-                     unitTime: res.printTimeSeconds || 0,
-                     unitWeight: res.materialGrams || 0,
-                     quantity: quantity,
-                     material: request.material,
-                     color: res.originalItem.color || 'Default'
-                 });
-                 
-                 grandTotal += unitPrice * quantity;
-                 totalTime += (res.printTimeSeconds || 0) * quantity;
-                 totalWeight += (res.materialGrams || 0) * quantity;
-             });
-
-             if (validCount === 0) {
-                 // Check if any failed due to virus
-                 const virusError = responses.find(r => r.error === 'VIRUS_DETECTED');
-                 if (virusError) {
-                     observer.error('VIRUS_DETECTED');
-                 } else {
-                     observer.error('All calculations failed.');
-                 }
-                 return;
-             }
-             
-             grandTotal += setupCost;
-
-             const result: QuoteResult = {
-                 sessionId: sessionId,
-                 items,
-                 setupCost: setupCost,
-                 currency: 'CHF',
-                 totalPrice: Math.round(grandTotal * 100) / 100,
-                 totalTimeHours: Math.floor(totalTime / 3600),
-                 totalTimeMinutes: Math.ceil((totalTime % 3600) / 60),
-                 totalWeight: Math.ceil(totalWeight),
-                 notes: request.notes
-             };
-             
-             observer.next(result);
-             observer.complete();
-        };
     });
   }
 
@@ -377,7 +384,8 @@ export class QuoteEstimatorService {
               material: session.materialCode, // Assumption: session has one material for all? or items have it? 
               // Backend model QuoteSession has materialCode. 
               // But line items might have different colors. 
-              color: item.colorCode
+              color: item.colorCode,
+              status: 'done'
           })),
           setupCost: session.setupCostChf,
           currency: 'CHF', // Fixed for now
