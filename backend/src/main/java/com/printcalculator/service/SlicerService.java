@@ -50,14 +50,18 @@ public class SlicerService {
         if (machineOverrides != null) machineOverrides.forEach(machineProfile::put);
         if (processOverrides != null) processOverrides.forEach(processProfile::put);
         
-        // Mantengo questa rimozione perché risolveva un errore specifico di triangolazione nei log
+        // Pulizia profonda per evitare errori di inizializzazione grafica/piatto
         machineProfile.remove("bed_exclude_area");
+        machineProfile.remove("head_wrap_detect_zone");
+        machineProfile.remove("bed_custom_model");
+        machineProfile.remove("bed_custom_texture");
 
         Path baseTempPath = Paths.get("/app/temp");
         if (!Files.exists(baseTempPath)) Files.createDirectories(baseTempPath);
         Path tempDir = Files.createTempDirectory(baseTempPath, "job_");
         
         try {
+            // Usiamo un nome file senza spazi per massima compatibilità CLI
             File localStl = tempDir.resolve("input.stl").toFile();
             Files.copy(inputStl.toPath(), localStl.toPath());
 
@@ -71,23 +75,35 @@ public class SlicerService {
 
             List<String> command = new ArrayList<>();
             command.add(slicerPath); 
-            command.add("--slice");
-            command.add("1"); 
-            command.add("--outputdir");
-            command.add(tempDir.toAbsolutePath().toString());
+            
+            // Parametri di caricamento
             command.add("--load-settings");
             command.add(mFile.getAbsolutePath());
             command.add("--load-settings");
             command.add(pFile.getAbsolutePath());
             command.add("--load-filaments");
             command.add(fFile.getAbsolutePath());
+            
+            // Output
+            command.add("--outputdir");
+            command.add(tempDir.toAbsolutePath().toString());
+            
+            // Slicing & Auto-center (fondamentale per evitare "Nothing to be sliced")
+            command.add("--arrange");
+            command.add("1"); 
+            command.add("--ensure-on-bed");
+            
+            command.add("--slice");
+            command.add("0"); // 0 solitamente significa "tutti i piatti con oggetti"
+            
+            // File da processare (sempre per ultimo)
             command.add(localStl.getAbsolutePath());
 
             logger.info("Executing Slicer: " + String.join(" ", command));
 
             runSlicerCommand(command, tempDir);
 
-            // Find any .gcode file
+            // Cerca il file G-code prodotto (input.gcode o simili)
             try (Stream<Path> s = Files.list(tempDir)) {
                 Optional<Path> found = s.filter(p -> p.toString().endsWith(".gcode")).findFirst();
                 if (found.isPresent()) return gCodeParser.parse(found.get().toFile());
@@ -103,8 +119,11 @@ public class SlicerService {
     protected void runSlicerCommand(List<String> command, Path tempDir) throws IOException, InterruptedException {
         ProcessBuilder pb = new ProcessBuilder(command);
         pb.directory(tempDir.toFile());
-        pb.environment().put("HOME", "/tmp");
-        pb.environment().put("QT_QPA_PLATFORM", "offscreen");
+        
+        // Variabili d'ambiente minimali ma necessarie
+        Map<String, String> env = pb.environment();
+        env.put("HOME", "/tmp");
+        env.put("QT_QPA_PLATFORM", "offscreen");
         
         Process process = pb.start();
         if (!process.waitFor(5, TimeUnit.MINUTES)) {
