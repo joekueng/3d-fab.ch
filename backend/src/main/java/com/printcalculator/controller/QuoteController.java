@@ -49,7 +49,7 @@ public class QuoteController {
             @RequestParam(value = "infill_pattern", required = false) String infillPattern,
             @RequestParam(value = "layer_height", required = false) Double layerHeight,
             @RequestParam(value = "nozzle_diameter", required = false) Double nozzleDiameter,
-            @RequestParam(value = "support_enabled", required = false, defaultValue = "true") Boolean supportEnabled
+            @RequestParam(value = "support_enabled", required = false, defaultValue = "false") Boolean supportEnabled
             ) throws IOException {
 
         // ... process selection logic ...

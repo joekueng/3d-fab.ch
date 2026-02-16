@@ -78,7 +78,7 @@ public class QuoteSessionController {
         // Default material/settings will be set when items are added or updated?
         // For now set safe defaults
         session.setMaterialCode("pla_basic"); 
-        session.setSupportsEnabled(true);
+        session.setSupportsEnabled(false);
         session.setCreatedAt(OffsetDateTime.now());
         session.setExpiresAt(OffsetDateTime.now().plusDays(30)); 
         
@@ -301,14 +301,14 @@ public class QuoteSessionController {
                     if (settings.getNozzleDiameter() == null) settings.setNozzleDiameter(0.4);
                     break;
             }
-            if (settings.getSupportsEnabled() == null) settings.setSupportsEnabled(true);
+            if (settings.getSupportsEnabled() == null) settings.setSupportsEnabled(false);
         } else {
             // ADVANCED Mode: Use values from Frontend, set defaults if missing
             if (settings.getLayerHeight() == null) settings.setLayerHeight(0.20);
             if (settings.getInfillDensity() == null) settings.setInfillDensity(20.0);
             if (settings.getInfillPattern() == null) settings.setInfillPattern("grid");
             if (settings.getNozzleDiameter() == null) settings.setNozzleDiameter(0.4);
-            if (settings.getSupportsEnabled() == null) settings.setSupportsEnabled(true);
+            if (settings.getSupportsEnabled() == null) settings.setSupportsEnabled(false);
         }
     }
 
