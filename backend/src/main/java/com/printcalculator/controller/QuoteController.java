@@ -7,6 +7,7 @@ import com.printcalculator.model.QuoteResult;
 import com.printcalculator.model.StlBounds;
 import com.printcalculator.repository.PrinterMachineRepository;
 import com.printcalculator.service.QuoteCalculator;
+import com.printcalculator.service.ProfileManager;
 import com.printcalculator.service.SlicerService;
 import com.printcalculator.service.StlService;
 import org.springframework.http.ResponseEntity;
@@ -29,16 +30,18 @@ public class QuoteController {
     private final StlService stlService;
     private final QuoteCalculator quoteCalculator;
     private final PrinterMachineRepository machineRepo;
+    private final ProfileManager profileManager;
 
     // Defaults (using aliases defined in ProfileManager)
     private static final String DEFAULT_FILAMENT = "pla_basic";
     private static final String DEFAULT_PROCESS = "standard";
 
-    public QuoteController(SlicerService slicerService, StlService stlService, QuoteCalculator quoteCalculator, PrinterMachineRepository machineRepo) {
+    public QuoteController(SlicerService slicerService, StlService stlService, QuoteCalculator quoteCalculator, PrinterMachineRepository machineRepo, ProfileManager profileManager) {
         this.slicerService = slicerService;
         this.stlService = stlService;
         this.quoteCalculator = quoteCalculator;
         this.machineRepo = machineRepo;
+        this.profileManager = profileManager;
     }
 
     @PostMapping("/api/quote")
@@ -125,6 +128,7 @@ public class QuoteController {
             if (slicerMachineProfile == null || slicerMachineProfile.isEmpty()) {
                 slicerMachineProfile = "bambu_a1"; 
             }
+            slicerMachineProfile = profileManager.resolveMachineProfileName(slicerMachineProfile, nozzleDiameter);
 
             // Validate model size against machine volume
             StlBounds bounds = validateModelSize(tempInput.toFile(), machine);

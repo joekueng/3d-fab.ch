@@ -11,6 +11,7 @@ import com.printcalculator.service.SlicerService;
 import com.printcalculator.service.QuoteCalculator;
 import com.printcalculator.service.StorageService;
 import com.printcalculator.service.StlService;
+import com.printcalculator.service.ProfileManager;
 import com.printcalculator.model.PrintStats;
 import com.printcalculator.model.QuoteResult;
 import com.printcalculator.entity.PrinterMachine;
@@ -63,6 +64,9 @@ public class ManualSessionPersistenceTest {
 
     @MockitoBean
     private StlService stlService;
+
+    @MockitoBean
+    private ProfileManager profileManager;
     
     @MockitoBean
     private QuoteCalculator quoteCalculator;
@@ -113,6 +117,7 @@ public class ManualSessionPersistenceTest {
         when(stlService.readBounds(any())).thenReturn(new StlBounds(0, 0, 0, 10, 10, 10));
         when(stlService.shiftToFitIfNeeded(any(), any(), anyInt(), anyInt(), anyInt()))
                 .thenReturn(new StlShiftResult(null, 0, 0, 0, false));
+        when(profileManager.resolveMachineProfileName(any(), any())).thenAnswer(i -> i.getArguments()[0]);
         when(storageService.loadAsResource(any())).thenReturn(new org.springframework.core.io.ByteArrayResource("dummy".getBytes()){
             @Override
             public File getFile() { return new File("dummy"); }

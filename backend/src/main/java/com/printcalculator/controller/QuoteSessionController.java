@@ -11,6 +11,7 @@ import com.printcalculator.repository.PrinterMachineRepository;
 import com.printcalculator.repository.QuoteLineItemRepository;
 import com.printcalculator.repository.QuoteSessionRepository;
 import com.printcalculator.service.QuoteCalculator;
+import com.printcalculator.service.ProfileManager;
 import com.printcalculator.service.SlicerService;
 import com.printcalculator.service.StlService;
 import org.springframework.http.MediaType;
@@ -45,6 +46,7 @@ public class QuoteSessionController {
     private final SlicerService slicerService;
     private final StlService stlService;
     private final QuoteCalculator quoteCalculator;
+    private final ProfileManager profileManager;
     private final PrinterMachineRepository machineRepo;
     private final com.printcalculator.repository.PricingPolicyRepository pricingRepo;
     private final com.printcalculator.service.StorageService storageService;
@@ -58,6 +60,7 @@ public class QuoteSessionController {
                                   SlicerService slicerService,
                                   StlService stlService,
                                   QuoteCalculator quoteCalculator,
+                                  ProfileManager profileManager,
                                   PrinterMachineRepository machineRepo,
                                   com.printcalculator.repository.PricingPolicyRepository pricingRepo,
                                   com.printcalculator.service.StorageService storageService) {
@@ -66,6 +69,7 @@ public class QuoteSessionController {
         this.slicerService = slicerService;
         this.stlService = stlService;
         this.quoteCalculator = quoteCalculator;
+        this.profileManager = profileManager;
         this.machineRepo = machineRepo;
         this.pricingRepo = pricingRepo;
         this.storageService = storageService;
@@ -163,6 +167,7 @@ public class QuoteSessionController {
             if (machineProfile == null || machineProfile.isBlank()) {
                 machineProfile = "bambu_a1"; // final fallback (alias handled in ProfileManager)
             }
+            machineProfile = profileManager.resolveMachineProfileName(machineProfile, settings.getNozzleDiameter());
             
             String filamentProfile = "Generic " + (settings.getMaterial() != null ? settings.getMaterial().toUpperCase() : "PLA");
             // Mapping: "pla_basic" -> "Generic PLA", "petg_basic" -> "Generic PETG"

@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.Map;
 import java.util.HashMap;
+import java.math.BigDecimal;
 
 @Service
 public class ProfileManager {
@@ -57,6 +58,18 @@ public class ProfileManager {
             throw new IOException("Profile not found: " + profileName);
         }
         return resolveInheritance(profilePath);
+    }
+
+    public String resolveMachineProfileName(String machineName, Double nozzleDiameter) {
+        String resolvedName = profileAliases.getOrDefault(machineName, machineName);
+        if (nozzleDiameter == null) return resolvedName;
+
+        String base = resolvedName.replaceAll("\\s*\\d+(?:\\.\\d+)?\\s*nozzle$", "").trim();
+        String formatted = BigDecimal.valueOf(nozzleDiameter).stripTrailingZeros().toPlainString();
+        String candidate = base + " " + formatted + " nozzle";
+
+        Path exists = findProfileFile(candidate, "machine");
+        return exists != null ? candidate : resolvedName;
     }
 
     private Path findProfileFile(String name, String type) {
