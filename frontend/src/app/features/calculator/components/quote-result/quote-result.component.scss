@@ -21,6 +21,11 @@
     background: var(--color-neutral-50);
     border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
+    
+    &.has-error {
+        border-color: #ef4444;
+        background: #fef2f2;
+    }
 }
 
 .item-info {
@@ -31,7 +36,21 @@
 }
 
 .file-name { font-weight: 500; font-size: 0.9rem; color: var(--color-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.file-details { font-size: 0.8rem; color: var(--color-text-muted); }
+.file-details { 
+    font-size: 0.8rem; 
+    color: var(--color-text-muted); 
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+.color-badge {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    display: inline-block;
+}
+.file-error { font-size: 0.8rem; color: #ef4444; font-weight: 500; }
 
 .item-controls {
     display: flex;

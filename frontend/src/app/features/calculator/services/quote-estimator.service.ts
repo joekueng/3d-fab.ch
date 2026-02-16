@@ -26,6 +26,7 @@ export interface QuoteItem {
   quantity: number;
   material?: string;
   color?: string;
+  error?: string;
 }
 
 export interface QuoteResult {
@@ -255,11 +256,22 @@ export class QuoteEstimatorService {
              let validCount = 0;
 
              responses.forEach((res, idx) => {
-                 if (!res || !res.success) return;
-                 validCount++;
+                 const quantity = res?.originalQty || request.items[idx].quantity || 1;
                  
+                 if (!res || !res.success) {
+                     items.push({
+                         fileName: request.items[idx].file.name,
+                         unitPrice: 0,
+                         unitTime: 0,
+                         unitWeight: 0,
+                         quantity: quantity,
+                         error: res?.error || 'UPLOAD_FAILED'
+                     });
+                     return;
+                 }
+                 
+                 validCount++;
                  const unitPrice = res.unitPriceChf || 0;
-                 const quantity = res.originalQty || 1;
                  
                  items.push({
                      id: res.id,
@@ -270,8 +282,6 @@ export class QuoteEstimatorService {
                      quantity: quantity,
                      material: request.material,
                      color: res.originalItem.color || 'Default'
-                     // Store ID if needed for updates? QuoteItem interface might need update
-                     // or we map it in component
                  });
                  
                  grandTotal += unitPrice * quantity;

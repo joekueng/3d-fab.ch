@@ -12,6 +12,7 @@ import { QuoteRequest, QuoteEstimatorService, OptionsResponse, SimpleOption, Mat
 import { getColorHex } from '../../../../core/constants/colors.const';
 
 interface FormItem {
+    id?: string;
     file: File;
     quantity: number;
     color: string;
@@ -178,6 +179,37 @@ export class UploadFormComponent implements OnInit {
       });
   }
 
+  updateItemQuantityAtIndex(index: number, quantity: number) {
+      this.items.update(current => {
+          const updated = [...current];
+          if (updated[index]) {
+              updated[index] = { ...updated[index], quantity };
+          }
+          return updated;
+      });
+  }
+
+  updateItemIds(itemsWithIds: { fileName: string, id: string }[]) {
+      this.items.update(current => {
+          return current.map(item => {
+              const match = itemsWithIds.find(i => i.fileName === item.file.name && !i.id); // This matching is weak
+              // Better: matching should be based on index if we trust order
+              return item;
+          });
+      });
+  }
+
+  updateItemIdsByIndex(ids: (string | undefined)[]) {
+      this.items.update(current => {
+          return current.map((item, i) => {
+              if (ids[i]) {
+                  return { ...item, id: ids[i] };
+              }
+              return item;
+          });
+      });
+  }
+
   selectFile(file: File) {
       if (this.selectedFile() === file) {
           // toggle off? no, keep active
@@ -208,11 +240,7 @@ export class UploadFormComponent implements OnInit {
       let val = parseInt(input.value, 10);
       if (isNaN(val) || val < 1) val = 1;
       
-      this.items.update(current => {
-          const updated = [...current];
-          updated[index] = { ...updated[index], quantity: val };
-          return updated;
-      });
+      this.updateItemQuantityAtIndex(index, val);
   }
 
   updateItemColor(index: number, newColor: string) {
@@ -234,12 +262,12 @@ export class UploadFormComponent implements OnInit {
       });
   }
 
-  setFiles(files: File[]) {
+  setFiles(files: File[], colors?: string[]) {
       const validItems: FormItem[] = [];
-      for (const file of files) {
-          // Default color is Black or derive from somewhere if possible, but here we just init
-          validItems.push({ file, quantity: 1, color: 'Black' });
-      }
+      files.forEach((file, i) => {
+          const color = (colors && colors[i]) ? colors[i] : 'Black';
+          validItems.push({ file, quantity: 1, color: color });
+      });
 
       if (validItems.length > 0) {
           this.items.set(validItems);

@@ -6,6 +6,7 @@ import { AppCardComponent } from '../../../../shared/components/app-card/app-car
 import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
 import { SummaryCardComponent } from '../../../../shared/components/summary-card/summary-card.component';
 import { QuoteResult, QuoteItem } from '../../services/quote-estimator.service';
+import { getColorHex } from '../../../../core/constants/colors.const';
 
 @Component({
   selector: 'app-quote-result',
@@ -18,10 +19,12 @@ export class QuoteResultComponent {
   result = input.required<QuoteResult>();
   consult = output<void>();
   proceed = output<void>();
-  itemChange = output<{id?: string, fileName: string, quantity: number}>();
+  itemChange = output<{id?: string, fileName: string, quantity: number, index: number}>();
 
   // Local mutable state for items to handle quantity changes
   items = signal<QuoteItem[]>([]);
+
+  getColorHex = getColorHex;
 
   constructor() {
       effect(() => {
@@ -44,7 +47,8 @@ export class QuoteResultComponent {
       this.itemChange.emit({
           id: this.items()[index].id,
           fileName: this.items()[index].fileName,
-          quantity: qty
+          quantity: qty,
+          index: index
       });
   }
 

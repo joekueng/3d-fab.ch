@@ -48,7 +48,7 @@ export class CalculatorPageComponent implements OnInit {
 
     this.route.queryParams.subscribe(params => {
         const sessionId = params['session'];
-        if (sessionId) {
+        if (sessionId && sessionId !== this.result()?.sessionId) {
             this.loadSession(sessionId);
         }
     });
@@ -106,14 +106,14 @@ export class CalculatorPageComponent implements OnInit {
       forkJoin(downloads).subscribe({
           next: (results: any[]) => {
               const files = results.map(res => new File([res.blob], res.fileName, { type: 'application/octet-stream' }));
+              const colors = items.map(i => i.colorCode || 'Black');
               
               if (this.uploadForm) {
-                  this.uploadForm.setFiles(files);
+                  this.uploadForm.setFiles(files, colors);
                   this.uploadForm.patchSettings(session);
                   
                   // Also restore colors? 
-                  // setFiles inits with 'Black'. We need to update them if they differ.
-                  // items has colorCode.
+                  // setFiles inits with correct colors now.
                   setTimeout(() => {
                       if (this.uploadForm) {
                            items.forEach((item, index) => {
@@ -122,7 +122,11 @@ export class CalculatorPageComponent implements OnInit {
                                if (item.colorCode) {
                                    this.uploadForm.updateItemColor(index, item.colorCode);
                                }
+                               if (item.quantity) {
+                                   this.uploadForm.updateItemQuantityAtIndex(index, item.quantity);
+                               }
                            });
+                           this.uploadForm.updateItemIdsByIndex(items.map(i => i.id));
                       }
                   });
               }
@@ -164,6 +168,11 @@ export class CalculatorPageComponent implements OnInit {
             this.uploadProgress.set(100);
             this.step.set('quote');
 
+            // Sync IDs back to upload form for future updates
+            if (this.uploadForm) {
+                this.uploadForm.updateItemIdsByIndex(res.items.map(i => i.id));
+            }
+
             // Update URL with session ID without reloading
             if (res.sessionId) {
                 this.router.navigate([], {
@@ -200,10 +209,10 @@ export class CalculatorPageComponent implements OnInit {
     this.step.set('quote');
   }
 
-  onItemChange(event: {id?: string, fileName: string, quantity: number}) {
+  onItemChange(event: {id?: string, fileName: string, quantity: number, index: number}) {
       // 1. Update local form for consistency (UI feedback)
       if (this.uploadForm) {
-          this.uploadForm.updateItemQuantityByName(event.fileName, event.quantity);
+          this.uploadForm.updateItemQuantityAtIndex(event.index, event.quantity);
       }
       
       // 2. Update backend session if ID exists

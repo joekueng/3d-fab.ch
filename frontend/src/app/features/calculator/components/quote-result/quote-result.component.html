@@ -35,28 +35,37 @@
   
   <!-- Detailed Items List (NOW ON BOTTOM) -->
   <div class="items-list">
-    @for (item of items(); track item.fileName; let i = $index) {
-      <div class="item-row">
+    @for (item of items(); track item; let i = $index) {
+      <div class="item-row" [class.has-error]="item.error">
         <div class="item-info">
           <span class="file-name">{{ item.fileName }}</span>
-          <span class="file-details">
-             {{ (item.unitTime / 3600) | number:'1.1-1' }}h | {{ item.unitWeight | number:'1.0-0' }}g
-          </span>
+          @if (item.error) {
+            <span class="file-error">{{ 'CALC.ERROR_' + item.error | translate }}</span>
+          } @else {
+            <span class="file-details">
+                <span class="color-badge" [title]="item.color" [style.background-color]="getColorHex(item.color!)"></span>
+                {{ (item.unitTime / 3600) | number:'1.1-1' }}h | {{ item.unitWeight | number:'1.0-0' }}g
+            </span>
+          }
         </div>
         
         <div class="item-controls">
-            <div class="qty-control">
-                <label>Qtà:</label>
-                <input 
-                    type="number" 
-                    min="1" 
-                    [ngModel]="item.quantity" 
-                    (ngModelChange)="updateQuantity(i, $event)"
-                    class="qty-input">
-            </div>
-            <div class="item-price">
-                {{ (item.unitPrice * item.quantity) | currency:result().currency }}
-            </div>
+            @if (!item.error) {
+                <div class="qty-control">
+                    <label>Qtà:</label>
+                    <input 
+                        type="number" 
+                        min="1" 
+                        [ngModel]="item.quantity" 
+                        (ngModelChange)="updateQuantity(i, $event)"
+                        class="qty-input">
+                </div>
+                <div class="item-price">
+                    {{ (item.unitPrice * item.quantity) | currency:result().currency }}
+                </div>
+            } @else {
+                <div class="item-price error">-</div>
+            }
         </div>
       </div>
     }

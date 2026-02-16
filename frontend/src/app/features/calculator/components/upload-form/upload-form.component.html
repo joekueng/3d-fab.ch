@@ -25,7 +25,7 @@
     <!-- New File List with Details -->
     @if (items().length > 0) {
         <div class="items-grid">
-            @for (item of items(); track item.file.name; let i = $index) {
+            @for (item of items(); track item; let i = $index) {
                 <div class="file-card" [class.active]="item.file === selectedFile()" (click)="selectFile(item.file)">
                     <div class="card-header">
                         <span class="file-name" [title]="item.file.name">{{ item.file.name }}</span>
