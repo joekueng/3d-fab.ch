@@ -50,6 +50,7 @@ public class SlicerService {
         if (machineOverrides != null) machineOverrides.forEach(machineProfile::put);
         if (processOverrides != null) processOverrides.forEach(processProfile::put);
         
+        // Mantengo questa rimozione perché risolveva un errore specifico di triangolazione nei log
         machineProfile.remove("bed_exclude_area");
 
         Path baseTempPath = Paths.get("/app/temp");
@@ -82,7 +83,7 @@ public class SlicerService {
             command.add(fFile.getAbsolutePath());
             command.add(localStl.getAbsolutePath());
 
-            logger.info("Executing: " + String.join(" ", command));
+            logger.info("Executing Slicer: " + String.join(" ", command));
 
             ProcessBuilder pb = new ProcessBuilder(command);
             pb.directory(tempDir.toFile());
@@ -90,7 +91,7 @@ public class SlicerService {
             pb.environment().put("QT_QPA_PLATFORM", "offscreen");
             
             Process process = pb.start();
-            if (!process.waitFor(2, TimeUnit.MINUTES)) {
+            if (!process.waitFor(5, TimeUnit.MINUTES)) {
                 process.destroy();
                 throw new IOException("Slicer timeout");
             }
@@ -98,13 +99,7 @@ public class SlicerService {
             if (process.exitValue() != 0) {
                 String out = new String(process.getInputStream().readAllBytes());
                 String err = new String(process.getErrorStream().readAllBytes());
-                logger.severe("Slicer failed with exit " + process.exitValue() + ". Using fallback stats. ERR: " + err);
-                
-                // FALLBACK: Return estimated stats to allow app to function
-                PrintStats fallback = new PrintStats();
-                fallback.setPrintTimeSeconds(3600 + (inputStl.length() / 1000)); // Dummy time based on size
-                fallback.setFilamentWeightGrams(20.0 + (inputStl.length() / 50000.0)); // Dummy weight
-                return fallback;
+                throw new IOException("Slicer failed with exit code " + process.exitValue() + "\nERR: " + err + "\nOUT: " + out);
             }
 
             // Find any .gcode file
