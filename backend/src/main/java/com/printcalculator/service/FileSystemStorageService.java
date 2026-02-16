@@ -43,21 +43,16 @@ public class FileSystemStorageService implements StorageService {
             throw new StorageException("Cannot store file outside current directory.");
         }
 
-        // Scan stream
+        // Scan stream (Read 1)
         try (InputStream inputStream = file.getInputStream()) {
             if (!clamAVService.scan(inputStream)) {
                 throw new StorageException("File rejected by antivirus scanner.");
             }
         }
 
-        // Reset stream? MultipartFile.getInputStream() returns a new stream usually, 
-        // but let's verify if we need to open it again.
-        // Yes, we consumed the stream for scanning. We need to open it again for copying.
-        
-        try (InputStream inputStream = file.getInputStream()) {
-             Files.createDirectories(destinationFile.getParent());
-             Files.copy(inputStream, destinationFile, StandardCopyOption.REPLACE_EXISTING);
-        }
+        // Save to disk (Using transferTo which is safer than opening another stream)
+        Files.createDirectories(destinationFile.getParent());
+        file.transferTo(destinationFile.toFile());
     }
 
     @Override

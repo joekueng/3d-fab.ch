@@ -99,7 +99,7 @@ public class SlicerService {
             // File da processare (sempre per ultimo)
             command.add(localStl.getAbsolutePath());
 
-            logger.info("Executing Slicer: " + String.join(" ", command));
+            logger.info("Executing Slicer on file: " + localStl.getAbsolutePath() + " (Size: " + localStl.length() + " bytes)");
 
             runSlicerCommand(command, tempDir);
 
