@@ -10,7 +10,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -42,40 +41,16 @@ public class SlicerService {
 
     public PrintStats slice(File inputStl, String machineName, String filamentName, String processName,
                             Map<String, String> machineOverrides, Map<String, String> processOverrides) throws IOException {
-        
         ObjectNode machineProfile = profileManager.getMergedProfile(machineName, "machine");
         ObjectNode filamentProfile = profileManager.getMergedProfile(filamentName, "filament");
         ObjectNode processProfile = profileManager.getMergedProfile(processName, "process");
 
         if (machineOverrides != null) machineOverrides.forEach(machineProfile::put);
         if (processOverrides != null) processOverrides.forEach(processProfile::put);
-        
-        // Evitiamo solo asset grafici opzionali che potrebbero richiedere file esterni
-        if (machineProfile.has("bed_custom_model")) machineProfile.put("bed_custom_model", "");
-        if (machineProfile.has("bed_custom_texture")) machineProfile.put("bed_custom_texture", "");
-        machineProfile.remove("thumbnail");
 
-        // OrcaSlicer si aspetta un poligono valido per bed_exclude_area.
-        // Alcuni profili BBL la sovrascrivono con [] e causano "Unable to create exclude triangles".
-        // Usiamo un quadrato minimo per rendere il poligono valido senza impattare la superficie utile.
-        if (!machineProfile.has("bed_exclude_area")
-                || !machineProfile.get("bed_exclude_area").isArray()
-                || machineProfile.get("bed_exclude_area").size() < 4) {
-            machineProfile.putArray("bed_exclude_area")
-                    .add("0x0")
-                    .add("1x0")
-                    .add("1x1")
-                    .add("0x1");
-        }
-
-        Path baseTempPath = Paths.get("/app/temp");
-        if (!Files.exists(baseTempPath)) Files.createDirectories(baseTempPath);
-        Path tempDir = Files.createTempDirectory(baseTempPath, "job_");
+        Path tempDir = Files.createTempDirectory("slicer_job_");
         
         try {
-            File localStl = tempDir.resolve("input.stl").toFile();
-            Files.copy(inputStl.toPath(), localStl.toPath());
-
             File mFile = tempDir.resolve("machine.json").toFile();
             File fFile = tempDir.resolve("filament.json").toFile();
             File pFile = tempDir.resolve("process.json").toFile();
@@ -94,18 +69,18 @@ public class SlicerService {
             command.add("--load-filaments");
             command.add(fFile.getAbsolutePath());
             
+            command.add("--ensure-on-bed");
+            command.add("--arrange");
+            command.add("1");
             command.add("--outputdir");
             command.add(tempDir.toAbsolutePath().toString());
-            
-            // Posizionamento gestito a monte (auto-center), evitiamo l'arrange CLI che
-            // in alcuni casi porta a "Nothing to be sliced"
             
             command.add("--slice");
             command.add("0");
 
-            command.add(localStl.getAbsolutePath());
+            command.add(inputStl.getAbsolutePath());
 
-            logger.info("Executing Slicer for " + machineName + " on: " + localStl.getAbsolutePath());
+            logger.info("Executing Slicer: " + String.join(" ", command));
 
             runSlicerCommand(command, tempDir);
 
