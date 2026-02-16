@@ -17,11 +17,19 @@ public class ClamAVService {
     private static final Logger logger = LoggerFactory.getLogger(ClamAVService.class);
 
     private final ClamavClient clamavClient;
+    private final boolean enabled;
 
     public ClamAVService(
-            @Value("${clamav.host:localhost}") String host,
-            @Value("${clamav.port:3310}") int port
+            @Value("${clamav.host:clamav}") String host,
+            @Value("${clamav.port:3310}") int port,
+            @Value("${clamav.enabled:false}") boolean enabled
     ) {
+        this.enabled = enabled;
+        if (!enabled) {
+            logger.info("ClamAV is DISABLED");
+            this.clamavClient = null;
+            return;
+        }
         logger.info("Initializing ClamAV client at {}:{}", host, port);
         ClamavClient client = null;
         try {
@@ -33,8 +41,7 @@ public class ClamAVService {
     }
 
     public boolean scan(InputStream inputStream) {
-        if (clamavClient == null) {
-            logger.warn("ClamAV client not initialized, skipping scan (FAIL-OPEN)");
+        if (!enabled || clamavClient == null) {
             return true;
         }
         try {

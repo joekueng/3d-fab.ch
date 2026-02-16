@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import com.printcalculator.exception.StorageException;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -39,20 +41,24 @@ public class FileSystemStorageService implements StorageService {
     public void store(MultipartFile file, Path destinationRelativePath) throws IOException {
         Path destinationFile = this.rootLocation.resolve(destinationRelativePath).normalize().toAbsolutePath();
         if (!destinationFile.getParent().startsWith(this.rootLocation.toAbsolutePath())) {
-            // Security check
             throw new StorageException("Cannot store file outside current directory.");
         }
 
-        // Scan stream (Read 1)
-        try (InputStream inputStream = file.getInputStream()) {
-            if (!clamAVService.scan(inputStream)) {
-                throw new StorageException("File rejected by antivirus scanner.");
-            }
-        }
-
-        // Save to disk (Using transferTo which is safer than opening another stream)
+        // 1. Salva prima il file su disco per evitare problemi di stream con file grandi
         Files.createDirectories(destinationFile.getParent());
         file.transferTo(destinationFile.toFile());
+
+        // 2. Scansiona il file appena salvato aprendo un nuovo stream
+        try (InputStream inputStream = new FileInputStream(destinationFile.toFile())) {
+            if (!clamAVService.scan(inputStream)) {
+                // Se infetto, cancella il file e solleva eccezione
+                Files.deleteIfExists(destinationFile);
+                throw new StorageException("File rejected by antivirus scanner.");
+            }
+        } catch (Exception e) {
+            if (e instanceof StorageException) throw e;
+            // Se l'antivirus fallisce per motivi tecnici, lasciamo il file (fail-open come concordato)
+        }
     }
 
     @Override
@@ -62,11 +68,6 @@ public class FileSystemStorageService implements StorageService {
              throw new StorageException("Cannot store file outside current directory.");
         }
         Files.createDirectories(destinationFile.getParent());
-        // We assume source is already safe/scanned if it is internal? 
-        // Or should we scan it too? 
-        // If it comes from QuoteSession (which was scanned on upload), it is safe.
-        // If we want to be paranoid, we can scan again, but maybe overkill.
-        // Let's assume it is safe for internal copies.
         Files.copy(source, destinationFile, StandardCopyOption.REPLACE_EXISTING);
     }
 

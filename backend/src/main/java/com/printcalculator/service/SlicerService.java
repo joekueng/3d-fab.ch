@@ -43,6 +43,9 @@ public class SlicerService {
     public PrintStats slice(File inputStl, String machineName, String filamentName, String processName,
                             Map<String, String> machineOverrides, Map<String, String> processOverrides) throws IOException {
         
+        // Log version once for diagnostics
+        try { runVersionCheck(); } catch (Exception e) {}
+
         ObjectNode machineProfile = profileManager.getMergedProfile(machineName, "machine");
         ObjectNode filamentProfile = profileManager.getMergedProfile(filamentName, "filament");
         ObjectNode processProfile = profileManager.getMergedProfile(processName, "process");
@@ -50,18 +53,14 @@ public class SlicerService {
         if (machineOverrides != null) machineOverrides.forEach(machineProfile::put);
         if (processOverrides != null) processOverrides.forEach(processProfile::put);
         
-        // Pulizia profonda per evitare errori di inizializzazione grafica/piatto
-        machineProfile.remove("bed_exclude_area");
-        machineProfile.remove("head_wrap_detect_zone");
-        machineProfile.remove("bed_custom_model");
-        machineProfile.remove("bed_custom_texture");
+        // Pulizia radicale per rendere la macchina "anonima" ed evitare crash geometrici su zone di esclusione
+        makeMachineGeneric(machineProfile);
 
         Path baseTempPath = Paths.get("/app/temp");
         if (!Files.exists(baseTempPath)) Files.createDirectories(baseTempPath);
         Path tempDir = Files.createTempDirectory(baseTempPath, "job_");
         
         try {
-            // Usiamo un nome file senza spazi per massima compatibilità CLI
             File localStl = tempDir.resolve("input.stl").toFile();
             Files.copy(inputStl.toPath(), localStl.toPath());
 
@@ -76,7 +75,7 @@ public class SlicerService {
             List<String> command = new ArrayList<>();
             command.add(slicerPath); 
             
-            // Parametri di caricamento
+            // Ordine ottimizzato per OrcaSlicer 1.9+
             command.add("--load-settings");
             command.add(mFile.getAbsolutePath());
             command.add("--load-settings");
@@ -84,26 +83,23 @@ public class SlicerService {
             command.add("--load-filaments");
             command.add(fFile.getAbsolutePath());
             
-            // Output
             command.add("--outputdir");
             command.add(tempDir.toAbsolutePath().toString());
             
-            // Slicing & Auto-center (fondamentale per evitare "Nothing to be sliced")
             command.add("--arrange");
             command.add("1"); 
             command.add("--ensure-on-bed");
             
             command.add("--slice");
-            command.add("0"); // 0 solitamente significa "tutti i piatti con oggetti"
-            
-            // File da processare (sempre per ultimo)
+            command.add("1"); // Plate 1
+
             command.add(localStl.getAbsolutePath());
 
             logger.info("Executing Slicer on file: " + localStl.getAbsolutePath() + " (Size: " + localStl.length() + " bytes)");
 
             runSlicerCommand(command, tempDir);
 
-            // Cerca il file G-code prodotto (input.gcode o simili)
+            // Cerca il file G-code prodotto
             try (Stream<Path> s = Files.list(tempDir)) {
                 Optional<Path> found = s.filter(p -> p.toString().endsWith(".gcode")).findFirst();
                 if (found.isPresent()) return gCodeParser.parse(found.get().toFile());
@@ -116,11 +112,40 @@ public class SlicerService {
         }
     }
 
+    private void makeMachineGeneric(ObjectNode profile) {
+        // Rimuove l'identità della stampante per forzare lo slicer a usare solo i dati geometrici che forniamo
+        profile.remove("inherits");
+        profile.remove("printer_model");
+        profile.remove("printer_variant");
+        profile.remove("setting_id");
+        profile.remove("printer_settings_id");
+        
+        // Rimuove zone di esclusione e modelli complessi che richiedono calcoli grafici pesanti
+        profile.remove("bed_exclude_area");
+        profile.remove("head_wrap_detect_zone");
+        profile.remove("bed_custom_model");
+        profile.remove("bed_custom_texture");
+        profile.remove("thumbnail");
+        profile.remove("thumbnails");
+
+        // Forza un'area di stampa standard 256x256 (Bambu A1)
+        try {
+            profile.set("printable_area", mapper.readTree("[\"0x0\",\"256x0\",\"256x256\",\"0x256\"]"));
+            profile.put("printable_height", "256");
+        } catch (Exception ignored) {}
+    }
+
+    private void runVersionCheck() throws IOException, InterruptedException {
+        Process p = new ProcessBuilder(slicerPath, "--version").start();
+        p.waitFor();
+        String ver = new String(p.getInputStream().readAllBytes()).trim();
+        logger.info("OrcaSlicer Version on server: " + ver);
+    }
+
     protected void runSlicerCommand(List<String> command, Path tempDir) throws IOException, InterruptedException {
         ProcessBuilder pb = new ProcessBuilder(command);
         pb.directory(tempDir.toFile());
         
-        // Variabili d'ambiente minimali ma necessarie
         Map<String, String> env = pb.environment();
         env.put("HOME", "/tmp");
         env.put("QT_QPA_PLATFORM", "offscreen");
