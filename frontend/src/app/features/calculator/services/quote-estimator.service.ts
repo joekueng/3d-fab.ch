@@ -139,6 +139,13 @@ export class QuoteEstimatorService {
       return this.http.patch(`${environment.apiUrl}/api/quote-sessions/line-items/${lineItemId}`, changes, { headers });
   }
 
+  deleteLineItem(sessionId: string, lineItemId: string): Observable<any> {
+      const headers: any = {};
+      // @ts-ignore
+      if (environment.basicAuth) headers['Authorization'] = 'Basic ' + btoa(environment.basicAuth);
+      return this.http.delete(`${environment.apiUrl}/api/quote-sessions/${sessionId}/line-items/${lineItemId}`, { headers });
+  }
+
   createOrder(sessionId: string, orderDetails: any): Observable<any> {
       const headers: any = {};
       // @ts-ignore

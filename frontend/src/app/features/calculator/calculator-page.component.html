@@ -37,6 +37,7 @@
             [loading]="loading()"
             [uploadProgress]="uploadProgress()"
             (submitRequest)="onCalculate($event)"
+            (itemRemoved)="onItemRemoved($event)"
           ></app-upload-form>
         </app-card>
       </div>

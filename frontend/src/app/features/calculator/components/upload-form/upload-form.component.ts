@@ -30,6 +30,7 @@ export class UploadFormComponent implements OnInit {
   loading = input<boolean>(false);
   uploadProgress = input<number>(0);
   submitRequest = output<QuoteRequest>();
+  itemRemoved = output<{index: number, id?: string}>();
 
   private estimator = inject(QuoteEstimatorService);
   private fb = inject(FormBuilder);
@@ -252,6 +253,7 @@ export class UploadFormComponent implements OnInit {
   }
 
   removeItem(index: number) {
+      const itemToRemove = this.items()[index];
       this.items.update(current => {
           const updated = [...current];
           const removed = updated.splice(index, 1)[0];
@@ -260,6 +262,7 @@ export class UploadFormComponent implements OnInit {
           }
           return updated;
       });
+      this.itemRemoved.emit({ index, id: itemToRemove.id });
   }
 
   setFiles(files: File[], colors?: string[]) {

@@ -224,6 +224,43 @@ export class CalculatorPageComponent implements OnInit {
       }
   }
 
+  onItemRemoved(event: {index: number, id?: string}) {
+      // 1. Update local result if exists to keep UI in sync
+      const currentRes = this.result();
+      if (currentRes) {
+          const updatedItems = [...currentRes.items];
+          updatedItems.splice(event.index, 1);
+          
+          // Recalculate totals locally for immediate feedback
+          let totalTime = 0;
+          let totalWeight = 0;
+          let itemsPrice = 0;
+          
+          updatedItems.forEach(i => {
+              totalTime += i.unitTime * i.quantity;
+              totalWeight += i.unitWeight * i.quantity;
+              itemsPrice += i.unitPrice * i.quantity;
+          });
+
+          this.result.set({
+              ...currentRes,
+              items: updatedItems,
+              totalPrice: Math.round((itemsPrice + currentRes.setupCost) * 100) / 100,
+              totalTimeHours: Math.floor(totalTime / 3600),
+              totalTimeMinutes: Math.ceil((totalTime % 3600) / 60),
+              totalWeight: Math.ceil(totalWeight)
+          });
+      }
+
+      // 2. Delete from backend if ID exists
+      if (event.id && currentRes?.sessionId) {
+          this.estimator.deleteLineItem(currentRes.sessionId, event.id).subscribe({
+              next: () => console.log('Line item deleted from backend'),
+              error: (err) => console.error('Failed to delete line item', err)
+          });
+      }
+  }
+
   onSubmitOrder(orderData: any) {
     console.log('Order Submitted:', orderData);
     this.orderSuccess.set(true);
