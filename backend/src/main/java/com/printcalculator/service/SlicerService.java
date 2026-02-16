@@ -103,7 +103,7 @@ public class SlicerService {
 
             command.add(localStl.getAbsolutePath());
 
-            logger.info("Executing Slicer for Bambu Lab A1 on: " + localStl.getAbsolutePath());
+            logger.info("Executing Slicer for " + machineName + " on: " + localStl.getAbsolutePath());
 
             runSlicerCommand(command, tempDir);
 

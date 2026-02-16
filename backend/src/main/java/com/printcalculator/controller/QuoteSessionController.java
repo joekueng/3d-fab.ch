@@ -129,11 +129,13 @@ public class QuoteSessionController {
                     .orElseThrow(() -> new RuntimeException("No active printer found"));
             
             // 2. Pick Profiles
-            String machineProfile = machine.getPrinterDisplayName(); // e.g. "Bambu Lab A1 0.4 nozzle"
-            // If the display name doesn't match the json profile name, we might need a mapping key in DB.
-            // For now assuming display name works or we use a tough default
-             machineProfile = "Bambu Lab A1 0.4 nozzle"; // Force known good for now? Or use DB field if exists. 
-             // Ideally: machine.getSlicerProfileName();
+            String machineProfile = machine.getSlicerMachineProfile();
+            if (machineProfile == null || machineProfile.isBlank()) {
+                machineProfile = machine.getPrinterDisplayName(); // e.g. "Bambu Lab A1 0.4 nozzle"
+            }
+            if (machineProfile == null || machineProfile.isBlank()) {
+                machineProfile = "bambu_a1"; // final fallback (alias handled in ProfileManager)
+            }
             
             String filamentProfile = "Generic " + (settings.getMaterial() != null ? settings.getMaterial().toUpperCase() : "PLA");
             // Mapping: "pla_basic" -> "Generic PLA", "petg_basic" -> "Generic PETG"
