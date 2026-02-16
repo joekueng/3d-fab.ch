@@ -13,7 +13,7 @@ public class TestConfig {
     @Bean
     @Primary
     public ClamAVService mockClamAVService() {
-        return new ClamAVService("localhost", 3310) {
+        return new ClamAVService("localhost", 3310, true) {
             @Override
             public boolean scan(InputStream inputStream) {
                 return true; // Always clean for tests
