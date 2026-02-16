@@ -55,10 +55,17 @@ public class SlicerService {
         if (machineProfile.has("bed_custom_texture")) machineProfile.put("bed_custom_texture", "");
         machineProfile.remove("thumbnail");
 
-        // OrcaSlicer si aspetta almeno un valore per bed_exclude_area.
+        // OrcaSlicer si aspetta un poligono valido per bed_exclude_area.
         // Alcuni profili BBL la sovrascrivono con [] e causano "Unable to create exclude triangles".
-        if (!machineProfile.has("bed_exclude_area") || machineProfile.get("bed_exclude_area").isEmpty()) {
-            machineProfile.putArray("bed_exclude_area").add("0x0");
+        // Usiamo un quadrato minimo per rendere il poligono valido senza impattare la superficie utile.
+        if (!machineProfile.has("bed_exclude_area")
+                || !machineProfile.get("bed_exclude_area").isArray()
+                || machineProfile.get("bed_exclude_area").size() < 4) {
+            machineProfile.putArray("bed_exclude_area")
+                    .add("0x0")
+                    .add("1x0")
+                    .add("1x1")
+                    .add("0x1");
         }
 
         Path baseTempPath = Paths.get("/app/temp");
