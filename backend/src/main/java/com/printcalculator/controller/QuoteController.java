@@ -95,7 +95,7 @@ public class QuoteController {
             // For now, we trust the override key works on the base profile.
         }
 
-        return processRequest(file, filament, actualProcess, machineOverrides, processOverrides);
+        return processRequest(file, filament, actualProcess, machineOverrides, processOverrides, nozzleDiameter);
     }
 
     @PostMapping("/calculate/stl")
@@ -103,12 +103,13 @@ public class QuoteController {
             @RequestParam("file") MultipartFile file
     ) throws IOException {
         // Legacy endpoint uses defaults
-        return processRequest(file, DEFAULT_FILAMENT, DEFAULT_PROCESS, null, null);
+        return processRequest(file, DEFAULT_FILAMENT, DEFAULT_PROCESS, null, null, null);
     }
 
     private ResponseEntity<QuoteResult> processRequest(MultipartFile file, String filament, String process,
                                                        Map<String, String> machineOverrides,
-                                                       Map<String, String> processOverrides) throws IOException {
+                                                       Map<String, String> processOverrides,
+                                                       Double nozzleDiameter) throws IOException {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
