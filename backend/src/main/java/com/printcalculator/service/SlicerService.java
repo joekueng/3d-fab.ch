@@ -87,11 +87,11 @@ public class SlicerService {
             command.add(tempDir.toAbsolutePath().toString());
             
             command.add("--arrange");
-            command.add("1"); 
+            command.add("1");
             command.add("--ensure-on-bed");
             
             command.add("--slice");
-            command.add("1"); // Plate 1
+            command.add("0");
 
             command.add(localStl.getAbsolutePath());
 
@@ -113,14 +113,15 @@ public class SlicerService {
     }
 
     private void makeMachineGeneric(ObjectNode profile) {
-        // Rimuove l'identità della stampante per forzare lo slicer a usare solo i dati geometrici che forniamo
+        // Forza l'identità della stampante per usare i parametri di accelerazione/velocità della A1
+        profile.put("printer_model", "Bambu Lab A1");
+        
+        // Rimuove l'ereditarietà e gli ID per evitare che lo slicer cerchi di ricaricare asset di sistema (mesh/texture)
         profile.remove("inherits");
-        profile.remove("printer_model");
-        profile.remove("printer_variant");
         profile.remove("setting_id");
         profile.remove("printer_settings_id");
         
-        // Rimuove zone di esclusione e modelli complessi che richiedono calcoli grafici pesanti
+        // Rimuove zone di esclusione e modelli complessi che richiedono calcoli grafici pesanti (CAUSA CRASH IN HEADLESS)
         profile.remove("bed_exclude_area");
         profile.remove("head_wrap_detect_zone");
         profile.remove("bed_custom_model");
@@ -128,7 +129,7 @@ public class SlicerService {
         profile.remove("thumbnail");
         profile.remove("thumbnails");
 
-        // Forza un'area di stampa standard 256x256 (Bambu A1)
+        // Forza un'area di stampa standard 256x256x256 (Bambu A1)
         try {
             profile.set("printable_area", mapper.readTree("[\"0x0\",\"256x0\",\"256x256\",\"0x256\"]"));
             profile.put("printable_height", "256");
