@@ -66,7 +66,6 @@ public class SlicerService {
             // 3. Build Command
             List<String> command = new ArrayList<>();
             command.add(slicerPath);
-            command.add("--headless");
             
             // Output directory
             command.add("--outputdir");

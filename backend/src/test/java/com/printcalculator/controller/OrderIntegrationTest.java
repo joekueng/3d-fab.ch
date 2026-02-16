@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import com.printcalculator.service.ClamAVService;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -48,7 +48,7 @@ import static org.mockito.Mockito.when;
 })
 class OrderIntegrationTest {
 
-    @MockBean
+    @MockitoBean
     private ClamAVService clamAVService;
 
     @Autowired

@@ -17,7 +17,7 @@ import com.printcalculator.entity.PrinterMachine;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,25 +45,25 @@ public class ManualSessionPersistenceTest {
     @Autowired
     private QuoteSessionController controller;
 
-    @MockBean
+    @MockitoBean
     private QuoteSessionRepository sessionRepo;
 
-    @MockBean
+    @MockitoBean
     private QuoteLineItemRepository lineItemRepo; // Mock this too
 
-    @MockBean
+    @MockitoBean
     private SlicerService slicerService;
 
-    @MockBean
+    @MockitoBean
     private StorageService storageService;
     
-    @MockBean
+    @MockitoBean
     private QuoteCalculator quoteCalculator;
     
-    @MockBean
+    @MockitoBean
     private PrinterMachineRepository machineRepo;
     
-    @MockBean
+    @MockitoBean
     private com.printcalculator.repository.PricingPolicyRepository pricingRepo; // Add this if needed by controller
 
     @Test
