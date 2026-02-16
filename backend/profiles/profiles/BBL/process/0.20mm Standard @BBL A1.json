@@ -11,6 +11,5 @@
     "travel_speed": "700",
     "compatible_printers": [
         "Bambu Lab A1 0.4 nozzle"
-    ],
-    "exclude_object": "0"
+    ]
 }
