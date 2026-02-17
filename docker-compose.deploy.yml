@@ -7,8 +7,6 @@ services:
     container_name: print-calculator-backend-${ENV}
     ports:
       - "${BACKEND_PORT}:8000"
-    env_file:
-      - .env
     environment:
       - DB_URL=${DB_URL}
       - DB_USERNAME=${DB_USERNAME}
@@ -20,6 +18,7 @@ services:
       - backend_profiles_${ENV}:/app/profiles
       - /mnt/cache/appdata/print-calculator/${ENV}/storage_quotes:/app/storage_quotes
       - /mnt/cache/appdata/print-calculator/${ENV}/storage_orders:/app/storage_orders
+      - /mnt/cache/appdata/print-calculator/${ENV}/storage_requests:/app/storage_requests
 
 
   frontend:

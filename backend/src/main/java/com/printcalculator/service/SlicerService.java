@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -135,12 +136,25 @@ public class SlicerService {
             Thread.currentThread().interrupt();
             throw new IOException("Interrupted during slicing", e);
         } finally {
-            // Cleanup temp dir
-            // In production we should delete, for debugging we might want to keep?
-            // Let's delete for now on success.
-            // recursiveDelete(tempDir);
-            // Leaving it effectively "leaks" temp, but safer for persistent debugging?
-            // Implementation detail: Use a utility to clean up.
+            deleteRecursively(tempDir);
+        }
+    }
+
+    private void deleteRecursively(Path path) {
+        if (path == null || !Files.exists(path)) {
+            return;
+        }
+
+        try (var walk = Files.walk(path)) {
+            walk.sorted(Comparator.reverseOrder()).forEach(p -> {
+                try {
+                    Files.deleteIfExists(p);
+                } catch (IOException e) {
+                    logger.warning("Failed to delete temp path " + p + ": " + e.getMessage());
+                }
+            });
+        } catch (IOException e) {
+            logger.warning("Failed to walk temp directory " + path + ": " + e.getMessage());
         }
     }
 }
