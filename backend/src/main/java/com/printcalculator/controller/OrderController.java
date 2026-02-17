@@ -88,6 +88,12 @@ public class OrderController {
         order.setCreatedAt(OffsetDateTime.now());
         order.setUpdatedAt(OffsetDateTime.now());
         order.setCurrency("CHF");
+        // Initialize all NOT NULL monetary fields before first persist.
+        order.setSetupCostChf(session.getSetupCostChf() != null ? session.getSetupCostChf() : BigDecimal.ZERO);
+        order.setShippingCostChf(BigDecimal.ZERO);
+        order.setDiscountChf(BigDecimal.ZERO);
+        order.setSubtotalChf(BigDecimal.ZERO);
+        order.setTotalChf(BigDecimal.ZERO);
 
         // Billing
         order.setBillingCustomerType(request.getCustomer().getCustomerType());
@@ -193,7 +199,7 @@ public class OrderController {
 
         // Update Order Totals
         order.setSubtotalChf(subtotal);
-        order.setSetupCostChf(session.getSetupCostChf());
+        order.setSetupCostChf(session.getSetupCostChf() != null ? session.getSetupCostChf() : BigDecimal.ZERO);
         order.setShippingCostChf(BigDecimal.valueOf(9.00)); // Default shipping? or 0?
         // TODO: Calc implementation for shipping
         

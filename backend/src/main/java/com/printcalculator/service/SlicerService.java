@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -79,8 +80,7 @@ public class SlicerService {
             command.add("--load-filaments");
             command.add(fFile.getAbsolutePath());
             command.add("--ensure-on-bed");
-            command.add("--arrange");
-            command.add("1"); // force arrange
+            // Single-model jobs do not need arrange; it can fail on near-limit models.
             command.add("--slice");
             command.add("0"); // slice plate 0
             command.add("--outputdir");
@@ -95,19 +95,23 @@ public class SlicerService {
             // 4. Run Process
             ProcessBuilder pb = new ProcessBuilder(command);
             pb.directory(tempDir.toFile());
-            // pb.inheritIO(); // Useful for debugging, but maybe capture instead?
+            Path slicerLogPath = tempDir.resolve("orcaslicer.log");
+            pb.redirectErrorStream(true);
+            pb.redirectOutput(slicerLogPath.toFile());
             
             Process process = pb.start();
             boolean finished = process.waitFor(5, TimeUnit.MINUTES);
             
             if (!finished) {
-                process.destroy();
+                process.destroyForcibly();
                 throw new IOException("Slicer timed out");
             }
             
             if (process.exitValue() != 0) {
-                // Read stderr
-                String error = new String(process.getErrorStream().readAllBytes());
+                String error = "";
+                if (Files.exists(slicerLogPath)) {
+                    error = Files.readString(slicerLogPath, StandardCharsets.UTF_8);
+                }
                 throw new IOException("Slicer failed with exit code " + process.exitValue() + ": " + error);
             }
 
