@@ -65,76 +65,75 @@ public class SlicerService {
             mapper.writeValue(fFile, filamentProfile);
             mapper.writeValue(pFile, processProfile);
 
-            // 3. Build Command
-            // --load-settings "machine.json;process.json" --load-filaments "filament.json"
-            List<String> command = new ArrayList<>();
-            command.add(slicerPath);
-            
-            // Load machine settings
-            command.add("--load-settings");
-            command.add(mFile.getAbsolutePath());
-            
-            // Load process settings
-            command.add("--load-settings");
-            command.add(pFile.getAbsolutePath());
-            command.add("--load-filaments");
-            command.add(fFile.getAbsolutePath());
-            command.add("--ensure-on-bed");
-            // Single-model jobs do not need arrange; it can fail on near-limit models.
-            command.add("--slice");
-            command.add("0"); // slice plate 0
-            command.add("--outputdir");
-            command.add(tempDir.toAbsolutePath().toString());
-            // Need to handle Mac structure for console if needed? 
-            // Usually the binary at Contents/MacOS/OrcaSlicer works fine as console app.
-            
-            command.add(inputStl.getAbsolutePath());
-
-            logger.info("Executing Slicer: " + String.join(" ", command));
-
-            // 4. Run Process
-            ProcessBuilder pb = new ProcessBuilder(command);
-            pb.directory(tempDir.toFile());
-            Path slicerLogPath = tempDir.resolve("orcaslicer.log");
-            pb.redirectErrorStream(true);
-            pb.redirectOutput(slicerLogPath.toFile());
-            
-            Process process = pb.start();
-            boolean finished = process.waitFor(5, TimeUnit.MINUTES);
-            
-            if (!finished) {
-                process.destroyForcibly();
-                throw new IOException("Slicer timed out");
-            }
-            
-            if (process.exitValue() != 0) {
-                String error = "";
-                if (Files.exists(slicerLogPath)) {
-                    error = Files.readString(slicerLogPath, StandardCharsets.UTF_8);
-                }
-                throw new IOException("Slicer failed with exit code " + process.exitValue() + ": " + error);
-            }
-
-            // 5. Find Output GCode
-            // Usually [basename].gcode or plate_1.gcode
             String basename = inputStl.getName();
             if (basename.toLowerCase().endsWith(".stl")) {
                 basename = basename.substring(0, basename.length() - 4);
             }
-            
-            File gcodeFile = tempDir.resolve(basename + ".gcode").toFile();
-            if (!gcodeFile.exists()) {
-                // Try plate_1.gcode fallback
-                File alt = tempDir.resolve("plate_1.gcode").toFile();
-                if (alt.exists()) {
-                    gcodeFile = alt;
-                } else {
-                     throw new IOException("GCode output not found in " + tempDir);
+            Path slicerLogPath = tempDir.resolve("orcaslicer.log");
+
+            // 3. Run slicer. Retry with arrange only for out-of-volume style failures.
+            for (boolean useArrange : new boolean[]{false, true}) {
+                List<String> command = new ArrayList<>();
+                command.add(slicerPath);
+                command.add("--load-settings");
+                command.add(mFile.getAbsolutePath());
+                command.add("--load-settings");
+                command.add(pFile.getAbsolutePath());
+                command.add("--load-filaments");
+                command.add(fFile.getAbsolutePath());
+                command.add("--ensure-on-bed");
+                if (useArrange) {
+                    command.add("--arrange");
+                    command.add("1");
                 }
+                command.add("--slice");
+                command.add("0");
+                command.add("--outputdir");
+                command.add(tempDir.toAbsolutePath().toString());
+                command.add(inputStl.getAbsolutePath());
+
+                logger.info("Executing Slicer" + (useArrange ? " (retry with arrange)" : "") + ": " + String.join(" ", command));
+
+                Files.deleteIfExists(slicerLogPath);
+                ProcessBuilder pb = new ProcessBuilder(command);
+                pb.directory(tempDir.toFile());
+                pb.redirectErrorStream(true);
+                pb.redirectOutput(slicerLogPath.toFile());
+
+                Process process = pb.start();
+                boolean finished = process.waitFor(5, TimeUnit.MINUTES);
+
+                if (!finished) {
+                    process.destroyForcibly();
+                    throw new IOException("Slicer timed out");
+                }
+
+                if (process.exitValue() != 0) {
+                    String error = "";
+                    if (Files.exists(slicerLogPath)) {
+                        error = Files.readString(slicerLogPath, StandardCharsets.UTF_8);
+                    }
+                    if (!useArrange && isOutOfVolumeError(error)) {
+                        logger.warning("Slicer reported model out of printable area, retrying with arrange.");
+                        continue;
+                    }
+                    throw new IOException("Slicer failed with exit code " + process.exitValue() + ": " + error);
+                }
+
+                File gcodeFile = tempDir.resolve(basename + ".gcode").toFile();
+                if (!gcodeFile.exists()) {
+                    File alt = tempDir.resolve("plate_1.gcode").toFile();
+                    if (alt.exists()) {
+                        gcodeFile = alt;
+                    } else {
+                        throw new IOException("GCode output not found in " + tempDir);
+                    }
+                }
+
+                return gCodeParser.parse(gcodeFile);
             }
 
-            // 6. Parse Results
-            return gCodeParser.parse(gcodeFile);
+            throw new IOException("Slicer failed after retry");
 
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -160,5 +159,16 @@ public class SlicerService {
         } catch (IOException e) {
             logger.warning("Failed to walk temp directory " + path + ": " + e.getMessage());
         }
+    }
+
+    private boolean isOutOfVolumeError(String errorLog) {
+        if (errorLog == null || errorLog.isBlank()) {
+            return false;
+        }
+
+        String normalized = errorLog.toLowerCase();
+        return normalized.contains("nothing to be sliced")
+                || normalized.contains("no object is fully inside the print volume")
+                || normalized.contains("calc_exclude_triangles");
     }
 }
