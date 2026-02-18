@@ -10,9 +10,9 @@
     "printer_variant": "0.4",
     "printable_area": [
         "0x0",
-        "260x0",
-        "260x260",
-        "0x260"
+        "256x0",
+        "256x256",
+        "0x256"
     ],
     "auxiliary_fan": "1",
     "bed_exclude_area": [

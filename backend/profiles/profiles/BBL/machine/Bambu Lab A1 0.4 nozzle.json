@@ -56,7 +56,7 @@
     "nozzle_height": "4.76",
     "nozzle_type": "stainless_steel",
     "nozzle_volume": "92",
-    "printable_height": "260",
+    "printable_height": "256",
     "printer_structure": "i3",
     "retract_lift_below": [
         "255"
