@@ -159,9 +159,8 @@ jobs:
             "setenv ${{ env.ENV }}" < /tmp/full_env.env
 
           # 6. Send docker-compose.deploy.yml to server
-          # We use a trick to find the base_dir: we look where the script usually puts things
-          cat docker-compose.deploy.yml | ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" \
-            "cat > /mnt/cache/appdata/print-calculator/docker-compose-deploy.yml 2>/dev/null || cat > /mnt/user/appdata/print-calculator/docker-compose-deploy.yml"
+          ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" \
+            "setcompose ${{ env.ENV }}" < docker-compose.deploy.yml
             
 
 
