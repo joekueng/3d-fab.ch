@@ -128,10 +128,20 @@ jobs:
       - name: Write env and compose to server
         shell: bash
         run: |
-          # 1. Start with the static env file content
+          # 1. Recalculate TAG and OWNER_LOWER (jobs don't share ENV)
+          if [[ "${{ gitea.ref }}" == "refs/heads/main" ]]; then
+            DEPLOY_TAG="prod"
+          elif [[ "${{ gitea.ref }}" == "refs/heads/int" ]]; then
+            DEPLOY_TAG="int"
+          else
+            DEPLOY_TAG="dev"
+          fi
+          DEPLOY_OWNER=$(echo '${{ gitea.repository_owner }}' | tr '[:upper:]' '[:lower:]')
+
+          # 2. Start with the static env file content
           cat "deploy/envs/${{ env.ENV }}.env" > /tmp/full_env.env
 
-          # 2. Determine DB credentials
+          # 3. Determine DB credentials
           if [[ "${{ env.ENV }}" == "prod" ]]; then
             DB_URL="${{ secrets.DB_URL_PROD }}"
             DB_USER="${{ secrets.DB_USERNAME_PROD }}"
@@ -146,14 +156,14 @@ jobs:
             DB_PASS="${{ secrets.DB_PASSWORD_DEV }}"
           fi
 
-          # 3. Append DB and Docker credentials
+          # 4. Append DB and Docker credentials
           printf '\nDB_URL=%s\nDB_USERNAME=%s\nDB_PASSWORD=%s\n' \
             "$DB_URL" "$DB_USER" "$DB_PASS" >> /tmp/full_env.env
           
           printf 'REGISTRY_URL=%s\nREPO_OWNER=%s\nTAG=%s\n' \
-            "${{ secrets.REGISTRY_URL }}" "$OWNER_LOWER" "$TAG" >> /tmp/full_env.env
+            "${{ secrets.REGISTRY_URL }}" "$DEPLOY_OWNER" "$DEPLOY_TAG" >> /tmp/full_env.env
 
-          # 4. Debug: print content (for debug purposes)
+          # 5. Debug: print content (for debug purposes)
           echo "Preparing to send env file with variables:"
           grep -v "PASSWORD" /tmp/full_env.env || true
 
