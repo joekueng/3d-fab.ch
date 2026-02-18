@@ -146,9 +146,12 @@ jobs:
             DB_PASS="${{ secrets.DB_PASSWORD_DEV }}"
           fi
 
-          # 3. Append DB credentials
+          # 3. Append DB and Docker credentials
           printf '\nDB_URL=%s\nDB_USERNAME=%s\nDB_PASSWORD=%s\n' \
             "$DB_URL" "$DB_USER" "$DB_PASS" >> /tmp/full_env.env
+          
+          printf 'REGISTRY_URL=%s\nREPO_OWNER=%s\nTAG=%s\n' \
+            "${{ secrets.REGISTRY_URL }}" "$OWNER_LOWER" "$TAG" >> /tmp/full_env.env
 
           # 4. Debug: print content (for debug purposes)
           echo "Preparing to send env file with variables:"
