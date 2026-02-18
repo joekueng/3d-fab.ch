@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
 
 @Service
 public class ProfileManager {
@@ -56,22 +57,38 @@ public class ProfileManager {
         if (profilePath == null) {
             throw new IOException("Profile not found: " + profileName);
         }
+        logger.info("Resolved " + type + " profile '" + profileName + "' -> " + profilePath);
         return resolveInheritance(profilePath);
     }
 
     private Path findProfileFile(String name, String type) {
         // Check aliases first
         String resolvedName = profileAliases.getOrDefault(name, name);
-        
-        // Simple search: look for name.json in the profiles_root recursively
-        // Type could be "machine", "process", "filament" to narrow down, but for now global search
-        String filename = resolvedName.endsWith(".json") ? resolvedName : resolvedName + ".json";
-        
+
+        // Look for name.json under the expected type directory first to avoid
+        // collisions across vendors/profile families with same filename.
+        String filename = toJsonFilename(resolvedName);
+
         try (Stream<Path> stream = Files.walk(Paths.get(profilesRoot))) {
-            Optional<Path> found = stream
+            List<Path> candidates = stream
                     .filter(p -> p.getFileName().toString().equals(filename))
-                    .findFirst();
-            return found.orElse(null);
+                    .sorted()
+                    .toList();
+
+            if (candidates.isEmpty()) {
+                return null;
+            }
+
+            if (type != null && !type.isBlank() && !"any".equalsIgnoreCase(type)) {
+                Optional<Path> typed = candidates.stream()
+                        .filter(p -> pathContainsSegment(p, type))
+                        .findFirst();
+                if (typed.isPresent()) {
+                    return typed.get();
+                }
+            }
+
+            return candidates.get(0);
         } catch (IOException e) {
             logger.severe("Error searching for profile: " + e.getMessage());
             return null;
@@ -85,14 +102,20 @@ public class ProfileManager {
         // 2. Check inherits
         if (currentNode.has("inherits")) {
             String parentName = currentNode.get("inherits").asText();
-            // Try to find parent in same directory or standard search
-            Path parentPath = currentPath.getParent().resolve(parentName);
+            // Try local directory first with explicit .json filename.
+            String parentFilename = toJsonFilename(parentName);
+            Path parentPath = currentPath.getParent().resolve(parentFilename);
             if (!Files.exists(parentPath)) {
-                // If not in same dir, search globally
+                // Fallback to the same profile type directory before global.
+                String inferredType = inferTypeFromPath(currentPath);
+                parentPath = findProfileFile(parentName, inferredType);
+            }
+            if (parentPath == null || !Files.exists(parentPath)) {
                 parentPath = findProfileFile(parentName, "any");
             }
 
             if (parentPath != null && Files.exists(parentPath)) {
+                logger.info("Resolved inherits '" + parentName + "' for " + currentPath + " -> " + parentPath);
                 // Recursive call
                 ObjectNode parentNode = resolveInheritance(parentPath);
                 // Merge current into parent (child overrides parent)
@@ -122,5 +145,31 @@ public class ProfileManager {
             // Replace standard fields
             mainNode.set(fieldName, jsonNode);
         }
+    }
+
+    private String toJsonFilename(String name) {
+        return name.endsWith(".json") ? name : name + ".json";
+    }
+
+    private boolean pathContainsSegment(Path path, String segment) {
+        String normalized = path.toString().replace('\\', '/');
+        String needle = "/" + segment + "/";
+        return normalized.contains(needle);
+    }
+
+    private String inferTypeFromPath(Path path) {
+        if (path == null) {
+            return "any";
+        }
+        if (pathContainsSegment(path, "machine")) {
+            return "machine";
+        }
+        if (pathContainsSegment(path, "process")) {
+            return "process";
+        }
+        if (pathContainsSegment(path, "filament")) {
+            return "filament";
+        }
+        return "any";
     }
 }

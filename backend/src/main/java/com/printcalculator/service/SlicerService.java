@@ -46,6 +46,12 @@ public class SlicerService {
         ObjectNode filamentProfile = profileManager.getMergedProfile(filamentName, "filament");
         ObjectNode processProfile = profileManager.getMergedProfile(processName, "process");
 
+        logger.info("Slicer profiles: machine='" + machineName + "', filament='" + filamentName + "', process='" + processName + "'");
+        logger.info("Machine limits: printable_area=" + machineProfile.path("printable_area")
+                + ", printable_height=" + machineProfile.path("printable_height")
+                + ", bed_exclude_area=" + machineProfile.path("bed_exclude_area")
+                + ", head_wrap_detect_zone=" + machineProfile.path("head_wrap_detect_zone"));
+
         // Apply Overrides
         if (machineOverrides != null) {
             machineOverrides.forEach(machineProfile::put);
