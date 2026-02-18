@@ -125,7 +125,7 @@ jobs:
 
           ssh-keyscan -H "${{ secrets.SERVER_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
 
-      - name: Write env to server
+      - name: Write env and compose to server
         shell: bash
         run: |
           # 1. Start with the static env file content
@@ -154,9 +154,14 @@ jobs:
           echo "Preparing to send env file with variables:"
           grep -v "PASSWORD" /tmp/full_env.env || true
 
-          # 5. Send to server
+          # 5. Send env to server
           ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" \
             "setenv ${{ env.ENV }}" < /tmp/full_env.env
+
+          # 6. Send docker-compose.deploy.yml to server
+          # We use a trick to find the base_dir: we look where the script usually puts things
+          cat docker-compose.deploy.yml | ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" \
+            "cat > /mnt/cache/appdata/print-calculator/docker-compose-deploy.yml 2>/dev/null || cat > /mnt/user/appdata/print-calculator/docker-compose-deploy.yml"
             
 
 

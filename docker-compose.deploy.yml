@@ -8,18 +8,25 @@ services:
     ports:
       - "${BACKEND_PORT}:8000"
     environment:
+      - SPRING_PROFILES_ACTIVE=${ENV}
       - DB_URL=${DB_URL}
       - DB_USERNAME=${DB_USERNAME}
       - DB_PASSWORD=${DB_PASSWORD}
       - TEMP_DIR=/app/temp
       - PROFILES_DIR=/app/profiles
     restart: always
-    volumes:
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    volumes: 
       - backend_profiles_${ENV}:/app/profiles
       - /mnt/cache/appdata/print-calculator/${ENV}/storage_quotes:/app/storage_quotes
       - /mnt/cache/appdata/print-calculator/${ENV}/storage_orders:/app/storage_orders
       - /mnt/cache/appdata/print-calculator/${ENV}/storage_requests:/app/storage_requests
-
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   frontend:
     image: ${REGISTRY_URL}/${REPO_OWNER}/print-calculator-frontend:${TAG}
@@ -29,6 +36,11 @@ services:
     depends_on:
       - backend
     restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   backend_profiles_prod:
