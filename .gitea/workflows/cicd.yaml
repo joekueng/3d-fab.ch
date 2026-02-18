@@ -156,11 +156,11 @@ jobs:
             DB_PASS="${{ secrets.DB_PASSWORD_DEV }}"
           fi
 
-          # 4. Append DB and Docker credentials
-          printf '\nDB_URL=%s\nDB_USERNAME=%s\nDB_PASSWORD=%s\n' \
+          # 4. Append DB and Docker credentials (quoted)
+          printf '\nDB_URL="%s"\nDB_USERNAME="%s"\nDB_PASSWORD="%s"\n' \
             "$DB_URL" "$DB_USER" "$DB_PASS" >> /tmp/full_env.env
           
-          printf 'REGISTRY_URL=%s\nREPO_OWNER=%s\nTAG=%s\n' \
+          printf 'REGISTRY_URL="%s"\nREPO_OWNER="%s"\nTAG="%s"\n' \
             "${{ secrets.REGISTRY_URL }}" "$DEPLOY_OWNER" "$DEPLOY_TAG" >> /tmp/full_env.env
 
           # 5. Debug: print content (for debug purposes)

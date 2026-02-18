@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   backend:
     # L'immagine usa il tag specificato nel file .env o passato da riga di comando
