@@ -22,15 +22,17 @@ public class QuoteController {
     private final SlicerService slicerService;
     private final QuoteCalculator quoteCalculator;
     private final PrinterMachineRepository machineRepo;
+    private final com.printcalculator.service.ClamAVService clamAVService;
 
     // Defaults (using aliases defined in ProfileManager)
     private static final String DEFAULT_FILAMENT = "pla_basic";
     private static final String DEFAULT_PROCESS = "standard";
 
-    public QuoteController(SlicerService slicerService, QuoteCalculator quoteCalculator, PrinterMachineRepository machineRepo) {
+    public QuoteController(SlicerService slicerService, QuoteCalculator quoteCalculator, PrinterMachineRepository machineRepo, com.printcalculator.service.ClamAVService clamAVService) {
         this.slicerService = slicerService;
         this.quoteCalculator = quoteCalculator;
         this.machineRepo = machineRepo;
+        this.clamAVService = clamAVService;
     }
 
     @PostMapping("/api/quote")
@@ -98,6 +100,9 @@ public class QuoteController {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
+
+        // Scan for virus
+        clamAVService.scan(file.getInputStream());
 
         // Fetch Default Active Machine
         PrinterMachine machine = machineRepo.findFirstByIsActiveTrue()

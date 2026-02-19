@@ -30,6 +30,7 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	compileOnly 'org.projectlombok:lombok'
+	implementation 'xyz.capybara:clamav-client:2.1.2'
 	annotationProcessor 'org.projectlombok:lombok'
 }
 

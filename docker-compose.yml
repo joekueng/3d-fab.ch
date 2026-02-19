@@ -20,8 +20,11 @@ services:
       - MARKUP_PERCENT=20
       - TEMP_DIR=/app/temp
       - PROFILES_DIR=/app/profiles
+      - CLAMAV_HOST=clamav
+      - CLAMAV_PORT=3310
     depends_on:
       - db
+      - clamav
     restart: unless-stopped
 
   frontend:
@@ -47,6 +50,14 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  clamav:
+    platform: linux/amd64
+    image: clamav/clamav:latest
+    container_name: print-calculator-clamav
+    ports:
+      - "3310:3310"
     restart: unless-stopped
 
 volumes:

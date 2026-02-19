@@ -28,6 +28,7 @@ public class OrderController {
     private final QuoteSessionRepository quoteSessionRepo;
     private final QuoteLineItemRepository quoteLineItemRepo;
     private final CustomerRepository customerRepo;
+    private final com.printcalculator.service.ClamAVService clamAVService;
 
     // TODO: Inject Storage Service or use a base path property
     private static final String STORAGE_ROOT = "storage_orders"; 
@@ -36,12 +37,14 @@ public class OrderController {
                            OrderItemRepository orderItemRepo,
                            QuoteSessionRepository quoteSessionRepo,
                            QuoteLineItemRepository quoteLineItemRepo,
-                           CustomerRepository customerRepo) {
+                           CustomerRepository customerRepo,
+                           com.printcalculator.service.ClamAVService clamAVService) {
         this.orderRepo = orderRepo;
         this.orderItemRepo = orderItemRepo;
         this.quoteSessionRepo = quoteSessionRepo;
         this.quoteLineItemRepo = quoteLineItemRepo;
         this.customerRepo = customerRepo;
+        this.clamAVService = clamAVService;
     }
 
 
@@ -229,6 +232,9 @@ public class OrderController {
         if (!item.getOrder().getId().equals(orderId)) {
             return ResponseEntity.badRequest().build();
         }
+
+        // Scan for virus
+        clamAVService.scan(file.getInputStream());
         
         // Ensure path logic
         String relativePath = item.getStoredRelativePath();

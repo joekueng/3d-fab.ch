@@ -10,6 +10,9 @@ services:
       - DB_URL=${DB_URL}
       - DB_USERNAME=${DB_USERNAME}
       - DB_PASSWORD=${DB_PASSWORD}
+      - CLAMAV_HOST=${CLAMAV_HOST}
+      - CLAMAV_PORT=${CLAMAV_PORT}
+      - CLAMAV_ENABLED=${CLAMAV_ENABLED}
       - TEMP_DIR=/app/temp
       - PROFILES_DIR=/app/profiles
     restart: always

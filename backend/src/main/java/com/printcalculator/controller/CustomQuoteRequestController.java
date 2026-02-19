@@ -25,14 +25,17 @@ public class CustomQuoteRequestController {
 
     private final CustomQuoteRequestRepository requestRepo;
     private final CustomQuoteRequestAttachmentRepository attachmentRepo;
+    private final com.printcalculator.service.ClamAVService clamAVService;
     
     // TODO: Inject Storage Service
     private static final String STORAGE_ROOT = "storage_requests";
 
     public CustomQuoteRequestController(CustomQuoteRequestRepository requestRepo,
-                                        CustomQuoteRequestAttachmentRepository attachmentRepo) {
+                                        CustomQuoteRequestAttachmentRepository attachmentRepo,
+                                        com.printcalculator.service.ClamAVService clamAVService) {
         this.requestRepo = requestRepo;
         this.attachmentRepo = attachmentRepo;
+        this.clamAVService = clamAVService;
     }
 
     // 1. Create Custom Quote Request
@@ -67,6 +70,9 @@ public class CustomQuoteRequestController {
             
             for (MultipartFile file : files) {
                 if (file.isEmpty()) continue;
+                
+                // Scan for virus
+                clamAVService.scan(file.getInputStream());
                 
                 CustomQuoteRequestAttachment attachment = new CustomQuoteRequestAttachment();
                 attachment.setRequest(request);

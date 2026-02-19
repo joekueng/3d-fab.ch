@@ -40,6 +40,7 @@ public class QuoteSessionController {
     private final QuoteCalculator quoteCalculator;
     private final PrinterMachineRepository machineRepo;
     private final com.printcalculator.repository.PricingPolicyRepository pricingRepo;
+    private final com.printcalculator.service.ClamAVService clamAVService;
 
     // Defaults
     private static final String DEFAULT_FILAMENT = "pla_basic";
@@ -50,13 +51,15 @@ public class QuoteSessionController {
                                   SlicerService slicerService,
                                   QuoteCalculator quoteCalculator,
                                   PrinterMachineRepository machineRepo,
-                                  com.printcalculator.repository.PricingPolicyRepository pricingRepo) {
+                                  com.printcalculator.repository.PricingPolicyRepository pricingRepo,
+                                  com.printcalculator.service.ClamAVService clamAVService) {
         this.sessionRepo = sessionRepo;
         this.lineItemRepo = lineItemRepo;
         this.slicerService = slicerService;
         this.quoteCalculator = quoteCalculator;
         this.machineRepo = machineRepo;
         this.pricingRepo = pricingRepo;
+        this.clamAVService = clamAVService;
     }
 
     // 1. Start a new empty session
@@ -98,6 +101,9 @@ public class QuoteSessionController {
     // Helper to add item
     private QuoteLineItem addItemToSession(QuoteSession session, MultipartFile file, com.printcalculator.dto.PrintSettingsDto settings) throws IOException {
         if (file.isEmpty()) throw new IOException("File is empty");
+
+        // Scan for virus
+        clamAVService.scan(file.getInputStream());
 
         // 1. Define Persistent Storage Path
         // Structure: storage_quotes/{sessionId}/{uuid}.{ext}
