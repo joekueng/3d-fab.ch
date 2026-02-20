@@ -148,5 +148,29 @@
     "SUCCESS_TITLE": "Message Sent Successfully",
     "SUCCESS_DESC": "Thank you for contacting us. We have received your message and will send you a recap email shortly.",
     "SEND_ANOTHER": "Send Another Message"
+  },
+  "CHECKOUT": {
+    "TITLE": "Checkout",
+    "CONTACT_INFO": "Contact Information",
+    "BILLING_ADDR": "Billing Address",
+    "SHIPPING_ADDR": "Shipping Address",
+    "FIRST_NAME": "First Name",
+    "LAST_NAME": "Last Name",
+    "EMAIL": "Email",
+    "PHONE": "Phone",
+    "COMPANY_NAME": "Company Name",
+    "ADDRESS_1": "Address Line 1",
+    "ADDRESS_2": "Address Line 2 (Optional)",
+    "ZIP": "ZIP Code",
+    "CITY": "City",
+    "COUNTRY": "Country",
+    "SHIPPING_SAME": "Shipping address same as billing",
+    "PLACE_ORDER": "Place Order",
+    "PROCESSING": "Processing...",
+    "SUMMARY_TITLE": "Order Summary",
+    "SUBTOTAL": "Subtotal",
+    "SETUP_FEE": "Setup Fee",
+    "TOTAL": "Total",
+    "QTY": "Qty"
   }
 }

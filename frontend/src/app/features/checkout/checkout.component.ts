@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { QuoteEstimatorService } from '../calculator/services/quote-estimator.service';
 import { AppInputComponent } from '../../shared/components/app-input/app-input.component';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
@@ -12,6 +13,7 @@ import { AppButtonComponent } from '../../shared/components/app-button/app-butto
   imports: [
     CommonModule, 
     ReactiveFormsModule, 
+    TranslateModule,
     AppInputComponent,
     AppButtonComponent
   ],
@@ -43,6 +45,7 @@ export class CheckoutComponent implements OnInit {
         firstName: ['', Validators.required],
         lastName: ['', Validators.required],
         companyName: [''], 
+        referencePerson: [''],
         addressLine1: ['', Validators.required],
         addressLine2: [''],
         zip: ['', Validators.required],
@@ -54,6 +57,7 @@ export class CheckoutComponent implements OnInit {
         firstName: [''],
         lastName: [''],
         companyName: [''],
+        referencePerson: [''],
         addressLine1: [''],
         addressLine2: [''],
         zip: [''],
@@ -74,13 +78,17 @@ export class CheckoutComponent implements OnInit {
     // Update validators based on type
     const billingGroup = this.checkoutForm.get('billingAddress') as FormGroup;
     const companyControl = billingGroup.get('companyName');
+    const referenceControl = billingGroup.get('referencePerson');
     
     if (isCompany) {
       companyControl?.setValidators([Validators.required]);
+      referenceControl?.setValidators([Validators.required]);
     } else {
       companyControl?.clearValidators();
+      referenceControl?.clearValidators();
     }
     companyControl?.updateValueAndValidity();
+    referenceControl?.updateValueAndValidity();
   }
 
   ngOnInit(): void {
@@ -147,6 +155,7 @@ export class CheckoutComponent implements OnInit {
         firstName: formVal.billingAddress.firstName,
         lastName: formVal.billingAddress.lastName,
         companyName: formVal.billingAddress.companyName,
+        contactPerson: formVal.billingAddress.referencePerson,
         addressLine1: formVal.billingAddress.addressLine1,
         addressLine2: formVal.billingAddress.addressLine2,
         zip: formVal.billingAddress.zip,
@@ -157,6 +166,7 @@ export class CheckoutComponent implements OnInit {
         firstName: formVal.shippingAddress.firstName,
         lastName: formVal.shippingAddress.lastName,
         companyName: formVal.shippingAddress.companyName,
+        contactPerson: formVal.shippingAddress.referencePerson,
         addressLine1: formVal.shippingAddress.addressLine1,
         addressLine2: formVal.shippingAddress.addressLine2,
         zip: formVal.shippingAddress.zip,

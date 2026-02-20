@@ -25,6 +25,7 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
   private controls!: OrbitControls;
   private animationId: number | null = null;
   private currentMesh: THREE.Mesh | null = null;
+  private autoRotate = true;
 
   loading = false;
 
@@ -38,14 +39,14 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
     }
     
     if (changes['color'] && this.currentMesh && !changes['file']) {
-        // Update existing mesh color if only color changed
-        const mat = this.currentMesh.material as THREE.MeshPhongMaterial;
-        mat.color.set(this.color);
+      this.applyColorStyle(this.color);
     }
   }
 
   ngOnDestroy() {
     if (this.animationId) cancelAnimationFrame(this.animationId);
+    this.clearCurrentMesh();
+    if (this.controls) this.controls.dispose();
     if (this.renderer) this.renderer.dispose();
   }
 
@@ -54,28 +55,51 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
     const height = this.rendererContainer.nativeElement.clientHeight;
 
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0xf7f6f2); // Neutral-50
+    this.scene.background = new THREE.Color(0xf4f8fc);
 
     // Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
     this.scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(1, 1, 1);
-    this.scene.add(directionalLight);
+    const hemiLight = new THREE.HemisphereLight(0xf8fbff, 0xc8d3df, 0.95);
+    hemiLight.position.set(0, 30, 0);
+    this.scene.add(hemiLight);
+
+    const directionalLight1 = new THREE.DirectionalLight(0xffffff, 1.35);
+    directionalLight1.position.set(6, 8, 6);
+    this.scene.add(directionalLight1);
+
+    const directionalLight2 = new THREE.DirectionalLight(0xe8f0ff, 0.85);
+    directionalLight2.position.set(-7, 4, -5);
+    this.scene.add(directionalLight2);
+
+    const directionalLight3 = new THREE.DirectionalLight(0xffffff, 0.55);
+    directionalLight3.position.set(0, 5, -9);
+    this.scene.add(directionalLight3);
 
     // Camera
     this.camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
     this.camera.position.z = 100;
 
     // Renderer
-    this.renderer = new THREE.WebGLRenderer({ antialias: true });
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.2;
     this.renderer.setSize(width, height);
     this.rendererContainer.nativeElement.appendChild(this.renderer.domElement);
 
     // Controls
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
+    this.controls.dampingFactor = 0.06;
+    this.controls.enablePan = false;
+    this.controls.minDistance = 10;
+    this.controls.maxDistance = 600;
+    this.controls.addEventListener('start', () => {
+      this.autoRotate = false;
+    });
 
     this.animate();
 
@@ -95,24 +119,27 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
 
   private loadFile(file: File) {
     this.loading = true;
+    this.autoRotate = true;
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
         const loader = new STLLoader();
         const geometry = loader.parse(event.target?.result as ArrayBuffer);
         
-        if (this.currentMesh) {
-          this.scene.remove(this.currentMesh);
-          this.currentMesh.geometry.dispose();
-        }
+        this.clearCurrentMesh();
 
-        const material = new THREE.MeshPhongMaterial({ 
-          color: this.color, 
-          specular: 0x111111,
-          shininess: 200 
+        geometry.computeVertexNormals();
+
+        const material = new THREE.MeshStandardMaterial({
+          color: this.color,
+          roughness: 0.42,
+          metalness: 0.05,
+          emissive: 0x000000,
+          emissiveIntensity: 0
         });
         
         this.currentMesh = new THREE.Mesh(geometry, material);
+        this.applyColorStyle(this.color);
         
         // Center geometry
         geometry.computeBoundingBox();
@@ -140,9 +167,10 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
         
         // Calculate distance towards camera (z-axis)
         let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
-        cameraZ *= 1.5; // Tighter zoom (reduced from 2.5)
+        cameraZ *= 1.72;
         
-        this.camera.position.z = cameraZ;
+        this.camera.position.set(cameraZ * 0.65, cameraZ * 0.95, cameraZ * 1.1);
+        this.camera.lookAt(0, 0, 0);
         this.camera.updateProjectionMatrix();
         this.controls.update();
         
@@ -157,9 +185,63 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
 
   private animate() {
     this.animationId = requestAnimationFrame(() => this.animate());
+    
+    if (this.currentMesh && this.autoRotate) {
+      this.currentMesh.rotation.z += 0.0025;
+    }
+
     if (this.controls) this.controls.update();
     if (this.renderer && this.scene && this.camera) {
         this.renderer.render(this.scene, this.camera);
     }
+  }
+
+  private clearCurrentMesh() {
+    if (!this.currentMesh) {
+      return;
+    }
+
+    this.scene.remove(this.currentMesh);
+    this.currentMesh.geometry.dispose();
+
+    const meshMaterial = this.currentMesh.material;
+    if (Array.isArray(meshMaterial)) {
+      meshMaterial.forEach((m) => m.dispose());
+    } else {
+      meshMaterial.dispose();
+    }
+
+    this.currentMesh = null;
+  }
+
+  private applyColorStyle(color: string) {
+    if (!this.currentMesh) {
+      return;
+    }
+
+    const darkColor = this.isDarkColor(color);
+    const meshMaterial = this.currentMesh.material;
+
+    if (meshMaterial instanceof THREE.MeshStandardMaterial) {
+      meshMaterial.color.set(color);
+      if (darkColor) {
+        meshMaterial.emissive.set(0x2a2f36);
+        meshMaterial.emissiveIntensity = 0.28;
+        meshMaterial.roughness = 0.5;
+        meshMaterial.metalness = 0.03;
+      } else {
+        meshMaterial.emissive.set(0x000000);
+        meshMaterial.emissiveIntensity = 0;
+        meshMaterial.roughness = 0.42;
+        meshMaterial.metalness = 0.05;
+      }
+      meshMaterial.needsUpdate = true;
+    }
+  }
+
+  private isDarkColor(color: string): boolean {
+    const c = new THREE.Color(color);
+    const luminance = 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
+    return luminance < 0.22;
   }
 }

@@ -127,5 +127,29 @@
     "SUCCESS_TITLE": "Messaggio Inviato con Successo",
     "SUCCESS_DESC": "Grazie per averci contattato. Abbiamo ricevuto il tuo messaggio e ti invieremo una email di riepilogo a breve.",
     "SEND_ANOTHER": "Invia un altro messaggio"
+  },
+  "CHECKOUT": {
+    "TITLE": "Checkout",
+    "CONTACT_INFO": "Informazioni di Contatto",
+    "BILLING_ADDR": "Indirizzo di Fatturazione",
+    "SHIPPING_ADDR": "Indirizzo di Spedizione",
+    "FIRST_NAME": "Nome",
+    "LAST_NAME": "Cognome",
+    "EMAIL": "Email",
+    "PHONE": "Telefono",
+    "COMPANY_NAME": "Nome Azienda",
+    "ADDRESS_1": "Indirizzo (Via e numero)",
+    "ADDRESS_2": "Informazioni aggiuntive (opzionale)",
+    "ZIP": "CAP",
+    "CITY": "Città",
+    "COUNTRY": "Paese",
+    "SHIPPING_SAME": "L'indirizzo di spedizione è lo stesso di quello di fatturazione",
+    "PLACE_ORDER": "Invia Ordine",
+    "PROCESSING": "Elaborazione...",
+    "SUMMARY_TITLE": "Riepilogo Ordine",
+    "SUBTOTAL": "Subtotale",
+    "SETUP_FEE": "Costo di Avvio",
+    "TOTAL": "Totale",
+    "QTY": "Qtà"
   }
 }

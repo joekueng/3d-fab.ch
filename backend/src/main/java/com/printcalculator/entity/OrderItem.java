@@ -67,6 +67,16 @@ public class OrderItem {
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
+    @PrePersist
+    private void onCreate() {
+        if (createdAt == null) {
+            createdAt = OffsetDateTime.now();
+        }
+        if (quantity == null) {
+            quantity = 1;
+        }
+    }
+
     public UUID getId() {
         return id;
     }

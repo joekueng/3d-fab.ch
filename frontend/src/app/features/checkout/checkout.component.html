@@ -1,5 +1,5 @@
 <div class="checkout-page">
-  <h2 class="section-title">Checkout</h2>
+  <h2 class="section-title">{{ 'CHECKOUT.TITLE' | translate }}</h2>
   
   <div class="checkout-layout">
     
@@ -15,23 +15,12 @@
         <!-- Contact Info Card -->
         <div class="form-card">
           <div class="card-header">
-            <h3>Contact Information</h3>
+            <h3>{{ 'CHECKOUT.CONTACT_INFO' | translate }}</h3>
           </div>
           <div class="card-content">
-            
-            <!-- User Type Selector -->
-            <div class="user-type-selector">
-              <div class="type-option" [class.selected]="!isCompany" (click)="setCustomerType(false)">
-                Private
-              </div>
-              <div class="type-option" [class.selected]="isCompany" (click)="setCustomerType(true)">
-                Company
-              </div>
-            </div>
-
             <div class="form-row">
-              <app-input formControlName="email" type="email" label="Email" [required]="true" [error]="checkoutForm.get('email')?.hasError('email') ? 'Invalid email' : null"></app-input>
-              <app-input formControlName="phone" type="tel" label="Phone" [required]="true"></app-input>
+              <app-input formControlName="email" type="email" [label]="'CHECKOUT.EMAIL' | translate" [required]="true" [error]="checkoutForm.get('email')?.hasError('email') ? 'Invalid email' : null"></app-input>
+              <app-input formControlName="phone" type="tel" [label]="'CHECKOUT.PHONE' | translate" [required]="true"></app-input>
             </div>
           </div>
         </div>
@@ -39,24 +28,37 @@
         <!-- Billing Address Card -->
         <div class="form-card">
           <div class="card-header">
-            <h3>Billing Address</h3>
+            <h3>{{ 'CHECKOUT.BILLING_ADDR' | translate }}</h3>
           </div>
           <div class="card-content" formGroupName="billingAddress">
             <div class="form-row">
-              <app-input formControlName="firstName" label="First Name" [required]="true"></app-input>
-              <app-input formControlName="lastName" label="Last Name" [required]="true"></app-input>
+              <app-input formControlName="firstName" [label]="'CHECKOUT.FIRST_NAME' | translate" [required]="true"></app-input>
+              <app-input formControlName="lastName" [label]="'CHECKOUT.LAST_NAME' | translate" [required]="true"></app-input>
             </div>
             
-            <!-- Company Name (Conditional) -->
-            <app-input *ngIf="isCompany" formControlName="companyName" label="Company Name" [required]="true"></app-input>
-            
-            <app-input formControlName="addressLine1" label="Address Line 1" [required]="true"></app-input>
-            <app-input formControlName="addressLine2" label="Address Line 2 (Optional)"></app-input>
+            <app-input formControlName="addressLine1" [label]="'CHECKOUT.ADDRESS_1' | translate" [required]="true"></app-input>
+            <app-input formControlName="addressLine2" [label]="'CHECKOUT.ADDRESS_2' | translate"></app-input>
 
             <div class="form-row three-cols">
-              <app-input formControlName="zip" label="ZIP Code" [required]="true"></app-input>
-              <app-input formControlName="city" label="City" class="city-field" [required]="true"></app-input>
-              <app-input formControlName="countryCode" label="Country" [disabled]="true" [required]="true"></app-input>
+              <app-input formControlName="zip" [label]="'CHECKOUT.ZIP' | translate" [required]="true"></app-input>
+              <app-input formControlName="city" [label]="'CHECKOUT.CITY' | translate" class="city-field" [required]="true"></app-input>
+              <app-input formControlName="countryCode" [label]="'CHECKOUT.COUNTRY' | translate" [disabled]="true" [required]="true"></app-input>
+            </div>
+
+            <!-- User Type Selector -->
+            <div class="user-type-selector">
+              <div class="type-option" [class.selected]="!isCompany" (click)="setCustomerType(false)">
+                {{ 'CONTACT.TYPE_PRIVATE' | translate }}
+              </div>
+              <div class="type-option" [class.selected]="isCompany" (click)="setCustomerType(true)">
+                {{ 'CONTACT.TYPE_COMPANY' | translate }}
+              </div>
+            </div>
+
+            <!-- Company Fields (Indented with left border) -->
+            <div *ngIf="isCompany" class="company-fields">
+              <app-input formControlName="companyName" [label]="('CONTACT.COMPANY_NAME' | translate) + ' *'" [placeholder]="'CONTACT.PLACEHOLDER_COMPANY' | translate"></app-input>
+              <app-input formControlName="referencePerson" [label]="('CONTACT.REF_PERSON' | translate) + ' *'" [placeholder]="'CONTACT.PLACEHOLDER_REF_PERSON' | translate"></app-input>
             </div>
           </div>
         </div>
@@ -66,36 +68,39 @@
           <label class="checkbox-container">
             <input type="checkbox" formControlName="shippingSameAsBilling">
             <span class="checkmark"></span>
-            Shipping address same as billing
+            {{ 'CHECKOUT.SHIPPING_SAME' | translate }}
           </label>
         </div>
 
         <!-- Shipping Address Card (Conditional) -->
         <div class="form-card" *ngIf="!checkoutForm.get('shippingSameAsBilling')?.value">
            <div class="card-header">
-            <h3>Shipping Address</h3>
+            <h3>{{ 'CHECKOUT.SHIPPING_ADDR' | translate }}</h3>
           </div>
           <div class="card-content" formGroupName="shippingAddress">
              <div class="form-row">
-              <app-input formControlName="firstName" label="First Name"></app-input>
-              <app-input formControlName="lastName" label="Last Name"></app-input>
+              <app-input formControlName="firstName" [label]="'CHECKOUT.FIRST_NAME' | translate"></app-input>
+              <app-input formControlName="lastName" [label]="'CHECKOUT.LAST_NAME' | translate"></app-input>
             </div>
             
-            <app-input formControlName="companyName" label="Company (Optional)"></app-input>
-            <app-input formControlName="addressLine1" label="Address Line 1"></app-input>
-            <app-input formControlName="zip" label="ZIP Code"></app-input>
+            <div *ngIf="isCompany" class="company-fields">
+              <app-input formControlName="companyName" [label]="('CHECKOUT.COMPANY_NAME' | translate) + ' (Optional)'"></app-input>
+              <app-input formControlName="referencePerson" [label]="('CONTACT.REF_PERSON' | translate) + ' (Optional)'"></app-input>
+            </div>
+
+            <app-input formControlName="addressLine1" [label]="'CHECKOUT.ADDRESS_1' | translate"></app-input>
             
             <div class="form-row three-cols">
-              <app-input formControlName="zip" label="ZIP Code"></app-input>
-              <app-input formControlName="city" label="City" class="city-field"></app-input>
-              <app-input formControlName="countryCode" label="Country" [disabled]="true"></app-input>
+              <app-input formControlName="zip" [label]="'CHECKOUT.ZIP' | translate"></app-input>
+              <app-input formControlName="city" [label]="'CHECKOUT.CITY' | translate" class="city-field"></app-input>
+              <app-input formControlName="countryCode" [label]="'CHECKOUT.COUNTRY' | translate" [disabled]="true"></app-input>
             </div>
           </div>
         </div>
 
         <div class="actions">
           <app-button type="submit" [disabled]="checkoutForm.invalid || isSubmitting()" [fullWidth]="true">
-            {{ isSubmitting() ? 'Processing...' : 'Place Order' }}
+            {{ isSubmitting() ? ('CHECKOUT.PROCESSING' | translate) : ('CHECKOUT.PLACE_ORDER' | translate) }}
           </app-button>
         </div>
 
@@ -106,7 +111,7 @@
     <div class="checkout-summary-section">
       <div class="form-card sticky-card">
         <div class="card-header">
-          <h3>Order Summary</h3>
+          <h3>{{ 'CHECKOUT.SUMMARY_TITLE' | translate }}</h3>
         </div>
         
         <div class="card-content">
@@ -115,7 +120,7 @@
                <div class="item-details">
                  <span class="item-name">{{ item.originalFilename }}</span>
                  <div class="item-specs">
-                   <span>Qty: {{ item.quantity }}</span> 
+                   <span>{{ 'CHECKOUT.QTY' | translate }}: {{ item.quantity }}</span> 
                    <span *ngIf="item.colorCode" class="color-dot" [style.background-color]="item.colorCode"></span>
                  </div>
                  <div class="item-specs-sub">
@@ -130,17 +135,17 @@
   
           <div class="summary-totals" *ngIf="quoteSession() as session">
             <div class="total-row">
-              <span>Subtotal</span>
-              <span>{{ (session.totalPrice - session.setupCostChf) | currency:'CHF' }}</span>
+              <span>{{ 'CHECKOUT.SUBTOTAL' | translate }}</span>
+              <span>{{ session.itemsTotalChf | currency:'CHF' }}</span>
             </div>
             <div class="total-row">
-              <span>Setup Fee</span>
-              <span>{{ session.setupCostChf | currency:'CHF' }}</span>
+              <span>{{ 'CHECKOUT.SETUP_FEE' | translate }}</span>
+              <span>{{ session.session.setupCostChf | currency:'CHF' }}</span>
             </div>
             <div class="divider"></div>
             <div class="total-row grand-total">
-              <span>Total</span>
-              <span>{{ session.totalPrice | currency:'CHF' }}</span>
+              <span>{{ 'CHECKOUT.TOTAL' | translate }}</span>
+              <span>{{ session.grandTotalChf | currency:'CHF' }}</span>
             </div>
           </div>
         </div>
