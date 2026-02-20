@@ -28,7 +28,7 @@
           </div>
         </div>
 
-        <div class="payment-details fade-in" *ngIf="selectedPaymentMethod === 'twint'">
+        <div class="payment-details fade-in text-center" *ngIf="selectedPaymentMethod === 'twint'">
           <div class="details-header">
             <h4>{{ 'PAYMENT.TWINT_TITLE' | translate }}</h4>
           </div>
@@ -42,7 +42,7 @@
             <p>{{ 'PAYMENT.TWINT_DESC' | translate }}</p>
             <p class="billing-hint">{{ 'PAYMENT.BILLING_INFO_HINT' | translate }}</p>
             <div class="twint-mobile-action">
-              <app-button (click)="openTwintPayment()" [fullWidth]="true">
+              <app-button variant="outline" (click)="openTwintPayment()" [fullWidth]="true">
                 {{ 'PAYMENT.TWINT_OPEN' | translate }}
               </app-button>
             </div>

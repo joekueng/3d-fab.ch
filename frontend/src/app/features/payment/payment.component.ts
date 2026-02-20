@@ -90,7 +90,7 @@ export class PaymentComponent implements OnInit {
   openTwintPayment(): void {
     const openUrl = this.twintOpenUrl();
     if (typeof window !== 'undefined' && openUrl) {
-      window.location.href = openUrl;
+      window.open(openUrl, '_blank');
     }
   }
 

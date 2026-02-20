@@ -32,12 +32,14 @@
 
 .btn-outline {
   background-color: transparent;
-  border-color: var(--color-border);
-  color: var(--color-text);
+  border-color: var(--color-brand);
+  border-width: 2px;
+  padding: calc(0.5rem - 1px) calc(1rem - 1px);
+  color: var(--color-neutral-900);
+  font-weight: 600;
   &:hover:not(:disabled) { 
-    border-color: var(--color-brand); 
+    background-color: var(--color-brand); 
     color: var(--color-neutral-900);
-    background-color: rgba(250, 207, 10, 0.1); /* Low opacity brand color */
   }
 }
 
