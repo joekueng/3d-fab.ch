@@ -9,8 +9,8 @@
             <div class="col-md-6">
               <app-input 
                 formControlName="name"
-                label="USER_DETAILS.NAME" 
-                placeholder="USER_DETAILS.NAME_PLACEHOLDER"
+                [label]="'USER_DETAILS.NAME' | translate" 
+                [placeholder]="'USER_DETAILS.NAME_PLACEHOLDER' | translate"
                 [required]="true"
                 [error]="form.get('name')?.invalid && form.get('name')?.touched ? ('COMMON.REQUIRED' | translate) : null">
               </app-input>
@@ -18,8 +18,8 @@
             <div class="col-md-6">
               <app-input 
                 formControlName="surname"
-                label="USER_DETAILS.SURNAME" 
-                placeholder="USER_DETAILS.SURNAME_PLACEHOLDER"
+                [label]="'USER_DETAILS.SURNAME' | translate" 
+                [placeholder]="'USER_DETAILS.SURNAME_PLACEHOLDER' | translate"
                 [required]="true"
                 [error]="form.get('surname')?.invalid && form.get('surname')?.touched ? ('COMMON.REQUIRED' | translate) : null">
               </app-input>
@@ -31,9 +31,9 @@
             <div class="col-md-6">
               <app-input 
                 formControlName="email"
-                label="USER_DETAILS.EMAIL" 
+                [label]="'USER_DETAILS.EMAIL' | translate" 
                 type="email"
-                placeholder="USER_DETAILS.EMAIL_PLACEHOLDER"
+                [placeholder]="'USER_DETAILS.EMAIL_PLACEHOLDER' | translate"
                 [required]="true"
                 [error]="form.get('email')?.invalid && form.get('email')?.touched ? ('COMMON.INVALID_EMAIL' | translate) : null">
               </app-input>
@@ -41,9 +41,9 @@
             <div class="col-md-6">
               <app-input 
                 formControlName="phone"
-                label="USER_DETAILS.PHONE" 
+                [label]="'USER_DETAILS.PHONE' | translate" 
                 type="tel"
-                placeholder="USER_DETAILS.PHONE_PLACEHOLDER"
+                [placeholder]="'USER_DETAILS.PHONE_PLACEHOLDER' | translate"
                 [required]="true"
                 [error]="form.get('phone')?.invalid && form.get('phone')?.touched ? ('COMMON.REQUIRED' | translate) : null">
               </app-input>
@@ -53,8 +53,8 @@
           <!-- Address -->
           <app-input 
             formControlName="address"
-            label="USER_DETAILS.ADDRESS" 
-            placeholder="USER_DETAILS.ADDRESS_PLACEHOLDER"
+            [label]="'USER_DETAILS.ADDRESS' | translate" 
+            [placeholder]="'USER_DETAILS.ADDRESS_PLACEHOLDER' | translate"
             [required]="true"
             [error]="form.get('address')?.invalid && form.get('address')?.touched ? ('COMMON.REQUIRED' | translate) : null">
           </app-input>
@@ -64,8 +64,8 @@
             <div class="col-md-4">
               <app-input 
                 formControlName="zip"
-                label="USER_DETAILS.ZIP" 
-                placeholder="USER_DETAILS.ZIP_PLACEHOLDER"
+                [label]="'USER_DETAILS.ZIP' | translate" 
+                [placeholder]="'USER_DETAILS.ZIP_PLACEHOLDER' | translate"
                 [required]="true"
                 [error]="form.get('zip')?.invalid && form.get('zip')?.touched ? ('COMMON.REQUIRED' | translate) : null">
               </app-input>
@@ -73,8 +73,8 @@
             <div class="col-md-8">
               <app-input 
                 formControlName="city"
-                label="USER_DETAILS.CITY" 
-                placeholder="USER_DETAILS.CITY_PLACEHOLDER"
+                [label]="'USER_DETAILS.CITY' | translate" 
+                [placeholder]="'USER_DETAILS.CITY_PLACEHOLDER' | translate"
                 [required]="true"
                 [error]="form.get('city')?.invalid && form.get('city')?.touched ? ('COMMON.REQUIRED' | translate) : null">
               </app-input>

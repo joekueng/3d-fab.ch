@@ -60,8 +60,8 @@
           <button type="button" class="remove-btn" (click)="removeFile(i)">×</button>
           <img *ngIf="file.type === 'image'" [src]="file.url" class="preview-img">
           <div *ngIf="file.type !== 'image'" class="file-icon">
-            <span *ngIf="file.type === 'pdf'">PDF</span>
-            <span *ngIf="file.type === '3d'">3D</span>
+            <span *ngIf="file.type === 'pdf'">{{ 'CONTACT.FILE_TYPE_PDF' | translate }}</span>
+            <span *ngIf="file.type === '3d'">{{ 'CONTACT.FILE_TYPE_3D' | translate }}</span>
           </div>
           <div class="file-name" [title]="file.file.name">{{ file.file.name }}</div>
         </div>

@@ -21,7 +21,7 @@
               <h3>{{ 'CHECKOUT.CONTACT_INFO' | translate }}</h3>
             </div>
             <div class="form-row">
-              <app-input formControlName="email" type="email" [label]="'CHECKOUT.EMAIL' | translate" [required]="true" [error]="checkoutForm.get('email')?.hasError('email') ? 'Invalid email' : null"></app-input>
+              <app-input formControlName="email" type="email" [label]="'CHECKOUT.EMAIL' | translate" [required]="true" [error]="checkoutForm.get('email')?.hasError('email') ? ('CHECKOUT.INVALID_EMAIL' | translate) : null"></app-input>
               <app-input formControlName="phone" type="tel" [label]="'CHECKOUT.PHONE' | translate" [required]="true"></app-input>
             </div>
           </app-card>
@@ -41,8 +41,8 @@
 
               <!-- Company Fields -->
               <div *ngIf="isCompany" class="company-fields mb-4">
-                <app-input formControlName="companyName" [label]="('CONTACT.COMPANY_NAME' | translate) + ' *'" [placeholder]="'CONTACT.PLACEHOLDER_COMPANY' | translate"></app-input>
-                <app-input formControlName="referencePerson" [label]="('CONTACT.REF_PERSON' | translate) + ' *'" [placeholder]="'CONTACT.PLACEHOLDER_REF_PERSON' | translate"></app-input>
+                <app-input formControlName="companyName" [label]="'CHECKOUT.COMPANY_NAME' | translate" [required]="true" [placeholder]="'CONTACT.PLACEHOLDER_COMPANY' | translate"></app-input>
+                <app-input formControlName="referencePerson" [label]="'CONTACT.REF_PERSON' | translate" [required]="true" [placeholder]="'CONTACT.PLACEHOLDER_REF_PERSON' | translate"></app-input>
               </div>
 
               <!-- User Type Selector -->
@@ -87,8 +87,8 @@
               </div>
               
               <div *ngIf="isCompany" class="company-fields">
-                <app-input formControlName="companyName" [label]="('CHECKOUT.COMPANY_NAME' | translate) + ' (Optional)'"></app-input>
-                <app-input formControlName="referencePerson" [label]="('CONTACT.REF_PERSON' | translate) + ' (Optional)'"></app-input>
+                <app-input formControlName="companyName" [label]="'CHECKOUT.COMPANY_OPTIONAL' | translate"></app-input>
+                <app-input formControlName="referencePerson" [label]="'CHECKOUT.REF_PERSON_OPTIONAL' | translate"></app-input>
               </div>
 
               <app-input formControlName="addressLine1" [label]="'CHECKOUT.ADDRESS_1' | translate"></app-input>

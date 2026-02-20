@@ -2,22 +2,18 @@
       <section class="hero">
         <div class="container hero-grid">
           <div class="hero-copy">
-            <p class="eyebrow">Stampa 3D tecnica per aziende, freelance e maker</p>
-            <h1 class="hero-title">
-              Prezzo e tempi in pochi secondi.<br>
-              Dal file 3D al pezzo finito.
-            </h1>
+            <p class="eyebrow">{{ 'HOME.HERO_EYEBROW' | translate }}</p>
+            <h1 class="hero-title" [innerHTML]="'HOME.HERO_TITLE' | translate"></h1>
             <p class="hero-lead">
-              Il calcolatore più avanzato per le tue stampe 3D: precisione assoluta e zero sorprese.
+              {{ 'HOME.HERO_LEAD' | translate }}
             </p>
             <p class="hero-subtitle">
-              Realizziamo pezzi unici e produzioni in serie. Se hai il file, il preventivo è istantaneo. 
-              Se devi ancora crearlo, il nostro team di design lo progetterà per te.
+              {{ 'HOME.HERO_SUBTITLE' | translate }}
             </p>
             <div class="hero-actions">
-              <app-button variant="primary" routerLink="/calculator/basic">Calcola Preventivo</app-button>
-              <app-button variant="outline" routerLink="/shop">Vai allo shop</app-button>
-              <app-button variant="text" routerLink="/contact">Parla con noi</app-button>
+              <app-button variant="primary" routerLink="/calculator/basic">{{ 'HOME.BTN_CALCULATE' | translate }}</app-button>
+              <app-button variant="outline" routerLink="/shop">{{ 'HOME.BTN_SHOP' | translate }}</app-button>
+              <app-button variant="text" routerLink="/contact">{{ 'HOME.BTN_CONTACT' | translate }}</app-button>
             </div>
           </div>
         </div>
@@ -26,31 +22,31 @@
       <section class="section calculator">
         <div class="container calculator-grid">
           <div class="calculator-copy">
-            <h2 class="section-title">Preventivo immediato in pochi secondi</h2>
+            <h2 class="section-title">{{ 'HOME.SEC_CALC_TITLE' | translate }}</h2>
             <p class="section-subtitle">
-              Nessuna registrazione necessaria. Non salviamo il tuo file fino al momento dell'ordine e la stima è effettuata tramite vero slicing.
+              {{ 'HOME.SEC_CALC_SUBTITLE' | translate }}
             </p>
             <ul class="calculator-list">
-              <li>Formati supportati: STL, 3MF, STEP, OBJ</li>
-              <li>Qualità: bozza, standard, alta definizione</li>
+              <li>{{ 'HOME.SEC_CALC_LIST_1' | translate }}</li>
+              <li>{{ 'HOME.SEC_CALC_LIST_2' | translate }}</li>
             </ul>
           </div>
           <app-card class="quote-card">
             <div class="quote-header">
               <div>
-                <p class="quote-eyebrow">Calcolo automatico</p>
-                <h3 class="quote-title">Prezzo e tempi in un click</h3>
+                <p class="quote-eyebrow">{{ 'HOME.CARD_CALC_EYEBROW' | translate }}</p>
+                <h3 class="quote-title">{{ 'HOME.CARD_CALC_TITLE' | translate }}</h3>
               </div>
-              <span class="quote-tag">Senza registrazione</span>
+              <span class="quote-tag">{{ 'HOME.CARD_CALC_TAG' | translate }}</span>
             </div>
             <ul class="quote-steps">
-              <li>Carica il file 3D</li>
-              <li>Scegli materiale e qualità</li>
-              <li>Ricevi subito costo e tempo</li>
+              <li>{{ 'HOME.CARD_CALC_STEP_1' | translate }}</li>
+              <li>{{ 'HOME.CARD_CALC_STEP_2' | translate }}</li>
+              <li>{{ 'HOME.CARD_CALC_STEP_3' | translate }}</li>
             </ul>
             <div class="quote-actions">
-              <app-button variant="primary" [fullWidth]="true" routerLink="/calculator/basic">Apri calcolatore</app-button>
-              <app-button variant="outline" [fullWidth]="true" routerLink="/contact">Parla con noi</app-button>
+              <app-button variant="primary" [fullWidth]="true" routerLink="/calculator/basic">{{ 'HOME.BTN_OPEN_CALC' | translate }}</app-button>
+              <app-button variant="outline" [fullWidth]="true" routerLink="/contact">{{ 'HOME.BTN_CONTACT' | translate }}</app-button>
             </div>
           </app-card>
         </div>
@@ -60,9 +56,9 @@
         <div class="capabilities-bg"></div>
         <div class="container">
           <div class="section-head">
-            <h2 class="section-title">Cosa puoi ottenere</h2>
+            <h2 class="section-title">{{ 'HOME.SEC_CAP_TITLE' | translate }}</h2>
             <p class="section-subtitle">
-              Produzione su misura per prototipi, piccole serie e pezzi personalizzati.
+              {{ 'HOME.SEC_CAP_SUBTITLE' | translate }}
             </p>
           </div>
           <div class="cap-cards">
@@ -70,29 +66,29 @@
               <div class="card-image-placeholder">
                   <!-- <img src="..." alt="..."> -->
               </div>
-              <h3>Prototipazione veloce</h3>
-              <p class="text-muted">Dal file digitale al modello fisico in 24/48 ore. Verifica ergonomia, incastri e funzionamento prima dello stampo definitivo.</p>
+              <h3>{{ 'HOME.CAP_1_TITLE' | translate }}</h3>
+              <p class="text-muted">{{ 'HOME.CAP_1_TEXT' | translate }}</p>
             </app-card>
             <app-card>
               <div class="card-image-placeholder">
                   <!-- <img src="..." alt="..."> -->
               </div>
-              <h3>Pezzi personalizzati</h3>
-              <p class="text-muted">Componenti unici impossibili da trovare in commercio. Riproduciamo parti rotte o creiamo adattamenti su misura.</p>
+              <h3>{{ 'HOME.CAP_2_TITLE' | translate }}</h3>
+              <p class="text-muted">{{ 'HOME.CAP_2_TEXT' | translate }}</p>
             </app-card>
             <app-card>
               <div class="card-image-placeholder">
                   <!-- <img src="..." alt="..."> -->
               </div>
-              <h3>Piccole serie</h3>
-              <p class="text-muted">Produzione ponte o serie limitate (10-500 pezzi) con qualità ripetibile. Ideale per validazione di mercato.</p>
+              <h3>{{ 'HOME.CAP_3_TITLE' | translate }}</h3>
+              <p class="text-muted">{{ 'HOME.CAP_3_TEXT' | translate }}</p>
             </app-card>
             <app-card>
               <div class="card-image-placeholder">
                   <!-- <img src="..." alt="..."> -->
               </div>
-              <h3>Consulenza e CAD</h3>
-              <p class="text-muted">Non hai il file 3D? Ti aiutiamo a progettarlo, ottimizzarlo per la stampa e scegliere il materiale giusto.</p>
+              <h3>{{ 'HOME.CAP_4_TITLE' | translate }}</h3>
+              <p class="text-muted">{{ 'HOME.CAP_4_TEXT' | translate }}</p>
             </app-card>
           </div>
         </div>
@@ -101,33 +97,32 @@
       <section class="section shop">
         <div class="container split">
           <div class="shop-copy">
-            <h2 class="section-title">Shop di soluzioni tecniche pronte</h2>
+            <h2 class="section-title">{{ 'HOME.SEC_SHOP_TITLE' | translate }}</h2>
             <p>
-              Prodotti selezionati, testati in laboratorio e pronti all'uso. Risolvono problemi reali con
-              funzionalità concrete.
+              {{ 'HOME.SEC_SHOP_TEXT' | translate }}
             </p>
             <ul class="shop-list">
-              <li>Accessori funzionali per officine e laboratori</li>
-              <li>Ricambi e componenti difficili da reperire</li>
-              <li>Supporti e organizzatori per migliorare i flussi di lavoro</li>
+              <li>{{ 'HOME.SEC_SHOP_LIST_1' | translate }}</li>
+              <li>{{ 'HOME.SEC_SHOP_LIST_2' | translate }}</li>
+              <li>{{ 'HOME.SEC_SHOP_LIST_3' | translate }}</li>
             </ul>
             <div class="shop-actions">
-              <app-button variant="primary" routerLink="/shop">Scopri i prodotti</app-button>
-              <app-button variant="outline" routerLink="/contact">Richiedi una soluzione</app-button>
+              <app-button variant="primary" routerLink="/shop">{{ 'HOME.BTN_DISCOVER' | translate }}</app-button>
+              <app-button variant="outline" routerLink="/contact">{{ 'HOME.BTN_REQ_SOLUTION' | translate }}</app-button>
             </div>
           </div>
           <div class="shop-cards">
             <app-card>
-              <h3>Best seller tecnici</h3>
-              <p class="text-muted">Soluzioni provate sul campo e già pronte alla spedizione.</p>
+              <h3>{{ 'HOME.CARD_SHOP_1_TITLE' | translate }}</h3>
+              <p class="text-muted">{{ 'HOME.CARD_SHOP_1_TEXT' | translate }}</p>
             </app-card>
             <app-card>
-              <h3>Kit pronti all'uso</h3>
-              <p class="text-muted">Componenti compatibili e facili da montare senza sorprese.</p>
+              <h3>{{ 'HOME.CARD_SHOP_2_TITLE' | translate }}</h3>
+              <p class="text-muted">{{ 'HOME.CARD_SHOP_2_TEXT' | translate }}</p>
             </app-card>
             <app-card>
-              <h3>Su richiesta</h3>
-              <p class="text-muted">Non trovi quello che serve? Lo progettiamo e lo produciamo per te.</p>
+              <h3>{{ 'HOME.CARD_SHOP_3_TITLE' | translate }}</h3>
+              <p class="text-muted">{{ 'HOME.CARD_SHOP_3_TEXT' | translate }}</p>
             </app-card>
           </div>
         </div>
@@ -136,17 +131,16 @@
       <section class="section about">
         <div class="container about-grid">
           <div class="about-copy">
-            <h2 class="section-title">Su di noi</h2>
+            <h2 class="section-title">{{ 'HOME.SEC_ABOUT_TITLE' | translate }}</h2>
             <p>
-              3D fab è un laboratorio tecnico di stampa 3D. Seguiamo progetti dalla consulenza iniziale
-              alla produzione, con tempi chiari e supporto diretto.
+              {{ 'HOME.SEC_ABOUT_TEXT' | translate }}
             </p>
-            <app-button variant="outline" routerLink="/contact">Contattaci</app-button>
+            <app-button variant="outline" routerLink="/contact">{{ 'HOME.BTN_CONTACT' | translate }}</app-button>
           </div>
           <div class="about-media">
             <div class="about-feature-image">
               <!-- Foto founders -->
-              <span class="text-sm">Foto Founders</span>
+              <span class="text-sm">{{ 'HOME.FOUNDERS_PHOTO' | translate }}</span>
             </div>
           </div>
         </div>

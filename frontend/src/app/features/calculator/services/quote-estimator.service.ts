@@ -161,6 +161,13 @@ export class QuoteEstimatorService {
           responseType: 'blob'
       });
   }
+
+  getTwintPayment(orderId: string): Observable<any> {
+      const headers: any = {};
+      // @ts-ignore
+      if (environment.basicAuth) headers['Authorization'] = 'Basic ' + btoa(environment.basicAuth);
+      return this.http.get(`${environment.apiUrl}/api/orders/${orderId}/twint`, { headers });
+  }
   
   calculate(request: QuoteRequest): Observable<number | QuoteResult> {
     console.log('QuoteEstimatorService: Calculating quote...', request);

@@ -46,8 +46,8 @@
             <app-card class="loading-state">
                 <div class="loader-content">
                     <div class="spinner"></div>
-                    <h3 class="loading-title">Analisi in corso...</h3>
-                    <p class="loading-text">Stiamo analizzando la geometria e calcolando il percorso utensile.</p>
+                    <h3 class="loading-title">{{ 'CALC.ANALYZING_TITLE' | translate }}</h3>
+                    <p class="loading-text">{{ 'CALC.ANALYZING_TEXT' | translate }}</p>
                 </div>
             </app-card>
         } @else if (result()) {

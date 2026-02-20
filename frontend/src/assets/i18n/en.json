@@ -180,10 +180,13 @@
     "METHOD": "Payment Method",
     "TWINT_TITLE": "Pay with TWINT",
     "TWINT_DESC": "Scan the code with your TWINT app",
+    "TWINT_OPEN": "Open directly in TWINT",
+    "TWINT_LINK": "Open payment link",
     "BANK_TITLE": "Bank Transfer",
     "BANK_OWNER": "Owner",
     "BANK_IBAN": "IBAN",
     "BANK_REF": "Reference",
+    "BILLING_INFO_HINT": "Add the same information used in billing.",
     "DOWNLOAD_QR": "Download QR-Invoice (PDF)",
     "CONFIRM": "Confirm Order",
     "SUMMARY_TITLE": "Order Summary",
@@ -192,5 +195,15 @@
     "SETUP_FEE": "Setup Fee",
     "TOTAL": "Total",
     "LOADING": "Loading order details..."
+  },
+  "ORDER_CONFIRMED": {
+    "TITLE": "Order Confirmed",
+    "SUBTITLE": "Payment received. Your order is now being processed.",
+    "STATUS": "Processing",
+    "HEADING": "We are preparing your order",
+    "ORDER_REF": "Order reference",
+    "PROCESSING_TEXT": "As soon as payment is confirmed, your order will move to production.",
+    "EMAIL_TEXT": "We will send you an email update with status and next steps.",
+    "BACK_HOME": "Back to Home"
   }
 }

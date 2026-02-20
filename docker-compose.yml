@@ -58,7 +58,10 @@ services:
     container_name: print-calculator-clamav
     ports:
       - "3310:3310"
+    volumes:
+      - clamav_db:/var/lib/clamav
     restart: unless-stopped
 
 volumes:
   postgres_data:
+  clamav_db:

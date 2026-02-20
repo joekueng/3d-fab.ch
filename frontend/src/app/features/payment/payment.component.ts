@@ -5,6 +5,7 @@ import { AppButtonComponent } from '../../shared/components/app-button/app-butto
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
 import { QuoteEstimatorService } from '../calculator/services/quote-estimator.service';
 import { TranslateModule } from '@ngx-translate/core';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-payment',
@@ -23,11 +24,14 @@ export class PaymentComponent implements OnInit {
   order = signal<any>(null);
   loading = signal(true);
   error = signal<string | null>(null);
+  twintOpenUrl = signal<string | null>(null);
+  twintQrUrl = signal<string | null>(null);
 
   ngOnInit(): void {
     this.orderId = this.route.snapshot.paramMap.get('orderId');
     if (this.orderId) {
       this.loadOrder();
+      this.loadTwintPayment();
     } else {
       this.error.set('Order ID not found.');
       this.loading.set(false);
@@ -68,8 +72,51 @@ export class PaymentComponent implements OnInit {
     });
   }
 
+  loadTwintPayment() {
+    if (!this.orderId) return;
+    this.quoteService.getTwintPayment(this.orderId).subscribe({
+      next: (res) => {
+        const qrPath = typeof res.qrImageUrl === 'string' ? `${res.qrImageUrl}?size=360` : null;
+        const qrDataUri = typeof res.qrImageDataUri === 'string' ? res.qrImageDataUri : null;
+        this.twintOpenUrl.set(this.resolveApiUrl(res.openUrl));
+        this.twintQrUrl.set(qrDataUri ?? this.resolveApiUrl(qrPath));
+      },
+      error: (err) => {
+        console.error('Failed to load TWINT payment details', err);
+      }
+    });
+  }
+
+  openTwintPayment(): void {
+    const openUrl = this.twintOpenUrl();
+    if (typeof window !== 'undefined' && openUrl) {
+      window.location.href = openUrl;
+    }
+  }
+
+  getTwintQrUrl(): string {
+    return this.twintQrUrl() ?? '';
+  }
+
+  onTwintQrError(): void {
+    this.twintQrUrl.set(null);
+  }
+
+  private resolveApiUrl(urlOrPath: string | null | undefined): string | null {
+    if (!urlOrPath) return null;
+    if (urlOrPath.startsWith('http://') || urlOrPath.startsWith('https://')) {
+      return urlOrPath;
+    }
+    const base = (environment.apiUrl || '').replace(/\/$/, '');
+    const path = urlOrPath.startsWith('/') ? urlOrPath : `/${urlOrPath}`;
+    return `${base}${path}`;
+  }
+
   completeOrder(): void {
-    alert('Payment Simulated! Order marked as PAID.');
-    this.router.navigate(['/']);
+    if (!this.orderId) {
+      this.router.navigate(['/']);
+      return;
+    }
+    this.router.navigate(['/order-confirmed', this.orderId]);
   }
 }

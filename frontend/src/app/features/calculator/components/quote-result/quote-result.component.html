@@ -21,7 +21,7 @@
   </div>
 
   <div class="setup-note">
-    <small>* Include {{ result().setupCost | currency:result().currency }} Setup Cost</small>
+    <small>{{ 'CALC.SETUP_NOTE' | translate:{cost: (result().setupCost | currency:result().currency)} }}</small>
   </div>
 
   @if (result().notes) {
@@ -46,7 +46,7 @@
         
         <div class="item-controls">
             <div class="qty-control">
-                <label>Qtà:</label>
+                <label>{{ 'CHECKOUT.QTY' | translate }}:</label>
                 <input 
                     type="number" 
                     min="1" 

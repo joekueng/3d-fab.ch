@@ -7,6 +7,7 @@ import com.printcalculator.service.InvoicePdfRenderingService;
 import com.printcalculator.service.OrderService;
 import com.printcalculator.service.QrBillService;
 import com.printcalculator.service.StorageService;
+import com.printcalculator.service.TwintPaymentService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +25,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Base64;
 import java.util.stream.Collectors;
+import java.net.URI;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -39,6 +42,7 @@ public class OrderController {
     private final StorageService storageService;
     private final InvoicePdfRenderingService invoiceService;
     private final QrBillService qrBillService;
+    private final TwintPaymentService twintPaymentService;
 
 
     public OrderController(OrderService orderService,
@@ -49,7 +53,8 @@ public class OrderController {
                            CustomerRepository customerRepo,
                            StorageService storageService,
                            InvoicePdfRenderingService invoiceService,
-                           QrBillService qrBillService) {
+                           QrBillService qrBillService,
+                           TwintPaymentService twintPaymentService) {
         this.orderService = orderService;
         this.orderRepo = orderRepo;
         this.orderItemRepo = orderItemRepo;
@@ -59,6 +64,7 @@ public class OrderController {
         this.storageService = storageService;
         this.invoiceService = invoiceService;
         this.qrBillService = qrBillService;
+        this.twintPaymentService = twintPaymentService;
     }
 
 
@@ -184,6 +190,51 @@ public class OrderController {
                 .header("Content-Disposition", "attachment; filename=\"invoice-" + orderId + ".pdf\"")
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdf);
+    }
+
+    @GetMapping("/{orderId}/twint")
+    public ResponseEntity<Map<String, String>> getTwintPayment(@PathVariable UUID orderId) {
+        if (!orderRepo.existsById(orderId)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        byte[] qrPng = twintPaymentService.generateQrPng(360);
+        String qrDataUri = "data:image/png;base64," + Base64.getEncoder().encodeToString(qrPng);
+
+        Map<String, String> data = new HashMap<>();
+        data.put("paymentUrl", twintPaymentService.getTwintPaymentUrl());
+        data.put("openUrl", "/api/orders/" + orderId + "/twint/open");
+        data.put("qrImageUrl", "/api/orders/" + orderId + "/twint/qr");
+        data.put("qrImageDataUri", qrDataUri);
+        return ResponseEntity.ok(data);
+    }
+
+    @GetMapping("/{orderId}/twint/open")
+    public ResponseEntity<Void> openTwintPayment(@PathVariable UUID orderId) {
+        if (!orderRepo.existsById(orderId)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.status(302)
+                .location(URI.create(twintPaymentService.getTwintPaymentUrl()))
+                .build();
+    }
+
+    @GetMapping("/{orderId}/twint/qr")
+    public ResponseEntity<byte[]> getTwintQr(
+            @PathVariable UUID orderId,
+            @RequestParam(defaultValue = "320") int size
+    ) {
+        if (!orderRepo.existsById(orderId)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        int normalizedSize = Math.max(200, Math.min(size, 600));
+        byte[] png = twintPaymentService.generateQrPng(normalizedSize);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_PNG)
+                .body(png);
     }
     
     private String getExtension(String filename) {

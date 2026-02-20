@@ -17,26 +17,35 @@
               class="type-option"
               [class.selected]="selectedPaymentMethod === 'twint'"
               (click)="selectPayment('twint')">
-              <span class="method-name">TWINT</span>
+              <span class="method-name">{{ 'PAYMENT.METHOD_TWINT' | translate }}</span>
             </div>
             <div
               class="type-option"
               [class.selected]="selectedPaymentMethod === 'bill'"
               (click)="selectPayment('bill')">
-              <span class="method-name">QR Bill / Bank Transfer</span>
+              <span class="method-name">{{ 'PAYMENT.METHOD_BANK' | translate }}</span>
             </div>
           </div>
         </div>
 
-        <div class="payment-details fade-in" *ngIf="selectedPaymentMethod === 'twint'">
+        <div class="payment-details payment-details-twint fade-in" *ngIf="selectedPaymentMethod === 'twint'">
           <div class="details-header">
             <h4>{{ 'PAYMENT.TWINT_TITLE' | translate }}</h4>
           </div>
           <div class="qr-placeholder">
-            <div class="qr-box">
-              <span>QR CODE</span>
-            </div>
+            <img
+              *ngIf="twintQrUrl()"
+              class="twint-qr"
+              [src]="getTwintQrUrl()"
+              (error)="onTwintQrError()"
+              alt="TWINT payment QR" />
             <p>{{ 'PAYMENT.TWINT_DESC' | translate }}</p>
+            <p class="billing-hint">{{ 'PAYMENT.BILLING_INFO_HINT' | translate }}</p>
+            <div class="twint-mobile-action">
+              <app-button (click)="openTwintPayment()" [fullWidth]="true">
+                {{ 'PAYMENT.TWINT_OPEN' | translate }}
+              </app-button>
+            </div>
             <p class="amount">{{ 'PAYMENT.TOTAL' | translate }}: {{ o.totalChf | currency:'CHF' }}</p>
           </div>
         </div>
@@ -49,6 +58,7 @@
             <p><strong>{{ 'PAYMENT.BANK_OWNER' | translate }}:</strong> 3D Fab Switzerland</p>
             <p><strong>{{ 'PAYMENT.BANK_IBAN' | translate }}:</strong> CH98 0000 0000 0000 0000 0</p>
             <p><strong>{{ 'PAYMENT.BANK_REF' | translate }}:</strong> {{ o.id }}</p>
+            <p class="billing-hint">{{ 'PAYMENT.BILLING_INFO_HINT' | translate }}</p>
 
             <div class="qr-bill-actions">
               <app-button variant="outline" (click)="downloadInvoice()">

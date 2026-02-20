@@ -1,0 +1,25 @@
+<div class="container hero">
+  <h1>{{ 'ORDER_CONFIRMED.TITLE' | translate }}</h1>
+  <p class="subtitle">{{ 'ORDER_CONFIRMED.SUBTITLE' | translate }}</p>
+</div>
+
+<div class="container">
+  <div class="confirmation-layout">
+    <app-card class="status-card">
+      <div class="status-badge">{{ 'ORDER_CONFIRMED.STATUS' | translate }}</div>
+      <h2>{{ 'ORDER_CONFIRMED.HEADING' | translate }}</h2>
+      <p class="order-ref" *ngIf="orderId">
+        {{ 'ORDER_CONFIRMED.ORDER_REF' | translate }}: <strong>#{{ orderId.substring(0, 8) }}</strong>
+      </p>
+
+      <div class="message-block">
+        <p>{{ 'ORDER_CONFIRMED.PROCESSING_TEXT' | translate }}</p>
+        <p>{{ 'ORDER_CONFIRMED.EMAIL_TEXT' | translate }}</p>
+      </div>
+
+      <div class="actions">
+        <app-button (click)="goHome()">{{ 'ORDER_CONFIRMED.BACK_HOME' | translate }}</app-button>
+      </div>
+    </app-card>
+  </div>
+</div>

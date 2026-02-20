@@ -34,6 +34,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/payment/payment.component').then(m => m.PaymentComponent)
       },
       {
+        path: 'order-confirmed/:orderId',
+        loadComponent: () => import('./features/order-confirmed/order-confirmed.component').then(m => m.OrderConfirmedComponent)
+      },
+      {
         path: '',
         loadChildren: () => import('./features/legal/legal.routes').then(m => m.LEGAL_ROUTES)
       },

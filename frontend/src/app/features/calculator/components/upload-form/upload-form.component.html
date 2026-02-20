@@ -34,7 +34,7 @@
                     <div class="card-body">
                         <div class="card-controls">
                              <div class="qty-group">
-                                <label>QTÀ</label>
+                                <label>{{ 'CALC.QTY_SHORT' | translate }}</label>
                                 <input 
                                     type="number" 
                                     min="1" 
@@ -45,7 +45,7 @@
                             </div>
 
                             <div class="color-group">
-                                <label>COLORE</label>
+                                <label>{{ 'CALC.COLOR_LABEL' | translate }}</label>
                                 <app-color-selector 
                                     [selectedColor]="item.color" 
                                     [variants]="currentMaterialVariants()"
@@ -134,7 +134,7 @@
   <app-input
     formControlName="notes"
     [label]="'CALC.NOTES' | translate"
-    placeholder="Istruzioni specifiche..."
+    [placeholder]="'CALC.NOTES_PLACEHOLDER' | translate"
   ></app-input>
 
   <div class="actions">
@@ -151,7 +151,7 @@
       type="submit" 
       [disabled]="items().length === 0 || loading()" 
       [fullWidth]="true">
-      {{ loading() ? (uploadProgress() < 100 ? 'Uploading...' : 'Processing...') : ('CALC.CALCULATE' | translate) }}
+      {{ loading() ? (uploadProgress() < 100 ? ('CALC.UPLOADING' | translate) : ('CALC.PROCESSING' | translate)) : ('CALC.CALCULATE' | translate) }}
     </app-button>
   </div>
 </form>

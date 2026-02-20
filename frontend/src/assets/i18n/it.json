@@ -11,6 +11,52 @@
     "TERMS": "Termini & Condizioni",
     "CONTACT": "Contattaci"
   },
+  "HOME": {
+    "HERO_EYEBROW": "Stampa 3D tecnica per aziende, freelance e maker",
+    "HERO_TITLE": "Prezzo e tempi in pochi secondi.<br>Dal file 3D al pezzo finito.",
+    "HERO_LEAD": "Il calcolatore più avanzato per le tue stampe 3D: precisione assoluta e zero sorprese.",
+    "HERO_SUBTITLE": "Realizziamo pezzi unici e produzioni in serie. Se hai il file, il preventivo è istantaneo. Se devi ancora crearlo, il nostro team di design lo progetterà per te.",
+    "BTN_CALCULATE": "Calcola Preventivo",
+    "BTN_SHOP": "Vai allo shop",
+    "BTN_CONTACT": "Parla con noi",
+    "SEC_CALC_TITLE": "Preventivo immediato in pochi secondi",
+    "SEC_CALC_SUBTITLE": "Nessuna registrazione necessaria. Non salviamo il tuo file fino al momento dell'ordine e la stima è effettuata tramite vero slicing.",
+    "SEC_CALC_LIST_1": "Formati supportati: STL, 3MF, STEP, OBJ",
+    "SEC_CALC_LIST_2": "Qualità: bozza, standard, alta definizione",
+    "CARD_CALC_EYEBROW": "Calcolo automatico",
+    "CARD_CALC_TITLE": "Prezzo e tempi in un click",
+    "CARD_CALC_TAG": "Senza registrazione",
+    "CARD_CALC_STEP_1": "Carica il file 3D",
+    "CARD_CALC_STEP_2": "Scegli materiale e qualità",
+    "CARD_CALC_STEP_3": "Ricevi subito costo e tempo",
+    "BTN_OPEN_CALC": "Apri calcolatore",
+    "SEC_CAP_TITLE": "Cosa puoi ottenere",
+    "SEC_CAP_SUBTITLE": "Produzione su misura per prototipi, piccole serie e pezzi personalizzati.",
+    "CAP_1_TITLE": "Prototipazione veloce",
+    "CAP_1_TEXT": "Dal file digitale al modello fisico in 24/48 ore. Verifica ergonomia, incastri e funzionamento prima dello stampo definitivo.",
+    "CAP_2_TITLE": "Pezzi personalizzati",
+    "CAP_2_TEXT": "Componenti unici impossibili da trovare in commercio. Riproduciamo parti rotte o creiamo adattamenti su misura.",
+    "CAP_3_TITLE": "Piccole serie",
+    "CAP_3_TEXT": "Produzione ponte o serie limitate (10-500 pezzi) con qualità ripetibile. Ideale per validazione di mercato.",
+    "CAP_4_TITLE": "Consulenza e CAD",
+    "CAP_4_TEXT": "Non hai il file 3D? Ti aiutiamo a progettarlo, ottimizzarlo per la stampa e scegliere il materiale giusto.",
+    "SEC_SHOP_TITLE": "Shop di soluzioni tecniche pronte",
+    "SEC_SHOP_TEXT": "Prodotti selezionati, testati in laboratorio e pronti all'uso. Risolvono problemi reali con funzionalità concrete.",
+    "SEC_SHOP_LIST_1": "Accessori funzionali per officine e laboratori",
+    "SEC_SHOP_LIST_2": "Ricambi e componenti difficili da reperire",
+    "SEC_SHOP_LIST_3": "Supporti e organizzatori per migliorare i flussi di lavoro",
+    "BTN_DISCOVER": "Scopri i prodotti",
+    "BTN_REQ_SOLUTION": "Richiedi una soluzione",
+    "CARD_SHOP_1_TITLE": "Best seller tecnici",
+    "CARD_SHOP_1_TEXT": "Soluzioni provate sul campo e già pronte alla spedizione.",
+    "CARD_SHOP_2_TITLE": "Kit pronti all'uso",
+    "CARD_SHOP_2_TEXT": "Componenti compatibili e facili da montare senza sorprese.",
+    "CARD_SHOP_3_TITLE": "Su richiesta",
+    "CARD_SHOP_3_TEXT": "Non trovi quello che serve? Lo progettiamo e lo produciamo per te.",
+    "SEC_ABOUT_TITLE": "Su di noi",
+    "SEC_ABOUT_TEXT": "3D fab è un laboratorio tecnico di stampa 3D. Seguiamo progetti dalla consulenza iniziale alla produzione, con tempi chiari e supporto diretto.",
+    "FOUNDERS_PHOTO": "Foto Founders"
+  },
   "CALC": {
     "TITLE": "Calcola Preventivo 3D",
     "SUBTITLE": "Carica il tuo file 3D (STL, 3MF, STEP...) e ricevi una stima immediata di costi e tempi di stampa.",
@@ -47,13 +93,53 @@
     "BENEFITS_1": "Preventivo automatico con costo e tempo immediati",
     "BENEFITS_2": "Materiali selezionati e qualità controllata",
     "BENEFITS_3": "Consulenza CAD se il file ha bisogno di modifiche",
-    "ERR_FILE_REQUIRED": "Il file è obbligatorio."
+    "ERR_FILE_REQUIRED": "Il file è obbligatorio.",
+    "ANALYZING_TITLE": "Analisi in corso...",
+    "ANALYZING_TEXT": "Stiamo analizzando la geometria e calcolando il percorso utensile.",
+    "QTY_SHORT": "QTÀ",
+    "COLOR_LABEL": "COLORE",
+    "ADD_FILES": "Aggiungi file",
+    "UPLOADING": "Caricamento...",
+    "PROCESSING": "Elaborazione...",
+    "NOTES_PLACEHOLDER": "Istruzioni specifiche...",
+    "SETUP_NOTE": "* Include {{cost}} Costo di Setup"
+  },
+  "QUOTE": {
+    "PROCEED_ORDER": "Procedi con l'ordine",
+    "CONSULT": "Richiedi Consulenza",
+    "TOTAL": "Totale"
+  },
+  "USER_DETAILS": {
+    "TITLE": "I tuoi dati",
+    "NAME": "Nome",
+    "NAME_PLACEHOLDER": "Il tuo nome",
+    "SURNAME": "Cognome",
+    "SURNAME_PLACEHOLDER": "Il tuo cognome",
+    "EMAIL": "Email",
+    "EMAIL_PLACEHOLDER": "tua@email.com",
+    "PHONE": "Telefono",
+    "PHONE_PLACEHOLDER": "+41 ...",
+    "ADDRESS": "Indirizzo",
+    "ADDRESS_PLACEHOLDER": "Via e numero",
+    "ZIP": "CAP",
+    "ZIP_PLACEHOLDER": "0000",
+    "CITY": "Città",
+    "CITY_PLACEHOLDER": "Città",
+    "SUBMIT": "Procedi",
+    "SUMMARY_TITLE": "Riepilogo"
+  },
+  "COMMON": {
+    "REQUIRED": "Campo obbligatorio",
+    "INVALID_EMAIL": "Email non valida",
+    "BACK": "Indietro",
+    "OPTIONAL": "(Opzionale)"
   },
   "SHOP": {
     "TITLE": "Soluzioni tecniche",
     "SUBTITLE": "Prodotti pronti che risolvono problemi pratici",
     "ADD_CART": "Aggiungi al Carrello",
-    "BACK": "Torna allo Shop"
+    "BACK": "Torna allo Shop",
+    "NOT_FOUND": "Prodotto non trovato."
   },
   "ABOUT": {
     "TITLE": "Chi Siamo",
@@ -126,7 +212,10 @@
     "ERR_MAX_FILES": "Limite massimo di 15 file raggiunto.",
     "SUCCESS_TITLE": "Messaggio Inviato con Successo",
     "SUCCESS_DESC": "Grazie per averci contattato. Abbiamo ricevuto il tuo messaggio e ti invieremo una email di riepilogo a breve.",
-    "SEND_ANOTHER": "Invia un altro messaggio"
+    "SEND_ANOTHER": "Invia un altro messaggio",
+    "HERO_SUBTITLE": "Siamo qui per aiutarti. Compila il modulo sottostante per qualsiasi richiesta.",
+    "FILE_TYPE_PDF": "PDF",
+    "FILE_TYPE_3D": "3D"
   },
   "CHECKOUT": {
     "TITLE": "Checkout",
@@ -152,17 +241,23 @@
     "SETUP_FEE": "Costo di Avvio",
     "TOTAL": "Totale",
     "QTY": "Qtà",
-    "SHIPPING": "Spedizione"
+    "SHIPPING": "Spedizione",
+    "INVALID_EMAIL": "Email non valida",
+    "COMPANY_OPTIONAL": "Nome Azienda (Opzionale)",
+    "REF_PERSON_OPTIONAL": "Persona di Riferimento (Opzionale)"
   },
   "PAYMENT": {
     "TITLE": "Pagamento",
     "METHOD": "Metodo di Pagamento",
     "TWINT_TITLE": "Paga con TWINT",
     "TWINT_DESC": "Inquadra il codice con l'app TWINT",
+    "TWINT_OPEN": "Apri direttamente in TWINT",
+    "TWINT_LINK": "Apri link di pagamento",
     "BANK_TITLE": "Bonifico Bancario",
     "BANK_OWNER": "Titolare",
     "BANK_IBAN": "IBAN",
     "BANK_REF": "Riferimento",
+    "BILLING_INFO_HINT": "Aggiungi le informazioni uguali a quelle della fatturazione.",
     "DOWNLOAD_QR": "Scarica QR-Fattura (PDF)",
     "CONFIRM": "Conferma Ordine",
     "SUMMARY_TITLE": "Riepilogo Ordine",
@@ -170,6 +265,18 @@
     "SHIPPING": "Spedizione",
     "SETUP_FEE": "Costo Setup",
     "TOTAL": "Totale",
-    "LOADING": "Caricamento dettagli ordine..."
+    "LOADING": "Caricamento dettagli ordine...",
+    "METHOD_TWINT": "TWINT",
+    "METHOD_BANK": "Fattura QR / Bonifico"
+  },
+  "ORDER_CONFIRMED": {
+    "TITLE": "Ordine Confermato",
+    "SUBTITLE": "Pagamento registrato. Il tuo ordine è ora in elaborazione.",
+    "STATUS": "In elaborazione",
+    "HEADING": "Stiamo preparando il tuo ordine",
+    "ORDER_REF": "Riferimento ordine",
+    "PROCESSING_TEXT": "Non appena confermiamo il pagamento, il tuo ordine passerà in produzione.",
+    "EMAIL_TEXT": "Ti invieremo una email con aggiornamento stato e prossimi step.",
+    "BACK_HOME": "Torna alla Home"
   }
 }

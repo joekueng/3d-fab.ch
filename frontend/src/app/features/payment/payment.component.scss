@@ -105,23 +105,33 @@
   }
 }
 
+.payment-details-twint {
+  border: 1px solid #dcd5ff;
+  background: linear-gradient(180deg, #fcfbff 0%, #f6f4ff 100%);
+}
+
 .qr-placeholder {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
 
-  .qr-box {
-    width: 180px;
-    height: 180px;
-    background-color: white;
-    border: 2px solid var(--color-neutral-900);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    margin-bottom: var(--space-4);
+  .twint-qr {
+    width: 240px;
+    height: 240px;
+    background-color: #fff;
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
+    padding: var(--space-2);
+    margin-bottom: var(--space-4);
+    object-fit: contain;
+    box-shadow: 0 6px 18px rgba(44, 37, 84, 0.08);
+  }
+
+  .twint-mobile-action {
+    width: 100%;
+    max-width: 320px;
+    margin-top: var(--space-3);
   }
 
   .amount {
@@ -130,6 +140,12 @@
     margin-top: var(--space-2);
     color: var(--color-text);
   }
+}
+
+.billing-hint {
+  margin-top: var(--space-3);
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
 }
 
 .bank-details {
