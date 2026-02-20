@@ -144,6 +144,23 @@ export class QuoteEstimatorService {
       if (environment.basicAuth) headers['Authorization'] = 'Basic ' + btoa(environment.basicAuth);
       return this.http.post(`${environment.apiUrl}/api/orders/from-quote/${sessionId}`, orderDetails, { headers });
   }
+
+  getOrder(orderId: string): Observable<any> {
+      const headers: any = {};
+      // @ts-ignore
+      if (environment.basicAuth) headers['Authorization'] = 'Basic ' + btoa(environment.basicAuth);
+      return this.http.get(`${environment.apiUrl}/api/orders/${orderId}`, { headers });
+  }
+
+  getOrderInvoice(orderId: string): Observable<Blob> {
+      const headers: any = {};
+      // @ts-ignore
+      if (environment.basicAuth) headers['Authorization'] = 'Basic ' + btoa(environment.basicAuth);
+      return this.http.get(`${environment.apiUrl}/api/orders/${orderId}/invoice`, {
+          headers,
+          responseType: 'blob'
+      });
+  }
   
   calculate(request: QuoteRequest): Observable<number | QuoteResult> {
     console.log('QuoteEstimatorService: Calculating quote...', request);

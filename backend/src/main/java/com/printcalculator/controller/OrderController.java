@@ -1,13 +1,17 @@
 package com.printcalculator.controller;
 
+import com.printcalculator.dto.*;
 import com.printcalculator.entity.*;
 import com.printcalculator.repository.*;
+import com.printcalculator.service.InvoicePdfRenderingService;
+import com.printcalculator.service.OrderService;
+import com.printcalculator.service.QrBillService;
+import com.printcalculator.service.StorageService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -15,209 +19,61 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
-import java.util.Optional;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
 
+    private final OrderService orderService;
     private final OrderRepository orderRepo;
     private final OrderItemRepository orderItemRepo;
     private final QuoteSessionRepository quoteSessionRepo;
     private final QuoteLineItemRepository quoteLineItemRepo;
     private final CustomerRepository customerRepo;
-    private final com.printcalculator.service.ClamAVService clamAVService;
+    private final StorageService storageService;
+    private final InvoicePdfRenderingService invoiceService;
+    private final QrBillService qrBillService;
 
-    // TODO: Inject Storage Service or use a base path property
-    private static final String STORAGE_ROOT = "storage_orders"; 
 
-    public OrderController(OrderRepository orderRepo,
+    public OrderController(OrderService orderService,
+                           OrderRepository orderRepo,
                            OrderItemRepository orderItemRepo,
                            QuoteSessionRepository quoteSessionRepo,
                            QuoteLineItemRepository quoteLineItemRepo,
                            CustomerRepository customerRepo,
-                           com.printcalculator.service.ClamAVService clamAVService) {
+                           StorageService storageService,
+                           InvoicePdfRenderingService invoiceService,
+                           QrBillService qrBillService) {
+        this.orderService = orderService;
         this.orderRepo = orderRepo;
         this.orderItemRepo = orderItemRepo;
         this.quoteSessionRepo = quoteSessionRepo;
         this.quoteLineItemRepo = quoteLineItemRepo;
         this.customerRepo = customerRepo;
-        this.clamAVService = clamAVService;
+        this.storageService = storageService;
+        this.invoiceService = invoiceService;
+        this.qrBillService = qrBillService;
     }
 
 
     // 1. Create Order from Quote
     @PostMapping("/from-quote/{quoteSessionId}")
     @Transactional
-    public ResponseEntity<Order> createOrderFromQuote(
+    public ResponseEntity<OrderDto> createOrderFromQuote(
             @PathVariable UUID quoteSessionId,
             @RequestBody com.printcalculator.dto.CreateOrderRequest request
     ) {
-        // 1. Fetch Quote Session
-        QuoteSession session = quoteSessionRepo.findById(quoteSessionId)
-                .orElseThrow(() -> new RuntimeException("Quote Session not found"));
-
-        if (!"ACTIVE".equals(session.getStatus())) {
-             // Allow converting only active sessions? Or check if not already converted?
-             // checking convertedOrderId might be better
-        }
-        if (session.getConvertedOrderId() != null) {
-            return ResponseEntity.badRequest().body(null); // Already converted
-        }
-
-        // 2. Handle Customer (Find or Create)
-        Customer customer = customerRepo.findByEmail(request.getCustomer().getEmail())
-                .orElseGet(() -> {
-                    Customer newC = new Customer();
-                    newC.setEmail(request.getCustomer().getEmail());
-                    newC.setCreatedAt(OffsetDateTime.now());
-                    return customerRepo.save(newC);
-                });
-        // Update customer details?
-        customer.setPhone(request.getCustomer().getPhone());
-        customer.setCustomerType(request.getCustomer().getCustomerType());
-        customer.setUpdatedAt(OffsetDateTime.now());
-        customerRepo.save(customer);
-
-        // 3. Create Order
-        Order order = new Order();
-        order.setSourceQuoteSession(session);
-        order.setCustomer(customer);
-        order.setCustomerEmail(request.getCustomer().getEmail());
-        order.setCustomerPhone(request.getCustomer().getPhone());
-        order.setStatus("PENDING_PAYMENT");
-        order.setCreatedAt(OffsetDateTime.now());
-        order.setUpdatedAt(OffsetDateTime.now());
-        order.setCurrency("CHF");
-        // Initialize all NOT NULL monetary fields before first persist.
-        order.setSetupCostChf(session.getSetupCostChf() != null ? session.getSetupCostChf() : BigDecimal.ZERO);
-        order.setShippingCostChf(BigDecimal.ZERO);
-        order.setDiscountChf(BigDecimal.ZERO);
-        order.setSubtotalChf(BigDecimal.ZERO);
-        order.setTotalChf(BigDecimal.ZERO);
-
-        // Billing
-        order.setBillingCustomerType(request.getCustomer().getCustomerType());
-        if (request.getBillingAddress() != null) {
-            order.setBillingFirstName(request.getBillingAddress().getFirstName());
-            order.setBillingLastName(request.getBillingAddress().getLastName());
-            order.setBillingCompanyName(request.getBillingAddress().getCompanyName());
-            order.setBillingContactPerson(request.getBillingAddress().getContactPerson());
-            order.setBillingAddressLine1(request.getBillingAddress().getAddressLine1());
-            order.setBillingAddressLine2(request.getBillingAddress().getAddressLine2());
-            order.setBillingZip(request.getBillingAddress().getZip());
-            order.setBillingCity(request.getBillingAddress().getCity());
-            order.setBillingCountryCode(request.getBillingAddress().getCountryCode() != null ? request.getBillingAddress().getCountryCode() : "CH");
-        }
-
-        // Shipping
-        order.setShippingSameAsBilling(request.isShippingSameAsBilling());
-        if (!request.isShippingSameAsBilling() && request.getShippingAddress() != null) {
-             order.setShippingFirstName(request.getShippingAddress().getFirstName());
-             order.setShippingLastName(request.getShippingAddress().getLastName());
-             order.setShippingCompanyName(request.getShippingAddress().getCompanyName());
-             order.setShippingContactPerson(request.getShippingAddress().getContactPerson());
-             order.setShippingAddressLine1(request.getShippingAddress().getAddressLine1());
-             order.setShippingAddressLine2(request.getShippingAddress().getAddressLine2());
-             order.setShippingZip(request.getShippingAddress().getZip());
-             order.setShippingCity(request.getShippingAddress().getCity());
-             order.setShippingCountryCode(request.getShippingAddress().getCountryCode() != null ? request.getShippingAddress().getCountryCode() : "CH");
-        } else {
-            // Copy billing to shipping? Or leave empty and rely on flag?
-            // Usually explicit copy is safer for queries
-            order.setShippingFirstName(order.getBillingFirstName());
-            order.setShippingLastName(order.getBillingLastName());
-            order.setShippingCompanyName(order.getBillingCompanyName());
-            order.setShippingContactPerson(order.getBillingContactPerson());
-            order.setShippingAddressLine1(order.getBillingAddressLine1());
-            order.setShippingAddressLine2(order.getBillingAddressLine2());
-            order.setShippingZip(order.getBillingZip());
-            order.setShippingCity(order.getBillingCity());
-            order.setShippingCountryCode(order.getBillingCountryCode());
-        }
-
-        // Financials from Session (Assuming mocked/calculated in session)
-        // We re-calculate totals from line items to be safe
-        List<QuoteLineItem> quoteItems = quoteLineItemRepo.findByQuoteSessionId(quoteSessionId);
-        
-        BigDecimal subtotal = BigDecimal.ZERO;
-        
-        // Save Order first to get ID
-        order = orderRepo.save(order);
-
-        // 4. Create Order Items
-        for (QuoteLineItem qItem : quoteItems) {
-            OrderItem oItem = new OrderItem();
-            oItem.setOrder(order);
-            oItem.setOriginalFilename(qItem.getOriginalFilename());
-            oItem.setQuantity(qItem.getQuantity());
-            oItem.setColorCode(qItem.getColorCode());
-            oItem.setMaterialCode(session.getMaterialCode()); // Or per item if supported
-            
-            // Pricing
-            oItem.setUnitPriceChf(qItem.getUnitPriceChf());
-            oItem.setLineTotalChf(qItem.getUnitPriceChf().multiply(BigDecimal.valueOf(qItem.getQuantity())));
-            oItem.setPrintTimeSeconds(qItem.getPrintTimeSeconds());
-            oItem.setMaterialGrams(qItem.getMaterialGrams());
-            
-            // File Handling Check
-            // "orders/{orderId}/3d-files/{orderItemId}/{uuid}.{ext}"
-            UUID fileUuid = UUID.randomUUID();
-            String ext = getExtension(qItem.getOriginalFilename());
-            String storedFilename = fileUuid.toString() + "." + ext;
-            
-            oItem.setStoredFilename(storedFilename);
-            oItem.setStoredRelativePath("PENDING"); // Placeholder
-            oItem.setMimeType("application/octet-stream"); // specific type if known
-            
-            oItem = orderItemRepo.save(oItem);
-            
-            // Update Path now that we have ID
-            String relativePath = "orders/" + order.getId() + "/3d-files/" + oItem.getId() + "/" + storedFilename;
-            oItem.setStoredRelativePath(relativePath);
-            
-            // COPY FILE from Quote to Order
-            if (qItem.getStoredPath() != null) {
-                try {
-                    Path sourcePath = Paths.get(qItem.getStoredPath());
-                    if (Files.exists(sourcePath)) {
-                        Path targetPath = Paths.get(STORAGE_ROOT, relativePath);
-                        Files.createDirectories(targetPath.getParent());
-                        Files.copy(sourcePath, targetPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-                        
-                        oItem.setFileSizeBytes(Files.size(targetPath));
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace(); // Log error but allow order creation? Or fail?
-                    // Ideally fail or mark as error
-                }
-            }
-            
-            orderItemRepo.save(oItem);
-            
-            subtotal = subtotal.add(oItem.getLineTotalChf());
-        }
-
-        // Update Order Totals
-        order.setSubtotalChf(subtotal);
-        order.setSetupCostChf(session.getSetupCostChf() != null ? session.getSetupCostChf() : BigDecimal.ZERO);
-        order.setShippingCostChf(BigDecimal.valueOf(9.00)); // Default shipping? or 0?
-        // TODO: Calc implementation for shipping
-        
-        BigDecimal total = subtotal.add(order.getSetupCostChf()).add(order.getShippingCostChf()).subtract(order.getDiscountChf() != null ? order.getDiscountChf() : BigDecimal.ZERO);
-        order.setTotalChf(total);
-        
-        // Link session
-        session.setConvertedOrderId(order.getId());
-        session.setStatus("CONVERTED"); // or CLOSED
-        quoteSessionRepo.save(session);
-        
-        return ResponseEntity.ok(orderRepo.save(order));
+        Order order = orderService.createOrderFromQuote(quoteSessionId, request);
+        List<OrderItem> items = orderItemRepo.findByOrder_Id(order.getId());
+        return ResponseEntity.ok(convertToDto(order, items));
     }
     
-    // 2. Upload file for Order Item
     @PostMapping(value = "/{orderId}/items/{orderItemId}/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Transactional
     public ResponseEntity<Void> uploadOrderItemFile(
@@ -232,41 +88,102 @@ public class OrderController {
         if (!item.getOrder().getId().equals(orderId)) {
             return ResponseEntity.badRequest().build();
         }
-
-        // Scan for virus
-        clamAVService.scan(file.getInputStream());
         
-        // Ensure path logic
         String relativePath = item.getStoredRelativePath();
         if (relativePath == null || relativePath.equals("PENDING")) {
-             // Should verify consistency
-             // If we used the logic above, it should have a path.
-             // If it's "PENDING", regen it.
              String ext = getExtension(file.getOriginalFilename());
              String storedFilename = UUID.randomUUID().toString() + "." + ext;
              relativePath = "orders/" + orderId + "/3d-files/" + orderItemId + "/" + storedFilename;
              item.setStoredRelativePath(relativePath);
              item.setStoredFilename(storedFilename);
-             // Update item
         }
         
-        // Save file to disk
-        Path absolutePath = Paths.get(STORAGE_ROOT, relativePath);
-        Files.createDirectories(absolutePath.getParent());
-        
-        if (Files.exists(absolutePath)) {
-            Files.delete(absolutePath); // Overwrite?
-        }
-        
-        Files.copy(file.getInputStream(), absolutePath);
-        
+        storageService.store(file, Paths.get(relativePath));
         item.setFileSizeBytes(file.getSize());
         item.setMimeType(file.getContentType());
-        // Calculate SHA256? (Optional)
-        
         orderItemRepo.save(item);
         
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{orderId}")
+    public ResponseEntity<OrderDto> getOrder(@PathVariable UUID orderId) {
+        return orderRepo.findById(orderId)
+                .map(o -> {
+                    List<OrderItem> items = orderItemRepo.findByOrder_Id(o.getId());
+                    return ResponseEntity.ok(convertToDto(o, items));
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/{orderId}/invoice")
+    public ResponseEntity<byte[]> getInvoice(@PathVariable UUID orderId) {
+        Order order = orderRepo.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        List<OrderItem> items = orderItemRepo.findByOrder_Id(orderId);
+
+        Map<String, Object> vars = new HashMap<>();
+        vars.put("sellerDisplayName", "3D Fab Switzerland");
+        vars.put("sellerAddressLine1", "Sede Ticino, Svizzera");
+        vars.put("sellerAddressLine2", "Sede Bienne, Svizzera");
+        vars.put("sellerEmail", "info@3dfab.ch");
+
+        vars.put("invoiceNumber", "INV-" + order.getId().toString().substring(0, 8).toUpperCase());
+        vars.put("invoiceDate", order.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE));
+        vars.put("dueDate", order.getCreatedAt().plusDays(7).format(DateTimeFormatter.ISO_LOCAL_DATE));
+
+        String buyerName = order.getBillingCustomerType().equals("BUSINESS") 
+            ? order.getBillingCompanyName() 
+            : order.getBillingFirstName() + " " + order.getBillingLastName();
+        vars.put("buyerDisplayName", buyerName);
+        vars.put("buyerAddressLine1", order.getBillingAddressLine1());
+        vars.put("buyerAddressLine2", order.getBillingZip() + " " + order.getBillingCity() + ", " + order.getBillingCountryCode());
+
+        List<Map<String, Object>> invoiceLineItems = items.stream().map(i -> {
+            Map<String, Object> line = new HashMap<>();
+            line.put("description", "Stampa 3D: " + i.getOriginalFilename());
+            line.put("quantity", i.getQuantity());
+            line.put("unitPriceFormatted", String.format("CHF %.2f", i.getUnitPriceChf()));
+            line.put("lineTotalFormatted", String.format("CHF %.2f", i.getLineTotalChf()));
+            return line;
+        }).collect(Collectors.toList());
+
+        Map<String, Object> setupLine = new HashMap<>();
+        setupLine.put("description", "Costo Setup");
+        setupLine.put("quantity", 1);
+        setupLine.put("unitPriceFormatted", String.format("CHF %.2f", order.getSetupCostChf()));
+        setupLine.put("lineTotalFormatted", String.format("CHF %.2f", order.getSetupCostChf()));
+        invoiceLineItems.add(setupLine);
+
+        Map<String, Object> shippingLine = new HashMap<>();
+        shippingLine.put("description", "Spedizione");
+        shippingLine.put("quantity", 1);
+        shippingLine.put("unitPriceFormatted", String.format("CHF %.2f", order.getShippingCostChf()));
+        shippingLine.put("lineTotalFormatted", String.format("CHF %.2f", order.getShippingCostChf()));
+        invoiceLineItems.add(shippingLine);
+
+        vars.put("invoiceLineItems", invoiceLineItems);
+        vars.put("subtotalFormatted", String.format("CHF %.2f", order.getSubtotalChf()));
+        vars.put("grandTotalFormatted", String.format("CHF %.2f", order.getTotalChf()));
+        vars.put("paymentTermsText", "Pagamento entro 7 giorni via Bonifico o TWINT. Grazie.");
+
+        String qrBillSvg = new String(qrBillService.generateQrBillSvg(order), java.nio.charset.StandardCharsets.UTF_8);
+        
+        // Strip XML declaration and DOCTYPE if present, as they validity break the embedding HTML page
+        if (qrBillSvg.contains("<?xml")) {
+            int svgStartIndex = qrBillSvg.indexOf("<svg");
+            if (svgStartIndex != -1) {
+                qrBillSvg = qrBillSvg.substring(svgStartIndex);
+            }
+        }
+        
+        byte[] pdf = invoiceService.generateInvoicePdfBytesFromTemplate(vars, qrBillSvg);
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"invoice-" + orderId + ".pdf\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
     }
     
     private String getExtension(String filename) {
@@ -276,6 +193,66 @@ public class OrderController {
             return filename.substring(i + 1);
         }
         return "stl";
+    }
+
+    private OrderDto convertToDto(Order order, List<OrderItem> items) {
+        OrderDto dto = new OrderDto();
+        dto.setId(order.getId());
+        dto.setStatus(order.getStatus());
+        dto.setCustomerEmail(order.getCustomerEmail());
+        dto.setCustomerPhone(order.getCustomerPhone());
+        dto.setBillingCustomerType(order.getBillingCustomerType());
+        dto.setCurrency(order.getCurrency());
+        dto.setSetupCostChf(order.getSetupCostChf());
+        dto.setShippingCostChf(order.getShippingCostChf());
+        dto.setDiscountChf(order.getDiscountChf());
+        dto.setSubtotalChf(order.getSubtotalChf());
+        dto.setTotalChf(order.getTotalChf());
+        dto.setCreatedAt(order.getCreatedAt());
+        dto.setShippingSameAsBilling(order.getShippingSameAsBilling());
+
+        AddressDto billing = new AddressDto();
+        billing.setFirstName(order.getBillingFirstName());
+        billing.setLastName(order.getBillingLastName());
+        billing.setCompanyName(order.getBillingCompanyName());
+        billing.setContactPerson(order.getBillingContactPerson());
+        billing.setAddressLine1(order.getBillingAddressLine1());
+        billing.setAddressLine2(order.getBillingAddressLine2());
+        billing.setZip(order.getBillingZip());
+        billing.setCity(order.getBillingCity());
+        billing.setCountryCode(order.getBillingCountryCode());
+        dto.setBillingAddress(billing);
+
+        if (!order.getShippingSameAsBilling()) {
+            AddressDto shipping = new AddressDto();
+            shipping.setFirstName(order.getShippingFirstName());
+            shipping.setLastName(order.getShippingLastName());
+            shipping.setCompanyName(order.getShippingCompanyName());
+            shipping.setContactPerson(order.getShippingContactPerson());
+            shipping.setAddressLine1(order.getShippingAddressLine1());
+            shipping.setAddressLine2(order.getShippingAddressLine2());
+            shipping.setZip(order.getShippingZip());
+            shipping.setCity(order.getShippingCity());
+            shipping.setCountryCode(order.getShippingCountryCode());
+            dto.setShippingAddress(shipping);
+        }
+
+        List<OrderItemDto> itemDtos = items.stream().map(i -> {
+            OrderItemDto idto = new OrderItemDto();
+            idto.setId(i.getId());
+            idto.setOriginalFilename(i.getOriginalFilename());
+            idto.setMaterialCode(i.getMaterialCode());
+            idto.setColorCode(i.getColorCode());
+            idto.setQuantity(i.getQuantity());
+            idto.setPrintTimeSeconds(i.getPrintTimeSeconds());
+            idto.setMaterialGrams(i.getMaterialGrams());
+            idto.setUnitPriceChf(i.getUnitPriceChf());
+            idto.setLineTotalChf(i.getLineTotalChf());
+            return idto;
+        }).collect(Collectors.toList());
+        dto.setItems(itemDtos);
+
+        return dto;
     }
 
 }

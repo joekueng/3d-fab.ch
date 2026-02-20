@@ -6,6 +6,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { QuoteEstimatorService } from '../calculator/services/quote-estimator.service';
 import { AppInputComponent } from '../../shared/components/app-input/app-input.component';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
+import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
 
 @Component({
   selector: 'app-checkout',
@@ -15,7 +16,8 @@ import { AppButtonComponent } from '../../shared/components/app-button/app-butto
     ReactiveFormsModule, 
     TranslateModule,
     AppInputComponent,
-    AppButtonComponent
+    AppButtonComponent,
+    AppCardComponent
   ],
   templateUrl: './checkout.component.html',
   styleUrls: ['./checkout.component.scss']
@@ -75,20 +77,27 @@ export class CheckoutComponent implements OnInit {
     const type = isCompany ? 'BUSINESS' : 'PRIVATE';
     this.checkoutForm.patchValue({ customerType: type });
     
-    // Update validators based on type
     const billingGroup = this.checkoutForm.get('billingAddress') as FormGroup;
     const companyControl = billingGroup.get('companyName');
     const referenceControl = billingGroup.get('referencePerson');
+    const firstNameControl = billingGroup.get('firstName');
+    const lastNameControl = billingGroup.get('lastName');
     
     if (isCompany) {
       companyControl?.setValidators([Validators.required]);
       referenceControl?.setValidators([Validators.required]);
+      firstNameControl?.clearValidators();
+      lastNameControl?.clearValidators();
     } else {
       companyControl?.clearValidators();
       referenceControl?.clearValidators();
+      firstNameControl?.setValidators([Validators.required]);
+      lastNameControl?.setValidators([Validators.required]);
     }
     companyControl?.updateValueAndValidity();
     referenceControl?.updateValueAndValidity();
+    firstNameControl?.updateValueAndValidity();
+    lastNameControl?.updateValueAndValidity();
   }
 
   ngOnInit(): void {

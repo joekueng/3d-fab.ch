@@ -1,21 +1,109 @@
-<div class="payment-container">
-  <mat-card class="payment-card">
-    <mat-card-header>
-      <mat-icon mat-card-avatar>payment</mat-icon>
-      <mat-card-title>Payment Integration</mat-card-title>
-      <mat-card-subtitle>Order #{{ orderId }}</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="coming-soon">
-        <h3>Coming Soon</h3>
-        <p>The online payment system is currently under development.</p>
-        <p>Your order has been saved. Please contact us to arrange payment.</p>
-      </div>
-    </mat-card-content>
-    <mat-card-actions align="end">
-      <button mat-raised-button color="primary" (click)="completeOrder()">
-        Simulate Payment Completion
-      </button>
-    </mat-card-actions>
-  </mat-card>
+<div class="container hero">
+  <h1>{{ 'PAYMENT.TITLE' | translate }}</h1>
+  <p class="subtitle">{{ 'CHECKOUT.SUBTITLE' | translate }}</p>
+</div>
+
+<div class="container">
+  <div class="payment-layout" *ngIf="order() as o">
+    <div class="payment-main">
+      <app-card class="mb-6">
+        <div class="card-header-simple">
+          <h3>{{ 'PAYMENT.METHOD' | translate }}</h3>
+        </div>
+
+        <div class="payment-selection">
+          <div class="methods-grid">
+            <div
+              class="type-option"
+              [class.selected]="selectedPaymentMethod === 'twint'"
+              (click)="selectPayment('twint')">
+              <span class="method-name">TWINT</span>
+            </div>
+            <div
+              class="type-option"
+              [class.selected]="selectedPaymentMethod === 'bill'"
+              (click)="selectPayment('bill')">
+              <span class="method-name">QR Bill / Bank Transfer</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="payment-details fade-in" *ngIf="selectedPaymentMethod === 'twint'">
+          <div class="details-header">
+            <h4>{{ 'PAYMENT.TWINT_TITLE' | translate }}</h4>
+          </div>
+          <div class="qr-placeholder">
+            <div class="qr-box">
+              <span>QR CODE</span>
+            </div>
+            <p>{{ 'PAYMENT.TWINT_DESC' | translate }}</p>
+            <p class="amount">{{ 'PAYMENT.TOTAL' | translate }}: {{ o.totalChf | currency:'CHF' }}</p>
+          </div>
+        </div>
+
+        <div class="payment-details fade-in" *ngIf="selectedPaymentMethod === 'bill'">
+          <div class="details-header">
+            <h4>{{ 'PAYMENT.BANK_TITLE' | translate }}</h4>
+          </div>
+          <div class="bank-details">
+            <p><strong>{{ 'PAYMENT.BANK_OWNER' | translate }}:</strong> 3D Fab Switzerland</p>
+            <p><strong>{{ 'PAYMENT.BANK_IBAN' | translate }}:</strong> CH98 0000 0000 0000 0000 0</p>
+            <p><strong>{{ 'PAYMENT.BANK_REF' | translate }}:</strong> {{ o.id }}</p>
+
+            <div class="qr-bill-actions">
+              <app-button variant="outline" (click)="downloadInvoice()">
+                {{ 'PAYMENT.DOWNLOAD_QR' | translate }}
+              </app-button>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <app-button (click)="completeOrder()" [disabled]="!selectedPaymentMethod" [fullWidth]="true">
+            {{ 'PAYMENT.CONFIRM' | translate }}
+          </app-button>
+        </div>
+      </app-card>
+    </div>
+
+    <div class="payment-summary">
+      <app-card class="sticky-card">
+        <div class="card-header-simple">
+          <h3>{{ 'PAYMENT.SUMMARY_TITLE' | translate }}</h3>
+          <p class="order-id">#{{ o.id.substring(0, 8) }}</p>
+        </div>
+
+        <div class="summary-totals">
+          <div class="total-row">
+            <span>{{ 'PAYMENT.SUBTOTAL' | translate }}</span>
+            <span>{{ o.subtotalChf | currency:'CHF' }}</span>
+          </div>
+          <div class="total-row">
+            <span>{{ 'PAYMENT.SHIPPING' | translate }}</span>
+            <span>{{ o.shippingCostChf | currency:'CHF' }}</span>
+          </div>
+          <div class="total-row">
+            <span>{{ 'PAYMENT.SETUP_FEE' | translate }}</span>
+            <span>{{ o.setupCostChf | currency:'CHF' }}</span>
+          </div>
+          <div class="grand-total-row">
+            <span>{{ 'PAYMENT.TOTAL' | translate }}</span>
+            <span>{{ o.totalChf | currency:'CHF' }}</span>
+          </div>
+        </div>
+      </app-card>
+    </div>
+  </div>
+
+  <div *ngIf="loading()" class="loading-state">
+    <app-card>
+      <p>{{ 'PAYMENT.LOADING' | translate }}</p>
+    </app-card>
+  </div>
+
+  <div *ngIf="error()" class="error-message">
+    <app-card>
+      <p>{{ error() }}</p>
+    </app-card>
+  </div>
 </div>

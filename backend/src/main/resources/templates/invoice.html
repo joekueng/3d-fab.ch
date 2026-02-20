@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8"/>
+  <style>
+    @page invoice { size: 8.5in 11in; margin: 0.65in; }
+    @page qrpage { size: A4; margin: 0; }
+
+    body {
+      page: invoice;
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 10pt;
+      margin: 0;
+      padding: 0;
+      background: #fff;
+      color: #1a1a1a;
+    }
+
+    .invoice-page {
+      page: invoice;
+      width: 100%;
+    }
+
+    .header-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    .header-table td {
+      vertical-align: top;
+      padding: 0;
+    }
+
+    .header-left {
+      width: 58%;
+      line-height: 1.35;
+    }
+
+    .header-right {
+      width: 42%;
+      text-align: right;
+      line-height: 1.35;
+    }
+
+    .invoice-title {
+      font-size: 15pt;
+      font-weight: 700;
+      margin: 0 0 4mm 0;
+      letter-spacing: 0.3px;
+    }
+
+    .section-title {
+      margin: 9mm 0 2mm 0;
+      font-size: 10.5pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.2px;
+    }
+
+    .buyer-box {
+      margin: 0;
+      line-height: 1.4;
+      min-height: 20mm;
+    }
+
+    .line-items {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      margin-top: 8mm;
+    }
+
+    .line-items th,
+    .line-items td {
+      border-bottom: 1px solid #d8d8d8;
+      padding: 2.8mm 2.2mm;
+      vertical-align: top;
+      word-break: break-word;
+    }
+
+    .line-items th {
+      text-align: left;
+      font-weight: 700;
+      background: #f7f7f7;
+    }
+
+    .line-items th:nth-child(1),
+    .line-items td:nth-child(1) {
+      width: 54%;
+    }
+
+    .line-items th:nth-child(2),
+    .line-items td:nth-child(2) {
+      width: 12%;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .line-items th:nth-child(3),
+    .line-items td:nth-child(3) {
+      width: 17%;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .line-items th:nth-child(4),
+    .line-items td:nth-child(4) {
+      width: 17%;
+      text-align: right;
+      white-space: nowrap;
+      font-weight: 600;
+    }
+
+    .totals {
+      margin-top: 7mm;
+      margin-left: auto;
+      width: 76mm;
+      border-collapse: collapse;
+    }
+
+    .totals td {
+      border: none;
+      padding: 1.6mm 0;
+    }
+
+    .totals-label {
+      text-align: left;
+      color: #3a3a3a;
+    }
+
+    .totals-value {
+      text-align: right;
+      white-space: nowrap;
+      font-weight: 600;
+    }
+
+    .total-strong td {
+      font-size: 11pt;
+      font-weight: 700;
+      padding-top: 2.4mm;
+      border-top: 1px solid #d8d8d8;
+    }
+
+    .payment-terms {
+      margin-top: 9mm;
+      line-height: 1.4;
+      color: #2b2b2b;
+    }
+
+    .qr-only-page {
+      page: qrpage;
+      position: relative;
+      width: 210mm;
+      height: 297mm;
+      background: #fff;
+      page-break-before: always;
+      break-before: page;
+    }
+
+    .qr-bill-bottom {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 210mm;
+      height: 105mm;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .qr-bill-bottom svg {
+      width: 210mm !important;
+      height: 105mm !important;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+<div class="invoice-page">
+
+<table class="header-table">
+  <tr>
+    <td class="header-left">
+      <div><strong th:text="${sellerDisplayName}">Nome Cognome</strong></div>
+      <div th:text="${sellerAddressLine1}">Via Esempio 12</div>
+      <div th:text="${sellerAddressLine2}">6500 Bellinzona, CH</div>
+      <div th:text="${sellerEmail}">email@example.com</div>
+    </td>
+    <td class="header-right">
+      <div class="invoice-title">Fattura</div>
+      <div>Numero: <span th:text="${invoiceNumber}">2026-000123</span></div>
+      <div>Data: <span th:text="${invoiceDate}">2026-02-13</span></div>
+      <div>Scadenza: <span th:text="${dueDate}">2026-02-20</span></div>
+    </td>
+  </tr>
+</table>
+
+<div class="section-title">Fatturare a</div>
+<div class="buyer-box">
+  <div>
+    <div th:text="${buyerDisplayName}">Cliente SA</div>
+    <div th:text="${buyerAddressLine1}">Via Cliente 7</div>
+    <div th:text="${buyerAddressLine2}">8000 Zürich, CH</div>
+  </div>
+</div>
+
+<table class="line-items">
+  <thead>
+    <tr>
+      <th>Descrizione</th>
+      <th>Qtà</th>
+      <th>Prezzo</th>
+      <th>Totale</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr th:each="lineItem : ${invoiceLineItems}">
+      <td th:text="${lineItem.description}">Stampa 3D pezzo X</td>
+      <td th:text="${lineItem.quantity}">1</td>
+      <td th:text="${lineItem.unitPriceFormatted}">CHF 10.00</td>
+      <td th:text="${lineItem.lineTotalFormatted}">CHF 10.00</td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="totals">
+  <tr>
+    <td class="totals-label">Subtotale</td>
+    <td class="totals-value" th:text="${subtotalFormatted}">CHF 10.00</td>
+  </tr>
+  <tr class="total-strong">
+    <td class="totals-label">Totale</td>
+    <td class="totals-value" th:text="${grandTotalFormatted}">CHF 10.00</td>
+  </tr>
+</table>
+
+<div class="payment-terms" th:text="${paymentTermsText}">
+  Pagamento entro 7 giorni. Grazie.
+</div>
+
+</div>
+
+<div class="qr-only-page">
+  <div class="qr-bill-bottom" th:utext="${qrBillSvg}">
+  </div>
+</div>
+
+</body>
+</html>

@@ -37,7 +37,7 @@
       <app-input formControlName="companyName" [label]="('CONTACT.COMPANY_NAME' | translate) + ' *'" [placeholder]="'CONTACT.PLACEHOLDER_COMPANY' | translate"></app-input>
       <app-input formControlName="referencePerson" [label]="('CONTACT.REF_PERSON' | translate) + ' *'" [placeholder]="'CONTACT.PLACEHOLDER_REF_PERSON' | translate"></app-input>
     </div>
-    
+
     <div class="form-group">
       <label>{{ 'CONTACT.LABEL_MESSAGE' | translate }}</label>
       <textarea formControlName="message" class="form-control" rows="4"></textarea>
@@ -47,10 +47,10 @@
     <div class="form-group">
       <label>{{ 'CONTACT.UPLOAD_LABEL' | translate }}</label>
       <p class="hint">{{ 'CONTACT.UPLOAD_HINT' | translate }}</p>
-      
-      <div class="drop-zone" (click)="fileInput.click()" 
+
+      <div class="drop-zone" (click)="fileInput.click()"
            (dragover)="onDragOver($event)" (drop)="onDrop($event)">
-        <input #fileInput type="file" multiple (change)="onFileSelected($event)" hidden 
+        <input #fileInput type="file" multiple (change)="onFileSelected($event)" hidden
                accept=".jpg,.jpeg,.png,.pdf,.stl,.step,.stp,.3mf,.obj">
         <p>{{ 'CONTACT.DROP_FILES' | translate }}</p>
       </div>

@@ -130,6 +130,7 @@
   },
   "CHECKOUT": {
     "TITLE": "Checkout",
+    "SUBTITLE": "Completa il tuo ordine inserendo i dettagli per la spedizione e il pagamento.",
     "CONTACT_INFO": "Informazioni di Contatto",
     "BILLING_ADDR": "Indirizzo di Fatturazione",
     "SHIPPING_ADDR": "Indirizzo di Spedizione",
@@ -150,6 +151,25 @@
     "SUBTOTAL": "Subtotale",
     "SETUP_FEE": "Costo di Avvio",
     "TOTAL": "Totale",
-    "QTY": "Qtà"
+    "QTY": "Qtà",
+    "SHIPPING": "Spedizione"
+  },
+  "PAYMENT": {
+    "TITLE": "Pagamento",
+    "METHOD": "Metodo di Pagamento",
+    "TWINT_TITLE": "Paga con TWINT",
+    "TWINT_DESC": "Inquadra il codice con l'app TWINT",
+    "BANK_TITLE": "Bonifico Bancario",
+    "BANK_OWNER": "Titolare",
+    "BANK_IBAN": "IBAN",
+    "BANK_REF": "Riferimento",
+    "DOWNLOAD_QR": "Scarica QR-Fattura (PDF)",
+    "CONFIRM": "Conferma Ordine",
+    "SUMMARY_TITLE": "Riepilogo Ordine",
+    "SUBTOTAL": "Subtotale",
+    "SHIPPING": "Spedizione",
+    "SETUP_FEE": "Costo Setup",
+    "TOTAL": "Totale",
+    "LOADING": "Caricamento dettagli ordine..."
   }
 }

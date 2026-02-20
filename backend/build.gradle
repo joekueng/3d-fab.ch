@@ -25,13 +25,21 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'xyz.capybara:clamav-client:2.1.2'
 	runtimeOnly 'org.postgresql:postgresql'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'com.h2database:h2'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	compileOnly 'org.projectlombok:lombok'
-	implementation 'xyz.capybara:clamav-client:2.1.2'
 	annotationProcessor 'org.projectlombok:lombok'
+	implementation 'io.github.openhtmltopdf:openhtmltopdf-pdfbox:1.1.37'
+	implementation 'io.github.openhtmltopdf:openhtmltopdf-svg-support:1.1.37'
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	implementation 'net.codecrete.qrbill:qrbill-generator:3.4.0'
+
+
+
 }
 
 tasks.named('test') {
