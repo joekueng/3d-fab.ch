@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Conferma Ordine</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 1px solid #eeeeee;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            color: #333333;
+        }
+        .content {
+            color: #555555;
+            line-height: 1.6;
+        }
+        .order-details {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .order-details th {
+            text-align: left;
+            padding-right: 20px;
+            color: #333333;
+        }
+        .footer {
+            text-align: center;
+            font-size: 0.9em;
+            color: #999999;
+            margin-top: 30px;
+            border-top: 1px solid #eeeeee;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Grazie per il tuo ordine!</h1>
+        </div>
+        <div class="content">
+            <p>Ciao <span th:text="${customerName}">Cliente</span>,</p>
+            <p>Abbiamo ricevuto il tuo ordine e stiamo iniziando a elaborarlo. Ecco un riepilogo dei dettagli:</p>
+
+            <div class="order-details">
+                <table>
+                    <tr>
+                        <th>Numero Ordine:</th>
+                        <td th:text="${orderId}">#0000</td>
+                    </tr>
+                    <tr>
+                        <th>Data:</th>
+                        <td th:text="${orderDate}">01/01/2026</td>
+                    </tr>
+                    <tr>
+                        <th>Costo totale:</th>
+                        <td th:text="${totalCost} + ' CHF'">0.00 CHF</td>
+                    </tr>
+                </table>
+            </div>
+
+            <p>Se hai domande o dubbi, non esitare a contattarci.</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2026 3D-Fab. Tutti i diritti riservati.</p>
+        </div>
+    </div>
+</body>
+</html>

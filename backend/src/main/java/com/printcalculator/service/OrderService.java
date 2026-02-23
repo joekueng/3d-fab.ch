@@ -8,9 +8,10 @@ import com.printcalculator.repository.OrderItemRepository;
 import com.printcalculator.repository.OrderRepository;
 import com.printcalculator.repository.QuoteLineItemRepository;
 import com.printcalculator.repository.QuoteSessionRepository;
+import com.printcalculator.event.OrderCreatedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -34,6 +35,7 @@ public class OrderService {
     private final StorageService storageService;
     private final InvoicePdfRenderingService invoiceService;
     private final QrBillService qrBillService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public OrderService(OrderRepository orderRepo,
                         OrderItemRepository orderItemRepo,
@@ -42,7 +44,8 @@ public class OrderService {
                         CustomerRepository customerRepo,
                         StorageService storageService,
                         InvoicePdfRenderingService invoiceService,
-                        QrBillService qrBillService) {
+                        QrBillService qrBillService,
+                        ApplicationEventPublisher eventPublisher) {
         this.orderRepo = orderRepo;
         this.orderItemRepo = orderItemRepo;
         this.quoteSessionRepo = quoteSessionRepo;
@@ -51,6 +54,7 @@ public class OrderService {
         this.storageService = storageService;
         this.invoiceService = invoiceService;
         this.qrBillService = qrBillService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -194,8 +198,12 @@ public class OrderService {
 
         // Generate Invoice and QR Bill
         generateAndSaveDocuments(order, savedItems);
+        
+        Order savedOrder = orderRepo.save(order);
+        
+        eventPublisher.publishEvent(new OrderCreatedEvent(this, savedOrder));
 
-        return orderRepo.save(order);
+        return savedOrder;
     }
     
     private void generateAndSaveDocuments(Order order, List<OrderItem> items) {
