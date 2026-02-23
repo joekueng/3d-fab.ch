@@ -13,6 +13,15 @@ services:
       - CLAMAV_HOST=${CLAMAV_HOST}
       - CLAMAV_PORT=${CLAMAV_PORT}
       - CLAMAV_ENABLED=${CLAMAV_ENABLED}
+      - MAIL_HOST=${MAIL_HOST:-mail.infomaniak.com}
+      - MAIL_PORT=${MAIL_PORT:-587}
+      - MAIL_USERNAME=${MAIL_USERNAME:-info@3d-fab.ch}
+      - MAIL_PASSWORD=${MAIL_PASSWORD:-}
+      - MAIL_SMTP_AUTH=${MAIL_SMTP_AUTH:-true}
+      - MAIL_SMTP_STARTTLS=${MAIL_SMTP_STARTTLS:-true}
+      - APP_MAIL_FROM=${APP_MAIL_FROM:-info@3d-fab.ch}
+      - APP_MAIL_ADMIN_ENABLED=${APP_MAIL_ADMIN_ENABLED:-true}
+      - APP_MAIL_ADMIN_ADDRESS=${APP_MAIL_ADMIN_ADDRESS:-info@3d-fab.ch}
       - TEMP_DIR=/app/temp
       - PROFILES_DIR=/app/profiles
     restart: always
