@@ -36,6 +36,7 @@ public class OrderService {
     private final InvoicePdfRenderingService invoiceService;
     private final QrBillService qrBillService;
     private final ApplicationEventPublisher eventPublisher;
+    private final PaymentService paymentService;
 
     public OrderService(OrderRepository orderRepo,
                         OrderItemRepository orderItemRepo,
@@ -45,7 +46,8 @@ public class OrderService {
                         StorageService storageService,
                         InvoicePdfRenderingService invoiceService,
                         QrBillService qrBillService,
-                        ApplicationEventPublisher eventPublisher) {
+                        ApplicationEventPublisher eventPublisher,
+                        PaymentService paymentService) {
         this.orderRepo = orderRepo;
         this.orderItemRepo = orderItemRepo;
         this.quoteSessionRepo = quoteSessionRepo;
@@ -55,6 +57,7 @@ public class OrderService {
         this.invoiceService = invoiceService;
         this.qrBillService = qrBillService;
         this.eventPublisher = eventPublisher;
+        this.paymentService = paymentService;
     }
 
     @Transactional
@@ -198,9 +201,12 @@ public class OrderService {
 
         // Generate Invoice and QR Bill
         generateAndSaveDocuments(order, savedItems);
-        
+
         Order savedOrder = orderRepo.save(order);
-        
+
+        // ALWAYS initialize payment as PENDING
+        paymentService.getOrCreatePaymentForOrder(savedOrder, "OTHER");
+
         eventPublisher.publishEvent(new OrderCreatedEvent(this, savedOrder));
 
         return savedOrder;

@@ -52,6 +52,9 @@ public class Payment {
     @Column(name = "initiated_at", nullable = false)
     private OffsetDateTime initiatedAt;
 
+    @Column(name = "reported_at")
+    private OffsetDateTime reportedAt;
+
     @Column(name = "received_at")
     private OffsetDateTime receivedAt;
 
@@ -133,6 +136,14 @@ public class Payment {
 
     public void setInitiatedAt(OffsetDateTime initiatedAt) {
         this.initiatedAt = initiatedAt;
+    }
+
+    public OffsetDateTime getReportedAt() {
+        return reportedAt;
+    }
+
+    public void setReportedAt(OffsetDateTime reportedAt) {
+        this.reportedAt = reportedAt;
     }
 
     public OffsetDateTime getReceivedAt() {

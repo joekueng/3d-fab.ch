@@ -1,7 +1,9 @@
 package com.printcalculator.event.listener;
 
 import com.printcalculator.entity.Order;
+import com.printcalculator.entity.Payment;
 import com.printcalculator.event.OrderCreatedEvent;
+import com.printcalculator.event.PaymentReportedEvent;
 import com.printcalculator.service.email.EmailNotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +49,19 @@ public class OrderEmailListener {
         }
     }
 
+    @Async
+    @EventListener
+    public void handlePaymentReportedEvent(PaymentReportedEvent event) {
+        Order order = event.getOrder();
+        log.info("Processing PaymentReportedEvent for order id: {}", order.getId());
+
+        try {
+            sendPaymentReportedEmail(order);
+        } catch (Exception e) {
+            log.error("Failed to send payment reported email for order id: {}", order.getId(), e);
+        }
+    }
+
     private void sendCustomerConfirmationEmail(Order order) {
         Map<String, Object> templateData = new HashMap<>();
         templateData.put("customerName", order.getCustomer().getFirstName());
@@ -60,6 +75,21 @@ public class OrderEmailListener {
                 order.getCustomer().getEmail(),
                 "Conferma Ordine #" + getDisplayOrderNumber(order) + " - 3D-Fab",
                 "order-confirmation",
+                templateData
+        );
+    }
+
+    private void sendPaymentReportedEmail(Order order) {
+        Map<String, Object> templateData = new HashMap<>();
+        templateData.put("customerName", order.getCustomer().getFirstName());
+        templateData.put("orderId", order.getId());
+        templateData.put("orderNumber", getDisplayOrderNumber(order));
+        templateData.put("orderDetailsUrl", buildOrderDetailsUrl(order));
+
+        emailNotificationService.sendEmail(
+                order.getCustomer().getEmail(),
+                "Stiamo verificando il tuo pagamento (Ordine #" + getDisplayOrderNumber(order) + ")",
+                "payment-reported",
                 templateData
         );
     }

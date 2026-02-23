@@ -24,8 +24,16 @@ public class SmtpEmailNotificationService implements EmailNotificationService {
     @Value("${app.mail.from}")
     private String fromAddress;
 
+    @Value("${app.mail.enabled:true}")
+    private boolean mailEnabled;
+
     @Override
     public void sendEmail(String to, String subject, String templateName, Map<String, Object> contextData) {
+        if (!mailEnabled) {
+            log.info("Email sending disabled (app.mail.enabled=false). Skipping email to {}", to);
+            return;
+        }
+
         log.info("Preparing to send email to {} with template {}", to, templateName);
 
         try {

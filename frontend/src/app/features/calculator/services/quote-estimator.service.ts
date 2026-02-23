@@ -152,6 +152,13 @@ export class QuoteEstimatorService {
       return this.http.get(`${environment.apiUrl}/api/orders/${orderId}`, { headers });
   }
 
+  reportPayment(orderId: string, method: string): Observable<any> {
+      const headers: any = {};
+      // @ts-ignore
+      if (environment.basicAuth) headers['Authorization'] = 'Basic ' + btoa(environment.basicAuth);
+      return this.http.post(`${environment.apiUrl}/api/orders/${orderId}/payments/report`, { method }, { headers });
+  }
+
   getOrderInvoice(orderId: string): Observable<Blob> {
       const headers: any = {};
       // @ts-ignore

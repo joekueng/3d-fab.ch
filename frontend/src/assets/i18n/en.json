@@ -194,7 +194,18 @@
     "SHIPPING": "Shipping",
     "SETUP_FEE": "Setup Fee",
     "TOTAL": "Total",
-    "LOADING": "Loading order details..."
+    "LOADING": "Loading order details...",
+    "METHOD_TWINT": "TWINT",
+    "METHOD_BANK": "Bank Transfer / QR",
+    "STATUS_REPORTED_TITLE": "Payment Reported",
+    "STATUS_REPORTED_DESC": "We are verifying your transaction. Your order will move to production as soon as the payment is confirmed.",
+    "IN_VERIFICATION": "Verifying Payment"
+  },
+  "TRACKING": {
+    "STEP_PENDING": "Pending",
+    "STEP_REPORTED": "Verifying",
+    "STEP_PRODUCTION": "Production",
+    "STEP_SHIPPED": "Shipped"
   },
   "ORDER_CONFIRMED": {
     "TITLE": "Order Confirmed",

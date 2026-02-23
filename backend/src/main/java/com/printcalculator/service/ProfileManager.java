@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -17,12 +18,15 @@ import java.util.stream.Stream;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Service
 public class ProfileManager {
 
     private static final Logger logger = Logger.getLogger(ProfileManager.class.getName());
     private final String profilesRoot;
+    private final Path resolvedProfilesRoot;
     private final ObjectMapper mapper;
 
     private final Map<String, String> profileAliases;
@@ -32,6 +36,8 @@ public class ProfileManager {
         this.mapper = mapper;
         this.profileAliases = new HashMap<>();
         initializeAliases();
+        this.resolvedProfilesRoot = resolveProfilesRoot(profilesRoot);
+        logger.info("Profiles root configured as '" + this.profilesRoot + "', resolved to '" + this.resolvedProfilesRoot + "'");
     }
 
     private void initializeAliases() {
@@ -55,13 +61,18 @@ public class ProfileManager {
     public ObjectNode getMergedProfile(String profileName, String type) throws IOException {
         Path profilePath = findProfileFile(profileName, type);
         if (profilePath == null) {
-            throw new IOException("Profile not found: " + profileName);
+            throw new IOException("Profile not found: " + profileName + " (root=" + resolvedProfilesRoot + ")");
         }
         logger.info("Resolved " + type + " profile '" + profileName + "' -> " + profilePath);
         return resolveInheritance(profilePath);
     }
 
     private Path findProfileFile(String name, String type) {
+        if (!Files.isDirectory(resolvedProfilesRoot)) {
+            logger.severe("Profiles root does not exist or is not a directory: " + resolvedProfilesRoot);
+            return null;
+        }
+
         // Check aliases first
         String resolvedName = profileAliases.getOrDefault(name, name);
 
@@ -69,7 +80,7 @@ public class ProfileManager {
         // collisions across vendors/profile families with same filename.
         String filename = toJsonFilename(resolvedName);
 
-        try (Stream<Path> stream = Files.walk(Paths.get(profilesRoot))) {
+        try (Stream<Path> stream = Files.walk(resolvedProfilesRoot)) {
             List<Path> candidates = stream
                     .filter(p -> p.getFileName().toString().equals(filename))
                     .sorted()
@@ -93,6 +104,37 @@ public class ProfileManager {
             logger.severe("Error searching for profile: " + e.getMessage());
             return null;
         }
+    }
+
+    private Path resolveProfilesRoot(String configuredRoot) {
+        Set<Path> candidates = new LinkedHashSet<>();
+        Path cwd = Paths.get("").toAbsolutePath().normalize();
+
+        if (configuredRoot != null && !configuredRoot.isBlank()) {
+            Path configured = Paths.get(configuredRoot);
+            candidates.add(configured.toAbsolutePath().normalize());
+            if (!configured.isAbsolute()) {
+                candidates.add(cwd.resolve(configuredRoot).normalize());
+            }
+        }
+
+        candidates.add(cwd.resolve("profiles").normalize());
+        candidates.add(cwd.resolve("backend/profiles").normalize());
+        candidates.add(Paths.get("/app/profiles").toAbsolutePath().normalize());
+
+        List<String> checkedPaths = new ArrayList<>();
+        for (Path candidate : candidates) {
+            checkedPaths.add(candidate.toString());
+            if (Files.isDirectory(candidate)) {
+                return candidate;
+            }
+        }
+
+        logger.warning("No profiles directory found. Checked: " + String.join(", ", checkedPaths));
+        if (configuredRoot != null && !configuredRoot.isBlank()) {
+            return Paths.get(configuredRoot).toAbsolutePath().normalize();
+        }
+        return cwd.resolve("profiles").normalize();
     }
 
     private ObjectNode resolveInheritance(Path currentPath) throws IOException {

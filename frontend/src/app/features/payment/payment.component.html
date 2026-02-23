@@ -6,6 +6,13 @@
 <div class="container">
   <div class="payment-layout" *ngIf="order() as o">
     <div class="payment-main">
+      <app-card class="mb-6 status-reported-card" *ngIf="o.paymentStatus === 'REPORTED'">
+        <div class="status-content text-center">
+          <h3>{{ 'PAYMENT.STATUS_REPORTED_TITLE' | translate }}</h3>
+          <p>{{ 'PAYMENT.STATUS_REPORTED_DESC' | translate }}</p>
+        </div>
+      </app-card>
+
       <app-card class="mb-6">
         <div class="card-header-simple">
           <h3>{{ 'PAYMENT.METHOD' | translate }}</h3>
@@ -69,8 +76,11 @@
         </div>
 
         <div class="actions">
-          <app-button (click)="completeOrder()" [disabled]="!selectedPaymentMethod" [fullWidth]="true">
-            {{ 'PAYMENT.CONFIRM' | translate }}
+          <app-button 
+            (click)="completeOrder()" 
+            [disabled]="!selectedPaymentMethod || o.paymentStatus === 'REPORTED'" 
+            [fullWidth]="true">
+            {{ o.paymentStatus === 'REPORTED' ? ('PAYMENT.IN_VERIFICATION' | translate) : ('PAYMENT.CONFIRM' | translate) }}
           </app-button>
         </div>
       </app-card>

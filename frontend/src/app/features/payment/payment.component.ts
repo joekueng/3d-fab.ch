@@ -116,11 +116,22 @@ export class PaymentComponent implements OnInit {
   }
 
   completeOrder(): void {
-    if (!this.orderId) {
-      this.router.navigate(['/']);
+    if (!this.orderId || !this.selectedPaymentMethod) {
       return;
     }
-    this.router.navigate(['/order-confirmed', this.orderId]);
+    
+    this.quoteService.reportPayment(this.orderId, this.selectedPaymentMethod).subscribe({
+      next: (order) => {
+        this.order.set(order);
+        // The UI will re-render and show the 'REPORTED' state.
+        // We stay on this page to let the user see the "In verifica" 
+        // status along with payment instructions.
+      },
+      error: (err) => {
+        console.error('Failed to report payment', err);
+        this.error.set('Failed to report payment. Please try again.');
+      }
+    });
   }
 
   getDisplayOrderNumber(order: any): string {

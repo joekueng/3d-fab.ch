@@ -5,6 +5,7 @@ import com.printcalculator.entity.*;
 import com.printcalculator.repository.*;
 import com.printcalculator.service.InvoicePdfRenderingService;
 import com.printcalculator.service.OrderService;
+import com.printcalculator.service.PaymentService;
 import com.printcalculator.service.QrBillService;
 import com.printcalculator.service.StorageService;
 import com.printcalculator.service.TwintPaymentService;
@@ -43,6 +44,8 @@ public class OrderController {
     private final InvoicePdfRenderingService invoiceService;
     private final QrBillService qrBillService;
     private final TwintPaymentService twintPaymentService;
+    private final PaymentService paymentService;
+    private final PaymentRepository paymentRepo;
 
 
     public OrderController(OrderService orderService,
@@ -54,7 +57,9 @@ public class OrderController {
                            StorageService storageService,
                            InvoicePdfRenderingService invoiceService,
                            QrBillService qrBillService,
-                           TwintPaymentService twintPaymentService) {
+                           TwintPaymentService twintPaymentService,
+                           PaymentService paymentService,
+                           PaymentRepository paymentRepo) {
         this.orderService = orderService;
         this.orderRepo = orderRepo;
         this.orderItemRepo = orderItemRepo;
@@ -65,6 +70,8 @@ public class OrderController {
         this.invoiceService = invoiceService;
         this.qrBillService = qrBillService;
         this.twintPaymentService = twintPaymentService;
+        this.paymentService = paymentService;
+        this.paymentRepo = paymentRepo;
     }
 
 
@@ -120,6 +127,17 @@ public class OrderController {
                     return ResponseEntity.ok(convertToDto(o, items));
                 })
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/{orderId}/payments/report")
+    @Transactional
+    public ResponseEntity<OrderDto> reportPayment(
+            @PathVariable UUID orderId,
+            @RequestBody Map<String, String> payload
+    ) {
+        String method = payload.get("method");
+        paymentService.reportPayment(orderId, method);
+        return getOrder(orderId);
     }
 
     @GetMapping("/{orderId}/invoice")
@@ -251,6 +269,12 @@ public class OrderController {
         dto.setId(order.getId());
         dto.setOrderNumber(getDisplayOrderNumber(order));
         dto.setStatus(order.getStatus());
+
+        paymentRepo.findByOrder_Id(order.getId()).ifPresent(p -> {
+            dto.setPaymentStatus(p.getStatus());
+            dto.setPaymentMethod(p.getMethod());
+        });
+
         dto.setCustomerEmail(order.getCustomerEmail());
         dto.setCustomerPhone(order.getCustomerPhone());
         dto.setBillingCustomerType(order.getBillingCustomerType());

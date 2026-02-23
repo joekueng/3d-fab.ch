@@ -4,13 +4,40 @@
 </div>
 
 <div class="container">
-  <div class="confirmation-layout">
+  <div class="confirmation-layout" *ngIf="order() as o">
     <app-card class="status-card">
-      <div class="status-badge">{{ 'ORDER_CONFIRMED.STATUS' | translate }}</div>
+      <div class="status-badge">{{ o.status === 'SHIPPED' ? ('TRACKING.STEP_SHIPPED' | translate) : ('ORDER_CONFIRMED.STATUS' | translate) }}</div>
       <h2>{{ 'ORDER_CONFIRMED.HEADING' | translate }}</h2>
       <p class="order-ref" *ngIf="orderNumber">
         {{ 'ORDER_CONFIRMED.ORDER_REF' | translate }}: <strong>#{{ orderNumber }}</strong>
       </p>
+
+      <div class="status-timeline">
+         <div class="timeline-step" 
+              [class.active]="o.status === 'PENDING_PAYMENT' && o.paymentStatus !== 'REPORTED'" 
+              [class.completed]="o.paymentStatus === 'REPORTED' || o.status !== 'PENDING_PAYMENT'">
+            <div class="circle">1</div>
+            <div class="label">{{ 'TRACKING.STEP_PENDING' | translate }}</div>
+         </div>
+         <div class="timeline-step" 
+              [class.active]="o.paymentStatus === 'REPORTED' && o.status === 'PENDING_PAYMENT'" 
+              [class.completed]="o.status === 'PAID' || o.status === 'IN_PRODUCTION' || o.status === 'SHIPPED' || o.status === 'COMPLETED'">
+            <div class="circle">2</div>
+            <div class="label">{{ 'TRACKING.STEP_REPORTED' | translate }}</div>
+         </div>
+         <div class="timeline-step" 
+              [class.active]="o.status === 'PAID' || o.status === 'IN_PRODUCTION'" 
+              [class.completed]="o.status === 'SHIPPED' || o.status === 'COMPLETED'">
+            <div class="circle">3</div>
+            <div class="label">{{ 'TRACKING.STEP_PRODUCTION' | translate }}</div>
+         </div>
+         <div class="timeline-step" 
+              [class.active]="o.status === 'SHIPPED'" 
+              [class.completed]="o.status === 'COMPLETED'">
+            <div class="circle">4</div>
+            <div class="label">{{ 'TRACKING.STEP_SHIPPED' | translate }}</div>
+         </div>
+      </div>
 
       <div class="message-block">
         <p>{{ 'ORDER_CONFIRMED.PROCESSING_TEXT' | translate }}</p>

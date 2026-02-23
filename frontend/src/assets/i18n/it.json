@@ -267,7 +267,16 @@
     "TOTAL": "Totale",
     "LOADING": "Caricamento dettagli ordine...",
     "METHOD_TWINT": "TWINT",
-    "METHOD_BANK": "Fattura QR / Bonifico"
+    "METHOD_BANK": "Fattura QR / Bonifico",
+    "STATUS_REPORTED_TITLE": "Abbiamo ricevuto la tua segnalazione",
+    "STATUS_REPORTED_DESC": "Stiamo verificando la transazione. Il tuo ordine passerà in produzione non appena l'accredito sarà confermato.",
+    "IN_VERIFICATION": "Pagamento in verifica"
+  },
+  "TRACKING": {
+    "STEP_PENDING": "In attesa",
+    "STEP_REPORTED": "In verifica",
+    "STEP_PRODUCTION": "In Produzione",
+    "STEP_SHIPPED": "Spedito"
   },
   "ORDER_CONFIRMED": {
     "TITLE": "Ordine Confermato",

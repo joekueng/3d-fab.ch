@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -20,6 +20,7 @@ export class OrderConfirmedComponent implements OnInit {
 
   orderId: string | null = null;
   orderNumber: string | null = null;
+  order = signal<any>(null);
 
   ngOnInit(): void {
     this.orderId = this.route.snapshot.paramMap.get('orderId');
@@ -30,6 +31,7 @@ export class OrderConfirmedComponent implements OnInit {
     this.orderNumber = this.extractOrderNumber(this.orderId);
     this.quoteService.getOrder(this.orderId).subscribe({
       next: (order) => {
+        this.order.set(order);
         this.orderNumber = order?.orderNumber ?? this.orderNumber;
       },
       error: () => {

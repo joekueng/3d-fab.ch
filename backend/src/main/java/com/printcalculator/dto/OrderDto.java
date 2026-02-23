@@ -9,6 +9,8 @@ public class OrderDto {
     private UUID id;
     private String orderNumber;
     private String status;
+    private String paymentStatus;
+    private String paymentMethod;
     private String customerEmail;
     private String customerPhone;
     private String billingCustomerType;
@@ -33,6 +35,12 @@ public class OrderDto {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public String getPaymentStatus() { return paymentStatus; }
+    public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
+
+    public String getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
 
     public String getCustomerEmail() { return customerEmail; }
     public void setCustomerEmail(String customerEmail) { this.customerEmail = customerEmail; }

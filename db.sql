@@ -553,7 +553,7 @@ CREATE TABLE IF NOT EXISTS payments
     order_id                uuid           NOT NULL REFERENCES orders (order_id) ON DELETE CASCADE,
 
     method                  text           NOT NULL CHECK (method IN ('QR_BILL', 'BANK_TRANSFER', 'TWINT', 'CARD', 'OTHER')),
-    status                  text           NOT NULL CHECK (status IN ('PENDING', 'RECEIVED', 'FAILED', 'CANCELLED', 'REFUNDED')),
+    status                  text           NOT NULL CHECK (status IN ('PENDING', 'REPORTED', 'RECEIVED', 'FAILED', 'CANCELLED', 'REFUNDED')),
 
     currency                char(3)        NOT NULL DEFAULT 'CHF',
     amount_chf              numeric(12, 2) NOT NULL CHECK (amount_chf >= 0),
@@ -564,6 +564,7 @@ CREATE TABLE IF NOT EXISTS payments
 
     qr_payload              text, -- se vuoi salvare contenuto QR/Swiss QR bill
     initiated_at            timestamptz    NOT NULL DEFAULT now(),
+    reported_at             timestamptz,
     received_at             timestamptz
 );
 
