@@ -51,7 +51,8 @@ public class QrBillService {
 
         // Reference
         // bill.setReference(QRBill.createCreditorReference("...")); // If using QRR
-        bill.setUnstructuredMessage("Order " + order.getId());
+        String orderRef = order.getOrderNumber() != null ? order.getOrderNumber() : order.getId().toString();
+        bill.setUnstructuredMessage("Order " + orderRef);
 
         return bill;
     }

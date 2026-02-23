@@ -138,6 +138,16 @@ public class Order {
         this.id = id;
     }
 
+    @Transient
+    public String getOrderNumber() {
+        if (id == null) {
+            return null;
+        }
+        String rawId = id.toString();
+        int dashIndex = rawId.indexOf('-');
+        return dashIndex > 0 ? rawId.substring(0, dashIndex) : rawId;
+    }
+
     public QuoteSession getSourceQuoteSession() {
         return sourceQuoteSession;
     }

@@ -7,6 +7,7 @@ import java.util.UUID;
 
 public class OrderDto {
     private UUID id;
+    private String orderNumber;
     private String status;
     private String customerEmail;
     private String customerPhone;
@@ -26,6 +27,9 @@ public class OrderDto {
     // Getters and Setters
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
+
+    public String getOrderNumber() { return orderNumber; }
+    public void setOrderNumber(String orderNumber) { this.orderNumber = orderNumber; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }

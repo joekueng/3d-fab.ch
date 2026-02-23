@@ -57,7 +57,7 @@
           <div class="bank-details">
             <p><strong>{{ 'PAYMENT.BANK_OWNER' | translate }}:</strong> 3D Fab Switzerland</p>
             <p><strong>{{ 'PAYMENT.BANK_IBAN' | translate }}:</strong> CH98 0000 0000 0000 0000 0</p>
-            <p><strong>{{ 'PAYMENT.BANK_REF' | translate }}:</strong> {{ o.id }}</p>
+            <p><strong>{{ 'PAYMENT.BANK_REF' | translate }}:</strong> {{ getDisplayOrderNumber(o) }}</p>
             <p class="billing-hint">{{ 'PAYMENT.BILLING_INFO_HINT' | translate }}</p>
 
             <div class="qr-bill-actions">
@@ -80,7 +80,7 @@
       <app-card class="sticky-card">
         <div class="card-header-simple">
           <h3>{{ 'PAYMENT.SUMMARY_TITLE' | translate }}</h3>
-          <p class="order-id">#{{ o.id.substring(0, 8) }}</p>
+          <p class="order-id">#{{ getDisplayOrderNumber(o) }}</p>
         </div>
 
         <div class="summary-totals">

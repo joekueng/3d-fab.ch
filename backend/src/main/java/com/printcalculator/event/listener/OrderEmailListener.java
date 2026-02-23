@@ -27,6 +27,9 @@ public class OrderEmailListener {
     @Value("${app.mail.admin.address:}")
     private String adminMailAddress;
 
+    @Value("${app.frontend.base-url:http://localhost:4200}")
+    private String frontendBaseUrl;
+
     @Async
     @EventListener
     public void handleOrderCreatedEvent(OrderCreatedEvent event) {
@@ -48,12 +51,14 @@ public class OrderEmailListener {
         Map<String, Object> templateData = new HashMap<>();
         templateData.put("customerName", order.getCustomer().getFirstName());
         templateData.put("orderId", order.getId());
+        templateData.put("orderNumber", getDisplayOrderNumber(order));
+        templateData.put("orderDetailsUrl", buildOrderDetailsUrl(order));
         templateData.put("orderDate", order.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
         templateData.put("totalCost", String.format("%.2f", order.getTotalChf()));
 
         emailNotificationService.sendEmail(
                 order.getCustomer().getEmail(),
-                "Conferma Ordine #" + order.getId() + " - 3D-Fab",
+                "Conferma Ordine #" + getDisplayOrderNumber(order) + " - 3D-Fab",
                 "order-confirmation",
                 templateData
         );
@@ -63,15 +68,30 @@ public class OrderEmailListener {
         Map<String, Object> templateData = new HashMap<>();
         templateData.put("customerName", order.getCustomer().getFirstName() + " " + order.getCustomer().getLastName());
         templateData.put("orderId", order.getId());
+        templateData.put("orderNumber", getDisplayOrderNumber(order));
+        templateData.put("orderDetailsUrl", buildOrderDetailsUrl(order));
         templateData.put("orderDate", order.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
         templateData.put("totalCost", String.format("%.2f", order.getTotalChf()));
         
         // Possiamo riutilizzare lo stesso template per ora o crearne uno ad-hoc in futuro
         emailNotificationService.sendEmail(
                 adminMailAddress,
-                "Nuovo Ordine Ricevuto #" + order.getId() + " - " + order.getCustomer().getLastName(),
+                "Nuovo Ordine Ricevuto #" + getDisplayOrderNumber(order) + " - " + order.getCustomer().getLastName(),
                 "order-confirmation", 
                 templateData
         );
+    }
+
+    private String getDisplayOrderNumber(Order order) {
+        String orderNumber = order.getOrderNumber();
+        if (orderNumber != null && !orderNumber.isBlank()) {
+            return orderNumber;
+        }
+        return order.getId() != null ? order.getId().toString() : "unknown";
+    }
+
+    private String buildOrderDetailsUrl(Order order) {
+        String baseUrl = frontendBaseUrl == null ? "" : frontendBaseUrl.replaceAll("/+$", "");
+        return baseUrl + "/ordine/" + order.getId();
     }
 }

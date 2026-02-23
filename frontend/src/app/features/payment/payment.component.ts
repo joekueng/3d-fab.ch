@@ -58,13 +58,16 @@ export class PaymentComponent implements OnInit {
   }
 
   downloadInvoice() {
-    if (!this.orderId) return;
-    this.quoteService.getOrderInvoice(this.orderId).subscribe({
+    const orderId = this.orderId;
+    if (!orderId) return;
+    this.quoteService.getOrderInvoice(orderId).subscribe({
       next: (blob) => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `invoice-${this.orderId}.pdf`;
+        const fallbackOrderNumber = this.extractOrderNumber(orderId);
+        const orderNumber = this.order()?.orderNumber ?? fallbackOrderNumber;
+        a.download = `invoice-${orderNumber}.pdf`;
         a.click();
         window.URL.revokeObjectURL(url);
       },
@@ -118,5 +121,19 @@ export class PaymentComponent implements OnInit {
       return;
     }
     this.router.navigate(['/order-confirmed', this.orderId]);
+  }
+
+  getDisplayOrderNumber(order: any): string {
+    if (order?.orderNumber) {
+      return order.orderNumber;
+    }
+    if (order?.id) {
+      return this.extractOrderNumber(order.id);
+    }
+    return 'N/A';
+  }
+
+  private extractOrderNumber(orderId: string): string {
+    return orderId.split('-')[0];
   }
 }

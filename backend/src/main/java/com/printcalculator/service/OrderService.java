@@ -231,7 +231,7 @@ public class OrderService {
             vars.put("sellerAddressLine2", "Sede Bienne, Svizzera");
             vars.put("sellerEmail", "info@3dfab.ch");
 
-            vars.put("invoiceNumber", "INV-" + order.getId().toString().substring(0, 8).toUpperCase());
+            vars.put("invoiceNumber", "INV-" + getDisplayOrderNumber(order).toUpperCase());
             vars.put("invoiceDate", order.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE));
             vars.put("dueDate", order.getCreatedAt().plusDays(7).format(DateTimeFormatter.ISO_LOCAL_DATE));
 
@@ -304,5 +304,13 @@ public class OrderService {
             return filename.substring(i + 1);
         }
         return "stl";
+    }
+
+    private String getDisplayOrderNumber(Order order) {
+        String orderNumber = order.getOrderNumber();
+        if (orderNumber != null && !orderNumber.isBlank()) {
+            return orderNumber;
+        }
+        return order.getId() != null ? order.getId().toString() : "unknown";
     }
 }

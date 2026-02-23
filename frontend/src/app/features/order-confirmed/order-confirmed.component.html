@@ -8,8 +8,8 @@
     <app-card class="status-card">
       <div class="status-badge">{{ 'ORDER_CONFIRMED.STATUS' | translate }}</div>
       <h2>{{ 'ORDER_CONFIRMED.HEADING' | translate }}</h2>
-      <p class="order-ref" *ngIf="orderId">
-        {{ 'ORDER_CONFIRMED.ORDER_REF' | translate }}: <strong>#{{ orderId.substring(0, 8) }}</strong>
+      <p class="order-ref" *ngIf="orderNumber">
+        {{ 'ORDER_CONFIRMED.ORDER_REF' | translate }}: <strong>#{{ orderNumber }}</strong>
       </p>
 
       <div class="message-block">

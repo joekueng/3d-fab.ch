@@ -29,8 +29,11 @@ public class DevEmailTestController {
     public ResponseEntity<String> testTemplate() {
         Context context = new Context();
         Map<String, Object> templateData = new HashMap<>();
+        UUID orderId = UUID.randomUUID();
         templateData.put("customerName", "Mario Rossi");
-        templateData.put("orderId", UUID.randomUUID());
+        templateData.put("orderId", orderId);
+        templateData.put("orderNumber", orderId.toString().split("-")[0]);
+        templateData.put("orderDetailsUrl", "https://tuosito.it/ordine/" + orderId);
         templateData.put("orderDate", OffsetDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
         templateData.put("totalCost", "45.50");
         

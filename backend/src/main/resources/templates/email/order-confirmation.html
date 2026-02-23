@@ -55,7 +55,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Grazie per il tuo ordine!</h1>
+            <h1>Grazie per il tuo ordine #<span th:text="${orderNumber}">00000000</span></h1>
         </div>
         <div class="content">
             <p>Ciao <span th:text="${customerName}">Cliente</span>,</p>
@@ -65,7 +65,7 @@
                 <table>
                     <tr>
                         <th>Numero Ordine:</th>
-                        <td th:text="${orderId}">#0000</td>
+                        <td th:text="${orderNumber}">00000000</td>
                     </tr>
                     <tr>
                         <th>Data:</th>
@@ -77,6 +77,11 @@
                     </tr>
                 </table>
             </div>
+
+            <p>
+                Clicca qui per i dettagli:
+                <a th:href="${orderDetailsUrl}" th:text="${orderDetailsUrl}">https://tuosito.it/ordine/00000000-0000-0000-0000-000000000000</a>
+            </p>
 
             <p>Se hai domande o dubbi, non esitare a contattarci.</p>
         </div>
