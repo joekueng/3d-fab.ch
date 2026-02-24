@@ -1,14 +1,14 @@
 <form [formGroup]="form" (ngSubmit)="onSubmit()">
-  
+
   <div class="section">
     @if (selectedFile()) {
       <div class="viewer-wrapper">
-         @if (isStepFile(selectedFile())) {
+         @if (!isStepFile(selectedFile())) {
              <div class="step-warning">
                  <p>{{ 'CALC.STEP_WARNING' | translate }}</p>
              </div>
          } @else {
-             <app-stl-viewer 
+             <app-stl-viewer
                 [file]="selectedFile()"
                 [color]="getSelectedFileColor()">
              </app-stl-viewer>
@@ -16,11 +16,11 @@
          <!-- Close button removed as requested -->
       </div>
     }
-    
+
     <!-- Initial Dropzone (Visible only when no files) -->
     @if (items().length === 0) {
-        <app-dropzone 
-            [label]="'CALC.UPLOAD_LABEL' | translate" 
+        <app-dropzone
+            [label]="'CALC.UPLOAD_LABEL' | translate"
             [subtext]="'CALC.UPLOAD_SUB' | translate"
             [accept]="acceptedFormats"
             [multiple]="true"
@@ -36,14 +36,14 @@
                     <div class="card-header">
                         <span class="file-name" [title]="item.file.name">{{ item.file.name }}</span>
                     </div>
-                    
+
                     <div class="card-body">
                         <div class="card-controls">
                              <div class="qty-group">
                                 <label>{{ 'CALC.QTY_SHORT' | translate }}</label>
-                                <input 
-                                    type="number" 
-                                    min="1" 
+                                <input
+                                    type="number"
+                                    min="1"
                                     [value]="item.quantity"
                                     (change)="updateItemQuantity(i, $event)"
                                     class="qty-input"
@@ -52,14 +52,14 @@
 
                             <div class="color-group">
                                 <label>{{ 'CALC.COLOR_LABEL' | translate }}</label>
-                                <app-color-selector 
-                                    [selectedColor]="item.color" 
+                                <app-color-selector
+                                    [selectedColor]="item.color"
                                     [variants]="currentMaterialVariants()"
                                     (colorSelected)="updateItemColor(i, $event)">
                                 </app-color-selector>
                             </div>
                         </div>
-                        
+
                         <button type="button" class="btn-remove" (click)="removeItem(i); $event.stopPropagation()" title="Remove file">
                             X
                         </button>
@@ -67,17 +67,17 @@
                 </div>
             }
         </div>
-        
+
         <!-- "Add Files" Button (Visible only when files exist) -->
         <div class="add-more-container">
             <input #additionalInput type="file" [accept]="acceptedFormats" multiple hidden (change)="onAdditionalFilesSelected($event)">
-            
+
             <button type="button" class="btn-add-more" (click)="additionalInput.click()">
                 + {{ 'CALC.ADD_FILES' | translate }}
             </button>
         </div>
     }
-    
+
     @if (items().length === 0 && form.get('itemsTouched')?.value) {
       <div class="error-msg">{{ 'CALC.ERR_FILE_REQUIRED' | translate }}</div>
     }
@@ -104,7 +104,7 @@
         ></app-select>
     }
   </div>
-  
+
   <!-- Global quantity removed, now per item -->
 
   @if (mode() === 'advanced') {
@@ -128,7 +128,7 @@
           type="number"
           [label]="'CALC.INFILL' | translate"
         ></app-input>
-        
+
         <div class="checkbox-row">
             <input type="checkbox" formControlName="supportEnabled" id="support">
             <label for="support">{{ 'CALC.SUPPORT' | translate }}</label>
@@ -153,9 +153,9 @@
         </div>
     }
 
-    <app-button 
-      type="submit" 
-      [disabled]="items().length === 0 || loading()" 
+    <app-button
+      type="submit"
+      [disabled]="items().length === 0 || loading()"
       [fullWidth]="true">
       {{ loading() ? (uploadProgress() < 100 ? ('CALC.UPLOADING' | translate) : ('CALC.PROCESSING' | translate)) : ('CALC.CALCULATE' | translate) }}
     </app-button>

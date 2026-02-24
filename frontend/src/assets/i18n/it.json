@@ -102,7 +102,7 @@
     "PROCESSING": "Elaborazione...",
     "NOTES_PLACEHOLDER": "Istruzioni specifiche...",
     "SETUP_NOTE": "* Include {{cost}} Costo di Setup",
-    "STEP_WARNING": "La visualizzazione 3D non è compatibile con i file STEP, ma il calcolatore funziona."
+    "STEP_WARNING": "La visualizzazione 3D non è compatibile con i file step e 3mf, ma il calcolatore funziona."
   },
   "QUOTE": {
     "PROCEED_ORDER": "Procedi con l'ordine",

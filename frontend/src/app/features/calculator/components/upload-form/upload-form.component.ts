@@ -34,7 +34,7 @@ export class UploadFormComponent implements OnInit {
   private fb = inject(FormBuilder);
 
   form: FormGroup;
-  
+
   items = signal<FormItem[]>([]);
   selectedFile = signal<File | null>(null);
 
@@ -44,13 +44,13 @@ export class UploadFormComponent implements OnInit {
   nozzleDiameters = signal<SimpleOption[]>([]);
   infillPatterns = signal<SimpleOption[]>([]);
   layerHeights = signal<SimpleOption[]>([]);
-  
+
   // Store full material options to lookup variants/colors if needed later
   private fullMaterialOptions: MaterialOption[] = [];
-  
+
   // Computed variants for valid material
   currentMaterialVariants = signal<VariantOption[]>([]);
-  
+
   private updateVariants() {
       const matCode = this.form.get('material')?.value;
       if (matCode && this.fullMaterialOptions.length > 0) {
@@ -66,7 +66,7 @@ export class UploadFormComponent implements OnInit {
   isStepFile(file: File | null): boolean {
       if (!file) return false;
       const name = file.name.toLowerCase();
-      return name.endsWith('.step') || name.endsWith('.stp');
+      return name.endsWith('.stl');
   }
 
   constructor() {
@@ -83,7 +83,7 @@ export class UploadFormComponent implements OnInit {
       infillPattern: ['grid'],
       supportEnabled: [false]
     });
-    
+
     // Listen to material changes to update variants
     this.form.get('material')?.valueChanges.subscribe(() => {
         this.updateVariants();
@@ -95,7 +95,7 @@ export class UploadFormComponent implements OnInit {
           next: (options: OptionsResponse) => {
               this.fullMaterialOptions = options.materials;
               this.updateVariants(); // Trigger initial update
-              
+
               this.materials.set(options.materials.map(m => ({ label: m.label, value: m.code })));
               this.qualities.set(options.qualities.map(q => ({ label: q.label, value: q.id })));
               this.infillPatterns.set(options.infillPatterns.map(p => ({ label: p.label, value: p.id })));
@@ -194,7 +194,7 @@ export class UploadFormComponent implements OnInit {
   getSelectedFileColor(): string {
       const file = this.selectedFile();
       if (!file) return '#facf0a'; // Default
-      
+
       const item = this.items().find(i => i.file === file);
       if (item) {
           const vars = this.currentMaterialVariants();
@@ -211,7 +211,7 @@ export class UploadFormComponent implements OnInit {
       const input = event.target as HTMLInputElement;
       let val = parseInt(input.value, 10);
       if (isNaN(val) || val < 1) val = 1;
-      
+
       this.items.update(current => {
           const updated = [...current];
           updated[index] = { ...updated[index], quantity: val };
@@ -255,33 +255,33 @@ export class UploadFormComponent implements OnInit {
 
   patchSettings(settings: any) {
       if (!settings) return;
-      // settings object matches keys in our form? 
+      // settings object matches keys in our form?
       // Session has: materialCode, etc. derived from QuoteSession entity properties
       // We need to map them if names differ.
-      
+
       const patch: any = {};
       if (settings.materialCode) patch.material = settings.materialCode;
-      
+
       // Heuristic for Quality if not explicitly stored as "draft/standard/high"
-      // But we stored it in session creation? 
+      // But we stored it in session creation?
       // QuoteSession entity does NOT store "quality" string directly, only layerHeight/infill.
       // So we might need to deduce it or just set Custom/Advanced.
       // But for Easy mode, we want to show "Standard" etc.
-      
+
       // Actually, let's look at what we have in QuoteSession.
-      // layerHeightMm, infillPercent, etc. 
+      // layerHeightMm, infillPercent, etc.
       // If we are in Easy mode, we might just set the "quality" dropdown to match approx?
       // Or if we stored "quality" in notes or separate field? We didn't.
-      
+
       // Let's try to reverse map or defaults.
       if (settings.layerHeightMm) {
           if (settings.layerHeightMm >= 0.28) patch.quality = 'draft';
           else if (settings.layerHeightMm <= 0.12) patch.quality = 'high';
           else patch.quality = 'standard';
-          
+
           patch.layerHeight = settings.layerHeightMm;
       }
-      
+
       if (settings.nozzleDiameterMm) patch.nozzleDiameter = settings.nozzleDiameterMm;
       if (settings.infillPercent) patch.infillDensity = settings.infillPercent;
       if (settings.infillPattern) patch.infillPattern = settings.infillPattern;
@@ -294,7 +294,7 @@ export class UploadFormComponent implements OnInit {
   onSubmit() {
     console.log('UploadFormComponent: onSubmit triggered');
     console.log('Form Valid:', this.form.valid, 'Items:', this.items().length);
-    
+
     if (this.form.valid && this.items().length > 0) {
       console.log('UploadFormComponent: Emitting submitRequest', this.form.value);
       this.submitRequest.emit({
