@@ -262,7 +262,7 @@
     "BANK_OWNER": "Titolare",
     "BANK_IBAN": "IBAN",
     "BANK_REF": "Riferimento",
-    "BILLING_INFO_HINT": "Aggiungi le informazioni uguali a quelle della fatturazione.",
+    "BILLING_INFO_HINT": "Abbiamo compilato i campi per te, per favore non modificare il motivo del pagamento",
     "DOWNLOAD_QR": "Scarica QR-Fattura (PDF)",
     "CONFIRM": "Ho completato il pagamento",
     "SUMMARY_TITLE": "Riepilogo Ordine",

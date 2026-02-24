@@ -49,7 +49,11 @@ export class CalculatorPageComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
         const sessionId = params['session'];
         if (sessionId) {
-            this.loadSession(sessionId);
+            // Avoid reloading if we just calculated this session
+            const currentRes = this.result();
+            if (!currentRes || currentRes.sessionId !== sessionId) {
+                this.loadSession(sessionId);
+            }
         }
     });
   }

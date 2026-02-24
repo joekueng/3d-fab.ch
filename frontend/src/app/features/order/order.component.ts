@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
 import { QuoteEstimatorService } from '../calculator/services/quote-estimator.service';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
 
 @Component({
@@ -18,6 +18,7 @@ export class OrderComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private quoteService = inject(QuoteEstimatorService);
+  private translate = inject(TranslateService);
 
   orderId: string | null = null;
   selectedPaymentMethod: 'twint' | 'bill' | null = 'twint';
@@ -99,6 +100,15 @@ export class OrderComponent implements OnInit {
 
   getTwintQrUrl(): string {
     return this.twintQrUrl() ?? '';
+  }
+
+  getTwintButtonImageUrl(): string {
+    const lang = this.translate.currentLang;
+    if (lang === 'de') {
+      return 'https://go.twint.ch/static/img/button_dark_de.svg';
+    }
+    // Default to EN for everything else (it, fr, en) as instructed or if not DE
+    return 'https://go.twint.ch/static/img/button_dark_en.svg';
   }
 
   onTwintQrError(): void {

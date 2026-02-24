@@ -21,14 +21,37 @@ public class TwintPaymentService {
         this.twintPaymentUrl = twintPaymentUrl;
     }
 
-    public String getTwintPaymentUrl() {
-        return twintPaymentUrl;
+    public String getTwintPaymentUrl(com.printcalculator.entity.Order order) {
+        StringBuilder urlBuilder = new StringBuilder(twintPaymentUrl);
+        
+        if (order != null) {
+            if (order.getTotalChf() != null) {
+                urlBuilder.append("&amount=").append(order.getTotalChf().toPlainString());
+            }
+            
+            String orderNumber = order.getOrderNumber();
+            if (orderNumber == null && order.getId() != null) {
+                orderNumber = order.getId().toString();
+            }
+            
+            if (orderNumber != null) {
+                try {
+                    urlBuilder.append("&trxInfo=").append(order.getId());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+        }
+        
+        return urlBuilder.toString();
     }
 
-    public byte[] generateQrPng(int sizePx) {
+    public byte[] generateQrPng(com.printcalculator.entity.Order order, int sizePx) {
         try {
+            String url = getTwintPaymentUrl(order);
             // Use High Error Correction for financial QR codes
-            QrCode qrCode = QrCode.encodeText(twintPaymentUrl, QrCode.Ecc.HIGH);
+            QrCode qrCode = QrCode.encodeText(url, QrCode.Ecc.HIGH);
             
             // Standard QR quiet zone is 4 modules
             int borderModules = 4;

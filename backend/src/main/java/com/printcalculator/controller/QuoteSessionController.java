@@ -71,7 +71,7 @@ public class QuoteSessionController {
         session.setPricingVersion("v1");
         // Default material/settings will be set when items are added or updated?
         // For now set safe defaults
-        session.setMaterialCode("pla_basic"); 
+        session.setMaterialCode("PLA"); 
         session.setSupportsEnabled(false);
         session.setCreatedAt(OffsetDateTime.now());
         session.setExpiresAt(OffsetDateTime.now().plusDays(30)); 
@@ -124,6 +124,15 @@ public class QuoteSessionController {
         try {
             // Apply Basic/Advanced Logic
             applyPrintSettings(settings);
+
+            // Update session global settings from the most recent item added
+            session.setMaterialCode(settings.getMaterial());
+            session.setNozzleDiameterMm(BigDecimal.valueOf(settings.getNozzleDiameter() != null ? settings.getNozzleDiameter() : 0.4));
+            session.setLayerHeightMm(BigDecimal.valueOf(settings.getLayerHeight() != null ? settings.getLayerHeight() : 0.2));
+            session.setInfillPattern(settings.getInfillPattern());
+            session.setInfillPercent(settings.getInfillDensity() != null ? settings.getInfillDensity().intValue() : 20);
+            session.setSupportsEnabled(settings.getSupportsEnabled() != null ? settings.getSupportsEnabled() : false);
+            sessionRepo.save(session);
 
             // REAL SLICING
             // 1. Pick Machine (default to first active or specific)

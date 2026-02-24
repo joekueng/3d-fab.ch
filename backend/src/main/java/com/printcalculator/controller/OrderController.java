@@ -212,15 +212,16 @@ public class OrderController {
 
     @GetMapping("/{orderId}/twint")
     public ResponseEntity<Map<String, String>> getTwintPayment(@PathVariable UUID orderId) {
-        if (!orderRepo.existsById(orderId)) {
+        Order order = orderRepo.findById(orderId).orElse(null);
+        if (order == null) {
             return ResponseEntity.notFound().build();
         }
 
-        byte[] qrPng = twintPaymentService.generateQrPng(360);
+        byte[] qrPng = twintPaymentService.generateQrPng(order, 360);
         String qrDataUri = "data:image/png;base64," + Base64.getEncoder().encodeToString(qrPng);
 
         Map<String, String> data = new HashMap<>();
-        data.put("paymentUrl", twintPaymentService.getTwintPaymentUrl());
+        data.put("paymentUrl", twintPaymentService.getTwintPaymentUrl(order));
         data.put("openUrl", "/api/orders/" + orderId + "/twint/open");
         data.put("qrImageUrl", "/api/orders/" + orderId + "/twint/qr");
         data.put("qrImageDataUri", qrDataUri);
@@ -229,12 +230,13 @@ public class OrderController {
 
     @GetMapping("/{orderId}/twint/open")
     public ResponseEntity<Void> openTwintPayment(@PathVariable UUID orderId) {
-        if (!orderRepo.existsById(orderId)) {
+        Order order = orderRepo.findById(orderId).orElse(null);
+        if (order == null) {
             return ResponseEntity.notFound().build();
         }
 
         return ResponseEntity.status(302)
-                .location(URI.create(twintPaymentService.getTwintPaymentUrl()))
+                .location(URI.create(twintPaymentService.getTwintPaymentUrl(order)))
                 .build();
     }
 
@@ -243,12 +245,13 @@ public class OrderController {
             @PathVariable UUID orderId,
             @RequestParam(defaultValue = "320") int size
     ) {
-        if (!orderRepo.existsById(orderId)) {
+        Order order = orderRepo.findById(orderId).orElse(null);
+        if (order == null) {
             return ResponseEntity.notFound().build();
         }
 
         int normalizedSize = Math.max(200, Math.min(size, 600));
-        byte[] png = twintPaymentService.generateQrPng(normalizedSize);
+        byte[] png = twintPaymentService.generateQrPng(order, normalizedSize);
 
         return ResponseEntity.ok()
                 .contentType(MediaType.IMAGE_PNG)

@@ -215,7 +215,7 @@ export class QuoteEstimatorService {
                      
                      const settings = {
                          complexityMode: request.mode.toUpperCase(),
-                         material: this.mapMaterial(request.material),
+                         material: request.material,
                          quality: request.quality,
                          supportsEnabled: request.supportEnabled,
                          color: item.color || '#FFFFFF',
@@ -315,14 +315,6 @@ export class QuoteEstimatorService {
              observer.complete();
         };
     });
-  }
-
-  private mapMaterial(mat: string): string {
-    const m = mat.toUpperCase();
-    if (m.includes('PLA')) return 'pla_basic';
-    if (m.includes('PETG')) return 'petg_basic';
-    if (m.includes('TPU')) return 'tpu_95a';
-    return 'pla_basic';
   }
 
   // Consultation Data Transfer

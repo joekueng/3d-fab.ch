@@ -71,10 +71,17 @@
                 <img *ngIf="twintQrUrl()" class="twint-qr" [src]="getTwintQrUrl()" (error)="onTwintQrError()" alt="TWINT payment QR" />
                 <p>{{ 'PAYMENT.TWINT_DESC' | translate }}</p>
                 <p class="billing-hint">{{ 'PAYMENT.BILLING_INFO_HINT' | translate }}</p>
-                <div class="twint-mobile-action">
-                  <app-button (click)="openTwintPayment()" [fullWidth]="true">
-                    {{ 'PAYMENT.TWINT_OPEN' | translate }}
-                  </app-button>
+                <div class="twint-mobile-action twint-button-container">
+                  <button style="width: auto; height: 58px;
+border-radius: 6px;
+display: flex;
+justify-content: center;
+cursor: pointer;
+background-color: transparent;
+border: none;
+align-items: center;" (click)="openTwintPayment()">
+                    <img style="width: auto; height: 58px" alt="Embedded TWINT button" [src]="getTwintButtonImageUrl()"/>
+                  </button>
                 </div>
                 <p class="amount">{{ 'PAYMENT.TOTAL' | translate }}: {{ o.totalChf | currency:'CHF' }}</p>
               </div>

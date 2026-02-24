@@ -150,6 +150,8 @@
     width: 100%;
     max-width: 320px;
     margin-top: var(--space-3);
+    display: flex;
+    justify-content: center;
   }
 
   .amount {

@@ -15,6 +15,7 @@ public class PrintSettingsDto {
     private String quality;  // "draft", "standard", "high"
     
     // Advanced Mode (Optional in Basic)
+    private Double nozzleDiameter;
     private Double layerHeight;
     private Double infillDensity;
     private String infillPattern;
