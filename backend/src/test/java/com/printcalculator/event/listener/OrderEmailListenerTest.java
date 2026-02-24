@@ -56,7 +56,7 @@ class OrderEmailListenerTest {
 
         ReflectionTestUtils.setField(orderEmailListener, "adminMailEnabled", true);
         ReflectionTestUtils.setField(orderEmailListener, "adminMailAddress", "admin@printcalculator.local");
-        ReflectionTestUtils.setField(orderEmailListener, "frontendBaseUrl", "https://tuosito.it");
+        ReflectionTestUtils.setField(orderEmailListener, "frontendBaseUrl", "https://3d-fab.ch");
     }
 
     @Test
@@ -76,7 +76,7 @@ class OrderEmailListenerTest {
         assertEquals("John", customerData.get("customerName"));
         assertEquals(order.getId(), customerData.get("orderId"));
         assertEquals(order.getOrderNumber(), customerData.get("orderNumber"));
-        assertEquals("https://tuosito.it/ordine/" + order.getId(), customerData.get("orderDetailsUrl"));
+        assertEquals("https://3d-fab.ch/co/" + order.getId(), customerData.get("orderDetailsUrl"));
         assertEquals(order.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")), customerData.get("orderDate"));
         assertEquals("150.50", customerData.get("totalCost"));
 

@@ -552,7 +552,7 @@ CREATE TABLE IF NOT EXISTS payments
     payment_id              uuid PRIMARY KEY        DEFAULT gen_random_uuid(),
     order_id                uuid           NOT NULL REFERENCES orders (order_id) ON DELETE CASCADE,
 
-    method                  text           NOT NULL CHECK (method IN ('QR_BILL', 'BANK_TRANSFER', 'TWINT', 'CARD', 'OTHER')),
+    method                  text           NOT NULL CHECK (method IN ('QR_BILL', 'TWINT', 'OTHER')),
     status                  text           NOT NULL CHECK (status IN ('PENDING', 'REPORTED', 'RECEIVED', 'FAILED', 'CANCELLED', 'REFUNDED')),
 
     currency                char(3)        NOT NULL DEFAULT 'CHF',

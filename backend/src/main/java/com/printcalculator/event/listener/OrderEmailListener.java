@@ -122,6 +122,6 @@ public class OrderEmailListener {
 
     private String buildOrderDetailsUrl(Order order) {
         String baseUrl = frontendBaseUrl == null ? "" : frontendBaseUrl.replaceAll("/+$", "");
-        return baseUrl + "/ordine/" + order.getId();
+        return baseUrl + "/co/" + order.getId();
     }
 }

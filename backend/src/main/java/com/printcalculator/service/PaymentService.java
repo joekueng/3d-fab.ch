@@ -38,7 +38,8 @@ public class PaymentService {
 
         Payment payment = new Payment();
         payment.setOrder(order);
-        payment.setMethod(defaultMethod != null ? defaultMethod : "OTHER");
+        // Default to "OTHER" always, as payment method should only be set by the admin explicitly
+        payment.setMethod("OTHER");
         payment.setStatus("PENDING");
         payment.setCurrency(order.getCurrency() != null ? order.getCurrency() : "CHF");
         payment.setAmountChf(order.getTotalChf() != null ? order.getTotalChf() : BigDecimal.ZERO);
@@ -53,7 +54,7 @@ public class PaymentService {
                 .orElseThrow(() -> new RuntimeException("Order not found with id " + orderId));
 
         Payment payment = paymentRepo.findByOrder_Id(orderId)
-                .orElseThrow(() -> new RuntimeException("No active payment found for order " + orderId));
+                .orElseGet(() -> getOrCreatePaymentForOrder(order, "OTHER"));
 
         if (!"PENDING".equals(payment.getStatus())) {
             throw new IllegalStateException("Payment is not in PENDING state. Current state: " + payment.getStatus());
@@ -61,9 +62,10 @@ public class PaymentService {
 
         payment.setStatus("REPORTED");
         payment.setReportedAt(OffsetDateTime.now());
-        if (method != null && !method.isBlank()) {
-            payment.setMethod(method);
-        }
+        
+        // We intentionally do not update the payment method here based on user input,
+        // because the user cannot reliably determine the actual method without an integration.
+        // It will be updated by the backoffice admin manually.
 
         payment = paymentRepo.save(payment);
 

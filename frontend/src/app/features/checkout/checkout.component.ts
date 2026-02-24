@@ -193,8 +193,7 @@ export class CheckoutComponent implements OnInit {
 
     this.quoteService.createOrder(this.sessionId, orderRequest).subscribe({
       next: (order) => {
-        console.log('Order created', order);
-        this.router.navigate(['/payment', order.id]);
+        this.router.navigate(['/order', order.id]);
       },
       error: (err) => {
         console.error('Order creation failed', err);

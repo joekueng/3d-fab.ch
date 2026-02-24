@@ -8,19 +8,19 @@ import { TranslateModule } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
 
 @Component({
-  selector: 'app-payment',
+  selector: 'app-order',
   standalone: true,
   imports: [CommonModule, AppButtonComponent, AppCardComponent, TranslateModule],
-  templateUrl: './payment.component.html',
-  styleUrl: './payment.component.scss'
+  templateUrl: './order.component.html',
+  styleUrl: './order.component.scss'
 })
-export class PaymentComponent implements OnInit {
+export class OrderComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private quoteService = inject(QuoteEstimatorService);
 
   orderId: string | null = null;
-  selectedPaymentMethod: 'twint' | 'bill' | null = null;
+  selectedPaymentMethod: 'twint' | 'bill' | null = 'twint';
   order = signal<any>(null);
   loading = signal(true);
   error = signal<string | null>(null);

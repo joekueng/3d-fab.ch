@@ -1,358 +1,379 @@
 <!DOCTYPE html>
 <html lang="it" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="utf-8"/>
-  <style>
-    @page invoice { size: A4; margin: 14mm 14mm 12mm 14mm; }
-    @page qrpage { size: A4; margin: 0; }
+    <meta charset="utf-8"/>
+    <style>
+        @page invoice {
+            size: A4;
+            margin: 12mm 12mm 12mm 12mm;
+        }
 
-    body {
-      page: invoice;
-      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-      font-size: 9.5pt;
-      margin: 0;
-      padding: 0;
-      background: #fff;
-      color: #191919;
-      line-height: 1.35;
-    }
+        @page qrpage {
+            size: A4;
+            margin: 0;
+        }
 
-    .invoice-page {
-      page: invoice;
-      width: 100%;
-    }
+        *, *:before, *:after {
+            box-sizing: border-box;
+        }
 
-    .top-layout {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 8mm;
-    }
+        body {
+            page: invoice;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 8.5pt;
+            margin: 0;
+            padding: 0;
+            background: #fff;
+            color: #000;
+            line-height: 1.35;
+        }
 
-    .top-layout td {
-      vertical-align: top;
-      padding: 0;
-    }
+        .invoice-page {
+            page: invoice;
+            width: 100%;
+        }
 
-    .doc-title {
-      font-size: 18pt;
-      font-weight: 700;
-      margin: 0 0 1.5mm 0;
-      letter-spacing: 0.2px;
-    }
+        /* Top Header Layout */
+        .header-layout {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            margin-bottom: 25mm;
+        }
 
-    .doc-subtitle {
-      color: #4b4b4b;
-      font-size: 10pt;
-    }
+        .header-layout td {
+            vertical-align: top;
+            padding: 0;
+        }
 
-    .seller-block {
-      text-align: right;
-      line-height: 1.45;
-      width: 42%;
-    }
+        .logo-block {
+            width: 33%;
+            font-size: 20pt;
+            font-weight: bold;
+            color: #005eb8; /* Brand blue similar to reference */
+            letter-spacing: -0.5px;
+        }
 
-    .seller-name {
-      font-size: 11pt;
-      font-weight: 700;
-    }
+        .logo-d {
+            font-style: italic;
+            color: #d22630;
+            font-size: 22pt;
+            margin-right: 2px;
+        }
 
-    .meta-layout {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 8mm;
-    }
+        .seller-block {
+            width: 33%;
+            font-size: 9pt;
+            line-height: 1.4;
+        }
 
-    .meta-layout td {
-      vertical-align: top;
-      padding: 0;
-    }
+        .website-block {
+            width: 33%;
+            text-align: right;
+            font-size: 9pt;
+        }
 
-    .order-details {
-      width: 60%;
-      padding-right: 5mm;
-    }
+        /* Document Title */
+        .doc-title {
+            font-size: 20pt;
+            font-weight: normal;
+            margin: 0 0 10mm 0;
+            letter-spacing: -0.5px;
+        }
 
-    .customer-box {
-      width: 40%;
-      background: #f7f7f7;
-      border: 1px solid #e2e2e2;
-      padding: 3mm 3.2mm;
-    }
+        /* Meta and Customer Details Layout */
+        .details-layout {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            margin-bottom: 15mm;
+        }
 
-    .box-title {
-      font-size: 8.8pt;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-      color: #5a5a5a;
-      margin-bottom: 2mm;
-      font-weight: 700;
-    }
+        .details-layout td {
+            vertical-align: top;
+            padding: 0;
+        }
 
-    .details-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
+        .meta-container {
+            width: 50%;
+        }
 
-    .details-table td {
-      padding: 1.1mm 0;
-      border-bottom: 1px solid #ececec;
-      vertical-align: top;
-    }
+        .customer-container {
+            width: 50%;
+            font-size: 10pt;
+            line-height: 1.5;
+        }
 
-    .details-label {
-      color: #636363;
-      width: 56%;
-      white-space: nowrap;
-      padding-right: 3mm;
-    }
+        .meta-table {
+            border-collapse: collapse;
+            font-size: 8.5pt;
+        }
 
-    .details-value {
-      text-align: left;
-      font-weight: 600;
-    }
+        .meta-table td {
+            padding: 1.5mm 0;
+            vertical-align: top;
+        }
 
-    .line-items {
-      width: 100%;
-      border-collapse: collapse;
-      table-layout: fixed;
-      margin-top: 3mm;
-      border-top: 1px solid #cfcfcf;
-    }
+        .meta-label {
+            width: 45mm;
+            padding-right: 2mm;
+        }
 
-    .line-items th,
-    .line-items td {
-      border-bottom: 1px solid #dedede;
-      padding: 2.4mm 2mm;
-      vertical-align: top;
-      word-wrap: break-word;
-    }
+        .meta-value {
+            /* allow wrapping just in case */
+        }
+        
+        /* Line Items Table */
+        .line-items {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            margin-top: 5mm;
+            font-size: 8.5pt;
+        }
 
-    .line-items th {
-      text-align: left;
-      font-weight: 700;
-      background: #f2f2f2;
-      color: #2c2c2c;
-      font-size: 9pt;
-      text-transform: uppercase;
-      letter-spacing: 0.25px;
-    }
+        .line-items th,
+        .line-items td {
+            padding: 1.5mm 0;
+            vertical-align: top;
+        }
 
-    .line-items th:nth-child(1),
-    .line-items td:nth-child(1) {
-      width: 50%;
-    }
+        .line-items th {
+            text-align: left;
+            font-weight: normal;
+            border-bottom: 1pt solid #000;
+        }
 
-    .line-items th:nth-child(2),
-    .line-items td:nth-child(2) {
-      width: 10%;
-      text-align: right;
-      white-space: nowrap;
-    }
+        .line-items tbody td {
+            border-bottom: 0.5pt solid #e0e0e0;
+        }
 
-    .line-items th:nth-child(3),
-    .line-items td:nth-child(3) {
-      width: 20%;
-      text-align: right;
-      white-space: nowrap;
-    }
+        .line-items tbody tr:last-child td {
+            border-bottom: 1pt solid #000;
+        }
 
-    .line-items th:nth-child(4),
-    .line-items td:nth-child(4) {
-      width: 20%;
-      text-align: right;
-      white-space: nowrap;
-      font-weight: 600;
-    }
+        .line-items th.center,
+        .line-items td.center {
+            text-align: center;
+        }
 
-    .summary-layout {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 6mm;
-    }
+        .line-items th.right,
+        .line-items td.right {
+            text-align: right;
+        }
 
-    .summary-layout td {
-      vertical-align: top;
-      padding: 0;
-    }
+        .col-desc { width: 45%; }
+        .col-qty { width: 10%; }
+        .col-price { width: 22%; }
+        .col-total { width: 23%; }
+        
+        .item-desc {
+            padding-right: 4mm;
+        }
 
-    .notes {
-      width: 58%;
-      padding-right: 5mm;
-      color: #383838;
-      line-height: 1.45;
-    }
+        /* Totals Block */
+        .totals-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            margin-top: 0;
+            font-size: 8.5pt;
+        }
 
-    .notes .section-caption {
-      font-weight: 700;
-      margin: 0 0 1.2mm 0;
-      color: #2a2a2a;
-    }
+        .totals-table td {
+            padding: 1.5mm 0;
+            border-bottom: 0.5pt solid #000;
+        }
 
-    .totals {
-      width: 42%;
-      margin-left: auto;
-      border-collapse: collapse;
-    }
+        .totals-label {
+            text-align: left;
+        }
 
-    .totals td {
-      border: none;
-      padding: 1.3mm 0;
-    }
+        .totals-value {
+            text-align: right;
+            width: 30%;
+        }
+        
+        .totals-table tr.no-border td {
+            border-bottom: none;
+        }
 
-    .totals-label {
-      text-align: left;
-      color: #4a4a4a;
-    }
+        .summary-notes {
+            margin-top: 4mm;
+            padding-bottom: 4mm;
+            border-bottom: 1pt solid #000;
+        }
 
-    .totals-value {
-      text-align: right;
-      white-space: nowrap;
-      font-weight: 600;
-    }
+        /* Footer Notes Layout */
+        .footer-layout {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            margin-top: 15mm;
+            font-size: 8.5pt;
+        }
 
-    .total-strong td {
-      font-size: 10.5pt;
-      font-weight: 700;
-      padding-top: 2mm;
-      border-top: 1px solid #cfcfcf;
-    }
+        .footer-layout td {
+            vertical-align: top;
+            padding: 0 0 3mm 0;
+        }
 
-    .due-row td {
-      font-size: 10pt;
-      font-weight: 700;
-      border-top: 1px solid #cfcfcf;
-      padding-top: 2.2mm;
-    }
+        .footer-label {
+            width: 25%;
+            font-weight: normal;
+        }
 
-    .qr-only-page {
-      page: qrpage;
-      position: relative;
-      width: 210mm;
-      height: 297mm;
-      background: #fff;
-      page-break-before: always;
-    }
+        .footer-text {
+            width: 75%;
+            line-height: 1.4;
+        }
 
-    .qr-bill-bottom {
-      position: absolute;
-      left: 0;
-      bottom: 0;
-      width: 210mm;
-      height: 105mm;
-      overflow: hidden;
-      background: #fff;
-    }
+        /* QR Page */
+        .qr-only-page {
+            page: qrpage;
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            page-break-before: always;
+        }
 
-    .qr-bill-bottom svg {
-      width: 210mm !important;
-      height: 105mm !important;
-      display: block;
-    }
-  </style>
+        .qr-bill-bottom {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 105mm;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .qr-bill-bottom svg {
+            width: 100% !important;
+            height: 105mm !important;
+            display: block;
+        }
+    </style>
 </head>
 <body>
 <div class="invoice-page">
 
-<table class="top-layout">
-  <tr>
-    <td>
-      <div class="doc-title">Conferma ordine</div>
-      <div class="doc-subtitle">Ricevuta semplificata</div>
-    </td>
-    <td class="seller-block">
-      <div class="seller-name" th:text="${sellerDisplayName}">3D Fab Switzerland</div>
-      <div th:text="${sellerAddressLine1}">Sede Ticino, Svizzera</div>
-      <div th:text="${sellerAddressLine2}">Sede Bienne, Svizzera</div>
-      <div th:text="${sellerEmail}">info@3dfab.ch</div>
-    </td>
-  </tr>
-</table>
+    <!-- Header -->
+    <table class="header-layout">
+        <tr>
+            <td class="logo-block">
+                3D-fab.ch
+            </td>
+            <td class="seller-block">
+                <div th:text="${sellerDisplayName}">3D Fab Switzerland</div>
+                <div th:text="${sellerAddressLine1}">Sede Ticino, Svizzera</div>
+                <div th:text="${sellerAddressLine2}">Sede Bienne, Svizzera</div>
+            </td>
+            <td class="website-block">
+                www.3d-fab.ch
+            </td>
+        </tr>
+    </table>
 
-<table class="meta-layout">
-  <tr>
-    <td class="order-details">
-      <table class="details-table">
-        <tr>
-          <td class="details-label">Data ordine / fattura</td>
-          <td class="details-value" th:text="${invoiceDate}">2026-02-13</td>
-        </tr>
-        <tr>
-          <td class="details-label">Numero documento</td>
-          <td class="details-value" th:text="${invoiceNumber}">INV-2026-000123</td>
-        </tr>
-        <tr>
-          <td class="details-label">Data di scadenza</td>
-          <td class="details-value" th:text="${dueDate}">2026-02-20</td>
-        </tr>
-        <tr>
-          <td class="details-label">Valuta</td>
-          <td class="details-value">CHF</td>
-        </tr>
-      </table>
-    </td>
-    <td class="customer-box">
-      <div class="box-title">Cliente</div>
-      <div th:text="${buyerDisplayName}">Cliente SA</div>
-      <div th:text="${buyerAddressLine1}">Via Cliente 7</div>
-      <div th:text="${buyerAddressLine2}">8000 Zürich, CH</div>
-    </td>
-  </tr>
-</table>
+    <!-- Document Title -->
+    <div class="doc-title">
+        Conferma dell'ordine <span th:text="${invoiceNumber}">141052743</span>
+    </div>
 
-<table class="line-items">
-  <thead>
-    <tr>
-      <th>Descrizione</th>
-      <th>Qtà</th>
-      <th>Prezzo unit.</th>
-      <th>Totale</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr th:each="lineItem : ${invoiceLineItems}">
-      <td th:text="${lineItem.description}">Stampa 3D pezzo X</td>
-      <td th:text="${lineItem.quantity}">1</td>
-      <td th:text="${lineItem.unitPriceFormatted}">CHF 10.00</td>
-      <td th:text="${lineItem.lineTotalFormatted}">CHF 10.00</td>
-    </tr>
-  </tbody>
-</table>
-
-<table class="summary-layout">
-  <tr>
-    <td class="notes">
-      <div class="section-caption">Informazioni</div>
-      <div th:text="${paymentTermsText}">
-        Appena riceviamo il pagamento l'ordine entra nella coda di stampa. Grazie per la fiducia.
-      </div>
-      <div style="margin-top: 2.5mm;">
-        Verifica i dettagli dell'ordine al ricevimento. Per assistenza, rispondi alla nostra email di conferma.
-      </div>
-    </td>
-    <td>
-      <table class="totals">
+    <!-- Details block (Meta and Customer) -->
+    <table class="details-layout">
         <tr>
-          <td class="totals-label">Subtotale</td>
-          <td class="totals-value" th:text="${subtotalFormatted}">CHF 10.00</td>
+            <td class="meta-container">
+                <table class="meta-table">
+                    <tr>
+                        <td class="meta-label">Data dell'ordine / fattura</td>
+                        <td class="meta-value" th:text="${invoiceDate}">07.03.2025</td>
+                    </tr>
+                    <tr>
+                        <td class="meta-label">Numero documento</td>
+                        <td class="meta-value" th:text="${invoiceNumber}">INV-2026-000123</td>
+                    </tr>
+                    <tr>
+                        <td class="meta-label">Data di scadenza</td>
+                        <td class="meta-value" th:text="${dueDate}">07.03.2025</td>
+                    </tr>
+                    <tr>
+                        <td class="meta-label">Metodo di pagamento</td>
+                        <td class="meta-value">QR / Bonifico oppure TWINT</td>
+                    </tr>
+                    <tr>
+                        <td class="meta-label">Valuta</td>
+                        <td class="meta-value">CHF</td>
+                    </tr>
+                </table>
+            </td>
+            <td class="customer-container">
+                <div th:text="${buyerDisplayName}">Joe Küng</div>
+                <div th:text="${buyerAddressLine1}">Via G.Pioda, 29a</div>
+                <div th:text="${buyerAddressLine2}">6710 biasca</div>
+                <div>Svizzera</div>
+            </td>
         </tr>
-        <tr class="total-strong">
-          <td class="totals-label">Totale ordine</td>
-          <td class="totals-value" th:text="${grandTotalFormatted}">CHF 10.00</td>
+    </table>
+
+    <!-- Items Table -->
+    <table class="line-items">
+        <thead>
+        <tr>
+            <th class="col-desc">Descrizione</th>
+            <th class="col-qty center">Quantità</th>
+            <th class="col-price right">Prezzo unitario</th>
+            <th class="col-total right">Prezzo incl.</th>
         </tr>
-        <tr class="due-row">
-          <td class="totals-label">Importo dovuto</td>
-          <td class="totals-value" th:text="${grandTotalFormatted}">CHF 10.00</td>
+        </thead>
+        <tbody>
+        <tr th:each="lineItem : ${invoiceLineItems}">
+            <td class="item-desc" th:text="${lineItem.description}">Apple iPhone 16 Pro</td>
+            <td class="center" th:text="${lineItem.quantity}">1</td>
+            <td class="right" th:text="${lineItem.unitPriceFormatted}">968.55</td>
+            <td class="right" th:text="${lineItem.lineTotalFormatted}">1'047.00</td>
         </tr>
-      </table>
-    </td>
-  </tr>
-</table>
+        </tbody>
+    </table>
+
+    <!-- Totals -->
+    <table class="totals-table">
+        <tr>
+            <td class="totals-label">Importo totale</td>
+            <td class="totals-value" th:text="${subtotalFormatted}">1'012.86</td>
+        </tr>
+        <tr>
+            <td class="totals-label">Totale di tutte le consegne e di tutti i servizi CHF</td>
+            <td class="totals-value" th:text="${grandTotalFormatted}">1'094.90</td>
+        </tr>
+        <tr class="no-border">
+            <td class="totals-label">Importo dovuto</td>
+            <td class="totals-value" th:text="${grandTotalFormatted}">1'094.90</td>
+        </tr>
+    </table>
+
+    <!-- Footer Notes -->
+    <table class="footer-layout">
+        <tr>
+            <td class="footer-label">Informazioni</td>
+            <td class="footer-text" th:text="${paymentTermsText}">
+                Appena riceviamo il pagamento l'ordine entra nella coda di stampa. Grazie per la fiducia.
+            </td>
+        </tr>
+        <tr>
+            <td class="footer-label">Generale</td>
+            <td class="footer-text">
+                Si applicano le nostre condizioni generali di contratto. Verifica i dettagli dell'ordine al ricevimento. Per assistenza, rispondi alla nostra email di conferma.
+            </td>
+        </tr>
+    </table>
 
 </div>
 
-<div class="qr-only-page">
-  <div class="qr-bill-bottom" th:utext="${qrBillSvg}">
-  </div>
+<!-- QR Bill Page (only renders if QR data is passed) -->
+<div class="qr-only-page" th:if="${qrBillSvg != null}">
+    <div class="qr-bill-bottom" th:utext="${qrBillSvg}">
+    </div>
 </div>
 
 </body>

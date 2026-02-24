@@ -73,8 +73,15 @@
   "SHOP": {
     "TITLE": "Technical solutions",
     "SUBTITLE": "Ready-made products solving practical problems",
+    "WIP_EYEBROW": "Work in progress",
+    "WIP_TITLE": "Shop under construction",
+    "WIP_SUBTITLE": "We are building a curated technical shop with products that are genuinely useful and field-tested.",
+    "WIP_CTA_CALC": "Check our calculator",
+    "WIP_RETURN_LATER": "Come back soon",
+    "WIP_NOTE": "We care about doing this right. In the meantime, you can get instant pricing and lead time from our calculator.",
     "ADD_CART": "Add to Cart",
-    "BACK": "Back to Shop"
+    "BACK": "Back to Shop",
+    "NOT_FOUND": "Product not found."
   },
   "ABOUT": {
     "TITLE": "About Us",
@@ -188,7 +195,7 @@
     "BANK_REF": "Reference",
     "BILLING_INFO_HINT": "Add the same information used in billing.",
     "DOWNLOAD_QR": "Download QR-Invoice (PDF)",
-    "CONFIRM": "Confirm Order",
+    "CONFIRM": "I have completed the payment",
     "SUMMARY_TITLE": "Order Summary",
     "SUBTOTAL": "Subtotal",
     "SHIPPING": "Shipping",
@@ -197,13 +204,15 @@
     "LOADING": "Loading order details...",
     "METHOD_TWINT": "TWINT",
     "METHOD_BANK": "Bank Transfer / QR",
-    "STATUS_REPORTED_TITLE": "Payment Reported",
-    "STATUS_REPORTED_DESC": "We are verifying your transaction. Your order will move to production as soon as the payment is confirmed.",
-    "IN_VERIFICATION": "Verifying Payment"
+    "STATUS_REPORTED_TITLE": "Order in progress",
+    "STATUS_REPORTED_DESC": "We have registered your operation. Your order will soon move to production.",
+    "IN_VERIFICATION": "Payment Reported"
   },
   "TRACKING": {
+    "TITLE": "Order Status",
+    "SUBTITLE": "Check the status of your order and manage the payment if necessary.",
     "STEP_PENDING": "Pending",
-    "STEP_REPORTED": "Verifying",
+    "STEP_REPORTED": "Received",
     "STEP_PRODUCTION": "Production",
     "STEP_SHIPPED": "Shipped"
   },

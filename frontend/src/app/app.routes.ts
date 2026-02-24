@@ -30,16 +30,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/checkout/checkout.component').then(m => m.CheckoutComponent)
       },
       {
-        path: 'payment/:orderId',
-        loadComponent: () => import('./features/payment/payment.component').then(m => m.PaymentComponent)
+        path: 'order/:orderId',
+        loadComponent: () => import('./features/order/order.component').then(m => m.OrderComponent)
       },
       {
-        path: 'ordine/:orderId',
-        loadComponent: () => import('./features/payment/payment.component').then(m => m.PaymentComponent)
-      },
-      {
-        path: 'order-confirmed/:orderId',
-        loadComponent: () => import('./features/order-confirmed/order-confirmed.component').then(m => m.OrderConfirmedComponent)
+        path: 'co/:orderId',
+        loadComponent: () => import('./features/order/order.component').then(m => m.OrderComponent)
       },
       {
         path: '',

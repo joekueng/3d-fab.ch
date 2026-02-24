@@ -234,3 +234,101 @@
   margin-top: var(--space-12);
   text-align: center;
 }
+
+.status-timeline {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-8);
+  position: relative;
+  /* padding: var(--space-6); */ /* Removed if it was here to match non-card layout */
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 15px;
+    left: 12.5%;
+    right: 12.5%;
+    height: 2px;
+    background: var(--color-border);
+    z-index: 1;
+  }
+}
+
+.timeline-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  text-align: center;
+
+  .circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--color-neutral-100);
+    border: 2px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    margin-bottom: var(--space-2);
+    color: var(--color-text-muted);
+    transition: all 0.3s ease;
+  }
+
+  .label {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    font-weight: 500;
+  }
+
+  &.active {
+    .circle {
+      border-color: var(--color-brand);
+      background: var(--color-bg);
+      color: var(--color-brand);
+    }
+    .label {
+      color: var(--color-text);
+      font-weight: 600;
+    }
+  }
+
+  &.completed {
+    .circle {
+      background: var(--color-brand);
+      border-color: var(--color-brand);
+      color: white;
+    }
+    .label {
+      color: var(--color-text);
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .status-timeline {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+    
+    &::before {
+      top: 10px;
+      bottom: 10px;
+      left: 15px;
+      width: 2px;
+      height: auto;
+    }
+
+    .timeline-step {
+      flex-direction: row;
+      gap: var(--space-3);
+      
+      .circle {
+        margin-bottom: 0;
+      }
+    }
+  }
+}
