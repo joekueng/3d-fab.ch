@@ -81,6 +81,14 @@ public class OrderService {
 
         customer.setPhone(request.getCustomer().getPhone());
         customer.setCustomerType(request.getCustomer().getCustomerType());
+        
+        if (request.getBillingAddress() != null) {
+            customer.setFirstName(request.getBillingAddress().getFirstName());
+            customer.setLastName(request.getBillingAddress().getLastName());
+            customer.setCompanyName(request.getBillingAddress().getCompanyName());
+            customer.setContactPerson(request.getBillingAddress().getContactPerson());
+        }
+        
         customer.setUpdatedAt(OffsetDateTime.now());
         customerRepo.save(customer);
 

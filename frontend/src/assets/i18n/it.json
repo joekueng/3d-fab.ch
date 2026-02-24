@@ -274,7 +274,7 @@
     "METHOD_TWINT": "TWINT",
     "METHOD_BANK": "Fattura QR / Bonifico",
     "STATUS_REPORTED_TITLE": "Ordine in lavorazione",
-    "STATUS_REPORTED_DESC": "Abbiamo registrato la tua operazione. L'ordine entrerà a breve in produzione.",
+    "STATUS_REPORTED_DESC": "Abbiamo registrato la tua operazione. Appena confermiamo il pagamento l'ordine entrà in produzione",
     "IN_VERIFICATION": "Pagamento Segnalato"
   },
   "TRACKING": {
