@@ -10,8 +10,8 @@ import { CommonModule } from '@angular/common';
 })
 export class AppDropzoneComponent {
   label = input<string>('Drop files here or click to upload');
-  subtext = input<string>('Supports .stl, .obj');
-  accept = input<string>('.stl,.obj');
+  subtext = input<string>('Supports .stl, .3mf, .step');
+  accept = input<string>('.stl,.3mf,.step,.stp');
   multiple = input<boolean>(true);
   
   filesDropped = output<File[]>();

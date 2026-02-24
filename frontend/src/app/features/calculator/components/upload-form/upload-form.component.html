@@ -3,10 +3,16 @@
   <div class="section">
     @if (selectedFile()) {
       <div class="viewer-wrapper">
-         <app-stl-viewer 
-            [file]="selectedFile()"
-            [color]="getSelectedFileColor()">
-         </app-stl-viewer>
+         @if (isStepFile(selectedFile())) {
+             <div class="step-warning">
+                 <p>{{ 'CALC.STEP_WARNING' | translate }}</p>
+             </div>
+         } @else {
+             <app-stl-viewer 
+                [file]="selectedFile()"
+                [color]="getSelectedFileColor()">
+             </app-stl-viewer>
+         }
          <!-- Close button removed as requested -->
       </div>
     }

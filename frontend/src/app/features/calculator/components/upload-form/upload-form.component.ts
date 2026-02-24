@@ -61,7 +61,13 @@ export class UploadFormComponent implements OnInit {
       }
   }
 
-  acceptedFormats = '.stl,.3mf,.step,.stp,.obj,.amf,.ply,.igs,.iges';
+  acceptedFormats = '.stl,.3mf,.step,.stp';
+
+  isStepFile(file: File | null): boolean {
+      if (!file) return false;
+      const name = file.name.toLowerCase();
+      return name.endsWith('.step') || name.endsWith('.stp');
+  }
 
   constructor() {
     this.form = this.fb.group({

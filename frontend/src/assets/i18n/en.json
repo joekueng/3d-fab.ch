@@ -43,7 +43,7 @@
     "MODE_EASY": "Quick",
     "MODE_ADVANCED": "Advanced",
     "UPLOAD_LABEL": "Drag your 3D file here",
-    "UPLOAD_SUB": "Supports STL, 3MF, STEP, OBJ up to 50MB",
+    "UPLOAD_SUB": "Supports STL, 3MF, STEP up to 50MB",
     "MATERIAL": "Material",
     "QUALITY": "Quality",
     "QUANTITY": "Quantity",
@@ -68,7 +68,8 @@
     "BENEFITS_1": "Automatic quote with instant cost and time",
     "BENEFITS_2": "Selected materials and quality control",
     "BENEFITS_3": "CAD consultation if file needs modifications",
-    "ERR_FILE_REQUIRED": "File is required."
+    "ERR_FILE_REQUIRED": "File is required.",
+    "STEP_WARNING": "3D preview is not available for STEP files, but the calculator works perfectly. You can proceed with the quotation."
   },
   "SHOP": {
     "TITLE": "Technical solutions",
@@ -140,7 +141,7 @@
     "COMPANY_NAME": "Company Name",
     "REF_PERSON": "Reference Person",
     "UPLOAD_LABEL": "Attachments",
-    "UPLOAD_HINT": "Max 15 files. Supported: Images, PDF, STL, STEP, 3MF, OBJ",
+    "UPLOAD_HINT": "Max 15 files. Supported: Images, PDF, STL, STEP, 3MF",
     "DROP_FILES": "Drop files here or click to upload",
     "PLACEHOLDER_NAME": "Your Name",
     "PLACEHOLDER_EMAIL": "your@email.com",

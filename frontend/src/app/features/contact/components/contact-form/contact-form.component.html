@@ -51,7 +51,7 @@
       <div class="drop-zone" (click)="fileInput.click()"
            (dragover)="onDragOver($event)" (drop)="onDrop($event)">
         <input #fileInput type="file" multiple (change)="onFileSelected($event)" hidden
-               accept=".jpg,.jpeg,.png,.pdf,.stl,.step,.stp,.3mf,.obj">
+               accept=".jpg,.jpeg,.png,.pdf,.stl,.step,.stp,.3mf">
         <p>{{ 'CONTACT.DROP_FILES' | translate }}</p>
       </div>
 

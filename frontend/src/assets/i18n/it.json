@@ -58,14 +58,14 @@
   },
   "CALC": {
     "TITLE": "Calcola Preventivo 3D",
-    "SUBTITLE": "Carica il tuo file 3D (STL, 3MF, STEP...) e ricevi una stima immediata di costi e tempi di stampa.",
+    "SUBTITLE": "Carica il tuo file 3D (STL, 3MF, STEP), imposta la qualtà, colore e calcola immediatamente prezzo e tempi.",
     "CTA_START": "Inizia Ora",
     "BUSINESS": "Aziende",
     "PRIVATE": "Privati",
     "MODE_EASY": "Base",
     "MODE_ADVANCED": "Avanzata",
     "UPLOAD_LABEL": "Trascina il tuo file 3D qui",
-    "UPLOAD_SUB": "Supportiamo STL, 3MF, STEP, OBJ fino a 50MB",
+    "UPLOAD_SUB": "Supportiamo STL, 3MF, STEP fino a 50MB",
     "MATERIAL": "Materiale",
     "QUALITY": "Qualità",
     "PRINT_SPEED": "Velocità di Stampa",
@@ -101,7 +101,8 @@
     "UPLOADING": "Caricamento...",
     "PROCESSING": "Elaborazione...",
     "NOTES_PLACEHOLDER": "Istruzioni specifiche...",
-    "SETUP_NOTE": "* Include {{cost}} Costo di Setup"
+    "SETUP_NOTE": "* Include {{cost}} Costo di Setup",
+    "STEP_WARNING": "La visualizzazione 3D non è compatibile con i file STEP, ma il calcolatore funziona."
   },
   "QUOTE": {
     "PROCEED_ORDER": "Procedi con l'ordine",
@@ -203,7 +204,7 @@
     "COMPANY_NAME": "Ragione Sociale",
     "REF_PERSON": "Persona di Riferimento",
     "UPLOAD_LABEL": "Allegati",
-    "UPLOAD_HINT": "Max 15 file. Supportati: Immagini, PDF, STL, STEP, 3MF, OBJ",
+    "UPLOAD_HINT": "Max 15 file. Supportati: Immagini, PDF, STL, STEP, 3MF",
     "DROP_FILES": "Trascina qui i file o clicca per caricare",
     "PLACEHOLDER_NAME": "Il tuo nome",
     "PLACEHOLDER_EMAIL": "tuo@email.com",
