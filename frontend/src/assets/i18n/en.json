@@ -199,6 +199,7 @@
     "BANK_REF": "Reference",
     "BILLING_INFO_HINT": "Add the same information used in billing.",
     "DOWNLOAD_QR": "Download QR-Invoice (PDF)",
+    "DOWNLOAD_CONFIRMATION": "Download Confirmation (PDF)",
     "CONFIRM": "I have completed the payment",
     "SUMMARY_TITLE": "Order Summary",
     "SUBTOTAL": "Subtotal",

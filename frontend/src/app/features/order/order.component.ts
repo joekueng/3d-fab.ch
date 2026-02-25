@@ -58,21 +58,21 @@ export class OrderComponent implements OnInit {
     this.selectedPaymentMethod = method;
   }
 
-  downloadInvoice() {
+  downloadQrInvoice() {
     const orderId = this.orderId;
     if (!orderId) return;
-    this.quoteService.getOrderInvoice(orderId).subscribe({
+    this.quoteService.getOrderConfirmation(orderId).subscribe({
       next: (blob) => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         const fallbackOrderNumber = this.extractOrderNumber(orderId);
         const orderNumber = this.order()?.orderNumber ?? fallbackOrderNumber;
-        a.download = `invoice-${orderNumber}.pdf`;
+        a.download = `qr-invoice-${orderNumber}.pdf`;
         a.click();
         window.URL.revokeObjectURL(url);
       },
-      error: (err) => console.error('Failed to download invoice', err)
+      error: (err) => console.error('Failed to download QR invoice', err)
     });
   }
 

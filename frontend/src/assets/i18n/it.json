@@ -271,6 +271,7 @@
     "BANK_REF": "Riferimento",
     "BILLING_INFO_HINT": "Abbiamo compilato i campi per te, per favore non modificare il motivo del pagamento",
     "DOWNLOAD_QR": "Scarica QR-Fattura (PDF)",
+    "DOWNLOAD_CONFIRMATION": "Scarica Conferma (PDF)",
     "CONFIRM": "Ho completato il pagamento",
     "SUMMARY_TITLE": "Riepilogo Ordine",
     "SUBTOTAL": "Subtotale",

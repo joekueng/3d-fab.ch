@@ -3,6 +3,7 @@ package com.printcalculator.service;
 import com.printcalculator.entity.Order;
 import com.printcalculator.entity.Payment;
 import com.printcalculator.event.PaymentReportedEvent;
+import com.printcalculator.event.PaymentConfirmedEvent;
 import com.printcalculator.repository.OrderRepository;
 import com.printcalculator.repository.PaymentRepository;
 import org.springframework.context.ApplicationEventPublisher;
@@ -70,6 +71,30 @@ public class PaymentService {
         payment = paymentRepo.save(payment);
 
         eventPublisher.publishEvent(new PaymentReportedEvent(this, order, payment));
+
+        return payment;
+    }
+
+    @Transactional
+    public Payment confirmPayment(UUID orderId, String method) {
+        Order order = orderRepo.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found with id " + orderId));
+
+        Payment payment = paymentRepo.findByOrder_Id(orderId)
+                .orElseGet(() -> getOrCreatePaymentForOrder(order, method != null ? method : "OTHER"));
+
+        payment.setStatus("COMPLETED");
+        if (method != null && !method.isBlank()) {
+            payment.setMethod(method.toUpperCase());
+        }
+        payment.setReceivedAt(OffsetDateTime.now());
+        payment = paymentRepo.save(payment);
+
+        order.setStatus("IN_PRODUCTION");
+        order.setPaidAt(OffsetDateTime.now());
+        orderRepo.save(order);
+
+        eventPublisher.publishEvent(new PaymentConfirmedEvent(this, order, payment));
 
         return payment;
     }

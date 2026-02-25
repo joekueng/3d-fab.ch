@@ -170,6 +170,16 @@ export class QuoteEstimatorService {
       });
   }
 
+  getOrderConfirmation(orderId: string): Observable<Blob> {
+      const headers: any = {};
+      // @ts-ignore
+      if (environment.basicAuth) headers['Authorization'] = 'Basic ' + btoa(environment.basicAuth);
+      return this.http.get(`${environment.apiUrl}/api/orders/${orderId}/confirmation`, {
+          headers,
+          responseType: 'blob'
+      });
+  }
+
   getTwintPayment(orderId: string): Observable<any> {
       const headers: any = {};
       // @ts-ignore

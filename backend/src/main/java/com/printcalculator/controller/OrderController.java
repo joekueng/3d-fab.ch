@@ -140,72 +140,30 @@ public class OrderController {
         return getOrder(orderId);
     }
 
+    @GetMapping("/{orderId}/confirmation")
+    public ResponseEntity<byte[]> getConfirmation(@PathVariable UUID orderId) {
+        return generateDocument(orderId, true);
+    }
+
     @GetMapping("/{orderId}/invoice")
     public ResponseEntity<byte[]> getInvoice(@PathVariable UUID orderId) {
+        // Paid invoices are sent by email after back-office payment confirmation.
+        // The public endpoint must not expose a "paid" invoice download.
+        return ResponseEntity.notFound().build();
+    }
+
+    private ResponseEntity<byte[]> generateDocument(UUID orderId, boolean isConfirmation) {
         Order order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
         List<OrderItem> items = orderItemRepo.findByOrder_Id(orderId);
+        Payment payment = paymentRepo.findByOrder_Id(orderId).orElse(null);
 
-        Map<String, Object> vars = new HashMap<>();
-        vars.put("sellerDisplayName", "3D Fab Switzerland");
-        vars.put("sellerAddressLine1", "Sede Ticino, Svizzera");
-        vars.put("sellerAddressLine2", "Sede Bienne, Svizzera");
-        vars.put("sellerEmail", "info@3dfab.ch");
-
-        vars.put("invoiceNumber", "INV-" + getDisplayOrderNumber(order).toUpperCase());
-        vars.put("invoiceDate", order.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE));
-        vars.put("dueDate", order.getCreatedAt().plusDays(7).format(DateTimeFormatter.ISO_LOCAL_DATE));
-
-        String buyerName = order.getBillingCustomerType().equals("BUSINESS") 
-            ? order.getBillingCompanyName() 
-            : order.getBillingFirstName() + " " + order.getBillingLastName();
-        vars.put("buyerDisplayName", buyerName);
-        vars.put("buyerAddressLine1", order.getBillingAddressLine1());
-        vars.put("buyerAddressLine2", order.getBillingZip() + " " + order.getBillingCity() + ", " + order.getBillingCountryCode());
-
-        List<Map<String, Object>> invoiceLineItems = items.stream().map(i -> {
-            Map<String, Object> line = new HashMap<>();
-            line.put("description", "Stampa 3D: " + i.getOriginalFilename());
-            line.put("quantity", i.getQuantity());
-            line.put("unitPriceFormatted", String.format("CHF %.2f", i.getUnitPriceChf()));
-            line.put("lineTotalFormatted", String.format("CHF %.2f", i.getLineTotalChf()));
-            return line;
-        }).collect(Collectors.toList());
-
-        Map<String, Object> setupLine = new HashMap<>();
-        setupLine.put("description", "Costo Setup");
-        setupLine.put("quantity", 1);
-        setupLine.put("unitPriceFormatted", String.format("CHF %.2f", order.getSetupCostChf()));
-        setupLine.put("lineTotalFormatted", String.format("CHF %.2f", order.getSetupCostChf()));
-        invoiceLineItems.add(setupLine);
-
-        Map<String, Object> shippingLine = new HashMap<>();
-        shippingLine.put("description", "Spedizione");
-        shippingLine.put("quantity", 1);
-        shippingLine.put("unitPriceFormatted", String.format("CHF %.2f", order.getShippingCostChf()));
-        shippingLine.put("lineTotalFormatted", String.format("CHF %.2f", order.getShippingCostChf()));
-        invoiceLineItems.add(shippingLine);
-
-        vars.put("invoiceLineItems", invoiceLineItems);
-        vars.put("subtotalFormatted", String.format("CHF %.2f", order.getSubtotalChf()));
-        vars.put("grandTotalFormatted", String.format("CHF %.2f", order.getTotalChf()));
-        vars.put("paymentTermsText", "Pagamento entro 7 giorni via Bonifico o TWINT. Grazie.");
-
-        String qrBillSvg = new String(qrBillService.generateQrBillSvg(order), java.nio.charset.StandardCharsets.UTF_8);
-        
-        // Strip XML declaration and DOCTYPE if present, as they validity break the embedding HTML page
-        if (qrBillSvg.contains("<?xml")) {
-            int svgStartIndex = qrBillSvg.indexOf("<svg");
-            if (svgStartIndex != -1) {
-                qrBillSvg = qrBillSvg.substring(svgStartIndex);
-            }
-        }
-        
-        byte[] pdf = invoiceService.generateInvoicePdfBytesFromTemplate(vars, qrBillSvg);
-
+        byte[] pdf = invoiceService.generateDocumentPdf(order, items, isConfirmation, qrBillService, payment);
+        String typePrefix = isConfirmation ? "confirmation-" : "invoice-";
+        String truncatedUuid = order.getId().toString().substring(0, 8);
         return ResponseEntity.ok()
-                .header("Content-Disposition", "attachment; filename=\"invoice-" + getDisplayOrderNumber(order) + ".pdf\"")
+                .header("Content-Disposition", "attachment; filename=\"" + typePrefix + truncatedUuid + ".pdf\"")
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdf);
     }

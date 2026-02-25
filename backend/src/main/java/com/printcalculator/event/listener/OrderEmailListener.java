@@ -1,10 +1,15 @@
 package com.printcalculator.event.listener;
 
 import com.printcalculator.entity.Order;
+import com.printcalculator.entity.OrderItem;
 import com.printcalculator.entity.Payment;
 import com.printcalculator.event.OrderCreatedEvent;
 import com.printcalculator.event.PaymentReportedEvent;
+import com.printcalculator.event.PaymentConfirmedEvent;
 import com.printcalculator.service.email.EmailNotificationService;
+import com.printcalculator.service.InvoicePdfRenderingService;
+import com.printcalculator.service.QrBillService;
+import com.printcalculator.repository.OrderItemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +27,9 @@ import java.util.Map;
 public class OrderEmailListener {
 
     private final EmailNotificationService emailNotificationService;
+    private final InvoicePdfRenderingService invoicePdfRenderingService;
+    private final OrderItemRepository orderItemRepository;
+    private final QrBillService qrBillService;
 
     @Value("${app.mail.admin.enabled:true}")
     private boolean adminMailEnabled;
@@ -62,6 +70,20 @@ public class OrderEmailListener {
         }
     }
 
+    @Async
+    @EventListener
+    public void handlePaymentConfirmedEvent(PaymentConfirmedEvent event) {
+        Order order = event.getOrder();
+        Payment payment = event.getPayment();
+        log.info("Processing PaymentConfirmedEvent for order id: {}", order.getId());
+
+        try {
+            sendPaidInvoiceEmail(order, payment);
+        } catch (Exception e) {
+            log.error("Failed to send paid invoice email for order id: {}", order.getId(), e);
+        }
+    }
+
     private void sendCustomerConfirmationEmail(Order order) {
         Map<String, Object> templateData = new HashMap<>();
         templateData.put("customerName", order.getCustomer().getFirstName());
@@ -91,6 +113,34 @@ public class OrderEmailListener {
                 "Stiamo verificando il tuo pagamento (Ordine #" + getDisplayOrderNumber(order) + ")",
                 "payment-reported",
                 templateData
+        );
+    }
+
+    private void sendPaidInvoiceEmail(Order order, Payment payment) {
+        Map<String, Object> templateData = new HashMap<>();
+        templateData.put("customerName", order.getCustomer().getFirstName());
+        templateData.put("orderId", order.getId());
+        templateData.put("orderNumber", getDisplayOrderNumber(order));
+        templateData.put("orderDetailsUrl", buildOrderDetailsUrl(order));
+        templateData.put("totalCost", String.format("%.2f", order.getTotalChf()));
+
+        byte[] pdf = null;
+        try {
+            java.util.List<OrderItem> items = orderItemRepository.findByOrder_Id(order.getId());
+            pdf = invoicePdfRenderingService.generateDocumentPdf(order, items, false, qrBillService, payment);
+        } catch (Exception e) {
+            log.error("Failed to generate PDF for paid invoice email: {}", e.getMessage(), e);
+        }
+
+        String filename = "Fattura-" + getDisplayOrderNumber(order) + ".pdf";
+
+        emailNotificationService.sendEmailWithAttachment(
+                order.getCustomer().getEmail(),
+                "Fattura Pagata (Ordine #" + getDisplayOrderNumber(order) + ") - 3D-Fab",
+                "payment-confirmed",
+                templateData,
+                filename,
+                pdf
         );
     }
 

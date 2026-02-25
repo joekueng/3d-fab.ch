@@ -10,6 +10,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
+import org.springframework.core.io.ByteArrayResource;
 
 import java.util.Map;
 
@@ -29,6 +30,11 @@ public class SmtpEmailNotificationService implements EmailNotificationService {
 
     @Override
     public void sendEmail(String to, String subject, String templateName, Map<String, Object> contextData) {
+        sendEmailWithAttachment(to, subject, templateName, contextData, null, null);
+    }
+
+    @Override
+    public void sendEmailWithAttachment(String to, String subject, String templateName, Map<String, Object> contextData, String attachmentName, byte[] attachmentData) {
         if (!mailEnabled) {
             log.info("Email sending disabled (app.mail.enabled=false). Skipping email to {}", to);
             return;
@@ -48,6 +54,10 @@ public class SmtpEmailNotificationService implements EmailNotificationService {
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(process, true); // true indicates HTML format
+
+            if (attachmentName != null && attachmentData != null) {
+                helper.addAttachment(attachmentName, new ByteArrayResource(attachmentData));
+            }
 
             emailSender.send(mimeMessage);
             log.info("Email successfully sent to {}", to);

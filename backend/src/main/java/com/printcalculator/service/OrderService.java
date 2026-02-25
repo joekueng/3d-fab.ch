@@ -3,13 +3,13 @@ package com.printcalculator.service;
 import com.printcalculator.dto.AddressDto;
 import com.printcalculator.dto.CreateOrderRequest;
 import com.printcalculator.entity.*;
+import com.printcalculator.entity.Payment;
 import com.printcalculator.repository.CustomerRepository;
 import com.printcalculator.repository.OrderItemRepository;
 import com.printcalculator.repository.OrderRepository;
 import com.printcalculator.repository.QuoteLineItemRepository;
 import com.printcalculator.repository.QuoteSessionRepository;
 import com.printcalculator.repository.PricingPolicyRepository;
-import com.printcalculator.service.QuoteCalculator;
 import com.printcalculator.event.OrderCreatedEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -332,6 +332,7 @@ public class OrderService {
             vars.put("paymentTermsText", "Appena riceviamo il pagamento l'ordine entrerà nella coda di stampa. Grazie per la fiducia");
 
             // 3. Generate PDF
+            Payment payment = null; // New order, payment not received yet
             byte[] pdfBytes = invoiceService.generateInvoicePdfBytesFromTemplate(vars, qrBillSvg);
             
             // Save PDF

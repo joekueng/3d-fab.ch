@@ -11,26 +11,26 @@
 <div class="container">
   <ng-container *ngIf="order() as o">
     <div class="status-timeline mb-6">
-       <div class="timeline-step" 
-            [class.active]="o.status === 'PENDING_PAYMENT' && o.paymentStatus !== 'REPORTED'" 
+       <div class="timeline-step"
+            [class.active]="o.status === 'PENDING_PAYMENT' && o.paymentStatus !== 'REPORTED'"
             [class.completed]="o.paymentStatus === 'REPORTED' || o.status !== 'PENDING_PAYMENT'">
           <div class="circle">1</div>
           <div class="label">{{ 'TRACKING.STEP_PENDING' | translate }}</div>
        </div>
-       <div class="timeline-step" 
-            [class.active]="o.paymentStatus === 'REPORTED' && o.status === 'PENDING_PAYMENT'" 
+       <div class="timeline-step"
+            [class.active]="o.paymentStatus === 'REPORTED' && o.status === 'PENDING_PAYMENT'"
             [class.completed]="o.status === 'PAID' || o.status === 'IN_PRODUCTION' || o.status === 'SHIPPED' || o.status === 'COMPLETED'">
           <div class="circle">2</div>
           <div class="label">{{ 'TRACKING.STEP_REPORTED' | translate }}</div>
        </div>
-       <div class="timeline-step" 
-            [class.active]="o.status === 'PAID' || o.status === 'IN_PRODUCTION'" 
+       <div class="timeline-step"
+            [class.active]="o.status === 'PAID' || o.status === 'IN_PRODUCTION'"
             [class.completed]="o.status === 'SHIPPED' || o.status === 'COMPLETED'">
           <div class="circle">3</div>
           <div class="label">{{ 'TRACKING.STEP_PRODUCTION' | translate }}</div>
        </div>
-       <div class="timeline-step" 
-            [class.active]="o.status === 'SHIPPED'" 
+       <div class="timeline-step"
+            [class.active]="o.status === 'SHIPPED'"
             [class.completed]="o.status === 'COMPLETED'">
           <div class="circle">4</div>
           <div class="label">{{ 'TRACKING.STEP_SHIPPED' | translate }}</div>
@@ -87,18 +87,15 @@ align-items: center;" (click)="openTwintPayment()">
               </div>
             </div>
 
-            <div class="payment-details fade-in" *ngIf="selectedPaymentMethod === 'bill'">
+            <div class="payment-details fade-in text-center" *ngIf="selectedPaymentMethod === 'bill'">
               <div class="details-header">
                 <h4>{{ 'PAYMENT.BANK_TITLE' | translate }}</h4>
               </div>
               <div class="bank-details">
-                <p><strong>{{ 'PAYMENT.BANK_OWNER' | translate }}:</strong> Küng, Joe</p>
-                <p><strong>{{ 'PAYMENT.BANK_IBAN' | translate }}:</strong> CH74 0900 0000 1548 2158 1</p>
-                <p><strong>{{ 'PAYMENT.BANK_REF' | translate }}:</strong> {{ getDisplayOrderNumber(o) }}</p>
                 <p class="billing-hint">{{ 'PAYMENT.BILLING_INFO_HINT' | translate }}</p>
-
+                <br>
                 <div class="qr-bill-actions">
-                  <app-button (click)="downloadInvoice()">
+                  <app-button (click)="downloadQrInvoice()">
                     {{ 'PAYMENT.DOWNLOAD_QR' | translate }}
                   </app-button>
                 </div>
@@ -138,6 +135,7 @@ align-items: center;" (click)="openTwintPayment()">
                 <span>{{ o.totalChf | currency:'CHF' }}</span>
               </div>
             </div>
+
           </app-card>
         </div>
       </div>

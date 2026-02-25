@@ -22,7 +22,7 @@ public class QrBillService {
         // Creditor (Merchant)
         bill.setAccount("CH7409000000154821581"); // TODO: Configurable IBAN
         bill.setCreditor(createAddress(
-                "Küng, Joe",
+                "Joe Küng",
                 "Via G. Pioda 29a",
                 "6710",
                 "Biasca",
@@ -49,10 +49,7 @@ public class QrBillService {
         bill.setAmount(order.getTotalChf());
         bill.setCurrency("CHF");
 
-        // Reference
-        // bill.setReference(QRBill.createCreditorReference("...")); // If using QRR
-        String orderRef = order.getOrderNumber() != null ? order.getOrderNumber() : order.getId().toString();
-        bill.setUnstructuredMessage("Order " + orderRef);
+        bill.setUnstructuredMessage(order.getId().toString());
 
         return bill;
     }

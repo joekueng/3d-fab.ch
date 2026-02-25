@@ -31,6 +31,7 @@
         .invoice-page {
             page: invoice;
             width: 100%;
+            page-break-after: always;
         }
 
         /* Top Header Layout */
@@ -48,17 +49,17 @@
 
         .logo-block {
             width: 33%;
-            font-size: 20pt;
+            font-size: 24pt;
             font-weight: bold;
-            color: #005eb8; /* Brand blue similar to reference */
             letter-spacing: -0.5px;
         }
 
-        .logo-d {
-            font-style: italic;
-            color: #d22630;
-            font-size: 22pt;
-            margin-right: 2px;
+        .logo-3d {
+            color: #111827; /* Dark black/blue */
+        }
+
+        .logo-fab {
+            color: #eab308; /* Yellow/Gold */
         }
 
         .seller-block {
@@ -231,17 +232,26 @@
         /* QR Page */
         .qr-only-page {
             page: qrpage;
-            position: relative;
             width: 100%;
-            height: 100%;
+            height: 297mm;
             background: #fff;
-            page-break-before: always;
+            page-break-inside: avoid;
+        }
+
+        .qr-only-layout {
+            width: 100%;
+            height: 297mm;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .qr-only-layout td {
+            vertical-align: bottom;
+            /* Keep the QR slip at page bottom, but with a safer print margin. */
+            padding: 0 0 1mm 0;
         }
 
         .qr-bill-bottom {
-            position: absolute;
-            left: 0;
-            bottom: 0;
             width: 100%;
             height: 105mm;
             overflow: hidden;
@@ -262,7 +272,8 @@
     <table class="header-layout">
         <tr>
             <td class="logo-block">
-                3D-fab.ch
+                <span class="logo-3d">3D</span> <span class="logo-fab">fab</span>
+                <div style="font-size: 14pt; font-weight: normal; margin-top: 4px; color: #111827;">Küng Caletti</div>
             </td>
             <td class="seller-block">
                 <div th:text="${sellerDisplayName}">3D Fab Switzerland</div>
@@ -277,7 +288,10 @@
 
     <!-- Document Title -->
     <div class="doc-title">
-        Conferma dell'ordine <span th:text="${invoiceNumber}">141052743</span>
+        <span th:if="${isConfirmation}">Conferma dell'ordine</span>
+        <span th:unless="${isConfirmation}">Fattura</span>
+        <span th:text="${invoiceNumber}">141052743</span>
+        <span th:unless="${isConfirmation}" style="color: #2e7d32; font-weight: bold; font-size: 18pt; padding-left: 15px;">PAGATO</span>
     </div>
 
     <!-- Details block (Meta and Customer) -->
@@ -299,7 +313,7 @@
                     </tr>
                     <tr>
                         <td class="meta-label">Metodo di pagamento</td>
-                        <td class="meta-value">QR / Bonifico oppure TWINT</td>
+                        <td class="meta-value" th:text="${paymentMethodText}">QR / Bonifico oppure TWINT</td>
                     </tr>
                     <tr>
                         <td class="meta-label">Valuta</td>
@@ -308,10 +322,19 @@
                 </table>
             </td>
             <td class="customer-container">
+                <div style="font-weight: bold; margin-bottom: 2mm;">Indirizzo di fatturazione:</div>
                 <div th:text="${buyerDisplayName}">Joe Küng</div>
                 <div th:text="${buyerAddressLine1}">Via G.Pioda, 29a</div>
                 <div th:text="${buyerAddressLine2}">6710 biasca</div>
                 <div>Svizzera</div>
+                <br/>
+                <div th:if="${shippingDisplayName != null}">
+                    <div style="font-weight: bold; margin-bottom: 2mm;">Indirizzo di spedizione:</div>
+                    <div th:text="${shippingDisplayName}">Joe Küng</div>
+                    <div th:text="${shippingAddressLine1}">Via G.Pioda, 29a</div>
+                    <div th:text="${shippingAddressLine2}">6710 biasca</div>
+                    <div>Svizzera</div>
+                </div>
             </td>
         </tr>
     </table>
@@ -346,9 +369,13 @@
             <td class="totals-label">Totale di tutte le consegne e di tutti i servizi CHF</td>
             <td class="totals-value" th:text="${grandTotalFormatted}">1'094.90</td>
         </tr>
-        <tr class="no-border">
+        <tr class="no-border" th:if="${isConfirmation}">
             <td class="totals-label">Importo dovuto</td>
             <td class="totals-value" th:text="${grandTotalFormatted}">1'094.90</td>
+        </tr>
+        <tr class="no-border" th:unless="${isConfirmation}">
+            <td class="totals-label">Importo dovuto</td>
+            <td class="totals-value">CHF 0.00</td>
         </tr>
     </table>
 
@@ -372,8 +399,14 @@
 
 <!-- QR Bill Page (only renders if QR data is passed) -->
 <div class="qr-only-page" th:if="${qrBillSvg != null}">
-    <div class="qr-bill-bottom" th:utext="${qrBillSvg}">
-    </div>
+    <table class="qr-only-layout">
+        <tr>
+            <td>
+                <div class="qr-bill-bottom" th:utext="${qrBillSvg}">
+                </div>
+            </td>
+        </tr>
+    </table>
 </div>
 
 </body>
