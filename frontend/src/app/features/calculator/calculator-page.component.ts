@@ -208,9 +208,31 @@ export class CalculatorPageComponent implements OnInit {
       
       // 2. Update backend session if ID exists
       if (event.id) {
+          const currentSessionId = this.result()?.sessionId;
+          if (!currentSessionId) return;
+          
+          this.loading.set(true);
           this.estimator.updateLineItem(event.id, { quantity: event.quantity }).subscribe({
-              next: (res) => console.log('Line item updated', res),
-              error: (err) => console.error('Failed to update line item', err)
+              next: () => {
+                  // 3. Fetch the updated session totals from the backend
+                  this.estimator.getQuoteSession(currentSessionId).subscribe({
+                      next: (sessionData) => {
+                          const newResult = this.estimator.mapSessionToQuoteResult(sessionData);
+                          // Preserve notes
+                          newResult.notes = this.result()?.notes;
+                          this.result.set(newResult);
+                          this.loading.set(false);
+                      },
+                      error: (err) => {
+                          console.error('Failed to refresh session totals', err);
+                          this.loading.set(false);
+                      }
+                  });
+              },
+              error: (err) => {
+                  console.error('Failed to update line item', err);
+                  this.loading.set(false);
+              }
           });
       }
   }

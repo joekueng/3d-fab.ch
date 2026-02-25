@@ -18,10 +18,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -200,9 +202,8 @@ public class QuoteSessionController {
             
             // Store breakdown
             Map<String, Object> breakdown = new HashMap<>();
-            breakdown.put("machine_cost", result.getTotalPrice() - result.getSetupCost()); // Approximation? 
-            // Better: QuoteResult could expose detailed breakdown. For now just storing what we have.
-            breakdown.put("setup_fee", result.getSetupCost());
+            breakdown.put("machine_cost", result.getTotalPrice()); // Excludes setup fee which is at session level
+            breakdown.put("setup_fee", 0);
             item.setPricingBreakdown(breakdown);
             
             // Dimensions
@@ -210,9 +211,9 @@ public class QuoteSessionController {
             // If GCodeParser doesn't return size, we might defaults or 0.
             // Stats has filament used. 
             // Let's set dummy for now or upgrade parser later.
-            item.setBoundingBoxXMm(BigDecimal.ZERO);
-            item.setBoundingBoxYMm(BigDecimal.ZERO);
-            item.setBoundingBoxZMm(BigDecimal.ZERO);
+            item.setBoundingBoxXMm(settings.getBoundingBoxX() != null ? BigDecimal.valueOf(settings.getBoundingBoxX()) : BigDecimal.ZERO);
+            item.setBoundingBoxYMm(settings.getBoundingBoxY() != null ? BigDecimal.valueOf(settings.getBoundingBoxY()) : BigDecimal.ZERO);
+            item.setBoundingBoxZMm(settings.getBoundingBoxZ() != null ? BigDecimal.valueOf(settings.getBoundingBoxZ()) : BigDecimal.ZERO);
             
             item.setCreatedAt(OffsetDateTime.now());
             item.setUpdatedAt(OffsetDateTime.now());
@@ -245,7 +246,7 @@ public class QuoteSessionController {
                 case "standard":
                 default:
                     settings.setLayerHeight(0.20);
-                    settings.setInfillDensity(20.0);
+                    settings.setInfillDensity(15.0);
                     settings.setInfillPattern("grid");
                     break;
             }
@@ -308,20 +309,78 @@ public class QuoteSessionController {
         
         List<QuoteLineItem> items = lineItemRepo.findByQuoteSessionId(id);
         
-        // Calculate Totals
+        // Calculate Totals and global session hours
         BigDecimal itemsTotal = BigDecimal.ZERO;
+        BigDecimal totalSeconds = BigDecimal.ZERO;
+
         for (QuoteLineItem item : items) {
             BigDecimal lineTotal = item.getUnitPriceChf().multiply(BigDecimal.valueOf(item.getQuantity()));
             itemsTotal = itemsTotal.add(lineTotal);
+            
+            if (item.getPrintTimeSeconds() != null) {
+                totalSeconds = totalSeconds.add(BigDecimal.valueOf(item.getPrintTimeSeconds()).multiply(BigDecimal.valueOf(item.getQuantity())));
+            }
+        }
+        
+        BigDecimal totalHours = totalSeconds.divide(BigDecimal.valueOf(3600), 4, RoundingMode.HALF_UP);
+        com.printcalculator.entity.PricingPolicy policy = pricingRepo.findFirstByIsActiveTrueOrderByValidFromDesc();
+        BigDecimal globalMachineCost = quoteCalculator.calculateSessionMachineCost(policy, totalHours);
+        
+        itemsTotal = itemsTotal.add(globalMachineCost);
+        
+        // Map items to DTO to embed distributed machine cost
+        List<Map<String, Object>> itemsDto = new ArrayList<>();
+        for (QuoteLineItem item : items) {
+            Map<String, Object> dto = new HashMap<>();
+            dto.put("id", item.getId());
+            dto.put("originalFilename", item.getOriginalFilename());
+            dto.put("quantity", item.getQuantity());
+            dto.put("printTimeSeconds", item.getPrintTimeSeconds());
+            dto.put("materialGrams", item.getMaterialGrams());
+            dto.put("colorCode", item.getColorCode());
+            dto.put("status", item.getStatus());
+            
+            BigDecimal unitPrice = item.getUnitPriceChf();
+            if (totalSeconds.compareTo(BigDecimal.ZERO) > 0 && item.getPrintTimeSeconds() != null) {
+                BigDecimal itemSeconds = BigDecimal.valueOf(item.getPrintTimeSeconds()).multiply(BigDecimal.valueOf(item.getQuantity()));
+                BigDecimal share = itemSeconds.divide(totalSeconds, 8, RoundingMode.HALF_UP);
+                BigDecimal itemMachineCost = globalMachineCost.multiply(share);
+                BigDecimal unitMachineCost = itemMachineCost.divide(BigDecimal.valueOf(item.getQuantity()), 2, RoundingMode.HALF_UP);
+                unitPrice = unitPrice.add(unitMachineCost);
+            }
+            dto.put("unitPriceChf", unitPrice);
+            itemsDto.add(dto);
         }
         
         BigDecimal setupFee = session.getSetupCostChf() != null ? session.getSetupCostChf() : BigDecimal.ZERO;
-        BigDecimal grandTotal = itemsTotal.add(setupFee);
+        
+        // Calculate shipping cost based on dimensions
+        boolean exceedsBaseSize = false;
+        for (QuoteLineItem item : items) {
+            BigDecimal x = item.getBoundingBoxXMm() != null ? item.getBoundingBoxXMm() : BigDecimal.ZERO;
+            BigDecimal y = item.getBoundingBoxYMm() != null ? item.getBoundingBoxYMm() : BigDecimal.ZERO;
+            BigDecimal z = item.getBoundingBoxZMm() != null ? item.getBoundingBoxZMm() : BigDecimal.ZERO;
+            
+            BigDecimal[] dims = {x, y, z};
+            java.util.Arrays.sort(dims);
+            
+            if (dims[2].compareTo(BigDecimal.valueOf(250.0)) > 0 ||
+                dims[1].compareTo(BigDecimal.valueOf(176.0)) > 0 ||
+                dims[0].compareTo(BigDecimal.valueOf(20.0)) > 0) {
+                exceedsBaseSize = true;
+                break;
+            }
+        }
+        BigDecimal shippingCostChf = exceedsBaseSize ? BigDecimal.valueOf(4.00) : BigDecimal.valueOf(2.00);
+
+        BigDecimal grandTotal = itemsTotal.add(setupFee).add(shippingCostChf);
         
         Map<String, Object> response = new HashMap<>();
         response.put("session", session);
-        response.put("items", items);
-        response.put("itemsTotalChf", itemsTotal);
+        response.put("items", itemsDto);
+        response.put("itemsTotalChf", itemsTotal); // Includes the base cost of all items + the global tiered machine cost
+        response.put("shippingCostChf", shippingCostChf);
+        response.put("globalMachineCostChf", globalMachineCost); // Provide it so frontend knows how much it was (optional now)
         response.put("grandTotalChf", grandTotal);
         
         return ResponseEntity.ok(response);

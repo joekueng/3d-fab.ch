@@ -535,6 +535,11 @@ CREATE TABLE IF NOT EXISTS order_items
     -- Snapshot output
     print_time_seconds   integer CHECK (print_time_seconds >= 0),
     material_grams       numeric(12, 2) CHECK (material_grams >= 0),
+
+    bounding_box_x_mm numeric(10, 3),
+    bounding_box_y_mm numeric(10, 3),
+    bounding_box_z_mm numeric(10, 3),
+
     unit_price_chf       numeric(12, 2) NOT NULL CHECK (unit_price_chf >= 0),
     line_total_chf       numeric(12, 2) NOT NULL CHECK (line_total_chf >= 0),
 

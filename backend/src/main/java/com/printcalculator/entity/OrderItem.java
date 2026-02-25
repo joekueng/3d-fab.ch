@@ -57,6 +57,15 @@ public class OrderItem {
     @Column(name = "material_grams", precision = 12, scale = 2)
     private BigDecimal materialGrams;
 
+    @Column(name = "bounding_box_x_mm", precision = 10, scale = 3)
+    private BigDecimal boundingBoxXMm;
+
+    @Column(name = "bounding_box_y_mm", precision = 10, scale = 3)
+    private BigDecimal boundingBoxYMm;
+
+    @Column(name = "bounding_box_z_mm", precision = 10, scale = 3)
+    private BigDecimal boundingBoxZMm;
+
     @Column(name = "unit_price_chf", nullable = false, precision = 12, scale = 2)
     private BigDecimal unitPriceChf;
 
@@ -179,6 +188,30 @@ public class OrderItem {
 
     public void setMaterialGrams(BigDecimal materialGrams) {
         this.materialGrams = materialGrams;
+    }
+
+    public BigDecimal getBoundingBoxXMm() {
+        return boundingBoxXMm;
+    }
+
+    public void setBoundingBoxXMm(BigDecimal boundingBoxXMm) {
+        this.boundingBoxXMm = boundingBoxXMm;
+    }
+
+    public BigDecimal getBoundingBoxYMm() {
+        return boundingBoxYMm;
+    }
+
+    public void setBoundingBoxYMm(BigDecimal boundingBoxYMm) {
+        this.boundingBoxYMm = boundingBoxYMm;
+    }
+
+    public BigDecimal getBoundingBoxZMm() {
+        return boundingBoxZMm;
+    }
+
+    public void setBoundingBoxZMm(BigDecimal boundingBoxZMm) {
+        this.boundingBoxZMm = boundingBoxZMm;
     }
 
     public BigDecimal getUnitPriceChf() {

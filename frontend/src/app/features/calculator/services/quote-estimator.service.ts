@@ -5,7 +5,7 @@ import { map, catchError, tap } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 
 export interface QuoteRequest {
-  items: { file: File, quantity: number, color?: string }[];
+  items: { file: File, quantity: number, color?: string, dimensions?: {x: number, y: number, z: number} }[];
   material: string;
   quality: string;
   notes?: string;
@@ -32,6 +32,7 @@ export interface QuoteResult {
   sessionId?: string;
   items: QuoteItem[];
   setupCost: number;
+  globalMachineCost: number;
   currency: string;
   totalPrice: number;
   totalTimeHours: number;
@@ -219,6 +220,9 @@ export class QuoteEstimatorService {
                          quality: request.quality,
                          supportsEnabled: request.supportEnabled,
                          color: item.color || '#FFFFFF',
+                         boundingBoxX: item.dimensions?.x,
+                         boundingBoxY: item.dimensions?.y,
+                         boundingBoxZ: item.dimensions?.z,
                          layerHeight: request.mode === 'advanced' ? request.layerHeight : null,
                          infillDensity: request.mode === 'advanced' ? request.infillDensity : null,
                          infillPattern: request.mode === 'advanced' ? request.infillPattern : null,
@@ -260,59 +264,19 @@ export class QuoteEstimatorService {
         });
 
         const finalize = (responses: any[], setupCost: number, sessionId: string) => {
-             observer.next(100); 
-             const items: QuoteItem[] = [];
-             let grandTotal = 0;
-             let totalTime = 0;
-             let totalWeight = 0;
-             let validCount = 0;
-
-             responses.forEach((res, idx) => {
-                 if (!res || !res.success) return;
-                 validCount++;
-                 
-                 const unitPrice = res.unitPriceChf || 0;
-                 const quantity = res.originalQty || 1;
-                 
-                 items.push({
-                     id: res.id,
-                     fileName: res.fileName,
-                     unitPrice: unitPrice,
-                     unitTime: res.printTimeSeconds || 0,
-                     unitWeight: res.materialGrams || 0,
-                     quantity: quantity,
-                     material: request.material,
-                     color: res.originalItem.color || 'Default'
-                     // Store ID if needed for updates? QuoteItem interface might need update
-                     // or we map it in component
-                 });
-                 
-                 grandTotal += unitPrice * quantity;
-                 totalTime += (res.printTimeSeconds || 0) * quantity;
-                 totalWeight += (res.materialGrams || 0) * quantity;
+             this.http.get<any>(`${environment.apiUrl}/api/quote-sessions/${sessionId}`, { headers }).subscribe({
+                 next: (sessionData) => {
+                     observer.next(100); 
+                     const result = this.mapSessionToQuoteResult(sessionData);
+                     result.notes = request.notes;
+                     observer.next(result);
+                     observer.complete();
+                 },
+                 error: (err) => {
+                     console.error('Failed to fetch final session calculation', err);
+                     observer.error('Failed to calculate final quote');
+                 }
              });
-
-             if (validCount === 0) {
-                 observer.error('All calculations failed.');
-                 return;
-             }
-             
-             grandTotal += setupCost;
-
-             const result: QuoteResult = {
-                 sessionId: sessionId,
-                 items,
-                 setupCost: setupCost,
-                 currency: 'CHF',
-                 totalPrice: Math.round(grandTotal * 100) / 100,
-                 totalTimeHours: Math.floor(totalTime / 3600),
-                 totalTimeMinutes: Math.ceil((totalTime % 3600) / 60),
-                 totalWeight: Math.ceil(totalWeight),
-                 notes: request.notes
-             };
-             
-             observer.next(result);
-             observer.complete();
         };
     });
   }
@@ -361,10 +325,11 @@ export class QuoteEstimatorService {
               // But line items might have different colors. 
               color: item.colorCode
           })),
-          setupCost: session.setupCostChf,
-          currency: 'CHF', // Fixed for now
-          totalPrice: sessionData.grandTotalChf,
-          totalTimeHours: Math.floor(totalTime / 3600),
+      setupCost: session.setupCostChf || 0,
+      globalMachineCost: sessionData.globalMachineCostChf || 0,
+      currency: 'CHF', // Fixed for now
+      totalPrice: (sessionData.itemsTotalChf || 0) + (session.setupCostChf || 0) + (sessionData.shippingCostChf || 0),
+      totalTimeHours: Math.floor(totalTime / 3600),
           totalTimeMinutes: Math.ceil((totalTime % 3600) / 60),
           totalWeight: Math.ceil(totalWeight),
           notes: session.notes

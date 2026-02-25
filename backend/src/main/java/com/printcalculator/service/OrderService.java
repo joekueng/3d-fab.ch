@@ -8,6 +8,8 @@ import com.printcalculator.repository.OrderItemRepository;
 import com.printcalculator.repository.OrderRepository;
 import com.printcalculator.repository.QuoteLineItemRepository;
 import com.printcalculator.repository.QuoteSessionRepository;
+import com.printcalculator.repository.PricingPolicyRepository;
+import com.printcalculator.service.QuoteCalculator;
 import com.printcalculator.event.OrderCreatedEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,6 +40,8 @@ public class OrderService {
     private final QrBillService qrBillService;
     private final ApplicationEventPublisher eventPublisher;
     private final PaymentService paymentService;
+    private final QuoteCalculator quoteCalculator;
+    private final PricingPolicyRepository pricingRepo;
 
     public OrderService(OrderRepository orderRepo,
                         OrderItemRepository orderItemRepo,
@@ -47,7 +52,9 @@ public class OrderService {
                         InvoicePdfRenderingService invoiceService,
                         QrBillService qrBillService,
                         ApplicationEventPublisher eventPublisher,
-                        PaymentService paymentService) {
+                        PaymentService paymentService,
+                        QuoteCalculator quoteCalculator,
+                        PricingPolicyRepository pricingRepo) {
         this.orderRepo = orderRepo;
         this.orderItemRepo = orderItemRepo;
         this.quoteSessionRepo = quoteSessionRepo;
@@ -58,6 +65,8 @@ public class OrderService {
         this.qrBillService = qrBillService;
         this.eventPublisher = eventPublisher;
         this.paymentService = paymentService;
+        this.quoteCalculator = quoteCalculator;
+        this.pricingRepo = pricingRepo;
     }
 
     @Transactional
@@ -145,11 +154,40 @@ public class OrderService {
         order.setTotalChf(BigDecimal.ZERO);
         order.setDiscountChf(BigDecimal.ZERO);
         order.setSetupCostChf(session.getSetupCostChf() != null ? session.getSetupCostChf() : BigDecimal.ZERO);
-        order.setShippingCostChf(BigDecimal.valueOf(9.00));
+        
+        // Calculate shipping cost based on dimensions before initial save
+        boolean exceedsBaseSize = false;
+        for (QuoteLineItem item : quoteItems) {
+            BigDecimal x = item.getBoundingBoxXMm() != null ? item.getBoundingBoxXMm() : BigDecimal.ZERO;
+            BigDecimal y = item.getBoundingBoxYMm() != null ? item.getBoundingBoxYMm() : BigDecimal.ZERO;
+            BigDecimal z = item.getBoundingBoxZMm() != null ? item.getBoundingBoxZMm() : BigDecimal.ZERO;
+            
+            BigDecimal[] dims = {x, y, z};
+            java.util.Arrays.sort(dims);
+            
+            if (dims[2].compareTo(BigDecimal.valueOf(250.0)) > 0 ||
+                dims[1].compareTo(BigDecimal.valueOf(176.0)) > 0 ||
+                dims[0].compareTo(BigDecimal.valueOf(20.0)) > 0) {
+                exceedsBaseSize = true;
+                break;
+            }
+        }
+        order.setShippingCostChf(exceedsBaseSize ? BigDecimal.valueOf(4.00) : BigDecimal.valueOf(2.00));
 
         order = orderRepo.save(order);
 
         List<OrderItem> savedItems = new ArrayList<>();
+
+        // Calculate global machine cost upfront
+        BigDecimal totalSeconds = BigDecimal.ZERO;
+        for (QuoteLineItem qItem : quoteItems) {
+            if (qItem.getPrintTimeSeconds() != null) {
+                totalSeconds = totalSeconds.add(BigDecimal.valueOf(qItem.getPrintTimeSeconds()).multiply(BigDecimal.valueOf(qItem.getQuantity())));
+            }
+        }
+        BigDecimal totalHours = totalSeconds.divide(BigDecimal.valueOf(3600), 4, RoundingMode.HALF_UP);
+        PricingPolicy policy = pricingRepo.findFirstByIsActiveTrueOrderByValidFromDesc();
+        BigDecimal globalMachineCost = quoteCalculator.calculateSessionMachineCost(policy, totalHours);
 
         for (QuoteLineItem qItem : quoteItems) {
             OrderItem oItem = new OrderItem();
@@ -159,10 +197,22 @@ public class OrderService {
             oItem.setColorCode(qItem.getColorCode());
             oItem.setMaterialCode(session.getMaterialCode());
 
-            oItem.setUnitPriceChf(qItem.getUnitPriceChf());
-            oItem.setLineTotalChf(qItem.getUnitPriceChf().multiply(BigDecimal.valueOf(qItem.getQuantity())));
+            BigDecimal distributedUnitPrice = qItem.getUnitPriceChf();
+            if (totalSeconds.compareTo(BigDecimal.ZERO) > 0 && qItem.getPrintTimeSeconds() != null) {
+                BigDecimal itemSeconds = BigDecimal.valueOf(qItem.getPrintTimeSeconds()).multiply(BigDecimal.valueOf(qItem.getQuantity()));
+                BigDecimal share = itemSeconds.divide(totalSeconds, 8, RoundingMode.HALF_UP);
+                BigDecimal itemMachineCost = globalMachineCost.multiply(share);
+                BigDecimal unitMachineCost = itemMachineCost.divide(BigDecimal.valueOf(qItem.getQuantity()), 2, RoundingMode.HALF_UP);
+                distributedUnitPrice = distributedUnitPrice.add(unitMachineCost);
+            }
+
+            oItem.setUnitPriceChf(distributedUnitPrice);
+            oItem.setLineTotalChf(distributedUnitPrice.multiply(BigDecimal.valueOf(qItem.getQuantity())));
             oItem.setPrintTimeSeconds(qItem.getPrintTimeSeconds());
             oItem.setMaterialGrams(qItem.getMaterialGrams());
+            oItem.setBoundingBoxXMm(qItem.getBoundingBoxXMm());
+            oItem.setBoundingBoxYMm(qItem.getBoundingBoxYMm());
+            oItem.setBoundingBoxZMm(qItem.getBoundingBoxZMm());
 
             UUID fileUuid = UUID.randomUUID();
             String ext = getExtension(qItem.getOriginalFilename());
@@ -196,10 +246,7 @@ public class OrderService {
         }
 
         order.setSubtotalChf(subtotal);
-        if (order.getShippingCostChf() == null) {
-            order.setShippingCostChf(BigDecimal.valueOf(9.00));
-        }
-
+        
         BigDecimal total = subtotal.add(order.getSetupCostChf()).add(order.getShippingCostChf()).subtract(order.getDiscountChf() != null ? order.getDiscountChf() : BigDecimal.ZERO);
         order.setTotalChf(total);
 

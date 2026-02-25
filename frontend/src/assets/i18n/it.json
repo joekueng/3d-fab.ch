@@ -81,6 +81,7 @@
     "CALCULATE": "Calcola Preventivo",
     "RESULT": "Preventivo Stimato",
     "TIME": "Tempo Stampa",
+    "MACHINE_COST": "Costo Macchina",
     "COST": "Costo Totale",
     "ORDER": "Ordina Ora",
     "CONSULT": "Richiedi Consulenza",
@@ -102,6 +103,7 @@
     "PROCESSING": "Elaborazione...",
     "NOTES_PLACEHOLDER": "Istruzioni specifiche...",
     "SETUP_NOTE": "* Include {{cost}} Costo di Setup",
+    "SHIPPING_NOTE": "** costi di spedizione esclusi calcolati al prossimo passaggio",
     "STEP_WARNING": "La visualizzazione 3D non è compatibile con i file step e 3mf"
   },
   "QUOTE": {
@@ -167,7 +169,7 @@
   },
   "LOCATIONS": {
     "TITLE": "Le Nostre Sedi",
-    "SUBTITLE": "Siamo presenti in due sedi per coprire meglio il territorio. Seleziona la sede per vedere i dettagli.",
+    "SUBTITLE": "Siamo presenti in due sedi. Seleziona la sede per vedere i dettagli.",
     "TICINO": "Ticino",
     "BIENNE": "Bienne",
     "ADDRESS_TICINO": "Via G. Pioda 29a, 6710 Biasca (TI)",
@@ -244,19 +246,23 @@
     "PROCESSING": "Elaborazione...",
     "SUMMARY_TITLE": "Riepilogo Ordine",
     "SUBTOTAL": "Subtotale",
+    "ITEMS_BASE_SUBTOTAL": "Costo Base Articoli",
+    "MACHINE_COST": "Costo Macchina",
     "SETUP_FEE": "Costo di Avvio",
     "TOTAL": "Totale",
     "QTY": "Qtà",
-    "SHIPPING": "Spedizione",
+    "SHIPPING": "Spedizione (CH)",
     "INVALID_EMAIL": "Email non valida",
     "COMPANY_OPTIONAL": "Nome Azienda (Opzionale)",
-    "REF_PERSON_OPTIONAL": "Persona di Riferimento (Opzionale)"
+    "REF_PERSON_OPTIONAL": "Persona di Riferimento (Opzionale)",
+    "SHIPPING_CALCULATED_NEXT_STEP": "il costo di spedizione viene calcolato al prossimo passaggio",
+    "EXCLUDES_SHIPPING": "Escluso costo di spedizione"
   },
   "PAYMENT": {
     "TITLE": "Pagamento",
     "METHOD": "Metodo di Pagamento",
     "TWINT_TITLE": "Paga con TWINT",
-    "TWINT_DESC": "Inquadra il codice con l'app TWINT",
+    "TWINT_DESC": "Inquadra il codice con l'app TWINT, da mobile clicca il bottone.",
     "TWINT_OPEN": "Apri direttamente in TWINT",
     "TWINT_LINK": "Apri link di pagamento",
     "BANK_TITLE": "Bonifico Bancario",

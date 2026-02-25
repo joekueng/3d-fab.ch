@@ -79,25 +79,27 @@ public class QuoteCalculator {
         BigDecimal weightKg = BigDecimal.valueOf(stats.filamentWeightGrams()).divide(BigDecimal.valueOf(1000), 4, RoundingMode.HALF_UP);
         BigDecimal materialCost = weightKg.multiply(variant.getCostChfPerKg());
 
-        // Machine Cost: Tiered
+        // We do NOT add tiered machine cost here anymore - it is calculated globally per session
         BigDecimal totalHours = BigDecimal.valueOf(stats.printTimeSeconds()).divide(BigDecimal.valueOf(3600), 4, RoundingMode.HALF_UP);
-        BigDecimal machineCost = calculateMachineCost(policy, totalHours);
 
         // Energy Cost: (watts / 1000) * hours * costPerKwh
         BigDecimal kw = BigDecimal.valueOf(machine.getPowerWatts()).divide(BigDecimal.valueOf(1000), 4, RoundingMode.HALF_UP);
         BigDecimal kwh = kw.multiply(totalHours);
         BigDecimal energyCost = kwh.multiply(policy.getElectricityCostChfPerKwh());
 
-        // Subtotal (Costs + Fixed Fees)
-        BigDecimal fixedFee = policy.getFixedJobFeeChf();
-        BigDecimal subtotal = materialCost.add(machineCost).add(energyCost).add(fixedFee);
+        // Subtotal (Costs without Fixed Fees and without Machine Tiers)
+        BigDecimal subtotal = materialCost.add(energyCost);
 
         // Markup
         // Markup is percentage (e.g. 20.0)
         BigDecimal markupFactor = BigDecimal.ONE.add(policy.getMarkupPercent().divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP));
-        BigDecimal totalPrice = subtotal.multiply(markupFactor).setScale(2, RoundingMode.HALF_UP);
-
-        return new QuoteResult(totalPrice.doubleValue(), "CHF", stats, fixedFee.doubleValue());
+        subtotal = subtotal.multiply(markupFactor);
+        return new QuoteResult(subtotal.doubleValue(), "CHF", stats);
+    }
+    public BigDecimal calculateSessionMachineCost(PricingPolicy policy, BigDecimal hours) {
+        BigDecimal rawCost = calculateMachineCost(policy, hours);
+        BigDecimal markupFactor = BigDecimal.ONE.add(policy.getMarkupPercent().divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP));
+        return rawCost.multiply(markupFactor).setScale(2, RoundingMode.HALF_UP);
     }
 
     private BigDecimal calculateMachineCost(PricingPolicy policy, BigDecimal hours) {

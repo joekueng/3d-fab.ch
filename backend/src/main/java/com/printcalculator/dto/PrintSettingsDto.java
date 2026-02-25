@@ -21,4 +21,9 @@ public class PrintSettingsDto {
     private String infillPattern;
     private Boolean supportsEnabled;
     private String notes;
+
+    // Dimensions
+    private Double boundingBoxX;
+    private Double boundingBoxY;
+    private Double boundingBoxZ;
 }

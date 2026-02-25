@@ -21,7 +21,8 @@
   </div>
 
   <div class="setup-note">
-    <small>{{ 'CALC.SETUP_NOTE' | translate:{cost: (result().setupCost | currency:result().currency)} }}</small>
+    <small>{{ 'CALC.SETUP_NOTE' | translate:{cost: (result().setupCost | currency:result().currency)} }}</small><br>
+    <small class="shipping-note" style="color: #666;">{{ 'CALC.SHIPPING_NOTE' | translate }}</small>
   </div>
 
   @if (result().notes) {
