@@ -8,18 +8,11 @@
     <div class="locations-grid">
       <div class="locations-controls">
         <div class="location-tabs">
-          <button 
-            class="tab-btn" 
-            [class.active]="selectedLocation === 'ticino'" 
-            (click)="selectLocation('ticino')">
-            {{ 'LOCATIONS.TICINO' | translate }}
-          </button>
-          <button 
-            class="tab-btn" 
-            [class.active]="selectedLocation === 'bienne'" 
-            (click)="selectLocation('bienne')">
-            {{ 'LOCATIONS.BIENNE' | translate }}
-          </button>
+          <app-toggle-selector 
+            [options]="locationOptions"
+            [selectedValue]="selectedLocation"
+            (selectionChange)="selectLocation($event)">
+          </app-toggle-selector>
         </div>
 
         <div class="location-details">
@@ -43,12 +36,12 @@
       <div class="map-container">
         <iframe 
           *ngIf="selectedLocation === 'ticino'"
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d177305.41680509657!2d8.826330925208468!3d46.00511195679905!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4784407817452d5b%3A0x6a0c0e86b976660!2sTicino%2C%20Svizzera!5e0!3m2!1sit!2sit!4v1700000000000!5m2!1sit!2sit" 
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2753.843657475132!2d8.96627047671755!3d46.35265507912163!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4785ca88d01d4a03%3A0xc312484ab7592fb!2sVia%20Giov.Bta.%20Pioda%2029A%2C%206710%20Biasca%2C%20Switzerland!5e0!3m2!1sen!2sch!4v1700000000000!5m2!1sen!2sch" 
           width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
         </iframe>
         <iframe 
           *ngIf="selectedLocation === 'bienne'"
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d43521.94247549427!2d7.211756262451172!3d47.13677764958641!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x478e192760f384f9%3A0xcb281f622956f4e6!2sBiel%2C%20Svizzera!5e0!3m2!1sit!2sit!4v1700000000000!5m2!1sit!2sit" 
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2729.0438104193587!2d7.240752176735282!3d47.126435979155985!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x478e1eb84efba295%3A0x95924d5ba8b6f3b0!2sLyss-Strasse%2071%2C%202560%20Nidau%2C%20Switzerland!5e0!3m2!1sen!2sch!4v1700000000000!5m2!1sen!2sch" 
           width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
         </iframe>
       </div>

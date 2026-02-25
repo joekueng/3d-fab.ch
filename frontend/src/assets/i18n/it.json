@@ -102,7 +102,7 @@
     "PROCESSING": "Elaborazione...",
     "NOTES_PLACEHOLDER": "Istruzioni specifiche...",
     "SETUP_NOTE": "* Include {{cost}} Costo di Setup",
-    "STEP_WARNING": "La visualizzazione 3D non è compatibile con i file step e 3mf, ma il calcolatore funziona."
+    "STEP_WARNING": "La visualizzazione 3D non è compatibile con i file step e 3mf"
   },
   "QUOTE": {
     "PROCEED_ORDER": "Procedi con l'ordine",
@@ -170,8 +170,8 @@
     "SUBTITLE": "Siamo presenti in due sedi per coprire meglio il territorio. Seleziona la sede per vedere i dettagli.",
     "TICINO": "Ticino",
     "BIENNE": "Bienne",
-    "ADDRESS_TICINO": "Sede Ticino, Svizzera",
-    "ADDRESS_BIENNE": "Sede Bienne, Svizzera",
+    "ADDRESS_TICINO": "Via G. Pioda 29a, 6710 Biasca (TI)",
+    "ADDRESS_BIENNE": "Lyss-strasse 71, Nidau 2560 Bienne",
     "CONTACT_US": "Contattaci"
   },
   "LEGAL": {

@@ -107,6 +107,12 @@ export class OrderComponent implements OnInit {
     if (lang === 'de') {
       return 'https://go.twint.ch/static/img/button_dark_de.svg';
     }
+    if (lang === 'it'){
+      return 'https://go.twint.ch/static/img/button_dark_it.svg';
+    }
+    if (lang === 'fr'){
+      return 'https://go.twint.ch/static/img/button_dark_fr.svg';
+    }
     // Default to EN for everything else (it, fr, en) as instructed or if not DE
     return 'https://go.twint.ch/static/img/button_dark_en.svg';
   }

@@ -7,6 +7,7 @@ import { QuoteEstimatorService } from '../calculator/services/quote-estimator.se
 import { AppInputComponent } from '../../shared/components/app-input/app-input.component';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
+import { AppToggleSelectorComponent, ToggleOption } from '../../shared/components/app-toggle-selector/app-toggle-selector.component';
 
 @Component({
   selector: 'app-checkout',
@@ -17,7 +18,8 @@ import { AppCardComponent } from '../../shared/components/app-card/app-card.comp
     TranslateModule,
     AppInputComponent,
     AppButtonComponent,
-    AppCardComponent
+    AppCardComponent,
+    AppToggleSelectorComponent
   ],
   templateUrl: './checkout.component.html',
   styleUrls: ['./checkout.component.scss']
@@ -34,6 +36,11 @@ export class CheckoutComponent implements OnInit {
   error: string | null = null;
   isSubmitting = signal(false); // Add signal for submit state
   quoteSession = signal<any>(null); // Add signal for session details
+
+  userTypeOptions: ToggleOption[] = [
+    { label: 'CONTACT.TYPE_PRIVATE', value: 'PRIVATE' },
+    { label: 'CONTACT.TYPE_COMPANY', value: 'BUSINESS' }
+  ];
 
   constructor() {
     this.checkoutForm = this.fb.group({
@@ -73,9 +80,9 @@ export class CheckoutComponent implements OnInit {
     return this.checkoutForm.get('customerType')?.value === 'BUSINESS';
   }
 
-  setCustomerType(isCompany: boolean) {
-    const type = isCompany ? 'BUSINESS' : 'PRIVATE';
+  setCustomerType(type: string) {
     this.checkoutForm.patchValue({ customerType: type });
+    const isCompany = type === 'BUSINESS';
     
     const billingGroup = this.checkoutForm.get('billingAddress') as FormGroup;
     const companyControl = billingGroup.get('companyName');

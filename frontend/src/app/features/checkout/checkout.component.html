@@ -46,14 +46,11 @@
               </div>
 
               <!-- User Type Selector -->
-              <div class="user-type-selector">
-                <div class="type-option" [class.selected]="!isCompany" (click)="setCustomerType(false)">
-                  {{ 'CONTACT.TYPE_PRIVATE' | translate }}
-                </div>
-                <div class="type-option" [class.selected]="isCompany" (click)="setCustomerType(true)">
-                  {{ 'CONTACT.TYPE_COMPANY' | translate }}
-                </div>
-              </div>
+              <app-toggle-selector 
+                [options]="userTypeOptions"
+                [selectedValue]="checkoutForm.get('customerType')?.value"
+                (selectionChange)="setCustomerType($event)">
+              </app-toggle-selector>
               
               <app-input formControlName="addressLine1" [label]="'CHECKOUT.ADDRESS_1' | translate" [required]="true"></app-input>
               <app-input formControlName="addressLine2" [label]="'CHECKOUT.ADDRESS_2' | translate"></app-input>
