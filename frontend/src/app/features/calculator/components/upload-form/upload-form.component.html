@@ -81,6 +81,11 @@
     @if (items().length === 0 && form.get('itemsTouched')?.value) {
       <div class="error-msg">{{ 'CALC.ERR_FILE_REQUIRED' | translate }}</div>
     }
+
+    <p class="upload-privacy-note">
+      {{ 'LEGAL.CONSENT.UPLOAD_NOTICE_PREFIX' | translate }}
+      <a href="/privacy" target="_blank" rel="noopener">{{ 'LEGAL.CONSENT.UPLOAD_NOTICE_LINK' | translate }}</a>.
+    </p>
   </div>
 
   <div class="grid">

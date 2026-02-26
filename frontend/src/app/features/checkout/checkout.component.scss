@@ -82,6 +82,17 @@
   border-radius: var(--radius-md);
 }
 
+.legal-consent {
+  margin: var(--space-4) 0 var(--space-4);
+
+  .checkbox-container {
+    font-size: 0.95rem;
+    line-height: 1.4;
+    align-items: flex-start;
+    min-height: 24px;
+  }
+}
+
 /* Custom Checkbox */
 .checkbox-container {
   display: flex;
@@ -140,6 +151,13 @@
   &:hover input ~ .checkmark {
     border-color: var(--color-brand);
   }
+}
+
+.consent-error {
+  margin-top: var(--space-2);
+  margin-left: 36px;
+  color: var(--color-danger-500, #ef4444);
+  font-size: 0.9rem;
 }
 
 .checkout-summary-section {

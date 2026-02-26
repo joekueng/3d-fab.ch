@@ -194,7 +194,9 @@
       "TERMS_LINK": "Termini e Condizioni",
       "AND": "e l'",
       "PRIVACY_LINK": "Informativa Privacy",
-      "REQUIRED_ERROR": "Per continuare devi accettare Termini e Privacy."
+      "REQUIRED_ERROR": "Per continuare devi accettare Termini e Privacy.",
+      "UPLOAD_NOTICE_PREFIX": "Caricando un file accetti la nostra",
+      "UPLOAD_NOTICE_LINK": "Informativa Privacy"
     },
     "PRIVACY": {
       "META": {

@@ -130,6 +130,10 @@
     "PRIVACY_TITLE": "Privacy Policy",
     "TERMS_TITLE": "Terms and Conditions",
     "LAST_UPDATE": "Last update",
+    "CONSENT": {
+      "UPLOAD_NOTICE_PREFIX": "By uploading a file, you accept our",
+      "UPLOAD_NOTICE_LINK": "Privacy Policy"
+    },
     "PRIVACY": {
       "SECTION_1": "1. Data Collection",
       "SECTION_2": "2. Purpose of Processing",

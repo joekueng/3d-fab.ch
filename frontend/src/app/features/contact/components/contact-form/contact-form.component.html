@@ -47,7 +47,10 @@
     <div class="form-group">
       <label>{{ 'CONTACT.UPLOAD_LABEL' | translate }}</label>
       <p class="hint">{{ 'CONTACT.UPLOAD_HINT' | translate }}</p>
-      <p class="hint upload-privacy-note">{{ 'LEGAL.CONSENT.UPLOAD_PRIVACY_NOTICE' | translate }}</p>
+      <p class="hint upload-privacy-note">
+        {{ 'LEGAL.CONSENT.UPLOAD_NOTICE_PREFIX' | translate }}
+        <a href="/privacy" target="_blank" rel="noopener">{{ 'LEGAL.CONSENT.UPLOAD_NOTICE_LINK' | translate }}</a>.
+      </p>
 
       <div class="drop-zone" (click)="fileInput.click()"
            (dragover)="onDragOver($event)" (drop)="onDrop($event)">
