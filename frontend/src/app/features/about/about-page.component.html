@@ -10,27 +10,61 @@
       <div class="divider"></div>
 
       <p class="description">{{ 'ABOUT.HOW_TEXT' | translate }}</p>
+      <br>
+      <h2 class="passions-title">{{ 'ABOUT.PASSIONS_TITLE' | translate }}</h2>
 
       <div class="tags-container">
-        <span class="tag">{{ 'ABOUT.PILL_1' | translate }}</span>
-        <span class="tag">{{ 'ABOUT.PILL_2' | translate }}</span>
-        <span class="tag">{{ 'ABOUT.PILL_3' | translate }}</span>
-        <span class="tag">{{ 'ABOUT.SERVICE_1' | translate }}</span>
-        <span class="tag">{{ 'ABOUT.SERVICE_2' | translate }}</span>
+        @for (passion of passions; track passion.id) {
+          <span class="tag" [class.is-active]="isPassionActive(passion.id)">
+            {{ passion.labelKey | translate }}
+          </span>
+        }
       </div>
     </div>
 
     <!-- Right Column: Visuals -->
     <div class="visual-content">
-      <div class="photo-card card-1">
-        <div class="placeholder-img"></div>
+      <div
+        class="photo-card card-1"
+        tabindex="0"
+        role="button"
+        [attr.aria-pressed]="isMemberSelected('joe')"
+        [class.is-active]="isMemberActive('joe')"
+        [class.is-selected]="isMemberSelected('joe')"
+        (mouseenter)="setHoveredMember('joe')"
+        (mouseleave)="setHoveredMember(null)"
+        (focus)="setHoveredMember('joe')"
+        (blur)="setHoveredMember(null)"
+        (click)="toggleSelectedMember('joe')"
+        (keydown.enter)="toggleSelectedMember('joe')"
+        (keydown.space)="toggleSelectedMember('joe'); $event.preventDefault()"
+      >
+        <div class="placeholder-img">
+          <img src="assets/images/joe.jpg" alt="Joe Küng">
+        </div>
         <div class="member-info">
           <span class="member-name">Joe Küng</span>
           <span class="member-role">Studente Ingegneria Informatica</span>
         </div>
       </div>
-      <div class="photo-card card-2">
-        <div class="placeholder-img"></div>
+      <div
+        class="photo-card card-2"
+        tabindex="0"
+        role="button"
+        [attr.aria-pressed]="isMemberSelected('matteo')"
+        [class.is-active]="isMemberActive('matteo')"
+        [class.is-selected]="isMemberSelected('matteo')"
+        (mouseenter)="setHoveredMember('matteo')"
+        (mouseleave)="setHoveredMember(null)"
+        (focus)="setHoveredMember('matteo')"
+        (blur)="setHoveredMember(null)"
+        (click)="toggleSelectedMember('matteo')"
+        (keydown.enter)="toggleSelectedMember('matteo')"
+        (keydown.space)="toggleSelectedMember('matteo'); $event.preventDefault()"
+      >
+        <div class="placeholder-img">
+          <img src="assets/images/matteo.jpg" alt="Matteo Caletti">
+        </div>
         <div class="member-info">
           <span class="member-name">Matteo Caletti</span>
           <span class="member-role">Studente Ingegneria Elettronica</span>

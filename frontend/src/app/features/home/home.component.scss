@@ -2,7 +2,7 @@
 
     .home-page {
       --home-bg: #faf9f6;
-      --color-bg-card: #f7f7f7;
+      --color-bg-card: #ffffff;
       background: var(--home-bg);
     }
 
@@ -228,12 +228,12 @@
     .card-image-placeholder {
         width: 100%;
         height: 160px;
-        background: var(--color-neutral-100);
+        background: #f5f5f5;
         margin: -1.5rem -1.5rem 1.5rem -1.5rem; /* Negative margins to bleed to edge */
         width: calc(100% + 3rem);
         border-top-left-radius: var(--radius-lg);
         border-top-right-radius: var(--radius-lg);
-        border-bottom: 1px solid var(--color-border);
+        border-bottom: 1px solid var(--color-neutral-300);
         display: flex;
         align-items: center;
         justify-content: center;

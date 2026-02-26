@@ -8,7 +8,7 @@
     <div class="locations-grid">
       <div class="locations-controls">
         <div class="location-tabs">
-          <app-toggle-selector 
+          <app-toggle-selector
             [options]="locationOptions"
             [selectedValue]="selectedLocation"
             (selectionChange)="selectLocation($event)">
@@ -17,14 +17,14 @@
 
         <div class="location-details">
           <div *ngIf="selectedLocation === 'ticino'" class="details-card">
-            <h3>{{ 'LOCATIONS.TICINO' | translate }}</h3>
+            <h3>{{ 'LOCATIONS.BIASCA' | translate }}</h3>
             <p>{{ 'LOCATIONS.ADDRESS_TICINO' | translate }}</p>
           </div>
           <div *ngIf="selectedLocation === 'bienne'" class="details-card">
             <h3>{{ 'LOCATIONS.BIENNE' | translate }}</h3>
             <p>{{ 'LOCATIONS.ADDRESS_BIENNE' | translate }}</p>
           </div>
-          
+
           <div class="actions">
             <a routerLink="/contact" class="contact-btn">
               {{ 'LOCATIONS.CONTACT_US' | translate }}
@@ -34,14 +34,14 @@
       </div>
 
       <div class="map-container">
-        <iframe 
+        <iframe
           *ngIf="selectedLocation === 'ticino'"
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2753.843657475132!2d8.96627047671755!3d46.35265507912163!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4785ca88d01d4a03%3A0xc312484ab7592fb!2sVia%20Giov.Bta.%20Pioda%2029A%2C%206710%20Biasca%2C%20Switzerland!5e0!3m2!1sen!2sch!4v1700000000000!5m2!1sen!2sch" 
+          src="https://www.google.com/maps?q=Via%20G.%20Pioda%2029a%2C%20Biasca&output=embed"
           width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
         </iframe>
-        <iframe 
+        <iframe
           *ngIf="selectedLocation === 'bienne'"
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2729.0438104193587!2d7.240752176735282!3d47.126435979155985!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x478e1eb84efba295%3A0x95924d5ba8b6f3b0!2sLyss-Strasse%2071%2C%202560%20Nidau%2C%20Switzerland!5e0!3m2!1sen!2sch!4v1700000000000!5m2!1sen!2sch" 
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2729.0438104193587!2d7.240752176735282!3d47.126435979155985!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x478e1eb84efba295%3A0x95924d5ba8b6f3b0!2sLyss-Strasse%2071%2C%202560%20Nidau%2C%20Switzerland!5e0!3m2!1sen!2sch!4v1700000000000!5m2!1sen!2sch"
           width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
         </iframe>
       </div>
