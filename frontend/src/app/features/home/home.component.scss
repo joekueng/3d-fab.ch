@@ -1,14 +1,16 @@
     @use '../../../styles/patterns';
 
     .home-page {
-      background: var(--color-bg);
+      --home-bg: #faf9f6;
+      --color-bg-card: #f7f7f7;
+      background: var(--home-bg);
     }
 
     .hero {
       position: relative;
       padding: 6rem 0 5rem;
       overflow: hidden;
-      background: var(--color-bg);
+      background: var(--home-bg);
       // Enhanced Grid Pattern
       &::after {
         content: '';
@@ -43,7 +45,7 @@
       position: relative;
       z-index: 1;
     }
-    
+
     .hero-copy { animation: fadeUp 0.8s ease both; }
     .hero-panel { animation: fadeUp 0.8s ease 0.15s both; }
 
@@ -194,7 +196,7 @@
     .capabilities-bg {
       display: none;
     }
-    
+
     .section { padding: 5.5rem 0; position: relative; }
     .section-head { margin-bottom: var(--space-8); }
     .section-title { font-size: clamp(2rem, 1.8vw + 1.2rem, 2.8rem); margin-bottom: var(--space-3); }
@@ -222,7 +224,7 @@
       gap: var(--space-4);
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     }
-    
+
     .card-image-placeholder {
         width: 100%;
         height: 160px;
@@ -234,20 +236,23 @@
         align-items: center;
         justify-content: center;
         color: var(--color-neutral-400);
+        overflow: hidden;
+    }
+
+    .card-image-placeholder img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
     }
 
     .shop {
-      background: var(--color-neutral-50);
+      background: var(--home-bg);
       position: relative;
-      // Triangular/Isogrid Pattern
-      &::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        @include patterns.pattern-triangular(var(--color-neutral-900), 40px);
-        opacity: 0.03;
-        pointer-events: none;
-      }
+    }
+    .shop .split { align-items: start; }
+    .shop-copy {
+      max-width: 760px;
     }
     .split {
       display: grid;
@@ -266,25 +271,61 @@
       flex-wrap: wrap;
       gap: var(--space-3);
     }
+    .shop-gallery {
+      display: flex;
+      gap: var(--space-4);
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding-bottom: var(--space-2);
+      scrollbar-width: thin;
+      width: min(100%, 440px);
+      justify-self: end;
+      aspect-ratio: 16 / 11;
+    }
+
+    .shop-gallery-item {
+      flex: 0 0 100%;
+      margin: 0;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--color-border);
+      background: var(--color-neutral-100);
+      box-shadow: var(--shadow-sm);
+      scroll-snap-align: start;
+      aspect-ratio: 16 / 10;
+    }
+
+    .shop-gallery-item img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
     .shop-cards {
       display: grid;
       gap: var(--space-4);
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     }
 
+    .shop-cards h3 {
+      margin-top: 0;
+      margin-bottom: var(--space-2);
+    }
+
+    .shop-cards p {
+      margin: 0;
+    }
+
     .about {
-      background: var(--color-neutral-50);
+      background: transparent;
       border-top: 1px solid var(--color-border);
       position: relative;
-      // Gyroid Pattern
-      &::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        @include patterns.pattern-gyroid(var(--color-neutral-900), 40px);
-        opacity: 0.03;
-        pointer-events: none;
-      }
+    }
+    .about-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
     }
     .about-grid {
       display: grid;
@@ -293,20 +334,61 @@
     }
     .about-media {
       position: relative;
+      display: flex;
+      justify-content: flex-end;
     }
-    
+
     .about-feature-image {
       width: 100%;
-      height: 100%;
-      min-height: 320px;
-      object-fit: cover;
+      max-width: 620px;
+      aspect-ratio: 16 / 10;
       border-radius: var(--radius-lg);
       background: var(--color-neutral-100);
       border: 1px solid var(--color-border);
-      display: flex;
+      position: relative;
+      overflow: hidden;
+      contain: layout paint;
+    }
+
+    .about-feature-photo {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    .founder-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      background: rgba(17, 24, 39, 0.45);
+      color: #fff;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      color: var(--color-text-muted);
+      font-size: 1.5rem;
+      line-height: 1;
+      cursor: pointer;
+      z-index: 1;
+      transition: background-color 0.2s ease;
+    }
+
+    .founder-nav:hover {
+      background: rgba(17, 24, 39, 0.7);
+    }
+
+    .founder-nav-prev { left: 0.75rem; }
+    .founder-nav-next { right: 0.75rem; }
+
+    .founder-nav:focus-visible {
+      outline: 2px solid var(--color-brand);
+      outline-offset: 2px;
     }
     .media-tile p {
       margin: 0;
@@ -322,12 +404,38 @@
       .calculator-grid { grid-template-columns: 1.1fr 0.9fr; }
       .calculator-grid { grid-template-columns: 1.1fr 0.9fr; }
       .split { grid-template-columns: 1.1fr 0.9fr; }
+      .shop-copy { grid-column: 1; }
+      .shop-gallery { grid-column: 2; }
+      .shop-cards {
+        grid-column: 1 / -1;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
       .about-grid { grid-template-columns: 1.1fr 0.9fr; }
     }
 
     @media (max-width: 640px) {
       .hero-actions { flex-direction: column; align-items: stretch; }
       .quote-meta { grid-template-columns: 1fr; }
+      .shop-gallery {
+        width: min(100%, 320px);
+        justify-self: start;
+      }
+      .shop-gallery-item {
+        aspect-ratio: 16 / 11;
+      }
+      .shop-cards { grid-template-columns: 1fr; }
+      .about-media {
+        justify-content: flex-start;
+      }
+      .about-feature-image {
+        max-width: min(100%, 360px);
+        aspect-ratio: 16 / 11;
+      }
+      .founder-nav {
+        width: 2rem;
+        height: 2rem;
+        font-size: 1.25rem;
+      }
     }
 
     @keyframes fadeUp {

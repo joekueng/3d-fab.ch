@@ -1,9 +1,9 @@
 /* src/styles/theme.scss */
-@use 'tokens';
+@use './tokens';
 
 :root {
   /* Semantic Colors - Theming Layer */
-  --color-bg: #ffffff;
+  --color-bg: #faf9f6;
   --color-bg-card: #ffffff;
   --color-text: var(--color-neutral-900);
   --color-text-muted: var(--color-secondary-500);

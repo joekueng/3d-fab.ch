@@ -12,4 +12,38 @@ import { AppCardComponent } from '../../shared/components/app-card/app-card.comp
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
-export class HomeComponent {}
+export class HomeComponent {
+  readonly shopGalleryImages = [
+    {
+      src: 'assets/images/home/supporto-bici.jpg',
+      alt: 'Prodotto tecnico stampato in 3D'
+    }
+  ];
+
+  readonly founderImages = [
+    {
+      src: 'assets/images/home/da-cambiare.jpg',
+      alt: 'Founder - da cambiare'
+    },
+    {
+      src: 'assets/images/home/vino.JPG',
+      alt: 'Founder - vino'
+    }
+  ];
+
+  founderImageIndex = 0;
+
+  prevFounderImage(): void {
+    this.founderImageIndex =
+      this.founderImageIndex === 0
+        ? this.founderImages.length - 1
+        : this.founderImageIndex - 1;
+  }
+
+  nextFounderImage(): void {
+    this.founderImageIndex =
+      this.founderImageIndex === this.founderImages.length - 1
+        ? 0
+        : this.founderImageIndex + 1;
+  }
+}

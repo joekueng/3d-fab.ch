@@ -63,28 +63,28 @@
           <div class="cap-cards">
             <app-card>
               <div class="card-image-placeholder">
-                  <!-- <img src="..." alt="..."> -->
+                <img src="assets/images/home/prototipi.jpg" alt="">
               </div>
               <h3>{{ 'HOME.CAP_1_TITLE' | translate }}</h3>
               <p class="text-muted">{{ 'HOME.CAP_1_TEXT' | translate }}</p>
             </app-card>
             <app-card>
               <div class="card-image-placeholder">
-                  <!-- <img src="..." alt="..."> -->
+                <img src="assets/images/home/original-vs-3dprinted.jpg" alt="">
               </div>
               <h3>{{ 'HOME.CAP_2_TITLE' | translate }}</h3>
               <p class="text-muted">{{ 'HOME.CAP_2_TEXT' | translate }}</p>
             </app-card>
             <app-card>
               <div class="card-image-placeholder">
-                  <!-- <img src="..." alt="..."> -->
+                <img src="assets/images/home/serie.jpg" alt="">
               </div>
               <h3>{{ 'HOME.CAP_3_TITLE' | translate }}</h3>
               <p class="text-muted">{{ 'HOME.CAP_3_TEXT' | translate }}</p>
             </app-card>
             <app-card>
               <div class="card-image-placeholder">
-                  <!-- <img src="..." alt="..."> -->
+                <img src="assets/images/home/cad.jpg" alt="">
               </div>
               <h3>{{ 'HOME.CAP_4_TITLE' | translate }}</h3>
               <p class="text-muted">{{ 'HOME.CAP_4_TEXT' | translate }}</p>
@@ -110,6 +110,11 @@
               <app-button variant="outline" routerLink="/contact">{{ 'HOME.BTN_REQ_SOLUTION' | translate }}</app-button>
             </div>
           </div>
+          <div class="shop-gallery" tabindex="0" aria-label="Gallery prodotti shop">
+            <figure class="shop-gallery-item" *ngFor="let image of shopGalleryImages">
+              <img [src]="image.src" [alt]="image.alt">
+            </figure>
+          </div>
           <div class="shop-cards">
             <app-card>
               <h3>{{ 'HOME.CARD_SHOP_1_TITLE' | translate }}</h3>
@@ -134,12 +139,36 @@
             <p>
               {{ 'HOME.SEC_ABOUT_TEXT' | translate }}
             </p>
-            <app-button variant="outline" routerLink="/contact">{{ 'HOME.BTN_CONTACT' | translate }}</app-button>
+            <div class="about-actions">
+              <app-button variant="primary" routerLink="/about">{{ 'HOME.SEC_ABOUT_TITLE' | translate }}</app-button>
+              <app-button variant="outline" routerLink="/contact">{{ 'HOME.BTN_CONTACT' | translate }}</app-button>
+            </div>
           </div>
           <div class="about-media">
             <div class="about-feature-image">
-              <!-- Foto founders -->
-              <span class="text-sm">{{ 'HOME.FOUNDERS_PHOTO' | translate }}</span>
+              <img
+                class="about-feature-photo"
+                [src]="founderImages[founderImageIndex].src"
+                [alt]="founderImages[founderImageIndex].alt"
+                width="1200"
+                height="900"
+              >
+              <button
+                type="button"
+                class="founder-nav founder-nav-prev"
+                (click)="prevFounderImage()"
+                aria-label="Foto precedente"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                class="founder-nav founder-nav-next"
+                (click)="nextFounderImage()"
+                aria-label="Foto successiva"
+              >
+                ›
+              </button>
             </div>
           </div>
         </div>
