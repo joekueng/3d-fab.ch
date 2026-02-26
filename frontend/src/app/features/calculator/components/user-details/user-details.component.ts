@@ -30,7 +30,8 @@ export class UserDetailsComponent {
       phone: ['', Validators.required],
       address: ['', Validators.required],
       zip: ['', Validators.required],
-      city: ['', Validators.required]
+      city: ['', Validators.required],
+      acceptLegal: [false, Validators.requiredTrue]
     });
   }
 

@@ -153,7 +153,7 @@
     "TITLE": "Chi Siamo",
     "EYEBROW": "Laboratorio di stampa 3D",
     "SUBTITLE": "Siamo due studenti con tanta voglia di fare e di imparare.",
-    "HOW_TEXT": "3D fab nasce dall'interesse iniziale di matteo ",
+    "HOW_TEXT": "3D Fab nasce dall’interesse iniziale di Matteo per la stampa 3D. Ha comprato una stampante e ha iniziato a sperimentare sul serio. \n A un certo punto sono arrivate le prime richieste: un pezzo rotto da sostituire, un ricambio che non si trova, un adattatore comodo da avere. Le richieste sono aumentate e ci siamo detti: ok, facciamolo bene.\nOggi trasformiamo bisogni concreti e idee in pezzi stampati, con costi trasparenti.\nIn seguito abbiamo creato un calcolatore per capire il costo in anticipo: è stato uno dei primi passi che ci ha fatto passare dal “facciamo qualche pezzo” a un progetto vero, insieme.",
     "PASSIONS_TITLE": "Le nostre passioni",
     "PASSION_BIKE_TRIAL": "Bike trial",
     "PASSION_MOUNTAIN": "Montagna",
@@ -184,18 +184,165 @@
     "CONTACT_US": "Contattaci"
   },
   "LEGAL": {
-    "PRIVACY_TITLE": "Privacy Policy",
+    "PRIVACY_TITLE": "Informativa Privacy",
     "TERMS_TITLE": "Termini e Condizioni",
     "LAST_UPDATE": "Ultimo aggiornamento",
+    "TERMS_UPDATE_DATE": "24 febbraio 2026",
+    "PRIVACY_UPDATE_DATE": "24 febbraio 2026",
+    "CONSENT": {
+      "LABEL_PREFIX": "Ho letto e accetto i",
+      "TERMS_LINK": "Termini e Condizioni",
+      "AND": "e l'",
+      "PRIVACY_LINK": "Informativa Privacy",
+      "REQUIRED_ERROR": "Per continuare devi accettare Termini e Privacy."
+    },
     "PRIVACY": {
-      "SECTION_1": "1. Raccolta dei Dati",
-      "SECTION_2": "2. Finalità del Trattamento",
-      "SECTION_3": "3. Cookie e Tracciamento"
+      "META": {
+        "CONTROLLER": "Titolari del trattamento: Matteo Caletti e Joe Kung (3D-Fab.ch).",
+        "CONTACT": "Contatto privacy: info@3d-fab.ch"
+      },
+      "S1": {
+        "TITLE": "1. Quali dati trattiamo",
+        "P1": "1.1. Raccogliamo i dati necessari per preventivi e ordini: nome, cognome, email, telefono, indirizzo, dati di spedizione/fatturazione e dettagli dell'ordine.",
+        "P2": "1.2. Quando carichi file 3D o allegati tecnici, i file vengono trattati solo per analisi, produzione, assistenza e gestione dell'ordine."
+      },
+      "S2": {
+        "TITLE": "2. Finalita del trattamento",
+        "P1": "2.1. Usiamo i dati esclusivamente per: preparare preventivi, confermare ordini, ricevere pagamenti, organizzare spedizioni e fornire supporto post-vendita.",
+        "P2": "2.2. Non usiamo i dati per profilazione, marketing automatico o vendita a terzi."
+      },
+      "S3": {
+        "TITLE": "3. Conservazione dei file e dei dati",
+        "P1": "3.1. I file caricati per il solo preventivo vengono conservati per la durata della sessione e rimossi automaticamente alla sua scadenza.",
+        "P2": "3.2. I file e i dati legati a ordini confermati vengono conservati per il tempo necessario a produzione, consegna, assistenza e obblighi amministrativi/legali, poi eliminati o minimizzati.",
+        "P3": "3.3. I file caricati nel calcolatore vengono usati solo per analisi tecnica e stima del preventivo e restano associati esclusivamente alla sessione del calcolatore."
+      },
+      "S4": {
+        "TITLE": "4. Cookie e tracciamento",
+        "P1": "4.1. Non utilizziamo cookie di profilazione, marketing o tracciamento di terze parti.",
+        "P2": "4.2. Non usiamo sistemi di advertising tracking. Eventuali dati tecnici temporanei sono usati solo per il funzionamento della sessione."
+      },
+      "S5": {
+        "TITLE": "5. Condivisione dei dati",
+        "P1": "5.1. Condividiamo i dati solo con fornitori strettamente necessari al servizio (hosting, pagamenti, spedizioni), limitandoci alle informazioni indispensabili.",
+        "P2": "5.2. I fornitori trattano i dati secondo istruzioni contrattuali e misure di sicurezza adeguate."
+      },
+      "S6": {
+        "TITLE": "6. Diritti dell'utente",
+        "P1": "6.1. Puoi richiedere accesso, rettifica, cancellazione o limitazione del trattamento dei tuoi dati, nei limiti previsti dalla legge.",
+        "P2": "6.2. Per qualsiasi richiesta privacy scrivi a info@3d-fab.ch."
+      }
     },
     "TERMS": {
-      "SECTION_1": "1. Condizioni d'Uso",
-      "SECTION_2": "2. Ordini e Pagamenti",
-      "SECTION_3": "3. Rimborsi e Resi"
+      "META": {
+        "PROVIDER": "Fornitore: 3D-Fab.ch (Matteo Caletti e Joe Kung)",
+        "VERSION": "Versione: v1.0",
+        "SCOPE": "Validi per stampa 3D FDM/FFF e servizi collegati, con vendita e consegna esclusivamente in Svizzera (CH)."
+      },
+      "S1": {
+        "TITLE": "1. Dati del fornitore e contatti",
+        "P1": "1.1. Fornitore: Matteo Caletti e Joe Kung.",
+        "P2": "1.2. Indirizzo: Lyss-strasse 71, Nidau 2560, CH.",
+        "P3": "1.3. Email: info@3d-fab.ch."
+      },
+      "S2": {
+        "TITLE": "2. Ambito di applicazione",
+        "P1": "2.1. I presenti Termini e Condizioni disciplinano stampa 3D su richiesta, servizi accessori (consulenza tecnica, CAD, verifica file, post-processing) ed eventuali articoli standard.",
+        "P2": "2.2. Il fornitore vende e consegna esclusivamente in Svizzera (CH).",
+        "P3": "2.3. Si applicano agli ordini effettuati via sito, email o altri canali concordati; condizioni diverse del cliente valgono solo se accettate per iscritto."
+      },
+      "S3": {
+        "TITLE": "3. Definizioni",
+        "P1": "3.1. Cliente: persona fisica o giuridica acquirente. File del cliente: modelli 3D e dati tecnici forniti. Prodotto personalizzato: pezzo realizzato su specifiche del cliente. Ordine: richiesta accettata dal fornitore."
+      },
+      "S4": {
+        "TITLE": "4. Conclusione del contratto e ordine",
+        "P1": "4.1. Il contratto si conclude con conferma ordine (email/portale) o con avvio produzione dopo pagamento/anticipo.",
+        "P2": "4.2. I preventivi automatici possono essere confermati o aggiornati dopo verifica tecnica minima (stampabilita, supporti, limiti macchina).",
+        "P3": "4.3. Il fornitore puo rifiutare ordini tecnicamente non fattibili o non conformi ai presenti termini."
+      },
+      "S5": {
+        "TITLE": "5. Prezzi, imposte e spedizione",
+        "P1": "5.1. I prezzi sono in CHF, salvo diversa indicazione su IVA inclusa/esclusa.",
+        "P2": "5.2. Spedizione e imballaggio sono indicati separatamente quando applicabili.",
+        "P3": "5.3. Per piccole serie o CAD complesso possono essere applicate offerte scritte con condizioni specifiche (campioni, scaglioni, approvazione primo pezzo)."
+      },
+      "S6": {
+        "TITLE": "6. Pagamenti",
+        "P1": "6.1. Metodi accettati: TWINT e bonifico bancario.",
+        "P2": "6.2. Salvo accordi diversi, la produzione parte solo dopo il pagamento.",
+        "P3": "6.3. Per consulenza CAD e piccole serie puo essere richiesto un anticipo (30-100%) e/o saldo prima della consegna.",
+        "P4": "6.4. Dati bonifico: Joe Kung, IBAN CH74 0900 0000 1548 2158 1, Via G. Pioda 29a, 6710 Biasca."
+      },
+      "S7": {
+        "TITLE": "7. File del cliente e responsabilita tecnica",
+        "P1": "7.1. Il cliente garantisce di avere i diritti sui file e che il loro uso non viola diritti di terzi (copyright, brevetti, licenze, segreti industriali).",
+        "P2": "7.2. Il cliente e responsabile di correttezza del modello, scelta materiale, adeguatezza all'uso finale e rispetto delle norme applicabili.",
+        "P3": "7.3. Il fornitore puo suggerire modifiche per migliorare stampabilita e resa, ma non svolge funzione di certificazione del prodotto finale salvo accordo scritto."
+      },
+      "S8": {
+        "TITLE": "8. Qualita FDM/FFF e tolleranze",
+        "P1": "8.1. La stampa FDM/FFF comporta caratteristiche intrinseche: linee di strato, anisotropia meccanica, micro-imperfezioni, variazioni cromatiche e possibili ritiri/deformazioni legati a geometria e materiale.",
+        "P2": "8.2. Tolleranze standard (salvo accordo scritto): fino a 100 mm +/-0.3 mm; oltre 100 mm +/-0.5% (minimo +/-0.3 mm).",
+        "P3": "8.3. Requisiti estetici o dimensionali critici devono essere concordati prima dell'ordine (es. campione, misure di controllo, finitura specifica)."
+      },
+      "S9": {
+        "TITLE": "9. Post-processing e lavorazioni aggiuntive",
+        "P1": "9.1. Lavorazioni come rimozione supporti, levigatura, primer/verniciatura o inserti filettati sono eseguite solo se concordate e possono introdurre variazioni dimensionali o estetiche.",
+        "P2": "9.2. Su richiesta puo essere prevista approvazione del primo pezzo o campione, eventualmente a pagamento."
+      },
+      "S10": {
+        "TITLE": "10. Tempi di produzione e consegna",
+        "P1": "10.1. I tempi indicati sono stime basate su carico di lavoro, complessita e disponibilita materiali.",
+        "P2": "10.2. Ritardi dovuti a cause esterne (corrieri, fornitori, guasti, forza maggiore) non danno diritto automatico a penali salvo accordo scritto.",
+        "P3": "10.3. Il cliente deve fornire indirizzi corretti e completi; eventuali costi di riconsegna per indirizzo errato restano a carico del cliente."
+      },
+      "S11": {
+        "TITLE": "11. Diritto di recesso e annullamento",
+        "P1": "11.1. Salvo eccezioni confermate per iscritto, non e previsto diritto di recesso o restituzione dopo l'ordine.",
+        "P2": "11.2. I prodotti personalizzati non sono annullabili ne rimborsabili dopo l'avvio della produzione.",
+        "P3": "11.3. Il fornitore puo accettare eccezioni prima dell'avvio produttivo, trattenendo eventuali costi gia sostenuti.",
+        "P4": "11.4. Eventuali condizioni speciali devono risultare nell'offerta, nella conferma d'ordine o in comunicazioni scritte."
+      },
+      "S12": {
+        "TITLE": "12. Reclami, difetti e rimedi",
+        "P1": "12.1. Il cliente deve controllare i prodotti alla consegna e segnalare eventuali difetti entro 7 giorni, per iscritto, con foto/video e descrizione.",
+        "P2": "12.2. Non costituiscono automaticamente difetto i segni tipici FDM, piccole variazioni cromatiche, imperfezioni non funzionali o tolleranze entro i limiti concordati.",
+        "P3": "12.3. In caso di difetto imputabile al fornitore, i rimedi sono a scelta del fornitore: ristampa/sostituzione oppure rimborso limitato al valore del pezzo o ordine difettoso.",
+        "P4": "12.4. Prima di ristampa o rimborso puo essere richiesta la restituzione del pezzo; se il difetto e confermato la restituzione e a carico del fornitore."
+      },
+      "S13": {
+        "TITLE": "13. Usi vietati e conformita",
+        "P1": "13.1. Il fornitore puo rifiutare ordini relativi a oggetti illegali, armi o parti regolamentate, applicazioni safety-critical o medicali senza accordi e validazioni dedicate.",
+        "P2": "13.2. Il cliente resta responsabile dell'uso finale e della conformita normativa del prodotto."
+      },
+      "S14": {
+        "TITLE": "14. Proprieta intellettuale e licenze",
+        "P1": "14.1. I diritti sui file del cliente restano al cliente o ai relativi titolari. Il cliente concede al fornitore una licenza limitata all'uso per valutazione tecnica e produzione.",
+        "P2": "14.2. Salvo accordi diversi, file e progetti CAD sviluppati dal fornitore vengono consegnati dopo pagamento, con diritto d'uso per gli scopi concordati.",
+        "P3": "14.3. Il cliente manleva il fornitore da pretese di terzi legate a file o istruzioni fornite dal cliente."
+      },
+      "S15": {
+        "TITLE": "15. Protezione dei dati",
+        "P1": "15.1. Il fornitore tratta i dati personali per gestione ordini, pagamenti, spedizioni e assistenza.",
+        "P2": "15.2. I dati possono essere condivisi con fornitori tecnici e corrieri solo nella misura necessaria all'erogazione del servizio."
+      },
+      "S16": {
+        "TITLE": "16. Limitazione di responsabilita",
+        "P1": "16.1. Nei limiti di legge, il fornitore risponde solo per danni diretti prevedibili e comunque non oltre il valore dell'ordine relativo al prodotto o servizio contestato.",
+        "P2": "16.2. Sono esclusi, nei limiti consentiti, danni indiretti, perdita di profitto, fermo attivita, perdita dati e danni consequenziali.",
+        "P3": "16.3. Restano salve le responsabilita non escludibili per legge (es. dolo o colpa grave)."
+      },
+      "S17": {
+        "TITLE": "17. Forza maggiore",
+        "P1": "17.1. Eventi fuori dal controllo ragionevole del fornitore (guasti, blackout, ritardi fornitori, scioperi, provvedimenti autorita) possono causare proroghe o sospensioni senza responsabilita."
+      },
+      "S18": {
+        "TITLE": "18. Legge applicabile e foro competente",
+        "P1": "18.1. Si applica il diritto svizzero.",
+        "P2": "18.2. Foro competente: sede del fornitore, salvo norme inderogabili a tutela dei consumatori.",
+        "P3": "18.3. In caso di discrepanze interpretative prevale la versione italiana dei presenti termini, salvo diverso accordo scritto."
+      }
     }
   },
   "CONTACT": {

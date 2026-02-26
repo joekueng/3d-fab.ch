@@ -98,6 +98,22 @@
             </div>
           </app-card>
 
+          <div class="legal-consent">
+            <label class="checkbox-container">
+              <input type="checkbox" formControlName="acceptLegal">
+              <span class="checkmark"></span>
+              <span>
+                {{ 'LEGAL.CONSENT.LABEL_PREFIX' | translate }}
+                <a href="/terms" target="_blank" rel="noopener">{{ 'LEGAL.CONSENT.TERMS_LINK' | translate }}</a>
+                {{ 'LEGAL.CONSENT.AND' | translate }}
+                <a href="/privacy" target="_blank" rel="noopener">{{ 'LEGAL.CONSENT.PRIVACY_LINK' | translate }}</a>.
+              </span>
+            </label>
+            <div class="consent-error" *ngIf="checkoutForm.get('acceptLegal')?.invalid && checkoutForm.get('acceptLegal')?.touched">
+              {{ 'LEGAL.CONSENT.REQUIRED_ERROR' | translate }}
+            </div>
+          </div>
+
           <div class="actions">
             <app-button type="submit" [disabled]="checkoutForm.invalid || isSubmitting()" [fullWidth]="true">
               {{ (isSubmitting() ? 'CHECKOUT.PROCESSING' : 'CHECKOUT.PLACE_ORDER') | translate }}

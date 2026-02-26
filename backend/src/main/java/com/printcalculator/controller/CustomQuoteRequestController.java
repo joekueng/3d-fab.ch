@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.multipart.MultipartFile;
+import jakarta.validation.Valid;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -61,9 +62,15 @@ public class CustomQuoteRequestController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Transactional
     public ResponseEntity<CustomQuoteRequest> createCustomQuoteRequest(
-            @RequestPart("request") com.printcalculator.dto.QuoteRequestDto requestDto,
+            @Valid @RequestPart("request") com.printcalculator.dto.QuoteRequestDto requestDto,
             @RequestPart(value = "files", required = false) List<MultipartFile> files
     ) throws IOException {
+        if (!requestDto.isAcceptTerms() || !requestDto.isAcceptPrivacy()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Accettazione Termini e Privacy obbligatoria."
+            );
+        }
         
         // 1. Create Request
         CustomQuoteRequest request = new CustomQuoteRequest();

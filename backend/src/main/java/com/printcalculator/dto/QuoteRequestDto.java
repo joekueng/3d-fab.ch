@@ -1,6 +1,7 @@
 package com.printcalculator.dto;
 
 import lombok.Data;
+import jakarta.validation.constraints.AssertTrue;
 
 @Data
 public class QuoteRequestDto {
@@ -12,4 +13,10 @@ public class QuoteRequestDto {
     private String companyName;
     private String contactPerson;
     private String message;
+
+    @AssertTrue(message = "L'accettazione dei Termini e Condizioni e obbligatoria.")
+    private boolean acceptTerms;
+
+    @AssertTrue(message = "L'accettazione dell'Informativa Privacy e obbligatoria.")
+    private boolean acceptPrivacy;
 }

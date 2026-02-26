@@ -12,6 +12,8 @@ export interface QuoteRequestDto {
   companyName?: string;
   contactPerson?: string;
   message: string;
+  acceptTerms: boolean;
+  acceptPrivacy: boolean;
 }
 
 @Injectable({

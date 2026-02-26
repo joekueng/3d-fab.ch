@@ -54,7 +54,8 @@ export class ContactFormComponent implements OnDestroy {
       message: ['', Validators.required],
       isCompany: [false],
       companyName: [''],
-      referencePerson: ['']
+      referencePerson: [''],
+      acceptLegal: [false, Validators.requiredTrue]
     });
 
     // Handle conditional validation for Company fields
@@ -192,7 +193,9 @@ export class ContactFormComponent implements OnDestroy {
         customerType: isCompany ? 'BUSINESS' : 'PRIVATE',
         email: formVal.email,
         phone: formVal.phone,
-        message: formVal.message
+        message: formVal.message,
+        acceptTerms: formVal.acceptLegal,
+        acceptPrivacy: formVal.acceptLegal
       };
 
       if (isCompany) {

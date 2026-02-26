@@ -49,6 +49,7 @@ export class CheckoutComponent implements OnInit {
       customerType: ['PRIVATE', Validators.required], // Default to PRIVATE
       
       shippingSameAsBilling: [true],
+      acceptLegal: [false, Validators.requiredTrue],
       
       billingAddress: this.fb.group({
         firstName: ['', Validators.required],
@@ -189,7 +190,9 @@ export class CheckoutComponent implements OnInit {
         city: formVal.shippingAddress.city,
         countryCode: formVal.shippingAddress.countryCode
       },
-      shippingSameAsBilling: formVal.shippingSameAsBilling
+      shippingSameAsBilling: formVal.shippingSameAsBilling,
+      acceptTerms: formVal.acceptLegal,
+      acceptPrivacy: formVal.acceptLegal
     };
 
     if (!this.sessionId) {

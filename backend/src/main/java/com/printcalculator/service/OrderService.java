@@ -71,6 +71,10 @@ public class OrderService {
 
     @Transactional
     public Order createOrderFromQuote(UUID quoteSessionId, CreateOrderRequest request) {
+        if (!request.isAcceptTerms() || !request.isAcceptPrivacy()) {
+            throw new IllegalArgumentException("Accettazione Termini e Privacy obbligatoria.");
+        }
+
         QuoteSession session = quoteSessionRepo.findById(quoteSessionId)
                 .orElseThrow(() -> new RuntimeException("Quote Session not found"));
 

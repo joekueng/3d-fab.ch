@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import jakarta.validation.Valid;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -80,7 +81,7 @@ public class OrderController {
     @Transactional
     public ResponseEntity<OrderDto> createOrderFromQuote(
             @PathVariable UUID quoteSessionId,
-            @RequestBody com.printcalculator.dto.CreateOrderRequest request
+            @Valid @RequestBody com.printcalculator.dto.CreateOrderRequest request
     ) {
         Order order = orderService.createOrderFromQuote(quoteSessionId, request);
         List<OrderItem> items = orderItemRepo.findByOrder_Id(order.getId());

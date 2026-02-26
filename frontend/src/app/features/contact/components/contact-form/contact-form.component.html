@@ -47,6 +47,7 @@
     <div class="form-group">
       <label>{{ 'CONTACT.UPLOAD_LABEL' | translate }}</label>
       <p class="hint">{{ 'CONTACT.UPLOAD_HINT' | translate }}</p>
+      <p class="hint upload-privacy-note">{{ 'LEGAL.CONSENT.UPLOAD_PRIVACY_NOTICE' | translate }}</p>
 
       <div class="drop-zone" (click)="fileInput.click()"
            (dragover)="onDragOver($event)" (drop)="onDrop($event)">
@@ -68,6 +69,22 @@
           </div>
           <div class="file-name" [title]="file.file.name">{{ file.file.name }}</div>
         </div>
+      </div>
+    </div>
+
+    <div class="legal-consent">
+      <label class="checkbox-container">
+        <input type="checkbox" formControlName="acceptLegal">
+        <span class="checkmark"></span>
+        <span>
+          {{ 'LEGAL.CONSENT.LABEL_PREFIX' | translate }}
+          <a href="/terms" target="_blank" rel="noopener">{{ 'LEGAL.CONSENT.TERMS_LINK' | translate }}</a>
+          {{ 'LEGAL.CONSENT.AND' | translate }}
+          <a href="/privacy" target="_blank" rel="noopener">{{ 'LEGAL.CONSENT.PRIVACY_LINK' | translate }}</a>.
+        </span>
+      </label>
+      <div class="consent-error" *ngIf="form.get('acceptLegal')?.invalid && form.get('acceptLegal')?.touched">
+        {{ 'LEGAL.CONSENT.REQUIRED_ERROR' | translate }}
       </div>
     </div>
 
