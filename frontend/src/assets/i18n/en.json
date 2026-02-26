@@ -142,7 +142,7 @@
     "COMPANY_NAME": "Company Name",
     "REF_PERSON": "Reference Person",
     "UPLOAD_LABEL": "Attachments",
-    "UPLOAD_HINT": "Max 15 files. Supported: Images, PDF, STL, STEP, 3MF",
+    "UPLOAD_HINT": "Max 15 files. Supported: images, videos, PDF, Office documents, STL/STEP/3MF/OBJ/IGES, DWG/DXF. Compressed files are not allowed.",
     "DROP_FILES": "Drop files here or click to upload",
     "PLACEHOLDER_NAME": "Your Name",
     "PLACEHOLDER_EMAIL": "your@email.com",
@@ -154,9 +154,15 @@
     "LABEL_NAME": "Name *",
     "MSG_SENT": "Sent!",
     "ERR_MAX_FILES": "Max 15 files limit reached.",
+    "ERR_COMPRESSED_FILES": "Compressed files are not allowed (ZIP/RAR/7z/TAR/GZ).",
     "SUCCESS_TITLE": "Message Sent Successfully",
     "SUCCESS_DESC": "Thank you for contacting us. We have received your message and will send you a recap email shortly.",
-    "SEND_ANOTHER": "Send Another Message"
+    "SEND_ANOTHER": "Send Another Message",
+    "FILE_TYPE_PDF": "PDF",
+    "FILE_TYPE_3D": "3D",
+    "FILE_TYPE_VIDEO": "Video",
+    "FILE_TYPE_DOC": "DOC",
+    "FILE_TYPE_FILE": "FILE"
   },
   "CHECKOUT": {
     "TITLE": "Checkout",

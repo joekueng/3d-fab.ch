@@ -231,6 +231,8 @@
         background: var(--color-neutral-100);
         margin: -1.5rem -1.5rem 1.5rem -1.5rem; /* Negative margins to bleed to edge */
         width: calc(100% + 3rem);
+        border-top-left-radius: var(--radius-lg);
+        border-top-right-radius: var(--radius-lg);
         border-bottom: 1px solid var(--color-border);
         display: flex;
         align-items: center;
@@ -417,8 +419,9 @@
       .hero-actions { flex-direction: column; align-items: stretch; }
       .quote-meta { grid-template-columns: 1fr; }
       .shop-gallery {
-        width: min(100%, 320px);
-        justify-self: start;
+        width: 100%;
+        max-width: none;
+        justify-self: stretch;
       }
       .shop-gallery-item {
         aspect-ratio: 16 / 11;

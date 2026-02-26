@@ -4,10 +4,12 @@ import com.printcalculator.entity.CustomQuoteRequest;
 import com.printcalculator.entity.CustomQuoteRequestAttachment;
 import com.printcalculator.repository.CustomQuoteRequestAttachmentRepository;
 import com.printcalculator.repository.CustomQuoteRequestRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -15,8 +17,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -29,6 +31,23 @@ public class CustomQuoteRequestController {
     
     // TODO: Inject Storage Service
     private static final String STORAGE_ROOT = "storage_requests";
+    private static final Set<String> FORBIDDEN_COMPRESSED_EXTENSIONS = Set.of(
+            "zip", "rar", "7z", "tar", "gz", "tgz", "bz2", "tbz2", "xz", "txz", "zst"
+    );
+    private static final Set<String> FORBIDDEN_COMPRESSED_MIME_TYPES = Set.of(
+            "application/zip",
+            "application/x-zip-compressed",
+            "application/x-rar-compressed",
+            "application/vnd.rar",
+            "application/x-7z-compressed",
+            "application/gzip",
+            "application/x-gzip",
+            "application/x-tar",
+            "application/x-bzip2",
+            "application/x-xz",
+            "application/zstd",
+            "application/x-zstd"
+    );
 
     public CustomQuoteRequestController(CustomQuoteRequestRepository requestRepo,
                                         CustomQuoteRequestAttachmentRepository attachmentRepo,
@@ -70,6 +89,13 @@ public class CustomQuoteRequestController {
             
             for (MultipartFile file : files) {
                 if (file.isEmpty()) continue;
+
+                if (isCompressedFile(file)) {
+                    throw new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "Compressed files are not allowed."
+                    );
+                }
                 
                 // Scan for virus
                 clamAVService.scan(file.getInputStream());
@@ -120,8 +146,17 @@ public class CustomQuoteRequestController {
         if (filename == null) return "dat";
         int i = filename.lastIndexOf('.');
         if (i > 0) {
-            return filename.substring(i + 1);
+            return filename.substring(i + 1).toLowerCase();
         }
         return "dat";
+    }
+
+    private boolean isCompressedFile(MultipartFile file) {
+        String ext = getExtension(file.getOriginalFilename());
+        if (FORBIDDEN_COMPRESSED_EXTENSIONS.contains(ext)) {
+            return true;
+        }
+        String mime = file.getContentType();
+        return mime != null && FORBIDDEN_COMPRESSED_MIME_TYPES.contains(mime.toLowerCase());
     }
 }

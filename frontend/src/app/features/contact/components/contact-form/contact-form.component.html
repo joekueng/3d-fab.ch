@@ -51,7 +51,7 @@
       <div class="drop-zone" (click)="fileInput.click()"
            (dragover)="onDragOver($event)" (drop)="onDrop($event)">
         <input #fileInput type="file" multiple (change)="onFileSelected($event)" hidden
-               accept=".jpg,.jpeg,.png,.pdf,.stl,.step,.stp,.3mf">
+               [accept]="acceptedFormats">
         <p>{{ 'CONTACT.DROP_FILES' | translate }}</p>
       </div>
 
@@ -59,9 +59,12 @@
         <div class="file-item" *ngFor="let file of files(); let i = index">
           <button type="button" class="remove-btn" (click)="removeFile(i)">×</button>
           <img *ngIf="file.type === 'image'" [src]="file.url" class="preview-img">
-          <div *ngIf="file.type !== 'image'" class="file-icon">
+          <video *ngIf="file.type === 'video'" [src]="file.url" class="preview-video" muted playsinline preload="metadata"></video>
+          <div *ngIf="file.type !== 'image' && file.type !== 'video'" class="file-icon">
             <span *ngIf="file.type === 'pdf'">{{ 'CONTACT.FILE_TYPE_PDF' | translate }}</span>
             <span *ngIf="file.type === '3d'">{{ 'CONTACT.FILE_TYPE_3D' | translate }}</span>
+            <span *ngIf="file.type === 'document'">{{ 'CONTACT.FILE_TYPE_DOC' | translate }}</span>
+            <span *ngIf="file.type === 'other'">{{ 'CONTACT.FILE_TYPE_FILE' | translate }}</span>
           </div>
           <div class="file-name" [title]="file.file.name">{{ file.file.name }}</div>
         </div>

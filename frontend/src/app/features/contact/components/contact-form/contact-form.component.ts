@@ -1,4 +1,4 @@
-import { Component, signal, effect, inject } from '@angular/core';
+import { Component, signal, effect, inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -10,7 +10,7 @@ import { QuoteRequestService } from '../../../../core/services/quote-request.ser
 interface FilePreview {
   file: File;
   url?: string;
-  type: 'image' | 'pdf' | '3d' | 'other';
+  type: 'image' | 'video' | 'pdf' | '3d' | 'document' | 'other';
 }
 
 import { SuccessStateComponent } from '../../../../shared/components/success-state/success-state.component';
@@ -22,10 +22,11 @@ import { SuccessStateComponent } from '../../../../shared/components/success-sta
   templateUrl: './contact-form.component.html',
   styleUrl: './contact-form.component.scss'
 })
-export class ContactFormComponent {
+export class ContactFormComponent implements OnDestroy {
   form: FormGroup;
   sent = signal(false);
   files = signal<FilePreview[]>([]);
+  readonly acceptedFormats = '.jpg,.jpeg,.png,.webp,.gif,.bmp,.svg,.heic,.heif,.pdf,.stl,.step,.stp,.3mf,.obj,.iges,.igs,.dwg,.dxf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.rtf,.csv,.mp4,.mov,.avi,.mkv,.webm,.m4v,.wmv';
   
   get isCompany(): boolean {
     return this.form.get('isCompany')?.value;
@@ -96,12 +97,20 @@ export class ContactFormComponent {
         });
         
         // Process files
-        const filePreviews: FilePreview[] = [];
-        pending.files.forEach(f => {
-            filePreviews.push({ file: f, type: this.getFileType(f) });
+        const filePreviews: FilePreview[] = pending.files.map(f => {
+          const type = this.getFileType(f);
+          return {
+            file: f,
+            type,
+            url: this.shouldCreatePreview(type) ? URL.createObjectURL(f) : undefined
+          };
         });
         this.files.set(filePreviews);
     }
+  }
+
+  ngOnDestroy(): void {
+    this.revokeAllPreviewUrls();
   }
 
   setCompanyMode(isCompany: boolean) {
@@ -124,36 +133,52 @@ export class ContactFormComponent {
 
   handleFiles(newFiles: File[]) {
     const currentFiles = this.files();
-    if (currentFiles.length + newFiles.length > 15) {
+    const blockedCompressed = newFiles.filter(file => this.isCompressedFile(file));
+    if (blockedCompressed.length > 0) {
+      alert(this.translate.instant('CONTACT.ERR_COMPRESSED_FILES'));
+    }
+
+    const allowedFiles = newFiles.filter(file => !this.isCompressedFile(file));
+    if (allowedFiles.length === 0) return;
+
+    if (currentFiles.length + allowedFiles.length > 15) {
       alert(this.translate.instant('CONTACT.ERR_MAX_FILES'));
       return;
     }
 
-    newFiles.forEach(file => {
+    allowedFiles.forEach(file => {
       const type = this.getFileType(file);
-      const preview: FilePreview = { file, type };
-
-      if (type === 'image') {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          preview.url = e.target?.result as string;
-          this.files.update(files => [...files]); 
-        };
-        reader.readAsDataURL(file);
-      }
+      const preview: FilePreview = {
+        file,
+        type,
+        url: this.shouldCreatePreview(type) ? URL.createObjectURL(file) : undefined
+      };
       this.files.update(files => [...files, preview]);
     });
   }
 
   removeFile(index: number) {
-    this.files.update(files => files.filter((_, i) => i !== index));
+    this.files.update(files => {
+      const fileToRemove = files[index];
+      if (fileToRemove) this.revokePreviewUrl(fileToRemove);
+      return files.filter((_, i) => i !== index);
+    });
   }
 
-  getFileType(file: File): 'image' | 'pdf' | '3d' | 'other' {
-    if (file.type.startsWith('image/')) return 'image';
-    if (file.type === 'application/pdf') return 'pdf';
-    const ext = file.name.split('.').pop()?.toLowerCase();
-    if (['stl', 'step', 'stp', '3mf', 'obj'].includes(ext || '')) return '3d';
+  getFileType(file: File): 'image' | 'video' | 'pdf' | '3d' | 'document' | 'other' {
+    const ext = this.getExtension(file.name);
+
+    if (file.type.startsWith('image/') || ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'svg', 'heic', 'heif'].includes(ext)) {
+      return 'image';
+    }
+    if (file.type.startsWith('video/') || ['mp4', 'mov', 'avi', 'mkv', 'webm', 'm4v', 'wmv'].includes(ext)) {
+      return 'video';
+    }
+    if (file.type === 'application/pdf' || ext === 'pdf') return 'pdf';
+    if (['stl', 'step', 'stp', '3mf', 'obj', 'iges', 'igs', 'dwg', 'dxf'].includes(ext)) return '3d';
+    if ([
+      'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'rtf', 'csv',
+    ].includes(ext)) return 'document';
     return 'other';
   }
 
@@ -195,6 +220,48 @@ export class ContactFormComponent {
   resetForm() {
     this.sent.set(false);
     this.form.reset({ requestType: 'custom', isCompany: false });
+    this.revokeAllPreviewUrls();
     this.files.set([]);
+  }
+
+  private getExtension(fileName: string): string {
+    const index = fileName.lastIndexOf('.');
+    return index > -1 ? fileName.substring(index + 1).toLowerCase() : '';
+  }
+
+  private shouldCreatePreview(type: FilePreview['type']): boolean {
+    return type === 'image' || type === 'video';
+  }
+
+  private isCompressedFile(file: File): boolean {
+    const ext = this.getExtension(file.name);
+    const compressedExtensions = [
+      'zip', 'rar', '7z', 'tar', 'gz', 'tgz', 'bz2', 'tbz2', 'xz', 'txz', 'zst'
+    ];
+    const compressedMimeTypes = [
+      'application/zip',
+      'application/x-zip-compressed',
+      'application/x-rar-compressed',
+      'application/vnd.rar',
+      'application/x-7z-compressed',
+      'application/gzip',
+      'application/x-gzip',
+      'application/x-tar',
+      'application/x-bzip2',
+      'application/x-xz',
+      'application/zstd',
+      'application/x-zstd'
+    ];
+    return compressedExtensions.includes(ext) || compressedMimeTypes.includes((file.type || '').toLowerCase());
+  }
+
+  private revokePreviewUrl(file: FilePreview): void {
+    if (file.url?.startsWith('blob:')) {
+      URL.revokeObjectURL(file.url);
+    }
+  }
+
+  private revokeAllPreviewUrls(): void {
+    this.files().forEach(file => this.revokePreviewUrl(file));
   }
 }
