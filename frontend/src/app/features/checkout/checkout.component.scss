@@ -240,6 +240,17 @@ app-toggle-selector.user-type-selector-compact {
     margin-left: var(--space-3);
     white-space: nowrap;
     color: var(--color-text);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+
+    .item-unit-price {
+      margin-top: 2px;
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: var(--color-text-muted);
+      line-height: 1.2;
+    }
   }
 }
 

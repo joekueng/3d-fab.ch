@@ -53,7 +53,7 @@
     "CARD_SHOP_3_TITLE": "Su richiesta",
     "CARD_SHOP_3_TEXT": "Non trovi quello che serve? Lo progettiamo e lo produciamo per te.",
     "SEC_ABOUT_TITLE": "Su di noi",
-    "SEC_ABOUT_TEXT": "Siamo due studenti di ingegneria: la stampa 3D ci ha conquistati per un motivo semplice, vedere un problema e costruire la soluzione. Da questa idea prendono forma prototipi, componenti oggetti pensati per funzionare nella quotidianità. ",
+    "SEC_ABOUT_TEXT": "Siamo due studenti di ingegneria: la stampa 3D ci ha conquistati per un motivo semplice, vedere un problema e costruire la soluzione. Da questa idea prendono forma prototipi, oggetti pensati per funzionare nella quotidianità. ",
     "FOUNDERS_PHOTO": "Foto Founders"
   },
   "CALC": {
@@ -103,13 +103,14 @@
     "PROCESSING": "Elaborazione...",
     "NOTES_PLACEHOLDER": "Istruzioni specifiche...",
     "SETUP_NOTE": "* Include {{cost}} Costo di Setup",
-    "SHIPPING_NOTE": "** costi di spedizione esclusi calcolati al prossimo passaggio",
+    "SHIPPING_NOTE": "** costi di spedizione esclusi, calcolati al prossimo passaggio",
     "STEP_WARNING": "La visualizzazione 3D non è compatibile con i file step e 3mf"
   },
   "QUOTE": {
     "PROCEED_ORDER": "Procedi con l'ordine",
     "CONSULT": "Richiedi Consulenza",
-    "TOTAL": "Totale"
+    "TOTAL": "Totale",
+    "MAX_QTY_NOTICE": "Per quantità oltre {{max}} pezzi, richiedi consulenza."
   },
   "USER_DETAILS": {
     "TITLE": "I tuoi dati",
@@ -153,7 +154,7 @@
     "TITLE": "Chi Siamo",
     "EYEBROW": "Laboratorio di stampa 3D",
     "SUBTITLE": "Siamo due studenti con tanta voglia di fare e di imparare.",
-    "HOW_TEXT": "3D Fab nasce dall’interesse iniziale di Matteo per la stampa 3D. Ha comprato una stampante e ha iniziato a sperimentare sul serio. \n A un certo punto sono arrivate le prime richieste: un pezzo rotto da sostituire, un ricambio che non si trova, un adattatore comodo da avere. Le richieste sono aumentate e ci siamo detti: ok, facciamolo bene.\nOggi trasformiamo bisogni concreti e idee in pezzi stampati, con costi trasparenti.\nIn seguito abbiamo creato un calcolatore per capire il costo in anticipo: è stato uno dei primi passi che ci ha fatto passare dal “facciamo qualche pezzo” a un progetto vero, insieme.",
+    "HOW_TEXT": "3D Fab nasce dall’interesse iniziale di Matteo per la stampa 3D. Ha comprato una stampante e ha iniziato a sperimentare sul serio. \n A un certo punto sono arrivate le prime richieste: un pezzo rotto da sostituire, un ricambio che non si trova, un adattatore comodo da avere. Le richieste sono aumentate e ci siamo detti: ok, facciamolo bene.\nIn seguito abbiamo creato un calcolatore per capire il costo in anticipo: è stato uno dei primi passi che ci ha fatto passare dal “facciamo qualche pezzo” a un progetto vero, insieme.",
     "PASSIONS_TITLE": "Le nostre passioni",
     "PASSION_BIKE_TRIAL": "Bike trial",
     "PASSION_MOUNTAIN": "Montagna",
@@ -411,6 +412,7 @@
     "SETUP_FEE": "Costo di Avvio",
     "TOTAL": "Totale",
     "QTY": "Qtà",
+    "PER_PIECE": "al pezzo",
     "SHIPPING": "Spedizione (CH)",
     "INVALID_EMAIL": "Email non valida",
     "COMPANY_OPTIONAL": "Nome Azienda (Opzionale)",

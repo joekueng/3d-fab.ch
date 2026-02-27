@@ -122,10 +122,15 @@
           <div class="summary-item" *ngFor="let item of quote()!.items">
             <div class="item-info">
               <span class="item-name">{{ item.fileName }}</span>
-              <span class="item-meta">{{ item.material }} - {{ item.color || 'Default' }}</span>
+              <span class="item-meta">{{ item.material }} - {{ item.color || ('USER_DETAILS.DEFAULT_COLOR' | translate) }}</span>
             </div>
             <div class="item-qty">x{{ item.quantity }}</div>
-            <div class="item-price">{{ (item.unitPrice * item.quantity) | currency:'CHF' }}</div>
+            <div class="item-price">
+              <span class="item-total-price">{{ (item.unitPrice * item.quantity) | currency:'CHF' }}</span>
+              <small class="item-unit-price" *ngIf="item.quantity > 1">
+                {{ item.unitPrice | currency:'CHF' }} {{ 'CHECKOUT.PER_PIECE' | translate }}
+              </small>
+            </div>
           </div>
 
           <hr>

@@ -15,6 +15,9 @@ import { QuoteResult, QuoteItem } from '../../services/quote-estimator.service';
   styleUrl: './quote-result.component.scss'
 })
 export class QuoteResultComponent {
+  readonly maxInputQuantity = 500;
+  readonly directOrderLimit = 100;
+
   result = input.required<QuoteResult>();
   consult = output<void>();
   proceed = output<void>();
@@ -34,19 +37,22 @@ export class QuoteResultComponent {
   updateQuantity(index: number, newQty: number | string) {
       const qty = typeof newQty === 'string' ? parseInt(newQty, 10) : newQty;
       if (qty < 1 || isNaN(qty)) return;
+      const normalizedQty = Math.min(qty, this.maxInputQuantity);
 
       this.items.update(current => {
           const updated = [...current];
-          updated[index] = { ...updated[index], quantity: qty };
+          updated[index] = { ...updated[index], quantity: normalizedQty };
           return updated;
       });
       
       this.itemChange.emit({
           id: this.items()[index].id,
           fileName: this.items()[index].fileName,
-          quantity: qty
+          quantity: normalizedQty
       });
   }
+
+  hasQuantityOverLimit = computed(() => this.items().some(item => item.quantity > this.directOrderLimit));
 
   totals = computed(() => {
       const currentItems = this.items();

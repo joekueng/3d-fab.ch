@@ -7,7 +7,8 @@
   "QUOTE": {
     "CONSULT": "Request Consultation",
     "PROCEED_ORDER": "Proceed to Order",
-    "TOTAL": "Total Estimate"
+    "TOTAL": "Total Estimate",
+    "MAX_QTY_NOTICE": "For quantities above {{max}} pieces, request consultation."
   },
   "USER_DETAILS": {
     "TITLE": "Shipping Details",
@@ -208,6 +209,7 @@
     "SETUP_FEE": "Setup Fee",
     "TOTAL": "Total",
     "QTY": "Qty",
+    "PER_PIECE": "per piece",
     "SHIPPING": "Shipping"
   },
   "PAYMENT": {

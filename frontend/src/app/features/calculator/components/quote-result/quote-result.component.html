@@ -51,12 +51,21 @@
                 <input 
                     type="number" 
                     min="1" 
+                    [max]="maxInputQuantity"
                     [ngModel]="item.quantity" 
                     (ngModelChange)="updateQuantity(i, $event)"
                     class="qty-input">
             </div>
             <div class="item-price">
-                {{ (item.unitPrice * item.quantity) | currency:result().currency }}
+                <span class="item-total-price">
+                    {{ (item.unitPrice * item.quantity) | currency:result().currency }}
+                </span>
+                <small class="item-unit-price" *ngIf="item.quantity > 1; else unitPricePlaceholder">
+                    {{ item.unitPrice | currency:result().currency }} {{ 'CHECKOUT.PER_PIECE' | translate }}
+                </small>
+                <ng-template #unitPricePlaceholder>
+                    <small class="item-unit-price item-unit-price--placeholder">&nbsp;</small>
+                </ng-template>
             </div>
         </div>
       </div>
@@ -67,9 +76,13 @@
     <app-button variant="outline" (click)="consult.emit()">
       {{ 'QUOTE.CONSULT' | translate }}
     </app-button>
-    
-    <app-button (click)="proceed.emit()">
-        {{ 'QUOTE.PROCEED_ORDER' | translate }}
-    </app-button>
+
+    @if (!hasQuantityOverLimit()) {
+      <app-button (click)="proceed.emit()">
+          {{ 'QUOTE.PROCEED_ORDER' | translate }}
+      </app-button>
+    } @else {
+      <small class="limit-note">{{ 'QUOTE.MAX_QTY_NOTICE' | translate:{ max: directOrderLimit } }}</small>
+    }
   </div>
 </app-card>
