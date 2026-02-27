@@ -109,6 +109,45 @@ export interface SimpleOption {
 })
 export class QuoteEstimatorService {
   private http = inject(HttpClient);
+
+  private buildEasyModePreset(quality: string | undefined): {
+      quality: string;
+      layerHeight: number;
+      infillDensity: number;
+      infillPattern: string;
+      nozzleDiameter: number;
+  } {
+      const normalized = (quality || 'standard').toLowerCase();
+
+      // Legacy alias support.
+      if (normalized === 'high' || normalized === 'extra_fine') {
+          return {
+              quality: 'extra_fine',
+              layerHeight: 0.12,
+              infillDensity: 20,
+              infillPattern: 'grid',
+              nozzleDiameter: 0.4
+          };
+      }
+
+      if (normalized === 'draft') {
+          return {
+              quality: 'extra_fine',
+              layerHeight: 0.24,
+              infillDensity: 12,
+              infillPattern: 'grid',
+              nozzleDiameter: 0.4
+          };
+      }
+
+      return {
+          quality: 'standard',
+          layerHeight: 0.2,
+          infillDensity: 15,
+          infillPattern: 'grid',
+          nozzleDiameter: 0.4
+      };
+  }
   
   getOptions(): Observable<OptionsResponse> {
       console.log('QuoteEstimatorService: Requesting options...');
@@ -223,20 +262,24 @@ export class QuoteEstimatorService {
                 request.items.forEach((item, index) => {
                      const formData = new FormData();
                      formData.append('file', item.file);
+
+                     const easyPreset = request.mode === 'easy'
+                         ? this.buildEasyModePreset(request.quality)
+                         : null;
                      
                      const settings = {
-                         complexityMode: request.mode.toUpperCase(),
+                         complexityMode: request.mode === 'easy' ? 'ADVANCED' : request.mode.toUpperCase(),
                          material: request.material,
-                         quality: request.quality,
+                         quality: easyPreset ? easyPreset.quality : request.quality,
                          supportsEnabled: request.supportEnabled,
                          color: item.color || '#FFFFFF',
                          boundingBoxX: item.dimensions?.x,
                          boundingBoxY: item.dimensions?.y,
                          boundingBoxZ: item.dimensions?.z,
-                         layerHeight: request.mode === 'advanced' ? request.layerHeight : null,
-                         infillDensity: request.mode === 'advanced' ? request.infillDensity : null,
-                         infillPattern: request.mode === 'advanced' ? request.infillPattern : null,
-                         nozzleDiameter: request.mode === 'advanced' ? request.nozzleDiameter : null
+                         layerHeight: easyPreset ? easyPreset.layerHeight : request.layerHeight,
+                         infillDensity: easyPreset ? easyPreset.infillDensity : request.infillDensity,
+                         infillPattern: easyPreset ? easyPreset.infillPattern : request.infillPattern,
+                         nozzleDiameter: easyPreset ? easyPreset.nozzleDiameter : request.nozzleDiameter
                      };
         
                      const settingsBlob = new Blob([JSON.stringify(settings)], { type: 'application/json' });

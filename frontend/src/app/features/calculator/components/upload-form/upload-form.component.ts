@@ -1,4 +1,4 @@
-import { Component, input, output, signal, effect, OnInit, inject } from '@angular/core';
+import { Component, input, output, signal, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -51,6 +51,7 @@ export class UploadFormComponent implements OnInit {
 
   // Store full material options to lookup variants/colors if needed later
   private fullMaterialOptions: MaterialOption[] = [];
+  private isPatchingSettings = false;
 
   // Computed variants for valid material
   currentMaterialVariants = signal<VariantOption[]>([]);
@@ -121,6 +122,25 @@ export class UploadFormComponent implements OnInit {
     this.form.get('material')?.valueChanges.subscribe(() => {
         this.updateVariants();
     });
+
+    this.form.get('quality')?.valueChanges.subscribe((quality) => {
+        if (this.mode() !== 'easy' || this.isPatchingSettings) return;
+        this.applyAdvancedPresetFromQuality(quality);
+    });
+  }
+
+  private applyAdvancedPresetFromQuality(quality: string | null | undefined) {
+      const normalized = (quality || 'standard').toLowerCase();
+
+      const presets: Record<string, { nozzleDiameter: number; layerHeight: number; infillDensity: number; infillPattern: string }> = {
+          standard: { nozzleDiameter: 0.4, layerHeight: 0.2, infillDensity: 15, infillPattern: 'grid' },
+          extra_fine: { nozzleDiameter: 0.4, layerHeight: 0.12, infillDensity: 20, infillPattern: 'grid' },
+          high: { nozzleDiameter: 0.4, layerHeight: 0.12, infillDensity: 20, infillPattern: 'grid' }, // Legacy alias
+          draft: { nozzleDiameter: 0.4, layerHeight: 0.24, infillDensity: 12, infillPattern: 'grid' }
+      };
+
+      const preset = presets[normalized] || presets['standard'];
+      this.form.patchValue(preset, { emitEvent: false });
   }
 
   ngOnInit() {
@@ -318,8 +338,8 @@ export class UploadFormComponent implements OnInit {
 
       // Let's try to reverse map or defaults.
       if (settings.layerHeightMm) {
-          if (settings.layerHeightMm >= 0.28) patch.quality = 'draft';
-          else if (settings.layerHeightMm <= 0.12) patch.quality = 'high';
+          if (settings.layerHeightMm >= 0.24) patch.quality = 'draft';
+          else if (settings.layerHeightMm <= 0.12) patch.quality = 'extra_fine';
           else patch.quality = 'standard';
 
           patch.layerHeight = settings.layerHeightMm;
@@ -331,7 +351,9 @@ export class UploadFormComponent implements OnInit {
       if (settings.supportsEnabled !== undefined) patch.supportEnabled = settings.supportsEnabled;
       if (settings.notes) patch.notes = settings.notes;
 
-      this.form.patchValue(patch);
+      this.isPatchingSettings = true;
+      this.form.patchValue(patch, { emitEvent: false });
+      this.isPatchingSettings = false;
   }
 
   onSubmit() {
