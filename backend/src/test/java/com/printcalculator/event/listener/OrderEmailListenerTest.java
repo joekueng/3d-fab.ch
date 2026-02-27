@@ -3,6 +3,10 @@ package com.printcalculator.event.listener;
 import com.printcalculator.entity.Customer;
 import com.printcalculator.entity.Order;
 import com.printcalculator.event.OrderCreatedEvent;
+import com.printcalculator.repository.OrderItemRepository;
+import com.printcalculator.service.InvoicePdfRenderingService;
+import com.printcalculator.service.QrBillService;
+import com.printcalculator.service.StorageService;
 import com.printcalculator.service.email.EmailNotificationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,15 +16,23 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -30,17 +42,32 @@ class OrderEmailListenerTest {
     @Mock
     private EmailNotificationService emailNotificationService;
 
+    @Mock
+    private InvoicePdfRenderingService invoicePdfRenderingService;
+
+    @Mock
+    private OrderItemRepository orderItemRepository;
+
+    @Mock
+    private QrBillService qrBillService;
+
+    @Mock
+    private StorageService storageService;
+
     @InjectMocks
     private OrderEmailListener orderEmailListener;
 
     @Captor
     private ArgumentCaptor<Map<String, Object>> templateDataCaptor;
 
+    @Captor
+    private ArgumentCaptor<byte[]> attachmentDataCaptor;
+
     private Order order;
     private OrderCreatedEvent event;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         Customer customer = new Customer();
         customer.setFirstName("John");
         customer.setLastName("Doe");
@@ -57,75 +84,77 @@ class OrderEmailListenerTest {
         ReflectionTestUtils.setField(orderEmailListener, "adminMailEnabled", true);
         ReflectionTestUtils.setField(orderEmailListener, "adminMailAddress", "admin@printcalculator.local");
         ReflectionTestUtils.setField(orderEmailListener, "frontendBaseUrl", "https://3d-fab.ch");
+
+        when(storageService.loadAsResource(any())).thenReturn(new ByteArrayResource("PDF".getBytes(StandardCharsets.UTF_8)));
     }
 
     @Test
     void handleOrderCreatedEvent_ShouldSendCustomerAndAdminEmails() {
-        // Act
         orderEmailListener.handleOrderCreatedEvent(event);
 
-        // Assert Customer Email
-        verify(emailNotificationService, times(1)).sendEmail(
+        verify(emailNotificationService, times(1)).sendEmailWithAttachment(
                 eq("john.doe@test.com"),
                 eq("Conferma Ordine #" + order.getOrderNumber() + " - 3D-Fab"),
                 eq("order-confirmation"),
-                templateDataCaptor.capture()
+                templateDataCaptor.capture(),
+                eq("Conferma-Ordine-" + order.getOrderNumber() + ".pdf"),
+                attachmentDataCaptor.capture()
         );
 
-        Map<String, Object> customerData = templateDataCaptor.getAllValues().get(0);
+        Map<String, Object> customerData = templateDataCaptor.getValue();
         assertEquals("John", customerData.get("customerName"));
         assertEquals(order.getId(), customerData.get("orderId"));
         assertEquals(order.getOrderNumber(), customerData.get("orderNumber"));
-        assertEquals("https://3d-fab.ch/co/" + order.getId(), customerData.get("orderDetailsUrl"));
-        assertEquals(order.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")), customerData.get("orderDate"));
-        assertEquals("150.50", customerData.get("totalCost"));
+        assertEquals("https://3d-fab.ch/it/co/" + order.getId(), customerData.get("orderDetailsUrl"));
+        assertNotNull(customerData.get("orderDate"));
+        assertTrue(customerData.get("orderDate").toString().contains("2026"));
+        assertTrue(customerData.get("totalCost").toString().contains("150"));
+        assertArrayEquals("PDF".getBytes(StandardCharsets.UTF_8), attachmentDataCaptor.getValue());
 
-        // Assert Admin Email
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Map<String, Object>> adminTemplateCaptor = (ArgumentCaptor<Map<String, Object>>) (ArgumentCaptor<?>) ArgumentCaptor.forClass(Map.class);
         verify(emailNotificationService, times(1)).sendEmail(
                 eq("admin@printcalculator.local"),
-                eq("Nuovo Ordine Ricevuto #" + order.getOrderNumber() + " - Doe"),
+                eq("Nuovo Ordine Ricevuto #" + order.getOrderNumber() + " - John Doe"),
                 eq("order-confirmation"),
-                templateDataCaptor.capture()
+                adminTemplateCaptor.capture()
         );
 
-        Map<String, Object> adminData = templateDataCaptor.getAllValues().get(1);
+        Map<String, Object> adminData = adminTemplateCaptor.getValue();
         assertEquals("John Doe", adminData.get("customerName"));
     }
-    
+
     @Test
     void handleOrderCreatedEvent_WithAdminDisabled_ShouldOnlySendCustomerEmail() {
-        // Arrange
         ReflectionTestUtils.setField(orderEmailListener, "adminMailEnabled", false);
-        
-        // Act
+
         orderEmailListener.handleOrderCreatedEvent(event);
 
-        // Assert
-        verify(emailNotificationService, times(1)).sendEmail(
+        verify(emailNotificationService, times(1)).sendEmailWithAttachment(
                 eq("john.doe@test.com"),
                 anyString(),
                 anyString(),
+                anyMap(),
+                anyString(),
                 any()
         );
-        
+
         verify(emailNotificationService, never()).sendEmail(
                 eq("admin@printcalculator.local"),
                 anyString(),
                 anyString(),
-                any()
+                anyMap()
         );
     }
-    
+
     @Test
     void handleOrderCreatedEvent_ExceptionHandling_ShouldNotPropagate() {
-        // Arrange
         doThrow(new RuntimeException("Simulated Mail Failure"))
-            .when(emailNotificationService).sendEmail(anyString(), anyString(), anyString(), any());
-            
-        // Act & Assert
-        // Event listener shouldn't throw exception back, thus passing the test.
-        orderEmailListener.handleOrderCreatedEvent(event);
-        
-        verify(emailNotificationService, times(1)).sendEmail(anyString(), anyString(), anyString(), any());
+                .when(emailNotificationService).sendEmailWithAttachment(anyString(), anyString(), anyString(), anyMap(), anyString(), any());
+
+        assertDoesNotThrow(() -> orderEmailListener.handleOrderCreatedEvent(event));
+
+        verify(emailNotificationService, times(1))
+                .sendEmailWithAttachment(anyString(), anyString(), anyString(), anyMap(), anyString(), any());
     }
 }
