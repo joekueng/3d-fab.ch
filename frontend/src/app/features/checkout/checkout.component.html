@@ -32,6 +32,12 @@
               <h3>{{ 'CHECKOUT.BILLING_ADDR' | translate }}</h3>
             </div>
             <div formGroupName="billingAddress">
+              <!-- User Type Selector -->
+              <app-toggle-selector class="mb-4 user-type-selector-compact"
+                [options]="userTypeOptions"
+                [selectedValue]="checkoutForm.get('customerType')?.value"
+                (selectionChange)="setCustomerType($event)">
+              </app-toggle-selector>
               
               <!-- Private Person Fields -->
               <div *ngIf="!isCompany" class="form-row">
@@ -44,13 +50,6 @@
                 <app-input formControlName="companyName" [label]="'CHECKOUT.COMPANY_NAME' | translate" [required]="true" [placeholder]="'CONTACT.PLACEHOLDER_COMPANY' | translate"></app-input>
                 <app-input formControlName="referencePerson" [label]="'CONTACT.REF_PERSON' | translate" [required]="true" [placeholder]="'CONTACT.PLACEHOLDER_REF_PERSON' | translate"></app-input>
               </div>
-
-              <!-- User Type Selector -->
-              <app-toggle-selector 
-                [options]="userTypeOptions"
-                [selectedValue]="checkoutForm.get('customerType')?.value"
-                (selectionChange)="setCustomerType($event)">
-              </app-toggle-selector>
               
               <app-input formControlName="addressLine1" [label]="'CHECKOUT.ADDRESS_1' | translate" [required]="true"></app-input>
               <app-input formControlName="addressLine2" [label]="'CHECKOUT.ADDRESS_2' | translate"></app-input>

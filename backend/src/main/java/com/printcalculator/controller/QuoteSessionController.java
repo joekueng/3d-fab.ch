@@ -3,6 +3,7 @@ package com.printcalculator.controller;
 import com.printcalculator.entity.PrinterMachine;
 import com.printcalculator.entity.QuoteLineItem;
 import com.printcalculator.entity.QuoteSession;
+import com.printcalculator.model.ModelDimensions;
 import com.printcalculator.model.PrintStats;
 import com.printcalculator.model.QuoteResult;
 import com.printcalculator.repository.PrinterMachineRepository;
@@ -28,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.Optional;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 
@@ -183,6 +185,8 @@ public class QuoteSessionController {
                 null, // machine overrides
                 processOverrides
             );
+
+            Optional<ModelDimensions> modelDimensions = slicerService.inspectModelDimensions(persistentPath.toFile());
             
             // 4. Calculate Quote
             QuoteResult result = quoteCalculator.calculate(stats, machine.getPrinterDisplayName(), filamentProfile);
@@ -206,14 +210,16 @@ public class QuoteSessionController {
             breakdown.put("setup_fee", 0);
             item.setPricingBreakdown(breakdown);
             
-            // Dimensions
-            // Cannot get bb from GCodeParser yet? 
-            // If GCodeParser doesn't return size, we might defaults or 0.
-            // Stats has filament used. 
-            // Let's set dummy for now or upgrade parser later.
-            item.setBoundingBoxXMm(settings.getBoundingBoxX() != null ? BigDecimal.valueOf(settings.getBoundingBoxX()) : BigDecimal.ZERO);
-            item.setBoundingBoxYMm(settings.getBoundingBoxY() != null ? BigDecimal.valueOf(settings.getBoundingBoxY()) : BigDecimal.ZERO);
-            item.setBoundingBoxZMm(settings.getBoundingBoxZ() != null ? BigDecimal.valueOf(settings.getBoundingBoxZ()) : BigDecimal.ZERO);
+            // Dimensions for shipping/package checks are computed server-side from the uploaded model.
+            item.setBoundingBoxXMm(modelDimensions
+                    .map(dim -> BigDecimal.valueOf(dim.xMm()))
+                    .orElseGet(() -> settings.getBoundingBoxX() != null ? BigDecimal.valueOf(settings.getBoundingBoxX()) : BigDecimal.ZERO));
+            item.setBoundingBoxYMm(modelDimensions
+                    .map(dim -> BigDecimal.valueOf(dim.yMm()))
+                    .orElseGet(() -> settings.getBoundingBoxY() != null ? BigDecimal.valueOf(settings.getBoundingBoxY()) : BigDecimal.ZERO));
+            item.setBoundingBoxZMm(modelDimensions
+                    .map(dim -> BigDecimal.valueOf(dim.zMm()))
+                    .orElseGet(() -> settings.getBoundingBoxZ() != null ? BigDecimal.valueOf(settings.getBoundingBoxZ()) : BigDecimal.ZERO));
             
             item.setCreatedAt(OffsetDateTime.now());
             item.setUpdatedAt(OffsetDateTime.now());
@@ -371,7 +377,16 @@ public class QuoteSessionController {
                 break;
             }
         }
-        BigDecimal shippingCostChf = exceedsBaseSize ? BigDecimal.valueOf(4.00) : BigDecimal.valueOf(2.00);
+        int totalQuantity = items.stream()
+                .mapToInt(i -> i.getQuantity() != null ? i.getQuantity() : 1)
+                .sum();
+
+        BigDecimal shippingCostChf;
+        if (exceedsBaseSize) {
+            shippingCostChf = totalQuantity > 5 ? BigDecimal.valueOf(9.00) : BigDecimal.valueOf(4.00);
+        } else {
+            shippingCostChf = BigDecimal.valueOf(2.00);
+        }
 
         BigDecimal grandTotal = itemsTotal.add(setupFee).add(shippingCostChf);
         

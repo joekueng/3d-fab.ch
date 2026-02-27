@@ -5,7 +5,7 @@ import { map, catchError, tap } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 
 export interface QuoteRequest {
-  items: { file: File, quantity: number, color?: string, dimensions?: {x: number, y: number, z: number} }[];
+  items: { file: File, quantity: number, color?: string }[];
   material: string;
   quality: string;
   notes?: string;
@@ -273,9 +273,6 @@ export class QuoteEstimatorService {
                          quality: easyPreset ? easyPreset.quality : request.quality,
                          supportsEnabled: request.supportEnabled,
                          color: item.color || '#FFFFFF',
-                         boundingBoxX: item.dimensions?.x,
-                         boundingBoxY: item.dimensions?.y,
-                         boundingBoxZ: item.dimensions?.z,
                          layerHeight: easyPreset ? easyPreset.layerHeight : request.layerHeight,
                          infillDensity: easyPreset ? easyPreset.infillDensity : request.infillDensity,
                          infillPattern: easyPreset ? easyPreset.infillPattern : request.infillPattern,

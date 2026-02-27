@@ -2,6 +2,7 @@ package com.printcalculator.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.printcalculator.model.ModelDimensions;
 import com.printcalculator.model.PrintStats;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -15,13 +16,19 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class SlicerService {
 
     private static final Logger logger = Logger.getLogger(SlicerService.class.getName());
+    private static final Pattern SIZE_X_PATTERN = Pattern.compile("(?m)^\\s*size_x\\s*=\\s*([-+]?\\d+(?:\\.\\d+)?)\\s*$");
+    private static final Pattern SIZE_Y_PATTERN = Pattern.compile("(?m)^\\s*size_y\\s*=\\s*([-+]?\\d+(?:\\.\\d+)?)\\s*$");
+    private static final Pattern SIZE_Z_PATTERN = Pattern.compile("(?m)^\\s*size_z\\s*=\\s*([-+]?\\d+(?:\\.\\d+)?)\\s*$");
 
     private final String slicerPath;
     private final ProfileManager profileManager;
@@ -146,6 +153,89 @@ public class SlicerService {
             throw new IOException("Interrupted during slicing", e);
         } finally {
             deleteRecursively(tempDir);
+        }
+    }
+
+    public Optional<ModelDimensions> inspectModelDimensions(File inputModel) {
+        Path tempDir = null;
+        try {
+            tempDir = Files.createTempDirectory("slicer_info_");
+            Path infoLogPath = tempDir.resolve("orcaslicer-info.log");
+
+            List<String> command = new ArrayList<>();
+            command.add(slicerPath);
+            command.add("--info");
+            command.add(inputModel.getAbsolutePath());
+
+            ProcessBuilder pb = new ProcessBuilder(command);
+            pb.directory(tempDir.toFile());
+            pb.redirectErrorStream(true);
+            pb.redirectOutput(infoLogPath.toFile());
+
+            Process process = pb.start();
+            boolean finished = process.waitFor(2, TimeUnit.MINUTES);
+            if (!finished) {
+                process.destroyForcibly();
+                logger.warning("Model info extraction timed out for " + inputModel.getName());
+                return Optional.empty();
+            }
+
+            String output = Files.exists(infoLogPath)
+                    ? Files.readString(infoLogPath, StandardCharsets.UTF_8)
+                    : "";
+
+            if (process.exitValue() != 0) {
+                logger.warning("OrcaSlicer --info failed (exit " + process.exitValue() + ") for "
+                        + inputModel.getName() + ": " + output);
+                return Optional.empty();
+            }
+
+            Optional<ModelDimensions> parsed = parseModelDimensionsFromInfoOutput(output);
+            if (parsed.isEmpty()) {
+                logger.warning("Could not parse size_x/size_y/size_z from OrcaSlicer --info output for "
+                        + inputModel.getName() + ": " + output);
+            }
+            return parsed;
+        } catch (Exception e) {
+            logger.warning("Failed to inspect model dimensions for " + inputModel.getName() + ": " + e.getMessage());
+            return Optional.empty();
+        } finally {
+            if (tempDir != null) {
+                deleteRecursively(tempDir);
+            }
+        }
+    }
+
+    static Optional<ModelDimensions> parseModelDimensionsFromInfoOutput(String output) {
+        if (output == null || output.isBlank()) {
+            return Optional.empty();
+        }
+
+        Double x = extractDouble(SIZE_X_PATTERN, output);
+        Double y = extractDouble(SIZE_Y_PATTERN, output);
+        Double z = extractDouble(SIZE_Z_PATTERN, output);
+
+        if (x == null || y == null || z == null) {
+            return Optional.empty();
+        }
+
+        if (x <= 0 || y <= 0 || z <= 0) {
+            return Optional.empty();
+        }
+
+        return Optional.of(new ModelDimensions(x, y, z));
+    }
+
+    private static Double extractDouble(Pattern pattern, String text) {
+        Matcher matcher = pattern.matcher(text);
+        if (!matcher.find()) {
+            return null;
+        }
+
+        try {
+            return Double.parseDouble(matcher.group(1));
+        } catch (NumberFormatException ignored) {
+            return null;
         }
     }
 

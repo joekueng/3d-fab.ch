@@ -176,7 +176,15 @@ public class OrderService {
                 break;
             }
         }
-        order.setShippingCostChf(exceedsBaseSize ? BigDecimal.valueOf(4.00) : BigDecimal.valueOf(2.00));
+        int totalQuantity = quoteItems.stream()
+                .mapToInt(i -> i.getQuantity() != null ? i.getQuantity() : 1)
+                .sum();
+
+        if (exceedsBaseSize) {
+            order.setShippingCostChf(totalQuantity > 5 ? BigDecimal.valueOf(9.00) : BigDecimal.valueOf(4.00));
+        } else {
+            order.setShippingCostChf(BigDecimal.valueOf(2.00));
+        }
 
         order = orderRepo.save(order);
 

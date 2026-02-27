@@ -65,6 +65,11 @@
 }
 
 /* User Type Selector CSS has been extracted to app-toggle-selector component */
+app-toggle-selector.user-type-selector-compact {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+}
 
 .company-fields {
   display: flex;

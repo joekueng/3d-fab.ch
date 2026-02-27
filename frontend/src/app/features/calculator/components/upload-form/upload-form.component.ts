@@ -10,15 +10,11 @@ import { StlViewerComponent } from '../../../../shared/components/stl-viewer/stl
 import { ColorSelectorComponent } from '../../../../shared/components/color-selector/color-selector.component';
 import { QuoteRequest, QuoteEstimatorService, OptionsResponse, SimpleOption, MaterialOption, VariantOption } from '../../services/quote-estimator.service';
 import { getColorHex } from '../../../../core/constants/colors.const';
-import * as THREE from 'three';
-// @ts-ignore
-import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 
 interface FormItem {
     file: File;
     quantity: number;
     color: string;
-    dimensions?: {x: number, y: number, z: number};
 }
 
 @Component({
@@ -72,35 +68,6 @@ export class UploadFormComponent implements OnInit {
       if (!file) return false;
       const name = file.name.toLowerCase();
       return name.endsWith('.stl');
-  }
-
-  private async getStlDimensions(file: File): Promise<{x: number, y: number, z: number} | null> {
-      return new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-              try {
-                  const loader = new STLLoader();
-                  const geometry = loader.parse(e.target?.result as ArrayBuffer);
-                  geometry.computeBoundingBox();
-                  if (geometry.boundingBox) {
-                      const size = new THREE.Vector3();
-                      geometry.boundingBox.getSize(size);
-                      resolve({
-                          x: Math.round(size.x * 10) / 10,
-                          y: Math.round(size.y * 10) / 10,
-                          z: Math.round(size.z * 10) / 10
-                      });
-                      return;
-                  }
-                  resolve(null);
-              } catch (err) {
-                  console.error("Error parsing STL for dimensions:", err);
-                  resolve(null);
-              }
-          };
-          reader.onerror = () => resolve(null);
-          reader.readAsArrayBuffer(file);
-      });
   }
 
   constructor() {
@@ -189,7 +156,7 @@ export class UploadFormComponent implements OnInit {
       }
   }
 
-  async onFilesDropped(newFiles: File[]) {
+  onFilesDropped(newFiles: File[]) {
     const MAX_SIZE = 200 * 1024 * 1024; // 200MB
     const validItems: FormItem[] = [];
     let hasError = false;
@@ -198,13 +165,8 @@ export class UploadFormComponent implements OnInit {
         if (file.size > MAX_SIZE) {
             hasError = true;
         } else {
-            let dimensions = undefined;
-            if (file.name.toLowerCase().endsWith('.stl')) {
-                const dims = await this.getStlDimensions(file);
-                if (dims) dimensions = dims;
-            }
             // Default color is Black
-            validItems.push({ file, quantity: 1, color: 'Black', dimensions });
+            validItems.push({ file, quantity: 1, color: 'Black' });
         }
     }
 
@@ -296,16 +258,11 @@ export class UploadFormComponent implements OnInit {
       });
   }
 
-  async setFiles(files: File[]) {
+  setFiles(files: File[]) {
       const validItems: FormItem[] = [];
       for (const file of files) {
-          let dimensions = undefined;
-          if (file.name.toLowerCase().endsWith('.stl')) {
-              const dims = await this.getStlDimensions(file);
-              if (dims) dimensions = dims;
-          }
           // Default color is Black or derive from somewhere if possible, but here we just init
-          validItems.push({ file, quantity: 1, color: 'Black', dimensions });
+          validItems.push({ file, quantity: 1, color: 'Black' });
       }
 
       if (validItems.length > 0) {
