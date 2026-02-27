@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${emailTitle}">Payment Reported</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 1px solid #eeeeee;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #333333;
+        }
+
+        .content {
+            color: #555555;
+            line-height: 1.6;
+        }
+
+        .status-box {
+            background-color: #fff9e8;
+            border: 1px solid #f4d68a;
+            border-radius: 5px;
+            padding: 12px;
+            margin-top: 18px;
+        }
+
+        .order-box {
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            padding: 12px;
+            margin-top: 18px;
+        }
+
+        .order-box th {
+            text-align: left;
+            padding-right: 18px;
+            vertical-align: top;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 0.9em;
+            color: #999999;
+            margin-top: 30px;
+            border-top: 1px solid #eeeeee;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1 th:text="${headlineText}">Payment reported for order #00000000</h1>
+    </div>
+
+    <div class="content">
+        <p th:text="${greetingText}">Hi Customer,</p>
+        <p th:text="${introText}">We received your payment report and we are now verifying it.</p>
+
+        <div class="status-box">
+            <strong th:text="${statusText}">Current status: Payment under verification.</strong>
+        </div>
+
+        <div class="order-box">
+            <table>
+                <tr>
+                    <th th:text="${labelOrderNumber}">Order number</th>
+                    <td th:text="${orderNumber}">00000000</td>
+                </tr>
+                <tr>
+                    <th th:text="${labelTotal}">Total</th>
+                    <td th:text="${totalCost}">CHF 0.00</td>
+                </tr>
+            </table>
+        </div>
+
+        <p>
+            <span th:text="${orderDetailsCtaText}">Check order status</span>:
+            <a th:href="${orderDetailsUrl}" th:text="${orderDetailsUrl}">https://example.com/en/co/00000000-0000-0000-0000-000000000000</a>
+        </p>
+        <p th:text="${supportText}">You will receive another email once payment is confirmed.</p>
+    </div>
+
+    <div class="footer">
+        <p>&copy; <span th:text="${currentYear}">2026</span> 3D-Fab</p>
+        <p th:text="${footerText}">Automated message.</p>
+    </div>
+</div>
+</body>
+</html>
