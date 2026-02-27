@@ -206,7 +206,13 @@ export class CheckoutComponent implements OnInit {
 
     this.quoteService.createOrder(this.sessionId, orderRequest).subscribe({
       next: (order) => {
-        this.router.navigate(['/order', order.id]);
+        const orderId = order?.id ?? order?.orderId;
+        if (!orderId) {
+          this.isSubmitting.set(false);
+          this.error = 'CHECKOUT.ERR_CREATE_ORDER';
+          return;
+        }
+        this.router.navigate(['/', this.languageService.selectedLang(), 'order', orderId]);
       },
       error: (err) => {
         console.error('Order creation failed', err);

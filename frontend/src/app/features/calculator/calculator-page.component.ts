@@ -11,6 +11,7 @@ import { QuoteResultComponent } from './components/quote-result/quote-result.com
 import { QuoteRequest, QuoteResult, QuoteEstimatorService } from './services/quote-estimator.service';
 import { SuccessStateComponent } from '../../shared/components/success-state/success-state.component';
 import { Router, ActivatedRoute } from '@angular/router';
+import { LanguageService } from '../../core/services/language.service';
 
 @Component({
   selector: 'app-calculator-page',
@@ -37,7 +38,8 @@ export class CalculatorPageComponent implements OnInit {
   constructor(
     private estimator: QuoteEstimatorService, 
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private languageService: LanguageService
   ) {}
 
   ngOnInit() {
@@ -207,7 +209,10 @@ export class CalculatorPageComponent implements OnInit {
   onProceed() {
     const res = this.result();
     if (res && res.sessionId) {
-      this.router.navigate(['/checkout'], { queryParams: { session: res.sessionId } });
+      this.router.navigate(
+        ['/', this.languageService.selectedLang(), 'checkout'],
+        { queryParams: { session: res.sessionId } }
+      );
     } else {
       console.error('No session ID found in quote result');
       // Fallback or error handling
@@ -302,7 +307,7 @@ export class CalculatorPageComponent implements OnInit {
       message: details
     });
 
-    this.router.navigate(['/contact']);
+    this.router.navigate(['/', this.languageService.selectedLang(), 'contact']);
   }
 
   private isInvalidQuote(result: QuoteResult): boolean {
