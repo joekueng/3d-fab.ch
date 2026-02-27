@@ -59,7 +59,6 @@ create table filament_variant
     unique (filament_material_type_id, variant_display_name)
 );
 
--- (opzionale) kg disponibili calcolati
 create view filament_variant_stock_kg as
 select filament_variant_id,
        stock_spools,

@@ -15,14 +15,36 @@
     <section class="list-panel">
       <h2>Lista ordini</h2>
       <div class="list-toolbar">
-        <label for="order-search">Cerca UUID</label>
-        <input
-          id="order-search"
-          type="search"
-          [ngModel]="orderSearchTerm"
-          (ngModelChange)="onSearchChange($event)"
-          placeholder="UUID completo o prefisso (es. 738131d8)"
-        />
+        <label class="toolbar-field" for="order-search">
+          <span>Cerca UUID</span>
+          <input
+            id="order-search"
+            type="search"
+            [ngModel]="orderSearchTerm"
+            (ngModelChange)="onSearchChange($event)"
+            placeholder="UUID completo o prefisso (es. 738131d8)"
+          />
+        </label>
+        <label class="toolbar-field" for="payment-status-filter">
+          <span>Stato pagamento</span>
+          <select
+            id="payment-status-filter"
+            [ngModel]="paymentStatusFilter"
+            (ngModelChange)="onPaymentStatusFilterChange($event)"
+          >
+            <option *ngFor="let option of paymentStatusFilterOptions" [ngValue]="option">{{ option }}</option>
+          </select>
+        </label>
+        <label class="toolbar-field" for="order-status-filter">
+          <span>Stato ordine</span>
+          <select
+            id="order-status-filter"
+            [ngModel]="orderStatusFilter"
+            (ngModelChange)="onOrderStatusFilterChange($event)"
+          >
+            <option *ngFor="let option of orderStatusFilterOptions" [ngValue]="option">{{ option }}</option>
+          </select>
+        </label>
       </div>
       <div class="table-wrap">
         <table>
@@ -31,6 +53,7 @@
               <th>Ordine</th>
               <th>Email</th>
               <th>Pagamento</th>
+              <th>Stato ordine</th>
               <th>Totale</th>
             </tr>
           </thead>
@@ -43,10 +66,11 @@
               <td>{{ order.orderNumber }}</td>
               <td>{{ order.customerEmail }}</td>
               <td>{{ order.paymentStatus || 'PENDING' }}</td>
+              <td>{{ order.status }}</td>
               <td>{{ order.totalChf | currency:'CHF':'symbol':'1.2-2' }}</td>
             </tr>
             <tr class="no-results" *ngIf="filteredOrders.length === 0">
-              <td colspan="4">Nessun ordine trovato per il filtro inserito.</td>
+              <td colspan="5">Nessun ordine trovato per i filtri selezionati.</td>
             </tr>
           </tbody>
         </table>

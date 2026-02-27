@@ -14,6 +14,52 @@ export interface AdminFilamentStockRow {
   active: boolean;
 }
 
+export interface AdminFilamentMaterialType {
+  id: number;
+  materialCode: string;
+  isFlexible: boolean;
+  isTechnical: boolean;
+  technicalTypeLabel?: string;
+}
+
+export interface AdminFilamentVariant {
+  id: number;
+  materialTypeId: number;
+  materialCode: string;
+  materialIsFlexible: boolean;
+  materialIsTechnical: boolean;
+  materialTechnicalTypeLabel?: string;
+  variantDisplayName: string;
+  colorName: string;
+  isMatte: boolean;
+  isSpecial: boolean;
+  costChfPerKg: number;
+  stockSpools: number;
+  spoolNetKg: number;
+  stockKg: number;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface AdminUpsertFilamentMaterialTypePayload {
+  materialCode: string;
+  isFlexible: boolean;
+  isTechnical: boolean;
+  technicalTypeLabel?: string;
+}
+
+export interface AdminUpsertFilamentVariantPayload {
+  materialTypeId: number;
+  variantDisplayName: string;
+  colorName: string;
+  isMatte: boolean;
+  isSpecial: boolean;
+  costChfPerKg: number;
+  stockSpools: number;
+  spoolNetKg: number;
+  isActive: boolean;
+}
+
 export interface AdminContactRequest {
   id: string;
   requestType: string;
@@ -26,6 +72,30 @@ export interface AdminContactRequest {
   createdAt: string;
 }
 
+export interface AdminContactRequestAttachment {
+  id: string;
+  originalFilename: string;
+  mimeType?: string;
+  fileSizeBytes?: number;
+  createdAt: string;
+}
+
+export interface AdminContactRequestDetail {
+  id: string;
+  requestType: string;
+  customerType: string;
+  email: string;
+  phone?: string;
+  name?: string;
+  companyName?: string;
+  contactPerson?: string;
+  message: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  attachments: AdminContactRequestAttachment[];
+}
+
 export interface AdminQuoteSession {
   id: string;
   status: string;
@@ -33,6 +103,33 @@ export interface AdminQuoteSession {
   createdAt: string;
   expiresAt: string;
   convertedOrderId?: string;
+}
+
+export interface AdminQuoteSessionDetailItem {
+  id: string;
+  originalFilename: string;
+  quantity: number;
+  printTimeSeconds?: number;
+  materialGrams?: number;
+  colorCode?: string;
+  status: string;
+  unitPriceChf: number;
+}
+
+export interface AdminQuoteSessionDetail {
+  session: {
+    id: string;
+    status: string;
+    materialCode: string;
+    setupCostChf?: number;
+    supportsEnabled?: boolean;
+    notes?: string;
+  };
+  items: AdminQuoteSessionDetailItem[];
+  itemsTotalChf: number;
+  shippingCostChf: number;
+  globalMachineCostChf: number;
+  grandTotalChf: number;
 }
 
 @Injectable({
@@ -46,11 +143,57 @@ export class AdminOperationsService {
     return this.http.get<AdminFilamentStockRow[]>(`${this.baseUrl}/filament-stock`, { withCredentials: true });
   }
 
+  getFilamentMaterials(): Observable<AdminFilamentMaterialType[]> {
+    return this.http.get<AdminFilamentMaterialType[]>(`${this.baseUrl}/filaments/materials`, { withCredentials: true });
+  }
+
+  getFilamentVariants(): Observable<AdminFilamentVariant[]> {
+    return this.http.get<AdminFilamentVariant[]>(`${this.baseUrl}/filaments/variants`, { withCredentials: true });
+  }
+
+  createFilamentMaterial(payload: AdminUpsertFilamentMaterialTypePayload): Observable<AdminFilamentMaterialType> {
+    return this.http.post<AdminFilamentMaterialType>(`${this.baseUrl}/filaments/materials`, payload, { withCredentials: true });
+  }
+
+  updateFilamentMaterial(materialId: number, payload: AdminUpsertFilamentMaterialTypePayload): Observable<AdminFilamentMaterialType> {
+    return this.http.put<AdminFilamentMaterialType>(`${this.baseUrl}/filaments/materials/${materialId}`, payload, { withCredentials: true });
+  }
+
+  createFilamentVariant(payload: AdminUpsertFilamentVariantPayload): Observable<AdminFilamentVariant> {
+    return this.http.post<AdminFilamentVariant>(`${this.baseUrl}/filaments/variants`, payload, { withCredentials: true });
+  }
+
+  updateFilamentVariant(variantId: number, payload: AdminUpsertFilamentVariantPayload): Observable<AdminFilamentVariant> {
+    return this.http.put<AdminFilamentVariant>(`${this.baseUrl}/filaments/variants/${variantId}`, payload, { withCredentials: true });
+  }
+
   getContactRequests(): Observable<AdminContactRequest[]> {
     return this.http.get<AdminContactRequest[]>(`${this.baseUrl}/contact-requests`, { withCredentials: true });
   }
 
+  getContactRequestDetail(requestId: string): Observable<AdminContactRequestDetail> {
+    return this.http.get<AdminContactRequestDetail>(`${this.baseUrl}/contact-requests/${requestId}`, { withCredentials: true });
+  }
+
+  downloadContactRequestAttachment(requestId: string, attachmentId: string): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/contact-requests/${requestId}/attachments/${attachmentId}/file`, {
+      withCredentials: true,
+      responseType: 'blob'
+    });
+  }
+
   getSessions(): Observable<AdminQuoteSession[]> {
     return this.http.get<AdminQuoteSession[]>(`${this.baseUrl}/sessions`, { withCredentials: true });
+  }
+
+  deleteSession(sessionId: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/sessions/${sessionId}`, { withCredentials: true });
+  }
+
+  getSessionDetail(sessionId: string): Observable<AdminQuoteSessionDetail> {
+    return this.http.get<AdminQuoteSessionDetail>(
+      `${environment.apiUrl}/api/quote-sessions/${sessionId}`,
+      { withCredentials: true }
+    );
   }
 }

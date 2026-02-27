@@ -21,10 +21,6 @@ export const ADMIN_ROUTES: Routes = [
         loadComponent: () => import('./pages/admin-dashboard.component').then(m => m.AdminDashboardComponent)
       },
       {
-        path: 'orders-past',
-        loadComponent: () => import('./pages/admin-orders-past.component').then(m => m.AdminOrdersPastComponent)
-      },
-      {
         path: 'filament-stock',
         loadComponent: () => import('./pages/admin-filament-stock.component').then(m => m.AdminFilamentStockComponent)
       },

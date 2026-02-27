@@ -31,7 +31,7 @@
 
 .workspace {
   display: grid;
-  grid-template-columns: minmax(400px, 0.95fr) minmax(560px, 1.45fr);
+  grid-template-columns: minmax(540px, 1.35fr) minmax(420px, 0.95fr);
   gap: var(--space-4);
   align-items: start;
 }
@@ -70,17 +70,24 @@ button:disabled {
 
 .list-toolbar {
   display: grid;
-  gap: var(--space-1);
+  grid-template-columns: minmax(230px, 1.6fr) minmax(170px, 1fr) minmax(190px, 1fr);
+  gap: var(--space-2);
   margin-bottom: var(--space-3);
 }
 
-.list-toolbar label {
+.toolbar-field {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.toolbar-field span {
   font-size: 0.78rem;
   font-weight: 600;
   color: var(--color-text-muted);
 }
 
-.list-toolbar input {
+.toolbar-field input,
+.toolbar-field select {
   width: 100%;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -383,6 +390,10 @@ h4 {
 }
 
 @media (max-width: 820px) {
+  .list-toolbar {
+    grid-template-columns: 1fr;
+  }
+
   .dashboard-header {
     flex-direction: column;
   }

@@ -19,6 +19,8 @@ export class AdminDashboardComponent implements OnInit {
   selectedStatus = '';
   selectedPaymentMethod = 'OTHER';
   orderSearchTerm = '';
+  paymentStatusFilter = 'ALL';
+  orderStatusFilter = 'ALL';
   showPrintDetails = false;
   loading = false;
   detailLoading = false;
@@ -34,6 +36,16 @@ export class AdminDashboardComponent implements OnInit {
     'CANCELLED'
   ];
   readonly paymentMethodOptions = ['TWINT', 'BANK_TRANSFER', 'CARD', 'CASH', 'OTHER'];
+  readonly paymentStatusFilterOptions = ['ALL', 'PENDING', 'REPORTED', 'COMPLETED'];
+  readonly orderStatusFilterOptions = [
+    'ALL',
+    'PENDING_PAYMENT',
+    'PAID',
+    'IN_PRODUCTION',
+    'SHIPPED',
+    'COMPLETED',
+    'CANCELLED'
+  ];
 
   ngOnInit(): void {
     this.loadOrders();
@@ -72,17 +84,17 @@ export class AdminDashboardComponent implements OnInit {
 
   onSearchChange(value: string): void {
     this.orderSearchTerm = value;
-    this.refreshFilteredOrders();
+    this.applyListFiltersAndSelection();
+  }
 
-    if (this.filteredOrders.length === 0) {
-      this.selectedOrder = null;
-      this.selectedStatus = '';
-      return;
-    }
+  onPaymentStatusFilterChange(value: string): void {
+    this.paymentStatusFilter = value || 'ALL';
+    this.applyListFiltersAndSelection();
+  }
 
-    if (!this.selectedOrder || !this.filteredOrders.some(order => order.id === this.selectedOrder?.id)) {
-      this.openDetails(this.filteredOrders[0].id);
-    }
+  onOrderStatusFilterChange(value: string): void {
+    this.orderStatusFilter = value || 'ALL';
+    this.applyListFiltersAndSelection();
   }
 
   openDetails(orderId: string): void {
@@ -225,23 +237,39 @@ export class AdminDashboardComponent implements OnInit {
 
   private applyOrderUpdate(updatedOrder: AdminOrder): void {
     this.orders = this.orders.map((order) => order.id === updatedOrder.id ? updatedOrder : order);
-    this.refreshFilteredOrders();
+    this.applyListFiltersAndSelection();
     this.selectedOrder = updatedOrder;
     this.selectedStatus = updatedOrder.status;
     this.selectedPaymentMethod = updatedOrder.paymentMethod || this.selectedPaymentMethod;
   }
 
-  private refreshFilteredOrders(): void {
-    const term = this.orderSearchTerm.trim().toLowerCase();
-    if (!term) {
-      this.filteredOrders = [...this.orders];
+  private applyListFiltersAndSelection(): void {
+    this.refreshFilteredOrders();
+
+    if (this.filteredOrders.length === 0) {
+      this.selectedOrder = null;
+      this.selectedStatus = '';
       return;
     }
 
+    if (!this.selectedOrder || !this.filteredOrders.some(order => order.id === this.selectedOrder?.id)) {
+      this.openDetails(this.filteredOrders[0].id);
+    }
+  }
+
+  private refreshFilteredOrders(): void {
+    const term = this.orderSearchTerm.trim().toLowerCase();
     this.filteredOrders = this.orders.filter((order) => {
       const fullUuid = order.id.toLowerCase();
       const shortUuid = (order.orderNumber || '').toLowerCase();
-      return fullUuid.includes(term) || shortUuid.includes(term);
+      const paymentStatus = (order.paymentStatus || 'PENDING').toUpperCase();
+      const orderStatus = (order.status || '').toUpperCase();
+
+      const matchesSearch = !term || fullUuid.includes(term) || shortUuid.includes(term);
+      const matchesPayment = this.paymentStatusFilter === 'ALL' || paymentStatus === this.paymentStatusFilter;
+      const matchesOrderStatus = this.orderStatusFilter === 'ALL' || orderStatus === this.orderStatusFilter;
+
+      return matchesSearch && matchesPayment && matchesOrderStatus;
     });
   }
 
