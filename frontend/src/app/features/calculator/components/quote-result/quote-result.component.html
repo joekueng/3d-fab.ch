@@ -54,6 +54,7 @@
                     [max]="maxInputQuantity"
                     [ngModel]="item.quantity" 
                     (ngModelChange)="updateQuantity(i, $event)"
+                    (blur)="flushQuantityUpdate(i)"
                     class="qty-input">
             </div>
             <div class="item-price">

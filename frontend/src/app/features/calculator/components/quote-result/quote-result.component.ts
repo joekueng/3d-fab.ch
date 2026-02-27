@@ -1,4 +1,4 @@
-import { Component, input, output, signal, computed, effect } from '@angular/core';
+import { Component, OnDestroy, input, output, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -14,9 +14,10 @@ import { QuoteResult, QuoteItem } from '../../services/quote-estimator.service';
   templateUrl: './quote-result.component.html',
   styleUrl: './quote-result.component.scss'
 })
-export class QuoteResultComponent {
+export class QuoteResultComponent implements OnDestroy {
   readonly maxInputQuantity = 500;
   readonly directOrderLimit = 100;
+  readonly quantityAutoRefreshMs = 2000;
 
   result = input.required<QuoteResult>();
   consult = output<void>();
@@ -25,31 +26,67 @@ export class QuoteResultComponent {
 
   // Local mutable state for items to handle quantity changes
   items = signal<QuoteItem[]>([]);
+  private lastSentQuantities = new Map<string, number>();
+  private quantityTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
   constructor() {
       effect(() => {
+          this.clearAllQuantityTimers();
+
           // Initialize local items when result inputs change
           // We map to new objects to avoid mutating the input directly if it was a reference
-          this.items.set(this.result().items.map(i => ({...i})));
+          const nextItems = this.result().items.map(i => ({...i}));
+          this.items.set(nextItems);
+
+          this.lastSentQuantities.clear();
+          nextItems.forEach(item => {
+              const key = item.id ?? item.fileName;
+              this.lastSentQuantities.set(key, item.quantity);
+          });
       }, { allowSignalWrites: true });
   }
 
+  ngOnDestroy(): void {
+      this.clearAllQuantityTimers();
+  }
+
   updateQuantity(index: number, newQty: number | string) {
-      const qty = typeof newQty === 'string' ? parseInt(newQty, 10) : newQty;
-      if (qty < 1 || isNaN(qty)) return;
-      const normalizedQty = Math.min(qty, this.maxInputQuantity);
+      const normalizedQty = this.normalizeQuantity(newQty);
+      if (normalizedQty === null) return;
+
+      const item = this.items()[index];
+      if (!item) return;
+      const key = item.id ?? item.fileName;
 
       this.items.update(current => {
           const updated = [...current];
           updated[index] = { ...updated[index], quantity: normalizedQty };
           return updated;
       });
-      
+
+      this.scheduleQuantityRefresh(index, key);
+  }
+
+  flushQuantityUpdate(index: number): void {
+      const item = this.items()[index];
+      if (!item) return;
+
+      const key = item.id ?? item.fileName;
+      this.clearQuantityRefreshTimer(key);
+
+      const normalizedQty = this.normalizeQuantity(item.quantity);
+      if (normalizedQty === null) return;
+
+      if (this.lastSentQuantities.get(key) === normalizedQty) {
+          return;
+      }
+
       this.itemChange.emit({
-          id: this.items()[index].id,
-          fileName: this.items()[index].fileName,
+          id: item.id,
+          fileName: item.fileName,
           quantity: normalizedQty
       });
+      this.lastSentQuantities.set(key, normalizedQty);
   }
 
   hasQuantityOverLimit = computed(() => this.items().some(item => item.quantity > this.directOrderLimit));
@@ -78,4 +115,34 @@ export class QuoteResultComponent {
           weight: Math.ceil(weight)
       };
   });
+
+  private normalizeQuantity(newQty: number | string): number | null {
+      const qty = typeof newQty === 'string' ? parseInt(newQty, 10) : newQty;
+      if (!Number.isFinite(qty) || qty < 1) {
+          return null;
+      }
+      return Math.min(qty, this.maxInputQuantity);
+  }
+
+  private scheduleQuantityRefresh(index: number, key: string): void {
+      this.clearQuantityRefreshTimer(key);
+      const timer = setTimeout(() => {
+          this.quantityTimers.delete(key);
+          this.flushQuantityUpdate(index);
+      }, this.quantityAutoRefreshMs);
+      this.quantityTimers.set(key, timer);
+  }
+
+  private clearQuantityRefreshTimer(key: string): void {
+      const timer = this.quantityTimers.get(key);
+      if (!timer) return;
+      clearTimeout(timer);
+      this.quantityTimers.delete(key);
+  }
+
+  private clearAllQuantityTimers(): void {
+      this.quantityTimers.forEach(timer => clearTimeout(timer));
+      this.quantityTimers.clear();
+  }
+
 }

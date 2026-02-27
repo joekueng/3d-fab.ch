@@ -15,6 +15,12 @@ export class LanguageService {
   ) {
     this.translate.addLangs(this.supportedLangs);
     this.translate.setDefaultLang('it');
+    this.translate.onLangChange.subscribe(event => {
+      const lang = typeof event.lang === 'string' ? event.lang.toLowerCase() : null;
+      if (this.isSupportedLang(lang) && lang !== this.currentLang()) {
+        this.currentLang.set(lang);
+      }
+    });
 
     const initialTree = this.router.parseUrl(this.router.url);
     const initialSegments = this.getPrimarySegments(initialTree);
@@ -53,6 +59,13 @@ export class LanguageService {
     }
 
     this.navigateIfChanged(currentTree, targetSegments);
+  }
+
+  selectedLang(): 'it' | 'en' | 'de' | 'fr' {
+    const activeLang = typeof this.translate.currentLang === 'string'
+      ? this.translate.currentLang.toLowerCase()
+      : null;
+    return this.isSupportedLang(activeLang) ? activeLang : this.currentLang();
   }
 
   private ensureLanguageInPath(urlTree: UrlTree): void {

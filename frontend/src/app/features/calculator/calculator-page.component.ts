@@ -228,8 +228,7 @@ export class CalculatorPageComponent implements OnInit {
       if (event.id) {
           const currentSessionId = this.result()?.sessionId;
           if (!currentSessionId) return;
-          
-          this.loading.set(true);
+
           this.estimator.updateLineItem(event.id, { quantity: event.quantity }).subscribe({
               next: () => {
                   // 3. Fetch the updated session totals from the backend
@@ -241,24 +240,20 @@ export class CalculatorPageComponent implements OnInit {
 
                           if (this.isInvalidQuote(newResult)) {
                               this.setQuoteError('CALC.ERROR_ZERO_PRICE');
-                              this.loading.set(false);
                               return;
                           }
 
                           this.error.set(false);
                           this.errorKey.set('CALC.ERROR_GENERIC');
                           this.result.set(newResult);
-                          this.loading.set(false);
                       },
                       error: (err) => {
                           console.error('Failed to refresh session totals', err);
-                          this.loading.set(false);
                       }
                   });
               },
               error: (err) => {
                   console.error('Failed to update line item', err);
-                  this.loading.set(false);
               }
           });
       }

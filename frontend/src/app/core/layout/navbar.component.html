@@ -19,7 +19,7 @@
         <div class="actions">
           <select
             class="lang-switch"
-            [value]="langService.currentLang()"
+            [value]="langService.selectedLang()"
             (change)="onLanguageChange($event)"
             [attr.aria-label]="'NAV.LANGUAGE_SELECTOR' | translate">
             @for (option of languageOptions; track option.value) {
