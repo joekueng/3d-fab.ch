@@ -4,7 +4,8 @@
     "CALCULATOR": "Calculator",
     "SHOP": "Shop",
     "ABOUT": "About Us",
-    "CONTACT": "Contact Us"
+    "CONTACT": "Contact Us",
+    "LANGUAGE_SELECTOR": "Language selector"
   },
   "QUOTE": {
     "CONSULT": "Request Consultation",
@@ -214,7 +215,7 @@
       "S6": {
         "TITLE": "6. User rights",
         "P1": "6.1. You can request access, rectification, deletion or restriction of processing of your data, within the limits provided by law.",
-        "P2": "6.2. For any privacy request write to info@3d-fab.ch."
+        "P2": "6.2. For any privacy request write to info@3d-fab.ch. The Italian version of this privacy policy is the only legally binding version, unless otherwise agreed in writing."
       }
     },
     "TERMS": {
