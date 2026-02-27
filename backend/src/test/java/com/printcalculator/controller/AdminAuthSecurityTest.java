@@ -1,6 +1,8 @@
 package com.printcalculator.controller;
 
 import com.printcalculator.config.SecurityConfig;
+import com.printcalculator.controller.admin.AdminAuthController;
+import com.printcalculator.security.AdminLoginThrottleService;
 import com.printcalculator.security.AdminSessionAuthenticationFilter;
 import com.printcalculator.security.AdminSessionService;
 import jakarta.servlet.http.Cookie;
@@ -22,7 +24,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = AdminAuthController.class)
-@Import({SecurityConfig.class, AdminSessionAuthenticationFilter.class, AdminSessionService.class})
+@Import({
+        SecurityConfig.class,
+        AdminSessionAuthenticationFilter.class,
+        AdminSessionService.class,
+        AdminLoginThrottleService.class
+})
 @TestPropertySource(properties = {
         "admin.password=test-admin-password",
         "admin.session.secret=0123456789abcdef0123456789abcdef",
@@ -36,6 +43,10 @@ class AdminAuthSecurityTest {
     @Test
     void loginOk_ShouldReturnCookie() throws Exception {
         MvcResult result = mockMvc.perform(post("/api/admin/auth/login")
+                        .with(req -> {
+                            req.setRemoteAddr("10.0.0.1");
+                            return req;
+                        })
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"password\":\"test-admin-password\"}"))
                 .andExpect(status().isOk())
@@ -53,9 +64,37 @@ class AdminAuthSecurityTest {
     @Test
     void loginKo_ShouldReturnUnauthorized() throws Exception {
         mockMvc.perform(post("/api/admin/auth/login")
+                        .with(req -> {
+                            req.setRemoteAddr("10.0.0.2");
+                            return req;
+                        })
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"password\":\"wrong-password\"}"))
                 .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.authenticated").value(false))
+                .andExpect(jsonPath("$.retryAfterSeconds").value(2));
+    }
+
+    @Test
+    void loginKoSecondAttemptDuringLock_ShouldReturnTooManyRequests() throws Exception {
+        mockMvc.perform(post("/api/admin/auth/login")
+                        .with(req -> {
+                            req.setRemoteAddr("10.0.0.3");
+                            return req;
+                        })
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"password\":\"wrong-password\"}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.retryAfterSeconds").value(2));
+
+        mockMvc.perform(post("/api/admin/auth/login")
+                        .with(req -> {
+                            req.setRemoteAddr("10.0.0.3");
+                            return req;
+                        })
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"password\":\"wrong-password\"}"))
+                .andExpect(status().isTooManyRequests())
                 .andExpect(jsonPath("$.authenticated").value(false));
     }
 
@@ -68,6 +107,10 @@ class AdminAuthSecurityTest {
     @Test
     void adminAccessWithValidCookie_ShouldReturn200() throws Exception {
         MvcResult login = mockMvc.perform(post("/api/admin/auth/login")
+                        .with(req -> {
+                            req.setRemoteAddr("10.0.0.4");
+                            return req;
+                        })
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"password\":\"test-admin-password\"}"))
                 .andExpect(status().isOk())

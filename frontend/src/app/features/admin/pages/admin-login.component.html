@@ -1,27 +1,31 @@
-<section class="admin-login-page">
-  <div class="admin-login-card">
-    <h1>Back-office</h1>
-    <p>Inserisci la password condivisa.</p>
+<div class="container">
+  <section class="admin-login-page">
+    <div class="admin-login-card">
+      <h1>Back-office</h1>
 
-    <form (ngSubmit)="submit()">
-      <label for="admin-password">Password</label>
-      <input
-        id="admin-password"
-        name="password"
-        type="password"
-        [(ngModel)]="password"
-        [disabled]="loading"
-        autocomplete="current-password"
-        required
-      />
+      <form (ngSubmit)="submit()">
+        <label for="admin-password">Password</label>
+        <input
+          id="admin-password"
+          name="password"
+          type="password"
+          [(ngModel)]="password"
+          [disabled]="loading || lockSecondsRemaining > 0"
+          autocomplete="current-password"
+          required
+        />
 
-      <button type="submit" [disabled]="loading || !password.trim()">
-        {{ loading ? 'Accesso...' : 'Accedi' }}
-      </button>
-    </form>
+        <button type="submit" [disabled]="loading || !password.trim() || lockSecondsRemaining > 0">
+          {{ loading ? 'Accesso...' : 'Accedi' }}
+        </button>
+      </form>
 
-    @if (errorMessage) {
-      <p class="error">{{ errorMessage }}</p>
-    }
-  </div>
-</section>
+      @if (errorMessage) {
+        <p class="error">{{ errorMessage }}</p>
+      }
+      @if (lockSecondsRemaining > 0) {
+        <p class="hint">Riprova tra {{ lockSecondsRemaining }}s.</p>
+      }
+    </div>
+  </section>
+</div>

@@ -1,0 +1,43 @@
+<section class="section-card">
+  <header class="section-header">
+    <div>
+      <h2>Stock filamenti</h2>
+      <p>Monitoraggio quantità disponibili per variante.</p>
+    </div>
+    <button type="button" (click)="loadStock()" [disabled]="loading">Aggiorna</button>
+  </header>
+
+  <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+  <div class="table-wrap" *ngIf="!loading; else loadingTpl">
+    <table>
+      <thead>
+        <tr>
+          <th>Materiale</th>
+          <th>Variante</th>
+          <th>Colore</th>
+          <th>Spool</th>
+          <th>Kg totali</th>
+          <th>Stato</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of rows">
+          <td>{{ row.materialCode }}</td>
+          <td>{{ row.variantDisplayName }}</td>
+          <td>{{ row.colorName }}</td>
+          <td>{{ row.stockSpools | number:'1.0-3' }}</td>
+          <td>{{ row.stockKg | number:'1.0-3' }} kg</td>
+          <td>
+            <span class="badge low" *ngIf="isLowStock(row)">Basso</span>
+            <span class="badge ok" *ngIf="!isLowStock(row)">OK</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<ng-template #loadingTpl>
+  <p>Caricamento stock...</p>
+</ng-template>

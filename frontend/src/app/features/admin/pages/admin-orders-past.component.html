@@ -1,0 +1,39 @@
+<section class="section-card">
+  <header class="section-header">
+    <div>
+      <h2>Ordini pagati</h2>
+    </div>
+    <button type="button" (click)="loadOrders()" [disabled]="loading">Aggiorna</button>
+  </header>
+
+  <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+  <div class="table-wrap" *ngIf="!loading; else loadingTpl">
+    <table>
+      <thead>
+        <tr>
+          <th>Ordine</th>
+          <th>Data</th>
+          <th>Email</th>
+          <th>Stato ordine</th>
+          <th>Stato pagamento</th>
+          <th>Totale</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let order of orders">
+          <td>{{ order.orderNumber }}</td>
+          <td>{{ order.createdAt | date:'short' }}</td>
+          <td>{{ order.customerEmail }}</td>
+          <td>{{ order.status }}</td>
+          <td>{{ order.paymentStatus || 'PENDING' }}</td>
+          <td>{{ order.totalChf | currency:'CHF':'symbol':'1.2-2' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<ng-template #loadingTpl>
+  <p>Caricamento ordini passati...</p>
+</ng-template>

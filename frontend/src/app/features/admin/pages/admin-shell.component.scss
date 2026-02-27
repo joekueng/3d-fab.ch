@@ -1,0 +1,120 @@
+.admin-container {
+  margin-top: var(--space-8);
+  max-width: min(1720px, 96vw);
+  padding: 0 var(--space-6);
+}
+
+.admin-shell {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  min-height: calc(100vh - 220px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  background: var(--color-bg-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.sidebar {
+  background: var(--color-neutral-100);
+  color: var(--color-text);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  border-right: 1px solid var(--color-border);
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.brand p {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.menu a {
+  text-decoration: none;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  font-weight: 600;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-card);
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.menu a:hover {
+  border-color: var(--color-brand);
+  color: var(--color-text);
+}
+
+.menu a.active {
+  background: #fff5b8;
+  color: var(--color-text);
+  border-color: var(--color-brand);
+}
+
+.logout {
+  margin-top: auto;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  background: var(--color-bg-card);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.logout:hover {
+  border-color: var(--color-brand);
+  background: #fff8cc;
+}
+
+.content {
+  background: var(--color-bg);
+  padding: var(--space-6);
+  min-width: 0;
+}
+
+@media (max-width: 960px) {
+  .admin-container {
+    margin-top: var(--space-6);
+    padding: 0 var(--space-4);
+  }
+
+  .admin-shell {
+    grid-template-columns: 1fr;
+    min-height: unset;
+  }
+
+  .sidebar {
+    border-right: 0;
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-4);
+  }
+
+  .menu {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .logout {
+    margin-top: var(--space-2);
+    align-self: flex-start;
+  }
+
+  .content {
+    padding: var(--space-4);
+  }
+}

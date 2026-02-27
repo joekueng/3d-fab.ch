@@ -1,0 +1,40 @@
+<section class="section-card">
+  <header class="section-header">
+    <div>
+      <h2>Sessioni quote</h2>
+      <p>Sessioni create dal configuratore con stato e conversione ordine.</p>
+    </div>
+    <button type="button" (click)="loadSessions()" [disabled]="loading">Aggiorna</button>
+  </header>
+
+  <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+  <div class="table-wrap" *ngIf="!loading; else loadingTpl">
+    <table>
+      <thead>
+        <tr>
+          <th>Sessione</th>
+          <th>Data creazione</th>
+          <th>Scadenza</th>
+          <th>Materiale</th>
+          <th>Stato</th>
+          <th>Ordine convertito</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let session of sessions">
+          <td>{{ session.id }}</td>
+          <td>{{ session.createdAt | date:'short' }}</td>
+          <td>{{ session.expiresAt | date:'short' }}</td>
+          <td>{{ session.materialCode }}</td>
+          <td>{{ session.status }}</td>
+          <td>{{ session.convertedOrderId || '-' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<ng-template #loadingTpl>
+  <p>Caricamento sessioni...</p>
+</ng-template>

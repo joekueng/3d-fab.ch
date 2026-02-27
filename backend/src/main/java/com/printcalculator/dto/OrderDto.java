@@ -25,6 +25,12 @@ public class OrderDto {
     private BigDecimal subtotalChf;
     private BigDecimal totalChf;
     private OffsetDateTime createdAt;
+    private String printMaterialCode;
+    private BigDecimal printNozzleDiameterMm;
+    private BigDecimal printLayerHeightMm;
+    private String printInfillPattern;
+    private Integer printInfillPercent;
+    private Boolean printSupportsEnabled;
     private List<OrderItemDto> items;
 
     // Getters and Setters
@@ -84,6 +90,24 @@ public class OrderDto {
 
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
+
+    public String getPrintMaterialCode() { return printMaterialCode; }
+    public void setPrintMaterialCode(String printMaterialCode) { this.printMaterialCode = printMaterialCode; }
+
+    public BigDecimal getPrintNozzleDiameterMm() { return printNozzleDiameterMm; }
+    public void setPrintNozzleDiameterMm(BigDecimal printNozzleDiameterMm) { this.printNozzleDiameterMm = printNozzleDiameterMm; }
+
+    public BigDecimal getPrintLayerHeightMm() { return printLayerHeightMm; }
+    public void setPrintLayerHeightMm(BigDecimal printLayerHeightMm) { this.printLayerHeightMm = printLayerHeightMm; }
+
+    public String getPrintInfillPattern() { return printInfillPattern; }
+    public void setPrintInfillPattern(String printInfillPattern) { this.printInfillPattern = printInfillPattern; }
+
+    public Integer getPrintInfillPercent() { return printInfillPercent; }
+    public void setPrintInfillPercent(Integer printInfillPercent) { this.printInfillPercent = printInfillPercent; }
+
+    public Boolean getPrintSupportsEnabled() { return printSupportsEnabled; }
+    public void setPrintSupportsEnabled(Boolean printSupportsEnabled) { this.printSupportsEnabled = printSupportsEnabled; }
 
     public List<OrderItemDto> getItems() { return items; }
     public void setItems(List<OrderItemDto> items) { this.items = items; }

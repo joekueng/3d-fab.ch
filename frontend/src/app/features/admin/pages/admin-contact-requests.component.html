@@ -1,0 +1,40 @@
+<section class="section-card">
+  <header class="section-header">
+    <div>
+      <h2>Richieste di contatto</h2>
+      <p>Richieste preventivo personalizzato ricevute dal sito.</p>
+    </div>
+    <button type="button" (click)="loadRequests()" [disabled]="loading">Aggiorna</button>
+  </header>
+
+  <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+  <div class="table-wrap" *ngIf="!loading; else loadingTpl">
+    <table>
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Nome / Azienda</th>
+          <th>Email</th>
+          <th>Tipo richiesta</th>
+          <th>Tipo cliente</th>
+          <th>Stato</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let request of requests">
+          <td>{{ request.createdAt | date:'short' }}</td>
+          <td>{{ request.name || request.companyName || '-' }}</td>
+          <td>{{ request.email }}</td>
+          <td>{{ request.requestType }}</td>
+          <td>{{ request.customerType }}</td>
+          <td>{{ request.status }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<ng-template #loadingTpl>
+  <p>Caricamento richieste...</p>
+</ng-template>

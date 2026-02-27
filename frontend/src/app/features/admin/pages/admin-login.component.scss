@@ -3,33 +3,33 @@
   justify-content: center;
   align-items: center;
   min-height: 70vh;
-  padding: 2rem 1rem;
+  padding: var(--space-8) 0;
 }
 
 .admin-login-card {
   width: 100%;
   max-width: 420px;
-  background: #fff;
-  border: 1px solid #d6dde8;
-  border-radius: 14px;
-  padding: 1.5rem;
-  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
 }
 
 h1 {
   margin: 0;
-  font-size: 1.6rem;
+  font-size: 1.5rem;
 }
 
 p {
-  margin: 0.5rem 0 1.25rem;
-  color: #46546a;
+  margin: var(--space-2) 0 var(--space-5);
+  color: var(--color-text-muted);
 }
 
 form {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: var(--space-3);
 }
 
 label {
@@ -37,20 +37,25 @@ label {
 }
 
 input {
-  border: 1px solid #c3cedd;
-  border-radius: 10px;
-  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
   font-size: 1rem;
 }
 
 button {
   border: 0;
-  border-radius: 10px;
-  background: #0f3f6f;
-  color: #fff;
-  padding: 0.75rem 0.9rem;
+  border-radius: var(--radius-md);
+  background: var(--color-brand);
+  color: var(--color-neutral-900);
+  padding: var(--space-3) var(--space-4);
   font-weight: 600;
   cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+button:hover:not(:disabled) {
+  background: var(--color-brand-hover);
 }
 
 button:disabled {
@@ -59,6 +64,12 @@ button:disabled {
 }
 
 .error {
-  margin-top: 1rem;
-  color: #b0182a;
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-2);
+  color: var(--color-danger-500);
+}
+
+.hint {
+  margin: 0;
+  color: var(--color-text-muted);
 }

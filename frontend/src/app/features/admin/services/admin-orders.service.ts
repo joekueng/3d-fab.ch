@@ -24,7 +24,17 @@ export interface AdminOrder {
   customerEmail: string;
   totalChf: number;
   createdAt: string;
+  printMaterialCode?: string;
+  printNozzleDiameterMm?: number;
+  printLayerHeightMm?: number;
+  printInfillPattern?: string;
+  printInfillPercent?: number;
+  printSupportsEnabled?: boolean;
   items: AdminOrderItem[];
+}
+
+export interface AdminUpdateOrderStatusPayload {
+  status: string;
 }
 
 @Injectable({
@@ -42,7 +52,32 @@ export class AdminOrdersService {
     return this.http.get<AdminOrder>(`${this.baseUrl}/${orderId}`, { withCredentials: true });
   }
 
-  confirmPayment(orderId: string): Observable<AdminOrder> {
-    return this.http.post<AdminOrder>(`${this.baseUrl}/${orderId}/payments/confirm`, {}, { withCredentials: true });
+  confirmPayment(orderId: string, method: string): Observable<AdminOrder> {
+    return this.http.post<AdminOrder>(`${this.baseUrl}/${orderId}/payments/confirm`, { method }, { withCredentials: true });
+  }
+
+  updateOrderStatus(orderId: string, payload: AdminUpdateOrderStatusPayload): Observable<AdminOrder> {
+    return this.http.post<AdminOrder>(`${this.baseUrl}/${orderId}/status`, payload, { withCredentials: true });
+  }
+
+  downloadOrderItemFile(orderId: string, orderItemId: string): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/${orderId}/items/${orderItemId}/file`, {
+      withCredentials: true,
+      responseType: 'blob'
+    });
+  }
+
+  downloadOrderConfirmation(orderId: string): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/${orderId}/documents/confirmation`, {
+      withCredentials: true,
+      responseType: 'blob'
+    });
+  }
+
+  downloadOrderInvoice(orderId: string): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/${orderId}/documents/invoice`, {
+      withCredentials: true,
+      responseType: 'blob'
+    });
   }
 }
