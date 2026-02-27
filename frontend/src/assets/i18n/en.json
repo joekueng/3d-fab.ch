@@ -2,7 +2,9 @@
   "NAV": {
     "HOME": "Home",
     "CALCULATOR": "Calculator",
-    "SHOP": "Shop"
+    "SHOP": "Shop",
+    "ABOUT": "About Us",
+    "CONTACT": "Contact Us"
   },
   "QUOTE": {
     "CONSULT": "Request Consultation",
@@ -28,7 +30,7 @@
     "CITY": "City",
     "CITY_PLACEHOLDER": "Zurich",
     "SUBMIT": "Submit Order",
-    "ORDER_SUCCESS": "Order submitted successfully! We will contact you shortly."
+    "DEFAULT_COLOR": "Default"
   },
   "FOOTER": {
     "PRIVACY": "Privacy",
@@ -71,7 +73,23 @@
     "BENEFITS_2": "Selected materials and quality control",
     "BENEFITS_3": "CAD consultation if file needs modifications",
     "ERR_FILE_REQUIRED": "File is required.",
-    "STEP_WARNING": "3D preview is not available for STEP files, but the calculator works perfectly. You can proceed with the quotation."
+    "STEP_WARNING": "3D preview is not available for STEP files, but the calculator works perfectly. You can proceed with the quotation.",
+    "REMOVE_FILE": "Remove file",
+    "FALLBACK_MATERIAL": "PLA (fallback)",
+    "FALLBACK_QUALITY_STANDARD": "Standard",
+    "ERR_FILE_TOO_LARGE": "Some files exceed the 200MB limit and were not added.",
+    "PRINT_SPEED": "Print speed",
+    "COLOR": "Color",
+    "ANALYZING_TITLE": "Analysis in progress...",
+    "ANALYZING_TEXT": "We are analyzing the geometry and calculating the toolpath.",
+    "QTY_SHORT": "QTY",
+    "COLOR_LABEL": "COLOR",
+    "ADD_FILES": "Add files",
+    "UPLOADING": "Uploading...",
+    "PROCESSING": "Processing...",
+    "NOTES_PLACEHOLDER": "Specific instructions...",
+    "SETUP_NOTE": "* Includes {{cost}} as setup cost",
+    "SHIPPING_NOTE": "** Shipping costs excluded, calculated at the next step"
   },
   "SHOP": {
     "TITLE": "Technical solutions",
@@ -84,13 +102,35 @@
     "WIP_NOTE": "We care about doing this right. In the meantime, you can get instant pricing and lead time from our calculator.",
     "ADD_CART": "Add to Cart",
     "BACK": "Back to Shop",
-    "NOT_FOUND": "Product not found."
+    "NOT_FOUND": "Product not found.",
+    "DETAILS": "Details",
+    "MOCK_ADD_CART": "Added to cart (Mock)",
+    "SUCCESS_TITLE": "Added to cart",
+    "SUCCESS_DESC": "The product has been added to the cart.",
+    "CONTINUE": "Continue",
+    "CATEGORIES": {
+      "FILAMENTS": "Filaments",
+      "ACCESSORIES": "Accessories"
+    },
+    "PRODUCTS": {
+      "P1": {
+        "NAME": "Standard PLA filament",
+        "DESC": "The classic choice for every print, easy and reliable."
+      },
+      "P2": {
+        "NAME": "PETG Tough filament",
+        "DESC": "Impact and temperature resistant."
+      },
+      "P3": {
+        "NAME": "Nozzle kit (0.4mm)",
+        "DESC": "Replacement set for FDM extruder."
+      }
+    }
   },
   "ABOUT": {
     "TITLE": "About Us",
     "EYEBROW": "3D Printing Lab",
     "SUBTITLE": "Transparency on price, quality and time. Technical and CAD consultation for businesses and individuals.",
-    "HOW_TITLE": "How we work",
     "HOW_TEXT": "We offer an automatic quote for those who already have the 3D file, and a consultation path for those who need to design or optimize the model.",
     "PASSIONS_TITLE": "Our passions",
     "PASSION_BIKE_TRIAL": "Bike trial",
@@ -106,17 +146,16 @@
     "PASSION_VAN_LIFE": "Van life",
     "PASSION_COFFEE": "Coffee",
     "PASSION_SOFTWARE_DEVELOPMENT": "Software development",
-    "PILL_1": "Instant Quote",
-    "PILL_2": "Technical Consultation",
-    "PILL_3": "Small series up to 500 pcs",
     "SERVICES_TITLE": "Main Services",
-    "SERVICE_1": "FDM 3D printing for prototypes and small series",
-    "SERVICE_2": "Technical materials on request",
-    "SERVICE_3": "CAD support and post-processing",
-    "SERVICE_4": "File verification and optimization for printing",
     "TARGET_TITLE": "Who is it for",
     "TARGET_TEXT": "Small businesses, freelancers, makers and customers looking for a ready-made product from the shop.",
-    "TEAM_TITLE": "Our Team"
+    "TEAM_TITLE": "Our Team",
+    "MEMBER_JOE_NAME": "Joe Küng",
+    "MEMBER_JOE_ROLE": "Computer Engineering Student",
+    "MEMBER_JOE_ALT": "Joe Küng",
+    "MEMBER_MATTEO_NAME": "Matteo Caletti",
+    "MEMBER_MATTEO_ROLE": "Electronics Engineering Student",
+    "MEMBER_MATTEO_ALT": "Matteo Caletti"
   },
   "LOCATIONS": {
     "TITLE": "Our Locations",
@@ -125,7 +164,8 @@
     "BIENNE": "Bienne",
     "ADDRESS_TICINO": "Via G. Pioda 29a, Biasca",
     "ADDRESS_BIENNE": "Lyss-strasse 71, Nidau 2560 Bienne",
-    "CONTACT_US": "Contact Us"
+    "CONTACT_US": "Contact Us",
+    "BIASCA": "Biasca"
   },
   "LEGAL": {
     "PRIVACY_TITLE": "Privacy Policy",
@@ -133,18 +173,163 @@
     "LAST_UPDATE": "Last update",
     "CONSENT": {
       "UPLOAD_NOTICE_PREFIX": "By uploading a file, you accept our",
-      "UPLOAD_NOTICE_LINK": "Privacy Policy"
+      "UPLOAD_NOTICE_LINK": "Privacy Policy",
+      "LABEL_PREFIX": "I have read and accept the",
+      "TERMS_LINK": "Terms and Conditions",
+      "AND": "and the",
+      "PRIVACY_LINK": "Privacy Policy",
+      "REQUIRED_ERROR": "To continue you must accept Terms and Privacy."
     },
     "PRIVACY": {
-      "SECTION_1": "1. Data Collection",
-      "SECTION_2": "2. Purpose of Processing",
-      "SECTION_3": "3. Cookies and Tracking"
+      "META": {
+        "CONTROLLER": "Data controllers: Matteo Caletti and Joe Kung (3D-Fab.ch).",
+        "CONTACT": "Privacy contact: info@3d-fab.ch"
+      },
+      "S1": {
+        "TITLE": "1. What data we process",
+        "P1": "1.1. We collect the data required for quotes and orders: first name, last name, email, phone, address, shipping/billing data and order details.",
+        "P2": "1.2. When you upload 3D files or technical attachments, files are processed only for analysis, production, support and order management."
+      },
+      "S2": {
+        "TITLE": "2. Purpose of processing",
+        "P1": "2.1. We use data exclusively to: prepare quotes, confirm orders, receive payments, organize shipments and provide after-sales support.",
+        "P2": "2.2. We do not use data for profiling, automated marketing or sale to third parties."
+      },
+      "S3": {
+        "TITLE": "3. Storage of files and data",
+        "P1": "3.1. Files uploaded only for quoting are stored for the session duration and automatically removed when it expires.",
+        "P2": "3.2. Files and data linked to confirmed orders are stored for the time necessary for production, delivery, support and administrative/legal obligations, then deleted or minimized.",
+        "P3": "3.3. Files uploaded in the calculator are used only for technical analysis and quote estimation and remain associated exclusively with the calculator session."
+      },
+      "S4": {
+        "TITLE": "4. Cookies and tracking",
+        "P1": "4.1. We do not use profiling, marketing or third-party tracking cookies.",
+        "P2": "4.2. We do not use advertising tracking systems. Any temporary technical data is used only for session operation."
+      },
+      "S5": {
+        "TITLE": "5. Data sharing",
+        "P1": "5.1. We share data only with suppliers strictly necessary for the service (hosting, payments, shipping), limiting it to essential information.",
+        "P2": "5.2. Suppliers process data according to contractual instructions and appropriate security measures."
+      },
+      "S6": {
+        "TITLE": "6. User rights",
+        "P1": "6.1. You can request access, rectification, deletion or restriction of processing of your data, within the limits provided by law.",
+        "P2": "6.2. For any privacy request write to info@3d-fab.ch."
+      }
     },
     "TERMS": {
-      "SECTION_1": "1. Terms of Use",
-      "SECTION_2": "2. Orders and Payments",
-      "SECTION_3": "3. Refunds and Returns"
-    }
+      "META": {
+        "PROVIDER": "Provider: 3D-Fab.ch (Matteo Caletti and Joe Kung)",
+        "VERSION": "Version: v1.0",
+        "SCOPE": "Valid for FDM/FFF 3D printing and related services, with sale and delivery exclusively in Switzerland (CH)."
+      },
+      "S1": {
+        "TITLE": "1. Provider details and contacts",
+        "P1": "1.1. Provider: Matteo Caletti and Joe Kung.",
+        "P2": "1.2. Address: Lyss-strasse 71, Nidau 2560, CH.",
+        "P3": "1.3. Email: info@3d-fab.ch."
+      },
+      "S2": {
+        "TITLE": "2. Scope of application",
+        "P1": "2.1. These Terms and Conditions govern on-demand 3D printing, ancillary services (technical consulting, CAD, file verification, post-processing) and any standard items.",
+        "P2": "2.2. The provider sells and delivers exclusively in Switzerland (CH).",
+        "P3": "2.3. They apply to orders placed via website, email or other agreed channels; different customer conditions apply only if accepted in writing."
+      },
+      "S3": {
+        "TITLE": "3. Definitions",
+        "P1": "3.1. Customer: natural or legal person buyer. Customer files: 3D models and technical data provided. Customized product: part made to customer specifications. Order: request accepted by the provider."
+      },
+      "S4": {
+        "TITLE": "4. Contract conclusion and order",
+        "P1": "4.1. The contract is concluded with order confirmation (email/portal) or with production start after payment/down payment.",
+        "P2": "4.2. Automatic quotes may be confirmed or updated after minimum technical verification (printability, supports, machine limits).",
+        "P3": "4.3. The provider may refuse technically unfeasible orders or orders not compliant with these terms."
+      },
+      "S5": {
+        "TITLE": "5. Prices, taxes and shipping",
+        "P1": "5.1. Prices are in CHF, unless otherwise indicated regarding VAT included/excluded.",
+        "P2": "5.2. Shipping and packaging are indicated separately when applicable.",
+        "P3": "5.3. For small series or complex CAD, written offers with specific conditions may apply (samples, tiers, first-part approval)."
+      },
+      "S6": {
+        "TITLE": "6. Payments",
+        "P1": "6.1. Accepted methods: TWINT and bank transfer.",
+        "P2": "6.2. Unless otherwise agreed, production starts only after payment.",
+        "P3": "6.3. For CAD consulting and small series, an advance payment (30-100%) and/or balance before delivery may be required.",
+        "P4": "6.4. Bank transfer details: Joe Kung, IBAN CH74 0900 0000 1548 2158 1, Via G. Pioda 29a, 6710 Biasca."
+      },
+      "S7": {
+        "TITLE": "7. Customer files and technical responsibility",
+        "P1": "7.1. The customer guarantees having rights to the files and that their use does not violate third-party rights (copyright, patents, licenses, trade secrets).",
+        "P2": "7.2. The customer is responsible for model correctness, material choice, suitability for end use and compliance with applicable regulations.",
+        "P3": "7.3. The provider may suggest changes to improve printability and performance, but does not perform final product certification unless agreed in writing."
+      },
+      "S8": {
+        "TITLE": "8. FDM/FFF quality and tolerances",
+        "P1": "8.1. FDM/FFF printing involves intrinsic characteristics: layer lines, mechanical anisotropy, micro-imperfections, color variations and possible shrinkage/warping linked to geometry and material.",
+        "P2": "8.2. Standard tolerances (unless agreed in writing): up to 100 mm +/-0.3 mm; above 100 mm +/-0.5% (minimum +/-0.3 mm).",
+        "P3": "8.3. Critical aesthetic or dimensional requirements must be agreed before order (e.g. sample, control measurements, specific finish)."
+      },
+      "S9": {
+        "TITLE": "9. Post-processing and additional operations",
+        "P1": "9.1. Operations such as support removal, sanding, primer/painting or threaded inserts are performed only if agreed and may introduce dimensional or aesthetic variations.",
+        "P2": "9.2. On request, first-part or sample approval may be provided, possibly for a fee."
+      },
+      "S10": {
+        "TITLE": "10. Production and delivery times",
+        "P1": "10.1. Indicated times are estimates based on workload, complexity and material availability.",
+        "P2": "10.2. Delays due to external causes (couriers, suppliers, failures, force majeure) do not automatically entitle penalties unless agreed in writing.",
+        "P3": "10.3. The customer must provide correct and complete addresses; any redelivery costs due to wrong address remain at the customer’s expense."
+      },
+      "S11": {
+        "TITLE": "11. Right of withdrawal and cancellation",
+        "P1": "11.1. Unless exceptions are confirmed in writing, there is no right of withdrawal or return after the order.",
+        "P2": "11.2. Customized products cannot be canceled or refunded after production starts.",
+        "P3": "11.3. The provider may accept exceptions before production starts, retaining any costs already incurred.",
+        "P4": "11.4. Any special conditions must be stated in the offer, order confirmation or written communications."
+      },
+      "S12": {
+        "TITLE": "12. Claims, defects and remedies",
+        "P1": "12.1. The customer must inspect products upon delivery and report any defects within 7 days, in writing, with photos/videos and description.",
+        "P2": "12.2. Typical FDM marks, small color variations, non-functional imperfections or tolerances within agreed limits do not automatically constitute a defect.",
+        "P3": "12.3. In case of a defect attributable to the provider, remedies are at the provider’s choice: reprint/replacement or refund limited to the value of the defective part or order.",
+        "P4": "12.4. Before reprint or refund, return of the part may be requested; if the defect is confirmed, return is at the provider’s expense."
+      },
+      "S13": {
+        "TITLE": "13. Prohibited uses and compliance",
+        "P1": "13.1. The provider may refuse orders related to illegal objects, weapons or regulated parts, safety-critical or medical applications without dedicated agreements and validations.",
+        "P2": "13.2. The customer remains responsible for end use and regulatory compliance of the product."
+      },
+      "S14": {
+        "TITLE": "14. Intellectual property and licenses",
+        "P1": "14.1. Rights to customer files remain with the customer or respective rights holders. The customer grants the provider a limited license for use for technical evaluation and production.",
+        "P2": "14.2. Unless otherwise agreed, files and CAD projects developed by the provider are delivered after payment, with right of use for agreed purposes.",
+        "P3": "14.3. The customer indemnifies the provider against third-party claims related to files or instructions provided by the customer."
+      },
+      "S15": {
+        "TITLE": "15. Data protection",
+        "P1": "15.1. The provider processes personal data for order management, payments, shipping and support.",
+        "P2": "15.2. Data may be shared with technical providers and couriers only to the extent necessary for service delivery."
+      },
+      "S16": {
+        "TITLE": "16. Limitation of liability",
+        "P1": "16.1. Within legal limits, the provider is liable only for foreseeable direct damages and in any case not beyond the order value related to the contested product or service.",
+        "P2": "16.2. Indirect damages, loss of profit, business interruption, data loss and consequential damages are excluded within allowed limits.",
+        "P3": "16.3. Non-excludable liabilities by law remain unaffected (e.g. willful misconduct or gross negligence)."
+      },
+      "S17": {
+        "TITLE": "17. Force majeure",
+        "P1": "17.1. Events beyond the provider’s reasonable control (failures, blackout, supplier delays, strikes, authority measures) may cause extensions or suspensions without liability."
+      },
+      "S18": {
+        "TITLE": "18. Applicable law and jurisdiction",
+        "P1": "18.1. Swiss law applies.",
+        "P2": "18.2. Place of jurisdiction: provider’s registered office, unless mandatory consumer protection rules apply.",
+        "P3": "18.3. In case of interpretative discrepancies, the Italian version of these terms prevails and is the only legally binding version, unless otherwise agreed in writing."
+      }
+    },
+    "TERMS_UPDATE_DATE": "24 February 2026",
+    "PRIVACY_UPDATE_DATE": "24 February 2026"
   },
   "CONTACT": {
     "TITLE": "Contact Us",
@@ -181,7 +366,10 @@
     "FILE_TYPE_3D": "3D",
     "FILE_TYPE_VIDEO": "Video",
     "FILE_TYPE_DOC": "DOC",
-    "FILE_TYPE_FILE": "FILE"
+    "FILE_TYPE_FILE": "FILE",
+    "ERROR_SUBMIT": "Error submitting request. Please try again.",
+    "REMOVE_FILE": "Remove attached file",
+    "HERO_SUBTITLE": "We are here to help you. Fill in the form below for any request."
   },
   "CHECKOUT": {
     "TITLE": "Checkout",
@@ -210,7 +398,16 @@
     "TOTAL": "Total",
     "QTY": "Qty",
     "PER_PIECE": "per piece",
-    "SHIPPING": "Shipping"
+    "SHIPPING": "Shipping",
+    "ERR_NO_SESSION_START": "No active session found. Please start a new quote.",
+    "ERR_LOAD_SESSION": "Failed to load session details. Please try again.",
+    "ERR_NO_SESSION_CREATE_ORDER": "No active session found. Cannot create order.",
+    "ERR_CREATE_ORDER": "Failed to create order. Please try again.",
+    "INVALID_EMAIL": "Invalid email",
+    "COMPANY_OPTIONAL": "Company Name (Optional)",
+    "REF_PERSON_OPTIONAL": "Reference Person (Optional)",
+    "SHIPPING_CALCULATED_NEXT_STEP": "shipping cost is calculated at the next step",
+    "EXCLUDES_SHIPPING": "Shipping cost excluded"
   },
   "PAYMENT": {
     "TITLE": "Payment",
@@ -237,7 +434,9 @@
     "METHOD_BANK": "Bank Transfer / QR",
     "STATUS_REPORTED_TITLE": "Order in progress",
     "STATUS_REPORTED_DESC": "We have registered your operation. Your order will soon move to production.",
-    "IN_VERIFICATION": "Payment Reported"
+    "IN_VERIFICATION": "Payment Reported",
+    "TWINT_QR_ALT": "TWINT payment QR",
+    "TWINT_BUTTON_ALT": "Embedded TWINT button"
   },
   "TRACKING": {
     "TITLE": "Order Status",
@@ -256,5 +455,91 @@
     "PROCESSING_TEXT": "As soon as payment is confirmed, your order will move to production.",
     "EMAIL_TEXT": "We will send you an email update with status and next steps.",
     "BACK_HOME": "Back to Home"
+  },
+  "STL_VIEWER": {
+    "LOADING": "Loading 3D model..."
+  },
+  "HOME": {
+    "SHOP_GALLERY_ARIA": "Shop product gallery",
+    "FOUNDER_PREV_ARIA": "Previous photo",
+    "FOUNDER_NEXT_ARIA": "Next photo",
+    "SHOP_IMAGE_ALT_1": "Technical product printed in 3D",
+    "FOUNDER_IMAGE_ALT_1": "Founder - photo 1",
+    "FOUNDER_IMAGE_ALT_2": "Founder - photo 2",
+    "HERO_EYEBROW": "Technical 3D printing for businesses, freelancers and makers",
+    "HERO_TITLE": "Price and lead time in a few seconds.<br>From 3D file to finished part.",
+    "HERO_LEAD": "The most advanced calculator for your 3D prints: total precision and zero surprises.",
+    "HERO_SUBTITLE": "We also offer CAD services for custom parts!",
+    "BTN_CALCULATE": "Calculate Quote",
+    "BTN_SHOP": "Go to shop",
+    "BTN_CONTACT": "Talk to us",
+    "SEC_CALC_TITLE": "Accurate pricing in a few seconds",
+    "SEC_CALC_SUBTITLE": "No registration required. The estimate is calculated through real slicing.",
+    "SEC_CALC_LIST_1": "Supported formats: STL, 3MF, STEP",
+    "CARD_CALC_EYEBROW": "Automatic calculation",
+    "CARD_CALC_TITLE": "Price and lead time in one click",
+    "CARD_CALC_TAG": "No registration",
+    "CARD_CALC_STEP_1": "Upload the 3D file",
+    "CARD_CALC_STEP_2": "Choose material and quality",
+    "CARD_CALC_STEP_3": "Get cost and lead time instantly",
+    "BTN_OPEN_CALC": "Open calculator",
+    "SEC_CAP_TITLE": "What you can get",
+    "SEC_CAP_SUBTITLE": "Custom production for prototypes, small series and custom parts.",
+    "CAP_1_TITLE": "Fast prototyping",
+    "CAP_1_TEXT": "From digital file to physical model in 24/48 hours. Verify ergonomics, fits and operation before the final mold.",
+    "CAP_2_TITLE": "Custom parts",
+    "CAP_2_TEXT": "Unique components impossible to find on the market. We reproduce broken parts or create custom adaptations.",
+    "CAP_3_TITLE": "Small series",
+    "CAP_3_TEXT": "Bridge production or limited series (10-500 parts) with repeatable quality.",
+    "CAP_4_TITLE": "Consulting and CAD",
+    "CAP_4_TEXT": "No 3D file yet? We help you design it, optimize it for printing and choose the right material together.",
+    "SEC_SHOP_TITLE": "Shop",
+    "SEC_SHOP_TEXT": "Selected products, ready to use.",
+    "SEC_SHOP_LIST_1": "Products designed by us",
+    "SEC_SHOP_LIST_2": "Spare parts and components that are hard to source",
+    "SEC_SHOP_LIST_3": "Supports and organizers to improve workflows",
+    "BTN_DISCOVER": "Discover products",
+    "BTN_REQ_SOLUTION": "Request a solution",
+    "CARD_SHOP_1_TITLE": "Selection of verified products",
+    "CARD_SHOP_1_TEXT": "Checked to ensure long-term functionality and stability.",
+    "CARD_SHOP_2_TITLE": "Ready-to-use kits",
+    "CARD_SHOP_2_TEXT": "Compatible components, easy to assemble with no surprises.",
+    "CARD_SHOP_3_TITLE": "On request",
+    "CARD_SHOP_3_TEXT": "Can’t find what you need? We design and produce it for you.",
+    "SEC_ABOUT_TITLE": "About us",
+    "SEC_ABOUT_TEXT": "We are two engineering students: 3D printing won us over for one simple reason, seeing a problem and building the solution. From this idea come prototypes and objects designed to work in everyday life.",
+    "FOUNDERS_PHOTO": "Founders photo"
+  },
+  "ORDER": {
+    "ERR_ID_NOT_FOUND": "Order ID not found.",
+    "ERR_LOAD_ORDER": "Failed to load order details.",
+    "ERR_REPORT_PAYMENT": "Failed to report payment. Please try again.",
+    "NOT_AVAILABLE": "N/A"
+  },
+  "DROPZONE": {
+    "DEFAULT_LABEL": "Drop files here or click to upload",
+    "DEFAULT_SUBTEXT": "Supports .stl, .3mf, .step"
+  },
+  "COLOR": {
+    "AVAILABLE_COLORS": "Available colors",
+    "CATEGORY_GLOSSY": "Glossy",
+    "CATEGORY_MATTE": "Matte",
+    "NAME": {
+      "BLACK": "Black",
+      "WHITE": "White",
+      "RED": "Red",
+      "BLUE": "Blue",
+      "GREEN": "Green",
+      "YELLOW": "Yellow",
+      "MATTE_BLACK": "Matte Black",
+      "MATTE_WHITE": "Matte White",
+      "MATTE_GRAY": "Matte Gray"
+    }
+  },
+  "COMMON": {
+    "REQUIRED": "Required field",
+    "INVALID_EMAIL": "Invalid email",
+    "BACK": "Back",
+    "OPTIONAL": "(Optional)"
   }
 }
