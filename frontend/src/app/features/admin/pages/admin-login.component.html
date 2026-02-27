@@ -1,0 +1,27 @@
+<section class="admin-login-page">
+  <div class="admin-login-card">
+    <h1>Back-office</h1>
+    <p>Inserisci la password condivisa.</p>
+
+    <form (ngSubmit)="submit()">
+      <label for="admin-password">Password</label>
+      <input
+        id="admin-password"
+        name="password"
+        type="password"
+        [(ngModel)]="password"
+        [disabled]="loading"
+        autocomplete="current-password"
+        required
+      />
+
+      <button type="submit" [disabled]="loading || !password.trim()">
+        {{ loading ? 'Accesso...' : 'Accedi' }}
+      </button>
+    </form>
+
+    @if (errorMessage) {
+      <p class="error">{{ errorMessage }}</p>
+    }
+  </div>
+</section>

@@ -163,9 +163,14 @@ jobs:
           printf 'REGISTRY_URL="%s"\nREPO_OWNER="%s"\nTAG="%s"\n' \
             "${{ secrets.REGISTRY_URL }}" "$DEPLOY_OWNER" "$DEPLOY_TAG" >> /tmp/full_env.env
 
+          ADMIN_TTL="${{ secrets.ADMIN_SESSION_TTL_MINUTES }}"
+          ADMIN_TTL="${ADMIN_TTL:-480}"
+          printf 'ADMIN_PASSWORD="%s"\nADMIN_SESSION_SECRET="%s"\nADMIN_SESSION_TTL_MINUTES="%s"\n' \
+            "${{ secrets.ADMIN_PASSWORD }}" "${{ secrets.ADMIN_SESSION_SECRET }}" "$ADMIN_TTL" >> /tmp/full_env.env
+
           # 5. Debug: print content (for debug purposes)
           echo "Preparing to send env file with variables:"
-          grep -v "PASSWORD" /tmp/full_env.env || true
+          grep -Ev "PASSWORD|SECRET" /tmp/full_env.env || true
 
           # 5. Send env to server
           ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" \

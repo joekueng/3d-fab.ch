@@ -1,0 +1,67 @@
+<section class="admin-dashboard">
+  <header class="dashboard-header">
+    <div>
+      <h1>Back-office ordini</h1>
+      <p>Gestione pagamenti e dettaglio ordini</p>
+    </div>
+    <div class="header-actions">
+      <button type="button" (click)="loadOrders()" [disabled]="loading">Aggiorna</button>
+      <button type="button" class="ghost" (click)="logout()">Logout</button>
+    </div>
+  </header>
+
+  <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+  <div class="table-wrap" *ngIf="!loading; else loadingTpl">
+    <table>
+      <thead>
+        <tr>
+          <th>Ordine</th>
+          <th>Email</th>
+          <th>Stato</th>
+          <th>Pagamento</th>
+          <th>Totale</th>
+          <th>Azioni</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let order of orders" [class.selected]="selectedOrder?.id === order.id">
+          <td>{{ order.orderNumber }}</td>
+          <td>{{ order.customerEmail }}</td>
+          <td>{{ order.status }}</td>
+          <td>{{ order.paymentStatus || 'PENDING' }}</td>
+          <td>{{ order.totalChf | currency:'CHF':'symbol':'1.2-2' }}</td>
+          <td class="actions">
+            <button type="button" class="ghost" (click)="openDetails(order.id)">Dettaglio</button>
+            <button
+              type="button"
+              (click)="confirmPayment(order.id)"
+              [disabled]="confirmingOrderId === order.id || order.paymentStatus === 'COMPLETED'"
+            >
+              {{ confirmingOrderId === order.id ? 'Invio...' : 'Conferma pagamento' }}
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <section class="details" *ngIf="selectedOrder">
+    <h2>Dettaglio ordine {{ selectedOrder.orderNumber }}</h2>
+    <p *ngIf="detailLoading">Caricamento dettaglio...</p>
+    <p><strong>Cliente:</strong> {{ selectedOrder.customerEmail }}</p>
+    <p><strong>Pagamento:</strong> {{ selectedOrder.paymentStatus || 'PENDING' }}</p>
+
+    <div class="items">
+      <div class="item" *ngFor="let item of selectedOrder.items">
+        <p><strong>File:</strong> {{ item.originalFilename }}</p>
+        <p><strong>Qta:</strong> {{ item.quantity }}</p>
+        <p><strong>Prezzo riga:</strong> {{ item.lineTotalChf | currency:'CHF':'symbol':'1.2-2' }}</p>
+      </div>
+    </div>
+  </section>
+</section>
+
+<ng-template #loadingTpl>
+  <p>Caricamento ordini...</p>
+</ng-template>

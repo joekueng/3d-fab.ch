@@ -38,6 +38,10 @@ const appChildRoutes: Routes = [
     loadChildren: () => import('./features/legal/legal.routes').then(m => m.LEGAL_ROUTES)
   },
   {
+    path: 'admin',
+    loadChildren: () => import('./features/admin/admin.routes').then(m => m.ADMIN_ROUTES)
+  },
+  {
     path: '**',
     redirectTo: ''
   }

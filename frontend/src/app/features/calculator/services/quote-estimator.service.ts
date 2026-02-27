@@ -152,8 +152,6 @@ export class QuoteEstimatorService {
   getOptions(): Observable<OptionsResponse> {
       console.log('QuoteEstimatorService: Requesting options...');
       const headers: any = {};
-      // @ts-ignore
-      if (environment.basicAuth) headers['Authorization'] = 'Basic ' + btoa(environment.basicAuth);
       return this.http.get<OptionsResponse>(`${environment.apiUrl}/api/calculator/options`, { headers }).pipe(
           tap({
               next: (res) => console.log('QuoteEstimatorService: Options loaded', res),
@@ -166,43 +164,31 @@ export class QuoteEstimatorService {
   
   getQuoteSession(sessionId: string): Observable<any> {
       const headers: any = {};
-      // @ts-ignore
-      if (environment.basicAuth) headers['Authorization'] = 'Basic ' + btoa(environment.basicAuth);
       return this.http.get(`${environment.apiUrl}/api/quote-sessions/${sessionId}`, { headers });
   }
 
   updateLineItem(lineItemId: string, changes: any): Observable<any> {
       const headers: any = {};
-      // @ts-ignore
-      if (environment.basicAuth) headers['Authorization'] = 'Basic ' + btoa(environment.basicAuth);
       return this.http.patch(`${environment.apiUrl}/api/quote-sessions/line-items/${lineItemId}`, changes, { headers });
   }
 
   createOrder(sessionId: string, orderDetails: any): Observable<any> {
       const headers: any = {};
-      // @ts-ignore
-      if (environment.basicAuth) headers['Authorization'] = 'Basic ' + btoa(environment.basicAuth);
       return this.http.post(`${environment.apiUrl}/api/orders/from-quote/${sessionId}`, orderDetails, { headers });
   }
 
   getOrder(orderId: string): Observable<any> {
       const headers: any = {};
-      // @ts-ignore
-      if (environment.basicAuth) headers['Authorization'] = 'Basic ' + btoa(environment.basicAuth);
       return this.http.get(`${environment.apiUrl}/api/orders/${orderId}`, { headers });
   }
 
   reportPayment(orderId: string, method: string): Observable<any> {
       const headers: any = {};
-      // @ts-ignore
-      if (environment.basicAuth) headers['Authorization'] = 'Basic ' + btoa(environment.basicAuth);
       return this.http.post(`${environment.apiUrl}/api/orders/${orderId}/payments/report`, { method }, { headers });
   }
 
   getOrderInvoice(orderId: string): Observable<Blob> {
       const headers: any = {};
-      // @ts-ignore
-      if (environment.basicAuth) headers['Authorization'] = 'Basic ' + btoa(environment.basicAuth);
       return this.http.get(`${environment.apiUrl}/api/orders/${orderId}/invoice`, {
           headers,
           responseType: 'blob'
@@ -211,8 +197,6 @@ export class QuoteEstimatorService {
 
   getOrderConfirmation(orderId: string): Observable<Blob> {
       const headers: any = {};
-      // @ts-ignore
-      if (environment.basicAuth) headers['Authorization'] = 'Basic ' + btoa(environment.basicAuth);
       return this.http.get(`${environment.apiUrl}/api/orders/${orderId}/confirmation`, {
           headers,
           responseType: 'blob'
@@ -221,8 +205,6 @@ export class QuoteEstimatorService {
 
   getTwintPayment(orderId: string): Observable<any> {
       const headers: any = {};
-      // @ts-ignore
-      if (environment.basicAuth) headers['Authorization'] = 'Basic ' + btoa(environment.basicAuth);
       return this.http.get(`${environment.apiUrl}/api/orders/${orderId}/twint`, { headers });
   }
   
@@ -236,8 +218,6 @@ export class QuoteEstimatorService {
     return new Observable(observer => {
         // 1. Create Session first
         const headers: any = {};
-        // @ts-ignore
-        if (environment.basicAuth) headers['Authorization'] = 'Basic ' + btoa(environment.basicAuth);
 
         this.http.post<any>(`${environment.apiUrl}/api/quote-sessions`, {}, { headers }).subscribe({
             next: (sessionRes) => {
@@ -347,8 +327,6 @@ export class QuoteEstimatorService {
   // Session File Retrieval
   getLineItemContent(sessionId: string, lineItemId: string): Observable<Blob> {
       const headers: any = {};
-      // @ts-ignore
-      if (environment.basicAuth) headers['Authorization'] = 'Basic ' + btoa(environment.basicAuth);
       return this.http.get(`${environment.apiUrl}/api/quote-sessions/${sessionId}/line-items/${lineItemId}/content`, {
           headers,
           responseType: 'blob'

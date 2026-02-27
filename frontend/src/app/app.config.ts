@@ -1,9 +1,10 @@
 import { ApplicationConfig, provideZoneChangeDetection, importProvidersFrom } from '@angular/core';
 import { provideRouter, withComponentInputBinding, withInMemoryScrolling, withViewTransitions } from '@angular/router';
 import { routes } from './app.routes';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { provideTranslateHttpLoader, TranslateHttpLoader } from '@ngx-translate/http-loader';
+import { adminAuthInterceptor } from './core/interceptors/admin-auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -16,7 +17,9 @@ export const appConfig: ApplicationConfig = {
         scrollPositionRestoration: 'top'
       })
     ),
-    provideHttpClient(),
+    provideHttpClient(
+      withInterceptors([adminAuthInterceptor])
+    ),
     provideTranslateHttpLoader({
       prefix: './assets/i18n/',
       suffix: '.json'
