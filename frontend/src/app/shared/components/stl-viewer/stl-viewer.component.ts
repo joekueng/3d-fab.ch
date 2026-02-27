@@ -1,5 +1,6 @@
 import { Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, ViewChild, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 import * as THREE from 'three';
 // @ts-ignore
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
@@ -9,7 +10,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 @Component({
   selector: 'app-stl-viewer',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   templateUrl: './stl-viewer.component.html',
   styleUrl: './stl-viewer.component.scss'
 })

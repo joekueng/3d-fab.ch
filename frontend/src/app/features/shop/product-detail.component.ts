@@ -1,7 +1,7 @@
 import { Component, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ShopService, Product } from './services/shop.service';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 
@@ -18,7 +18,10 @@ export class ProductDetailComponent {
   
   product = signal<Product | undefined>(undefined);
 
-  constructor(private shopService: ShopService) {}
+  constructor(
+    private shopService: ShopService,
+    private translate: TranslateService
+  ) {}
 
   ngOnInit() {
     const productId = this.id();
@@ -28,6 +31,6 @@ export class ProductDetailComponent {
   }
 
   addToCart() {
-    alert('Aggiunto al carrello (Mock)');
+    alert(this.translate.instant('SHOP.MOCK_ADD_CART'));
   }
 }

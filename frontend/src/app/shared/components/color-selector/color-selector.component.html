@@ -14,7 +14,7 @@
     <div class="color-popup">
       @for (category of categories(); track category.name) {
         <div class="category">
-          <div class="category-name">{{ category.name }}</div>
+          <div class="category-name">{{ category.name | translate }}</div>
           <div class="colors-grid">
             @for (color of category.colors; track color.value) {
               <div 
@@ -28,7 +28,7 @@
                      <div class="color-circle small" [style.background-color]="color.hex"></div>
                 </div>
                 
-                <span class="color-name">{{ color.label }}</span>
+                <span class="color-name">{{ color.label | translate }}</span>
               </div>
             }
           </div>

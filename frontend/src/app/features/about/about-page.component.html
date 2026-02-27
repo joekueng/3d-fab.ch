@@ -40,11 +40,11 @@
         (keydown.space)="toggleSelectedMember('joe'); $event.preventDefault()"
       >
         <div class="placeholder-img">
-          <img src="assets/images/joe.jpg" alt="Joe Küng">
+          <img src="assets/images/joe.jpg" [attr.alt]="'ABOUT.MEMBER_JOE_ALT' | translate">
         </div>
         <div class="member-info">
-          <span class="member-name">Joe Küng</span>
-          <span class="member-role">Studente Ingegneria Informatica</span>
+          <span class="member-name">{{ 'ABOUT.MEMBER_JOE_NAME' | translate }}</span>
+          <span class="member-role">{{ 'ABOUT.MEMBER_JOE_ROLE' | translate }}</span>
         </div>
       </div>
       <div
@@ -63,11 +63,11 @@
         (keydown.space)="toggleSelectedMember('matteo'); $event.preventDefault()"
       >
         <div class="placeholder-img">
-          <img src="assets/images/matteo.jpg" alt="Matteo Caletti">
+          <img src="assets/images/matteo.jpg" [attr.alt]="'ABOUT.MEMBER_MATTEO_ALT' | translate">
         </div>
         <div class="member-info">
-          <span class="member-name">Matteo Caletti</span>
-          <span class="member-role">Studente Ingegneria Elettronica</span>
+          <span class="member-name">{{ 'ABOUT.MEMBER_MATTEO_NAME' | translate }}</span>
+          <span class="member-role">{{ 'ABOUT.MEMBER_MATTEO_ROLE' | translate }}</span>
         </div>
       </div>
     </div>

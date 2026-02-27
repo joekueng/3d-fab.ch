@@ -110,9 +110,9 @@
               <app-button variant="outline" routerLink="/contact">{{ 'HOME.BTN_REQ_SOLUTION' | translate }}</app-button>
             </div>
           </div>
-          <div class="shop-gallery" tabindex="0" aria-label="Gallery prodotti shop">
+          <div class="shop-gallery" tabindex="0" [attr.aria-label]="'HOME.SHOP_GALLERY_ARIA' | translate">
             <figure class="shop-gallery-item" *ngFor="let image of shopGalleryImages">
-              <img [src]="image.src" [alt]="image.alt">
+              <img [src]="image.src" [alt]="image.alt | translate">
             </figure>
           </div>
           <div class="shop-cards">
@@ -149,7 +149,7 @@
               <img
                 class="about-feature-photo"
                 [src]="founderImages[founderImageIndex].src"
-                [alt]="founderImages[founderImageIndex].alt"
+                [alt]="founderImages[founderImageIndex].alt | translate"
                 width="1200"
                 height="900"
               >
@@ -157,7 +157,7 @@
                 type="button"
                 class="founder-nav founder-nav-prev"
                 (click)="prevFounderImage()"
-                aria-label="Foto precedente"
+                [attr.aria-label]="'HOME.FOUNDER_PREV_ARIA' | translate"
               >
                 ‹
               </button>
@@ -165,7 +165,7 @@
                 type="button"
                 class="founder-nav founder-nav-next"
                 (click)="nextFounderImage()"
-                aria-label="Foto successiva"
+                [attr.aria-label]="'HOME.FOUNDER_NEXT_ARIA' | translate"
               >
                 ›
               </button>

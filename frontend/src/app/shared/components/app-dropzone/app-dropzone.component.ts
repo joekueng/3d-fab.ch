@@ -1,16 +1,17 @@
 import { Component, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-dropzone',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   templateUrl: './app-dropzone.component.html',
   styleUrl: './app-dropzone.component.scss'
 })
 export class AppDropzoneComponent {
-  label = input<string>('Drop files here or click to upload');
-  subtext = input<string>('Supports .stl, .3mf, .step');
+  label = input<string>('DROPZONE.DEFAULT_LABEL');
+  subtext = input<string>('DROPZONE.DEFAULT_SUBTEXT');
   accept = input<string>('.stl,.3mf,.step,.stp');
   multiple = input<boolean>(true);
   

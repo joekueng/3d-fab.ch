@@ -68,7 +68,12 @@
                 <h4>{{ 'PAYMENT.TWINT_TITLE' | translate }}</h4>
               </div>
               <div class="qr-placeholder">
-                <img *ngIf="twintQrUrl()" class="twint-qr" [src]="getTwintQrUrl()" (error)="onTwintQrError()" alt="TWINT payment QR" />
+                <img
+                  *ngIf="twintQrUrl()"
+                  class="twint-qr"
+                  [src]="getTwintQrUrl()"
+                  (error)="onTwintQrError()"
+                  [attr.alt]="'PAYMENT.TWINT_QR_ALT' | translate" />
                 <p>{{ 'PAYMENT.TWINT_DESC' | translate }}</p>
                 <p class="billing-hint">{{ 'PAYMENT.BILLING_INFO_HINT' | translate }}</p>
                 <div class="twint-mobile-action twint-button-container">
@@ -80,7 +85,10 @@ cursor: pointer;
 background-color: transparent;
 border: none;
 align-items: center;" (click)="openTwintPayment()">
-                    <img style="width: auto; height: 58px" alt="Embedded TWINT button" [src]="getTwintButtonImageUrl()"/>
+                    <img
+                      style="width: auto; height: 58px"
+                      [attr.alt]="'PAYMENT.TWINT_BUTTON_ALT' | translate"
+                      [src]="getTwintButtonImageUrl()"/>
                   </button>
                 </div>
                 <p class="amount">{{ 'PAYMENT.TOTAL' | translate }}: {{ o.totalChf | currency:'CHF' }}</p>
@@ -150,7 +158,7 @@ align-items: center;" (click)="openTwintPayment()">
 
   <div *ngIf="error()" class="error-message">
     <app-card>
-      <p>{{ error() }}</p>
+      <p>{{ error()! | translate }}</p>
     </app-card>
   </div>
 </div>

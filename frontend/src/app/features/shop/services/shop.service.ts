@@ -17,24 +17,24 @@ export class ShopService {
   private staticProducts: Product[] = [
     {
       id: '1',
-      name: 'Filamento PLA Standard',
-      description: 'Il classico per ogni stampa, facile e affidabile.',
+      name: 'SHOP.PRODUCTS.P1.NAME',
+      description: 'SHOP.PRODUCTS.P1.DESC',
       price: 24.90,
-      category: 'Filamenti'
+      category: 'SHOP.CATEGORIES.FILAMENTS'
     },
     {
       id: '2',
-      name: 'Filamento PETG Tough',
-      description: 'Resistente agli urti e alle temperature.',
+      name: 'SHOP.PRODUCTS.P2.NAME',
+      description: 'SHOP.PRODUCTS.P2.DESC',
       price: 29.90,
-      category: 'Filamenti'
+      category: 'SHOP.CATEGORIES.FILAMENTS'
     },
     {
       id: '3',
-      name: 'Kit Ugelli (0.4mm)',
-      description: 'Set di ricambio per estrusore FDM.',
+      name: 'SHOP.PRODUCTS.P3.NAME',
+      description: 'SHOP.PRODUCTS.P3.DESC',
       price: 15.00,
-      category: 'Accessori'
+      category: 'SHOP.CATEGORIES.ACCESSORIES'
     }
   ];
 

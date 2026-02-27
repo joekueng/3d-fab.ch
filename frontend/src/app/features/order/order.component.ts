@@ -34,7 +34,7 @@ export class OrderComponent implements OnInit {
       this.loadOrder();
       this.loadTwintPayment();
     } else {
-      this.error.set('Order ID not found.');
+      this.error.set('ORDER.ERR_ID_NOT_FOUND');
       this.loading.set(false);
     }
   }
@@ -48,7 +48,7 @@ export class OrderComponent implements OnInit {
       },
       error: (err) => {
         console.error('Failed to load order', err);
-        this.error.set('Failed to load order details.');
+        this.error.set('ORDER.ERR_LOAD_ORDER');
         this.loading.set(false);
       }
     });
@@ -145,7 +145,7 @@ export class OrderComponent implements OnInit {
       },
       error: (err) => {
         console.error('Failed to report payment', err);
-        this.error.set('Failed to report payment. Please try again.');
+        this.error.set('ORDER.ERR_REPORT_PAYMENT');
       }
     });
   }
@@ -157,7 +157,7 @@ export class OrderComponent implements OnInit {
     if (order?.id) {
       return this.extractOrderNumber(order.id);
     }
-    return 'N/A';
+    return this.translate.instant('ORDER.NOT_AVAILABLE');
   }
 
   private extractOrderNumber(orderId: string): string {

@@ -211,7 +211,7 @@ export class ContactFormComponent implements OnDestroy {
         },
         error: (err) => {
           console.error('Submission failed', err);
-          alert('Error submitting request. Please try again.');
+          alert(this.translate.instant('CONTACT.ERROR_SUBMIT'));
         }
       });
       

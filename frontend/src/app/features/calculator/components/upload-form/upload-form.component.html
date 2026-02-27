@@ -20,8 +20,8 @@
     <!-- Initial Dropzone (Visible only when no files) -->
     @if (items().length === 0) {
         <app-dropzone
-            [label]="'CALC.UPLOAD_LABEL' | translate"
-            [subtext]="'CALC.UPLOAD_SUB' | translate"
+            [label]="'CALC.UPLOAD_LABEL'"
+            [subtext]="'CALC.UPLOAD_SUB'"
             [accept]="acceptedFormats"
             [multiple]="true"
             (filesDropped)="onFilesDropped($event)">
@@ -60,7 +60,11 @@
                             </div>
                         </div>
 
-                        <button type="button" class="btn-remove" (click)="removeItem(i); $event.stopPropagation()" title="Remove file">
+                        <button
+                            type="button"
+                            class="btn-remove"
+                            (click)="removeItem(i); $event.stopPropagation()"
+                            [attr.title]="'CALC.REMOVE_FILE' | translate">
                             X
                         </button>
                     </div>

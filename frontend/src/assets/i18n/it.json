@@ -15,7 +15,7 @@
     "HERO_EYEBROW": "Stampa 3D tecnica per aziende, freelance e maker",
     "HERO_TITLE": "Prezzo e tempi in pochi secondi.<br>Dal file 3D al pezzo finito.",
     "HERO_LEAD": "Il calcolatore più avanzato per le tue stampe 3D: precisione assoluta e zero sorprese.",
-    "HERO_SUBTITLE": "Offriamo anche servizi di cad, per pezzi personalizzati!",
+    "HERO_SUBTITLE": "Offriamo anche servizi di CAD per pezzi personalizzati!",
     "BTN_CALCULATE": "Calcola Preventivo",
     "BTN_SHOP": "Vai allo shop",
     "BTN_CONTACT": "Parla con noi",
@@ -54,11 +54,17 @@
     "CARD_SHOP_3_TEXT": "Non trovi quello che serve? Lo progettiamo e lo produciamo per te.",
     "SEC_ABOUT_TITLE": "Su di noi",
     "SEC_ABOUT_TEXT": "Siamo due studenti di ingegneria: la stampa 3D ci ha conquistati per un motivo semplice, vedere un problema e costruire la soluzione. Da questa idea prendono forma prototipi, oggetti pensati per funzionare nella quotidianità. ",
-    "FOUNDERS_PHOTO": "Foto Founders"
+    "FOUNDERS_PHOTO": "Foto Founders",
+    "SHOP_GALLERY_ARIA": "Galleria prodotti shop",
+    "FOUNDER_PREV_ARIA": "Foto precedente",
+    "FOUNDER_NEXT_ARIA": "Foto successiva",
+    "SHOP_IMAGE_ALT_1": "Prodotto tecnico stampato in 3D",
+    "FOUNDER_IMAGE_ALT_1": "Founder - foto 1",
+    "FOUNDER_IMAGE_ALT_2": "Founder - foto 2"
   },
   "CALC": {
     "TITLE": "Calcola Preventivo 3D",
-    "SUBTITLE": "Carica il tuo file 3D (STL, 3MF, STEP), imposta la qualtà, colore e calcola immediatamente prezzo e tempi.",
+    "SUBTITLE": "Carica il tuo file 3D (STL, 3MF, STEP), imposta la qualità, il colore e calcola immediatamente prezzo e tempi.",
     "CTA_START": "Inizia Ora",
     "BUSINESS": "Aziende",
     "PRIVATE": "Privati",
@@ -102,9 +108,13 @@
     "UPLOADING": "Caricamento...",
     "PROCESSING": "Elaborazione...",
     "NOTES_PLACEHOLDER": "Istruzioni specifiche...",
-    "SETUP_NOTE": "* Include {{cost}} Costo di Setup",
-    "SHIPPING_NOTE": "** costi di spedizione esclusi, calcolati al prossimo passaggio",
-    "STEP_WARNING": "La visualizzazione 3D non è compatibile con i file step e 3mf"
+    "SETUP_NOTE": "* Include {{cost}} come costo di setup",
+    "SHIPPING_NOTE": "** Costi di spedizione esclusi, calcolati al passaggio successivo",
+    "STEP_WARNING": "La visualizzazione 3D non è compatibile con i file step e 3mf",
+    "REMOVE_FILE": "Rimuovi file",
+    "FALLBACK_MATERIAL": "PLA (fallback)",
+    "FALLBACK_QUALITY_STANDARD": "Standard",
+    "ERR_FILE_TOO_LARGE": "Alcuni file superano il limite di 200MB e non sono stati aggiunti."
   },
   "QUOTE": {
     "PROCEED_ORDER": "Procedi con l'ordine",
@@ -129,7 +139,8 @@
     "CITY": "Città",
     "CITY_PLACEHOLDER": "Città",
     "SUBMIT": "Procedi",
-    "SUMMARY_TITLE": "Riepilogo"
+    "SUMMARY_TITLE": "Riepilogo",
+    "DEFAULT_COLOR": "Predefinito"
   },
   "COMMON": {
     "REQUIRED": "Campo obbligatorio",
@@ -145,10 +156,33 @@
     "WIP_SUBTITLE": "Stiamo preparando uno shop con prodotti selezionati e funzionalità di creazione automatica!",
     "WIP_CTA_CALC": "Vai al calcolatore",
     "WIP_RETURN_LATER": "Torna tra un po'",
-    "WIP_NOTE": "Ci teniamo a fare le cose fatte bene: nel frattempo puoi calcolare subito prezzo e tempi di un file 3d con il nostro calcolatore.",
+    "WIP_NOTE": "Ci teniamo a fare le cose fatte bene: nel frattempo puoi calcolare subito prezzo e tempi di un file 3D con il nostro calcolatore.",
     "ADD_CART": "Aggiungi al Carrello",
     "BACK": "Torna allo Shop",
-    "NOT_FOUND": "Prodotto non trovato."
+    "NOT_FOUND": "Prodotto non trovato.",
+    "DETAILS": "Dettagli",
+    "MOCK_ADD_CART": "Aggiunto al carrello (Mock)",
+    "SUCCESS_TITLE": "Aggiunto al carrello",
+    "SUCCESS_DESC": "Il prodotto è stato aggiunto correttamente al carrello.",
+    "CONTINUE": "Continua",
+    "CATEGORIES": {
+      "FILAMENTS": "Filamenti",
+      "ACCESSORIES": "Accessori"
+    },
+    "PRODUCTS": {
+      "P1": {
+        "NAME": "Filamento PLA Standard",
+        "DESC": "Il classico per ogni stampa, facile e affidabile."
+      },
+      "P2": {
+        "NAME": "Filamento PETG Tough",
+        "DESC": "Resistente agli urti e alle temperature."
+      },
+      "P3": {
+        "NAME": "Kit Ugelli (0.4mm)",
+        "DESC": "Set di ricambio per estrusore FDM."
+      }
+    }
   },
   "ABOUT": {
     "TITLE": "Chi Siamo",
@@ -172,7 +206,13 @@
     "SERVICES_TITLE": "Servizi principali",
     "TARGET_TITLE": "Per chi è",
     "TARGET_TEXT": "Piccole aziende, freelance, smanettoni e clienti che cercano un prodotto già pronto dallo shop.",
-    "TEAM_TITLE": "Il Nostro Team"
+    "TEAM_TITLE": "Il Nostro Team",
+    "MEMBER_JOE_NAME": "Joe Küng",
+    "MEMBER_JOE_ROLE": "Studente Ingegneria Informatica",
+    "MEMBER_JOE_ALT": "Joe Küng",
+    "MEMBER_MATTEO_NAME": "Matteo Caletti",
+    "MEMBER_MATTEO_ROLE": "Studente Ingegneria Elettronica",
+    "MEMBER_MATTEO_ALT": "Matteo Caletti"
   },
   "LOCATIONS": {
     "TITLE": "Le Nostre Sedi",
@@ -210,7 +250,7 @@
         "P2": "1.2. Quando carichi file 3D o allegati tecnici, i file vengono trattati solo per analisi, produzione, assistenza e gestione dell'ordine."
       },
       "S2": {
-        "TITLE": "2. Finalita del trattamento",
+        "TITLE": "2. Finalità del trattamento",
         "P1": "2.1. Usiamo i dati esclusivamente per: preparare preventivi, confermare ordini, ricevere pagamenti, organizzare spedizioni e fornire supporto post-vendita.",
         "P2": "2.2. Non usiamo i dati per profilazione, marketing automatico o vendita a terzi."
       },
@@ -261,8 +301,8 @@
       "S4": {
         "TITLE": "4. Conclusione del contratto e ordine",
         "P1": "4.1. Il contratto si conclude con conferma ordine (email/portale) o con avvio produzione dopo pagamento/anticipo.",
-        "P2": "4.2. I preventivi automatici possono essere confermati o aggiornati dopo verifica tecnica minima (stampabilita, supporti, limiti macchina).",
-        "P3": "4.3. Il fornitore puo rifiutare ordini tecnicamente non fattibili o non conformi ai presenti termini."
+        "P2": "4.2. I preventivi automatici possono essere confermati o aggiornati dopo verifica tecnica minima (stampabilità, supporti, limiti macchina).",
+        "P3": "4.3. Il fornitore può rifiutare ordini tecnicamente non fattibili o non conformi ai presenti termini."
       },
       "S5": {
         "TITLE": "5. Prezzi, imposte e spedizione",
@@ -274,17 +314,17 @@
         "TITLE": "6. Pagamenti",
         "P1": "6.1. Metodi accettati: TWINT e bonifico bancario.",
         "P2": "6.2. Salvo accordi diversi, la produzione parte solo dopo il pagamento.",
-        "P3": "6.3. Per consulenza CAD e piccole serie puo essere richiesto un anticipo (30-100%) e/o saldo prima della consegna.",
+        "P3": "6.3. Per consulenza CAD e piccole serie può essere richiesto un anticipo (30-100%) e/o saldo prima della consegna.",
         "P4": "6.4. Dati bonifico: Joe Kung, IBAN CH74 0900 0000 1548 2158 1, Via G. Pioda 29a, 6710 Biasca."
       },
       "S7": {
-        "TITLE": "7. File del cliente e responsabilita tecnica",
+        "TITLE": "7. File del cliente e responsabilità tecnica",
         "P1": "7.1. Il cliente garantisce di avere i diritti sui file e che il loro uso non viola diritti di terzi (copyright, brevetti, licenze, segreti industriali).",
-        "P2": "7.2. Il cliente e responsabile di correttezza del modello, scelta materiale, adeguatezza all'uso finale e rispetto delle norme applicabili.",
-        "P3": "7.3. Il fornitore puo suggerire modifiche per migliorare stampabilita e resa, ma non svolge funzione di certificazione del prodotto finale salvo accordo scritto."
+        "P2": "7.2. Il cliente è responsabile di correttezza del modello, scelta materiale, adeguatezza all'uso finale e rispetto delle norme applicabili.",
+        "P3": "7.3. Il fornitore può suggerire modifiche per migliorare stampabilità e resa, ma non svolge funzione di certificazione del prodotto finale salvo accordo scritto."
       },
       "S8": {
-        "TITLE": "8. Qualita FDM/FFF e tolleranze",
+        "TITLE": "8. Qualità FDM/FFF e tolleranze",
         "P1": "8.1. La stampa FDM/FFF comporta caratteristiche intrinseche: linee di strato, anisotropia meccanica, micro-imperfezioni, variazioni cromatiche e possibili ritiri/deformazioni legati a geometria e materiale.",
         "P2": "8.2. Tolleranze standard (salvo accordo scritto): fino a 100 mm +/-0.3 mm; oltre 100 mm +/-0.5% (minimo +/-0.3 mm).",
         "P3": "8.3. Requisiti estetici o dimensionali critici devono essere concordati prima dell'ordine (es. campione, misure di controllo, finitura specifica)."
@@ -292,19 +332,19 @@
       "S9": {
         "TITLE": "9. Post-processing e lavorazioni aggiuntive",
         "P1": "9.1. Lavorazioni come rimozione supporti, levigatura, primer/verniciatura o inserti filettati sono eseguite solo se concordate e possono introdurre variazioni dimensionali o estetiche.",
-        "P2": "9.2. Su richiesta puo essere prevista approvazione del primo pezzo o campione, eventualmente a pagamento."
+        "P2": "9.2. Su richiesta può essere prevista approvazione del primo pezzo o campione, eventualmente a pagamento."
       },
       "S10": {
         "TITLE": "10. Tempi di produzione e consegna",
-        "P1": "10.1. I tempi indicati sono stime basate su carico di lavoro, complessita e disponibilita materiali.",
+        "P1": "10.1. I tempi indicati sono stime basate su carico di lavoro, complessità e disponibilità materiali.",
         "P2": "10.2. Ritardi dovuti a cause esterne (corrieri, fornitori, guasti, forza maggiore) non danno diritto automatico a penali salvo accordo scritto.",
         "P3": "10.3. Il cliente deve fornire indirizzi corretti e completi; eventuali costi di riconsegna per indirizzo errato restano a carico del cliente."
       },
       "S11": {
         "TITLE": "11. Diritto di recesso e annullamento",
-        "P1": "11.1. Salvo eccezioni confermate per iscritto, non e previsto diritto di recesso o restituzione dopo l'ordine.",
-        "P2": "11.2. I prodotti personalizzati non sono annullabili ne rimborsabili dopo l'avvio della produzione.",
-        "P3": "11.3. Il fornitore puo accettare eccezioni prima dell'avvio produttivo, trattenendo eventuali costi gia sostenuti.",
+        "P1": "11.1. Salvo eccezioni confermate per iscritto, non è previsto diritto di recesso o restituzione dopo l'ordine.",
+        "P2": "11.2. I prodotti personalizzati non sono annullabili né rimborsabili dopo l'avvio della produzione.",
+        "P3": "11.3. Il fornitore può accettare eccezioni prima dell'avvio produttivo, trattenendo eventuali costi già sostenuti.",
         "P4": "11.4. Eventuali condizioni speciali devono risultare nell'offerta, nella conferma d'ordine o in comunicazioni scritte."
       },
       "S12": {
@@ -312,15 +352,15 @@
         "P1": "12.1. Il cliente deve controllare i prodotti alla consegna e segnalare eventuali difetti entro 7 giorni, per iscritto, con foto/video e descrizione.",
         "P2": "12.2. Non costituiscono automaticamente difetto i segni tipici FDM, piccole variazioni cromatiche, imperfezioni non funzionali o tolleranze entro i limiti concordati.",
         "P3": "12.3. In caso di difetto imputabile al fornitore, i rimedi sono a scelta del fornitore: ristampa/sostituzione oppure rimborso limitato al valore del pezzo o ordine difettoso.",
-        "P4": "12.4. Prima di ristampa o rimborso puo essere richiesta la restituzione del pezzo; se il difetto e confermato la restituzione e a carico del fornitore."
+        "P4": "12.4. Prima di ristampa o rimborso può essere richiesta la restituzione del pezzo; se il difetto è confermato la restituzione è a carico del fornitore."
       },
       "S13": {
-        "TITLE": "13. Usi vietati e conformita",
-        "P1": "13.1. Il fornitore puo rifiutare ordini relativi a oggetti illegali, armi o parti regolamentate, applicazioni safety-critical o medicali senza accordi e validazioni dedicate.",
-        "P2": "13.2. Il cliente resta responsabile dell'uso finale e della conformita normativa del prodotto."
+        "TITLE": "13. Usi vietati e conformità",
+        "P1": "13.1. Il fornitore può rifiutare ordini relativi a oggetti illegali, armi o parti regolamentate, applicazioni safety-critical o medicali senza accordi e validazioni dedicate.",
+        "P2": "13.2. Il cliente resta responsabile dell'uso finale e della conformità normativa del prodotto."
       },
       "S14": {
-        "TITLE": "14. Proprieta intellettuale e licenze",
+        "TITLE": "14. Proprietà intellettuale e licenze",
         "P1": "14.1. I diritti sui file del cliente restano al cliente o ai relativi titolari. Il cliente concede al fornitore una licenza limitata all'uso per valutazione tecnica e produzione.",
         "P2": "14.2. Salvo accordi diversi, file e progetti CAD sviluppati dal fornitore vengono consegnati dopo pagamento, con diritto d'uso per gli scopi concordati.",
         "P3": "14.3. Il cliente manleva il fornitore da pretese di terzi legate a file o istruzioni fornite dal cliente."
@@ -331,14 +371,14 @@
         "P2": "15.2. I dati possono essere condivisi con fornitori tecnici e corrieri solo nella misura necessaria all'erogazione del servizio."
       },
       "S16": {
-        "TITLE": "16. Limitazione di responsabilita",
+        "TITLE": "16. Limitazione di responsabilità",
         "P1": "16.1. Nei limiti di legge, il fornitore risponde solo per danni diretti prevedibili e comunque non oltre il valore dell'ordine relativo al prodotto o servizio contestato.",
-        "P2": "16.2. Sono esclusi, nei limiti consentiti, danni indiretti, perdita di profitto, fermo attivita, perdita dati e danni consequenziali.",
-        "P3": "16.3. Restano salve le responsabilita non escludibili per legge (es. dolo o colpa grave)."
+        "P2": "16.2. Sono esclusi, nei limiti consentiti, danni indiretti, perdita di profitto, fermo attività, perdita dati e danni consequenziali.",
+        "P3": "16.3. Restano salve le responsabilità non escludibili per legge (es. dolo o colpa grave)."
       },
       "S17": {
         "TITLE": "17. Forza maggiore",
-        "P1": "17.1. Eventi fuori dal controllo ragionevole del fornitore (guasti, blackout, ritardi fornitori, scioperi, provvedimenti autorita) possono causare proroghe o sospensioni senza responsabilita."
+        "P1": "17.1. Eventi fuori dal controllo ragionevole del fornitore (guasti, blackout, ritardi fornitori, scioperi, provvedimenti autorità) possono causare proroghe o sospensioni senza responsabilità."
       },
       "S18": {
         "TITLE": "18. Legge applicabile e foro competente",
@@ -384,7 +424,9 @@
     "FILE_TYPE_3D": "3D",
     "FILE_TYPE_VIDEO": "Video",
     "FILE_TYPE_DOC": "DOC",
-    "FILE_TYPE_FILE": "FILE"
+    "FILE_TYPE_FILE": "FILE",
+    "ERROR_SUBMIT": "Errore durante l'invio della richiesta. Riprova.",
+    "REMOVE_FILE": "Rimuovi file allegato"
   },
   "CHECKOUT": {
     "TITLE": "Checkout",
@@ -418,7 +460,11 @@
     "COMPANY_OPTIONAL": "Nome Azienda (Opzionale)",
     "REF_PERSON_OPTIONAL": "Persona di Riferimento (Opzionale)",
     "SHIPPING_CALCULATED_NEXT_STEP": "il costo di spedizione viene calcolato al prossimo passaggio",
-    "EXCLUDES_SHIPPING": "Escluso costo di spedizione"
+    "EXCLUDES_SHIPPING": "Escluso costo di spedizione",
+    "ERR_NO_SESSION_START": "Nessuna sessione attiva trovata. Inizia un nuovo preventivo.",
+    "ERR_LOAD_SESSION": "Impossibile caricare i dettagli della sessione. Riprova.",
+    "ERR_NO_SESSION_CREATE_ORDER": "Nessuna sessione attiva trovata. Impossibile creare l'ordine.",
+    "ERR_CREATE_ORDER": "Impossibile creare l'ordine. Riprova."
   },
   "PAYMENT": {
     "TITLE": "Pagamento",
@@ -444,8 +490,10 @@
     "METHOD_TWINT": "TWINT",
     "METHOD_BANK": "Fattura QR / Bonifico",
     "STATUS_REPORTED_TITLE": "Ordine in lavorazione",
-    "STATUS_REPORTED_DESC": "Abbiamo registrato la tua operazione. Appena confermiamo il pagamento l'ordine entrà in produzione",
-    "IN_VERIFICATION": "Pagamento Segnalato"
+    "STATUS_REPORTED_DESC": "Abbiamo registrato la tua operazione. Appena confermiamo il pagamento l'ordine entrerà in produzione",
+    "IN_VERIFICATION": "Pagamento Segnalato",
+    "TWINT_QR_ALT": "QR di pagamento TWINT",
+    "TWINT_BUTTON_ALT": "Pulsante TWINT incorporato"
   },
   "TRACKING": {
     "TITLE": "Stato dell'Ordine",
@@ -464,5 +512,34 @@
     "PROCESSING_TEXT": "Non appena confermiamo il pagamento, il tuo ordine passerà in produzione.",
     "EMAIL_TEXT": "Ti invieremo una email con aggiornamento stato e prossimi step.",
     "BACK_HOME": "Torna alla Home"
+  },
+  "STL_VIEWER": {
+    "LOADING": "Caricamento modello 3D..."
+  },
+  "ORDER": {
+    "ERR_ID_NOT_FOUND": "ID ordine non trovato.",
+    "ERR_LOAD_ORDER": "Impossibile caricare i dettagli dell'ordine.",
+    "ERR_REPORT_PAYMENT": "Impossibile segnalare il pagamento. Riprova.",
+    "NOT_AVAILABLE": "N/D"
+  },
+  "DROPZONE": {
+    "DEFAULT_LABEL": "Trascina i file qui o clicca per caricare",
+    "DEFAULT_SUBTEXT": "Supporta .STL, .3MF, .STEP"
+  },
+  "COLOR": {
+    "AVAILABLE_COLORS": "Colori disponibili",
+    "CATEGORY_GLOSSY": "Lucidi",
+    "CATEGORY_MATTE": "Opachi",
+    "NAME": {
+      "BLACK": "Nero",
+      "WHITE": "Bianco",
+      "RED": "Rosso",
+      "BLUE": "Blu",
+      "GREEN": "Verde",
+      "YELLOW": "Giallo",
+      "MATTE_BLACK": "Nero opaco",
+      "MATTE_WHITE": "Bianco opaco",
+      "MATTE_GRAY": "Grigio opaco"
+    }
   }
 }

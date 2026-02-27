@@ -1,7 +1,7 @@
 import { Component, input, output, signal, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AppInputComponent } from '../../../../shared/components/app-input/app-input.component';
 import { AppSelectComponent } from '../../../../shared/components/app-select/app-select.component';
 import { AppDropzoneComponent } from '../../../../shared/components/app-dropzone/app-dropzone.component';
@@ -32,6 +32,7 @@ export class UploadFormComponent implements OnInit {
 
   private estimator = inject(QuoteEstimatorService);
   private fb = inject(FormBuilder);
+  private translate = inject(TranslateService);
 
   form: FormGroup;
 
@@ -127,8 +128,8 @@ export class UploadFormComponent implements OnInit {
           error: (err) => {
               console.error('Failed to load options', err);
               // Fallback for debugging/offline dev
-              this.materials.set([{ label: 'PLA (Fallback)', value: 'PLA' }]);
-              this.qualities.set([{ label: 'Standard', value: 'standard' }]);
+              this.materials.set([{ label: this.translate.instant('CALC.FALLBACK_MATERIAL'), value: 'PLA' }]);
+              this.qualities.set([{ label: this.translate.instant('CALC.FALLBACK_QUALITY_STANDARD'), value: 'standard' }]);
               this.nozzleDiameters.set([{ label: '0.4 mm', value: 0.4 }]);
               this.setDefaults();
           }
@@ -171,7 +172,7 @@ export class UploadFormComponent implements OnInit {
     }
 
     if (hasError) {
-        alert("Alcuni file superano il limite di 200MB e non sono stati aggiunti.");
+        alert(this.translate.instant('CALC.ERR_FILE_TOO_LARGE'));
     }
 
     if (validItems.length > 0) {

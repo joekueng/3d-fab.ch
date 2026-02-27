@@ -16,18 +16,18 @@ export class HomeComponent {
   readonly shopGalleryImages = [
     {
       src: 'assets/images/home/supporto-bici.jpg',
-      alt: 'Prodotto tecnico stampato in 3D'
+      alt: 'HOME.SHOP_IMAGE_ALT_1'
     }
   ];
 
   readonly founderImages = [
     {
       src: 'assets/images/home/da-cambiare.jpg',
-      alt: 'Founder - da cambiare'
+      alt: 'HOME.FOUNDER_IMAGE_ALT_1'
     },
     {
       src: 'assets/images/home/vino.JPG',
-      alt: 'Founder - vino'
+      alt: 'HOME.FOUNDER_IMAGE_ALT_2'
     }
   ];
 

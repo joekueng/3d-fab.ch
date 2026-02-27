@@ -112,7 +112,7 @@ export class CheckoutComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       this.sessionId = params['session'];
       if (!this.sessionId) {
-        this.error = 'No active session found. Please start a new quote.';
+        this.error = 'CHECKOUT.ERR_NO_SESSION_START';
         this.router.navigate(['/']); // Redirect if no session
         return;
       }
@@ -143,7 +143,7 @@ export class CheckoutComponent implements OnInit {
           },
           error: (err) => {
             console.error('Failed to load session', err);
-            this.error = 'Failed to load session details. Please try again.';
+            this.error = 'CHECKOUT.ERR_LOAD_SESSION';
           }
       });
   }
@@ -196,7 +196,7 @@ export class CheckoutComponent implements OnInit {
     };
 
     if (!this.sessionId) {
-      this.error = 'No active session found. Cannot create order.';
+      this.error = 'CHECKOUT.ERR_NO_SESSION_CREATE_ORDER';
       this.isSubmitting.set(false);
       return;
     }
@@ -208,7 +208,7 @@ export class CheckoutComponent implements OnInit {
       error: (err) => {
         console.error('Order creation failed', err);
         this.isSubmitting.set(false);
-        this.error = 'Failed to create order. Please try again.';
+        this.error = 'CHECKOUT.ERR_CREATE_ORDER';
       }
     });
   }

@@ -24,7 +24,7 @@ export class ColorSelectorComponent {
           // Flatten variants into a single category for now
           // We could try to group by extracting words, but "Colors" is fine.
           return [{
-              name: 'Available Colors',
+              name: 'COLOR.AVAILABLE_COLORS',
               colors: vars.map(v => ({
                   label: v.colorName, // Display "Red"
                   value: v.colorName, // Send "Red" to backend

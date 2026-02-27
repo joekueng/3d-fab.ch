@@ -61,7 +61,11 @@
 
       <div class="file-grid" *ngIf="files().length > 0">
         <div class="file-item" *ngFor="let file of files(); let i = index">
-          <button type="button" class="remove-btn" (click)="removeFile(i)">×</button>
+          <button
+            type="button"
+            class="remove-btn"
+            (click)="removeFile(i)"
+            [attr.aria-label]="'CONTACT.REMOVE_FILE' | translate">×</button>
           <img *ngIf="file.type === 'image'" [src]="file.url" class="preview-img">
           <video *ngIf="file.type === 'video'" [src]="file.url" class="preview-video" muted playsinline preload="metadata"></video>
           <div *ngIf="file.type !== 'image' && file.type !== 'video'" class="file-icon">
