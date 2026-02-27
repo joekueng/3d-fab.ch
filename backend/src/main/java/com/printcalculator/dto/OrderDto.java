@@ -13,6 +13,7 @@ public class OrderDto {
     private String paymentMethod;
     private String customerEmail;
     private String customerPhone;
+    private String preferredLanguage;
     private String billingCustomerType;
     private AddressDto billingAddress;
     private AddressDto shippingAddress;
@@ -47,6 +48,9 @@ public class OrderDto {
 
     public String getCustomerPhone() { return customerPhone; }
     public void setCustomerPhone(String customerPhone) { this.customerPhone = customerPhone; }
+
+    public String getPreferredLanguage() { return preferredLanguage; }
+    public void setPreferredLanguage(String preferredLanguage) { this.preferredLanguage = preferredLanguage; }
 
     public String getBillingCustomerType() { return billingCustomerType; }
     public void setBillingCustomerType(String billingCustomerType) { this.billingCustomerType = billingCustomerType; }

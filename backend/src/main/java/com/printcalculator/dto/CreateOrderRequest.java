@@ -8,6 +8,7 @@ public class CreateOrderRequest {
     private CustomerDto customer;
     private AddressDto billingAddress;
     private AddressDto shippingAddress;
+    private String language;
     private boolean shippingSameAsBilling;
 
     @AssertTrue(message = "L'accettazione dei Termini e Condizioni e obbligatoria.")

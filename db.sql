@@ -468,6 +468,7 @@ CREATE TABLE IF NOT EXISTS orders
     customer_id              uuid REFERENCES customers (customer_id),
     customer_email           text           NOT NULL,
     customer_phone           text,
+    preferred_language       char(2)        NOT NULL DEFAULT 'it',
 
     -- Snapshot indirizzo/fatturazione (evita tabella addresses e mantiene storico)
     billing_customer_type    text           NOT NULL CHECK (billing_customer_type IN ('PRIVATE', 'COMPANY')),

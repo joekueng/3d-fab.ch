@@ -22,6 +22,7 @@ services:
       - APP_MAIL_FROM=${APP_MAIL_FROM:-info@3d-fab.ch}
       - APP_MAIL_ADMIN_ENABLED=${APP_MAIL_ADMIN_ENABLED:-true}
       - APP_MAIL_ADMIN_ADDRESS=${APP_MAIL_ADMIN_ADDRESS:-info@3d-fab.ch}
+      - APP_FRONTEND_BASE_URL=${APP_FRONTEND_BASE_URL:-http://localhost:4200}
       - TEMP_DIR=/app/temp
       - PROFILES_DIR=/app/profiles
     restart: always

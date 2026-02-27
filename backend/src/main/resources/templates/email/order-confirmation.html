@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Conferma Ordine</title>
+    <title th:text="${emailTitle}">Order Confirmation</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -10,6 +10,7 @@
             margin: 0;
             padding: 0;
         }
+
         .container {
             max-width: 600px;
             margin: 20px auto;
@@ -18,30 +19,41 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
+
         .header {
             text-align: center;
             border-bottom: 1px solid #eeeeee;
             padding-bottom: 20px;
             margin-bottom: 20px;
         }
+
         .header h1 {
             color: #333333;
         }
+
         .content {
             color: #555555;
             line-height: 1.6;
         }
+
         .order-details {
             background-color: #f9f9f9;
             padding: 15px;
             border-radius: 5px;
             margin-top: 20px;
         }
+
         .order-details th {
             text-align: left;
             padding-right: 20px;
             color: #333333;
+            vertical-align: top;
         }
+
+        .order-details td {
+            word-break: break-word;
+        }
+
         .footer {
             text-align: center;
             font-size: 0.9em;
@@ -53,41 +65,46 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Grazie per il tuo ordine #<span th:text="${orderNumber}">00000000</span></h1>
-        </div>
-        <div class="content">
-            <p>Ciao <span th:text="${customerName}">Cliente</span>,</p>
-            <p>Abbiamo ricevuto il tuo ordine e stiamo iniziando a elaborarlo. Ecco un riepilogo dei dettagli:</p>
-
-            <div class="order-details">
-                <table>
-                    <tr>
-                        <th>Numero Ordine:</th>
-                        <td th:text="${orderNumber}">00000000</td>
-                    </tr>
-                    <tr>
-                        <th>Data:</th>
-                        <td th:text="${orderDate}">01/01/2026</td>
-                    </tr>
-                    <tr>
-                        <th>Costo totale:</th>
-                        <td th:text="${totalCost} + ' CHF'">0.00 CHF</td>
-                    </tr>
-                </table>
-            </div>
-
-            <p>
-                Clicca qui per i dettagli:
-                <a th:href="${orderDetailsUrl}" th:text="${orderDetailsUrl}">https://tuosito.it/ordine/00000000-0000-0000-0000-000000000000</a>
-            </p>
-
-            <p>Se hai domande o dubbi, non esitare a contattarci.</p>
-        </div>
-        <div class="footer">
-            <p>&copy; 2026 3D-Fab. Tutti i diritti riservati.</p>
-        </div>
+<div class="container">
+    <div class="header">
+        <h1 th:text="${headlineText}">Thank you for your order #00000000</h1>
     </div>
+
+    <div class="content">
+        <p th:text="${greetingText}">Hi Customer,</p>
+        <p th:text="${introText}">We received your order and started processing it.</p>
+
+        <div class="order-details">
+            <p style="margin-top:0; font-weight: bold;" th:text="${detailsTitleText}">Order details</p>
+            <table>
+                <tr>
+                    <th th:text="${labelOrderNumber}">Order number</th>
+                    <td th:text="${orderNumber}">00000000</td>
+                </tr>
+                <tr>
+                    <th th:text="${labelDate}">Date</th>
+                    <td th:text="${orderDate}">Jan 1, 2026, 10:00:00 AM</td>
+                </tr>
+                <tr>
+                    <th th:text="${labelTotal}">Total</th>
+                    <td th:text="${totalCost}">CHF 0.00</td>
+                </tr>
+            </table>
+        </div>
+
+        <p>
+            <span th:text="${orderDetailsCtaText}">View order status</span>:
+            <a th:href="${orderDetailsUrl}" th:text="${orderDetailsUrl}">https://example.com/en/co/00000000-0000-0000-0000-000000000000</a>
+        </p>
+
+        <p th:text="${attachmentHintText}">The order confirmation PDF is attached.</p>
+        <p th:text="${supportText}">If you have questions, reply to this email.</p>
+    </div>
+
+    <div class="footer">
+        <p>&copy; <span th:text="${currentYear}">2026</span> 3D-Fab</p>
+        <p th:text="${footerText}">Automated message.</p>
+    </div>
+</div>
 </body>
 </html>

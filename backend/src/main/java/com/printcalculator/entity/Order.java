@@ -95,6 +95,10 @@ public class Order {
     @Column(name = "shipping_country_code", length = 2)
     private String shippingCountryCode;
 
+    @ColumnDefault("'it'")
+    @Column(name = "preferred_language", length = 2)
+    private String preferredLanguage;
+
     @ColumnDefault("'CHF'")
     @Column(name = "currency", nullable = false, length = 3)
     private String currency;
@@ -354,6 +358,14 @@ public class Order {
 
     public void setCurrency(String currency) {
         this.currency = currency;
+    }
+
+    public String getPreferredLanguage() {
+        return preferredLanguage;
+    }
+
+    public void setPreferredLanguage(String preferredLanguage) {
+        this.preferredLanguage = preferredLanguage;
     }
 
     public BigDecimal getSetupCostChf() {

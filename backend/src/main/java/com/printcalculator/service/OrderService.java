@@ -1,9 +1,7 @@
 package com.printcalculator.service;
 
-import com.printcalculator.dto.AddressDto;
 import com.printcalculator.dto.CreateOrderRequest;
 import com.printcalculator.entity.*;
-import com.printcalculator.entity.Payment;
 import com.printcalculator.repository.CustomerRepository;
 import com.printcalculator.repository.OrderItemRepository;
 import com.printcalculator.repository.OrderRepository;
@@ -18,14 +16,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
@@ -113,6 +108,7 @@ public class OrderService {
         order.setStatus("PENDING_PAYMENT");
         order.setCreatedAt(OffsetDateTime.now());
         order.setUpdatedAt(OffsetDateTime.now());
+        order.setPreferredLanguage(normalizeLanguage(request.getLanguage()));
         order.setCurrency("CHF");
 
         order.setBillingCustomerType(request.getCustomer().getCustomerType());
@@ -281,75 +277,13 @@ public class OrderService {
     
     private void generateAndSaveDocuments(Order order, List<OrderItem> items) {
         try {
-            // 1. Generate QR Bill
+            // 1. Generate and save the raw QR Bill for internal traceability.
             byte[] qrBillSvgBytes = qrBillService.generateQrBillSvg(order);
-            String qrBillSvg = new String(qrBillSvgBytes, StandardCharsets.UTF_8);
+            saveFileBytes(qrBillSvgBytes, buildQrBillSvgRelativePath(order));
 
-            // Strip XML declaration and DOCTYPE if present, as they validity break the embedding HTML page
-            if (qrBillSvg.contains("<?xml")) {
-                int svgStartIndex = qrBillSvg.indexOf("<svg");
-                if (svgStartIndex != -1) {
-                    qrBillSvg = qrBillSvg.substring(svgStartIndex);
-                }
-            }
-            
-            // Save QR Bill SVG
-            String qrRelativePath = "orders/" + order.getId() + "/documents/qr-bill.svg";
-            saveFileBytes(qrBillSvgBytes, qrRelativePath);
-
-            // 2. Prepare Invoice Variables
-            Map<String, Object> vars = new HashMap<>();
-            vars.put("sellerDisplayName", "3D Fab Switzerland");
-            vars.put("sellerAddressLine1", "Sede Ticino, Svizzera");
-            vars.put("sellerAddressLine2", "Sede Bienne, Svizzera");
-            vars.put("sellerEmail", "info@3dfab.ch");
-
-            vars.put("invoiceNumber", "INV-" + getDisplayOrderNumber(order).toUpperCase());
-            vars.put("invoiceDate", order.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE));
-            vars.put("dueDate", order.getCreatedAt().plusDays(7).format(DateTimeFormatter.ISO_LOCAL_DATE));
-
-            String buyerName = "BUSINESS".equals(order.getBillingCustomerType())
-                    ? order.getBillingCompanyName()
-                    : order.getBillingFirstName() + " " + order.getBillingLastName();
-            vars.put("buyerDisplayName", buyerName);
-            vars.put("buyerAddressLine1", order.getBillingAddressLine1());
-            vars.put("buyerAddressLine2", order.getBillingZip() + " " + order.getBillingCity() + ", " + order.getBillingCountryCode());
-
-            List<Map<String, Object>> invoiceLineItems = items.stream().map(i -> {
-                Map<String, Object> line = new HashMap<>();
-                line.put("description", "Stampa 3D: " + i.getOriginalFilename());
-                line.put("quantity", i.getQuantity());
-                line.put("unitPriceFormatted", String.format("CHF %.2f", i.getUnitPriceChf()));
-                line.put("lineTotalFormatted", String.format("CHF %.2f", i.getLineTotalChf()));
-                return line;
-            }).collect(Collectors.toList());
-
-            Map<String, Object> setupLine = new HashMap<>();
-            setupLine.put("description", "Costo Setup");
-            setupLine.put("quantity", 1);
-            setupLine.put("unitPriceFormatted", String.format("CHF %.2f", order.getSetupCostChf()));
-            setupLine.put("lineTotalFormatted", String.format("CHF %.2f", order.getSetupCostChf()));
-            invoiceLineItems.add(setupLine);
-
-            Map<String, Object> shippingLine = new HashMap<>();
-            shippingLine.put("description", "Spedizione");
-            shippingLine.put("quantity", 1);
-            shippingLine.put("unitPriceFormatted", String.format("CHF %.2f", order.getShippingCostChf()));
-            shippingLine.put("lineTotalFormatted", String.format("CHF %.2f", order.getShippingCostChf()));
-            invoiceLineItems.add(shippingLine);
-
-            vars.put("invoiceLineItems", invoiceLineItems);
-            vars.put("subtotalFormatted", String.format("CHF %.2f", order.getSubtotalChf()));
-            vars.put("grandTotalFormatted", String.format("CHF %.2f", order.getTotalChf()));
-            vars.put("paymentTermsText", "Appena riceviamo il pagamento l'ordine entrerà nella coda di stampa. Grazie per la fiducia");
-
-            // 3. Generate PDF
-            Payment payment = null; // New order, payment not received yet
-            byte[] pdfBytes = invoiceService.generateInvoicePdfBytesFromTemplate(vars, qrBillSvg);
-            
-            // Save PDF
-            String pdfRelativePath = "orders/" + order.getId() + "/documents/invoice-" + order.getId() + ".pdf";
-            saveFileBytes(pdfBytes, pdfRelativePath);
+            // 2. Generate and save the same confirmation PDF served by /api/orders/{id}/confirmation.
+            byte[] confirmationPdfBytes = invoiceService.generateDocumentPdf(order, items, true, qrBillService, null);
+            saveFileBytes(confirmationPdfBytes, buildConfirmationPdfRelativePath(order));
 
         } catch (Exception e) {
             e.printStackTrace(); 
@@ -386,5 +320,29 @@ public class OrderService {
             return orderNumber;
         }
         return order.getId() != null ? order.getId().toString() : "unknown";
+    }
+
+    private String buildQrBillSvgRelativePath(Order order) {
+        return "orders/" + order.getId() + "/documents/qr-bill.svg";
+    }
+
+    private String buildConfirmationPdfRelativePath(Order order) {
+        return "orders/" + order.getId() + "/documents/confirmation-" + getDisplayOrderNumber(order) + ".pdf";
+    }
+
+    private String normalizeLanguage(String language) {
+        if (language == null || language.isBlank()) {
+            return "it";
+        }
+
+        String normalized = language.trim().toLowerCase(Locale.ROOT);
+        if (normalized.length() > 2) {
+            normalized = normalized.substring(0, 2);
+        }
+
+        return switch (normalized) {
+            case "it", "en", "de", "fr" -> normalized;
+            default -> "it";
+        };
     }
 }

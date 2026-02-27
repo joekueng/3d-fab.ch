@@ -8,6 +8,7 @@ import { AppInputComponent } from '../../shared/components/app-input/app-input.c
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
 import { AppToggleSelectorComponent, ToggleOption } from '../../shared/components/app-toggle-selector/app-toggle-selector.component';
+import { LanguageService } from '../../core/services/language.service';
 
 @Component({
   selector: 'app-checkout',
@@ -29,6 +30,7 @@ export class CheckoutComponent implements OnInit {
   private quoteService = inject(QuoteEstimatorService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private languageService = inject(LanguageService);
 
   checkoutForm: FormGroup;
   sessionId: string | null = null;
@@ -191,6 +193,7 @@ export class CheckoutComponent implements OnInit {
         countryCode: formVal.shippingAddress.countryCode
       },
       shippingSameAsBilling: formVal.shippingSameAsBilling,
+      language: this.languageService.selectedLang(),
       acceptTerms: formVal.acceptLegal,
       acceptPrivacy: formVal.acceptLegal
     };

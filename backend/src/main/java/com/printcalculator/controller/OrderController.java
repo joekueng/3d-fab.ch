@@ -157,6 +157,19 @@ public class OrderController {
         Order order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
+        if (isConfirmation) {
+            String relativePath = buildConfirmationPdfRelativePath(order);
+            try {
+                byte[] existingPdf = storageService.loadAsResource(Paths.get(relativePath)).getInputStream().readAllBytes();
+                return ResponseEntity.ok()
+                        .header("Content-Disposition", "attachment; filename=\"confirmation-" + getDisplayOrderNumber(order) + ".pdf\"")
+                        .contentType(MediaType.APPLICATION_PDF)
+                        .body(existingPdf);
+            } catch (Exception ignored) {
+                // Fallback to on-the-fly generation if the stored file is missing or unreadable.
+            }
+        }
+
         List<OrderItem> items = orderItemRepo.findByOrder_Id(orderId);
         Payment payment = paymentRepo.findByOrder_Id(orderId).orElse(null);
 
@@ -167,6 +180,10 @@ public class OrderController {
                 .header("Content-Disposition", "attachment; filename=\"" + typePrefix + truncatedUuid + ".pdf\"")
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdf);
+    }
+
+    private String buildConfirmationPdfRelativePath(Order order) {
+        return "orders/" + order.getId() + "/documents/confirmation-" + getDisplayOrderNumber(order) + ".pdf";
     }
 
     @GetMapping("/{orderId}/twint")
@@ -239,6 +256,7 @@ public class OrderController {
 
         dto.setCustomerEmail(order.getCustomerEmail());
         dto.setCustomerPhone(order.getCustomerPhone());
+        dto.setPreferredLanguage(order.getPreferredLanguage());
         dto.setBillingCustomerType(order.getBillingCustomerType());
         dto.setCurrency(order.getCurrency());
         dto.setSetupCostChf(order.getSetupCostChf());
