@@ -115,7 +115,8 @@
     "REMOVE_FILE": "Supprimer le fichier",
     "FALLBACK_MATERIAL": "PLA (fallback)",
     "FALLBACK_QUALITY_STANDARD": "Standard",
-    "ERR_FILE_TOO_LARGE": "Certains fichiers dépassent la limite de 200MB et n'ont pas été ajoutés."
+    "ERR_FILE_TOO_LARGE": "Certains fichiers dépassent la limite de 200MB et n'ont pas été ajoutés.",
+    "ERROR_ZERO_PRICE": "Quelque chose s'est mal passé. Essayez un autre format ou contactez-nous."
   },
   "QUOTE": {
     "PROCEED_ORDER": "Procéder à la commande",

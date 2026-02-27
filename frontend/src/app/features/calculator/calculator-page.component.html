@@ -3,7 +3,7 @@
   <p class="subtitle">{{ 'CALC.SUBTITLE' | translate }}</p>
 
   @if (error()) {
-    <app-alert type="error">{{ 'CALC.ERROR_GENERIC' | translate }}</app-alert>
+    <app-alert type="error">{{ errorKey() | translate }}</app-alert>
   }
 </div>
 

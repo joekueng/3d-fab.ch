@@ -27,6 +27,7 @@ export class CalculatorPageComponent implements OnInit {
   uploadProgress = signal(0);
   result = signal<QuoteResult | null>(null);
   error = signal<boolean>(false);
+  errorKey = signal<string>('CALC.ERROR_GENERIC');
   
   orderSuccess = signal(false);
   
@@ -64,6 +65,14 @@ export class CalculatorPageComponent implements OnInit {
           next: (data) => {
               // 1. Map to Result
               const result = this.estimator.mapSessionToQuoteResult(data);
+              if (this.isInvalidQuote(result)) {
+                  this.setQuoteError('CALC.ERROR_ZERO_PRICE');
+                  this.loading.set(false);
+                  return;
+              }
+
+              this.error.set(false);
+              this.errorKey.set('CALC.ERROR_GENERIC');
               this.result.set(result);
               this.step.set('quote');
               
@@ -79,7 +88,7 @@ export class CalculatorPageComponent implements OnInit {
           },
           error: (err) => {
               console.error('Failed to load session', err);
-              this.error.set(true);
+              this.setQuoteError('CALC.ERROR_GENERIC');
               this.loading.set(false);
           }
       });
@@ -146,6 +155,7 @@ export class CalculatorPageComponent implements OnInit {
     this.loading.set(true);
     this.uploadProgress.set(0);
     this.error.set(false);
+    this.errorKey.set('CALC.ERROR_GENERIC');
     this.result.set(null);
     this.orderSuccess.set(false);
 
@@ -163,6 +173,14 @@ export class CalculatorPageComponent implements OnInit {
         } else {
             // It's the result
             const res = event as QuoteResult;
+            if (this.isInvalidQuote(res)) {
+                this.setQuoteError('CALC.ERROR_ZERO_PRICE');
+                this.loading.set(false);
+                return;
+            }
+
+            this.error.set(false);
+            this.errorKey.set('CALC.ERROR_GENERIC');
             this.result.set(res);
             this.loading.set(false);
             this.uploadProgress.set(100);
@@ -180,7 +198,7 @@ export class CalculatorPageComponent implements OnInit {
         }
       },
       error: () => {
-        this.error.set(true);
+        this.setQuoteError('CALC.ERROR_GENERIC');
         this.loading.set(false);
       }
     });
@@ -216,10 +234,19 @@ export class CalculatorPageComponent implements OnInit {
               next: () => {
                   // 3. Fetch the updated session totals from the backend
                   this.estimator.getQuoteSession(currentSessionId).subscribe({
-                      next: (sessionData) => {
+                  next: (sessionData) => {
                           const newResult = this.estimator.mapSessionToQuoteResult(sessionData);
                           // Preserve notes
                           newResult.notes = this.result()?.notes;
+
+                          if (this.isInvalidQuote(newResult)) {
+                              this.setQuoteError('CALC.ERROR_ZERO_PRICE');
+                              this.loading.set(false);
+                              return;
+                          }
+
+                          this.error.set(false);
+                          this.errorKey.set('CALC.ERROR_GENERIC');
                           this.result.set(newResult);
                           this.loading.set(false);
                       },
@@ -281,5 +308,15 @@ export class CalculatorPageComponent implements OnInit {
     });
 
     this.router.navigate(['/contact']);
+  }
+
+  private isInvalidQuote(result: QuoteResult): boolean {
+    return !Number.isFinite(result.totalPrice) || result.totalPrice <= 0;
+  }
+
+  private setQuoteError(key: string): void {
+    this.errorKey.set(key);
+    this.error.set(true);
+    this.result.set(null);
   }
 }
