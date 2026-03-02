@@ -189,10 +189,11 @@
     .meta-value { font-weight: 600; }
     .quote-actions { display: grid; gap: var(--space-3); }
 
-    .capabilities {
-      position: relative;
-      border-bottom: 1px solid var(--color-border);
-    }
+.capabilities {
+  position: relative;
+  border-bottom: 1px solid var(--color-border);
+  padding-top: 3rem;
+}
     .capabilities-bg {
       display: none;
     }

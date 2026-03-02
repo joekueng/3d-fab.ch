@@ -19,38 +19,6 @@
         </div>
       </section>
 
-      <section class="section calculator">
-        <div class="container calculator-grid">
-          <div class="calculator-copy">
-            <h2 class="section-title">{{ 'HOME.SEC_CALC_TITLE' | translate }}</h2>
-            <p class="section-subtitle">
-              {{ 'HOME.SEC_CALC_SUBTITLE' | translate }}
-            </p>
-            <ul class="calculator-list">
-              <li>{{ 'HOME.SEC_CALC_LIST_1' | translate }}</li>
-            </ul>
-          </div>
-          <app-card class="quote-card">
-            <div class="quote-header">
-              <div>
-                <p class="quote-eyebrow">{{ 'HOME.CARD_CALC_EYEBROW' | translate }}</p>
-                <h3 class="quote-title">{{ 'HOME.CARD_CALC_TITLE' | translate }}</h3>
-              </div>
-              <span class="quote-tag">{{ 'HOME.CARD_CALC_TAG' | translate }}</span>
-            </div>
-            <ul class="quote-steps">
-              <li>{{ 'HOME.CARD_CALC_STEP_1' | translate }}</li>
-              <li>{{ 'HOME.CARD_CALC_STEP_2' | translate }}</li>
-              <li>{{ 'HOME.CARD_CALC_STEP_3' | translate }}</li>
-            </ul>
-            <div class="quote-actions">
-              <app-button variant="primary" [fullWidth]="true" routerLink="/calculator/basic">{{ 'HOME.BTN_OPEN_CALC' | translate }}</app-button>
-              <app-button variant="outline" [fullWidth]="true" routerLink="/contact">{{ 'HOME.BTN_CONTACT' | translate }}</app-button>
-            </div>
-          </app-card>
-        </div>
-      </section>
-
       <section class="section capabilities">
         <div class="capabilities-bg"></div>
         <div class="container">
@@ -90,6 +58,38 @@
               <p class="text-muted">{{ 'HOME.CAP_4_TEXT' | translate }}</p>
             </app-card>
           </div>
+        </div>
+      </section>
+
+      <section class="section calculator">
+        <div class="container calculator-grid">
+          <div class="calculator-copy">
+            <h2 class="section-title">{{ 'HOME.SEC_CALC_TITLE' | translate }}</h2>
+            <p class="section-subtitle">
+              {{ 'HOME.SEC_CALC_SUBTITLE' | translate }}
+            </p>
+            <ul class="calculator-list">
+              <li>{{ 'HOME.SEC_CALC_LIST_1' | translate }}</li>
+            </ul>
+          </div>
+          <app-card class="quote-card">
+            <div class="quote-header">
+              <div>
+                <p class="quote-eyebrow">{{ 'HOME.CARD_CALC_EYEBROW' | translate }}</p>
+                <h3 class="quote-title">{{ 'HOME.CARD_CALC_TITLE' | translate }}</h3>
+              </div>
+              <span class="quote-tag">{{ 'HOME.CARD_CALC_TAG' | translate }}</span>
+            </div>
+            <ul class="quote-steps">
+              <li>{{ 'HOME.CARD_CALC_STEP_1' | translate }}</li>
+              <li>{{ 'HOME.CARD_CALC_STEP_2' | translate }}</li>
+              <li>{{ 'HOME.CARD_CALC_STEP_3' | translate }}</li>
+            </ul>
+            <div class="quote-actions">
+              <app-button variant="primary" [fullWidth]="true" routerLink="/calculator/basic">{{ 'HOME.BTN_OPEN_CALC' | translate }}</app-button>
+              <app-button variant="outline" [fullWidth]="true" routerLink="/contact">{{ 'HOME.BTN_CONTACT' | translate }}</app-button>
+            </div>
+          </app-card>
         </div>
       </section>
 
