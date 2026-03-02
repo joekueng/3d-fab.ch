@@ -6,6 +6,9 @@ public class AdminUpsertFilamentVariantRequest {
     private Long materialTypeId;
     private String variantDisplayName;
     private String colorName;
+    private String colorHex;
+    private String finishType;
+    private String brand;
     private Boolean isMatte;
     private Boolean isSpecial;
     private BigDecimal costChfPerKg;
@@ -35,6 +38,30 @@ public class AdminUpsertFilamentVariantRequest {
 
     public void setColorName(String colorName) {
         this.colorName = colorName;
+    }
+
+    public String getColorHex() {
+        return colorHex;
+    }
+
+    public void setColorHex(String colorHex) {
+        this.colorHex = colorHex;
+    }
+
+    public String getFinishType() {
+        return finishType;
+    }
+
+    public void setFinishType(String finishType) {
+        this.finishType = finishType;
+    }
+
+    public String getBrand() {
+        return brand;
+    }
+
+    public void setBrand(String brand) {
+        this.brand = brand;
     }
 
     public Boolean getIsMatte() {

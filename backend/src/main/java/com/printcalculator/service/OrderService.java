@@ -203,7 +203,14 @@ public class OrderService {
             oItem.setOriginalFilename(qItem.getOriginalFilename());
             oItem.setQuantity(qItem.getQuantity());
             oItem.setColorCode(qItem.getColorCode());
-            oItem.setMaterialCode(session.getMaterialCode());
+            oItem.setFilamentVariant(qItem.getFilamentVariant());
+            if (qItem.getFilamentVariant() != null
+                    && qItem.getFilamentVariant().getFilamentMaterialType() != null
+                    && qItem.getFilamentVariant().getFilamentMaterialType().getMaterialCode() != null) {
+                oItem.setMaterialCode(qItem.getFilamentVariant().getFilamentMaterialType().getMaterialCode());
+            } else {
+                oItem.setMaterialCode(session.getMaterialCode());
+            }
 
             BigDecimal distributedUnitPrice = qItem.getUnitPriceChf();
             if (totalSeconds.compareTo(BigDecimal.ZERO) > 0 && qItem.getPrintTimeSeconds() != null) {

@@ -135,7 +135,10 @@ export class CalculatorPageComponent implements OnInit {
                                // Assuming index matches. 
                                // Need to be careful if items order changed, but usually ID sort or insert order.
                                if (item.colorCode) {
-                                   this.uploadForm.updateItemColor(index, item.colorCode);
+                                   this.uploadForm.updateItemColor(index, {
+                                       colorName: item.colorCode,
+                                       filamentVariantId: item.filamentVariantId
+                                   });
                                }
                            });
                       }

@@ -14,48 +14,171 @@
 
   <div class="content" *ngIf="!loading; else loadingTpl">
     <section class="panel">
-      <h3>Inserimento rapido</h3>
-      <div class="create-grid">
-        <section class="subpanel">
-          <h4>Nuovo materiale</h4>
-          <div class="form-grid">
-            <label class="form-field form-field--wide">
-              <span>Codice materiale</span>
-              <input type="text" [(ngModel)]="newMaterial.materialCode" placeholder="PLA, PETG, TPU..." />
-            </label>
-            <label class="form-field form-field--wide">
-              <span>Etichetta tecnico</span>
-              <input
-                type="text"
-                [(ngModel)]="newMaterial.technicalTypeLabel"
-                [disabled]="!newMaterial.isTechnical"
-                placeholder="alta temperatura, rinforzato..."
-              />
-            </label>
+      <div class="panel-header">
+        <h3>Inserimento rapido</h3>
+        <button type="button" class="panel-toggle" (click)="toggleQuickInsertCollapsed()">
+          {{ quickInsertCollapsed ? 'Espandi' : 'Collassa' }}
+        </button>
+      </div>
+
+      <div *ngIf="!quickInsertCollapsed; else quickInsertCollapsedTpl">
+        <div class="create-grid">
+          <section class="subpanel">
+            <h4>Nuovo materiale</h4>
+            <div class="form-grid">
+              <label class="form-field form-field--wide">
+                <span>Codice materiale</span>
+                <input type="text" [(ngModel)]="newMaterial.materialCode" placeholder="PLA, PETG, TPU..." />
+              </label>
+              <label class="form-field form-field--wide">
+                <span>Etichetta tecnico</span>
+                <input
+                  type="text"
+                  [(ngModel)]="newMaterial.technicalTypeLabel"
+                  [disabled]="!newMaterial.isTechnical"
+                  placeholder="alta temperatura, rinforzato..."
+                />
+              </label>
+            </div>
+
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox" [(ngModel)]="newMaterial.isFlexible" />
+                <span>Flessibile</span>
+              </label>
+              <label class="toggle">
+                <input type="checkbox" [(ngModel)]="newMaterial.isTechnical" />
+                <span>Tecnico</span>
+              </label>
+            </div>
+
+            <button type="button" (click)="createMaterial()" [disabled]="creatingMaterial">
+              {{ creatingMaterial ? 'Salvataggio...' : 'Aggiungi materiale' }}
+            </button>
+          </section>
+
+          <section class="subpanel">
+            <h4>Nuova variante</h4>
+            <div class="form-grid">
+              <label class="form-field">
+                <span>Materiale</span>
+                <select [(ngModel)]="newVariant.materialTypeId">
+                  <option *ngFor="let material of materials; trackBy: trackById" [ngValue]="material.id">
+                    {{ material.materialCode }}
+                  </option>
+                </select>
+              </label>
+              <label class="form-field">
+                <span>Nome variante</span>
+                <input type="text" [(ngModel)]="newVariant.variantDisplayName" placeholder="PLA Nero Opaco BrandX" />
+              </label>
+              <label class="form-field">
+                <span>Colore</span>
+                <input type="text" [(ngModel)]="newVariant.colorName" placeholder="Nero, Bianco..." />
+              </label>
+              <label class="form-field">
+                <span>Hex colore</span>
+                <input type="text" [(ngModel)]="newVariant.colorHex" placeholder="#1A1A1A" />
+              </label>
+              <label class="form-field">
+                <span>Finitura</span>
+                <select [(ngModel)]="newVariant.finishType">
+                  <option value="GLOSSY">GLOSSY</option>
+                  <option value="MATTE">MATTE</option>
+                  <option value="MARBLE">MARBLE</option>
+                  <option value="SILK">SILK</option>
+                  <option value="TRANSLUCENT">TRANSLUCENT</option>
+                  <option value="SPECIAL">SPECIAL</option>
+                </select>
+              </label>
+              <label class="form-field">
+                <span>Brand</span>
+                <input type="text" [(ngModel)]="newVariant.brand" placeholder="Bambu, SUNLU..." />
+              </label>
+              <label class="form-field">
+                <span>Costo CHF/kg</span>
+                <input type="number" step="0.01" min="0" [(ngModel)]="newVariant.costChfPerKg" />
+              </label>
+              <label class="form-field">
+                <span>Stock spool</span>
+                <input type="number" step="0.001" min="0" max="999.999" [(ngModel)]="newVariant.stockSpools" />
+              </label>
+              <label class="form-field">
+                <span>Spool netto kg</span>
+                <input type="number" step="0.001" min="0.001" max="999.999" [(ngModel)]="newVariant.spoolNetKg" />
+              </label>
+            </div>
+
+            <div class="toggle-group">
+              <label class="toggle">
+                <input type="checkbox" [(ngModel)]="newVariant.isMatte" />
+                <span>Matte</span>
+              </label>
+              <label class="toggle">
+                <input type="checkbox" [(ngModel)]="newVariant.isSpecial" />
+                <span>Special</span>
+              </label>
+              <label class="toggle">
+                <input type="checkbox" [(ngModel)]="newVariant.isActive" />
+                <span>Attiva</span>
+              </label>
+            </div>
+
+            <p class="variant-meta">
+              Stock spools: <strong>{{ newVariant.stockSpools | number:'1.0-3' }}</strong> |
+              Filamento totale: <strong>{{ computeStockFilamentGrams(newVariant.stockSpools, newVariant.spoolNetKg) | number:'1.0-0' }} g</strong>
+            </p>
+
+            <button type="button" (click)="createVariant()" [disabled]="creatingVariant || !materials.length">
+              {{ creatingVariant ? 'Salvataggio...' : 'Aggiungi variante' }}
+            </button>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h3>Varianti filamento</h3>
+      <div class="variant-list">
+        <article class="variant-row" *ngFor="let variant of variants; trackBy: trackById">
+          <div class="variant-header">
+            <button
+              type="button"
+              class="expand-toggle"
+              (click)="toggleVariantExpanded(variant.id)"
+              [attr.aria-expanded]="isVariantExpanded(variant.id)">
+              {{ isVariantExpanded(variant.id) ? '▾' : '▸' }}
+            </button>
+
+            <div class="variant-head-main">
+              <strong>{{ variant.variantDisplayName }}</strong>
+              <div class="variant-collapsed-summary" *ngIf="!isVariantExpanded(variant.id)">
+                <span class="color-summary">
+                  <span class="color-dot" [style.background-color]="getVariantColorHex(variant)"></span>
+                  {{ variant.colorName || 'N/D' }}
+                </span>
+                <span>Stock spools: {{ variant.stockSpools | number:'1.0-3' }}</span>
+                <span>Filamento: {{ computeStockFilamentGrams(variant.stockSpools, variant.spoolNetKg) | number:'1.0-0' }} g</span>
+              </div>
+            </div>
+
+            <div class="variant-head-actions">
+              <span class="badge low" *ngIf="isLowStock(variant)">Stock basso</span>
+              <span class="badge ok" *ngIf="!isLowStock(variant)">Stock ok</span>
+              <button
+                type="button"
+                class="btn-delete"
+                (click)="openDeleteVariant(variant)"
+                [disabled]="deletingVariantIds.has(variant.id)">
+                {{ deletingVariantIds.has(variant.id) ? 'Eliminazione...' : 'Elimina' }}
+              </button>
+            </div>
           </div>
 
-          <div class="toggle-group">
-            <label class="toggle">
-              <input type="checkbox" [(ngModel)]="newMaterial.isFlexible" />
-              <span>Flessibile</span>
-            </label>
-            <label class="toggle">
-              <input type="checkbox" [(ngModel)]="newMaterial.isTechnical" />
-              <span>Tecnico</span>
-            </label>
-          </div>
-
-          <button type="button" (click)="createMaterial()" [disabled]="creatingMaterial">
-            {{ creatingMaterial ? 'Salvataggio...' : 'Aggiungi materiale' }}
-          </button>
-        </section>
-
-        <section class="subpanel">
-          <h4>Nuova variante</h4>
-          <div class="form-grid">
+          <div class="form-grid" *ngIf="isVariantExpanded(variant.id)">
             <label class="form-field">
               <span>Materiale</span>
-              <select [(ngModel)]="newVariant.materialTypeId">
+              <select [(ngModel)]="variant.materialTypeId">
                 <option *ngFor="let material of materials; trackBy: trackById" [ngValue]="material.id">
                   {{ material.materialCode }}
                 </option>
@@ -63,50 +186,75 @@
             </label>
             <label class="form-field">
               <span>Nome variante</span>
-              <input type="text" [(ngModel)]="newVariant.variantDisplayName" placeholder="PLA Nero Opaco BrandX" />
+              <input type="text" [(ngModel)]="variant.variantDisplayName" />
             </label>
             <label class="form-field">
               <span>Colore</span>
-              <input type="text" [(ngModel)]="newVariant.colorName" placeholder="Nero, Bianco..." />
+              <input type="text" [(ngModel)]="variant.colorName" />
+            </label>
+            <label class="form-field">
+              <span>Hex colore</span>
+              <input type="text" [(ngModel)]="variant.colorHex" />
+            </label>
+            <label class="form-field">
+              <span>Finitura</span>
+              <select [(ngModel)]="variant.finishType">
+                <option value="GLOSSY">GLOSSY</option>
+                <option value="MATTE">MATTE</option>
+                <option value="MARBLE">MARBLE</option>
+                <option value="SILK">SILK</option>
+                <option value="TRANSLUCENT">TRANSLUCENT</option>
+                <option value="SPECIAL">SPECIAL</option>
+              </select>
+            </label>
+            <label class="form-field">
+              <span>Brand</span>
+              <input type="text" [(ngModel)]="variant.brand" />
             </label>
             <label class="form-field">
               <span>Costo CHF/kg</span>
-              <input type="number" step="0.01" min="0" [(ngModel)]="newVariant.costChfPerKg" />
+              <input type="number" step="0.01" min="0" [(ngModel)]="variant.costChfPerKg" />
             </label>
             <label class="form-field">
               <span>Stock spool</span>
-              <input type="number" step="0.001" min="0" max="999.999" [(ngModel)]="newVariant.stockSpools" />
+              <input type="number" step="0.001" min="0" max="999.999" [(ngModel)]="variant.stockSpools" />
             </label>
             <label class="form-field">
               <span>Spool netto kg</span>
-              <input type="number" step="0.001" min="0.001" max="999.999" [(ngModel)]="newVariant.spoolNetKg" />
+              <input type="number" step="0.001" min="0.001" max="999.999" [(ngModel)]="variant.spoolNetKg" />
             </label>
           </div>
 
-          <div class="toggle-group">
+          <div class="toggle-group" *ngIf="isVariantExpanded(variant.id)">
             <label class="toggle">
-              <input type="checkbox" [(ngModel)]="newVariant.isMatte" />
+              <input type="checkbox" [(ngModel)]="variant.isMatte" />
               <span>Matte</span>
             </label>
             <label class="toggle">
-              <input type="checkbox" [(ngModel)]="newVariant.isSpecial" />
+              <input type="checkbox" [(ngModel)]="variant.isSpecial" />
               <span>Special</span>
             </label>
             <label class="toggle">
-              <input type="checkbox" [(ngModel)]="newVariant.isActive" />
+              <input type="checkbox" [(ngModel)]="variant.isActive" />
               <span>Attiva</span>
             </label>
           </div>
 
-          <p class="variant-meta">
-            Stock stimato: <strong>{{ computeStockKg(newVariant.stockSpools, newVariant.spoolNetKg) | number:'1.0-3' }} kg</strong>
+          <p class="variant-meta" *ngIf="isVariantExpanded(variant.id)">
+            Stock spools: <strong>{{ variant.stockSpools | number:'1.0-3' }}</strong> |
+            Filamento totale: <strong>{{ computeStockFilamentGrams(variant.stockSpools, variant.spoolNetKg) | number:'1.0-0' }} g</strong>
           </p>
 
-          <button type="button" (click)="createVariant()" [disabled]="creatingVariant || !materials.length">
-            {{ creatingVariant ? 'Salvataggio...' : 'Aggiungi variante' }}
+          <button
+            type="button"
+            *ngIf="isVariantExpanded(variant.id)"
+            (click)="saveVariant(variant)"
+            [disabled]="savingVariantIds.has(variant.id)">
+            {{ savingVariantIds.has(variant.id) ? 'Salvataggio...' : 'Salva variante' }}
           </button>
-        </section>
+        </article>
       </div>
+      <p class="muted" *ngIf="variants.length === 0">Nessuna variante configurata.</p>
     </section>
 
     <section class="panel">
@@ -150,74 +298,6 @@
         <p class="muted" *ngIf="materials.length === 0">Nessun materiale configurato.</p>
       </div>
     </section>
-
-    <section class="panel">
-      <h3>Varianti filamento</h3>
-      <div class="variant-grid">
-        <article class="variant-card" *ngFor="let variant of variants; trackBy: trackById">
-          <div class="variant-header">
-            <strong>{{ variant.variantDisplayName }}</strong>
-            <span class="badge low" *ngIf="isLowStock(variant)">Stock basso</span>
-            <span class="badge ok" *ngIf="!isLowStock(variant)">Stock ok</span>
-          </div>
-
-          <div class="form-grid">
-            <label class="form-field">
-              <span>Materiale</span>
-              <select [(ngModel)]="variant.materialTypeId">
-                <option *ngFor="let material of materials; trackBy: trackById" [ngValue]="material.id">
-                  {{ material.materialCode }}
-                </option>
-              </select>
-            </label>
-            <label class="form-field">
-              <span>Nome variante</span>
-              <input type="text" [(ngModel)]="variant.variantDisplayName" />
-            </label>
-            <label class="form-field">
-              <span>Colore</span>
-              <input type="text" [(ngModel)]="variant.colorName" />
-            </label>
-            <label class="form-field">
-              <span>Costo CHF/kg</span>
-              <input type="number" step="0.01" min="0" [(ngModel)]="variant.costChfPerKg" />
-            </label>
-            <label class="form-field">
-              <span>Stock spool</span>
-              <input type="number" step="0.001" min="0" max="999.999" [(ngModel)]="variant.stockSpools" />
-            </label>
-            <label class="form-field">
-              <span>Spool netto kg</span>
-              <input type="number" step="0.001" min="0.001" max="999.999" [(ngModel)]="variant.spoolNetKg" />
-            </label>
-          </div>
-
-          <div class="toggle-group">
-            <label class="toggle">
-              <input type="checkbox" [(ngModel)]="variant.isMatte" />
-              <span>Matte</span>
-            </label>
-            <label class="toggle">
-              <input type="checkbox" [(ngModel)]="variant.isSpecial" />
-              <span>Special</span>
-            </label>
-            <label class="toggle">
-              <input type="checkbox" [(ngModel)]="variant.isActive" />
-              <span>Attiva</span>
-            </label>
-          </div>
-
-          <p class="variant-meta">
-            Totale stimato: <strong>{{ computeStockKg(variant.stockSpools, variant.spoolNetKg) | number:'1.0-3' }} kg</strong>
-          </p>
-
-          <button type="button" (click)="saveVariant(variant)" [disabled]="savingVariantIds.has(variant.id)">
-            {{ savingVariantIds.has(variant.id) ? 'Salvataggio...' : 'Salva variante' }}
-          </button>
-        </article>
-      </div>
-      <p class="muted" *ngIf="variants.length === 0">Nessuna variante configurata.</p>
-    </section>
   </div>
 </section>
 
@@ -228,3 +308,24 @@
 <ng-template #materialsCollapsedTpl>
   <p class="muted">Sezione collassata ({{ materials.length }} materiali).</p>
 </ng-template>
+
+<ng-template #quickInsertCollapsedTpl>
+  <p class="muted">Sezione collassata.</p>
+</ng-template>
+
+<div class="dialog-backdrop" *ngIf="variantToDelete" (click)="closeDeleteVariantDialog()"></div>
+<div class="confirm-dialog" *ngIf="variantToDelete">
+  <h4>Sei sicuro?</h4>
+  <p>Vuoi eliminare la variante <strong>{{ variantToDelete?.variantDisplayName }}</strong>?</p>
+  <p class="muted">L'operazione non è reversibile.</p>
+  <div class="dialog-actions">
+    <button type="button" class="btn-secondary" (click)="closeDeleteVariantDialog()">Annulla</button>
+    <button
+      type="button"
+      class="btn-delete"
+      (click)="confirmDeleteVariant()"
+      [disabled]="variantToDelete && deletingVariantIds.has(variantToDelete.id)">
+      {{ variantToDelete && deletingVariantIds.has(variantToDelete.id) ? 'Eliminazione...' : 'Conferma elimina' }}
+    </button>
+  </div>
+</div>

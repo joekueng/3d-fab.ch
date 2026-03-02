@@ -8,4 +8,5 @@ import java.util.UUID;
 
 public interface QuoteLineItemRepository extends JpaRepository<QuoteLineItem, UUID> {
     List<QuoteLineItem> findByQuoteSessionId(UUID quoteSessionId);
+    boolean existsByFilamentVariant_Id(Long filamentVariantId);
 }

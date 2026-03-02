@@ -24,6 +24,16 @@ public class FilamentVariant {
     @Column(name = "color_name", nullable = false, length = Integer.MAX_VALUE)
     private String colorName;
 
+    @Column(name = "color_hex", length = Integer.MAX_VALUE)
+    private String colorHex;
+
+    @ColumnDefault("'GLOSSY'")
+    @Column(name = "finish_type", length = Integer.MAX_VALUE)
+    private String finishType;
+
+    @Column(name = "brand", length = Integer.MAX_VALUE)
+    private String brand;
+
     @ColumnDefault("false")
     @Column(name = "is_matte", nullable = false)
     private Boolean isMatte;
@@ -81,6 +91,30 @@ public class FilamentVariant {
 
     public void setColorName(String colorName) {
         this.colorName = colorName;
+    }
+
+    public String getColorHex() {
+        return colorHex;
+    }
+
+    public void setColorHex(String colorHex) {
+        this.colorHex = colorHex;
+    }
+
+    public String getFinishType() {
+        return finishType;
+    }
+
+    public void setFinishType(String finishType) {
+        this.finishType = finishType;
+    }
+
+    public String getBrand() {
+        return brand;
+    }
+
+    public void setBrand(String brand) {
+        this.brand = brand;
     }
 
     public Boolean getIsMatte() {

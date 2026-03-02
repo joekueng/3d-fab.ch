@@ -35,6 +35,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -105,6 +106,10 @@ public class AdminOperationsController {
             dto.setStockSpools(stock.getStockSpools());
             dto.setSpoolNetKg(stock.getSpoolNetKg());
             dto.setStockKg(stock.getStockKg());
+            BigDecimal grams = stock.getStockKg() != null
+                    ? stock.getStockKg().multiply(BigDecimal.valueOf(1000))
+                    : BigDecimal.ZERO;
+            dto.setStockFilamentGrams(grams);
 
             if (variant != null) {
                 dto.setMaterialCode(

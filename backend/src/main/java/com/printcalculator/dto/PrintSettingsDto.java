@@ -10,6 +10,8 @@ public class PrintSettingsDto {
     // Common
     private String material; // e.g. "PLA", "PETG"
     private String color;    // e.g. "White", "#FFFFFF"
+    private Long filamentVariantId;
+    private Long printerMachineId;
     
     // Basic Mode
     private String quality;  // "draft", "standard", "high"

@@ -23,7 +23,7 @@
                 [class.disabled]="color.outOfStock">
                 
                 <div class="selection-ring" 
-                     [class.active]="selectedColor() === color.value"
+                     [class.active]="selectedVariantId() ? selectedVariantId() === color.variantId : selectedColor() === color.value"
                      [class.out-of-stock]="color.outOfStock">
                      <div class="color-circle small" [style.background-color]="color.hex"></div>
                 </div>

@@ -44,6 +44,10 @@ create table filament_variant
 
     variant_display_name      text           not null, -- es: "PLA Nero Opaco BrandX"
     color_name                text           not null, -- Nero, Bianco, ecc.
+    color_hex                 text,
+    finish_type               text           not null default 'GLOSSY'
+        check (finish_type in ('GLOSSY', 'MATTE', 'MARBLE', 'SILK', 'TRANSLUCENT', 'SPECIAL')),
+    brand                     text,
     is_matte                  boolean        not null default false,
     is_special                boolean        not null default false,
 
@@ -65,6 +69,37 @@ select filament_variant_id,
        spool_net_kg,
        (stock_spools * spool_net_kg) as stock_kg
 from filament_variant;
+
+create table printer_machine_profile
+(
+    printer_machine_profile_id bigserial primary key,
+    printer_machine_id         bigint         not null references printer_machine (printer_machine_id) on delete cascade,
+    nozzle_diameter_mm         numeric(4, 2)  not null check (nozzle_diameter_mm > 0),
+    orca_machine_profile_name  text           not null,
+    is_default                 boolean        not null default false,
+    is_active                  boolean        not null default true,
+    unique (printer_machine_id, nozzle_diameter_mm)
+);
+
+create table material_orca_profile_map
+(
+    material_orca_profile_map_id bigserial primary key,
+    printer_machine_profile_id   bigint  not null references printer_machine_profile (printer_machine_profile_id) on delete cascade,
+    filament_material_type_id    bigint  not null references filament_material_type (filament_material_type_id),
+    orca_filament_profile_name   text    not null,
+    is_active                    boolean not null default true,
+    unique (printer_machine_profile_id, filament_material_type_id)
+);
+
+create table filament_variant_orca_override
+(
+    filament_variant_orca_override_id bigserial primary key,
+    filament_variant_id               bigint  not null references filament_variant (filament_variant_id) on delete cascade,
+    printer_machine_profile_id        bigint  not null references printer_machine_profile (printer_machine_profile_id) on delete cascade,
+    orca_filament_profile_name        text    not null,
+    is_active                         boolean not null default true,
+    unique (filament_variant_id, printer_machine_profile_id)
+);
 
 
 
@@ -252,6 +287,7 @@ insert into filament_material_type (material_code,
 values ('PLA', false, false, null),
        ('PETG', false, false, null),
        ('TPU', true, false, null),
+       ('PC', false, true, 'engineering'),
        ('ABS', false, false, null),
        ('Nylon', false, false, null),
        ('Carbon PLA', false, false, null)
@@ -275,6 +311,9 @@ insert
 into filament_variant (filament_material_type_id,
                        variant_display_name,
                        color_name,
+                       color_hex,
+                       finish_type,
+                       brand,
                        is_matte,
                        is_special,
                        cost_chf_per_kg,
@@ -284,6 +323,9 @@ into filament_variant (filament_material_type_id,
 select pla.filament_material_type_id,
        v.variant_display_name,
        v.color_name,
+       v.color_hex,
+       v.finish_type,
+       null::text as brand,
        v.is_matte,
        v.is_special,
        18.00, -- PLA da Excel
@@ -291,17 +333,114 @@ select pla.filament_material_type_id,
        1.000,
        true
 from pla
-         cross join (values ('PLA Bianco', 'Bianco', false, false, 3.000::numeric),
-                            ('PLA Nero', 'Nero', false, false, 3.000::numeric),
-                            ('PLA Blu', 'Blu', false, false, 1.000::numeric),
-                            ('PLA Arancione', 'Arancione', false, false, 1.000::numeric),
-                            ('PLA Grigio', 'Grigio', false, false, 1.000::numeric),
-                            ('PLA Grigio Scuro', 'Grigio scuro', false, false, 1.000::numeric),
-                            ('PLA Grigio Chiaro', 'Grigio chiaro', false, false, 1.000::numeric),
-                            ('PLA Viola', 'Viola', false, false,
-                             1.000::numeric)) as v(variant_display_name, color_name, is_matte, is_special, stock_spools)
+         cross join (values ('PLA Bianco', 'Bianco', '#F5F5F5', 'GLOSSY', false, false, 3.000::numeric),
+                            ('PLA Nero', 'Nero', '#1A1A1A', 'GLOSSY', false, false, 3.000::numeric),
+                            ('PLA Blu', 'Blu', '#1976D2', 'GLOSSY', false, false, 1.000::numeric),
+                            ('PLA Arancione', 'Arancione', '#FFA726', 'GLOSSY', false, false, 1.000::numeric),
+                            ('PLA Grigio', 'Grigio', '#BDBDBD', 'GLOSSY', false, false, 1.000::numeric),
+                            ('PLA Grigio Scuro', 'Grigio scuro', '#424242', 'MATTE', true, false, 1.000::numeric),
+                            ('PLA Grigio Chiaro', 'Grigio chiaro', '#D6D6D6', 'MATTE', true, false, 1.000::numeric),
+                            ('PLA Viola', 'Viola', '#7B1FA2', 'GLOSSY', false, false,
+                             1.000::numeric)) as v(variant_display_name, color_name, color_hex, finish_type, is_matte, is_special, stock_spools)
 on conflict (filament_material_type_id, variant_display_name) do update
     set color_name      = excluded.color_name,
+        color_hex       = excluded.color_hex,
+        finish_type     = excluded.finish_type,
+        brand           = excluded.brand,
+        is_matte        = excluded.is_matte,
+        is_special      = excluded.is_special,
+        cost_chf_per_kg = excluded.cost_chf_per_kg,
+        stock_spools    = excluded.stock_spools,
+        spool_net_kg    = excluded.spool_net_kg,
+        is_active       = excluded.is_active;
+
+-- Varianti base per materiali principali del calcolatore
+with mat as (select filament_material_type_id
+             from filament_material_type
+             where material_code = 'PETG')
+insert
+into filament_variant (filament_material_type_id, variant_display_name, color_name, color_hex, finish_type, brand,
+                       is_matte, is_special, cost_chf_per_kg, stock_spools, spool_net_kg, is_active)
+select mat.filament_material_type_id,
+       'PETG Nero',
+       'Nero',
+       '#1A1A1A',
+       'GLOSSY',
+       'Bambu',
+       false,
+       false,
+       24.00,
+       1.000,
+       1.000,
+       true
+from mat
+on conflict (filament_material_type_id, variant_display_name) do update
+    set color_name      = excluded.color_name,
+        color_hex       = excluded.color_hex,
+        finish_type     = excluded.finish_type,
+        brand           = excluded.brand,
+        is_matte        = excluded.is_matte,
+        is_special      = excluded.is_special,
+        cost_chf_per_kg = excluded.cost_chf_per_kg,
+        stock_spools    = excluded.stock_spools,
+        spool_net_kg    = excluded.spool_net_kg,
+        is_active       = excluded.is_active;
+
+with mat as (select filament_material_type_id
+             from filament_material_type
+             where material_code = 'TPU')
+insert
+into filament_variant (filament_material_type_id, variant_display_name, color_name, color_hex, finish_type, brand,
+                       is_matte, is_special, cost_chf_per_kg, stock_spools, spool_net_kg, is_active)
+select mat.filament_material_type_id,
+       'TPU Nero',
+       'Nero',
+       '#1A1A1A',
+       'GLOSSY',
+       'Bambu',
+       false,
+       false,
+       42.00,
+       1.000,
+       1.000,
+       true
+from mat
+on conflict (filament_material_type_id, variant_display_name) do update
+    set color_name      = excluded.color_name,
+        color_hex       = excluded.color_hex,
+        finish_type     = excluded.finish_type,
+        brand           = excluded.brand,
+        is_matte        = excluded.is_matte,
+        is_special      = excluded.is_special,
+        cost_chf_per_kg = excluded.cost_chf_per_kg,
+        stock_spools    = excluded.stock_spools,
+        spool_net_kg    = excluded.spool_net_kg,
+        is_active       = excluded.is_active;
+
+with mat as (select filament_material_type_id
+             from filament_material_type
+             where material_code = 'PC')
+insert
+into filament_variant (filament_material_type_id, variant_display_name, color_name, color_hex, finish_type, brand,
+                       is_matte, is_special, cost_chf_per_kg, stock_spools, spool_net_kg, is_active)
+select mat.filament_material_type_id,
+       'PC Naturale',
+       'Naturale',
+       '#D9D9D9',
+       'TRANSLUCENT',
+       'Generic',
+       false,
+       true,
+       48.00,
+       1.000,
+       1.000,
+       true
+from mat
+on conflict (filament_material_type_id, variant_display_name) do update
+    set color_name      = excluded.color_name,
+        color_hex       = excluded.color_hex,
+        finish_type     = excluded.finish_type,
+        brand           = excluded.brand,
         is_matte        = excluded.is_matte,
         is_special      = excluded.is_special,
         cost_chf_per_kg = excluded.cost_chf_per_kg,
@@ -324,6 +463,51 @@ on conflict (nozzle_diameter_mm) do update
     set owned_quantity              = excluded.owned_quantity,
         extra_nozzle_change_fee_chf = excluded.extra_nozzle_change_fee_chf,
         is_active                   = excluded.is_active;
+
+-- =========================================================
+-- 5b) Orca machine/material mapping (data-driven)
+-- =========================================================
+with a1 as (select printer_machine_id
+            from printer_machine
+            where printer_display_name = 'BambuLab A1')
+insert
+into printer_machine_profile (printer_machine_id, nozzle_diameter_mm, orca_machine_profile_name, is_default, is_active)
+select a1.printer_machine_id, v.nozzle_diameter_mm, v.profile_name, v.is_default, true
+from a1
+         cross join (values (0.40::numeric, 'Bambu Lab A1 0.4 nozzle', true),
+                            (0.20::numeric, 'Bambu Lab A1 0.2 nozzle', false),
+                            (0.60::numeric, 'Bambu Lab A1 0.6 nozzle', false),
+                            (0.80::numeric, 'Bambu Lab A1 0.8 nozzle', false))
+             as v(nozzle_diameter_mm, profile_name, is_default)
+on conflict (printer_machine_id, nozzle_diameter_mm) do update
+    set orca_machine_profile_name = excluded.orca_machine_profile_name,
+        is_default                = excluded.is_default,
+        is_active                 = excluded.is_active;
+
+with p as (select printer_machine_profile_id
+           from printer_machine_profile pmp
+                    join printer_machine pm on pm.printer_machine_id = pmp.printer_machine_id
+           where pm.printer_display_name = 'BambuLab A1'
+             and pmp.nozzle_diameter_mm = 0.40::numeric),
+     m as (select filament_material_type_id, material_code
+           from filament_material_type
+           where material_code in ('PLA', 'PETG', 'TPU', 'PC'))
+insert
+into material_orca_profile_map (printer_machine_profile_id, filament_material_type_id, orca_filament_profile_name, is_active)
+select p.printer_machine_profile_id,
+       m.filament_material_type_id,
+       case m.material_code
+           when 'PLA' then 'Bambu PLA Basic @BBL A1'
+           when 'PETG' then 'Bambu PETG Basic @BBL A1'
+           when 'TPU' then 'Bambu TPU 95A @BBL A1'
+           when 'PC' then 'Generic PC @BBL A1'
+           end,
+       true
+from p
+         cross join m
+on conflict (printer_machine_profile_id, filament_material_type_id) do update
+    set orca_filament_profile_name = excluded.orca_filament_profile_name,
+        is_active                  = excluded.is_active;
 
 
 -- =========================================================
@@ -420,6 +604,7 @@ CREATE TABLE IF NOT EXISTS quote_line_items
     original_filename  text        NOT NULL,
     quantity           integer     NOT NULL DEFAULT 1 CHECK (quantity >= 1),
     color_code         text,  -- es: white/black o codice interno
+    filament_variant_id bigint REFERENCES filament_variant (filament_variant_id),
 
     -- Output slicing / calcolo
     bounding_box_x_mm  numeric(10, 3),
@@ -529,6 +714,7 @@ CREATE TABLE IF NOT EXISTS order_items
     sha256_hex           text,                    -- opzionale, utile anche per dedup interno
 
     material_code        text           NOT NULL,
+    filament_variant_id  bigint REFERENCES filament_variant (filament_variant_id),
     color_code           text,
     quantity             integer        NOT NULL DEFAULT 1 CHECK (quantity >= 1),
 

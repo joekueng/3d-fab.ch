@@ -12,12 +12,16 @@ public class AdminFilamentVariantDto {
     private String materialTechnicalTypeLabel;
     private String variantDisplayName;
     private String colorName;
+    private String colorHex;
+    private String finishType;
+    private String brand;
     private Boolean isMatte;
     private Boolean isSpecial;
     private BigDecimal costChfPerKg;
     private BigDecimal stockSpools;
     private BigDecimal spoolNetKg;
     private BigDecimal stockKg;
+    private BigDecimal stockFilamentGrams;
     private Boolean isActive;
     private OffsetDateTime createdAt;
 
@@ -85,6 +89,30 @@ public class AdminFilamentVariantDto {
         this.colorName = colorName;
     }
 
+    public String getColorHex() {
+        return colorHex;
+    }
+
+    public void setColorHex(String colorHex) {
+        this.colorHex = colorHex;
+    }
+
+    public String getFinishType() {
+        return finishType;
+    }
+
+    public void setFinishType(String finishType) {
+        this.finishType = finishType;
+    }
+
+    public String getBrand() {
+        return brand;
+    }
+
+    public void setBrand(String brand) {
+        this.brand = brand;
+    }
+
     public Boolean getIsMatte() {
         return isMatte;
     }
@@ -131,6 +159,14 @@ public class AdminFilamentVariantDto {
 
     public void setStockKg(BigDecimal stockKg) {
         this.stockKg = stockKg;
+    }
+
+    public BigDecimal getStockFilamentGrams() {
+        return stockFilamentGrams;
+    }
+
+    public void setStockFilamentGrams(BigDecimal stockFilamentGrams) {
+        this.stockFilamentGrams = stockFilamentGrams;
     }
 
     public Boolean getIsActive() {

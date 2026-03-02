@@ -11,6 +11,7 @@ export interface AdminFilamentStockRow {
   stockSpools: number;
   spoolNetKg: number;
   stockKg: number;
+  stockFilamentGrams: number;
   active: boolean;
 }
 
@@ -31,12 +32,16 @@ export interface AdminFilamentVariant {
   materialTechnicalTypeLabel?: string;
   variantDisplayName: string;
   colorName: string;
+  colorHex?: string;
+  finishType?: string;
+  brand?: string;
   isMatte: boolean;
   isSpecial: boolean;
   costChfPerKg: number;
   stockSpools: number;
   spoolNetKg: number;
   stockKg: number;
+  stockFilamentGrams: number;
   isActive: boolean;
   createdAt: string;
 }
@@ -52,6 +57,9 @@ export interface AdminUpsertFilamentVariantPayload {
   materialTypeId: number;
   variantDisplayName: string;
   colorName: string;
+  colorHex?: string;
+  finishType?: string;
+  brand?: string;
   isMatte: boolean;
   isSpecial: boolean;
   costChfPerKg: number;
@@ -165,6 +173,10 @@ export class AdminOperationsService {
 
   updateFilamentVariant(variantId: number, payload: AdminUpsertFilamentVariantPayload): Observable<AdminFilamentVariant> {
     return this.http.put<AdminFilamentVariant>(`${this.baseUrl}/filaments/variants/${variantId}`, payload, { withCredentials: true });
+  }
+
+  deleteFilamentVariant(variantId: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/filaments/variants/${variantId}`, { withCredentials: true });
   }
 
   getContactRequests(): Observable<AdminContactRequest[]> {

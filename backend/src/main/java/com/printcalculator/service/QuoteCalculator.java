@@ -60,40 +60,49 @@ public class QuoteCalculator {
                  .orElseThrow(() -> new RuntimeException("No active printer found"));
         }
 
-        // 3. Fetch Filament Info
-        // filamentProfileName might be "bambu_pla_basic_black" or "Generic PLA"
-        // We try to extract material code (PLA, PETG)
         String materialCode = detectMaterialCode(filamentProfileName);
         FilamentMaterialType materialType = materialRepo.findByMaterialCode(materialCode)
                 .orElseThrow(() -> new RuntimeException("Unknown material type: " + materialCode));
-
-        // Try to find specific variant (e.g. by color if we could parse it)
-        // For now, get default/first active variant for this material
         FilamentVariant variant = variantRepo.findFirstByFilamentMaterialTypeAndIsActiveTrue(materialType)
                 .orElseThrow(() -> new RuntimeException("No active variant for material: " + materialCode));
 
+        return calculate(stats, machine, policy, variant);
+    }
 
-        // --- CALCULATIONS ---
+    public QuoteResult calculate(PrintStats stats, String machineName, FilamentVariant variant) {
+        PricingPolicy policy = pricingRepo.findFirstByIsActiveTrueOrderByValidFromDesc();
+        if (policy == null) {
+            throw new RuntimeException("No active pricing policy found");
+        }
 
-        // Material Cost: (weight / 1000) * costPerKg
-        BigDecimal weightKg = BigDecimal.valueOf(stats.filamentWeightGrams()).divide(BigDecimal.valueOf(1000), 4, RoundingMode.HALF_UP);
+        PrinterMachine machine = machineRepo.findByPrinterDisplayName(machineName).orElse(null);
+        if (machine == null) {
+            machine = machineRepo.findFirstByIsActiveTrue()
+                    .orElseThrow(() -> new RuntimeException("No active printer found"));
+        }
+
+        return calculate(stats, machine, policy, variant);
+    }
+
+    private QuoteResult calculate(PrintStats stats, PrinterMachine machine, PricingPolicy policy, FilamentVariant variant) {
+        BigDecimal weightKg = BigDecimal.valueOf(stats.filamentWeightGrams())
+                .divide(BigDecimal.valueOf(1000), 4, RoundingMode.HALF_UP);
         BigDecimal materialCost = weightKg.multiply(variant.getCostChfPerKg());
 
-        // We do NOT add tiered machine cost here anymore - it is calculated globally per session
-        BigDecimal totalHours = BigDecimal.valueOf(stats.printTimeSeconds()).divide(BigDecimal.valueOf(3600), 4, RoundingMode.HALF_UP);
+        BigDecimal totalHours = BigDecimal.valueOf(stats.printTimeSeconds())
+                .divide(BigDecimal.valueOf(3600), 4, RoundingMode.HALF_UP);
 
-        // Energy Cost: (watts / 1000) * hours * costPerKwh
-        BigDecimal kw = BigDecimal.valueOf(machine.getPowerWatts()).divide(BigDecimal.valueOf(1000), 4, RoundingMode.HALF_UP);
+        BigDecimal kw = BigDecimal.valueOf(machine.getPowerWatts())
+                .divide(BigDecimal.valueOf(1000), 4, RoundingMode.HALF_UP);
         BigDecimal kwh = kw.multiply(totalHours);
         BigDecimal energyCost = kwh.multiply(policy.getElectricityCostChfPerKwh());
 
-        // Subtotal (Costs without Fixed Fees and without Machine Tiers)
         BigDecimal subtotal = materialCost.add(energyCost);
-
-        // Markup
-        // Markup is percentage (e.g. 20.0)
-        BigDecimal markupFactor = BigDecimal.ONE.add(policy.getMarkupPercent().divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP));
+        BigDecimal markupFactor = BigDecimal.ONE.add(
+                policy.getMarkupPercent().divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP)
+        );
         subtotal = subtotal.multiply(markupFactor);
+
         return new QuoteResult(subtotal.doubleValue(), "CHF", stats);
     }
     public BigDecimal calculateSessionMachineCost(PricingPolicy policy, BigDecimal hours) {

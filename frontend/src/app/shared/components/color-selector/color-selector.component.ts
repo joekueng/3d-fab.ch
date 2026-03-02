@@ -13,25 +13,33 @@ import { VariantOption } from '../../../features/calculator/services/quote-estim
 })
 export class ColorSelectorComponent {
   selectedColor = input<string>('Black');
+  selectedVariantId = input<number | null>(null);
   variants = input<VariantOption[]>([]);
-  colorSelected = output<string>();
+  colorSelected = output<{ colorName: string; filamentVariantId?: number }>();
 
   isOpen = signal(false);
 
   categories = computed(() => {
       const vars = this.variants();
       if (vars && vars.length > 0) {
-          // Flatten variants into a single category for now
-          // We could try to group by extracting words, but "Colors" is fine.
-          return [{
-              name: 'COLOR.AVAILABLE_COLORS',
-              colors: vars.map(v => ({
-                  label: v.colorName, // Display "Red"
-                  value: v.colorName, // Send "Red" to backend
+          const byFinish = new Map<string, ColorOption[]>();
+          vars.forEach(v => {
+              const finish = v.finishType || 'AVAILABLE_COLORS';
+              const bucket = byFinish.get(finish) || [];
+              bucket.push({
+                  label: v.colorName,
+                  value: v.colorName,
                   hex: v.hexColor,
+                  variantId: v.id,
                   outOfStock: v.isOutOfStock
-              }))
-          }] as ColorCategory[];
+              });
+              byFinish.set(finish, bucket);
+          });
+
+          return Array.from(byFinish.entries()).map(([finish, colors]) => ({
+              name: finish,
+              colors
+          })) as ColorCategory[];
       }
       return PRODUCT_COLORS;
   });
@@ -42,8 +50,11 @@ export class ColorSelectorComponent {
 
   selectColor(color: ColorOption) {
     if (color.outOfStock) return;
-    
-    this.colorSelected.emit(color.value);
+
+    this.colorSelected.emit({
+      colorName: color.value,
+      filamentVariantId: color.variantId
+    });
     this.isOpen.set(false);
   }
 

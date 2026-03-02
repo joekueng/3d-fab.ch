@@ -15,6 +15,7 @@ interface FormItem {
     file: File;
     quantity: number;
     color: string;
+    filamentVariantId?: number;
 }
 
 @Component({
@@ -58,6 +59,7 @@ export class UploadFormComponent implements OnInit {
       if (matCode && this.fullMaterialOptions.length > 0) {
           const found = this.fullMaterialOptions.find(m => m.code === matCode);
           this.currentMaterialVariants.set(found ? found.variants : []);
+          this.syncItemVariantSelections();
       } else {
           this.currentMaterialVariants.set([]);
       }
@@ -166,8 +168,13 @@ export class UploadFormComponent implements OnInit {
         if (file.size > MAX_SIZE) {
             hasError = true;
         } else {
-            // Default color is Black
-            validItems.push({ file, quantity: 1, color: 'Black' });
+            const defaultSelection = this.getDefaultVariantSelection();
+            validItems.push({
+                file,
+                quantity: 1,
+                color: defaultSelection.colorName,
+                filamentVariantId: defaultSelection.filamentVariantId
+            });
         }
     }
 
@@ -220,7 +227,9 @@ export class UploadFormComponent implements OnInit {
       if (item) {
           const vars = this.currentMaterialVariants();
           if (vars && vars.length > 0) {
-              const found = vars.find(v => v.colorName === item.color);
+              const found = item.filamentVariantId
+                  ? vars.find(v => v.id === item.filamentVariantId)
+                  : vars.find(v => v.colorName === item.color);
               if (found) return found.hexColor;
           }
           return getColorHex(item.color);
@@ -240,10 +249,12 @@ export class UploadFormComponent implements OnInit {
       });
   }
 
-  updateItemColor(index: number, newColor: string) {
+  updateItemColor(index: number, newSelection: string | { colorName: string; filamentVariantId?: number }) {
+      const colorName = typeof newSelection === 'string' ? newSelection : newSelection.colorName;
+      const filamentVariantId = typeof newSelection === 'string' ? undefined : newSelection.filamentVariantId;
       this.items.update(current => {
           const updated = [...current];
-          updated[index] = { ...updated[index], color: newColor };
+          updated[index] = { ...updated[index], color: colorName, filamentVariantId };
           return updated;
       });
   }
@@ -261,9 +272,14 @@ export class UploadFormComponent implements OnInit {
 
   setFiles(files: File[]) {
       const validItems: FormItem[] = [];
+      const defaultSelection = this.getDefaultVariantSelection();
       for (const file of files) {
-          // Default color is Black or derive from somewhere if possible, but here we just init
-          validItems.push({ file, quantity: 1, color: 'Black' });
+          validItems.push({
+              file,
+              quantity: 1,
+              color: defaultSelection.colorName,
+              filamentVariantId: defaultSelection.filamentVariantId
+          });
       }
 
       if (validItems.length > 0) {
@@ -272,6 +288,39 @@ export class UploadFormComponent implements OnInit {
           // Auto select last added
           this.selectedFile.set(validItems[validItems.length - 1].file);
       }
+  }
+
+  private getDefaultVariantSelection(): { colorName: string; filamentVariantId?: number } {
+      const vars = this.currentMaterialVariants();
+      if (vars && vars.length > 0) {
+          const preferred = vars.find(v => !v.isOutOfStock) || vars[0];
+          return {
+              colorName: preferred.colorName,
+              filamentVariantId: preferred.id
+          };
+      }
+      return { colorName: 'Black' };
+  }
+
+  private syncItemVariantSelections(): void {
+      const vars = this.currentMaterialVariants();
+      if (!vars || vars.length === 0) {
+          return;
+      }
+
+      const fallback = vars.find(v => !v.isOutOfStock) || vars[0];
+      this.items.update(current => current.map(item => {
+          const byId = item.filamentVariantId != null
+              ? vars.find(v => v.id === item.filamentVariantId)
+              : null;
+          const byColor = vars.find(v => v.colorName === item.color);
+          const selected = byId || byColor || fallback;
+          return {
+              ...item,
+              color: selected.colorName,
+              filamentVariantId: selected.id
+          };
+      }));
   }
 
   patchSettings(settings: any) {

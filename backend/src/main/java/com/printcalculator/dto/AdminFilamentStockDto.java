@@ -10,6 +10,7 @@ public class AdminFilamentStockDto {
     private BigDecimal stockSpools;
     private BigDecimal spoolNetKg;
     private BigDecimal stockKg;
+    private BigDecimal stockFilamentGrams;
     private Boolean active;
 
     public Long getFilamentVariantId() {
@@ -66,6 +67,14 @@ public class AdminFilamentStockDto {
 
     public void setStockKg(BigDecimal stockKg) {
         this.stockKg = stockKg;
+    }
+
+    public BigDecimal getStockFilamentGrams() {
+        return stockFilamentGrams;
+    }
+
+    public void setStockFilamentGrams(BigDecimal stockFilamentGrams) {
+        this.stockFilamentGrams = stockFilamentGrams;
     }
 
     public Boolean getActive() {

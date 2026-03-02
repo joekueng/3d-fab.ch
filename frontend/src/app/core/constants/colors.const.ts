@@ -2,6 +2,7 @@ export interface ColorOption {
   label: string;
   value: string;
   hex: string;
+  variantId?: number;
   outOfStock?: boolean;
 }
 

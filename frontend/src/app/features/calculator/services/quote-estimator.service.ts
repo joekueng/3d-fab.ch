@@ -5,7 +5,7 @@ import { map, catchError, tap } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 
 export interface QuoteRequest {
-  items: { file: File, quantity: number, color?: string }[];
+  items: { file: File, quantity: number, color?: string, filamentVariantId?: number }[];
   material: string;
   quality: string;
   notes?: string;
@@ -26,6 +26,7 @@ export interface QuoteItem {
   quantity: number;
   material?: string;
   color?: string;
+  filamentVariantId?: number;
 }
 
 export interface QuoteResult {
@@ -72,9 +73,13 @@ export interface MaterialOption {
     variants: VariantOption[];
 }
 export interface VariantOption {
+    id: number;
     name: string;
     colorName: string;
     hexColor: string;
+    finishType: string;
+    stockSpools: number;
+    stockFilamentGrams: number;
     isOutOfStock: boolean;
 }
 export interface QualityOption {
@@ -250,6 +255,7 @@ export class QuoteEstimatorService {
                      const settings = {
                          complexityMode: request.mode === 'easy' ? 'ADVANCED' : request.mode.toUpperCase(),
                          material: request.material,
+                         filamentVariantId: item.filamentVariantId,
                          quality: easyPreset ? easyPreset.quality : request.quality,
                          supportsEnabled: request.supportEnabled,
                          color: item.color || '#FFFFFF',
@@ -351,7 +357,8 @@ export class QuoteEstimatorService {
               material: session.materialCode, // Assumption: session has one material for all? or items have it? 
               // Backend model QuoteSession has materialCode. 
               // But line items might have different colors. 
-              color: item.colorCode
+              color: item.colorCode,
+              filamentVariantId: item.filamentVariantId
           })),
       setupCost: session.setupCostChf || 0,
       globalMachineCost: sessionData.globalMachineCostChf || 0,

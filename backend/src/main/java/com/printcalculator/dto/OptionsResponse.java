@@ -10,7 +10,16 @@ public record OptionsResponse(
     List<NozzleOptionDTO> nozzleDiameters
 ) {
     public record MaterialOption(String code, String label, List<VariantOption> variants) {}
-    public record VariantOption(String name, String colorName, String hexColor, boolean isOutOfStock) {}
+    public record VariantOption(
+            Long id,
+            String name,
+            String colorName,
+            String hexColor,
+            String finishType,
+            Double stockSpools,
+            Double stockFilamentGrams,
+            boolean isOutOfStock
+    ) {}
     public record QualityOption(String id, String label) {}
     public record InfillPatternOption(String id, String label) {}
     public record LayerHeightOptionDTO(double value, String label) {}

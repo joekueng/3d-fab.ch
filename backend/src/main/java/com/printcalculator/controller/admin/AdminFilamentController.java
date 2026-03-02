@@ -8,6 +8,8 @@ import com.printcalculator.entity.FilamentMaterialType;
 import com.printcalculator.entity.FilamentVariant;
 import com.printcalculator.repository.FilamentMaterialTypeRepository;
 import com.printcalculator.repository.FilamentVariantRepository;
+import com.printcalculator.repository.OrderItemRepository;
+import com.printcalculator.repository.QuoteLineItemRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -17,8 +19,12 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestController
@@ -26,16 +32,26 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 @Transactional(readOnly = true)
 public class AdminFilamentController {
     private static final BigDecimal MAX_NUMERIC_6_3 = new BigDecimal("999.999");
+    private static final Pattern HEX_COLOR_PATTERN = Pattern.compile("^#[0-9A-Fa-f]{6}$");
+    private static final Set<String> ALLOWED_FINISH_TYPES = Set.of(
+            "GLOSSY", "MATTE", "MARBLE", "SILK", "TRANSLUCENT", "SPECIAL"
+    );
 
     private final FilamentMaterialTypeRepository materialRepo;
     private final FilamentVariantRepository variantRepo;
+    private final QuoteLineItemRepository quoteLineItemRepo;
+    private final OrderItemRepository orderItemRepo;
 
     public AdminFilamentController(
             FilamentMaterialTypeRepository materialRepo,
-            FilamentVariantRepository variantRepo
+            FilamentVariantRepository variantRepo,
+            QuoteLineItemRepository quoteLineItemRepo,
+            OrderItemRepository orderItemRepo
     ) {
         this.materialRepo = materialRepo;
         this.variantRepo = variantRepo;
+        this.quoteLineItemRepo = quoteLineItemRepo;
+        this.orderItemRepo = orderItemRepo;
     }
 
     @GetMapping("/materials")
@@ -130,6 +146,20 @@ public class AdminFilamentController {
         return ResponseEntity.ok(toVariantDto(saved));
     }
 
+    @DeleteMapping("/variants/{variantId}")
+    @Transactional
+    public ResponseEntity<Void> deleteVariant(@PathVariable Long variantId) {
+        FilamentVariant variant = variantRepo.findById(variantId)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Filament variant not found"));
+
+        if (quoteLineItemRepo.existsByFilamentVariant_Id(variantId) || orderItemRepo.existsByFilamentVariant_Id(variantId)) {
+            throw new ResponseStatusException(CONFLICT, "Variant is already used in quotes/orders and cannot be deleted");
+        }
+
+        variantRepo.delete(variant);
+        return ResponseEntity.noContent().build();
+    }
+
     private void applyMaterialPayload(
             FilamentMaterialType material,
             AdminUpsertFilamentMaterialTypeRequest payload,
@@ -156,10 +186,17 @@ public class AdminFilamentController {
             String normalizedDisplayName,
             String normalizedColorName
     ) {
+        String normalizedColorHex = normalizeAndValidateColorHex(payload.getColorHex());
+        String normalizedFinishType = normalizeAndValidateFinishType(payload.getFinishType(), payload.getIsMatte());
+        String normalizedBrand = normalizeOptional(payload.getBrand());
+
         variant.setFilamentMaterialType(material);
         variant.setVariantDisplayName(normalizedDisplayName);
         variant.setColorName(normalizedColorName);
-        variant.setIsMatte(Boolean.TRUE.equals(payload.getIsMatte()));
+        variant.setColorHex(normalizedColorHex);
+        variant.setFinishType(normalizedFinishType);
+        variant.setBrand(normalizedBrand);
+        variant.setIsMatte(Boolean.TRUE.equals(payload.getIsMatte()) || "MATTE".equals(normalizedFinishType));
         variant.setIsSpecial(Boolean.TRUE.equals(payload.getIsSpecial()));
         variant.setCostChfPerKg(payload.getCostChfPerKg());
         variant.setStockSpools(payload.getStockSpools());
@@ -186,6 +223,35 @@ public class AdminFilamentController {
             throw new ResponseStatusException(BAD_REQUEST, "Color name is required");
         }
         return value.trim();
+    }
+
+    private String normalizeAndValidateColorHex(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        String normalized = value.trim();
+        if (!HEX_COLOR_PATTERN.matcher(normalized).matches()) {
+            throw new ResponseStatusException(BAD_REQUEST, "Color hex must be in format #RRGGBB");
+        }
+        return normalized.toUpperCase(Locale.ROOT);
+    }
+
+    private String normalizeAndValidateFinishType(String finishType, Boolean isMatte) {
+        String normalized = finishType == null || finishType.isBlank()
+                ? (Boolean.TRUE.equals(isMatte) ? "MATTE" : "GLOSSY")
+                : finishType.trim().toUpperCase(Locale.ROOT);
+        if (!ALLOWED_FINISH_TYPES.contains(normalized)) {
+            throw new ResponseStatusException(BAD_REQUEST, "Invalid finish type");
+        }
+        return normalized;
+    }
+
+    private String normalizeOptional(String value) {
+        if (value == null) {
+            return null;
+        }
+        String normalized = value.trim();
+        return normalized.isBlank() ? null : normalized;
     }
 
     private FilamentMaterialType validateAndResolveMaterial(AdminUpsertFilamentVariantRequest payload) {
@@ -268,16 +334,20 @@ public class AdminFilamentController {
 
         dto.setVariantDisplayName(variant.getVariantDisplayName());
         dto.setColorName(variant.getColorName());
+        dto.setColorHex(variant.getColorHex());
+        dto.setFinishType(variant.getFinishType());
+        dto.setBrand(variant.getBrand());
         dto.setIsMatte(variant.getIsMatte());
         dto.setIsSpecial(variant.getIsSpecial());
         dto.setCostChfPerKg(variant.getCostChfPerKg());
         dto.setStockSpools(variant.getStockSpools());
         dto.setSpoolNetKg(variant.getSpoolNetKg());
+        BigDecimal stockKg = BigDecimal.ZERO;
         if (variant.getStockSpools() != null && variant.getSpoolNetKg() != null) {
-            dto.setStockKg(variant.getStockSpools().multiply(variant.getSpoolNetKg()));
-        } else {
-            dto.setStockKg(BigDecimal.ZERO);
+            stockKg = variant.getStockSpools().multiply(variant.getSpoolNetKg());
         }
+        dto.setStockKg(stockKg);
+        dto.setStockFilamentGrams(stockKg.multiply(BigDecimal.valueOf(1000)));
         dto.setIsActive(variant.getIsActive());
         dto.setCreatedAt(variant.getCreatedAt());
         return dto;

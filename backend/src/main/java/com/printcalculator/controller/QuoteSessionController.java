@@ -1,14 +1,19 @@
 package com.printcalculator.controller;
 
+import com.printcalculator.entity.FilamentMaterialType;
+import com.printcalculator.entity.FilamentVariant;
 import com.printcalculator.entity.PrinterMachine;
 import com.printcalculator.entity.QuoteLineItem;
 import com.printcalculator.entity.QuoteSession;
 import com.printcalculator.model.ModelDimensions;
 import com.printcalculator.model.PrintStats;
 import com.printcalculator.model.QuoteResult;
+import com.printcalculator.repository.FilamentMaterialTypeRepository;
+import com.printcalculator.repository.FilamentVariantRepository;
 import com.printcalculator.repository.PrinterMachineRepository;
 import com.printcalculator.repository.QuoteLineItemRepository;
 import com.printcalculator.repository.QuoteSessionRepository;
+import com.printcalculator.service.OrcaProfileResolver;
 import com.printcalculator.service.QuoteCalculator;
 import com.printcalculator.service.SlicerService;
 import org.springframework.http.MediaType;
@@ -43,18 +48,20 @@ public class QuoteSessionController {
     private final SlicerService slicerService;
     private final QuoteCalculator quoteCalculator;
     private final PrinterMachineRepository machineRepo;
+    private final FilamentMaterialTypeRepository materialRepo;
+    private final FilamentVariantRepository variantRepo;
+    private final OrcaProfileResolver orcaProfileResolver;
     private final com.printcalculator.repository.PricingPolicyRepository pricingRepo;
     private final com.printcalculator.service.ClamAVService clamAVService;
-
-    // Defaults
-    private static final String DEFAULT_FILAMENT = "pla_basic";
-    private static final String DEFAULT_PROCESS = "standard";
 
     public QuoteSessionController(QuoteSessionRepository sessionRepo,
                                   QuoteLineItemRepository lineItemRepo,
                                   SlicerService slicerService,
                                   QuoteCalculator quoteCalculator,
                                   PrinterMachineRepository machineRepo,
+                                  FilamentMaterialTypeRepository materialRepo,
+                                  FilamentVariantRepository variantRepo,
+                                  OrcaProfileResolver orcaProfileResolver,
                                   com.printcalculator.repository.PricingPolicyRepository pricingRepo,
                                   com.printcalculator.service.ClamAVService clamAVService) {
         this.sessionRepo = sessionRepo;
@@ -62,6 +69,9 @@ public class QuoteSessionController {
         this.slicerService = slicerService;
         this.quoteCalculator = quoteCalculator;
         this.machineRepo = machineRepo;
+        this.materialRepo = materialRepo;
+        this.variantRepo = variantRepo;
+        this.orcaProfileResolver = orcaProfileResolver;
         this.pricingRepo = pricingRepo;
         this.clamAVService = clamAVService;
     }
@@ -129,45 +139,31 @@ public class QuoteSessionController {
             // Apply Basic/Advanced Logic
             applyPrintSettings(settings);
 
+            BigDecimal nozzleDiameter = BigDecimal.valueOf(settings.getNozzleDiameter() != null ? settings.getNozzleDiameter() : 0.4);
+
+            // Pick machine (selected machine if provided, otherwise first active)
+            PrinterMachine machine = resolvePrinterMachine(settings.getPrinterMachineId());
+
+            // Resolve selected filament variant
+            FilamentVariant selectedVariant = resolveFilamentVariant(settings);
+
             // Update session global settings from the most recent item added
-            session.setMaterialCode(settings.getMaterial());
-            session.setNozzleDiameterMm(BigDecimal.valueOf(settings.getNozzleDiameter() != null ? settings.getNozzleDiameter() : 0.4));
+            session.setMaterialCode(selectedVariant.getFilamentMaterialType().getMaterialCode());
+            session.setNozzleDiameterMm(nozzleDiameter);
             session.setLayerHeightMm(BigDecimal.valueOf(settings.getLayerHeight() != null ? settings.getLayerHeight() : 0.2));
             session.setInfillPattern(settings.getInfillPattern());
             session.setInfillPercent(settings.getInfillDensity() != null ? settings.getInfillDensity().intValue() : 20);
             session.setSupportsEnabled(settings.getSupportsEnabled() != null ? settings.getSupportsEnabled() : false);
             sessionRepo.save(session);
 
-            // REAL SLICING
-            // 1. Pick Machine (default to first active or specific)
-            PrinterMachine machine = machineRepo.findFirstByIsActiveTrue()
-                    .orElseThrow(() -> new RuntimeException("No active printer found"));
-            
-            // 2. Pick Profiles
-            String machineProfile = machine.getPrinterDisplayName(); // e.g. "Bambu Lab A1 0.4 nozzle"
-            // If the display name doesn't match the json profile name, we might need a mapping key in DB.
-            // For now assuming display name works or we use a tough default
-             machineProfile = "Bambu Lab A1 0.4 nozzle"; // Force known good for now? Or use DB field if exists. 
-             // Ideally: machine.getSlicerProfileName();
-            
-            String filamentProfile = "Generic " + (settings.getMaterial() != null ? settings.getMaterial().toUpperCase() : "PLA");
-            // Mapping: "pla_basic" -> "Generic PLA", "petg_basic" -> "Generic PETG"
-            if (settings.getMaterial() != null) {
-                if (settings.getMaterial().toLowerCase().contains("pla")) filamentProfile = "Generic PLA";
-                else if (settings.getMaterial().toLowerCase().contains("petg")) filamentProfile = "Generic PETG";
-                else if (settings.getMaterial().toLowerCase().contains("tpu")) filamentProfile = "Generic TPU";
-                else if (settings.getMaterial().toLowerCase().contains("abs")) filamentProfile = "Generic ABS";
-            }
+            OrcaProfileResolver.ResolvedProfiles profiles = orcaProfileResolver.resolve(machine, nozzleDiameter, selectedVariant);
+            String machineProfile = profiles.machineProfileName();
+            String filamentProfile = profiles.filamentProfileName();
 
-            String processProfile = "0.20mm Standard @BBL A1"; 
-            // Mapping quality to process
-            // "standard" -> "0.20mm Standard @BBL A1"
-            // "draft" -> "0.28mm Extra Draft @BBL A1"
-            // "high" -> "0.12mm Fine @BBL A1" (approx names, need to be exact for Orca)
-            // Let's use robust defaults or simple overrides
+            String processProfile = "standard";
             if (settings.getLayerHeight() != null) {
-                 if (settings.getLayerHeight() >= 0.28) processProfile = "0.28mm Extra Draft @BBL A1";
-                 else if (settings.getLayerHeight() <= 0.12) processProfile = "0.12mm Fine @BBL A1";
+                 if (settings.getLayerHeight() >= 0.28) processProfile = "draft";
+                 else if (settings.getLayerHeight() <= 0.12) processProfile = "extra_fine";
             }
             
             // Build overrides map from settings
@@ -189,7 +185,7 @@ public class QuoteSessionController {
             Optional<ModelDimensions> modelDimensions = slicerService.inspectModelDimensions(persistentPath.toFile());
             
             // 4. Calculate Quote
-            QuoteResult result = quoteCalculator.calculate(stats, machine.getPrinterDisplayName(), filamentProfile);
+            QuoteResult result = quoteCalculator.calculate(stats, machine.getPrinterDisplayName(), selectedVariant);
 
             // 5. Create Line Item
             QuoteLineItem item = new QuoteLineItem();
@@ -197,7 +193,8 @@ public class QuoteSessionController {
             item.setOriginalFilename(file.getOriginalFilename());
             item.setStoredPath(persistentPath.toString()); // SAVE PATH
             item.setQuantity(1);
-            item.setColorCode(settings.getColor() != null ? settings.getColor() : "#FFFFFF");
+            item.setColorCode(selectedVariant.getColorName());
+            item.setFilamentVariant(selectedVariant);
             item.setStatus("READY"); // or CALCULATED
             
             item.setPrintTimeSeconds((int) stats.printTimeSeconds());
@@ -262,6 +259,50 @@ public class QuoteSessionController {
             if (settings.getInfillDensity() == null) settings.setInfillDensity(20.0);
             if (settings.getInfillPattern() == null) settings.setInfillPattern("grid");
         }
+    }
+
+    private PrinterMachine resolvePrinterMachine(Long printerMachineId) {
+        if (printerMachineId != null) {
+            PrinterMachine selected = machineRepo.findById(printerMachineId)
+                    .orElseThrow(() -> new RuntimeException("Printer machine not found: " + printerMachineId));
+            if (!Boolean.TRUE.equals(selected.getIsActive())) {
+                throw new RuntimeException("Selected printer machine is not active");
+            }
+            return selected;
+        }
+
+        return machineRepo.findFirstByIsActiveTrue()
+                .orElseThrow(() -> new RuntimeException("No active printer found"));
+    }
+
+    private FilamentVariant resolveFilamentVariant(com.printcalculator.dto.PrintSettingsDto settings) {
+        if (settings.getFilamentVariantId() != null) {
+            FilamentVariant variant = variantRepo.findById(settings.getFilamentVariantId())
+                    .orElseThrow(() -> new RuntimeException("Filament variant not found: " + settings.getFilamentVariantId()));
+            if (!Boolean.TRUE.equals(variant.getIsActive())) {
+                throw new RuntimeException("Selected filament variant is not active");
+            }
+            return variant;
+        }
+
+        String requestedMaterialCode = settings.getMaterial() != null
+                ? settings.getMaterial().trim().toUpperCase()
+                : "PLA";
+
+        FilamentMaterialType materialType = materialRepo.findByMaterialCode(requestedMaterialCode)
+                .orElseGet(() -> materialRepo.findByMaterialCode("PLA")
+                        .orElseThrow(() -> new RuntimeException("Fallback material PLA not configured")));
+
+        String requestedColor = settings.getColor() != null ? settings.getColor().trim() : null;
+        if (requestedColor != null && !requestedColor.isBlank()) {
+            Optional<FilamentVariant> byColor = variantRepo.findByFilamentMaterialTypeAndColorName(materialType, requestedColor);
+            if (byColor.isPresent() && Boolean.TRUE.equals(byColor.get().getIsActive())) {
+                return byColor.get();
+            }
+        }
+
+        return variantRepo.findFirstByFilamentMaterialTypeAndIsActiveTrue(materialType)
+                .orElseThrow(() -> new RuntimeException("No active variant for material: " + requestedMaterialCode));
     }
 
     // 3. Update Line Item
@@ -344,6 +385,7 @@ public class QuoteSessionController {
             dto.put("printTimeSeconds", item.getPrintTimeSeconds());
             dto.put("materialGrams", item.getMaterialGrams());
             dto.put("colorCode", item.getColorCode());
+            dto.put("filamentVariantId", item.getFilamentVariant() != null ? item.getFilamentVariant().getId() : null);
             dto.put("status", item.getStatus());
             
             BigDecimal unitPrice = item.getUnitPriceChf();

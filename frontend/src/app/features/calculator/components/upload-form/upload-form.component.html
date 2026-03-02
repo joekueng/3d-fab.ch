@@ -54,6 +54,7 @@
                                 <label>{{ 'CALC.COLOR_LABEL' | translate }}</label>
                                 <app-color-selector
                                     [selectedColor]="item.color"
+                                    [selectedVariantId]="item.filamentVariantId ?? null"
                                     [variants]="currentMaterialVariants()"
                                     (colorSelected)="updateItemColor(i, $event)">
                                 </app-color-selector>

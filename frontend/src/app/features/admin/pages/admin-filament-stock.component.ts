@@ -9,6 +9,7 @@ import {
   AdminUpsertFilamentVariantPayload
 } from '../services/admin-operations.service';
 import { forkJoin } from 'rxjs';
+import { getColorHex } from '../../../core/constants/colors.const';
 
 @Component({
   selector: 'app-admin-filament-stock',
@@ -23,11 +24,15 @@ export class AdminFilamentStockComponent implements OnInit {
   materials: AdminFilamentMaterialType[] = [];
   variants: AdminFilamentVariant[] = [];
   loading = false;
+  quickInsertCollapsed = false;
   materialsCollapsed = true;
   creatingMaterial = false;
   creatingVariant = false;
   savingMaterialIds = new Set<number>();
   savingVariantIds = new Set<number>();
+  deletingVariantIds = new Set<number>();
+  expandedVariantIds = new Set<number>();
+  variantToDelete: AdminFilamentVariant | null = null;
   errorMessage: string | null = null;
   successMessage: string | null = null;
 
@@ -42,6 +47,9 @@ export class AdminFilamentStockComponent implements OnInit {
     materialTypeId: 0,
     variantDisplayName: '',
     colorName: '',
+    colorHex: '',
+    finishType: 'GLOSSY',
+    brand: '',
     isMatte: false,
     isSpecial: false,
     costChfPerKg: 0,
@@ -66,6 +74,12 @@ export class AdminFilamentStockComponent implements OnInit {
       next: ({ materials, variants }) => {
         this.materials = this.sortMaterials(materials);
         this.variants = this.sortVariants(variants);
+        const existingIds = new Set(this.variants.map(v => v.id));
+        this.expandedVariantIds.forEach(id => {
+          if (!existingIds.has(id)) {
+            this.expandedVariantIds.delete(id);
+          }
+        });
         if (!this.newVariant.materialTypeId && this.materials.length > 0) {
           this.newVariant.materialTypeId = this.materials[0].id;
         }
@@ -178,6 +192,9 @@ export class AdminFilamentStockComponent implements OnInit {
           materialTypeId: this.newVariant.materialTypeId || this.materials[0]?.id || 0,
           variantDisplayName: '',
           colorName: '',
+          colorHex: '',
+          finishType: 'GLOSSY',
+          brand: '',
           isMatte: false,
           isSpecial: false,
           costChfPerKg: 0,
@@ -221,7 +238,7 @@ export class AdminFilamentStockComponent implements OnInit {
   }
 
   isLowStock(variant: AdminFilamentVariant): boolean {
-    return this.computeStockKg(variant.stockSpools, variant.spoolNetKg) < 1;
+    return this.computeStockFilamentGrams(variant.stockSpools, variant.spoolNetKg) < 1000;
   }
 
   computeStockKg(stockSpools?: number, spoolNetKg?: number): number {
@@ -234,12 +251,72 @@ export class AdminFilamentStockComponent implements OnInit {
     return spools * netKg;
   }
 
+  computeStockFilamentGrams(stockSpools?: number, spoolNetKg?: number): number {
+    return this.computeStockKg(stockSpools, spoolNetKg) * 1000;
+  }
+
   trackById(index: number, item: { id: number }): number {
     return item.id;
   }
 
+  isVariantExpanded(variantId: number): boolean {
+    return this.expandedVariantIds.has(variantId);
+  }
+
+  toggleVariantExpanded(variantId: number): void {
+    if (this.expandedVariantIds.has(variantId)) {
+      this.expandedVariantIds.delete(variantId);
+      return;
+    }
+    this.expandedVariantIds.add(variantId);
+  }
+
+  getVariantColorHex(variant: AdminFilamentVariant): string {
+    if (variant.colorHex && variant.colorHex.trim().length > 0) {
+      return variant.colorHex;
+    }
+    return getColorHex(variant.colorName || '');
+  }
+
+  openDeleteVariant(variant: AdminFilamentVariant): void {
+    this.variantToDelete = variant;
+  }
+
+  closeDeleteVariantDialog(): void {
+    this.variantToDelete = null;
+  }
+
+  confirmDeleteVariant(): void {
+    const variant = this.variantToDelete;
+    if (!variant || this.deletingVariantIds.has(variant.id)) {
+      return;
+    }
+
+    this.errorMessage = null;
+    this.successMessage = null;
+    this.deletingVariantIds.add(variant.id);
+
+    this.adminOperationsService.deleteFilamentVariant(variant.id).subscribe({
+      next: () => {
+        this.variants = this.variants.filter(v => v.id !== variant.id);
+        this.expandedVariantIds.delete(variant.id);
+        this.deletingVariantIds.delete(variant.id);
+        this.variantToDelete = null;
+        this.successMessage = 'Variante eliminata.';
+      },
+      error: (err) => {
+        this.deletingVariantIds.delete(variant.id);
+        this.errorMessage = this.extractErrorMessage(err, 'Eliminazione variante non riuscita.');
+      }
+    });
+  }
+
   toggleMaterialsCollapsed(): void {
     this.materialsCollapsed = !this.materialsCollapsed;
+  }
+
+  toggleQuickInsertCollapsed(): void {
+    this.quickInsertCollapsed = !this.quickInsertCollapsed;
   }
 
   private toVariantPayload(source: AdminUpsertFilamentVariantPayload | AdminFilamentVariant): AdminUpsertFilamentVariantPayload {
@@ -247,6 +324,9 @@ export class AdminFilamentStockComponent implements OnInit {
       materialTypeId: Number(source.materialTypeId),
       variantDisplayName: (source.variantDisplayName || '').trim(),
       colorName: (source.colorName || '').trim(),
+      colorHex: (source.colorHex || '').trim() || undefined,
+      finishType: (source.finishType || 'GLOSSY').trim().toUpperCase(),
+      brand: (source.brand || '').trim() || undefined,
       isMatte: !!source.isMatte,
       isSpecial: !!source.isSpecial,
       costChfPerKg: Number(source.costChfPerKg ?? 0),

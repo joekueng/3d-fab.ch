@@ -44,6 +44,10 @@ public class OrderItem {
     @Column(name = "material_code", nullable = false, length = Integer.MAX_VALUE)
     private String materialCode;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "filament_variant_id")
+    private FilamentVariant filamentVariant;
+
     @Column(name = "color_code", length = Integer.MAX_VALUE)
     private String colorCode;
 
@@ -156,6 +160,14 @@ public class OrderItem {
 
     public void setMaterialCode(String materialCode) {
         this.materialCode = materialCode;
+    }
+
+    public FilamentVariant getFilamentVariant() {
+        return filamentVariant;
+    }
+
+    public void setFilamentVariant(FilamentVariant filamentVariant) {
+        this.filamentVariant = filamentVariant;
     }
 
     public String getColorCode() {

@@ -40,6 +40,11 @@ public class QuoteLineItem {
     @Column(name = "color_code", length = Integer.MAX_VALUE)
     private String colorCode;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "filament_variant_id")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private FilamentVariant filamentVariant;
+
     @Column(name = "bounding_box_x_mm", precision = 10, scale = 3)
     private BigDecimal boundingBoxXMm;
 
@@ -122,6 +127,14 @@ public class QuoteLineItem {
 
     public void setColorCode(String colorCode) {
         this.colorCode = colorCode;
+    }
+
+    public FilamentVariant getFilamentVariant() {
+        return filamentVariant;
+    }
+
+    public void setFilamentVariant(FilamentVariant filamentVariant) {
+        this.filamentVariant = filamentVariant;
     }
 
     public BigDecimal getBoundingBoxXMm() {
