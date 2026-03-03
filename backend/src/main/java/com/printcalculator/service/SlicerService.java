@@ -639,22 +639,22 @@ public class SlicerService {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setNamespaceAware(true);
         dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        setFeatureIfSupported(dbf, "http://apache.org/xml/features/disallow-doctype-decl", true);
-        setFeatureIfSupported(dbf, "http://xml.org/sax/features/external-general-entities", false);
-        setFeatureIfSupported(dbf, "http://xml.org/sax/features/external-parameter-entities", false);
+        dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        try {
+            dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+        } catch (Exception ignored) {
+            // Best-effort hardening.
+        }
+        try {
+            dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        } catch (Exception ignored) {
+            // Best-effort hardening.
+        }
         dbf.setXIncludeAware(false);
         dbf.setExpandEntityReferences(false);
 
         try (InputStream is = zipFile.getInputStream(entry)) {
             return dbf.newDocumentBuilder().parse(is);
-        }
-    }
-
-    private void setFeatureIfSupported(DocumentBuilderFactory dbf, String feature, boolean enabled) {
-        try {
-            dbf.setFeature(feature, enabled);
-        } catch (Exception ignored) {
-            // Best-effort hardening.
         }
     }
 
