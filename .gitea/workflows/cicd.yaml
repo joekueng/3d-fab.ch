@@ -3,8 +3,6 @@ name: Build, Test, Deploy and Analysis
 on:
   push:
     branches: [main, int, dev]
-  pull_request: # <--- Abilita l'esecuzione sulle Pull Request
-    branches: [main, int, dev]
   workflow_dispatch:
 
 concurrency:
