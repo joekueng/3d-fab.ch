@@ -22,7 +22,7 @@ export class QuoteResultComponent implements OnDestroy {
   result = input.required<QuoteResult>();
   consult = output<void>();
   proceed = output<void>();
-  itemChange = output<{id?: string, fileName: string, quantity: number}>();
+  itemChange = output<{id?: string, index: number, fileName: string, quantity: number}>();
 
   // Local mutable state for items to handle quantity changes
   items = signal<QuoteItem[]>([]);
@@ -83,6 +83,7 @@ export class QuoteResultComponent implements OnDestroy {
 
       this.itemChange.emit({
           id: item.id,
+          index,
           fileName: item.fileName,
           quantity: normalizedQty
       });
