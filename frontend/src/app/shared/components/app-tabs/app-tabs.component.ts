@@ -7,10 +7,10 @@ import { TranslateModule } from '@ngx-translate/core';
   standalone: true,
   imports: [CommonModule, TranslateModule],
   templateUrl: './app-tabs.component.html',
-  styleUrl: './app-tabs.component.scss'
+  styleUrl: './app-tabs.component.scss',
 })
 export class AppTabsComponent {
-  tabs = input<{label: string, value: string}[]>([]);
+  tabs = input<{ label: string; value: string }[]>([]);
   activeTab = input<string>('');
   tabChange = output<string>();
 

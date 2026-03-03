@@ -1,29 +1,37 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { QuoteEstimatorService } from '../calculator/services/quote-estimator.service';
 import { AppInputComponent } from '../../shared/components/app-input/app-input.component';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
-import { AppToggleSelectorComponent, ToggleOption } from '../../shared/components/app-toggle-selector/app-toggle-selector.component';
+import {
+  AppToggleSelectorComponent,
+  ToggleOption,
+} from '../../shared/components/app-toggle-selector/app-toggle-selector.component';
 import { LanguageService } from '../../core/services/language.service';
 
 @Component({
   selector: 'app-checkout',
   standalone: true,
   imports: [
-    CommonModule, 
-    ReactiveFormsModule, 
+    CommonModule,
+    ReactiveFormsModule,
     TranslateModule,
     AppInputComponent,
     AppButtonComponent,
     AppCardComponent,
-    AppToggleSelectorComponent
+    AppToggleSelectorComponent,
   ],
   templateUrl: './checkout.component.html',
-  styleUrls: ['./checkout.component.scss']
+  styleUrls: ['./checkout.component.scss'],
 })
 export class CheckoutComponent implements OnInit {
   private fb = inject(FormBuilder);
@@ -41,7 +49,7 @@ export class CheckoutComponent implements OnInit {
 
   userTypeOptions: ToggleOption[] = [
     { label: 'CONTACT.TYPE_PRIVATE', value: 'PRIVATE' },
-    { label: 'CONTACT.TYPE_COMPANY', value: 'BUSINESS' }
+    { label: 'CONTACT.TYPE_COMPANY', value: 'BUSINESS' },
   ];
 
   constructor() {
@@ -49,22 +57,22 @@ export class CheckoutComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       phone: ['', Validators.required],
       customerType: ['PRIVATE', Validators.required], // Default to PRIVATE
-      
+
       shippingSameAsBilling: [true],
       acceptLegal: [false, Validators.requiredTrue],
-      
+
       billingAddress: this.fb.group({
         firstName: ['', Validators.required],
         lastName: ['', Validators.required],
-        companyName: [''], 
+        companyName: [''],
         referencePerson: [''],
         addressLine1: ['', Validators.required],
         addressLine2: [''],
         zip: ['', Validators.required],
         city: ['', Validators.required],
-        countryCode: ['CH', Validators.required]
+        countryCode: ['CH', Validators.required],
       }),
-      
+
       shippingAddress: this.fb.group({
         firstName: [''],
         lastName: [''],
@@ -74,8 +82,8 @@ export class CheckoutComponent implements OnInit {
         addressLine2: [''],
         zip: [''],
         city: [''],
-        countryCode: ['CH']
-      })
+        countryCode: ['CH'],
+      }),
     });
   }
 
@@ -86,13 +94,13 @@ export class CheckoutComponent implements OnInit {
   setCustomerType(type: string) {
     this.checkoutForm.patchValue({ customerType: type });
     const isCompany = type === 'BUSINESS';
-    
+
     const billingGroup = this.checkoutForm.get('billingAddress') as FormGroup;
     const companyControl = billingGroup.get('companyName');
     const referenceControl = billingGroup.get('referencePerson');
     const firstNameControl = billingGroup.get('firstName');
     const lastNameControl = billingGroup.get('lastName');
-    
+
     if (isCompany) {
       companyControl?.setValidators([Validators.required]);
       referenceControl?.setValidators([Validators.required]);
@@ -111,43 +119,47 @@ export class CheckoutComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.subscribe((params) => {
       this.sessionId = params['session'];
       if (!this.sessionId) {
         this.error = 'CHECKOUT.ERR_NO_SESSION_START';
         this.router.navigate(['/']); // Redirect if no session
         return;
       }
-      
+
       this.loadSessionDetails();
     });
 
     // Toggle shipping validation based on checkbox
-    this.checkoutForm.get('shippingSameAsBilling')?.valueChanges.subscribe(isSame => {
-      const shippingGroup = this.checkoutForm.get('shippingAddress') as FormGroup;
-      if (isSame) {
-        shippingGroup.disable();
-      } else {
-        shippingGroup.enable();
-      }
-    });
-    
+    this.checkoutForm
+      .get('shippingSameAsBilling')
+      ?.valueChanges.subscribe((isSame) => {
+        const shippingGroup = this.checkoutForm.get(
+          'shippingAddress',
+        ) as FormGroup;
+        if (isSame) {
+          shippingGroup.disable();
+        } else {
+          shippingGroup.enable();
+        }
+      });
+
     // Initial state
     this.checkoutForm.get('shippingAddress')?.disable();
   }
 
   loadSessionDetails() {
-      if (!this.sessionId) return; // Ensure sessionId is present before fetching
-      this.quoteService.getQuoteSession(this.sessionId).subscribe({
-          next: (session) => {
-              this.quoteSession.set(session);
-              console.log('Loaded session:', session);
-          },
-          error: (err) => {
-            console.error('Failed to load session', err);
-            this.error = 'CHECKOUT.ERR_LOAD_SESSION';
-          }
-      });
+    if (!this.sessionId) return; // Ensure sessionId is present before fetching
+    this.quoteService.getQuoteSession(this.sessionId).subscribe({
+      next: (session) => {
+        this.quoteSession.set(session);
+        console.log('Loaded session:', session);
+      },
+      error: (err) => {
+        console.error('Failed to load session', err);
+        this.error = 'CHECKOUT.ERR_LOAD_SESSION';
+      },
+    });
   }
 
   onSubmit() {
@@ -168,7 +180,7 @@ export class CheckoutComponent implements OnInit {
         // Assuming firstName, lastName, companyName for customer come from billingAddress if not explicitly in contact group
         firstName: formVal.billingAddress.firstName,
         lastName: formVal.billingAddress.lastName,
-        companyName: formVal.billingAddress.companyName
+        companyName: formVal.billingAddress.companyName,
       },
       billingAddress: {
         firstName: formVal.billingAddress.firstName,
@@ -179,23 +191,25 @@ export class CheckoutComponent implements OnInit {
         addressLine2: formVal.billingAddress.addressLine2,
         zip: formVal.billingAddress.zip,
         city: formVal.billingAddress.city,
-        countryCode: formVal.billingAddress.countryCode
+        countryCode: formVal.billingAddress.countryCode,
       },
-      shippingAddress: formVal.shippingSameAsBilling ? null : {
-        firstName: formVal.shippingAddress.firstName,
-        lastName: formVal.shippingAddress.lastName,
-        companyName: formVal.shippingAddress.companyName,
-        contactPerson: formVal.shippingAddress.referencePerson,
-        addressLine1: formVal.shippingAddress.addressLine1,
-        addressLine2: formVal.shippingAddress.addressLine2,
-        zip: formVal.shippingAddress.zip,
-        city: formVal.shippingAddress.city,
-        countryCode: formVal.shippingAddress.countryCode
-      },
+      shippingAddress: formVal.shippingSameAsBilling
+        ? null
+        : {
+            firstName: formVal.shippingAddress.firstName,
+            lastName: formVal.shippingAddress.lastName,
+            companyName: formVal.shippingAddress.companyName,
+            contactPerson: formVal.shippingAddress.referencePerson,
+            addressLine1: formVal.shippingAddress.addressLine1,
+            addressLine2: formVal.shippingAddress.addressLine2,
+            zip: formVal.shippingAddress.zip,
+            city: formVal.shippingAddress.city,
+            countryCode: formVal.shippingAddress.countryCode,
+          },
       shippingSameAsBilling: formVal.shippingSameAsBilling,
       language: this.languageService.selectedLang(),
       acceptTerms: formVal.acceptLegal,
-      acceptPrivacy: formVal.acceptLegal
+      acceptPrivacy: formVal.acceptLegal,
     };
 
     if (!this.sessionId) {
@@ -212,13 +226,18 @@ export class CheckoutComponent implements OnInit {
           this.error = 'CHECKOUT.ERR_CREATE_ORDER';
           return;
         }
-        this.router.navigate(['/', this.languageService.selectedLang(), 'order', orderId]);
+        this.router.navigate([
+          '/',
+          this.languageService.selectedLang(),
+          'order',
+          orderId,
+        ]);
       },
       error: (err) => {
         console.error('Order creation failed', err);
         this.isSubmitting.set(false);
         this.error = 'CHECKOUT.ERR_CREATE_ORDER';
-      }
+      },
     });
   }
 }

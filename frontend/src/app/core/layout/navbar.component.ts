@@ -8,15 +8,18 @@ import { LanguageService } from '../services/language.service';
   standalone: true,
   imports: [RouterLink, RouterLinkActive, TranslateModule],
   templateUrl: './navbar.component.html',
-  styleUrls: ['./navbar.component.scss']
+  styleUrls: ['./navbar.component.scss'],
 })
 export class NavbarComponent {
   isMenuOpen = false;
-  readonly languageOptions: Array<{ value: 'it' | 'en' | 'de' | 'fr'; label: string }> = [
+  readonly languageOptions: Array<{
+    value: 'it' | 'en' | 'de' | 'fr';
+    label: string;
+  }> = [
     { value: 'it', label: 'IT' },
     { value: 'en', label: 'EN' },
     { value: 'de', label: 'DE' },
-    { value: 'fr', label: 'FR' }
+    { value: 'fr', label: 'FR' },
   ];
 
   constructor(public langService: LanguageService) {}

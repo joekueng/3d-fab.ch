@@ -15,6 +15,7 @@ FROM eclipse-temurin:21-jre-jammy
 RUN apt-get update && apt-get install -y \
     wget \
     p7zip-full \
+    assimp-utils \
     libgl1 \
     libglib2.0-0 \
     libgtk-3-0 \
@@ -32,6 +33,7 @@ RUN wget -q https://github.com/SoftFever/OrcaSlicer/releases/download/v2.2.0/Orc
 ENV PATH="/opt/orcaslicer/usr/bin:${PATH}"
 # Set Slicer Path env variable for Java app
 ENV SLICER_PATH="/opt/orcaslicer/AppRun"
+ENV ASSIMP_PATH="assimp"
 
 WORKDIR /app
 # Copy JAR from build stage

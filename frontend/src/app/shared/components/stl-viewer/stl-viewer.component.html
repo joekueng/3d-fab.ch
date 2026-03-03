@@ -2,12 +2,12 @@
   @if (loading) {
     <div class="loading-overlay">
       <div class="spinner"></div>
-      <span>{{ 'STL_VIEWER.LOADING' | translate }}</span>
+      <span>{{ "STL_VIEWER.LOADING" | translate }}</span>
     </div>
   }
   @if (file && !loading) {
     <div class="dims-overlay">
-       {{ dimensions.x }} x {{ dimensions.y }} x {{ dimensions.z }} mm
+      {{ dimensions.x }} x {{ dimensions.y }} x {{ dimensions.z }} mm
     </div>
   }
 </div>

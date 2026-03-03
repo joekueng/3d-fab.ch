@@ -75,7 +75,10 @@ button:disabled {
 
 .list-toolbar {
   display: grid;
-  grid-template-columns: minmax(230px, 1.6fr) minmax(170px, 1fr) minmax(190px, 1fr);
+  grid-template-columns: minmax(230px, 1.6fr) minmax(170px, 1fr) minmax(
+      190px,
+      1fr
+    );
   gap: var(--space-2);
   margin-bottom: var(--space-3);
 }

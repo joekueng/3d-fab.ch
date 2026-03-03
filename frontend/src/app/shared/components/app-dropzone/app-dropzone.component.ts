@@ -7,16 +7,16 @@ import { TranslateModule } from '@ngx-translate/core';
   standalone: true,
   imports: [CommonModule, TranslateModule],
   templateUrl: './app-dropzone.component.html',
-  styleUrl: './app-dropzone.component.scss'
+  styleUrl: './app-dropzone.component.scss',
 })
 export class AppDropzoneComponent {
   label = input<string>('DROPZONE.DEFAULT_LABEL');
   subtext = input<string>('DROPZONE.DEFAULT_SUBTEXT');
   accept = input<string>('.stl,.3mf,.step,.stp');
   multiple = input<boolean>(true);
-  
+
   filesDropped = output<File[]>();
-  
+
   isDragOver = signal(false);
   fileNames = signal<string[]>([]);
 
@@ -51,8 +51,8 @@ export class AppDropzoneComponent {
   }
 
   handleFiles(files: File[]) {
-    const newNames = files.map(f => f.name);
-    this.fileNames.update(current => [...current, ...newNames]);
+    const newNames = files.map((f) => f.name);
+    this.fileNames.update((current) => [...current, ...newNames]);
     this.filesDropped.emit(files);
   }
 }

@@ -62,7 +62,9 @@ button {
   padding: var(--space-2) var(--space-4);
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease, opacity 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    opacity 0.2s ease;
   line-height: 1.2;
 }
 

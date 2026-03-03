@@ -3,25 +3,34 @@
     <div class="col-md-6">
       <app-card [title]="'USER_DETAILS.TITLE' | translate">
         <form [formGroup]="form" (ngSubmit)="onSubmit()">
-          
           <!-- Name & Surname -->
           <div class="row">
             <div class="col-md-6">
-              <app-input 
+              <app-input
                 formControlName="name"
-                [label]="'USER_DETAILS.NAME' | translate" 
+                [label]="'USER_DETAILS.NAME' | translate"
                 [placeholder]="'USER_DETAILS.NAME_PLACEHOLDER' | translate"
                 [required]="true"
-                [error]="form.get('name')?.invalid && form.get('name')?.touched ? ('COMMON.REQUIRED' | translate) : null">
+                [error]="
+                  form.get('name')?.invalid && form.get('name')?.touched
+                    ? ('COMMON.REQUIRED' | translate)
+                    : null
+                "
+              >
               </app-input>
             </div>
             <div class="col-md-6">
-              <app-input 
+              <app-input
                 formControlName="surname"
-                [label]="'USER_DETAILS.SURNAME' | translate" 
+                [label]="'USER_DETAILS.SURNAME' | translate"
                 [placeholder]="'USER_DETAILS.SURNAME_PLACEHOLDER' | translate"
                 [required]="true"
-                [error]="form.get('surname')?.invalid && form.get('surname')?.touched ? ('COMMON.REQUIRED' | translate) : null">
+                [error]="
+                  form.get('surname')?.invalid && form.get('surname')?.touched
+                    ? ('COMMON.REQUIRED' | translate)
+                    : null
+                "
+              >
               </app-input>
             </div>
           </div>
@@ -29,87 +38,117 @@
           <!-- Email & Phone -->
           <div class="row">
             <div class="col-md-6">
-              <app-input 
+              <app-input
                 formControlName="email"
-                [label]="'USER_DETAILS.EMAIL' | translate" 
+                [label]="'USER_DETAILS.EMAIL' | translate"
                 type="email"
                 [placeholder]="'USER_DETAILS.EMAIL_PLACEHOLDER' | translate"
                 [required]="true"
-                [error]="form.get('email')?.invalid && form.get('email')?.touched ? ('COMMON.INVALID_EMAIL' | translate) : null">
+                [error]="
+                  form.get('email')?.invalid && form.get('email')?.touched
+                    ? ('COMMON.INVALID_EMAIL' | translate)
+                    : null
+                "
+              >
               </app-input>
             </div>
             <div class="col-md-6">
-              <app-input 
+              <app-input
                 formControlName="phone"
-                [label]="'USER_DETAILS.PHONE' | translate" 
+                [label]="'USER_DETAILS.PHONE' | translate"
                 type="tel"
                 [placeholder]="'USER_DETAILS.PHONE_PLACEHOLDER' | translate"
                 [required]="true"
-                [error]="form.get('phone')?.invalid && form.get('phone')?.touched ? ('COMMON.REQUIRED' | translate) : null">
+                [error]="
+                  form.get('phone')?.invalid && form.get('phone')?.touched
+                    ? ('COMMON.REQUIRED' | translate)
+                    : null
+                "
+              >
               </app-input>
             </div>
           </div>
 
           <!-- Address -->
-          <app-input 
+          <app-input
             formControlName="address"
-            [label]="'USER_DETAILS.ADDRESS' | translate" 
+            [label]="'USER_DETAILS.ADDRESS' | translate"
             [placeholder]="'USER_DETAILS.ADDRESS_PLACEHOLDER' | translate"
             [required]="true"
-            [error]="form.get('address')?.invalid && form.get('address')?.touched ? ('COMMON.REQUIRED' | translate) : null">
+            [error]="
+              form.get('address')?.invalid && form.get('address')?.touched
+                ? ('COMMON.REQUIRED' | translate)
+                : null
+            "
+          >
           </app-input>
 
           <!-- Zip & City -->
           <div class="row">
             <div class="col-md-4">
-              <app-input 
+              <app-input
                 formControlName="zip"
-                [label]="'USER_DETAILS.ZIP' | translate" 
+                [label]="'USER_DETAILS.ZIP' | translate"
                 [placeholder]="'USER_DETAILS.ZIP_PLACEHOLDER' | translate"
                 [required]="true"
-                [error]="form.get('zip')?.invalid && form.get('zip')?.touched ? ('COMMON.REQUIRED' | translate) : null">
+                [error]="
+                  form.get('zip')?.invalid && form.get('zip')?.touched
+                    ? ('COMMON.REQUIRED' | translate)
+                    : null
+                "
+              >
               </app-input>
             </div>
             <div class="col-md-8">
-              <app-input 
+              <app-input
                 formControlName="city"
-                [label]="'USER_DETAILS.CITY' | translate" 
+                [label]="'USER_DETAILS.CITY' | translate"
                 [placeholder]="'USER_DETAILS.CITY_PLACEHOLDER' | translate"
                 [required]="true"
-                [error]="form.get('city')?.invalid && form.get('city')?.touched ? ('COMMON.REQUIRED' | translate) : null">
+                [error]="
+                  form.get('city')?.invalid && form.get('city')?.touched
+                    ? ('COMMON.REQUIRED' | translate)
+                    : null
+                "
+              >
               </app-input>
             </div>
           </div>
 
           <div class="legal-consent">
             <label>
-              <input type="checkbox" formControlName="acceptLegal">
+              <input type="checkbox" formControlName="acceptLegal" />
               <span>
-                {{ 'LEGAL.CONSENT.LABEL_PREFIX' | translate }}
-                <a href="/terms" target="_blank" rel="noopener">{{ 'LEGAL.CONSENT.TERMS_LINK' | translate }}</a>
-                {{ 'LEGAL.CONSENT.AND' | translate }}
-                <a href="/privacy" target="_blank" rel="noopener">{{ 'LEGAL.CONSENT.PRIVACY_LINK' | translate }}</a>.
+                {{ "LEGAL.CONSENT.LABEL_PREFIX" | translate }}
+                <a href="/terms" target="_blank" rel="noopener">{{
+                  "LEGAL.CONSENT.TERMS_LINK" | translate
+                }}</a>
+                {{ "LEGAL.CONSENT.AND" | translate }}
+                <a href="/privacy" target="_blank" rel="noopener">{{
+                  "LEGAL.CONSENT.PRIVACY_LINK" | translate
+                }}</a
+                >.
               </span>
             </label>
-            <div class="consent-error" *ngIf="form.get('acceptLegal')?.invalid && form.get('acceptLegal')?.touched">
-              {{ 'LEGAL.CONSENT.REQUIRED_ERROR' | translate }}
+            <div
+              class="consent-error"
+              *ngIf="
+                form.get('acceptLegal')?.invalid &&
+                form.get('acceptLegal')?.touched
+              "
+            >
+              {{ "LEGAL.CONSENT.REQUIRED_ERROR" | translate }}
             </div>
           </div>
 
           <div class="actions">
-            <app-button 
-              type="button" 
-              variant="outline" 
-              (click)="onCancel()">
-              {{ 'COMMON.BACK' | translate }}
+            <app-button type="button" variant="outline" (click)="onCancel()">
+              {{ "COMMON.BACK" | translate }}
             </app-button>
-            <app-button 
-              type="submit" 
-              [disabled]="form.invalid || submitting()">
-              {{ 'USER_DETAILS.SUBMIT' | translate }}
+            <app-button type="submit" [disabled]="form.invalid || submitting()">
+              {{ "USER_DETAILS.SUBMIT" | translate }}
             </app-button>
           </div>
-
         </form>
       </app-card>
     </div>
@@ -117,30 +156,38 @@
     <!-- Order Summary Column -->
     <div class="col-md-6">
       <app-card [title]="'USER_DETAILS.SUMMARY_TITLE' | translate">
-        
         <div class="summary-content" *ngIf="quote()">
           <div class="summary-item" *ngFor="let item of quote()!.items">
             <div class="item-info">
               <span class="item-name">{{ item.fileName }}</span>
-              <span class="item-meta">{{ item.material }} - {{ item.color || ('USER_DETAILS.DEFAULT_COLOR' | translate) }}</span>
+              <span class="item-meta"
+                >{{ item.material }} -
+                {{
+                  item.color || ("USER_DETAILS.DEFAULT_COLOR" | translate)
+                }}</span
+              >
             </div>
             <div class="item-qty">x{{ item.quantity }}</div>
             <div class="item-price">
-              <span class="item-total-price">{{ (item.unitPrice * item.quantity) | currency:'CHF' }}</span>
+              <span class="item-total-price">{{
+                item.unitPrice * item.quantity | currency: "CHF"
+              }}</span>
               <small class="item-unit-price" *ngIf="item.quantity > 1">
-                {{ item.unitPrice | currency:'CHF' }} {{ 'CHECKOUT.PER_PIECE' | translate }}
+                {{ item.unitPrice | currency: "CHF" }}
+                {{ "CHECKOUT.PER_PIECE" | translate }}
               </small>
             </div>
           </div>
 
-          <hr>
+          <hr />
 
           <div class="total-row">
-            <span>{{ 'QUOTE.TOTAL' | translate }}</span>
-            <span class="total-price">{{ quote()!.totalPrice | currency:'CHF' }}</span>
+            <span>{{ "QUOTE.TOTAL" | translate }}</span>
+            <span class="total-price">{{
+              quote()!.totalPrice | currency: "CHF"
+            }}</span>
           </div>
         </div>
-
       </app-card>
     </div>
   </div>

@@ -1,14 +1,17 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AdminOrder, AdminOrdersService } from '../services/admin-orders.service';
+import {
+  AdminOrder,
+  AdminOrdersService,
+} from '../services/admin-orders.service';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './admin-dashboard.component.html',
-  styleUrl: './admin-dashboard.component.scss'
+  styleUrl: './admin-dashboard.component.scss',
 })
 export class AdminDashboardComponent implements OnInit {
   private readonly adminOrdersService = inject(AdminOrdersService);
@@ -33,10 +36,21 @@ export class AdminDashboardComponent implements OnInit {
     'IN_PRODUCTION',
     'SHIPPED',
     'COMPLETED',
-    'CANCELLED'
+    'CANCELLED',
   ];
-  readonly paymentMethodOptions = ['TWINT', 'BANK_TRANSFER', 'CARD', 'CASH', 'OTHER'];
-  readonly paymentStatusFilterOptions = ['ALL', 'PENDING', 'REPORTED', 'COMPLETED'];
+  readonly paymentMethodOptions = [
+    'TWINT',
+    'BANK_TRANSFER',
+    'CARD',
+    'CASH',
+    'OTHER',
+  ];
+  readonly paymentStatusFilterOptions = [
+    'ALL',
+    'PENDING',
+    'REPORTED',
+    'COMPLETED',
+  ];
   readonly orderStatusFilterOptions = [
     'ALL',
     'PENDING_PAYMENT',
@@ -44,7 +58,7 @@ export class AdminDashboardComponent implements OnInit {
     'IN_PRODUCTION',
     'SHIPPED',
     'COMPLETED',
-    'CANCELLED'
+    'CANCELLED',
   ];
 
   ngOnInit(): void {
@@ -62,8 +76,12 @@ export class AdminDashboardComponent implements OnInit {
         if (!this.selectedOrder && this.filteredOrders.length > 0) {
           this.openDetails(this.filteredOrders[0].id);
         } else if (this.selectedOrder) {
-          const exists = orders.find(order => order.id === this.selectedOrder?.id);
-          const selectedIsVisible = this.filteredOrders.some(order => order.id === this.selectedOrder?.id);
+          const exists = orders.find(
+            (order) => order.id === this.selectedOrder?.id,
+          );
+          const selectedIsVisible = this.filteredOrders.some(
+            (order) => order.id === this.selectedOrder?.id,
+          );
           if (exists && selectedIsVisible) {
             this.openDetails(exists.id);
           } else if (this.filteredOrders.length > 0) {
@@ -78,7 +96,7 @@ export class AdminDashboardComponent implements OnInit {
       error: () => {
         this.loading = false;
         this.errorMessage = 'Impossibile caricare gli ordini.';
-      }
+      },
     });
   }
 
@@ -109,7 +127,7 @@ export class AdminDashboardComponent implements OnInit {
       error: () => {
         this.detailLoading = false;
         this.errorMessage = 'Impossibile caricare il dettaglio ordine.';
-      }
+      },
     });
   }
 
@@ -119,36 +137,44 @@ export class AdminDashboardComponent implements OnInit {
     }
 
     this.confirmingPayment = true;
-    this.adminOrdersService.confirmPayment(this.selectedOrder.id, this.selectedPaymentMethod).subscribe({
-      next: (updatedOrder) => {
-        this.confirmingPayment = false;
-        this.applyOrderUpdate(updatedOrder);
-      },
-      error: () => {
-        this.confirmingPayment = false;
-        this.errorMessage = 'Conferma pagamento non riuscita.';
-      }
-    });
+    this.adminOrdersService
+      .confirmPayment(this.selectedOrder.id, this.selectedPaymentMethod)
+      .subscribe({
+        next: (updatedOrder) => {
+          this.confirmingPayment = false;
+          this.applyOrderUpdate(updatedOrder);
+        },
+        error: () => {
+          this.confirmingPayment = false;
+          this.errorMessage = 'Conferma pagamento non riuscita.';
+        },
+      });
   }
 
   updateStatus(): void {
-    if (!this.selectedOrder || this.updatingStatus || !this.selectedStatus.trim()) {
+    if (
+      !this.selectedOrder ||
+      this.updatingStatus ||
+      !this.selectedStatus.trim()
+    ) {
       return;
     }
 
     this.updatingStatus = true;
-    this.adminOrdersService.updateOrderStatus(this.selectedOrder.id, {
-      status: this.selectedStatus.trim()
-    }).subscribe({
-      next: (updatedOrder) => {
-        this.updatingStatus = false;
-        this.applyOrderUpdate(updatedOrder);
-      },
-      error: () => {
-        this.updatingStatus = false;
-        this.errorMessage = 'Aggiornamento stato ordine non riuscito.';
-      }
-    });
+    this.adminOrdersService
+      .updateOrderStatus(this.selectedOrder.id, {
+        status: this.selectedStatus.trim(),
+      })
+      .subscribe({
+        next: (updatedOrder) => {
+          this.updatingStatus = false;
+          this.applyOrderUpdate(updatedOrder);
+        },
+        error: () => {
+          this.updatingStatus = false;
+          this.errorMessage = 'Aggiornamento stato ordine non riuscito.';
+        },
+      });
   }
 
   downloadItemFile(itemId: string, filename: string): void {
@@ -156,14 +182,16 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
 
-    this.adminOrdersService.downloadOrderItemFile(this.selectedOrder.id, itemId).subscribe({
-      next: (blob) => {
-        this.downloadBlob(blob, filename || `order-item-${itemId}`);
-      },
-      error: () => {
-        this.errorMessage = 'Download file non riuscito.';
-      }
-    });
+    this.adminOrdersService
+      .downloadOrderItemFile(this.selectedOrder.id, itemId)
+      .subscribe({
+        next: (blob) => {
+          this.downloadBlob(blob, filename || `order-item-${itemId}`);
+        },
+        error: () => {
+          this.errorMessage = 'Download file non riuscito.';
+        },
+      });
   }
 
   downloadConfirmation(): void {
@@ -171,14 +199,19 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
 
-    this.adminOrdersService.downloadOrderConfirmation(this.selectedOrder.id).subscribe({
-      next: (blob) => {
-        this.downloadBlob(blob, `conferma-${this.selectedOrder?.orderNumber || this.selectedOrder?.id}.pdf`);
-      },
-      error: () => {
-        this.errorMessage = 'Download conferma ordine non riuscito.';
-      }
-    });
+    this.adminOrdersService
+      .downloadOrderConfirmation(this.selectedOrder.id)
+      .subscribe({
+        next: (blob) => {
+          this.downloadBlob(
+            blob,
+            `conferma-${this.selectedOrder?.orderNumber || this.selectedOrder?.id}.pdf`,
+          );
+        },
+        error: () => {
+          this.errorMessage = 'Download conferma ordine non riuscito.';
+        },
+      });
   }
 
   downloadInvoice(): void {
@@ -186,14 +219,19 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
 
-    this.adminOrdersService.downloadOrderInvoice(this.selectedOrder.id).subscribe({
-      next: (blob) => {
-        this.downloadBlob(blob, `fattura-${this.selectedOrder?.orderNumber || this.selectedOrder?.id}.pdf`);
-      },
-      error: () => {
-        this.errorMessage = 'Download fattura non riuscito.';
-      }
-    });
+    this.adminOrdersService
+      .downloadOrderInvoice(this.selectedOrder.id)
+      .subscribe({
+        next: (blob) => {
+          this.downloadBlob(
+            blob,
+            `fattura-${this.selectedOrder?.orderNumber || this.selectedOrder?.id}.pdf`,
+          );
+        },
+        error: () => {
+          this.errorMessage = 'Download fattura non riuscito.';
+        },
+      });
   }
 
   onStatusChange(event: Event): void {
@@ -228,7 +266,10 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   isHexColor(value?: string): boolean {
-    return typeof value === 'string' && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value);
+    return (
+      typeof value === 'string' &&
+      /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value)
+    );
   }
 
   isSelected(orderId: string): boolean {
@@ -236,11 +277,14 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   private applyOrderUpdate(updatedOrder: AdminOrder): void {
-    this.orders = this.orders.map((order) => order.id === updatedOrder.id ? updatedOrder : order);
+    this.orders = this.orders.map((order) =>
+      order.id === updatedOrder.id ? updatedOrder : order,
+    );
     this.applyListFiltersAndSelection();
     this.selectedOrder = updatedOrder;
     this.selectedStatus = updatedOrder.status;
-    this.selectedPaymentMethod = updatedOrder.paymentMethod || this.selectedPaymentMethod;
+    this.selectedPaymentMethod =
+      updatedOrder.paymentMethod || this.selectedPaymentMethod;
   }
 
   private applyListFiltersAndSelection(): void {
@@ -252,7 +296,10 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
 
-    if (!this.selectedOrder || !this.filteredOrders.some(order => order.id === this.selectedOrder?.id)) {
+    if (
+      !this.selectedOrder ||
+      !this.filteredOrders.some((order) => order.id === this.selectedOrder?.id)
+    ) {
       this.openDetails(this.filteredOrders[0].id);
     }
   }
@@ -265,9 +312,14 @@ export class AdminDashboardComponent implements OnInit {
       const paymentStatus = (order.paymentStatus || 'PENDING').toUpperCase();
       const orderStatus = (order.status || '').toUpperCase();
 
-      const matchesSearch = !term || fullUuid.includes(term) || shortUuid.includes(term);
-      const matchesPayment = this.paymentStatusFilter === 'ALL' || paymentStatus === this.paymentStatusFilter;
-      const matchesOrderStatus = this.orderStatusFilter === 'ALL' || orderStatus === this.orderStatusFilter;
+      const matchesSearch =
+        !term || fullUuid.includes(term) || shortUuid.includes(term);
+      const matchesPayment =
+        this.paymentStatusFilter === 'ALL' ||
+        paymentStatus === this.paymentStatusFilter;
+      const matchesOrderStatus =
+        this.orderStatusFilter === 'ALL' ||
+        orderStatus === this.orderStatusFilter;
 
       return matchesSearch && matchesPayment && matchesOrderStatus;
     });

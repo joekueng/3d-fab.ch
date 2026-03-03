@@ -1,7 +1,8 @@
-<button 
-  [type]="type()" 
+<button
+  [type]="type()"
   [class]="'btn btn-' + variant() + ' ' + (fullWidth() ? 'w-full' : '')"
   [disabled]="disabled()"
-  (click)="handleClick($event)">
+  (click)="handleClick($event)"
+>
   <ng-content></ng-content>
 </button>

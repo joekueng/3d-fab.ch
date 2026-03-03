@@ -1,71 +1,110 @@
 <div class="container hero">
   <h1>
-    {{ 'TRACKING.TITLE' | translate }}
+    {{ "TRACKING.TITLE" | translate }}
     <ng-container *ngIf="order()">
-      <br/><span class="order-id-title">#{{ getDisplayOrderNumber(order()) }}</span>
+      <br /><span class="order-id-title"
+        >#{{ getDisplayOrderNumber(order()) }}</span
+      >
     </ng-container>
   </h1>
-  <p class="subtitle">{{ 'TRACKING.SUBTITLE' | translate }}</p>
+  <p class="subtitle">{{ "TRACKING.SUBTITLE" | translate }}</p>
 </div>
 
 <div class="container">
   <ng-container *ngIf="order() as o">
     <div class="status-timeline mb-6">
-       <div class="timeline-step"
-            [class.active]="o.status === 'PENDING_PAYMENT' && o.paymentStatus !== 'REPORTED'"
-            [class.completed]="o.paymentStatus === 'REPORTED' || o.status !== 'PENDING_PAYMENT'">
-          <div class="circle">1</div>
-          <div class="label">{{ 'TRACKING.STEP_PENDING' | translate }}</div>
-       </div>
-       <div class="timeline-step"
-            [class.active]="o.paymentStatus === 'REPORTED' && o.status === 'PENDING_PAYMENT'"
-            [class.completed]="o.status === 'PAID' || o.status === 'IN_PRODUCTION' || o.status === 'SHIPPED' || o.status === 'COMPLETED'">
-          <div class="circle">2</div>
-          <div class="label">{{ 'TRACKING.STEP_REPORTED' | translate }}</div>
-       </div>
-       <div class="timeline-step"
-            [class.active]="o.status === 'PAID' || o.status === 'IN_PRODUCTION'"
-            [class.completed]="o.status === 'SHIPPED' || o.status === 'COMPLETED'">
-          <div class="circle">3</div>
-          <div class="label">{{ 'TRACKING.STEP_PRODUCTION' | translate }}</div>
-       </div>
-       <div class="timeline-step"
-            [class.active]="o.status === 'SHIPPED'"
-            [class.completed]="o.status === 'COMPLETED'">
-          <div class="circle">4</div>
-          <div class="label">{{ 'TRACKING.STEP_SHIPPED' | translate }}</div>
-       </div>
+      <div
+        class="timeline-step"
+        [class.active]="
+          o.status === 'PENDING_PAYMENT' && o.paymentStatus !== 'REPORTED'
+        "
+        [class.completed]="
+          o.paymentStatus === 'REPORTED' || o.status !== 'PENDING_PAYMENT'
+        "
+      >
+        <div class="circle">1</div>
+        <div class="label">{{ "TRACKING.STEP_PENDING" | translate }}</div>
+      </div>
+      <div
+        class="timeline-step"
+        [class.active]="
+          o.paymentStatus === 'REPORTED' && o.status === 'PENDING_PAYMENT'
+        "
+        [class.completed]="
+          o.status === 'PAID' ||
+          o.status === 'IN_PRODUCTION' ||
+          o.status === 'SHIPPED' ||
+          o.status === 'COMPLETED'
+        "
+      >
+        <div class="circle">2</div>
+        <div class="label">{{ "TRACKING.STEP_REPORTED" | translate }}</div>
+      </div>
+      <div
+        class="timeline-step"
+        [class.active]="o.status === 'PAID' || o.status === 'IN_PRODUCTION'"
+        [class.completed]="o.status === 'SHIPPED' || o.status === 'COMPLETED'"
+      >
+        <div class="circle">3</div>
+        <div class="label">{{ "TRACKING.STEP_PRODUCTION" | translate }}</div>
+      </div>
+      <div
+        class="timeline-step"
+        [class.active]="o.status === 'SHIPPED'"
+        [class.completed]="o.status === 'COMPLETED'"
+      >
+        <div class="circle">4</div>
+        <div class="label">{{ "TRACKING.STEP_SHIPPED" | translate }}</div>
+      </div>
     </div>
 
     <ng-container *ngIf="o.status === 'PENDING_PAYMENT'">
-      <app-card class="mb-6 status-reported-card" *ngIf="o.paymentStatus === 'REPORTED'">
-          <div class="status-content text-center">
-            <h3>{{ 'PAYMENT.STATUS_REPORTED_TITLE' | translate }}</h3>
-            <p>{{ 'PAYMENT.STATUS_REPORTED_DESC' | translate }}</p>
-          </div>
+      <app-card
+        class="mb-6 status-reported-card"
+        *ngIf="o.paymentStatus === 'REPORTED'"
+      >
+        <div class="status-content text-center">
+          <h3>{{ "PAYMENT.STATUS_REPORTED_TITLE" | translate }}</h3>
+          <p>{{ "PAYMENT.STATUS_REPORTED_DESC" | translate }}</p>
+        </div>
       </app-card>
 
       <div class="payment-layout">
         <div class="payment-main">
           <app-card class="mb-6">
             <div class="card-header-simple">
-              <h3>{{ 'PAYMENT.METHOD' | translate }}</h3>
+              <h3>{{ "PAYMENT.METHOD" | translate }}</h3>
             </div>
 
             <div class="payment-selection">
               <div class="methods-grid">
-                <div class="type-option" [class.selected]="selectedPaymentMethod === 'twint'" (click)="selectPayment('twint')">
-                  <span class="method-name">{{ 'PAYMENT.METHOD_TWINT' | translate }}</span>
+                <div
+                  class="type-option"
+                  [class.selected]="selectedPaymentMethod === 'twint'"
+                  (click)="selectPayment('twint')"
+                >
+                  <span class="method-name">{{
+                    "PAYMENT.METHOD_TWINT" | translate
+                  }}</span>
                 </div>
-                <div class="type-option" [class.selected]="selectedPaymentMethod === 'bill'" (click)="selectPayment('bill')">
-                  <span class="method-name">{{ 'PAYMENT.METHOD_BANK' | translate }}</span>
+                <div
+                  class="type-option"
+                  [class.selected]="selectedPaymentMethod === 'bill'"
+                  (click)="selectPayment('bill')"
+                >
+                  <span class="method-name">{{
+                    "PAYMENT.METHOD_BANK" | translate
+                  }}</span>
                 </div>
               </div>
             </div>
 
-            <div class="payment-details fade-in text-center" *ngIf="selectedPaymentMethod === 'twint'">
+            <div
+              class="payment-details fade-in text-center"
+              *ngIf="selectedPaymentMethod === 'twint'"
+            >
               <div class="details-header">
-                <h4>{{ 'PAYMENT.TWINT_TITLE' | translate }}</h4>
+                <h4>{{ "PAYMENT.TWINT_TITLE" | translate }}</h4>
               </div>
               <div class="qr-placeholder">
                 <img
@@ -73,46 +112,75 @@
                   class="twint-qr"
                   [src]="getTwintQrUrl()"
                   (error)="onTwintQrError()"
-                  [attr.alt]="'PAYMENT.TWINT_QR_ALT' | translate" />
-                <p>{{ 'PAYMENT.TWINT_DESC' | translate }}</p>
-                <p class="billing-hint">{{ 'PAYMENT.BILLING_INFO_HINT' | translate }}</p>
+                  [attr.alt]="'PAYMENT.TWINT_QR_ALT' | translate"
+                />
+                <p>{{ "PAYMENT.TWINT_DESC" | translate }}</p>
+                <p class="billing-hint">
+                  {{ "PAYMENT.BILLING_INFO_HINT" | translate }}
+                </p>
                 <div class="twint-mobile-action twint-button-container">
-                  <button style="width: auto; height: 58px;
-border-radius: 6px;
-display: flex;
-justify-content: center;
-cursor: pointer;
-background-color: transparent;
-border: none;
-align-items: center;" (click)="openTwintPayment()">
+                  <button
+                    style="
+                      width: auto;
+                      height: 58px;
+                      border-radius: 6px;
+                      display: flex;
+                      justify-content: center;
+                      cursor: pointer;
+                      background-color: transparent;
+                      border: none;
+                      align-items: center;
+                    "
+                    (click)="openTwintPayment()"
+                  >
                     <img
                       style="width: auto; height: 58px"
                       [attr.alt]="'PAYMENT.TWINT_BUTTON_ALT' | translate"
-                      [src]="getTwintButtonImageUrl()"/>
+                      [src]="getTwintButtonImageUrl()"
+                    />
                   </button>
                 </div>
-                <p class="amount">{{ 'PAYMENT.TOTAL' | translate }}: {{ o.totalChf | currency:'CHF' }}</p>
+                <p class="amount">
+                  {{ "PAYMENT.TOTAL" | translate }}:
+                  {{ o.totalChf | currency: "CHF" }}
+                </p>
               </div>
             </div>
 
-            <div class="payment-details fade-in text-center" *ngIf="selectedPaymentMethod === 'bill'">
+            <div
+              class="payment-details fade-in text-center"
+              *ngIf="selectedPaymentMethod === 'bill'"
+            >
               <div class="details-header">
-                <h4>{{ 'PAYMENT.BANK_TITLE' | translate }}</h4>
+                <h4>{{ "PAYMENT.BANK_TITLE" | translate }}</h4>
               </div>
               <div class="bank-details">
-                <p class="billing-hint">{{ 'PAYMENT.BILLING_INFO_HINT' | translate }}</p>
-                <br>
+                <p class="billing-hint">
+                  {{ "PAYMENT.BILLING_INFO_HINT" | translate }}
+                </p>
+                <br />
                 <div class="qr-bill-actions">
                   <app-button (click)="downloadQrInvoice()">
-                    {{ 'PAYMENT.DOWNLOAD_QR' | translate }}
+                    {{ "PAYMENT.DOWNLOAD_QR" | translate }}
                   </app-button>
                 </div>
               </div>
             </div>
 
             <div class="actions">
-              <app-button variant="outline" (click)="completeOrder()" [disabled]="!selectedPaymentMethod || o.paymentStatus === 'REPORTED'" [fullWidth]="true">
-                {{ o.paymentStatus === 'REPORTED' ? ('PAYMENT.IN_VERIFICATION' | translate) : ('PAYMENT.CONFIRM' | translate) }}
+              <app-button
+                variant="outline"
+                (click)="completeOrder()"
+                [disabled]="
+                  !selectedPaymentMethod || o.paymentStatus === 'REPORTED'
+                "
+                [fullWidth]="true"
+              >
+                {{
+                  o.paymentStatus === "REPORTED"
+                    ? ("PAYMENT.IN_VERIFICATION" | translate)
+                    : ("PAYMENT.CONFIRM" | translate)
+                }}
               </app-button>
             </div>
           </app-card>
@@ -121,29 +189,28 @@ align-items: center;" (click)="openTwintPayment()">
         <div class="payment-summary">
           <app-card class="sticky-card">
             <div class="card-header-simple">
-              <h3>{{ 'PAYMENT.SUMMARY_TITLE' | translate }}</h3>
+              <h3>{{ "PAYMENT.SUMMARY_TITLE" | translate }}</h3>
               <p class="order-id">#{{ getDisplayOrderNumber(o) }}</p>
             </div>
 
             <div class="summary-totals">
               <div class="total-row">
-                <span>{{ 'PAYMENT.SUBTOTAL' | translate }}</span>
-                <span>{{ o.subtotalChf | currency:'CHF' }}</span>
+                <span>{{ "PAYMENT.SUBTOTAL" | translate }}</span>
+                <span>{{ o.subtotalChf | currency: "CHF" }}</span>
               </div>
               <div class="total-row">
-                <span>{{ 'PAYMENT.SHIPPING' | translate }}</span>
-                <span>{{ o.shippingCostChf | currency:'CHF' }}</span>
+                <span>{{ "PAYMENT.SHIPPING" | translate }}</span>
+                <span>{{ o.shippingCostChf | currency: "CHF" }}</span>
               </div>
               <div class="total-row">
-                <span>{{ 'PAYMENT.SETUP_FEE' | translate }}</span>
-                <span>{{ o.setupCostChf | currency:'CHF' }}</span>
+                <span>{{ "PAYMENT.SETUP_FEE" | translate }}</span>
+                <span>{{ o.setupCostChf | currency: "CHF" }}</span>
               </div>
               <div class="grand-total-row">
-                <span>{{ 'PAYMENT.TOTAL' | translate }}</span>
-                <span>{{ o.totalChf | currency:'CHF' }}</span>
+                <span>{{ "PAYMENT.TOTAL" | translate }}</span>
+                <span>{{ o.totalChf | currency: "CHF" }}</span>
               </div>
             </div>
-
           </app-card>
         </div>
       </div>
@@ -152,7 +219,7 @@ align-items: center;" (click)="openTwintPayment()">
 
   <div *ngIf="loading()" class="loading-state">
     <app-card>
-      <p>{{ 'PAYMENT.LOADING' | translate }}</p>
+      <p>{{ "PAYMENT.LOADING" | translate }}</p>
     </app-card>
   </div>
 

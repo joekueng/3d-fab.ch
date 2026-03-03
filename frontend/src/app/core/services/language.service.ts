@@ -1,22 +1,33 @@
 import { Injectable, signal } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { NavigationEnd, PRIMARY_OUTLET, Router, UrlTree } from '@angular/router';
+import {
+  NavigationEnd,
+  PRIMARY_OUTLET,
+  Router,
+  UrlTree,
+} from '@angular/router';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class LanguageService {
   currentLang = signal<'it' | 'en' | 'de' | 'fr'>('it');
-  private readonly supportedLangs: Array<'it' | 'en' | 'de' | 'fr'> = ['it', 'en', 'de', 'fr'];
+  private readonly supportedLangs: Array<'it' | 'en' | 'de' | 'fr'> = [
+    'it',
+    'en',
+    'de',
+    'fr',
+  ];
 
   constructor(
     private translate: TranslateService,
-    private router: Router
+    private router: Router,
   ) {
     this.translate.addLangs(this.supportedLangs);
     this.translate.setDefaultLang('it');
-    this.translate.onLangChange.subscribe(event => {
-      const lang = typeof event.lang === 'string' ? event.lang.toLowerCase() : null;
+    this.translate.onLangChange.subscribe((event) => {
+      const lang =
+        typeof event.lang === 'string' ? event.lang.toLowerCase() : null;
       if (this.isSupportedLang(lang) && lang !== this.currentLang()) {
         this.currentLang.set(lang);
       }
@@ -27,11 +38,13 @@ export class LanguageService {
     const queryLang = this.getQueryLang(initialTree);
     const initialLang = this.isSupportedLang(initialSegments[0])
       ? initialSegments[0]
-      : (this.isSupportedLang(queryLang) ? queryLang : 'it');
+      : this.isSupportedLang(queryLang)
+        ? queryLang
+        : 'it';
     this.applyLanguage(initialLang);
     this.ensureLanguageInPath(initialTree);
 
-    this.router.events.subscribe(event => {
+    this.router.events.subscribe((event) => {
       if (!(event instanceof NavigationEnd)) {
         return;
       }
@@ -52,7 +65,10 @@ export class LanguageService {
     let targetSegments: string[];
     if (segments.length === 0) {
       targetSegments = [lang];
-    } else if (this.isSupportedLang(segments[0]) || this.looksLikeLangToken(segments[0])) {
+    } else if (
+      this.isSupportedLang(segments[0]) ||
+      this.looksLikeLangToken(segments[0])
+    ) {
       targetSegments = [lang, ...segments.slice(1)];
     } else {
       targetSegments = [lang, ...segments];
@@ -62,9 +78,10 @@ export class LanguageService {
   }
 
   selectedLang(): 'it' | 'en' | 'de' | 'fr' {
-    const activeLang = typeof this.translate.currentLang === 'string'
-      ? this.translate.currentLang.toLowerCase()
-      : null;
+    const activeLang =
+      typeof this.translate.currentLang === 'string'
+        ? this.translate.currentLang.toLowerCase()
+        : null;
     return this.isSupportedLang(activeLang) ? activeLang : this.currentLang();
   }
 
@@ -77,7 +94,9 @@ export class LanguageService {
     }
 
     const queryLang = this.getQueryLang(urlTree);
-    const activeLang = this.isSupportedLang(queryLang) ? queryLang : this.currentLang();
+    const activeLang = this.isSupportedLang(queryLang)
+      ? queryLang
+      : this.currentLang();
     if (activeLang !== this.currentLang()) {
       this.applyLanguage(activeLang);
     }
@@ -99,7 +118,7 @@ export class LanguageService {
     if (!primaryGroup) {
       return [];
     }
-    return primaryGroup.segments.map(segment => segment.path.toLowerCase());
+    return primaryGroup.segments.map((segment) => segment.path.toLowerCase());
   }
 
   private getQueryLang(urlTree: UrlTree): string | null {
@@ -107,12 +126,19 @@ export class LanguageService {
     return typeof lang === 'string' ? lang.toLowerCase() : null;
   }
 
-  private isSupportedLang(lang: string | null | undefined): lang is 'it' | 'en' | 'de' | 'fr' {
-    return typeof lang === 'string' && this.supportedLangs.includes(lang as 'it' | 'en' | 'de' | 'fr');
+  private isSupportedLang(
+    lang: string | null | undefined,
+  ): lang is 'it' | 'en' | 'de' | 'fr' {
+    return (
+      typeof lang === 'string' &&
+      this.supportedLangs.includes(lang as 'it' | 'en' | 'de' | 'fr')
+    );
   }
 
   private looksLikeLangToken(segment: string | null | undefined): boolean {
-    return typeof segment === 'string' && /^[a-z]{2}(?:-[a-z]{2})?$/i.test(segment);
+    return (
+      typeof segment === 'string' && /^[a-z]{2}(?:-[a-z]{2})?$/i.test(segment)
+    );
   }
 
   private applyLanguage(lang: 'it' | 'en' | 'de' | 'fr'): void {
@@ -123,14 +149,20 @@ export class LanguageService {
     this.currentLang.set(lang);
   }
 
-  private navigateIfChanged(currentTree: UrlTree, targetSegments: string[]): void {
+  private navigateIfChanged(
+    currentTree: UrlTree,
+    targetSegments: string[],
+  ): void {
     const { lang: _unusedLang, ...queryParams } = currentTree.queryParams;
     const targetTree = this.router.createUrlTree(['/', ...targetSegments], {
       queryParams,
-      fragment: currentTree.fragment ?? undefined
+      fragment: currentTree.fragment ?? undefined,
     });
 
-    if (this.router.serializeUrl(targetTree) === this.router.serializeUrl(currentTree)) {
+    if (
+      this.router.serializeUrl(targetTree) ===
+      this.router.serializeUrl(currentTree)
+    ) {
       return;
     }
 

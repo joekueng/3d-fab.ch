@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './app-alert.component.html',
-  styleUrl: './app-alert.component.scss'
+  styleUrl: './app-alert.component.scss',
 })
 export class AppAlertComponent {
   type = input<'info' | 'warning' | 'error' | 'success'>('info');

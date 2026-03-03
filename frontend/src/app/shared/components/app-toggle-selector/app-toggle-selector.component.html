@@ -1,8 +1,10 @@
 <div class="user-type-selector">
   @for (option of options(); track option.value) {
-    <div class="type-option" 
-         [class.selected]="selectedValue() === option.value"
-         (click)="selectOption(option.value)">
+    <div
+      class="type-option"
+      [class.selected]="selectedValue() === option.value"
+      (click)="selectOption(option.value)"
+    >
       {{ option.label | translate }}
     </div>
   }
