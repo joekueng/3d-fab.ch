@@ -285,6 +285,7 @@ insert into filament_material_type (material_code,
                                     is_technical,
                                     technical_type_label)
 values ('PLA', false, false, null),
+       ('PLA TOUGH', false, false, null),
        ('PETG', false, false, null),
        ('TPU', true, false, null),
        ('PC', false, true, 'engineering'),
@@ -355,6 +356,37 @@ on conflict (filament_material_type_id, variant_display_name) do update
         is_active       = excluded.is_active;
 
 -- Varianti base per materiali principali del calcolatore
+with mat as (select filament_material_type_id
+             from filament_material_type
+             where material_code = 'PLA TOUGH')
+insert
+into filament_variant (filament_material_type_id, variant_display_name, color_name, color_hex, finish_type, brand,
+                       is_matte, is_special, cost_chf_per_kg, stock_spools, spool_net_kg, is_active)
+select mat.filament_material_type_id,
+       'PLA Tough Nero',
+       'Nero',
+       '#1A1A1A',
+       'GLOSSY',
+       'Bambu',
+       false,
+       false,
+       18.00,
+       1.000,
+       1.000,
+       true
+from mat
+on conflict (filament_material_type_id, variant_display_name) do update
+    set color_name      = excluded.color_name,
+        color_hex       = excluded.color_hex,
+        finish_type     = excluded.finish_type,
+        brand           = excluded.brand,
+        is_matte        = excluded.is_matte,
+        is_special      = excluded.is_special,
+        cost_chf_per_kg = excluded.cost_chf_per_kg,
+        stock_spools    = excluded.stock_spools,
+        spool_net_kg    = excluded.spool_net_kg,
+        is_active       = excluded.is_active;
+
 with mat as (select filament_material_type_id
              from filament_material_type
              where material_code = 'PETG')
@@ -491,13 +523,14 @@ with p as (select printer_machine_profile_id
              and pmp.nozzle_diameter_mm = 0.40::numeric),
      m as (select filament_material_type_id, material_code
            from filament_material_type
-           where material_code in ('PLA', 'PETG', 'TPU', 'PC'))
+           where material_code in ('PLA', 'PLA TOUGH', 'PETG', 'TPU', 'PC'))
 insert
 into material_orca_profile_map (printer_machine_profile_id, filament_material_type_id, orca_filament_profile_name, is_active)
 select p.printer_machine_profile_id,
        m.filament_material_type_id,
        case m.material_code
            when 'PLA' then 'Bambu PLA Basic @BBL A1'
+           when 'PLA TOUGH' then 'Bambu PLA Tough @BBL A1'
            when 'PETG' then 'Bambu PETG Basic @BBL A1'
            when 'TPU' then 'Bambu TPU 95A @BBL A1'
            when 'PC' then 'Generic PC @BBL A1'

@@ -116,6 +116,7 @@ public class OrcaProfileResolver {
                 : "PLA";
 
         return switch (materialCode) {
+            case "PLA TOUGH" -> "Bambu PLA Tough @BBL A1";
             case "PETG" -> "Generic PETG";
             case "TPU" -> "Generic TPU";
             case "PC" -> "Generic PC";

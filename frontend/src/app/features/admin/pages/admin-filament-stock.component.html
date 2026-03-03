@@ -316,7 +316,7 @@
 <div class="dialog-backdrop" *ngIf="variantToDelete" (click)="closeDeleteVariantDialog()"></div>
 <div class="confirm-dialog" *ngIf="variantToDelete">
   <h4>Sei sicuro?</h4>
-  <p>Vuoi eliminare la variante <strong>{{ variantToDelete?.variantDisplayName }}</strong>?</p>
+  <p>Vuoi eliminare la variante <strong>{{ variantToDelete.variantDisplayName }}</strong>?</p>
   <p class="muted">L'operazione non è reversibile.</p>
   <div class="dialog-actions">
     <button type="button" class="btn-secondary" (click)="closeDeleteVariantDialog()">Annulla</button>

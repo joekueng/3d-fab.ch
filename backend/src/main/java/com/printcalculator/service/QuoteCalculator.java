@@ -21,6 +21,8 @@ import java.util.List;
 
 @Service
 public class QuoteCalculator {
+    private static final BigDecimal SETUP_FEE_DOUBLE_THRESHOLD_CHF = BigDecimal.TEN;
+    private static final BigDecimal SETUP_FEE_MULTIPLIER_BELOW_THRESHOLD = BigDecimal.valueOf(2);
 
     private final PricingPolicyRepository pricingRepo;
     private final PricingPolicyMachineHourTierRepository tierRepo;
@@ -111,6 +113,21 @@ public class QuoteCalculator {
         return rawCost.multiply(markupFactor).setScale(2, RoundingMode.HALF_UP);
     }
 
+    public BigDecimal calculateSessionSetupFee(PricingPolicy policy) {
+        if (policy == null || policy.getFixedJobFeeChf() == null) {
+            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+        }
+
+        BigDecimal baseSetupFee = policy.getFixedJobFeeChf();
+        if (baseSetupFee.compareTo(SETUP_FEE_DOUBLE_THRESHOLD_CHF) < 0) {
+            return baseSetupFee
+                    .multiply(SETUP_FEE_MULTIPLIER_BELOW_THRESHOLD)
+                    .setScale(2, RoundingMode.HALF_UP);
+        }
+
+        return baseSetupFee.setScale(2, RoundingMode.HALF_UP);
+    }
+
     private BigDecimal calculateMachineCost(PricingPolicy policy, BigDecimal hours) {
         List<PricingPolicyMachineHourTier> tiers = tierRepo.findAllByPricingPolicyOrderByTierStartHoursAsc(policy);
         if (tiers.isEmpty()) {
@@ -158,6 +175,7 @@ public class QuoteCalculator {
 
     private String detectMaterialCode(String profileName) {
         String lower = profileName.toLowerCase();
+        if (lower.contains("pla tough") || lower.contains("pla_tough")) return "PLA TOUGH";
         if (lower.contains("petg")) return "PETG";
         if (lower.contains("tpu")) return "TPU";
         if (lower.contains("abs")) return "ABS";

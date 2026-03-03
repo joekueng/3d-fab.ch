@@ -97,7 +97,7 @@ public class QuoteSessionController {
         session.setExpiresAt(OffsetDateTime.now().plusDays(30)); 
         
         var policy = pricingRepo.findFirstByIsActiveTrueOrderByValidFromDesc();
-        session.setSetupCostChf(policy != null ? policy.getFixedJobFeeChf() : BigDecimal.ZERO);
+        session.setSetupCostChf(quoteCalculator.calculateSessionSetupFee(policy));
         
         session = sessionRepo.save(session);
         return ResponseEntity.ok(session);
@@ -296,9 +296,7 @@ public class QuoteSessionController {
             return variant;
         }
 
-        String requestedMaterialCode = settings.getMaterial() != null
-                ? settings.getMaterial().trim().toUpperCase()
-                : "PLA";
+        String requestedMaterialCode = normalizeRequestedMaterialCode(settings.getMaterial());
 
         FilamentMaterialType materialType = materialRepo.findByMaterialCode(requestedMaterialCode)
                 .orElseGet(() -> materialRepo.findByMaterialCode("PLA")
@@ -314,6 +312,18 @@ public class QuoteSessionController {
 
         return variantRepo.findFirstByFilamentMaterialTypeAndIsActiveTrue(materialType)
                 .orElseThrow(() -> new RuntimeException("No active variant for material: " + requestedMaterialCode));
+    }
+
+    private String normalizeRequestedMaterialCode(String value) {
+        if (value == null || value.isBlank()) {
+            return "PLA";
+        }
+
+        return value.trim()
+                .toUpperCase(Locale.ROOT)
+                .replace('_', ' ')
+                .replace('-', ' ')
+                .replaceAll("\\s+", " ");
     }
 
     // 3. Update Line Item
