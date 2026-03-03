@@ -1,14 +1,38 @@
-name: Build, Test and Deploy
+name: Build, Test, Deploy and Analysis
 
 on:
   push:
     branches: [main, int, dev]
+  pull_request: # <--- Abilita l'esecuzione sulle Pull Request
+    branches: [main, int, dev]
+  workflow_dispatch:
 
 concurrency:
   group: print-calculator-${{ gitea.ref }}
   cancel-in-progress: true
 
 jobs:
+  # --- JOB DI ANALISI (In parallelo) ---
+  qodana:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fondamentale per Qodana per analizzare la storia
+
+      - name: 'Qodana Scan'
+        uses: JetBrains/qodana-action@v2025.3
+        env:
+          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
+        with:
+          # In Gitea, pr-mode funziona se il runner ha accesso ai dati del clone
+          pr-mode: ${{ gitea.event_name == 'pull_request' }}
+          use-caches: true
+          # Nota: Gitea ha un supporto limitato per i commenti automatici
+          # rispetto a GitHub, ma l'analisi verrà eseguita correttamente.
+          post-pr-comment: false
+          use-annotations: true
   test-backend:
     runs-on: ubuntu-latest
     steps:
