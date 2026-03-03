@@ -639,9 +639,9 @@ public class SlicerService {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setNamespaceAware(true);
         dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        disableIfSupported(dbf, "http://apache.org/xml/features/disallow-doctype-decl");
-        disableIfSupported(dbf, "http://xml.org/sax/features/external-general-entities");
-        disableIfSupported(dbf, "http://xml.org/sax/features/external-parameter-entities");
+        setFeatureIfSupported(dbf, "http://apache.org/xml/features/disallow-doctype-decl", true);
+        setFeatureIfSupported(dbf, "http://xml.org/sax/features/external-general-entities", false);
+        setFeatureIfSupported(dbf, "http://xml.org/sax/features/external-parameter-entities", false);
         dbf.setXIncludeAware(false);
         dbf.setExpandEntityReferences(false);
 
@@ -650,9 +650,9 @@ public class SlicerService {
         }
     }
 
-    private void disableIfSupported(DocumentBuilderFactory dbf, String feature) {
+    private void setFeatureIfSupported(DocumentBuilderFactory dbf, String feature, boolean enabled) {
         try {
-            dbf.setFeature(feature, false);
+            dbf.setFeature(feature, enabled);
         } catch (Exception ignored) {
             // Best-effort hardening.
         }
