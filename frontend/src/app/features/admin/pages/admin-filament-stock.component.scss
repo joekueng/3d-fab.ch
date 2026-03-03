@@ -2,7 +2,7 @@
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  padding: var(--space-6);
+  padding: clamp(12px, 2vw, 24px);
   box-shadow: var(--shadow-sm);
 }
 
@@ -205,6 +205,7 @@ select:disabled {
 .variant-head-actions {
   display: inline-flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: var(--space-2);
 }
 
@@ -346,6 +347,7 @@ button:disabled {
 .dialog-actions {
   display: flex;
   justify-content: flex-end;
+  flex-wrap: wrap;
   gap: var(--space-2);
 }
 
@@ -355,8 +357,56 @@ button:disabled {
   }
 }
 
+@media (max-width: 900px) {
+  .section-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .panel-header {
+    flex-wrap: wrap;
+  }
+
+  .material-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 760px) {
+  .section-card {
+    padding: var(--space-4);
+  }
+
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .variant-header {
+    flex-wrap: wrap;
+  }
+
+  .variant-head-main {
+    width: 100%;
+    order: 2;
+  }
+
+  .variant-head-actions {
+    width: 100%;
+    order: 3;
+  }
+
+  .expand-toggle {
+    order: 1;
+  }
+
+  .panel button,
+  .subpanel button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .section-card {
+    padding: var(--space-3);
   }
 }

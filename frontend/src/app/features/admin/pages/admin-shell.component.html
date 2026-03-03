@@ -6,12 +6,14 @@
         <p>Amministrazione operativa</p>
       </div>
 
-      <nav class="menu">
-        <a routerLink="orders" routerLinkActive="active">Ordini</a>
-        <a routerLink="filament-stock" routerLinkActive="active">Stock filamenti</a>
-        <a routerLink="contact-requests" routerLinkActive="active">Richieste contatto</a>
-        <a routerLink="sessions" routerLinkActive="active">Sessioni</a>
-      </nav>
+      <div class="menu-scroll">
+        <nav class="menu">
+          <a routerLink="orders" routerLinkActive="active">Ordini</a>
+          <a routerLink="filament-stock" routerLinkActive="active">Stock filamenti</a>
+          <a routerLink="contact-requests" routerLinkActive="active">Richieste contatto</a>
+          <a routerLink="sessions" routerLinkActive="active">Sessioni</a>
+        </nav>
+      </div>
 
       <button type="button" class="logout" (click)="logout()">Logout</button>
     </aside>

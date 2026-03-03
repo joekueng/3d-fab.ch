@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import {
   AdminContactRequest,
   AdminContactRequestAttachment,
@@ -10,19 +11,23 @@ import {
 @Component({
   selector: 'app-admin-contact-requests',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './admin-contact-requests.component.html',
   styleUrl: './admin-contact-requests.component.scss'
 })
 export class AdminContactRequestsComponent implements OnInit {
   private readonly adminOperationsService = inject(AdminOperationsService);
 
+  readonly statusOptions = ['NEW', 'PENDING', 'IN_PROGRESS', 'DONE', 'CLOSED'];
   requests: AdminContactRequest[] = [];
   selectedRequest: AdminContactRequestDetail | null = null;
   selectedRequestId: string | null = null;
   loading = false;
   detailLoading = false;
+  updatingStatus = false;
+  selectedStatus = '';
   errorMessage: string | null = null;
+  successMessage: string | null = null;
 
   ngOnInit(): void {
     this.loadRequests();
@@ -31,6 +36,7 @@ export class AdminContactRequestsComponent implements OnInit {
   loadRequests(): void {
     this.loading = true;
     this.errorMessage = null;
+    this.successMessage = null;
     this.adminOperationsService.getContactRequests().subscribe({
       next: (requests) => {
         this.requests = requests;
@@ -54,9 +60,11 @@ export class AdminContactRequestsComponent implements OnInit {
   openDetails(requestId: string): void {
     this.selectedRequestId = requestId;
     this.detailLoading = true;
+    this.errorMessage = null;
     this.adminOperationsService.getContactRequestDetail(requestId).subscribe({
       next: (detail) => {
         this.selectedRequest = detail;
+        this.selectedStatus = detail.status || '';
         this.detailLoading = false;
       },
       error: () => {
@@ -109,6 +117,37 @@ export class AdminContactRequestsComponent implements OnInit {
       return 'chip-danger';
     }
     return 'chip-light';
+  }
+
+  updateRequestStatus(): void {
+    if (!this.selectedRequest || !this.selectedRequestId || !this.selectedStatus || this.updatingStatus) {
+      return;
+    }
+
+    this.errorMessage = null;
+    this.successMessage = null;
+    this.updatingStatus = true;
+
+    this.adminOperationsService.updateContactRequestStatus(this.selectedRequestId, { status: this.selectedStatus }).subscribe({
+      next: (updated) => {
+        this.selectedRequest = updated;
+        this.selectedStatus = updated.status || this.selectedStatus;
+        this.requests = this.requests.map(request =>
+          request.id === updated.id
+            ? {
+                ...request,
+                status: updated.status
+              }
+            : request
+        );
+        this.updatingStatus = false;
+        this.successMessage = 'Stato richiesta aggiornato.';
+      },
+      error: () => {
+        this.updatingStatus = false;
+        this.errorMessage = 'Impossibile aggiornare lo stato della richiesta.';
+      }
+    });
   }
 
   private downloadBlob(blob: Blob, filename: string): void {

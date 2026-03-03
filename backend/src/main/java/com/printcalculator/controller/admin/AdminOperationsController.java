@@ -5,6 +5,7 @@ import com.printcalculator.dto.AdminContactRequestAttachmentDto;
 import com.printcalculator.dto.AdminContactRequestDetailDto;
 import com.printcalculator.dto.AdminFilamentStockDto;
 import com.printcalculator.dto.AdminQuoteSessionDto;
+import com.printcalculator.dto.AdminUpdateContactRequestStatusRequest;
 import com.printcalculator.entity.CustomQuoteRequest;
 import com.printcalculator.entity.CustomQuoteRequestAttachment;
 import com.printcalculator.entity.FilamentVariant;
@@ -28,7 +29,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -41,15 +44,18 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -60,6 +66,9 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 public class AdminOperationsController {
     private static final Logger logger = LoggerFactory.getLogger(AdminOperationsController.class);
     private static final Path CONTACT_ATTACHMENTS_ROOT = Paths.get("storage_requests").toAbsolutePath().normalize();
+    private static final Set<String> CONTACT_REQUEST_ALLOWED_STATUSES = Set.of(
+            "NEW", "PENDING", "IN_PROGRESS", "DONE", "CLOSED"
+    );
 
     private final FilamentVariantStockKgRepository filamentStockRepo;
     private final FilamentVariantRepository filamentVariantRepo;
@@ -156,22 +165,40 @@ public class AdminOperationsController {
                 .map(this::toContactRequestAttachmentDto)
                 .toList();
 
-        AdminContactRequestDetailDto dto = new AdminContactRequestDetailDto();
-        dto.setId(request.getId());
-        dto.setRequestType(request.getRequestType());
-        dto.setCustomerType(request.getCustomerType());
-        dto.setEmail(request.getEmail());
-        dto.setPhone(request.getPhone());
-        dto.setName(request.getName());
-        dto.setCompanyName(request.getCompanyName());
-        dto.setContactPerson(request.getContactPerson());
-        dto.setMessage(request.getMessage());
-        dto.setStatus(request.getStatus());
-        dto.setCreatedAt(request.getCreatedAt());
-        dto.setUpdatedAt(request.getUpdatedAt());
-        dto.setAttachments(attachments);
+        return ResponseEntity.ok(toContactRequestDetailDto(request, attachments));
+    }
 
-        return ResponseEntity.ok(dto);
+    @PatchMapping("/contact-requests/{requestId}/status")
+    @Transactional
+    public ResponseEntity<AdminContactRequestDetailDto> updateContactRequestStatus(
+            @PathVariable UUID requestId,
+            @RequestBody AdminUpdateContactRequestStatusRequest payload
+    ) {
+        CustomQuoteRequest request = customQuoteRequestRepo.findById(requestId)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Contact request not found"));
+
+        String requestedStatus = payload != null && payload.getStatus() != null
+                ? payload.getStatus().trim().toUpperCase(Locale.ROOT)
+                : "";
+
+        if (!CONTACT_REQUEST_ALLOWED_STATUSES.contains(requestedStatus)) {
+            throw new ResponseStatusException(
+                    BAD_REQUEST,
+                    "Invalid status. Allowed: " + String.join(", ", CONTACT_REQUEST_ALLOWED_STATUSES)
+            );
+        }
+
+        request.setStatus(requestedStatus);
+        request.setUpdatedAt(OffsetDateTime.now());
+        CustomQuoteRequest saved = customQuoteRequestRepo.save(request);
+
+        List<AdminContactRequestAttachmentDto> attachments = customQuoteRequestAttachmentRepo
+                .findByRequest_IdOrderByCreatedAtAsc(requestId)
+                .stream()
+                .map(this::toContactRequestAttachmentDto)
+                .toList();
+
+        return ResponseEntity.ok(toContactRequestDetailDto(saved, attachments));
     }
 
     @GetMapping("/contact-requests/{requestId}/attachments/{attachmentId}/file")
@@ -288,6 +315,27 @@ public class AdminOperationsController {
         dto.setMimeType(attachment.getMimeType());
         dto.setFileSizeBytes(attachment.getFileSizeBytes());
         dto.setCreatedAt(attachment.getCreatedAt());
+        return dto;
+    }
+
+    private AdminContactRequestDetailDto toContactRequestDetailDto(
+            CustomQuoteRequest request,
+            List<AdminContactRequestAttachmentDto> attachments
+    ) {
+        AdminContactRequestDetailDto dto = new AdminContactRequestDetailDto();
+        dto.setId(request.getId());
+        dto.setRequestType(request.getRequestType());
+        dto.setCustomerType(request.getCustomerType());
+        dto.setEmail(request.getEmail());
+        dto.setPhone(request.getPhone());
+        dto.setName(request.getName());
+        dto.setCompanyName(request.getCompanyName());
+        dto.setContactPerson(request.getContactPerson());
+        dto.setMessage(request.getMessage());
+        dto.setStatus(request.getStatus());
+        dto.setCreatedAt(request.getCreatedAt());
+        dto.setUpdatedAt(request.getUpdatedAt());
+        dto.setAttachments(attachments);
         return dto;
     }
 

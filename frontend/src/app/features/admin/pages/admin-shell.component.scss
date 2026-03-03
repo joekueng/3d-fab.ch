@@ -1,7 +1,7 @@
 .admin-container {
   margin-top: var(--space-8);
   max-width: min(1720px, 96vw);
-  padding: 0 var(--space-6);
+  padding: 0 clamp(12px, 2.2vw, 24px);
 }
 
 .admin-shell {
@@ -42,6 +42,10 @@
   gap: var(--space-2);
 }
 
+.menu-scroll {
+  min-width: 0;
+}
+
 .menu a {
   text-decoration: none;
   color: var(--color-text-muted);
@@ -51,6 +55,7 @@
   border: 1px solid var(--color-border);
   background: var(--color-bg-card);
   transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+  white-space: nowrap;
 }
 
 .menu a:hover {
@@ -87,10 +92,20 @@
   min-width: 0;
 }
 
-@media (max-width: 960px) {
+@media (max-width: 1240px) {
+  .admin-shell {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+
+  .sidebar {
+    padding: var(--space-5);
+  }
+}
+
+@media (max-width: 1360px) {
   .admin-container {
     margin-top: var(--space-6);
-    padding: 0 var(--space-4);
+    padding: 0 var(--space-3);
   }
 
   .admin-shell {
@@ -104,17 +119,39 @@
     padding: var(--space-4);
   }
 
+  .menu-scroll {
+    overflow-x: auto;
+    padding-bottom: 2px;
+    margin: 0 calc(-1 * var(--space-1));
+    padding-inline: var(--space-1);
+  }
+
   .menu {
     flex-direction: row;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    min-width: max-content;
   }
 
   .logout {
-    margin-top: var(--space-2);
-    align-self: flex-start;
+    margin-top: var(--space-1);
+    width: fit-content;
   }
 
   .content {
     padding: var(--space-4);
+  }
+}
+
+@media (max-width: 520px) {
+  .brand h1 {
+    font-size: 1.02rem;
+  }
+
+  .brand p {
+    font-size: 0.8rem;
+  }
+
+  .content {
+    padding: var(--space-3);
   }
 }

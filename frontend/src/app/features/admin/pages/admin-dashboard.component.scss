@@ -2,7 +2,7 @@
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  padding: var(--space-5);
+  padding: clamp(12px, 2vw, 20px);
   box-shadow: var(--shadow-sm);
 }
 
@@ -31,9 +31,14 @@
 
 .workspace {
   display: grid;
-  grid-template-columns: minmax(540px, 1.35fr) minmax(420px, 0.95fr);
+  grid-template-columns: minmax(0, 1.2fr) minmax(340px, 0.9fr);
   gap: var(--space-4);
   align-items: start;
+}
+
+.list-panel,
+.detail-panel {
+  min-width: 0;
 }
 
 button {
@@ -107,6 +112,7 @@ button:disabled {
 table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 760px;
 }
 
 thead {
@@ -218,7 +224,7 @@ tbody tr.no-results:hover {
 }
 
 .status-editor select {
-  min-width: 220px;
+  min-width: 210px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: var(--space-2) var(--space-3);
@@ -383,13 +389,21 @@ h4 {
   font-size: 0.88rem;
 }
 
-@media (max-width: 1060px) {
+@media (max-width: 1280px) {
   .workspace {
     grid-template-columns: 1fr;
+  }
+
+  .detail-panel {
+    min-height: unset;
   }
 }
 
 @media (max-width: 820px) {
+  .admin-dashboard {
+    padding: var(--space-4);
+  }
+
   .list-toolbar {
     grid-template-columns: 1fr;
   }
@@ -405,5 +419,44 @@ h4 {
 
   .item {
     align-items: flex-start;
+  }
+
+  .actions-block {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .status-editor {
+    width: 100%;
+  }
+
+  .status-editor select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .doc-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .items {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .admin-dashboard {
+    padding: var(--space-3);
+  }
+
+  th,
+  td {
+    padding: var(--space-2);
+    font-size: 0.88rem;
+  }
+
+  .modal-backdrop {
+    padding: var(--space-2);
   }
 }

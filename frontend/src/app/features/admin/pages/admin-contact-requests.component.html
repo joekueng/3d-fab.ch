@@ -9,6 +9,7 @@
   </header>
 
   <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+  <p class="success" *ngIf="successMessage">{{ successMessage }}</p>
 
   <div class="workspace" *ngIf="!loading; else loadingTpl">
     <section class="list-panel">
@@ -79,6 +80,24 @@
         <div class="meta-item"><dt>Azienda</dt><dd>{{ selectedRequest.companyName || '-' }}</dd></div>
         <div class="meta-item"><dt>Referente</dt><dd>{{ selectedRequest.contactPerson || '-' }}</dd></div>
       </dl>
+
+      <div class="status-editor">
+        <div class="status-editor-field">
+          <label for="contact-request-status">Stato richiesta</label>
+          <select
+            id="contact-request-status"
+            [ngModel]="selectedStatus"
+            (ngModelChange)="selectedStatus = $event">
+            <option *ngFor="let status of statusOptions" [ngValue]="status">{{ status }}</option>
+          </select>
+        </div>
+        <button
+          type="button"
+          (click)="updateRequestStatus()"
+          [disabled]="!selectedRequest || updatingStatus || !selectedStatus || selectedStatus === selectedRequest.status">
+          {{ updatingStatus ? 'Salvataggio...' : 'Aggiorna stato' }}
+        </button>
+      </div>
 
       <div class="message-box">
         <h4>Messaggio</h4>

@@ -3,7 +3,7 @@
   justify-content: center;
   align-items: center;
   min-height: 70vh;
-  padding: var(--space-8) 0;
+  padding: var(--space-8) var(--space-3);
 }
 
 .admin-login-card {
@@ -72,4 +72,19 @@ button:disabled {
 .hint {
   margin: 0;
   color: var(--color-text-muted);
+}
+
+@media (max-width: 520px) {
+  .admin-login-page {
+    min-height: 64vh;
+    padding: var(--space-5) var(--space-2);
+  }
+
+  .admin-login-card {
+    padding: var(--space-4);
+  }
+
+  h1 {
+    font-size: 1.25rem;
+  }
 }

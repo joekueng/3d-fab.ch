@@ -104,6 +104,10 @@ export interface AdminContactRequestDetail {
   attachments: AdminContactRequestAttachment[];
 }
 
+export interface AdminUpdateContactRequestStatusPayload {
+  status: string;
+}
+
 export interface AdminQuoteSession {
   id: string;
   status: string;
@@ -185,6 +189,17 @@ export class AdminOperationsService {
 
   getContactRequestDetail(requestId: string): Observable<AdminContactRequestDetail> {
     return this.http.get<AdminContactRequestDetail>(`${this.baseUrl}/contact-requests/${requestId}`, { withCredentials: true });
+  }
+
+  updateContactRequestStatus(
+    requestId: string,
+    payload: AdminUpdateContactRequestStatusPayload
+  ): Observable<AdminContactRequestDetail> {
+    return this.http.patch<AdminContactRequestDetail>(
+      `${this.baseUrl}/contact-requests/${requestId}/status`,
+      payload,
+      { withCredentials: true }
+    );
   }
 
   downloadContactRequestAttachment(requestId: string, attachmentId: string): Observable<Blob> {
