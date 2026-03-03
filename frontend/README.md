@@ -1,59 +1,53 @@
-# Frontend
+# Print Calculator Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.12.
+This is a modern Angular application designed with a Clean Architecture approach (Core, Shared, Features) and Design Tokens for easy theming.
 
-## Development server
+## Project Structure
 
-To start a local development server, run:
+- **Core**: Singleton services, global layout components (Navbar, Footer), guards.
+- **Shared**: Reusable dumb UI components (Buttons, Cards, Inputs). No business logic.
+- **Features**: Lazy-loaded modules (Calculator, Shop, About). Each contains its own pages, components, and services.
+- **Styles**: Design tokens and theming layer.
 
-```bash
-ng serve
-```
+## Getting Started
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+1. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
 
-## Code scaffolding
+2. **Run Development Server**:
+   ```bash
+   ng serve
+   ```
+   Navigate to `http://localhost:4200/`.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Theming
 
-```bash
-ng generate component component-name
-```
+The application uses CSS Variables defined in `src/styles/tokens.scss` and mapped in `src/styles/theme.scss`.
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+- **Change Colors**: Edit `src/styles/tokens.scss`.
+- **Create New Theme**:
+  1. Duplicate `src/styles/theme.scss` (e.g., `theme-dark.scss`).
+  2. Override the semantic variables (e.g., `--color-bg`, `--color-text`).
+  3. Load the new theme file or switch classes on the body tag.
 
-```bash
-ng generate --help
-```
+## Adding a New Feature
 
-## Building
+1. **Create Directory**: `src/app/features/my-feature`.
+2. **Create Routes**: Create `my-feature.routes.ts` exporting a `Routes` array.
+3. **Register Route**: Add to `src/app/app.routes.ts` using lazy loading:
+   ```typescript
+   {
+     path: 'my-feature',
+     loadChildren: () => import('./features/my-feature/my-feature.routes').then(m => m.MY_FEATURE_ROUTES)
+   }
+   ```
 
-To build the project run:
+## Internationalization (i18n)
 
-```bash
-ng build
-```
+Translations are stored in `src/assets/i18n/`.
+- `it.json` (Italian - Default)
+- `en.json` (English)
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+To add a language, create the JSON file and update `LanguageService` in `src/app/core/services/language.service.ts`.

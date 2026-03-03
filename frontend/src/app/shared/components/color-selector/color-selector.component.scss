@@ -1,0 +1,152 @@
+.color-selector-container {
+  position: relative;
+  display: inline-block;
+  // margin-left: 10px; // Handled by parent now
+}
+
+.backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 999;
+    background: transparent;
+    cursor: default;
+}
+
+.color-circle {
+  width: 20px; /* Reduced from 24px */
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #ddd;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+
+  &.trigger:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  }
+
+  &.small {
+    width: 20px;
+    height: 20px;
+    border: 1px solid #eee;
+  }
+}
+
+.color-popup {
+  position: absolute;
+  top: calc(100% + 8px); // Explicit gap
+  left: -2px; // Align left edge with slight offset
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 8px; /* Slightly tighter radius */
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 1000;
+  width: 230px; /* Increased size */
+  
+  // Little triangle arrow
+  &::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 8px; // Align arrow to left side near trigger
+    border-width: 0 6px 6px 6px;
+    border-style: solid;
+    border-color: transparent transparent white transparent;
+  }
+
+  /* Mobile Fixed Positioning */
+  @media (max-width: 768px) {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 280px; /* Provide enough width for touch targets */
+    max-width: 90vw; /* Safety constraint */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2); /* Stronger shadow for modal feel */
+
+    /* Hide arrow on mobile since it's detached from trigger */
+    &::before {
+      display: none;
+    }
+  }
+}
+
+.category {
+  margin-bottom: 12px;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.category-name {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #888;
+  margin-bottom: 6px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.colors-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columns for better alignment */
+  gap: 12px;
+}
+
+.color-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  text-align: center;
+  
+  &:hover .selection-ring {
+    transform: scale(1.1);
+  }
+  
+  &.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+    &:hover .selection-ring { transform: none; }
+  }
+}
+
+.selection-ring {
+  position: relative;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+  padding: 2px; /* Space for ring */
+  
+  &.active {
+    border-color: var(--color-brand, #facf0a);
+    box-shadow: 0 0 0 1px var(--color-brand, #facf0a);
+  }
+  
+  &.out-of-stock::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 100%;
+        height: 2px;
+        background: #cc0000;
+        transform: translate(-50%, -50%) rotate(-45deg);
+  }
+}
+
+.color-name {
+    font-size: 0.65rem;
+    color: #444;
+    line-height: 1.1;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

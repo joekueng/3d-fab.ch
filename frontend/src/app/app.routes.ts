@@ -1,13 +1,65 @@
 import { Routes } from '@angular/router';
-import { HomeComponent } from './home/home.component';
-import { BasicQuoteComponent } from './quote/basic-quote/basic-quote.component';
-import { AdvancedQuoteComponent } from './quote/advanced-quote/advanced-quote.component';
-import { ContactComponent } from './contact/contact.component';
+
+const appChildRoutes: Routes = [
+  {
+    path: '',
+    loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent)
+  },
+  {
+    path: 'calculator',
+    loadChildren: () => import('./features/calculator/calculator.routes').then(m => m.CALCULATOR_ROUTES)
+  },
+  {
+    path: 'shop',
+    loadChildren: () => import('./features/shop/shop.routes').then(m => m.SHOP_ROUTES)
+  },
+  {
+    path: 'about',
+    loadChildren: () => import('./features/about/about.routes').then(m => m.ABOUT_ROUTES)
+  },
+  {
+    path: 'contact',
+    loadChildren: () => import('./features/contact/contact.routes').then(m => m.CONTACT_ROUTES)
+  },
+  {
+    path: 'checkout',
+    loadComponent: () => import('./features/checkout/checkout.component').then(m => m.CheckoutComponent)
+  },
+  {
+    path: 'order/:orderId',
+    loadComponent: () => import('./features/order/order.component').then(m => m.OrderComponent)
+  },
+  {
+    path: 'co/:orderId',
+    loadComponent: () => import('./features/order/order.component').then(m => m.OrderComponent)
+  },
+  {
+    path: '',
+    loadChildren: () => import('./features/legal/legal.routes').then(m => m.LEGAL_ROUTES)
+  },
+  {
+    path: 'admin',
+    loadChildren: () => import('./features/admin/admin.routes').then(m => m.ADMIN_ROUTES)
+  },
+  {
+    path: '**',
+    redirectTo: ''
+  }
+];
 
 export const routes: Routes = [
-  { path: '', component: HomeComponent },
-  { path: 'quote/basic', component: BasicQuoteComponent },
-  { path: 'quote/advanced', component: AdvancedQuoteComponent },
-  { path: 'contact', component: ContactComponent },
-  { path: '**', redirectTo: '' }
+  {
+    path: ':lang',
+    loadComponent: () => import('./core/layout/layout.component').then(m => m.LayoutComponent),
+    children: appChildRoutes
+  },
+  {
+    path: '',
+    loadComponent: () => import('./core/layout/layout.component').then(m => m.LayoutComponent),
+    children: appChildRoutes
+  },
+  {
+    path: '**',
+    redirectTo: ''
+  }
 ];

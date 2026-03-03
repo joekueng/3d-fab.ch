@@ -1,0 +1,390 @@
+import { Component, input, output, signal, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { AppInputComponent } from '../../../../shared/components/app-input/app-input.component';
+import { AppSelectComponent } from '../../../../shared/components/app-select/app-select.component';
+import { AppDropzoneComponent } from '../../../../shared/components/app-dropzone/app-dropzone.component';
+import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
+import { StlViewerComponent } from '../../../../shared/components/stl-viewer/stl-viewer.component';
+import { ColorSelectorComponent } from '../../../../shared/components/color-selector/color-selector.component';
+import { QuoteRequest, QuoteEstimatorService, OptionsResponse, SimpleOption, MaterialOption, VariantOption } from '../../services/quote-estimator.service';
+import { getColorHex } from '../../../../core/constants/colors.const';
+
+interface FormItem {
+    file: File;
+    quantity: number;
+    color: string;
+    filamentVariantId?: number;
+}
+
+@Component({
+  selector: 'app-upload-form',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, AppInputComponent, AppSelectComponent, AppDropzoneComponent, AppButtonComponent, StlViewerComponent, ColorSelectorComponent],
+  templateUrl: './upload-form.component.html',
+  styleUrl: './upload-form.component.scss'
+})
+export class UploadFormComponent implements OnInit {
+  mode = input<'easy' | 'advanced'>('easy');
+  loading = input<boolean>(false);
+  uploadProgress = input<number>(0);
+  submitRequest = output<QuoteRequest>();
+
+  private estimator = inject(QuoteEstimatorService);
+  private fb = inject(FormBuilder);
+  private translate = inject(TranslateService);
+
+  form: FormGroup;
+
+  items = signal<FormItem[]>([]);
+  selectedFile = signal<File | null>(null);
+
+  // Dynamic Options
+  materials = signal<SimpleOption[]>([]);
+  qualities = signal<SimpleOption[]>([]);
+  nozzleDiameters = signal<SimpleOption[]>([]);
+  infillPatterns = signal<SimpleOption[]>([]);
+  layerHeights = signal<SimpleOption[]>([]);
+
+  // Store full material options to lookup variants/colors if needed later
+  private fullMaterialOptions: MaterialOption[] = [];
+  private isPatchingSettings = false;
+
+  // Computed variants for valid material
+  currentMaterialVariants = signal<VariantOption[]>([]);
+
+  private updateVariants() {
+      const matCode = this.form.get('material')?.value;
+      if (matCode && this.fullMaterialOptions.length > 0) {
+          const found = this.fullMaterialOptions.find(m => m.code === matCode);
+          this.currentMaterialVariants.set(found ? found.variants : []);
+          this.syncItemVariantSelections();
+      } else {
+          this.currentMaterialVariants.set([]);
+      }
+  }
+
+  acceptedFormats = '.stl,.3mf,.step,.stp';
+
+  isStepFile(file: File | null): boolean {
+      if (!file) return false;
+      const name = file.name.toLowerCase();
+      return name.endsWith('.stl');
+  }
+
+  constructor() {
+    this.form = this.fb.group({
+      itemsTouched: [false], // Hack to track touched state for custom items list
+      material: ['', Validators.required],
+      quality: ['', Validators.required],
+      items: [[]], // Track items in form for validation if needed
+      notes: [''],
+      // Advanced fields
+      infillDensity: [15, [Validators.min(0), Validators.max(100)]],
+      layerHeight: [0.2, [Validators.min(0.05), Validators.max(1.0)]],
+      nozzleDiameter: [0.4, Validators.required],
+      infillPattern: ['grid'],
+      supportEnabled: [false]
+    });
+
+    // Listen to material changes to update variants
+    this.form.get('material')?.valueChanges.subscribe(() => {
+        this.updateVariants();
+    });
+
+    this.form.get('quality')?.valueChanges.subscribe((quality) => {
+        if (this.mode() !== 'easy' || this.isPatchingSettings) return;
+        this.applyAdvancedPresetFromQuality(quality);
+    });
+  }
+
+  private applyAdvancedPresetFromQuality(quality: string | null | undefined) {
+      const normalized = (quality || 'standard').toLowerCase();
+
+      const presets: Record<string, { nozzleDiameter: number; layerHeight: number; infillDensity: number; infillPattern: string }> = {
+          standard: { nozzleDiameter: 0.4, layerHeight: 0.2, infillDensity: 15, infillPattern: 'grid' },
+          extra_fine: { nozzleDiameter: 0.4, layerHeight: 0.12, infillDensity: 20, infillPattern: 'grid' },
+          high: { nozzleDiameter: 0.4, layerHeight: 0.12, infillDensity: 20, infillPattern: 'grid' }, // Legacy alias
+          draft: { nozzleDiameter: 0.4, layerHeight: 0.24, infillDensity: 12, infillPattern: 'grid' }
+      };
+
+      const preset = presets[normalized] || presets['standard'];
+      this.form.patchValue(preset, { emitEvent: false });
+  }
+
+  ngOnInit() {
+      this.estimator.getOptions().subscribe({
+          next: (options: OptionsResponse) => {
+              this.fullMaterialOptions = options.materials;
+              this.updateVariants(); // Trigger initial update
+
+              this.materials.set(options.materials.map(m => ({ label: m.label, value: m.code })));
+              this.qualities.set(options.qualities.map(q => ({ label: q.label, value: q.id })));
+              this.infillPatterns.set(options.infillPatterns.map(p => ({ label: p.label, value: p.id })));
+              this.layerHeights.set(options.layerHeights.map(l => ({ label: l.label, value: l.value })));
+              this.nozzleDiameters.set(options.nozzleDiameters.map(n => ({ label: n.label, value: n.value })));
+
+              this.setDefaults();
+          },
+          error: (err) => {
+              console.error('Failed to load options', err);
+              // Fallback for debugging/offline dev
+              this.materials.set([{ label: this.translate.instant('CALC.FALLBACK_MATERIAL'), value: 'PLA' }]);
+              this.qualities.set([{ label: this.translate.instant('CALC.FALLBACK_QUALITY_STANDARD'), value: 'standard' }]);
+              this.nozzleDiameters.set([{ label: '0.4 mm', value: 0.4 }]);
+              this.setDefaults();
+          }
+      });
+  }
+
+  private setDefaults() {
+      // Set Defaults if available
+      if (this.materials().length > 0 && !this.form.get('material')?.value) {
+           this.form.get('material')?.setValue(this.materials()[0].value);
+      }
+      if (this.qualities().length > 0 && !this.form.get('quality')?.value) {
+          // Try to find 'standard' or use first
+          const std = this.qualities().find(q => q.value === 'standard');
+          this.form.get('quality')?.setValue(std ? std.value : this.qualities()[0].value);
+      }
+      if (this.nozzleDiameters().length > 0 && !this.form.get('nozzleDiameter')?.value) {
+           this.form.get('nozzleDiameter')?.setValue(0.4); // Prefer 0.4
+      }
+      if (this.layerHeights().length > 0 && !this.form.get('layerHeight')?.value) {
+           this.form.get('layerHeight')?.setValue(0.2); // Prefer 0.2
+      }
+      if (this.infillPatterns().length > 0 && !this.form.get('infillPattern')?.value) {
+           this.form.get('infillPattern')?.setValue(this.infillPatterns()[0].value);
+      }
+  }
+
+  onFilesDropped(newFiles: File[]) {
+    const MAX_SIZE = 200 * 1024 * 1024; // 200MB
+    const validItems: FormItem[] = [];
+    let hasError = false;
+
+    for (const file of newFiles) {
+        if (file.size > MAX_SIZE) {
+            hasError = true;
+        } else {
+            const defaultSelection = this.getDefaultVariantSelection();
+            validItems.push({
+                file,
+                quantity: 1,
+                color: defaultSelection.colorName,
+                filamentVariantId: defaultSelection.filamentVariantId
+            });
+        }
+    }
+
+    if (hasError) {
+        alert(this.translate.instant('CALC.ERR_FILE_TOO_LARGE'));
+    }
+
+    if (validItems.length > 0) {
+        this.items.update(current => [...current, ...validItems]);
+        this.form.get('itemsTouched')?.setValue(true);
+        // Auto select last added
+        this.selectedFile.set(validItems[validItems.length - 1].file);
+    }
+  }
+
+  onAdditionalFilesSelected(event: Event) {
+      const input = event.target as HTMLInputElement;
+      if (input.files && input.files.length > 0) {
+          this.onFilesDropped(Array.from(input.files));
+          // Reset input so same files can be selected again if needed
+          input.value = '';
+      }
+  }
+
+  updateItemQuantityByName(fileName: string, quantity: number) {
+      this.items.update(current => {
+          return current.map(item => {
+              if (item.file.name === fileName) {
+                  return { ...item, quantity };
+              }
+              return item;
+          });
+      });
+  }
+
+  selectFile(file: File) {
+      if (this.selectedFile() === file) {
+          // toggle off? no, keep active
+      } else {
+          this.selectedFile.set(file);
+      }
+  }
+
+  // Helper to get color of currently selected file
+  getSelectedFileColor(): string {
+      const file = this.selectedFile();
+      if (!file) return '#facf0a'; // Default
+
+      const item = this.items().find(i => i.file === file);
+      if (item) {
+          const vars = this.currentMaterialVariants();
+          if (vars && vars.length > 0) {
+              const found = item.filamentVariantId
+                  ? vars.find(v => v.id === item.filamentVariantId)
+                  : vars.find(v => v.colorName === item.color);
+              if (found) return found.hexColor;
+          }
+          return getColorHex(item.color);
+      }
+      return '#facf0a';
+  }
+
+  updateItemQuantity(index: number, event: Event) {
+      const input = event.target as HTMLInputElement;
+      let val = parseInt(input.value, 10);
+      if (isNaN(val) || val < 1) val = 1;
+
+      this.items.update(current => {
+          const updated = [...current];
+          updated[index] = { ...updated[index], quantity: val };
+          return updated;
+      });
+  }
+
+  updateItemColor(index: number, newSelection: string | { colorName: string; filamentVariantId?: number }) {
+      const colorName = typeof newSelection === 'string' ? newSelection : newSelection.colorName;
+      const filamentVariantId = typeof newSelection === 'string' ? undefined : newSelection.filamentVariantId;
+      this.items.update(current => {
+          const updated = [...current];
+          updated[index] = { ...updated[index], color: colorName, filamentVariantId };
+          return updated;
+      });
+  }
+
+  removeItem(index: number) {
+      this.items.update(current => {
+          const updated = [...current];
+          const removed = updated.splice(index, 1)[0];
+          if (this.selectedFile() === removed.file) {
+              this.selectedFile.set(null);
+          }
+          return updated;
+      });
+  }
+
+  setFiles(files: File[]) {
+      const validItems: FormItem[] = [];
+      const defaultSelection = this.getDefaultVariantSelection();
+      for (const file of files) {
+          validItems.push({
+              file,
+              quantity: 1,
+              color: defaultSelection.colorName,
+              filamentVariantId: defaultSelection.filamentVariantId
+          });
+      }
+
+      if (validItems.length > 0) {
+          this.items.set(validItems);
+          this.form.get('itemsTouched')?.setValue(true);
+          // Auto select last added
+          this.selectedFile.set(validItems[validItems.length - 1].file);
+      }
+  }
+
+  private getDefaultVariantSelection(): { colorName: string; filamentVariantId?: number } {
+      const vars = this.currentMaterialVariants();
+      if (vars && vars.length > 0) {
+          const preferred = vars.find(v => !v.isOutOfStock) || vars[0];
+          return {
+              colorName: preferred.colorName,
+              filamentVariantId: preferred.id
+          };
+      }
+      return { colorName: 'Black' };
+  }
+
+  private syncItemVariantSelections(): void {
+      const vars = this.currentMaterialVariants();
+      if (!vars || vars.length === 0) {
+          return;
+      }
+
+      const fallback = vars.find(v => !v.isOutOfStock) || vars[0];
+      this.items.update(current => current.map(item => {
+          const byId = item.filamentVariantId != null
+              ? vars.find(v => v.id === item.filamentVariantId)
+              : null;
+          const byColor = vars.find(v => v.colorName === item.color);
+          const selected = byId || byColor || fallback;
+          return {
+              ...item,
+              color: selected.colorName,
+              filamentVariantId: selected.id
+          };
+      }));
+  }
+
+  patchSettings(settings: any) {
+      if (!settings) return;
+      // settings object matches keys in our form?
+      // Session has: materialCode, etc. derived from QuoteSession entity properties
+      // We need to map them if names differ.
+
+      const patch: any = {};
+      if (settings.materialCode) patch.material = settings.materialCode;
+
+      // Heuristic for Quality if not explicitly stored as "draft/standard/high"
+      // But we stored it in session creation?
+      // QuoteSession entity does NOT store "quality" string directly, only layerHeight/infill.
+      // So we might need to deduce it or just set Custom/Advanced.
+      // But for Easy mode, we want to show "Standard" etc.
+
+      // Actually, let's look at what we have in QuoteSession.
+      // layerHeightMm, infillPercent, etc.
+      // If we are in Easy mode, we might just set the "quality" dropdown to match approx?
+      // Or if we stored "quality" in notes or separate field? We didn't.
+
+      // Let's try to reverse map or defaults.
+      if (settings.layerHeightMm) {
+          if (settings.layerHeightMm >= 0.24) patch.quality = 'draft';
+          else if (settings.layerHeightMm <= 0.12) patch.quality = 'extra_fine';
+          else patch.quality = 'standard';
+
+          patch.layerHeight = settings.layerHeightMm;
+      }
+
+      if (settings.nozzleDiameterMm) patch.nozzleDiameter = settings.nozzleDiameterMm;
+      if (settings.infillPercent) patch.infillDensity = settings.infillPercent;
+      if (settings.infillPattern) patch.infillPattern = settings.infillPattern;
+      if (settings.supportsEnabled !== undefined) patch.supportEnabled = settings.supportsEnabled;
+      if (settings.notes) patch.notes = settings.notes;
+
+      this.isPatchingSettings = true;
+      this.form.patchValue(patch, { emitEvent: false });
+      this.isPatchingSettings = false;
+  }
+
+  onSubmit() {
+    console.log('UploadFormComponent: onSubmit triggered');
+    console.log('Form Valid:', this.form.valid, 'Items:', this.items().length);
+
+    if (this.form.valid && this.items().length > 0) {
+      console.log('UploadFormComponent: Emitting submitRequest', this.form.value);
+      this.submitRequest.emit({
+        ...this.form.value,
+        items: this.items(), // Pass the items array explicitly AFTER form value to prevent overwrite
+        mode: this.mode()
+      });
+    } else {
+      console.warn('UploadFormComponent: Form Invalid or No Items');
+      console.log('Form Errors:', this.form.errors);
+      Object.keys(this.form.controls).forEach(key => {
+          const control = this.form.get(key);
+          if (control?.invalid) {
+              console.log('Invalid Control:', key, control.errors, 'Value:', control.value);
+          }
+      });
+      this.form.markAllAsTouched();
+      this.form.get('itemsTouched')?.setValue(true);
+    }
+  }
+}

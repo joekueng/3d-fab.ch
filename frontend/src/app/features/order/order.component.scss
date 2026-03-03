@@ -1,0 +1,336 @@
+.hero {
+  padding: var(--space-12) 0 var(--space-8);
+  text-align: center;
+
+  h1 {
+    font-size: 2.5rem;
+    margin-bottom: var(--space-2);
+  }
+}
+
+.subtitle {
+  font-size: 1.125rem;
+  color: var(--color-text-muted);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.payment-layout {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: var(--space-8);
+  align-items: start;
+  margin-bottom: var(--space-12);
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+  }
+}
+
+.card-header-simple {
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0;
+  }
+
+  .order-id {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    margin-top: 2px;
+  }
+}
+
+.payment-selection {
+  margin-bottom: var(--space-6);
+}
+
+.methods-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.type-option {
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: var(--color-bg-card);
+  text-align: center;
+  font-weight: 600;
+  color: var(--color-text-muted);
+
+  &:hover {
+    border-color: var(--color-brand);
+    color: var(--color-text);
+  }
+
+  &.selected {
+    border-color: var(--color-brand);
+    background-color: var(--color-neutral-100);
+    color: #000;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+}
+
+.payment-details {
+  background: var(--color-neutral-100);
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+  margin-bottom: var(--space-6);
+  border: 1px solid var(--color-border);
+
+  &.text-center {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+
+    .details-header {
+      width: 100%;
+      text-align: center;
+    }
+    
+    .qr-placeholder {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+  }
+
+  .details-header {
+    margin-bottom: var(--space-4);
+    h4 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+  }
+}
+
+
+.qr-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+
+  .twint-qr {
+    width: 240px;
+    height: 240px;
+    background-color: #fff;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-2);
+    margin-bottom: var(--space-4);
+    object-fit: contain;
+    box-shadow: 0 6px 18px rgba(44, 37, 84, 0.08);
+  }
+
+  .twint-mobile-action {
+    width: 100%;
+    max-width: 320px;
+    margin-top: var(--space-3);
+    display: flex;
+    justify-content: center;
+  }
+
+  .amount {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-top: var(--space-2);
+    color: var(--color-text);
+  }
+}
+
+.billing-hint {
+  margin-top: var(--space-3);
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+}
+
+.bank-details {
+  p {
+    margin-bottom: var(--space-2);
+    font-size: 1rem;
+    color: var(--color-text);
+  }
+}
+
+.qr-bill-actions {
+  margin-top: var(--space-4);
+}
+
+.sticky-card {
+  position: sticky;
+  top: var(--space-6);
+}
+
+.summary-totals {
+  background: var(--color-neutral-100);
+  padding: var(--space-6);
+  border-radius: var(--radius-md);
+
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--space-2);
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+  }
+
+  .grand-total-row {
+    display: flex;
+    justify-content: space-between;
+    color: var(--color-text);
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin-top: var(--space-4);
+    padding-top: var(--space-4);
+    border-top: 2px solid var(--color-border);
+  }
+}
+
+.actions {
+  margin-top: var(--space-8);
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mb-6 { margin-bottom: var(--space-6); }
+
+.error-message,
+.loading-state {
+  margin-top: var(--space-12);
+  text-align: center;
+}
+
+.status-timeline {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-8);
+  position: relative;
+  /* padding: var(--space-6); */ /* Removed if it was here to match non-card layout */
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 15px;
+    left: 12.5%;
+    right: 12.5%;
+    height: 2px;
+    background: var(--color-border);
+    z-index: 1;
+  }
+}
+
+.timeline-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  text-align: center;
+
+  .circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--color-neutral-100);
+    border: 2px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    margin-bottom: var(--space-2);
+    color: var(--color-text-muted);
+    transition: all 0.3s ease;
+  }
+
+  .label {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    font-weight: 500;
+  }
+
+  &.active {
+    .circle {
+      border-color: var(--color-brand);
+      background: var(--color-bg);
+      color: var(--color-brand);
+    }
+    .label {
+      color: var(--color-text);
+      font-weight: 600;
+    }
+  }
+
+  &.completed {
+    .circle {
+      background: var(--color-brand);
+      border-color: var(--color-brand);
+      color: white;
+    }
+    .label {
+      color: var(--color-text);
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .status-timeline {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+    
+    &::before {
+      top: 10px;
+      bottom: 10px;
+      left: 15px;
+      width: 2px;
+      height: auto;
+    }
+
+    .timeline-step {
+      flex-direction: row;
+      gap: var(--space-3);
+      
+      .circle {
+        margin-bottom: 0;
+      }
+    }
+  }
+}

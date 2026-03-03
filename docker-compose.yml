@@ -1,28 +1,27 @@
 services:
-  backend:
-    platform: linux/amd64
-    build:
-      context: ./backend
-      platforms:
-        - linux/amd64
-    container_name: print-calculator-backend
-    ports:
-      - "8000:8000"
+  db:
+    image: postgres:15-alpine
+    container_name: print-calculator-db
     environment:
-      - FILAMENT_COST_PER_KG=22.0
-      - MACHINE_COST_PER_HOUR=2.50
-      - ENERGY_COST_PER_KWH=0.30
-      - PRINTER_POWER_WATTS=150
-      - MARKUP_PERCENT=20
-      - TEMP_DIR=/app/temp
-      - PROFILES_DIR=/app/profiles
+      - POSTGRES_USER=printcalc
+      - POSTGRES_PASSWORD=printcalc_secret
+      - POSTGRES_DB=printcalc
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
 
-  frontend:
-    build: ./frontend
-    container_name: print-calculator-frontend
+  clamav:
+    platform: linux/amd64
+    image: clamav/clamav:latest
+    container_name: print-calculator-clamav
     ports:
-      - "80:80"
-    depends_on:
-      - backend
+      - "3310:3310"
+    volumes:
+      - clamav_db:/var/lib/clamav
     restart: unless-stopped
+
+volumes:
+  postgres_data:
+  clamav_db:

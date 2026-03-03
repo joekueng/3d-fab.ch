@@ -1,0 +1,176 @@
+    <main class="home-page">
+      <section class="hero">
+        <div class="container hero-grid">
+          <div class="hero-copy">
+            <p class="eyebrow">{{ 'HOME.HERO_EYEBROW' | translate }}</p>
+            <h1 class="hero-title" [innerHTML]="'HOME.HERO_TITLE' | translate"></h1>
+            <p class="hero-lead">
+              {{ 'HOME.HERO_LEAD' | translate }}
+            </p>
+            <p class="hero-subtitle">
+              {{ 'HOME.HERO_SUBTITLE' | translate }}
+            </p>
+            <div class="hero-actions">
+              <app-button variant="primary" routerLink="/calculator/basic">{{ 'HOME.BTN_CALCULATE' | translate }}</app-button>
+              <app-button variant="outline" routerLink="/shop">{{ 'HOME.BTN_SHOP' | translate }}</app-button>
+              <app-button variant="text" routerLink="/contact">{{ 'HOME.BTN_CONTACT' | translate }}</app-button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section capabilities">
+        <div class="capabilities-bg"></div>
+        <div class="container">
+          <div class="section-head">
+            <h2 class="section-title">{{ 'HOME.SEC_CAP_TITLE' | translate }}</h2>
+            <p class="section-subtitle">
+              {{ 'HOME.SEC_CAP_SUBTITLE' | translate }}
+            </p>
+          </div>
+          <div class="cap-cards">
+            <app-card>
+              <div class="card-image-placeholder">
+                <img src="assets/images/home/prototipi.jpg" alt="">
+              </div>
+              <h3>{{ 'HOME.CAP_1_TITLE' | translate }}</h3>
+              <p class="text-muted">{{ 'HOME.CAP_1_TEXT' | translate }}</p>
+            </app-card>
+            <app-card>
+              <div class="card-image-placeholder">
+                <img src="assets/images/home/original-vs-3dprinted.jpg" alt="">
+              </div>
+              <h3>{{ 'HOME.CAP_2_TITLE' | translate }}</h3>
+              <p class="text-muted">{{ 'HOME.CAP_2_TEXT' | translate }}</p>
+            </app-card>
+            <app-card>
+              <div class="card-image-placeholder">
+                <img src="assets/images/home/serie.jpg" alt="">
+              </div>
+              <h3>{{ 'HOME.CAP_3_TITLE' | translate }}</h3>
+              <p class="text-muted">{{ 'HOME.CAP_3_TEXT' | translate }}</p>
+            </app-card>
+            <app-card>
+              <div class="card-image-placeholder">
+                <img src="assets/images/home/cad.jpg" alt="">
+              </div>
+              <h3>{{ 'HOME.CAP_4_TITLE' | translate }}</h3>
+              <p class="text-muted">{{ 'HOME.CAP_4_TEXT' | translate }}</p>
+            </app-card>
+          </div>
+        </div>
+      </section>
+
+      <section class="section calculator">
+        <div class="container calculator-grid">
+          <div class="calculator-copy">
+            <h2 class="section-title">{{ 'HOME.SEC_CALC_TITLE' | translate }}</h2>
+            <p class="section-subtitle">
+              {{ 'HOME.SEC_CALC_SUBTITLE' | translate }}
+            </p>
+            <ul class="calculator-list">
+              <li>{{ 'HOME.SEC_CALC_LIST_1' | translate }}</li>
+            </ul>
+          </div>
+          <app-card class="quote-card">
+            <div class="quote-header">
+              <div>
+                <p class="quote-eyebrow">{{ 'HOME.CARD_CALC_EYEBROW' | translate }}</p>
+                <h3 class="quote-title">{{ 'HOME.CARD_CALC_TITLE' | translate }}</h3>
+              </div>
+              <span class="quote-tag">{{ 'HOME.CARD_CALC_TAG' | translate }}</span>
+            </div>
+            <ul class="quote-steps">
+              <li>{{ 'HOME.CARD_CALC_STEP_1' | translate }}</li>
+              <li>{{ 'HOME.CARD_CALC_STEP_2' | translate }}</li>
+              <li>{{ 'HOME.CARD_CALC_STEP_3' | translate }}</li>
+            </ul>
+            <div class="quote-actions">
+              <app-button variant="primary" [fullWidth]="true" routerLink="/calculator/basic">{{ 'HOME.BTN_OPEN_CALC' | translate }}</app-button>
+              <app-button variant="outline" [fullWidth]="true" routerLink="/contact">{{ 'HOME.BTN_CONTACT' | translate }}</app-button>
+            </div>
+          </app-card>
+        </div>
+      </section>
+
+      <section class="section shop">
+        <div class="container split">
+          <div class="shop-copy">
+            <h2 class="section-title">{{ 'HOME.SEC_SHOP_TITLE' | translate }}</h2>
+            <p>
+              {{ 'HOME.SEC_SHOP_TEXT' | translate }}
+            </p>
+            <ul class="shop-list">
+              <li>{{ 'HOME.SEC_SHOP_LIST_1' | translate }}</li>
+              <li>{{ 'HOME.SEC_SHOP_LIST_2' | translate }}</li>
+              <li>{{ 'HOME.SEC_SHOP_LIST_3' | translate }}</li>
+            </ul>
+            <div class="shop-actions">
+              <app-button variant="primary" routerLink="/shop">{{ 'HOME.BTN_DISCOVER' | translate }}</app-button>
+              <app-button variant="outline" routerLink="/contact">{{ 'HOME.BTN_REQ_SOLUTION' | translate }}</app-button>
+            </div>
+          </div>
+          <div class="shop-gallery" tabindex="0" [attr.aria-label]="'HOME.SHOP_GALLERY_ARIA' | translate">
+            <figure class="shop-gallery-item" *ngFor="let image of shopGalleryImages">
+              <img [src]="image.src" [alt]="image.alt | translate">
+            </figure>
+          </div>
+          <div class="shop-cards">
+            <app-card>
+              <h3>{{ 'HOME.CARD_SHOP_1_TITLE' | translate }}</h3>
+              <p class="text-muted">{{ 'HOME.CARD_SHOP_1_TEXT' | translate }}</p>
+            </app-card>
+            <app-card>
+              <h3>{{ 'HOME.CARD_SHOP_2_TITLE' | translate }}</h3>
+              <p class="text-muted">{{ 'HOME.CARD_SHOP_2_TEXT' | translate }}</p>
+            </app-card>
+            <app-card>
+              <h3>{{ 'HOME.CARD_SHOP_3_TITLE' | translate }}</h3>
+              <p class="text-muted">{{ 'HOME.CARD_SHOP_3_TEXT' | translate }}</p>
+            </app-card>
+          </div>
+        </div>
+      </section>
+
+      <section class="section about">
+        <div class="container about-grid">
+          <div class="about-copy">
+            <h2 class="section-title">{{ 'HOME.SEC_ABOUT_TITLE' | translate }}</h2>
+            <p>
+              {{ 'HOME.SEC_ABOUT_TEXT' | translate }}
+            </p>
+            <div class="about-actions">
+              <app-button variant="primary" routerLink="/about">{{ 'HOME.SEC_ABOUT_TITLE' | translate }}</app-button>
+              <app-button variant="outline" routerLink="/contact">{{ 'HOME.BTN_CONTACT' | translate }}</app-button>
+            </div>
+          </div>
+          <div class="about-media">
+            <div class="about-feature-image">
+              <img
+                class="about-feature-photo"
+                [src]="founderImages[founderImageIndex].src"
+                [alt]="founderImages[founderImageIndex].alt | translate"
+                width="1200"
+                height="900"
+              >
+              <button
+                type="button"
+                class="founder-nav founder-nav-prev"
+                (click)="prevFounderImage()"
+                [attr.aria-label]="'HOME.FOUNDER_PREV_ARIA' | translate"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                class="founder-nav founder-nav-next"
+                (click)="nextFounderImage()"
+                [attr.aria-label]="'HOME.FOUNDER_NEXT_ARIA' | translate"
+              >
+                ›
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>

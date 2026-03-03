@@ -1,0 +1,226 @@
+.section { margin-bottom: var(--space-6); }
+.upload-privacy-note {
+    margin-top: var(--space-3);
+    margin-bottom: 0;
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    text-align: left;
+}
+.grid { 
+    display: grid; 
+    grid-template-columns: 1fr; 
+    gap: var(--space-4); 
+    
+    @media(min-width: 640px) {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+.actions { margin-top: var(--space-6); }
+.error-msg { color: var(--color-danger-500); font-size: 0.875rem; margin-top: var(--space-2); text-align: center; }
+
+.viewer-wrapper { position: relative; margin-bottom: var(--space-4); }
+
+/* Grid Layout for Files */
+.items-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Force 2 columns on mobile */
+    gap: var(--space-2); /* Tighten gap for mobile */
+    margin-top: var(--space-4);
+    margin-bottom: var(--space-4);
+    
+    @media(min-width: 640px) {
+        gap: var(--space-3);
+    }
+}
+
+.file-card {
+    padding: var(--space-2); /* Reduced from space-3 */
+    background: var(--color-neutral-100);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    transition: all 0.2s;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 4px; /* Reduced gap */
+    position: relative; /* For absolute positioning of remove btn */
+    min-width: 0; /* Allow flex item to shrink below content size if needed */
+    
+    &:hover { border-color: var(--color-neutral-300); }
+    &.active {
+         border-color: var(--color-brand);
+         background: rgba(250, 207, 10, 0.05);
+         box-shadow: 0 0 0 1px var(--color-brand);
+    }
+}
+
+.card-header {
+    overflow: hidden;
+    padding-right: 25px; /* Adjusted */
+    margin-bottom: 2px;
+}
+
+.file-name { 
+    font-weight: 500; 
+    font-size: 0.8rem; /* Smaller font */
+    color: var(--color-text);
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card-body {
+    display: flex;
+    align-items: center;
+    padding-top: 0;
+}
+
+.card-controls {
+    display: flex;
+    align-items: flex-end; /* Align bottom of input and color circle */
+    gap: 16px; /* Space between Qty and Color */
+    width: 100%;
+}
+
+.qty-group, .color-group {
+    display: flex;
+    flex-direction: column; /* Stack label and input */
+    align-items: flex-start;
+    gap: 0px; 
+    
+    label { 
+        font-size: 0.6rem; 
+        color: var(--color-text-muted); 
+        text-transform: uppercase; 
+        letter-spacing: 0.5px; 
+        font-weight: 600;
+        margin-bottom: 2px;
+    }
+}
+
+.color-group {
+    align-items: flex-start; /* Align label left */
+    /* margin-right removed */
+    
+    /* Override margin in selector for this context */
+    ::ng-deep .color-selector-container {
+        margin-left: 0;
+    }
+}
+
+.qty-input {
+    width: 36px; /* Slightly smaller */
+    padding: 1px 2px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    text-align: center;
+    font-size: 0.85rem;
+    background: white;
+    height: 24px; /* Explicit height to match color circle somewhat */
+    &:focus { outline: none; border-color: var(--color-brand); }
+}
+
+.btn-remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: none;
+    background: transparent;
+    color: var(--color-text-muted);
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-size: 0.8rem;
+    
+    &:hover { 
+        background: var(--color-danger-100); 
+        color: var(--color-danger-500);
+    }
+}
+
+/* Prominent Add Button */
+.add-more-container {
+    margin-top: var(--space-2);
+}
+
+.btn-add-more {
+    width: 100%;
+    padding: var(--space-3);
+    background: var(--color-neutral-800);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    
+    &:hover {
+        background: var(--color-neutral-900);
+        transform: translateY(-1px);
+    }
+    &:active { transform: translateY(0); }
+}
+
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    height: 100%;
+    padding-top: var(--space-4);
+    
+    input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        accent-color: var(--color-brand);
+    }
+    label {
+        font-weight: 500;
+        cursor: pointer;
+    }
+}
+
+/* Progress Bar */
+.progress-container {
+    margin-bottom: var(--space-3);
+    text-align: center;
+    width: 100%;
+}
+.progress-bar {
+    height: 4px;
+    background: var(--color-border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 0;
+    position: relative;
+    width: 100%;
+}
+.progress-fill {
+    height: 100%;
+    background: var(--color-brand);
+}
+
+.step-warning {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 300px;
+    background: var(--color-neutral-100);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    text-align: center;
+    color: var(--color-text-muted);
+    font-weight: 500;
+}

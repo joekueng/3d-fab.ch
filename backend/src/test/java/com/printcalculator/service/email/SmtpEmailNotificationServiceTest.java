@@ -1,0 +1,83 @@
+package com.printcalculator.service.email;
+
+import jakarta.mail.internet.MimeMessage;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class SmtpEmailNotificationServiceTest {
+
+    @Mock
+    private JavaMailSender emailSender;
+
+    @Mock
+    private TemplateEngine templateEngine;
+
+    @Mock
+    private MimeMessage mimeMessage;
+
+    @InjectMocks
+    private SmtpEmailNotificationService emailNotificationService;
+
+    @BeforeEach
+    void setUp() {
+        ReflectionTestUtils.setField(emailNotificationService, "fromAddress", "noreply@test.com");
+        ReflectionTestUtils.setField(emailNotificationService, "mailEnabled", true);
+    }
+
+    @Test
+    void sendEmail_Success() {
+        // Arrange
+        String to = "user@test.com";
+        String subject = "Test Subject";
+        String templateName = "test-template";
+        Map<String, Object> contextData = new HashMap<>();
+        contextData.put("key", "value");
+
+        when(templateEngine.process(eq("email/" + templateName), any(Context.class))).thenReturn("<html>Test</html>");
+        when(emailSender.createMimeMessage()).thenReturn(mimeMessage);
+
+        // Act
+        emailNotificationService.sendEmail(to, subject, templateName, contextData);
+
+        // Assert
+        verify(templateEngine, times(1)).process(eq("email/" + templateName), any(Context.class));
+        verify(emailSender, times(1)).createMimeMessage();
+        verify(emailSender, times(1)).send(mimeMessage);
+    }
+
+    @Test
+    void sendEmail_Exception_ShouldNotThrow() {
+        // Arrange
+        String to = "user@test.com";
+        String subject = "Test Subject";
+        String templateName = "test-template";
+        Map<String, Object> contextData = new HashMap<>();
+
+        when(templateEngine.process(eq("email/" + templateName), any(Context.class))).thenThrow(new RuntimeException("Template error"));
+
+        // Act & Assert
+        // We expect the exception to be caught and logged, not propagated
+        assertDoesNotThrow(() -> emailNotificationService.sendEmail(to, subject, templateName, contextData));
+        
+        verify(emailSender, never()).createMimeMessage();
+        verify(emailSender, never()).send(any(MimeMessage.class));
+    }
+}

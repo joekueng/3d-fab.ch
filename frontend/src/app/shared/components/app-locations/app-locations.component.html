@@ -1,0 +1,50 @@
+<section class="locations-section">
+  <div class="container">
+    <div class="section-header">
+      <h2>{{ 'LOCATIONS.TITLE' | translate }}</h2>
+      <p class="subtitle">{{ 'LOCATIONS.SUBTITLE' | translate }}</p>
+    </div>
+
+    <div class="locations-grid">
+      <div class="locations-controls">
+        <div class="location-tabs">
+          <app-toggle-selector
+            [options]="locationOptions"
+            [selectedValue]="selectedLocation"
+            (selectionChange)="selectLocation($event)">
+          </app-toggle-selector>
+        </div>
+
+        <div class="location-details">
+          <div *ngIf="selectedLocation === 'ticino'" class="details-card">
+            <h3>{{ 'LOCATIONS.BIASCA' | translate }}</h3>
+            <p>{{ 'LOCATIONS.ADDRESS_TICINO' | translate }}</p>
+          </div>
+          <div *ngIf="selectedLocation === 'bienne'" class="details-card">
+            <h3>{{ 'LOCATIONS.BIENNE' | translate }}</h3>
+            <p>{{ 'LOCATIONS.ADDRESS_BIENNE' | translate }}</p>
+          </div>
+
+          <div class="actions">
+            <a routerLink="/contact" class="contact-btn">
+              {{ 'LOCATIONS.CONTACT_US' | translate }}
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="map-container">
+        <iframe
+          *ngIf="selectedLocation === 'ticino'"
+          src="https://www.google.com/maps?q=Via%20G.%20Pioda%2029a%2C%20Biasca&output=embed"
+          width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+        <iframe
+          *ngIf="selectedLocation === 'bienne'"
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2729.0438104193587!2d7.240752176735282!3d47.126435979155985!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x478e1eb84efba295%3A0x95924d5ba8b6f3b0!2sLyss-Strasse%2071%2C%202560%20Nidau%2C%20Switzerland!5e0!3m2!1sen!2sch!4v1700000000000!5m2!1sen!2sch"
+          width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+      </div>
+    </div>
+  </div>
+</section>

@@ -35,3 +35,17 @@ replay_pid*
 .classpath
 .settings/
 .DS_Store
+
+# Build Results
+target/
+build/
+.gradle/
+.mvn/
+
+./storage_orders
+./storage_quotes
+storage_orders
+storage_quotes
+
+# Qodana local reports/artifacts
+backend/.qodana/

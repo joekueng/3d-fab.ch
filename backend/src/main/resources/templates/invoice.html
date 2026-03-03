@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <style>
+        @page invoice {
+            size: A4;
+            margin: 12mm 12mm 12mm 12mm;
+        }
+
+        @page qrpage {
+            size: A4;
+            margin: 0;
+        }
+
+        *, *:before, *:after {
+            box-sizing: border-box;
+        }
+
+        body {
+            page: invoice;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 8.5pt;
+            margin: 0;
+            padding: 0;
+            background: #fff;
+            color: #000;
+            line-height: 1.35;
+        }
+
+        .invoice-page {
+            page: invoice;
+            width: 100%;
+            page-break-after: always;
+        }
+
+        /* Top Header Layout */
+        .header-layout {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            margin-bottom: 25mm;
+        }
+
+        .header-layout td {
+            vertical-align: top;
+            padding: 0;
+        }
+
+        .logo-block {
+            width: 33%;
+            font-size: 24pt;
+            font-weight: bold;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-3d {
+            color: #111827; /* Dark black/blue */
+        }
+
+        .logo-fab {
+            color: #eab308; /* Yellow/Gold */
+        }
+
+        .seller-block {
+            width: 33%;
+            font-size: 9pt;
+            line-height: 1.4;
+        }
+
+        .website-block {
+            width: 33%;
+            text-align: right;
+            font-size: 9pt;
+        }
+
+        /* Document Title */
+        .doc-title {
+            font-size: 20pt;
+            font-weight: normal;
+            margin: 0 0 10mm 0;
+            letter-spacing: -0.5px;
+        }
+
+        /* Meta and Customer Details Layout */
+        .details-layout {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            margin-bottom: 15mm;
+        }
+
+        .details-layout td {
+            vertical-align: top;
+            padding: 0;
+        }
+
+        .meta-container {
+            width: 50%;
+        }
+
+        .customer-container {
+            width: 50%;
+            font-size: 10pt;
+            line-height: 1.5;
+        }
+
+        .meta-table {
+            border-collapse: collapse;
+            font-size: 8.5pt;
+        }
+
+        .meta-table td {
+            padding: 1.5mm 0;
+            vertical-align: top;
+        }
+
+        .meta-label {
+            width: 45mm;
+            padding-right: 2mm;
+        }
+
+        .meta-value {
+            /* allow wrapping just in case */
+        }
+        
+        /* Line Items Table */
+        .line-items {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            margin-top: 5mm;
+            font-size: 8.5pt;
+        }
+
+        .line-items th,
+        .line-items td {
+            padding: 1.5mm 0;
+            vertical-align: top;
+        }
+
+        .line-items th {
+            text-align: left;
+            font-weight: normal;
+            border-bottom: 1pt solid #000;
+        }
+
+        .line-items tbody td {
+            border-bottom: 0.5pt solid #e0e0e0;
+        }
+
+        .line-items tbody tr:last-child td {
+            border-bottom: 1pt solid #000;
+        }
+
+        .line-items th.center,
+        .line-items td.center {
+            text-align: center;
+        }
+
+        .line-items th.right,
+        .line-items td.right {
+            text-align: right;
+        }
+
+        .col-desc { width: 45%; }
+        .col-qty { width: 10%; }
+        .col-price { width: 22%; }
+        .col-total { width: 23%; }
+        
+        .item-desc {
+            padding-right: 4mm;
+        }
+
+        /* Totals Block */
+        .totals-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            margin-top: 0;
+            font-size: 8.5pt;
+        }
+
+        .totals-table td {
+            padding: 1.5mm 0;
+            border-bottom: 0.5pt solid #000;
+        }
+
+        .totals-label {
+            text-align: left;
+        }
+
+        .totals-value {
+            text-align: right;
+            width: 30%;
+        }
+        
+        .totals-table tr.no-border td {
+            border-bottom: none;
+        }
+
+        .summary-notes {
+            margin-top: 4mm;
+            padding-bottom: 4mm;
+            border-bottom: 1pt solid #000;
+        }
+
+        /* Footer Notes Layout */
+        .footer-layout {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            margin-top: 15mm;
+            font-size: 8.5pt;
+        }
+
+        .footer-layout td {
+            vertical-align: top;
+            padding: 0 0 3mm 0;
+        }
+
+        .footer-label {
+            width: 25%;
+            font-weight: normal;
+        }
+
+        .footer-text {
+            width: 75%;
+            line-height: 1.4;
+        }
+
+        /* QR Page */
+        .qr-only-page {
+            page: qrpage;
+            width: 100%;
+            height: 297mm;
+            background: #fff;
+            page-break-inside: avoid;
+        }
+
+        .qr-only-layout {
+            width: 100%;
+            height: 297mm;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .qr-only-layout td {
+            vertical-align: bottom;
+            /* Keep the QR slip at page bottom, but with a safer print margin. */
+            padding: 0 0 1mm 0;
+        }
+
+        .qr-bill-bottom {
+            width: 100%;
+            height: 105mm;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .qr-bill-bottom svg {
+            width: 100% !important;
+            height: 105mm !important;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<div class="invoice-page">
+
+    <!-- Header -->
+    <table class="header-layout">
+        <tr>
+            <td class="logo-block">
+                <span class="logo-3d">3D</span> <span class="logo-fab">fab</span>
+                <div style="font-size: 14pt; font-weight: normal; margin-top: 4px; color: #111827;">Küng Caletti</div>
+            </td>
+            <td class="seller-block">
+                <div th:text="${sellerDisplayName}">3D Fab Switzerland</div>
+                <div th:text="${sellerAddressLine1}">Via G. pioda 29a - 6710 Biasca, Svizzera</div>
+                <div th:text="${sellerAddressLine2}">Lyss-Strasse 71 - 2560 Nidau, Svizzera</div>
+            </td>
+            <td class="website-block">
+                www.3d-fab.ch
+            </td>
+        </tr>
+    </table>
+
+    <!-- Document Title -->
+    <div class="doc-title">
+        <span th:if="${isConfirmation}">Conferma dell'ordine</span>
+        <span th:unless="${isConfirmation}">Fattura</span>
+        <span th:text="${invoiceNumber}">141052743</span>
+        <span th:unless="${isConfirmation}" style="color: #2e7d32; font-weight: bold; font-size: 18pt; padding-left: 15px;">PAGATO</span>
+    </div>
+
+    <!-- Details block (Meta and Customer) -->
+    <table class="details-layout">
+        <tr>
+            <td class="meta-container">
+                <table class="meta-table">
+                    <tr>
+                        <td class="meta-label">Data dell'ordine / fattura</td>
+                        <td class="meta-value" th:text="${invoiceDate}">07.03.2025</td>
+                    </tr>
+                    <tr>
+                        <td class="meta-label">Numero documento</td>
+                        <td class="meta-value" th:text="${invoiceNumber}">INV-2026-000123</td>
+                    </tr>
+                    <tr>
+                        <td class="meta-label">Data di scadenza</td>
+                        <td class="meta-value" th:text="${dueDate}">07.03.2025</td>
+                    </tr>
+                    <tr>
+                        <td class="meta-label">Metodo di pagamento</td>
+                        <td class="meta-value" th:text="${paymentMethodText}">QR / Bonifico oppure TWINT</td>
+                    </tr>
+                    <tr>
+                        <td class="meta-label">Valuta</td>
+                        <td class="meta-value">CHF</td>
+                    </tr>
+                </table>
+            </td>
+            <td class="customer-container">
+                <div style="font-weight: bold; margin-bottom: 2mm;">Indirizzo di fatturazione:</div>
+                <div th:text="${buyerDisplayName}">Joe Küng</div>
+                <div th:text="${buyerAddressLine1}">Via G.Pioda, 29a</div>
+                <div th:text="${buyerAddressLine2}">6710 biasca</div>
+                <div>Svizzera</div>
+                <br/>
+                <div th:if="${shippingDisplayName != null}">
+                    <div style="font-weight: bold; margin-bottom: 2mm;">Indirizzo di spedizione:</div>
+                    <div th:text="${shippingDisplayName}">Joe Küng</div>
+                    <div th:text="${shippingAddressLine1}">Via G.Pioda, 29a</div>
+                    <div th:text="${shippingAddressLine2}">6710 biasca</div>
+                    <div>Svizzera</div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Items Table -->
+    <table class="line-items">
+        <thead>
+        <tr>
+            <th class="col-desc">Descrizione</th>
+            <th class="col-qty center">Quantità</th>
+            <th class="col-price right">Prezzo unitario</th>
+            <th class="col-total right">Prezzo incl.</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="lineItem : ${invoiceLineItems}">
+            <td class="item-desc" th:text="${lineItem.description}">Apple iPhone 16 Pro</td>
+            <td class="center" th:text="${lineItem.quantity}">1</td>
+            <td class="right" th:text="${lineItem.unitPriceFormatted}">968.55</td>
+            <td class="right" th:text="${lineItem.lineTotalFormatted}">1'047.00</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- Totals -->
+    <table class="totals-table">
+        <tr>
+            <td class="totals-label">Importo totale</td>
+            <td class="totals-value" th:text="${subtotalFormatted}">1'012.86</td>
+        </tr>
+        <tr>
+            <td class="totals-label">Totale di tutte le consegne e di tutti i servizi CHF</td>
+            <td class="totals-value" th:text="${grandTotalFormatted}">1'094.90</td>
+        </tr>
+        <tr class="no-border" th:if="${isConfirmation}">
+            <td class="totals-label">Importo dovuto</td>
+            <td class="totals-value" th:text="${grandTotalFormatted}">1'094.90</td>
+        </tr>
+        <tr class="no-border" th:unless="${isConfirmation}">
+            <td class="totals-label">Importo dovuto</td>
+            <td class="totals-value">CHF 0.00</td>
+        </tr>
+    </table>
+
+    <!-- Footer Notes -->
+    <table class="footer-layout">
+        <tr>
+            <td class="footer-label">Informazioni</td>
+            <td class="footer-text" th:text="${paymentTermsText}">
+                Appena riceviamo il pagamento l'ordine entra nella coda di stampa. Grazie per la fiducia.
+            </td>
+        </tr>
+        <tr>
+            <td class="footer-label">Generale</td>
+            <td class="footer-text">
+                Si applicano le nostre condizioni generali di contratto. Verifica i dettagli dell'ordine al ricevimento. Per assistenza, rispondi alla nostra email di conferma.
+            </td>
+        </tr>
+    </table>
+
+</div>
+
+<!-- QR Bill Page (only renders if QR data is passed) -->
+<div class="qr-only-page" th:if="${qrBillSvg != null}">
+    <table class="qr-only-layout">
+        <tr>
+            <td>
+                <div class="qr-bill-bottom" th:utext="${qrBillSvg}">
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,68 @@
+@use 'sass:math';
+
+// =============================================================================
+// 3D Print Infill Patterns
+// =============================================================================
+
+// 1. Grid (Rectilinear Infill)
+// Basic square grid, standard infill.
+@mixin pattern-grid($color, $size: 40px, $weight: 1px) {
+  background-image:
+    linear-gradient($color $weight, transparent $weight),
+    linear-gradient(90deg, $color $weight, transparent $weight);
+  background-size: $size $size;
+}
+
+// 2. Triangular (Isogrid / Triangle Infill)
+// Strong aesthetic, often used for structural parts.
+@mixin pattern-triangular($color, $size: 40px, $weight: 1px) {
+  background-image:
+    linear-gradient(30deg, $color 1px, transparent 1px),
+    linear-gradient(150deg, $color 1px, transparent 1px),
+    linear-gradient(90deg, $color 1px, transparent 1px);
+  background-size: $size $size;
+  // Note: Simplification of true isogrid for CSS stability
+}
+
+// 3. Hexagonal (Honeycomb Infill)
+// Flat top-view hex lattice (no 3D depth effect).
+@mixin pattern-honeycomb($color, $size: 32px) {
+  background-color: transparent;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='52' height='45' viewBox='0 0 52 45'%3E%3Cg fill='none' stroke='%23000' stroke-width='1.25'%3E%3Cpath d='M13 0H39L52 22.5L39 45H13L0 22.5Z'/%3E%3Cpath d='M39 -22.5H65L78 0L65 22.5H39L26 0Z'/%3E%3Cpath d='M39 22.5H65L78 45L65 67.5H39L26 45Z'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: $size calc(#{$size} * 0.8653846);
+  background-position: 0 0;
+  background-repeat: repeat;
+}
+
+// 4. Diagonal (Rectilinear 45deg)
+@mixin pattern-diagonal($color, $size: 20px, $weight: 1px) {
+  background-image:
+    repeating-linear-gradient(45deg, $color 0, $color $weight, transparent $weight, transparent 50%),
+    repeating-linear-gradient(-45deg, $color 0, $color $weight, transparent $weight, transparent 50%);
+  background-size: $size $size;
+}
+
+// 5. Gyroid (Approximation via Curves)
+// Using radial gradients to simulate organic curves
+@mixin pattern-gyroid($color, $size: 40px) {
+    background-image: 
+        radial-gradient(circle at 0 0, transparent 47%, $color 48%, $color 50%, transparent 51%), 
+        radial-gradient(circle at 100% 100%, transparent 47%, $color 48%, $color 50%, transparent 51%);
+    background-size: $size $size;
+}
+
+// 6. Cross Hatch (45deg Grid)
+// Intersecting diagonal lines
+@mixin pattern-cross-hatch($color, $size: 24px, $weight: 1px) {
+  background-image:
+    repeating-linear-gradient(45deg, $color 0, $color $weight, transparent $weight, transparent 50%),
+    repeating-linear-gradient(-45deg, $color 0, $color $weight, transparent $weight, transparent 50%);
+  background-size: $size $size;
+}
+
+// 7. Rectilinear (Alternating Lines)
+// Simulating a raster scan path or simple linear infill
+@mixin pattern-rectilinear($color, $size: 20px, $weight: 1px) {
+  background-image: repeating-linear-gradient(90deg, $color 0, $color $weight, transparent $weight, transparent $size);
+  background-size: $size $size;
+}

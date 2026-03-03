@@ -1,0 +1,547 @@
+{
+  "NAV": {
+    "HOME": "Home",
+    "CALCULATOR": "Calcolatore",
+    "SHOP": "Shop",
+    "ABOUT": "Chi Siamo",
+    "CONTACT": "Contattaci",
+    "LANGUAGE_SELECTOR": "Selettore lingua"
+  },
+  "FOOTER": {
+    "PRIVACY": "Privacy",
+    "TERMS": "Termini & Condizioni",
+    "CONTACT": "Contattaci"
+  },
+  "HOME": {
+    "HERO_EYEBROW": "Stampa 3D tecnica per aziende, freelance e maker",
+    "HERO_TITLE": "Prezzo e tempi in pochi secondi.<br>Dal file 3D al pezzo finito.",
+    "HERO_LEAD": "Il calcolatore più avanzato per le tue stampe 3D: precisione assoluta e zero sorprese.",
+    "HERO_SUBTITLE": "Offriamo anche servizi di CAD per pezzi personalizzati!",
+    "BTN_CALCULATE": "Calcola Preventivo",
+    "BTN_SHOP": "Vai allo shop",
+    "BTN_CONTACT": "Parla con noi",
+    "SEC_CALC_TITLE": "Prezzo corretto in pochi secondi",
+    "SEC_CALC_SUBTITLE": "Nessuna registrazione necessaria. La stima è effettuata tramite vero slicing.",
+    "SEC_CALC_LIST_1": "Formati supportati: STL, 3MF, STEP",
+    "CARD_CALC_EYEBROW": "Calcolo automatico",
+    "CARD_CALC_TITLE": "Prezzo e tempi in un click",
+    "CARD_CALC_TAG": "Senza registrazione",
+    "CARD_CALC_STEP_1": "Carica il file 3D",
+    "CARD_CALC_STEP_2": "Scegli materiale e qualità",
+    "CARD_CALC_STEP_3": "Ricevi subito costo e tempo",
+    "BTN_OPEN_CALC": "Apri calcolatore",
+    "SEC_CAP_TITLE": "Cosa puoi ottenere",
+    "SEC_CAP_SUBTITLE": "Produzione su misura per prototipi, piccole serie e pezzi personalizzati.",
+    "CAP_1_TITLE": "Prototipazione veloce",
+    "CAP_1_TEXT": "Dal file digitale al modello fisico in 24/48 ore. Verifica ergonomia, incastri e funzionamento prima dello stampo definitivo.",
+    "CAP_2_TITLE": "Pezzi personalizzati",
+    "CAP_2_TEXT": "Componenti unici impossibili da trovare in commercio. Riproduciamo parti rotte o creiamo adattamenti su misura.",
+    "CAP_3_TITLE": "Piccole serie",
+    "CAP_3_TEXT": "Produzione ponte o serie limitate (10-500 pezzi) con qualità ripetibile.",
+    "CAP_4_TITLE": "Consulenza e CAD",
+    "CAP_4_TEXT": "Non hai il file 3D? Ti aiutiamo a progettarlo, ottimizzarlo per la stampa e scegliere il materiale giusto insieme.",
+    "SEC_SHOP_TITLE": "Shop",
+    "SEC_SHOP_TEXT": "Prodotti selezionati, e pronti all'uso.",
+    "SEC_SHOP_LIST_1": "Prodotti disegnati da noi",
+    "SEC_SHOP_LIST_2": "Ricambi e componenti difficili da reperire",
+    "SEC_SHOP_LIST_3": "Supporti e organizzatori per migliorare i flussi di lavoro",
+    "BTN_DISCOVER": "Scopri i prodotti",
+    "BTN_REQ_SOLUTION": "Richiedi una soluzione",
+    "CARD_SHOP_1_TITLE": "Selezione di prodotti verificati",
+    "CARD_SHOP_1_TEXT": "Controllati per garantire funzionalità e stabilità nel lungo periodo.",
+    "CARD_SHOP_2_TITLE": "Kit pronti all'uso",
+    "CARD_SHOP_2_TEXT": "Componenti compatibili e facili da montare senza sorprese.",
+    "CARD_SHOP_3_TITLE": "Su richiesta",
+    "CARD_SHOP_3_TEXT": "Non trovi quello che serve? Lo progettiamo e lo produciamo per te.",
+    "SEC_ABOUT_TITLE": "Su di noi",
+    "SEC_ABOUT_TEXT": "Siamo due studenti di ingegneria: la stampa 3D ci ha conquistati per un motivo semplice, vedere un problema e costruire la soluzione. Da questa idea prendono forma prototipi, oggetti pensati per funzionare nella quotidianità. ",
+    "FOUNDERS_PHOTO": "Foto Founders",
+    "SHOP_GALLERY_ARIA": "Galleria prodotti shop",
+    "FOUNDER_PREV_ARIA": "Foto precedente",
+    "FOUNDER_NEXT_ARIA": "Foto successiva",
+    "SHOP_IMAGE_ALT_1": "Prodotto tecnico stampato in 3D",
+    "FOUNDER_IMAGE_ALT_1": "Founder - foto 1",
+    "FOUNDER_IMAGE_ALT_2": "Founder - foto 2"
+  },
+  "CALC": {
+    "TITLE": "Calcola Preventivo 3D",
+    "SUBTITLE": "Carica il tuo file 3D (STL, 3MF, STEP), imposta la qualità, il colore e calcola immediatamente prezzo e tempi.",
+    "CTA_START": "Inizia Ora",
+    "BUSINESS": "Aziende",
+    "PRIVATE": "Privati",
+    "MODE_EASY": "Base",
+    "MODE_ADVANCED": "Avanzata",
+    "UPLOAD_LABEL": "Trascina il tuo file 3D qui",
+    "UPLOAD_SUB": "Supportiamo STL, 3MF, STEP fino a 50MB",
+    "MATERIAL": "Materiale",
+    "QUALITY": "Qualità",
+    "PRINT_SPEED": "Velocità di Stampa",
+    "QUANTITY": "Quantità",
+    "NOTES": "Note aggiuntive",
+    "COLOR": "Colore",
+    "INFILL": "Riempimento (%)",
+    "PATTERN": "Pattern di riempimento",
+    "LAYER_HEIGHT": "Altezza Layer",
+    "NOZZLE": "Diametro Ugello",
+    "SUPPORT": "Supporti",
+    "SUPPORT_DESC": "Abilita supporti per sporgenze",
+    "CALCULATE": "Calcola Preventivo",
+    "RESULT": "Preventivo Stimato",
+    "TIME": "Tempo Stampa",
+    "MACHINE_COST": "Costo Macchina",
+    "COST": "Costo Totale",
+    "ORDER": "Ordina Ora",
+    "CONSULT": "Richiedi Consulenza",
+    "ERROR_GENERIC": "Si è verificato un errore durante il calcolo del preventivo.",
+    "NEW_QUOTE": "Calcola Nuovo Preventivo",
+    "ORDER_SUCCESS_TITLE": "Ordine Inviato con Successo",
+    "ORDER_SUCCESS_DESC": "Abbiamo ricevuto i dettagli del tuo ordine. Riceverai a breve una email di conferma con i dettagli per il pagamento.",
+    "BENEFITS_TITLE": "Perché scegliere noi?",
+    "BENEFITS_1": "Preventivo automatico con costo e tempo immediati",
+    "BENEFITS_2": "Materiali selezionati e qualità controllata",
+    "BENEFITS_3": "Consulenza CAD se il file ha bisogno di modifiche",
+    "ERR_FILE_REQUIRED": "Il file è obbligatorio.",
+    "ANALYZING_TITLE": "Analisi in corso...",
+    "ANALYZING_TEXT": "Stiamo analizzando la geometria e calcolando il percorso utensile.",
+    "QTY_SHORT": "QTÀ",
+    "COLOR_LABEL": "COLORE",
+    "ADD_FILES": "Aggiungi file",
+    "UPLOADING": "Caricamento...",
+    "PROCESSING": "Elaborazione...",
+    "NOTES_PLACEHOLDER": "Istruzioni specifiche...",
+    "SETUP_NOTE": "* Include {{cost}} come costo di setup",
+    "SHIPPING_NOTE": "** Costi di spedizione esclusi, calcolati al passaggio successivo",
+    "STEP_WARNING": "La visualizzazione 3D non è compatibile con i file step e 3mf",
+    "REMOVE_FILE": "Rimuovi file",
+    "FALLBACK_MATERIAL": "PLA (fallback)",
+    "FALLBACK_QUALITY_STANDARD": "Standard",
+    "ERR_FILE_TOO_LARGE": "Alcuni file superano il limite di 200MB e non sono stati aggiunti.",
+    "ERROR_ZERO_PRICE": "Qualcosa è andato storto. Prova con un altro formato oppure contattaci."
+  },
+  "QUOTE": {
+    "PROCEED_ORDER": "Procedi con l'ordine",
+    "CONSULT": "Richiedi Consulenza",
+    "TOTAL": "Totale",
+    "MAX_QTY_NOTICE": "Per quantità oltre {{max}} pezzi, richiedi consulenza."
+  },
+  "USER_DETAILS": {
+    "TITLE": "I tuoi dati",
+    "NAME": "Nome",
+    "NAME_PLACEHOLDER": "Il tuo nome",
+    "SURNAME": "Cognome",
+    "SURNAME_PLACEHOLDER": "Il tuo cognome",
+    "EMAIL": "Email",
+    "EMAIL_PLACEHOLDER": "tua@email.com",
+    "PHONE": "Telefono",
+    "PHONE_PLACEHOLDER": "+41 ...",
+    "ADDRESS": "Indirizzo",
+    "ADDRESS_PLACEHOLDER": "Via e numero",
+    "ZIP": "CAP",
+    "ZIP_PLACEHOLDER": "0000",
+    "CITY": "Città",
+    "CITY_PLACEHOLDER": "Città",
+    "SUBMIT": "Procedi",
+    "SUMMARY_TITLE": "Riepilogo",
+    "DEFAULT_COLOR": "Predefinito"
+  },
+  "COMMON": {
+    "REQUIRED": "Campo obbligatorio",
+    "INVALID_EMAIL": "Email non valida",
+    "BACK": "Indietro",
+    "OPTIONAL": "(Opzionale)"
+  },
+  "SHOP": {
+    "TITLE": "Soluzioni tecniche",
+    "SUBTITLE": "Prodotti pronti che risolvono problemi pratici",
+    "WIP_EYEBROW": "Work in progress",
+    "WIP_TITLE": "Shop in allestimento",
+    "WIP_SUBTITLE": "Stiamo preparando uno shop con prodotti selezionati e funzionalità di creazione automatica!",
+    "WIP_CTA_CALC": "Vai al calcolatore",
+    "WIP_RETURN_LATER": "Torna tra un po'",
+    "WIP_NOTE": "Ci teniamo a fare le cose fatte bene: nel frattempo puoi calcolare subito prezzo e tempi di un file 3D con il nostro calcolatore.",
+    "ADD_CART": "Aggiungi al Carrello",
+    "BACK": "Torna allo Shop",
+    "NOT_FOUND": "Prodotto non trovato.",
+    "DETAILS": "Dettagli",
+    "MOCK_ADD_CART": "Aggiunto al carrello (Mock)",
+    "SUCCESS_TITLE": "Aggiunto al carrello",
+    "SUCCESS_DESC": "Il prodotto è stato aggiunto correttamente al carrello.",
+    "CONTINUE": "Continua",
+    "CATEGORIES": {
+      "FILAMENTS": "Filamenti",
+      "ACCESSORIES": "Accessori"
+    },
+    "PRODUCTS": {
+      "P1": {
+        "NAME": "Filamento PLA Standard",
+        "DESC": "Il classico per ogni stampa, facile e affidabile."
+      },
+      "P2": {
+        "NAME": "Filamento PETG Tough",
+        "DESC": "Resistente agli urti e alle temperature."
+      },
+      "P3": {
+        "NAME": "Kit Ugelli (0.4mm)",
+        "DESC": "Set di ricambio per estrusore FDM."
+      }
+    }
+  },
+  "ABOUT": {
+    "TITLE": "Chi Siamo",
+    "EYEBROW": "Laboratorio di stampa 3D",
+    "SUBTITLE": "Siamo due studenti con tanta voglia di fare e di imparare.",
+    "HOW_TEXT": "3D Fab nasce per trasformare le potenzialità della stampa 3D in soluzioni quotidiane. Siamo partiti dalla curiosità tecnica e siamo arrivati alla produzione di ricambi, prodotti e prototipi su misura. Per passare da un'idea a un progetto concreto abbiamo lanciato il nostro calcolatore automatico: preventivi chiari in un clic per garantirti un servizio professionale e senza sorprese sul prezzo.",
+    "PASSIONS_TITLE": "I nostri interessi",
+    "PASSION_BIKE_TRIAL": "Bike trial",
+    "PASSION_MOUNTAIN": "Montagna",
+    "PASSION_SKI": "Ski",
+    "PASSION_SELF_HOSTING": "Self hosting",
+    "PASSION_PRINT_3D": "Stampa 3D",
+    "PASSION_TRAVEL": "Travel",
+    "PASSION_SNOWBOARD": "Snowboard",
+    "PASSION_SNOWBOARD_INSTRUCTOR": "Istruttore snowboard",
+    "PASSION_ELECTRONICS": "Elettronica",
+    "PASSION_WOODWORKING": "Lavorazione del legno",
+    "PASSION_VAN_LIFE": "Van life",
+    "PASSION_COFFEE": "Caffè",
+    "PASSION_SOFTWARE_DEVELOPMENT": "Sviluppo software",
+    "SERVICES_TITLE": "Servizi principali",
+    "TARGET_TITLE": "Per chi è",
+    "TARGET_TEXT": "Piccole aziende, freelance, smanettoni e clienti che cercano un prodotto già pronto dallo shop.",
+    "TEAM_TITLE": "Il Nostro Team",
+    "MEMBER_JOE_NAME": "Joe Küng",
+    "MEMBER_JOE_ROLE": "Studente Ingegneria Informatica",
+    "MEMBER_JOE_ALT": "Joe Küng",
+    "MEMBER_MATTEO_NAME": "Matteo Caletti",
+    "MEMBER_MATTEO_ROLE": "Studente Ingegneria Elettronica",
+    "MEMBER_MATTEO_ALT": "Matteo Caletti"
+  },
+  "LOCATIONS": {
+    "TITLE": "Le Nostre Sedi",
+    "SUBTITLE": "Siamo presenti in due sedi. Seleziona la sede per vedere i dettagli.",
+    "TICINO": "Ticino",
+    "BIASCA": "Biasca",
+    "BIENNE": "Bienne",
+    "ADDRESS_TICINO": "Via G. Pioda 29a, Biasca",
+    "ADDRESS_BIENNE": "Lyss-strasse 71, Nidau 2560 Bienne",
+    "CONTACT_US": "Contattaci"
+  },
+  "LEGAL": {
+    "PRIVACY_TITLE": "Informativa Privacy",
+    "TERMS_TITLE": "Termini e Condizioni",
+    "LAST_UPDATE": "Ultimo aggiornamento",
+    "TERMS_UPDATE_DATE": "24 febbraio 2026",
+    "PRIVACY_UPDATE_DATE": "24 febbraio 2026",
+    "CONSENT": {
+      "LABEL_PREFIX": "Ho letto e accetto i",
+      "TERMS_LINK": "Termini e Condizioni",
+      "AND": "e l'",
+      "PRIVACY_LINK": "Informativa Privacy",
+      "REQUIRED_ERROR": "Per continuare devi accettare Termini e Privacy.",
+      "UPLOAD_NOTICE_PREFIX": "Caricando un file accetti la nostra",
+      "UPLOAD_NOTICE_LINK": "Informativa Privacy"
+    },
+    "PRIVACY": {
+      "META": {
+        "CONTROLLER": "Titolari del trattamento: Matteo Caletti e Joe Kung (3D-Fab.ch).",
+        "CONTACT": "Contatto privacy: info@3d-fab.ch"
+      },
+      "S1": {
+        "TITLE": "1. Quali dati trattiamo",
+        "P1": "1.1. Raccogliamo i dati necessari per preventivi e ordini: nome, cognome, email, telefono, indirizzo, dati di spedizione/fatturazione e dettagli dell'ordine.",
+        "P2": "1.2. Quando carichi file 3D o allegati tecnici, i file vengono trattati solo per analisi, produzione, assistenza e gestione dell'ordine."
+      },
+      "S2": {
+        "TITLE": "2. Finalità del trattamento",
+        "P1": "2.1. Usiamo i dati esclusivamente per: preparare preventivi, confermare ordini, ricevere pagamenti, organizzare spedizioni e fornire supporto post-vendita.",
+        "P2": "2.2. Non usiamo i dati per profilazione, marketing automatico o vendita a terzi."
+      },
+      "S3": {
+        "TITLE": "3. Conservazione dei file e dei dati",
+        "P1": "3.1. I file caricati per il solo preventivo vengono conservati per la durata della sessione e rimossi automaticamente alla sua scadenza.",
+        "P2": "3.2. I file e i dati legati a ordini confermati vengono conservati per il tempo necessario a produzione, consegna, assistenza e obblighi amministrativi/legali, poi eliminati o minimizzati.",
+        "P3": "3.3. I file caricati nel calcolatore vengono usati solo per analisi tecnica e stima del preventivo e restano associati esclusivamente alla sessione del calcolatore."
+      },
+      "S4": {
+        "TITLE": "4. Cookie e tracciamento",
+        "P1": "4.1. Non utilizziamo cookie di profilazione, marketing o tracciamento di terze parti.",
+        "P2": "4.2. Non usiamo sistemi di advertising tracking. Eventuali dati tecnici temporanei sono usati solo per il funzionamento della sessione."
+      },
+      "S5": {
+        "TITLE": "5. Condivisione dei dati",
+        "P1": "5.1. Condividiamo i dati solo con fornitori strettamente necessari al servizio (hosting, pagamenti, spedizioni), limitandoci alle informazioni indispensabili.",
+        "P2": "5.2. I fornitori trattano i dati secondo istruzioni contrattuali e misure di sicurezza adeguate."
+      },
+      "S6": {
+        "TITLE": "6. Diritti dell'utente",
+        "P1": "6.1. Puoi richiedere accesso, rettifica, cancellazione o limitazione del trattamento dei tuoi dati, nei limiti previsti dalla legge.",
+        "P2": "6.2. Per qualsiasi richiesta privacy scrivi a info@3d-fab.ch."
+      }
+    },
+    "TERMS": {
+      "META": {
+        "PROVIDER": "Fornitore: 3D-Fab.ch (Matteo Caletti e Joe Kung)",
+        "VERSION": "Versione: v1.0",
+        "SCOPE": "Validi per stampa 3D FDM/FFF e servizi collegati, con vendita e consegna esclusivamente in Svizzera (CH)."
+      },
+      "S1": {
+        "TITLE": "1. Dati del fornitore e contatti",
+        "P1": "1.1. Fornitore: Matteo Caletti e Joe Kung.",
+        "P2": "1.2. Indirizzo: Lyss-strasse 71, Nidau 2560, CH.",
+        "P3": "1.3. Email: info@3d-fab.ch."
+      },
+      "S2": {
+        "TITLE": "2. Ambito di applicazione",
+        "P1": "2.1. I presenti Termini e Condizioni disciplinano stampa 3D su richiesta, servizi accessori (consulenza tecnica, CAD, verifica file, post-processing) ed eventuali articoli standard.",
+        "P2": "2.2. Il fornitore vende e consegna esclusivamente in Svizzera (CH).",
+        "P3": "2.3. Si applicano agli ordini effettuati via sito, email o altri canali concordati; condizioni diverse del cliente valgono solo se accettate per iscritto."
+      },
+      "S3": {
+        "TITLE": "3. Definizioni",
+        "P1": "3.1. Cliente: persona fisica o giuridica acquirente. File del cliente: modelli 3D e dati tecnici forniti. Prodotto personalizzato: pezzo realizzato su specifiche del cliente. Ordine: richiesta accettata dal fornitore."
+      },
+      "S4": {
+        "TITLE": "4. Conclusione del contratto e ordine",
+        "P1": "4.1. Il contratto si conclude con conferma ordine (email/portale) o con avvio produzione dopo pagamento/anticipo.",
+        "P2": "4.2. I preventivi automatici possono essere confermati o aggiornati dopo verifica tecnica minima (stampabilità, supporti, limiti macchina).",
+        "P3": "4.3. Il fornitore può rifiutare ordini tecnicamente non fattibili o non conformi ai presenti termini."
+      },
+      "S5": {
+        "TITLE": "5. Prezzi, imposte e spedizione",
+        "P1": "5.1. I prezzi sono in CHF, salvo diversa indicazione su IVA inclusa/esclusa.",
+        "P2": "5.2. Spedizione e imballaggio sono indicati separatamente quando applicabili.",
+        "P3": "5.3. Per piccole serie o CAD complesso possono essere applicate offerte scritte con condizioni specifiche (campioni, scaglioni, approvazione primo pezzo)."
+      },
+      "S6": {
+        "TITLE": "6. Pagamenti",
+        "P1": "6.1. Metodi accettati: TWINT e bonifico bancario.",
+        "P2": "6.2. Salvo accordi diversi, la produzione parte solo dopo il pagamento.",
+        "P3": "6.3. Per consulenza CAD e piccole serie può essere richiesto un anticipo (30-100%) e/o saldo prima della consegna.",
+        "P4": "6.4. Dati bonifico: Joe Kung, IBAN CH74 0900 0000 1548 2158 1, Via G. Pioda 29a, 6710 Biasca."
+      },
+      "S7": {
+        "TITLE": "7. File del cliente e responsabilità tecnica",
+        "P1": "7.1. Il cliente garantisce di avere i diritti sui file e che il loro uso non viola diritti di terzi (copyright, brevetti, licenze, segreti industriali).",
+        "P2": "7.2. Il cliente è responsabile di correttezza del modello, scelta materiale, adeguatezza all'uso finale e rispetto delle norme applicabili.",
+        "P3": "7.3. Il fornitore può suggerire modifiche per migliorare stampabilità e resa, ma non svolge funzione di certificazione del prodotto finale salvo accordo scritto."
+      },
+      "S8": {
+        "TITLE": "8. Qualità FDM/FFF e tolleranze",
+        "P1": "8.1. La stampa FDM/FFF comporta caratteristiche intrinseche: linee di strato, anisotropia meccanica, micro-imperfezioni, variazioni cromatiche e possibili ritiri/deformazioni legati a geometria e materiale.",
+        "P2": "8.2. Tolleranze standard (salvo accordo scritto): fino a 100 mm +/-0.3 mm; oltre 100 mm +/-0.5% (minimo +/-0.3 mm).",
+        "P3": "8.3. Requisiti estetici o dimensionali critici devono essere concordati prima dell'ordine (es. campione, misure di controllo, finitura specifica)."
+      },
+      "S9": {
+        "TITLE": "9. Post-processing e lavorazioni aggiuntive",
+        "P1": "9.1. Lavorazioni come rimozione supporti, levigatura, primer/verniciatura o inserti filettati sono eseguite solo se concordate e possono introdurre variazioni dimensionali o estetiche.",
+        "P2": "9.2. Su richiesta può essere prevista approvazione del primo pezzo o campione, eventualmente a pagamento."
+      },
+      "S10": {
+        "TITLE": "10. Tempi di produzione e consegna",
+        "P1": "10.1. I tempi indicati sono stime basate su carico di lavoro, complessità e disponibilità materiali.",
+        "P2": "10.2. Ritardi dovuti a cause esterne (corrieri, fornitori, guasti, forza maggiore) non danno diritto automatico a penali salvo accordo scritto.",
+        "P3": "10.3. Il cliente deve fornire indirizzi corretti e completi; eventuali costi di riconsegna per indirizzo errato restano a carico del cliente."
+      },
+      "S11": {
+        "TITLE": "11. Diritto di recesso e annullamento",
+        "P1": "11.1. Salvo eccezioni confermate per iscritto, non è previsto diritto di recesso o restituzione dopo l'ordine.",
+        "P2": "11.2. I prodotti personalizzati non sono annullabili né rimborsabili dopo l'avvio della produzione.",
+        "P3": "11.3. Il fornitore può accettare eccezioni prima dell'avvio produttivo, trattenendo eventuali costi già sostenuti.",
+        "P4": "11.4. Eventuali condizioni speciali devono risultare nell'offerta, nella conferma d'ordine o in comunicazioni scritte."
+      },
+      "S12": {
+        "TITLE": "12. Reclami, difetti e rimedi",
+        "P1": "12.1. Il cliente deve controllare i prodotti alla consegna e segnalare eventuali difetti entro 7 giorni, per iscritto, con foto/video e descrizione.",
+        "P2": "12.2. Non costituiscono automaticamente difetto i segni tipici FDM, piccole variazioni cromatiche, imperfezioni non funzionali o tolleranze entro i limiti concordati.",
+        "P3": "12.3. In caso di difetto imputabile al fornitore, i rimedi sono a scelta del fornitore: ristampa/sostituzione oppure rimborso limitato al valore del pezzo o ordine difettoso.",
+        "P4": "12.4. Prima di ristampa o rimborso può essere richiesta la restituzione del pezzo; se il difetto è confermato la restituzione è a carico del fornitore."
+      },
+      "S13": {
+        "TITLE": "13. Usi vietati e conformità",
+        "P1": "13.1. Il fornitore può rifiutare ordini relativi a oggetti illegali, armi o parti regolamentate, applicazioni safety-critical o medicali senza accordi e validazioni dedicate.",
+        "P2": "13.2. Il cliente resta responsabile dell'uso finale e della conformità normativa del prodotto."
+      },
+      "S14": {
+        "TITLE": "14. Proprietà intellettuale e licenze",
+        "P1": "14.1. I diritti sui file del cliente restano al cliente o ai relativi titolari. Il cliente concede al fornitore una licenza limitata all'uso per valutazione tecnica e produzione.",
+        "P2": "14.2. Salvo accordi diversi, file e progetti CAD sviluppati dal fornitore vengono consegnati dopo pagamento, con diritto d'uso per gli scopi concordati.",
+        "P3": "14.3. Il cliente manleva il fornitore da pretese di terzi legate a file o istruzioni fornite dal cliente."
+      },
+      "S15": {
+        "TITLE": "15. Protezione dei dati",
+        "P1": "15.1. Il fornitore tratta i dati personali per gestione ordini, pagamenti, spedizioni e assistenza.",
+        "P2": "15.2. I dati possono essere condivisi con fornitori tecnici e corrieri solo nella misura necessaria all'erogazione del servizio."
+      },
+      "S16": {
+        "TITLE": "16. Limitazione di responsabilità",
+        "P1": "16.1. Nei limiti di legge, il fornitore risponde solo per danni diretti prevedibili e comunque non oltre il valore dell'ordine relativo al prodotto o servizio contestato.",
+        "P2": "16.2. Sono esclusi, nei limiti consentiti, danni indiretti, perdita di profitto, fermo attività, perdita dati e danni consequenziali.",
+        "P3": "16.3. Restano salve le responsabilità non escludibili per legge (es. dolo o colpa grave)."
+      },
+      "S17": {
+        "TITLE": "17. Forza maggiore",
+        "P1": "17.1. Eventi fuori dal controllo ragionevole del fornitore (guasti, blackout, ritardi fornitori, scioperi, provvedimenti autorità) possono causare proroghe o sospensioni senza responsabilità."
+      },
+      "S18": {
+        "TITLE": "18. Legge applicabile e foro competente",
+        "P1": "18.1. Si applica il diritto svizzero.",
+        "P2": "18.2. Foro competente: sede del fornitore, salvo norme inderogabili a tutela dei consumatori.",
+        "P3": "18.3. In caso di discrepanze interpretative prevale la versione italiana dei presenti termini, che è l'unica versione legalmente vincolante, salvo diverso accordo scritto."
+      }
+    }
+  },
+  "CONTACT": {
+    "TITLE": "Contattaci",
+    "SEND": "Invia Messaggio",
+    "REQ_TYPE_LABEL": "Tipo di Richiesta",
+    "TYPE_PRIVATE": "Privato",
+    "TYPE_COMPANY": "Azienda",
+    "REQ_TYPE_CUSTOM": "Preventivo Personalizzato",
+    "REQ_TYPE_SERIES": "Stampa in Serie",
+    "REQ_TYPE_CONSULT": "Consulenza",
+    "REQ_TYPE_QUESTION": "Domande Generali",
+    "PHONE": "Telefono",
+    "IS_COMPANY": "Sei un'azienda?",
+    "COMPANY_NAME": "Ragione Sociale",
+    "REF_PERSON": "Persona di Riferimento",
+    "UPLOAD_LABEL": "Allegati",
+    "UPLOAD_HINT": "Max 15 file. Supportati: immagini, video, PDF, documenti Office, STL/STEP/3MF/OBJ/IGES, DWG/DXF. File compressi non consentiti.",
+    "DROP_FILES": "Trascina qui i file o clicca per caricare",
+    "PLACEHOLDER_NAME": "Il tuo nome",
+    "PLACEHOLDER_EMAIL": "tuo@email.com",
+    "PLACEHOLDER_PHONE": "+41 00 000 00 00",
+    "PLACEHOLDER_COMPANY": "Nome Azienda",
+    "PLACEHOLDER_REF_PERSON": "Persona di Riferimento",
+    "LABEL_MESSAGE": "Messaggio *",
+    "LABEL_EMAIL": "Email *",
+    "LABEL_NAME": "Nome *",
+    "MSG_SENT": "Inviato!",
+    "ERR_MAX_FILES": "Limite massimo di 15 file raggiunto.",
+    "ERR_COMPRESSED_FILES": "I file compressi non sono consentiti (ZIP/RAR/7z/TAR/GZ).",
+    "SUCCESS_TITLE": "Messaggio Inviato con Successo",
+    "SUCCESS_DESC": "Grazie per averci contattato. Abbiamo ricevuto il tuo messaggio e ti invieremo una email di riepilogo a breve.",
+    "SEND_ANOTHER": "Invia un altro messaggio",
+    "HERO_SUBTITLE": "Siamo qui per aiutarti. Compila il modulo sottostante per qualsiasi richiesta.",
+    "FILE_TYPE_PDF": "PDF",
+    "FILE_TYPE_3D": "3D",
+    "FILE_TYPE_VIDEO": "Video",
+    "FILE_TYPE_DOC": "DOC",
+    "FILE_TYPE_FILE": "FILE",
+    "ERROR_SUBMIT": "Errore durante l'invio della richiesta. Riprova.",
+    "REMOVE_FILE": "Rimuovi file allegato"
+  },
+  "CHECKOUT": {
+    "TITLE": "Checkout",
+    "SUBTITLE": "Completa il tuo ordine inserendo i dettagli per la spedizione e il pagamento.",
+    "CONTACT_INFO": "Informazioni di Contatto",
+    "BILLING_ADDR": "Indirizzo di Fatturazione",
+    "SHIPPING_ADDR": "Indirizzo di Spedizione",
+    "FIRST_NAME": "Nome",
+    "LAST_NAME": "Cognome",
+    "EMAIL": "Email",
+    "PHONE": "Telefono",
+    "COMPANY_NAME": "Nome Azienda",
+    "ADDRESS_1": "Indirizzo (Via e numero)",
+    "ADDRESS_2": "Informazioni aggiuntive (opzionale)",
+    "ZIP": "CAP",
+    "CITY": "Città",
+    "COUNTRY": "Paese",
+    "SHIPPING_SAME": "L'indirizzo di spedizione è lo stesso di quello di fatturazione",
+    "PLACE_ORDER": "Invia Ordine",
+    "PROCESSING": "Elaborazione...",
+    "SUMMARY_TITLE": "Riepilogo Ordine",
+    "SUBTOTAL": "Subtotale",
+    "ITEMS_BASE_SUBTOTAL": "Costo Base Articoli",
+    "MACHINE_COST": "Costo Macchina",
+    "SETUP_FEE": "Costo di Avvio",
+    "TOTAL": "Totale",
+    "QTY": "Qtà",
+    "PER_PIECE": "al pezzo",
+    "SHIPPING": "Spedizione (CH)",
+    "INVALID_EMAIL": "Email non valida",
+    "COMPANY_OPTIONAL": "Nome Azienda (Opzionale)",
+    "REF_PERSON_OPTIONAL": "Persona di Riferimento (Opzionale)",
+    "SHIPPING_CALCULATED_NEXT_STEP": "il costo di spedizione viene calcolato al prossimo passaggio",
+    "EXCLUDES_SHIPPING": "Escluso costo di spedizione",
+    "ERR_NO_SESSION_START": "Nessuna sessione attiva trovata. Inizia un nuovo preventivo.",
+    "ERR_LOAD_SESSION": "Impossibile caricare i dettagli della sessione. Riprova.",
+    "ERR_NO_SESSION_CREATE_ORDER": "Nessuna sessione attiva trovata. Impossibile creare l'ordine.",
+    "ERR_CREATE_ORDER": "Impossibile creare l'ordine. Riprova."
+  },
+  "PAYMENT": {
+    "TITLE": "Pagamento",
+    "METHOD": "Metodo di Pagamento",
+    "TWINT_TITLE": "Paga con TWINT",
+    "TWINT_DESC": "Inquadra il codice con l'app TWINT, da mobile clicca il bottone.",
+    "TWINT_OPEN": "Apri direttamente in TWINT",
+    "TWINT_LINK": "Apri link di pagamento",
+    "BANK_TITLE": "Bonifico Bancario",
+    "BANK_OWNER": "Titolare",
+    "BANK_IBAN": "IBAN",
+    "BANK_REF": "Riferimento",
+    "BILLING_INFO_HINT": "Abbiamo compilato i campi per te, per favore non modificare il motivo del pagamento",
+    "DOWNLOAD_QR": "Scarica QR-Fattura (PDF)",
+    "DOWNLOAD_CONFIRMATION": "Scarica Conferma (PDF)",
+    "CONFIRM": "Ho completato il pagamento",
+    "SUMMARY_TITLE": "Riepilogo Ordine",
+    "SUBTOTAL": "Subtotale",
+    "SHIPPING": "Spedizione",
+    "SETUP_FEE": "Costo Setup",
+    "TOTAL": "Totale",
+    "LOADING": "Caricamento dettagli ordine...",
+    "METHOD_TWINT": "TWINT",
+    "METHOD_BANK": "Fattura QR / Bonifico",
+    "STATUS_REPORTED_TITLE": "Ordine in lavorazione",
+    "STATUS_REPORTED_DESC": "Abbiamo registrato la tua operazione. Appena confermiamo il pagamento l'ordine entrerà in produzione",
+    "IN_VERIFICATION": "Pagamento Segnalato",
+    "TWINT_QR_ALT": "QR di pagamento TWINT",
+    "TWINT_BUTTON_ALT": "Pulsante TWINT incorporato"
+  },
+  "TRACKING": {
+    "TITLE": "Stato dell'Ordine",
+    "SUBTITLE": "Consulta lo stato del tuo ordine e gestisci il pagamento se necessario.",
+    "STEP_PENDING": "In attesa",
+    "STEP_REPORTED": "In verifica",
+    "STEP_PRODUCTION": "In Produzione",
+    "STEP_SHIPPED": "Spedito"
+  },
+  "ORDER_CONFIRMED": {
+    "TITLE": "Ordine Confermato",
+    "SUBTITLE": "Pagamento registrato. Il tuo ordine è ora in elaborazione.",
+    "STATUS": "In elaborazione",
+    "HEADING": "Stiamo preparando il tuo ordine",
+    "ORDER_REF": "Riferimento ordine",
+    "PROCESSING_TEXT": "Non appena confermiamo il pagamento, il tuo ordine passerà in produzione.",
+    "EMAIL_TEXT": "Ti invieremo una email con aggiornamento stato e prossimi step.",
+    "BACK_HOME": "Torna alla Home"
+  },
+  "STL_VIEWER": {
+    "LOADING": "Caricamento modello 3D..."
+  },
+  "ORDER": {
+    "ERR_ID_NOT_FOUND": "ID ordine non trovato.",
+    "ERR_LOAD_ORDER": "Impossibile caricare i dettagli dell'ordine.",
+    "ERR_REPORT_PAYMENT": "Impossibile segnalare il pagamento. Riprova.",
+    "NOT_AVAILABLE": "N/D"
+  },
+  "DROPZONE": {
+    "DEFAULT_LABEL": "Trascina i file qui o clicca per caricare",
+    "DEFAULT_SUBTEXT": "Supporta .STL, .3MF, .STEP"
+  },
+  "COLOR": {
+    "AVAILABLE_COLORS": "Colori disponibili",
+    "CATEGORY_GLOSSY": "Lucidi",
+    "CATEGORY_MATTE": "Opachi",
+    "NAME": {
+      "BLACK": "Nero",
+      "WHITE": "Bianco",
+      "RED": "Rosso",
+      "BLUE": "Blu",
+      "GREEN": "Verde",
+      "YELLOW": "Giallo",
+      "MATTE_BLACK": "Nero opaco",
+      "MATTE_WHITE": "Bianco opaco",
+      "MATTE_GRAY": "Grigio opaco"
+    }
+  }
+}

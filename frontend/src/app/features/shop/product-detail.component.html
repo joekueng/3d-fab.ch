@@ -1,0 +1,25 @@
+<div class="container wrapper">
+  <a routerLink="/shop" class="back-link">← {{ 'SHOP.BACK' | translate }}</a>
+  
+  @if (product(); as p) {
+    <div class="detail-grid">
+      <div class="image-box"></div>
+      
+      <div class="info">
+        <span class="category">{{ p.category | translate }}</span>
+        <h1>{{ p.name | translate }}</h1>
+        <p class="price">{{ p.price | currency:'EUR' }}</p>
+        
+        <p class="desc">{{ p.description | translate }}</p>
+        
+        <div class="actions">
+          <app-button variant="primary" (click)="addToCart()">
+            {{ 'SHOP.ADD_CART' | translate }}
+          </app-button>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <p>{{ 'SHOP.NOT_FOUND' | translate }}</p>
+  }
+</div>

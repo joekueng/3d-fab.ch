@@ -1,0 +1,72 @@
+<div class="container hero">
+  <h1>{{ 'CALC.TITLE' | translate }}</h1>
+  <p class="subtitle">{{ 'CALC.SUBTITLE' | translate }}</p>
+
+  @if (error()) {
+    <app-alert type="error">{{ errorKey() | translate }}</app-alert>
+  }
+</div>
+
+@if (step() === 'success') {
+    <div class="container hero">
+        <app-success-state context="calc" (action)="onNewQuote()"></app-success-state>
+    </div>
+} @else {
+    <div class="container content-grid">
+      <!-- Left Column: Input -->
+      <div class="col-input">
+        <app-card>
+          <div class="mode-selector">
+            <div class="mode-option"
+                 [class.active]="mode() === 'easy'"
+                 (click)="mode.set('easy')">
+              {{ 'CALC.MODE_EASY' | translate }}
+            </div>
+            <div class="mode-option"
+                 [class.active]="mode() === 'advanced'"
+                 (click)="mode.set('advanced')">
+              {{ 'CALC.MODE_ADVANCED' | translate }}
+            </div>
+          </div>
+    
+          <app-upload-form
+            #uploadForm
+            [mode]="mode()"
+            [loading]="loading()"
+            [uploadProgress]="uploadProgress()"
+            (submitRequest)="onCalculate($event)"
+          ></app-upload-form>
+        </app-card>
+      </div>
+    
+      <!-- Right Column: Result or Info -->
+      <div class="col-result" #resultCol>
+    
+        @if (loading()) {
+            <app-card class="loading-state">
+                <div class="loader-content">
+                    <div class="spinner"></div>
+                    <h3 class="loading-title">{{ 'CALC.ANALYZING_TITLE' | translate }}</h3>
+                    <p class="loading-text">{{ 'CALC.ANALYZING_TEXT' | translate }}</p>
+                </div>
+            </app-card>
+        } @else if (result()) {
+          <app-quote-result 
+            [result]="result()!" 
+            (consult)="onConsult()"
+            (proceed)="onProceed()"
+            (itemChange)="onItemChange($event)"
+          ></app-quote-result>
+        } @else {
+          <app-card>
+            <h3>{{ 'CALC.BENEFITS_TITLE' | translate }}</h3>
+            <ul class="benefits">
+               <li>{{ 'CALC.BENEFITS_1' | translate }}</li>
+               <li>{{ 'CALC.BENEFITS_2' | translate }}</li>
+               <li>{{ 'CALC.BENEFITS_3' | translate }}</li>
+            </ul>
+          </app-card>
+        }
+      </div>
+    </div>
+}

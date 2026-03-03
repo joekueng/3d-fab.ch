@@ -1,31 +1,53 @@
-name: Build, Test and Deploy
+name: Build, Test, Deploy and Analysis
 
 on:
   push:
     branches: [main, int, dev]
+  workflow_dispatch:
 
 concurrency:
   group: print-calculator-${{ gitea.ref }}
   cancel-in-progress: true
 
 jobs:
+  # --- JOB DI ANALISI (In parallelo) ---
+  qodana:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fondamentale per Qodana per analizzare la storia
+
+      - name: 'Qodana Scan'
+        uses: JetBrains/qodana-action@v2025.3
+        env:
+          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
+        with:
+          # In Gitea, pr-mode funziona se il runner ha accesso ai dati del clone
+          pr-mode: ${{ gitea.event_name == 'pull_request' }}
+          use-caches: false
+          # Nota: Gitea ha un supporto limitato per i commenti automatici
+          # rispetto a GitHub, ma l'analisi verrà eseguita correttamente.
+          post-pr-comment: false
+          use-annotations: true
   test-backend:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Evito actions/setup-python (spesso fragile su act_runner)
-      - name: Install Python deps + run tests
-        shell: bash
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Run Tests with Gradle
         run: |
-          apt-get update
-          apt-get install -y --no-install-recommends python3 python3-pip
-          python3 -m pip install --upgrade pip
-          python3 -m pip install -r backend/requirements.txt
-          python3 -m pip install pytest httpx
-          export PYTHONPATH="${PYTHONPATH}:$(pwd)/backend"
-          pytest backend/tests
+          cd backend
+          chmod +x gradlew
+          ./gradlew test
 
   build-and-push:
     needs: test-backend
@@ -81,6 +103,9 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Set ENV
         shell: bash
         run: |
@@ -92,7 +117,7 @@ jobs:
             echo "ENV=dev" >> "$GITHUB_ENV"
           fi
 
-      - name: Trigger deploy on Unraid (forced command key)
+      - name: Setup SSH key
         shell: bash
         run: |
           set -euo pipefail
@@ -120,9 +145,70 @@ jobs:
           # 5) Validazione: se fallisce qui, la chiave NON è valida/corrotta
           ssh-keygen -y -f ~/.ssh/id_ed25519 >/dev/null
 
-          # ... (resto del codice uguale)
           ssh-keyscan -H "${{ secrets.SERVER_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Write env and compose to server
+        shell: bash
+        run: |
+          # 1. Recalculate TAG and OWNER_LOWER (jobs don't share ENV)
+          if [[ "${{ gitea.ref }}" == "refs/heads/main" ]]; then
+            DEPLOY_TAG="prod"
+          elif [[ "${{ gitea.ref }}" == "refs/heads/int" ]]; then
+            DEPLOY_TAG="int"
+          else
+            DEPLOY_TAG="dev"
+          fi
+          DEPLOY_OWNER=$(echo '${{ gitea.repository_owner }}' | tr '[:upper:]' '[:lower:]')
+
+          # 2. Start with the static env file content
+          cat "deploy/envs/${{ env.ENV }}.env" > /tmp/full_env.env
+
+          # 3. Determine DB credentials
+          if [[ "${{ env.ENV }}" == "prod" ]]; then
+            DB_URL="${{ secrets.DB_URL_PROD }}"
+            DB_USER="${{ secrets.DB_USERNAME_PROD }}"
+            DB_PASS="${{ secrets.DB_PASSWORD_PROD }}"
+          elif [[ "${{ env.ENV }}" == "int" ]]; then
+            DB_URL="${{ secrets.DB_URL_INT }}"
+            DB_USER="${{ secrets.DB_USERNAME_INT }}"
+            DB_PASS="${{ secrets.DB_PASSWORD_INT }}"
+          else
+            DB_URL="${{ secrets.DB_URL_DEV }}"
+            DB_USER="${{ secrets.DB_USERNAME_DEV }}"
+            DB_PASS="${{ secrets.DB_PASSWORD_DEV }}"
+          fi
+
+          # 4. Append DB and Docker credentials (quoted)
+          printf '\nDB_URL="%s"\nDB_USERNAME="%s"\nDB_PASSWORD="%s"\n' \
+            "$DB_URL" "$DB_USER" "$DB_PASS" >> /tmp/full_env.env
+          
+          printf 'REGISTRY_URL="%s"\nREPO_OWNER="%s"\nTAG="%s"\n' \
+            "${{ secrets.REGISTRY_URL }}" "$DEPLOY_OWNER" "$DEPLOY_TAG" >> /tmp/full_env.env
+
+          ADMIN_TTL="${{ secrets.ADMIN_SESSION_TTL_MINUTES }}"
+          ADMIN_TTL="${ADMIN_TTL:-480}"
+          printf 'ADMIN_PASSWORD="%s"\nADMIN_SESSION_SECRET="%s"\nADMIN_SESSION_TTL_MINUTES="%s"\n' \
+            "${{ secrets.ADMIN_PASSWORD }}" "${{ secrets.ADMIN_SESSION_SECRET }}" "$ADMIN_TTL" >> /tmp/full_env.env
+
+          # 5. Debug: print content (for debug purposes)
+          echo "Preparing to send env file with variables:"
+          grep -Ev "PASSWORD|SECRET" /tmp/full_env.env || true
+
+          # 5. Send env to server
+          ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" \
+            "setenv ${{ env.ENV }}" < /tmp/full_env.env
+
+          # 6. Send docker-compose.deploy.yml to server
+          ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" \
+            "setcompose ${{ env.ENV }}" < docker-compose.deploy.yml
+            
+
+
+      - name: Trigger deploy on Unraid (forced command key)
+        shell: bash
+        run: |
+          set -euo pipefail
 
           # Aggiungiamo le opzioni di verbosità se dovesse fallire ancora, 
           # e assicuriamoci che l'input sia pulito
-          ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" "${{ env.ENV }}"
+          ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" "deploy ${{ env.ENV }}"
