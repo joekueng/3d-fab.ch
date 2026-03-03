@@ -25,13 +25,17 @@ export const adminAuthInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(request).pipe(
     catchError((error: unknown) => {
-      if (!isLoginRequest && error instanceof HttpErrorResponse && error.status === 401) {
+      if (
+        !isLoginRequest &&
+        error instanceof HttpErrorResponse &&
+        error.status === 401
+      ) {
         const lang = resolveLangFromUrl(router.url);
         if (!router.url.includes('/admin/login')) {
           void router.navigate(['/', lang, 'admin', 'login']);
         }
       }
       return throwError(() => error);
-    })
+    }),
   );
 };

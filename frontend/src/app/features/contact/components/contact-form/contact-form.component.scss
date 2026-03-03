@@ -1,7 +1,23 @@
-.form-group { display: flex; flex-direction: column; margin-bottom: var(--space-4); }
-label { font-size: 0.875rem; font-weight: 500; margin-bottom: var(--space-2); color: var(--color-text); }
-.hint { font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: var(--space-2); }
-.upload-privacy-note { margin-top: calc(var(--space-2) * -1); font-size: 0.78rem; }
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--space-4);
+}
+label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: var(--space-2);
+  color: var(--color-text);
+}
+.hint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+.upload-privacy-note {
+  margin-top: calc(var(--space-2) * -1);
+  font-size: 0.78rem;
+}
 
 .form-control {
   padding: 0.5rem 0.75rem;
@@ -11,7 +27,10 @@ label { font-size: 0.875rem; font-weight: 500; margin-bottom: var(--space-2); co
   background: var(--color-bg-card);
   color: var(--color-text);
   font-family: inherit;
-  &:focus { outline: none; border-color: var(--color-brand); }
+  &:focus {
+    outline: none;
+    border-color: var(--color-brand);
+  }
 }
 
 select.form-control {
@@ -27,13 +46,18 @@ select.form-control {
   flex-direction: column;
   gap: var(--space-4);
   margin-bottom: var(--space-4);
-  @media(min-width: 768px) {
+  @media (min-width: 768px) {
     flex-direction: row;
-    .col { flex: 1; margin-bottom: 0; }
+    .col {
+      flex: 1;
+      margin-bottom: 0;
+    }
   }
 }
 
-app-input.col { width: 100%; }
+app-input.col {
+  width: 100%;
+}
 
 /* User Type Selector Styles */
 .user-type-selector {
@@ -58,14 +82,16 @@ app-input.col { width: 100%; }
   color: var(--color-text-muted);
   transition: all 0.2s ease;
   user-select: none;
-  
-  &:hover { color: var(--color-text); }
-  
+
+  &:hover {
+    color: var(--color-text);
+  }
+
   &.selected {
     background-color: var(--color-brand);
     color: #000;
     font-weight: 600;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   }
 }
 
@@ -87,7 +113,10 @@ app-input.col { width: 100%; }
   cursor: pointer;
   color: var(--color-text-muted);
   transition: all 0.2s;
-  &:hover { border-color: var(--color-brand); color: var(--color-brand); }
+  &:hover {
+    border-color: var(--color-brand);
+    color: var(--color-brand);
+  }
 }
 
 .file-grid {
@@ -111,8 +140,13 @@ app-input.col { width: 100%; }
 }
 
 .preview-img {
-   width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0;
-   border-radius: var(--radius-sm);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: var(--radius-sm);
 }
 
 .preview-video {
@@ -126,21 +160,46 @@ app-input.col { width: 100%; }
 }
 
 .file-icon {
-   font-weight: 700; color: var(--color-text-muted); font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
 }
 
 .file-name {
-   font-size: 0.65rem; color: var(--color-text); white-space: nowrap; overflow: hidden;
-   text-overflow: ellipsis; width: 100%; text-align: center; position: absolute; bottom: 2px;
-   padding: 0 4px; z-index: 2; background: rgba(255,255,255,0.8);
+  font-size: 0.65rem;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  text-align: center;
+  position: absolute;
+  bottom: 2px;
+  padding: 0 4px;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.8);
 }
 
 .remove-btn {
-  position: absolute; top: 2px; right: 2px; z-index: 10;
-  background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%;
-  width: 18px; height: 18px; font-size: 12px; cursor: pointer;
-  display: flex; align-items: center; justify-content: center; line-height: 1;
-  &:hover { background: red; }
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  &:hover {
+    background: red;
+  }
 }
 
 .legal-consent {
@@ -169,7 +228,7 @@ app-input.col { width: 100%; }
     &:checked ~ .checkmark {
       background-color: var(--color-brand);
       border-color: var(--color-brand);
-      
+
       &:after {
         display: block;
       }

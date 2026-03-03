@@ -1,35 +1,74 @@
-    <header class="navbar">
-      <div class="container navbar-inner">
-        <a routerLink="/" class="brand">3D <span class="highlight">fab</span></a>
-        
-        <div class="mobile-toggle" (click)="toggleMenu()" [class.active]="isMenuOpen">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
+<header class="navbar">
+  <div class="container navbar-inner">
+    <a routerLink="/" class="brand">3D <span class="highlight">fab</span></a>
 
-        <nav class="nav-links" [class.open]="isMenuOpen">
-          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">{{ 'NAV.HOME' | translate }}</a>
-          <a routerLink="/calculator/basic" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}" (click)="closeMenu()">{{ 'NAV.CALCULATOR' | translate }}</a>
-          <a routerLink="/shop" routerLinkActive="active" (click)="closeMenu()">{{ 'NAV.SHOP' | translate }}</a>
-          <a routerLink="/about" routerLinkActive="active" (click)="closeMenu()">{{ 'NAV.ABOUT' | translate }}</a>
-          <a routerLink="/contact" routerLinkActive="active" (click)="closeMenu()">{{ 'NAV.CONTACT' | translate }}</a>
-        </nav>
+    <div
+      class="mobile-toggle"
+      (click)="toggleMenu()"
+      [class.active]="isMenuOpen"
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
 
-        <div class="actions">
-          <select
-            class="lang-switch"
-            [value]="langService.selectedLang()"
-            (change)="onLanguageChange($event)"
-            [attr.aria-label]="'NAV.LANGUAGE_SELECTOR' | translate">
-            @for (option of languageOptions; track option.value) {
-              <option [value]="option.value">{{ option.label }}</option>
-            }
-          </select>
-          
-          <div class="icon-placeholder">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-          </div>
-        </div>
+    <nav class="nav-links" [class.open]="isMenuOpen">
+      <a
+        routerLink="/"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        (click)="closeMenu()"
+        >{{ "NAV.HOME" | translate }}</a
+      >
+      <a
+        routerLink="/calculator/basic"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: false }"
+        (click)="closeMenu()"
+        >{{ "NAV.CALCULATOR" | translate }}</a
+      >
+      <a routerLink="/shop" routerLinkActive="active" (click)="closeMenu()">{{
+        "NAV.SHOP" | translate
+      }}</a>
+      <a routerLink="/about" routerLinkActive="active" (click)="closeMenu()">{{
+        "NAV.ABOUT" | translate
+      }}</a>
+      <a
+        routerLink="/contact"
+        routerLinkActive="active"
+        (click)="closeMenu()"
+        >{{ "NAV.CONTACT" | translate }}</a
+      >
+    </nav>
+
+    <div class="actions">
+      <select
+        class="lang-switch"
+        [value]="langService.selectedLang()"
+        (change)="onLanguageChange($event)"
+        [attr.aria-label]="'NAV.LANGUAGE_SELECTOR' | translate"
+      >
+        @for (option of languageOptions; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+
+      <div class="icon-placeholder">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
       </div>
-    </header>
+    </div>
+  </div>
+</header>

@@ -10,9 +10,14 @@ import { environment } from '../../../environments/environment';
 @Component({
   selector: 'app-order',
   standalone: true,
-  imports: [CommonModule, AppButtonComponent, AppCardComponent, TranslateModule],
+  imports: [
+    CommonModule,
+    AppButtonComponent,
+    AppCardComponent,
+    TranslateModule,
+  ],
   templateUrl: './order.component.html',
-  styleUrl: './order.component.scss'
+  styleUrl: './order.component.scss',
 })
 export class OrderComponent implements OnInit {
   private route = inject(ActivatedRoute);
@@ -50,7 +55,7 @@ export class OrderComponent implements OnInit {
         console.error('Failed to load order', err);
         this.error.set('ORDER.ERR_LOAD_ORDER');
         this.loading.set(false);
-      }
+      },
     });
   }
 
@@ -72,7 +77,7 @@ export class OrderComponent implements OnInit {
         a.click();
         window.URL.revokeObjectURL(url);
       },
-      error: (err) => console.error('Failed to download QR invoice', err)
+      error: (err) => console.error('Failed to download QR invoice', err),
     });
   }
 
@@ -80,14 +85,18 @@ export class OrderComponent implements OnInit {
     if (!this.orderId) return;
     this.quoteService.getTwintPayment(this.orderId).subscribe({
       next: (res) => {
-        const qrPath = typeof res.qrImageUrl === 'string' ? `${res.qrImageUrl}?size=360` : null;
-        const qrDataUri = typeof res.qrImageDataUri === 'string' ? res.qrImageDataUri : null;
+        const qrPath =
+          typeof res.qrImageUrl === 'string'
+            ? `${res.qrImageUrl}?size=360`
+            : null;
+        const qrDataUri =
+          typeof res.qrImageDataUri === 'string' ? res.qrImageDataUri : null;
         this.twintOpenUrl.set(this.resolveApiUrl(res.openUrl));
         this.twintQrUrl.set(qrDataUri ?? this.resolveApiUrl(qrPath));
       },
       error: (err) => {
         console.error('Failed to load TWINT payment details', err);
-      }
+      },
     });
   }
 
@@ -107,10 +116,10 @@ export class OrderComponent implements OnInit {
     if (lang === 'de') {
       return 'https://go.twint.ch/static/img/button_dark_de.svg';
     }
-    if (lang === 'it'){
+    if (lang === 'it') {
       return 'https://go.twint.ch/static/img/button_dark_it.svg';
     }
-    if (lang === 'fr'){
+    if (lang === 'fr') {
       return 'https://go.twint.ch/static/img/button_dark_fr.svg';
     }
     // Default to EN for everything else (it, fr, en) as instructed or if not DE
@@ -135,19 +144,21 @@ export class OrderComponent implements OnInit {
     if (!this.orderId || !this.selectedPaymentMethod) {
       return;
     }
-    
-    this.quoteService.reportPayment(this.orderId, this.selectedPaymentMethod).subscribe({
-      next: (order) => {
-        this.order.set(order);
-        // The UI will re-render and show the 'REPORTED' state.
-        // We stay on this page to let the user see the "In verifica" 
-        // status along with payment instructions.
-      },
-      error: (err) => {
-        console.error('Failed to report payment', err);
-        this.error.set('ORDER.ERR_REPORT_PAYMENT');
-      }
-    });
+
+    this.quoteService
+      .reportPayment(this.orderId, this.selectedPaymentMethod)
+      .subscribe({
+        next: (order) => {
+          this.order.set(order);
+          // The UI will re-render and show the 'REPORTED' state.
+          // We stay on this page to let the user see the "In verifica"
+          // status along with payment instructions.
+        },
+        error: (err) => {
+          console.error('Failed to report payment', err);
+          this.error.set('ORDER.ERR_REPORT_PAYMENT');
+        },
+      });
   }
 
   getDisplayOrderNumber(order: any): string {

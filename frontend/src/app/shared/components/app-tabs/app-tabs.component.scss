@@ -12,8 +12,10 @@
   color: var(--color-text-muted);
   border-bottom: 2px solid transparent;
   transition: all 0.2s;
-  
-  &:hover { color: var(--color-text); }
+
+  &:hover {
+    color: var(--color-text);
+  }
   &.active {
     color: var(--color-brand);
     border-bottom-color: var(--color-brand);

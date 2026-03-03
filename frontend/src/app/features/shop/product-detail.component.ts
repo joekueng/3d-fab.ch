@@ -10,23 +10,25 @@ import { AppButtonComponent } from '../../shared/components/app-button/app-butto
   standalone: true,
   imports: [CommonModule, RouterLink, TranslateModule, AppButtonComponent],
   templateUrl: './product-detail.component.html',
-  styleUrl: './product-detail.component.scss'
+  styleUrl: './product-detail.component.scss',
 })
 export class ProductDetailComponent {
   // Input binding from router
   id = input<string>();
-  
+
   product = signal<Product | undefined>(undefined);
 
   constructor(
     private shopService: ShopService,
-    private translate: TranslateService
+    private translate: TranslateService,
   ) {}
 
   ngOnInit() {
     const productId = this.id();
     if (productId) {
-      this.shopService.getProductById(productId).subscribe(p => this.product.set(p));
+      this.shopService
+        .getProductById(productId)
+        .subscribe((p) => this.product.set(p));
     }
   }
 

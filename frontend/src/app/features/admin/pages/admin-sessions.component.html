@@ -4,7 +4,14 @@
       <h2>Sessioni quote</h2>
       <p>Sessioni create dal configuratore con stato e conversione ordine.</p>
     </div>
-    <button type="button" class="btn-primary" (click)="loadSessions()" [disabled]="loading">Aggiorna</button>
+    <button
+      type="button"
+      class="btn-primary"
+      (click)="loadSessions()"
+      [disabled]="loading"
+    >
+      Aggiorna
+    </button>
   </header>
 
   <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
@@ -26,41 +33,73 @@
       <tbody>
         <ng-container *ngFor="let session of sessions">
           <tr>
-            <td [title]="session.id">{{ session.id | slice:0:8 }}</td>
-            <td>{{ session.createdAt | date:'short' }}</td>
-            <td>{{ session.expiresAt | date:'short' }}</td>
+            <td [title]="session.id">{{ session.id | slice: 0 : 8 }}</td>
+            <td>{{ session.createdAt | date: "short" }}</td>
+            <td>{{ session.expiresAt | date: "short" }}</td>
             <td>{{ session.materialCode }}</td>
             <td>{{ session.status }}</td>
-            <td>{{ session.convertedOrderId || '-' }}</td>
+            <td>{{ session.convertedOrderId || "-" }}</td>
             <td class="actions">
               <button
                 type="button"
                 class="btn-secondary"
-                (click)="toggleSessionDetail(session)">
-                {{ isDetailOpen(session.id) ? 'Nascondi' : 'Vedi' }}
+                (click)="toggleSessionDetail(session)"
+              >
+                {{ isDetailOpen(session.id) ? "Nascondi" : "Vedi" }}
               </button>
               <button
                 type="button"
                 class="btn-danger"
                 (click)="deleteSession(session)"
-                [disabled]="isDeletingSession(session.id) || !!session.convertedOrderId"
-                [title]="session.convertedOrderId ? 'Sessione collegata a un ordine, non eliminabile.' : ''">
-                {{ isDeletingSession(session.id) ? 'Eliminazione...' : 'Elimina' }}
+                [disabled]="
+                  isDeletingSession(session.id) || !!session.convertedOrderId
+                "
+                [title]="
+                  session.convertedOrderId
+                    ? 'Sessione collegata a un ordine, non eliminabile.'
+                    : ''
+                "
+              >
+                {{
+                  isDeletingSession(session.id) ? "Eliminazione..." : "Elimina"
+                }}
               </button>
             </td>
           </tr>
           <tr *ngIf="isDetailOpen(session.id)">
             <td colspan="7" class="detail-cell">
-              <div *ngIf="isLoadingDetail(session.id)">Caricamento dettaglio...</div>
-              <div *ngIf="!isLoadingDetail(session.id) && getSessionDetail(session.id) as detail" class="detail-box">
+              <div *ngIf="isLoadingDetail(session.id)">
+                Caricamento dettaglio...
+              </div>
+              <div
+                *ngIf="
+                  !isLoadingDetail(session.id) &&
+                  getSessionDetail(session.id) as detail
+                "
+                class="detail-box"
+              >
                 <div class="detail-summary">
-                  <div><strong>Elementi:</strong> {{ detail.items.length }}</div>
-                  <div><strong>Totale articoli:</strong> {{ detail.itemsTotalChf | currency:'CHF' }}</div>
-                  <div><strong>Spedizione:</strong> {{ detail.shippingCostChf | currency:'CHF' }}</div>
-                  <div><strong>Totale sessione:</strong> {{ detail.grandTotalChf | currency:'CHF' }}</div>
+                  <div>
+                    <strong>Elementi:</strong> {{ detail.items.length }}
+                  </div>
+                  <div>
+                    <strong>Totale articoli:</strong>
+                    {{ detail.itemsTotalChf | currency: "CHF" }}
+                  </div>
+                  <div>
+                    <strong>Spedizione:</strong>
+                    {{ detail.shippingCostChf | currency: "CHF" }}
+                  </div>
+                  <div>
+                    <strong>Totale sessione:</strong>
+                    {{ detail.grandTotalChf | currency: "CHF" }}
+                  </div>
                 </div>
 
-                <table class="detail-table" *ngIf="detail.items.length > 0; else noItemsTpl">
+                <table
+                  class="detail-table"
+                  *ngIf="detail.items.length > 0; else noItemsTpl"
+                >
                   <thead>
                     <tr>
                       <th>File</th>
@@ -76,9 +115,15 @@
                       <td>{{ item.originalFilename }}</td>
                       <td>{{ item.quantity }}</td>
                       <td>{{ formatPrintTime(item.printTimeSeconds) }}</td>
-                      <td>{{ item.materialGrams ? (item.materialGrams | number:'1.0-2') + ' g' : '-' }}</td>
+                      <td>
+                        {{
+                          item.materialGrams
+                            ? (item.materialGrams | number: "1.0-2") + " g"
+                            : "-"
+                        }}
+                      </td>
                       <td>{{ item.status }}</td>
-                      <td>{{ item.unitPriceChf | currency:'CHF' }}</td>
+                      <td>{{ item.unitPriceChf | currency: "CHF" }}</td>
                     </tr>
                   </tbody>
                 </table>

@@ -6,28 +6,37 @@
   border-radius: var(--radius-md);
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    border-color 0.2s;
   border: 1px solid transparent;
   font-family: inherit;
   font-size: 1rem;
-  
+
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
   }
 }
-.w-full { width: 100%; }
+.w-full {
+  width: 100%;
+}
 
 .btn-primary {
   background-color: var(--color-brand);
   color: var(--color-neutral-900);
-  &:hover:not(:disabled) { background-color: var(--color-brand-hover); }
+  &:hover:not(:disabled) {
+    background-color: var(--color-brand-hover);
+  }
 }
 
 .btn-secondary {
   background-color: var(--color-neutral-200);
   color: var(--color-neutral-900);
-  &:hover:not(:disabled) { background-color: var(--color-neutral-300); }
+  &:hover:not(:disabled) {
+    background-color: var(--color-neutral-300);
+  }
 }
 
 .btn-outline {
@@ -37,8 +46,8 @@
   padding: calc(0.5rem - 1px) calc(1rem - 1px);
   color: var(--color-neutral-900);
   font-weight: 600;
-  &:hover:not(:disabled) { 
-    background-color: var(--color-brand); 
+  &:hover:not(:disabled) {
+    background-color: var(--color-brand);
     color: var(--color-neutral-900);
   }
 }
@@ -47,5 +56,7 @@
   background-color: transparent;
   color: var(--color-text-muted);
   padding: 0.5rem;
-  &:hover:not(:disabled) { color: var(--color-text); }
+  &:hover:not(:disabled) {
+    color: var(--color-text);
+  }
 }

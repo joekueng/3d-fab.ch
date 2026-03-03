@@ -7,8 +7,13 @@ import { AppCardComponent } from '../../shared/components/app-card/app-card.comp
 @Component({
   selector: 'app-contact-page',
   standalone: true,
-  imports: [CommonModule, TranslateModule, ContactFormComponent, AppCardComponent],
+  imports: [
+    CommonModule,
+    TranslateModule,
+    ContactFormComponent,
+    AppCardComponent,
+  ],
   templateUrl: './contact-page.component.html',
-  styleUrl: './contact-page.component.scss'
+  styleUrl: './contact-page.component.scss',
 })
 export class ContactPageComponent {}

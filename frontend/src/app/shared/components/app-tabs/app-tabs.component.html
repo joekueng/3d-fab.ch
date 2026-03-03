@@ -1,9 +1,10 @@
 <div class="tabs">
   @for (tab of tabs(); track tab.value) {
-    <button 
-      class="tab" 
+    <button
+      class="tab"
       [class.active]="activeTab() === tab.value"
-      (click)="selectTab(tab.value)">
+      (click)="selectTab(tab.value)"
+    >
       {{ tab.label | translate }}
     </button>
   }

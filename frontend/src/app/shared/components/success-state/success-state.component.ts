@@ -10,7 +10,7 @@ export type SuccessContext = 'contact' | 'calc' | 'shop';
   standalone: true,
   imports: [CommonModule, TranslateModule, AppButtonComponent],
   templateUrl: './success-state.component.html',
-  styleUrl: './success-state.component.scss'
+  styleUrl: './success-state.component.scss',
 })
 export class SuccessStateComponent {
   context = input.required<SuccessContext>();

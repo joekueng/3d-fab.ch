@@ -9,7 +9,7 @@ import { Product } from '../../services/shop.service';
   standalone: true,
   imports: [CommonModule, RouterLink, TranslateModule],
   templateUrl: './product-card.component.html',
-  styleUrl: './product-card.component.scss'
+  styleUrl: './product-card.component.scss',
 })
 export class ProductCardComponent {
   product = input.required<Product>();
