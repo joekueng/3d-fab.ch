@@ -176,9 +176,9 @@
     "CONSENT": {
       "UPLOAD_NOTICE_PREFIX": "Durch das Hochladen einer Datei akzeptieren Sie unsere",
       "UPLOAD_NOTICE_LINK": "Datenschutzerklärung",
-      "LABEL_PREFIX": "Ich habe gelesen und akzeptiere die",
+      "LABEL_PREFIX": "Ich habe die",
       "TERMS_LINK": "Allgemeinen Geschäftsbedingungen",
-      "AND": "und die",
+      "AND": "gelesen und akzeptiere die",
       "PRIVACY_LINK": "Datenschutzerklärung",
       "REQUIRED_ERROR": "Um fortzufahren müssen Sie AGB und Datenschutz akzeptieren."
     },
@@ -509,7 +509,7 @@
     "CARD_SHOP_3_TITLE": "Auf Anfrage",
     "CARD_SHOP_3_TEXT": "Sie finden nicht, was Sie brauchen? Wir entwickeln und produzieren es für Sie.",
     "SEC_ABOUT_TITLE": "Über uns",
-    "SEC_ABOUT_TEXT": "Wir sind zwei Ingenieurstudenten: 3D-Druck hat uns aus einem einfachen Grund begeistert – ein Problem sehen und die Lösung bauen. Aus dieser Idee entstehen Prototypen und Objekte, die im Alltag funktionieren.",
+    "SEC_ABOUT_TEXT": "Wir sind zwei Ingenieurstudenten: 3D-Druck hat uns aus einem einfachen Grund begeistert ein Problem sehen und die Lösung finden. Aus dieser Idee entstehen Prototypen und Objekte, die im Alltag funktionieren.",
     "FOUNDERS_PHOTO": "Foto der Gründer"
   },
   "ORDER": {
