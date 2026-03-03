@@ -5,7 +5,7 @@ import {
   AdminContactRequest,
   AdminContactRequestAttachment,
   AdminContactRequestDetail,
-  AdminOperationsService
+  AdminOperationsService,
 } from '../services/admin-operations.service';
 
 @Component({
@@ -13,7 +13,7 @@ import {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './admin-contact-requests.component.html',
-  styleUrl: './admin-contact-requests.component.scss'
+  styleUrl: './admin-contact-requests.component.scss',
 })
 export class AdminContactRequestsComponent implements OnInit {
   private readonly adminOperationsService = inject(AdminOperationsService);
@@ -43,7 +43,10 @@ export class AdminContactRequestsComponent implements OnInit {
         if (requests.length === 0) {
           this.selectedRequest = null;
           this.selectedRequestId = null;
-        } else if (this.selectedRequestId && requests.some(r => r.id === this.selectedRequestId)) {
+        } else if (
+          this.selectedRequestId &&
+          requests.some((r) => r.id === this.selectedRequestId)
+        ) {
           this.openDetails(this.selectedRequestId);
         } else {
           this.openDetails(requests[0].id);
@@ -53,7 +56,7 @@ export class AdminContactRequestsComponent implements OnInit {
       error: () => {
         this.loading = false;
         this.errorMessage = 'Impossibile caricare le richieste di contatto.';
-      }
+      },
     });
   }
 
@@ -70,7 +73,7 @@ export class AdminContactRequestsComponent implements OnInit {
       error: () => {
         this.detailLoading = false;
         this.errorMessage = 'Impossibile caricare il dettaglio richiesta.';
-      }
+      },
     });
   }
 
@@ -83,12 +86,18 @@ export class AdminContactRequestsComponent implements OnInit {
       return;
     }
 
-    this.adminOperationsService.downloadContactRequestAttachment(this.selectedRequest.id, attachment.id).subscribe({
-      next: (blob) => this.downloadBlob(blob, attachment.originalFilename || `attachment-${attachment.id}`),
-      error: () => {
-        this.errorMessage = 'Download allegato non riuscito.';
-      }
-    });
+    this.adminOperationsService
+      .downloadContactRequestAttachment(this.selectedRequest.id, attachment.id)
+      .subscribe({
+        next: (blob) =>
+          this.downloadBlob(
+            blob,
+            attachment.originalFilename || `attachment-${attachment.id}`,
+          ),
+        error: () => {
+          this.errorMessage = 'Download allegato non riuscito.';
+        },
+      });
   }
 
   formatFileSize(bytes?: number): string {
@@ -120,7 +129,12 @@ export class AdminContactRequestsComponent implements OnInit {
   }
 
   updateRequestStatus(): void {
-    if (!this.selectedRequest || !this.selectedRequestId || !this.selectedStatus || this.updatingStatus) {
+    if (
+      !this.selectedRequest ||
+      !this.selectedRequestId ||
+      !this.selectedStatus ||
+      this.updatingStatus
+    ) {
       return;
     }
 
@@ -128,26 +142,31 @@ export class AdminContactRequestsComponent implements OnInit {
     this.successMessage = null;
     this.updatingStatus = true;
 
-    this.adminOperationsService.updateContactRequestStatus(this.selectedRequestId, { status: this.selectedStatus }).subscribe({
-      next: (updated) => {
-        this.selectedRequest = updated;
-        this.selectedStatus = updated.status || this.selectedStatus;
-        this.requests = this.requests.map(request =>
-          request.id === updated.id
-            ? {
-                ...request,
-                status: updated.status
-              }
-            : request
-        );
-        this.updatingStatus = false;
-        this.successMessage = 'Stato richiesta aggiornato.';
-      },
-      error: () => {
-        this.updatingStatus = false;
-        this.errorMessage = 'Impossibile aggiornare lo stato della richiesta.';
-      }
-    });
+    this.adminOperationsService
+      .updateContactRequestStatus(this.selectedRequestId, {
+        status: this.selectedStatus,
+      })
+      .subscribe({
+        next: (updated) => {
+          this.selectedRequest = updated;
+          this.selectedStatus = updated.status || this.selectedStatus;
+          this.requests = this.requests.map((request) =>
+            request.id === updated.id
+              ? {
+                  ...request,
+                  status: updated.status,
+                }
+              : request,
+          );
+          this.updatingStatus = false;
+          this.successMessage = 'Stato richiesta aggiornato.';
+        },
+        error: () => {
+          this.updatingStatus = false;
+          this.errorMessage =
+            'Impossibile aggiornare lo stato della richiesta.';
+        },
+      });
   }
 
   private downloadBlob(blob: Blob, filename: string): void {

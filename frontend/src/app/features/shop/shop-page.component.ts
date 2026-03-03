@@ -9,6 +9,6 @@ import { AppButtonComponent } from '../../shared/components/app-button/app-butto
   standalone: true,
   imports: [CommonModule, RouterLink, TranslateModule, AppButtonComponent],
   templateUrl: './shop-page.component.html',
-  styleUrl: './shop-page.component.scss'
+  styleUrl: './shop-page.component.scss',
 })
 export class ShopPageComponent {}

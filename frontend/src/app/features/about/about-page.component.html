@@ -1,17 +1,16 @@
 <section class="about-section">
   <div class="container split-layout">
-
     <!-- Left Column: Content -->
     <div class="text-content">
-      <p class="eyebrow">{{ 'ABOUT.EYEBROW' | translate }}</p>
-      <h1>{{ 'ABOUT.TITLE' | translate }}</h1>
-      <p class="subtitle">{{ 'ABOUT.SUBTITLE' | translate }}</p>
+      <p class="eyebrow">{{ "ABOUT.EYEBROW" | translate }}</p>
+      <h1>{{ "ABOUT.TITLE" | translate }}</h1>
+      <p class="subtitle">{{ "ABOUT.SUBTITLE" | translate }}</p>
 
       <div class="divider"></div>
 
-      <p class="description">{{ 'ABOUT.HOW_TEXT' | translate }}</p>
-      <br>
-      <h2 class="passions-title">{{ 'ABOUT.PASSIONS_TITLE' | translate }}</h2>
+      <p class="description">{{ "ABOUT.HOW_TEXT" | translate }}</p>
+      <br />
+      <h2 class="passions-title">{{ "ABOUT.PASSIONS_TITLE" | translate }}</h2>
 
       <div class="tags-container">
         @for (passion of passions; track passion.id) {
@@ -40,11 +39,18 @@
         (keydown.space)="toggleSelectedMember('joe'); $event.preventDefault()"
       >
         <div class="placeholder-img">
-          <img src="assets/images/joe.jpg" [attr.alt]="'ABOUT.MEMBER_JOE_ALT' | translate">
+          <img
+            src="assets/images/joe.jpg"
+            [attr.alt]="'ABOUT.MEMBER_JOE_ALT' | translate"
+          />
         </div>
         <div class="member-info">
-          <span class="member-name">{{ 'ABOUT.MEMBER_JOE_NAME' | translate }}</span>
-          <span class="member-role">{{ 'ABOUT.MEMBER_JOE_ROLE' | translate }}</span>
+          <span class="member-name">{{
+            "ABOUT.MEMBER_JOE_NAME" | translate
+          }}</span>
+          <span class="member-role">{{
+            "ABOUT.MEMBER_JOE_ROLE" | translate
+          }}</span>
         </div>
       </div>
       <div
@@ -60,18 +66,26 @@
         (blur)="setHoveredMember(null)"
         (click)="toggleSelectedMember('matteo')"
         (keydown.enter)="toggleSelectedMember('matteo')"
-        (keydown.space)="toggleSelectedMember('matteo'); $event.preventDefault()"
+        (keydown.space)="
+          toggleSelectedMember('matteo'); $event.preventDefault()
+        "
       >
         <div class="placeholder-img">
-          <img src="assets/images/matteo.jpg" [attr.alt]="'ABOUT.MEMBER_MATTEO_ALT' | translate">
+          <img
+            src="assets/images/matteo.jpg"
+            [attr.alt]="'ABOUT.MEMBER_MATTEO_ALT' | translate"
+          />
         </div>
         <div class="member-info">
-          <span class="member-name">{{ 'ABOUT.MEMBER_MATTEO_NAME' | translate }}</span>
-          <span class="member-role">{{ 'ABOUT.MEMBER_MATTEO_ROLE' | translate }}</span>
+          <span class="member-name">{{
+            "ABOUT.MEMBER_MATTEO_NAME" | translate
+          }}</span>
+          <span class="member-role">{{
+            "ABOUT.MEMBER_MATTEO_ROLE" | translate
+          }}</span>
         </div>
       </div>
     </div>
-
   </div>
 </section>
 

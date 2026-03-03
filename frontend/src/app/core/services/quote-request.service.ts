@@ -17,7 +17,7 @@ export interface QuoteRequestDto {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class QuoteRequestService {
   private http = inject(HttpClient);
@@ -25,15 +25,15 @@ export class QuoteRequestService {
 
   createRequest(request: QuoteRequestDto, files: File[]): Observable<any> {
     const formData = new FormData();
-    
+
     // Append Request DTO as JSON Blob
     const requestBlob = new Blob([JSON.stringify(request)], {
-      type: 'application/json'
+      type: 'application/json',
     });
     formData.append('request', requestBlob);
-    
+
     // Append Files
-    files.forEach(file => {
+    files.forEach((file) => {
       formData.append('files', file);
     });
 

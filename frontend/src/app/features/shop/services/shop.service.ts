@@ -10,7 +10,7 @@ export interface Product {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ShopService {
   // Dati statici per ora
@@ -19,23 +19,23 @@ export class ShopService {
       id: '1',
       name: 'SHOP.PRODUCTS.P1.NAME',
       description: 'SHOP.PRODUCTS.P1.DESC',
-      price: 24.90,
-      category: 'SHOP.CATEGORIES.FILAMENTS'
+      price: 24.9,
+      category: 'SHOP.CATEGORIES.FILAMENTS',
     },
     {
       id: '2',
       name: 'SHOP.PRODUCTS.P2.NAME',
       description: 'SHOP.PRODUCTS.P2.DESC',
-      price: 29.90,
-      category: 'SHOP.CATEGORIES.FILAMENTS'
+      price: 29.9,
+      category: 'SHOP.CATEGORIES.FILAMENTS',
     },
     {
       id: '3',
       name: 'SHOP.PRODUCTS.P3.NAME',
       description: 'SHOP.PRODUCTS.P3.DESC',
-      price: 15.00,
-      category: 'SHOP.CATEGORIES.ACCESSORIES'
-    }
+      price: 15.0,
+      category: 'SHOP.CATEGORIES.ACCESSORIES',
+    },
   ];
 
   getProducts(): Observable<Product[]> {
@@ -43,6 +43,6 @@ export class ShopService {
   }
 
   getProductById(id: string): Observable<Product | undefined> {
-    return of(this.staticProducts.find(p => p.id === id));
+    return of(this.staticProducts.find((p) => p.id === id));
   }
 }

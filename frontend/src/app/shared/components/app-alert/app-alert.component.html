@@ -1,9 +1,17 @@
 <div class="alert" [ngClass]="type()">
   <div class="icon">
-    @if(type() === 'info') { ℹ️ }
-    @if(type() === 'warning') { ⚠️ }
-    @if(type() === 'error') { ❌ }
-    @if(type() === 'success') { ✅ }
+    @if (type() === "info") {
+      ℹ️
+    }
+    @if (type() === "warning") {
+      ⚠️
+    }
+    @if (type() === "error") {
+      ❌
+    }
+    @if (type() === "success") {
+      ✅
+    }
   </div>
   <div class="content"><ng-content></ng-content></div>
 </div>

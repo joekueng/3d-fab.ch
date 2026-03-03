@@ -11,23 +11,31 @@ export interface AdminAuthResponse {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AdminAuthService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/api/admin/auth`;
 
   login(password: string): Observable<AdminAuthResponse> {
-    return this.http.post<AdminAuthResponse>(`${this.baseUrl}/login`, { password }, { withCredentials: true });
+    return this.http.post<AdminAuthResponse>(
+      `${this.baseUrl}/login`,
+      { password },
+      { withCredentials: true },
+    );
   }
 
   logout(): Observable<void> {
-    return this.http.post<void>(`${this.baseUrl}/logout`, {}, { withCredentials: true });
+    return this.http.post<void>(
+      `${this.baseUrl}/logout`,
+      {},
+      { withCredentials: true },
+    );
   }
 
   me(): Observable<boolean> {
-    return this.http.get<AdminAuthResponse>(`${this.baseUrl}/me`, { withCredentials: true }).pipe(
-      map((response) => Boolean(response?.authenticated))
-    );
+    return this.http
+      .get<AdminAuthResponse>(`${this.baseUrl}/me`, { withCredentials: true })
+      .pipe(map((response) => Boolean(response?.authenticated)));
   }
 }

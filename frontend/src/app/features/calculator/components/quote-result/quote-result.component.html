@@ -1,14 +1,15 @@
 <app-card>
-  <h3 class="title">{{ 'CALC.RESULT' | translate }}</h3>
-  
+  <h3 class="title">{{ "CALC.RESULT" | translate }}</h3>
+
   <!-- Summary Grid (NOW ON TOP) -->
   <div class="result-grid">
-    <app-summary-card 
-      class="item full-width" 
-      [label]="'CALC.COST' | translate" 
-      [large]="true" 
-      [highlight]="true">
-      {{ totals().price | currency:result().currency }}
+    <app-summary-card
+      class="item full-width"
+      [label]="'CALC.COST' | translate"
+      [large]="true"
+      [highlight]="true"
+    >
+      {{ totals().price | currency: result().currency }}
     </app-summary-card>
 
     <app-summary-card [label]="'CALC.TIME' | translate">
@@ -21,19 +22,26 @@
   </div>
 
   <div class="setup-note">
-    <small>{{ 'CALC.SETUP_NOTE' | translate:{cost: (result().setupCost | currency:result().currency)} }}</small><br>
-    <small class="shipping-note" style="color: #666;">{{ 'CALC.SHIPPING_NOTE' | translate }}</small>
+    <small>{{
+      "CALC.SETUP_NOTE"
+        | translate
+          : { cost: (result().setupCost | currency: result().currency) }
+    }}</small
+    ><br />
+    <small class="shipping-note" style="color: #666">{{
+      "CALC.SHIPPING_NOTE" | translate
+    }}</small>
   </div>
 
   @if (result().notes) {
     <div class="notes-section">
-        <label>{{ 'CALC.NOTES' | translate }}:</label>
-        <p>{{ result().notes }}</p>
+      <label>{{ "CALC.NOTES" | translate }}:</label>
+      <p>{{ result().notes }}</p>
     </div>
   }
 
   <div class="divider"></div>
-  
+
   <!-- Detailed Items List (NOW ON BOTTOM) -->
   <div class="items-list">
     @for (item of items(); track item.fileName; let i = $index) {
@@ -41,33 +49,41 @@
         <div class="item-info">
           <span class="file-name">{{ item.fileName }}</span>
           <span class="file-details">
-             {{ (item.unitTime / 3600) | number:'1.1-1' }}h | {{ item.unitWeight | number:'1.0-0' }}g
+            {{ item.unitTime / 3600 | number: "1.1-1" }}h |
+            {{ item.unitWeight | number: "1.0-0" }}g
           </span>
         </div>
-        
+
         <div class="item-controls">
-            <div class="qty-control">
-                <label>{{ 'CHECKOUT.QTY' | translate }}:</label>
-                <input 
-                    type="number" 
-                    min="1" 
-                    [max]="maxInputQuantity"
-                    [ngModel]="item.quantity" 
-                    (ngModelChange)="updateQuantity(i, $event)"
-                    (blur)="flushQuantityUpdate(i)"
-                    class="qty-input">
-            </div>
-            <div class="item-price">
-                <span class="item-total-price">
-                    {{ (item.unitPrice * item.quantity) | currency:result().currency }}
-                </span>
-                <small class="item-unit-price" *ngIf="item.quantity > 1; else unitPricePlaceholder">
-                    {{ item.unitPrice | currency:result().currency }} {{ 'CHECKOUT.PER_PIECE' | translate }}
-                </small>
-                <ng-template #unitPricePlaceholder>
-                    <small class="item-unit-price item-unit-price--placeholder">&nbsp;</small>
-                </ng-template>
-            </div>
+          <div class="qty-control">
+            <label>{{ "CHECKOUT.QTY" | translate }}:</label>
+            <input
+              type="number"
+              min="1"
+              [max]="maxInputQuantity"
+              [ngModel]="item.quantity"
+              (ngModelChange)="updateQuantity(i, $event)"
+              (blur)="flushQuantityUpdate(i)"
+              class="qty-input"
+            />
+          </div>
+          <div class="item-price">
+            <span class="item-total-price">
+              {{ item.unitPrice * item.quantity | currency: result().currency }}
+            </span>
+            <small
+              class="item-unit-price"
+              *ngIf="item.quantity > 1; else unitPricePlaceholder"
+            >
+              {{ item.unitPrice | currency: result().currency }}
+              {{ "CHECKOUT.PER_PIECE" | translate }}
+            </small>
+            <ng-template #unitPricePlaceholder>
+              <small class="item-unit-price item-unit-price--placeholder"
+                >&nbsp;</small
+              >
+            </ng-template>
+          </div>
         </div>
       </div>
     }
@@ -75,15 +91,17 @@
 
   <div class="actions">
     <app-button variant="outline" (click)="consult.emit()">
-      {{ 'QUOTE.CONSULT' | translate }}
+      {{ "QUOTE.CONSULT" | translate }}
     </app-button>
 
     @if (!hasQuantityOverLimit()) {
       <app-button (click)="proceed.emit()">
-          {{ 'QUOTE.PROCEED_ORDER' | translate }}
+        {{ "QUOTE.PROCEED_ORDER" | translate }}
       </app-button>
     } @else {
-      <small class="limit-note">{{ 'QUOTE.MAX_QTY_NOTICE' | translate:{ max: directOrderLimit } }}</small>
+      <small class="limit-note">{{
+        "QUOTE.MAX_QTY_NOTICE" | translate: { max: directOrderLimit }
+      }}</small>
     }
   </div>
 </app-card>

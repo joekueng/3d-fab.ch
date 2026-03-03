@@ -6,6 +6,6 @@ import { TranslateModule } from '@ngx-translate/core';
   standalone: true,
   imports: [TranslateModule],
   templateUrl: './terms.component.html',
-  styleUrl: './terms.component.scss'
+  styleUrl: './terms.component.scss',
 })
 export class TermsComponent {}

@@ -145,82 +145,138 @@ export interface AdminQuoteSessionDetail {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AdminOperationsService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/api/admin`;
 
   getFilamentStock(): Observable<AdminFilamentStockRow[]> {
-    return this.http.get<AdminFilamentStockRow[]>(`${this.baseUrl}/filament-stock`, { withCredentials: true });
+    return this.http.get<AdminFilamentStockRow[]>(
+      `${this.baseUrl}/filament-stock`,
+      { withCredentials: true },
+    );
   }
 
   getFilamentMaterials(): Observable<AdminFilamentMaterialType[]> {
-    return this.http.get<AdminFilamentMaterialType[]>(`${this.baseUrl}/filaments/materials`, { withCredentials: true });
+    return this.http.get<AdminFilamentMaterialType[]>(
+      `${this.baseUrl}/filaments/materials`,
+      { withCredentials: true },
+    );
   }
 
   getFilamentVariants(): Observable<AdminFilamentVariant[]> {
-    return this.http.get<AdminFilamentVariant[]>(`${this.baseUrl}/filaments/variants`, { withCredentials: true });
+    return this.http.get<AdminFilamentVariant[]>(
+      `${this.baseUrl}/filaments/variants`,
+      { withCredentials: true },
+    );
   }
 
-  createFilamentMaterial(payload: AdminUpsertFilamentMaterialTypePayload): Observable<AdminFilamentMaterialType> {
-    return this.http.post<AdminFilamentMaterialType>(`${this.baseUrl}/filaments/materials`, payload, { withCredentials: true });
+  createFilamentMaterial(
+    payload: AdminUpsertFilamentMaterialTypePayload,
+  ): Observable<AdminFilamentMaterialType> {
+    return this.http.post<AdminFilamentMaterialType>(
+      `${this.baseUrl}/filaments/materials`,
+      payload,
+      { withCredentials: true },
+    );
   }
 
-  updateFilamentMaterial(materialId: number, payload: AdminUpsertFilamentMaterialTypePayload): Observable<AdminFilamentMaterialType> {
-    return this.http.put<AdminFilamentMaterialType>(`${this.baseUrl}/filaments/materials/${materialId}`, payload, { withCredentials: true });
+  updateFilamentMaterial(
+    materialId: number,
+    payload: AdminUpsertFilamentMaterialTypePayload,
+  ): Observable<AdminFilamentMaterialType> {
+    return this.http.put<AdminFilamentMaterialType>(
+      `${this.baseUrl}/filaments/materials/${materialId}`,
+      payload,
+      { withCredentials: true },
+    );
   }
 
-  createFilamentVariant(payload: AdminUpsertFilamentVariantPayload): Observable<AdminFilamentVariant> {
-    return this.http.post<AdminFilamentVariant>(`${this.baseUrl}/filaments/variants`, payload, { withCredentials: true });
+  createFilamentVariant(
+    payload: AdminUpsertFilamentVariantPayload,
+  ): Observable<AdminFilamentVariant> {
+    return this.http.post<AdminFilamentVariant>(
+      `${this.baseUrl}/filaments/variants`,
+      payload,
+      { withCredentials: true },
+    );
   }
 
-  updateFilamentVariant(variantId: number, payload: AdminUpsertFilamentVariantPayload): Observable<AdminFilamentVariant> {
-    return this.http.put<AdminFilamentVariant>(`${this.baseUrl}/filaments/variants/${variantId}`, payload, { withCredentials: true });
+  updateFilamentVariant(
+    variantId: number,
+    payload: AdminUpsertFilamentVariantPayload,
+  ): Observable<AdminFilamentVariant> {
+    return this.http.put<AdminFilamentVariant>(
+      `${this.baseUrl}/filaments/variants/${variantId}`,
+      payload,
+      { withCredentials: true },
+    );
   }
 
   deleteFilamentVariant(variantId: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/filaments/variants/${variantId}`, { withCredentials: true });
+    return this.http.delete<void>(
+      `${this.baseUrl}/filaments/variants/${variantId}`,
+      { withCredentials: true },
+    );
   }
 
   getContactRequests(): Observable<AdminContactRequest[]> {
-    return this.http.get<AdminContactRequest[]>(`${this.baseUrl}/contact-requests`, { withCredentials: true });
+    return this.http.get<AdminContactRequest[]>(
+      `${this.baseUrl}/contact-requests`,
+      { withCredentials: true },
+    );
   }
 
-  getContactRequestDetail(requestId: string): Observable<AdminContactRequestDetail> {
-    return this.http.get<AdminContactRequestDetail>(`${this.baseUrl}/contact-requests/${requestId}`, { withCredentials: true });
+  getContactRequestDetail(
+    requestId: string,
+  ): Observable<AdminContactRequestDetail> {
+    return this.http.get<AdminContactRequestDetail>(
+      `${this.baseUrl}/contact-requests/${requestId}`,
+      { withCredentials: true },
+    );
   }
 
   updateContactRequestStatus(
     requestId: string,
-    payload: AdminUpdateContactRequestStatusPayload
+    payload: AdminUpdateContactRequestStatusPayload,
   ): Observable<AdminContactRequestDetail> {
     return this.http.patch<AdminContactRequestDetail>(
       `${this.baseUrl}/contact-requests/${requestId}/status`,
       payload,
-      { withCredentials: true }
+      { withCredentials: true },
     );
   }
 
-  downloadContactRequestAttachment(requestId: string, attachmentId: string): Observable<Blob> {
-    return this.http.get(`${this.baseUrl}/contact-requests/${requestId}/attachments/${attachmentId}/file`, {
-      withCredentials: true,
-      responseType: 'blob'
-    });
+  downloadContactRequestAttachment(
+    requestId: string,
+    attachmentId: string,
+  ): Observable<Blob> {
+    return this.http.get(
+      `${this.baseUrl}/contact-requests/${requestId}/attachments/${attachmentId}/file`,
+      {
+        withCredentials: true,
+        responseType: 'blob',
+      },
+    );
   }
 
   getSessions(): Observable<AdminQuoteSession[]> {
-    return this.http.get<AdminQuoteSession[]>(`${this.baseUrl}/sessions`, { withCredentials: true });
+    return this.http.get<AdminQuoteSession[]>(`${this.baseUrl}/sessions`, {
+      withCredentials: true,
+    });
   }
 
   deleteSession(sessionId: string): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/sessions/${sessionId}`, { withCredentials: true });
+    return this.http.delete<void>(`${this.baseUrl}/sessions/${sessionId}`, {
+      withCredentials: true,
+    });
   }
 
   getSessionDetail(sessionId: string): Observable<AdminQuoteSessionDetail> {
     return this.http.get<AdminQuoteSessionDetail>(
       `${environment.apiUrl}/api/quote-sessions/${sessionId}`,
-      { withCredentials: true }
+      { withCredentials: true },
     );
   }
 }

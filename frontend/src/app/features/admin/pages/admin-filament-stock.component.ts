@@ -6,7 +6,7 @@ import {
   AdminFilamentVariant,
   AdminOperationsService,
   AdminUpsertFilamentMaterialTypePayload,
-  AdminUpsertFilamentVariantPayload
+  AdminUpsertFilamentVariantPayload,
 } from '../services/admin-operations.service';
 import { forkJoin } from 'rxjs';
 import { getColorHex } from '../../../core/constants/colors.const';
@@ -16,7 +16,7 @@ import { getColorHex } from '../../../core/constants/colors.const';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './admin-filament-stock.component.html',
-  styleUrl: './admin-filament-stock.component.scss'
+  styleUrl: './admin-filament-stock.component.scss',
 })
 export class AdminFilamentStockComponent implements OnInit {
   private readonly adminOperationsService = inject(AdminOperationsService);
@@ -40,7 +40,7 @@ export class AdminFilamentStockComponent implements OnInit {
     materialCode: '',
     isFlexible: false,
     isTechnical: false,
-    technicalTypeLabel: ''
+    technicalTypeLabel: '',
   };
 
   newVariant: AdminUpsertFilamentVariantPayload = {
@@ -55,7 +55,7 @@ export class AdminFilamentStockComponent implements OnInit {
     costChfPerKg: 0,
     stockSpools: 0,
     spoolNetKg: 1,
-    isActive: true
+    isActive: true,
   };
 
   ngOnInit(): void {
@@ -69,13 +69,13 @@ export class AdminFilamentStockComponent implements OnInit {
 
     forkJoin({
       materials: this.adminOperationsService.getFilamentMaterials(),
-      variants: this.adminOperationsService.getFilamentVariants()
+      variants: this.adminOperationsService.getFilamentVariants(),
     }).subscribe({
       next: ({ materials, variants }) => {
         this.materials = this.sortMaterials(materials);
         this.variants = this.sortVariants(variants);
-        const existingIds = new Set(this.variants.map(v => v.id));
-        this.expandedVariantIds.forEach(id => {
+        const existingIds = new Set(this.variants.map((v) => v.id));
+        this.expandedVariantIds.forEach((id) => {
           if (!existingIds.has(id)) {
             this.expandedVariantIds.delete(id);
           }
@@ -87,8 +87,11 @@ export class AdminFilamentStockComponent implements OnInit {
       },
       error: (err) => {
         this.loading = false;
-        this.errorMessage = this.extractErrorMessage(err, 'Impossibile caricare i filamenti.');
-      }
+        this.errorMessage = this.extractErrorMessage(
+          err,
+          'Impossibile caricare i filamenti.',
+        );
+      },
     });
   }
 
@@ -107,7 +110,7 @@ export class AdminFilamentStockComponent implements OnInit {
       isTechnical: !!this.newMaterial.isTechnical,
       technicalTypeLabel: this.newMaterial.isTechnical
         ? (this.newMaterial.technicalTypeLabel || '').trim()
-        : ''
+        : '',
     };
 
     this.adminOperationsService.createFilamentMaterial(payload).subscribe({
@@ -120,15 +123,18 @@ export class AdminFilamentStockComponent implements OnInit {
           materialCode: '',
           isFlexible: false,
           isTechnical: false,
-          technicalTypeLabel: ''
+          technicalTypeLabel: '',
         };
         this.creatingMaterial = false;
         this.successMessage = 'Materiale aggiunto.';
       },
       error: (err) => {
         this.creatingMaterial = false;
-        this.errorMessage = this.extractErrorMessage(err, 'Creazione materiale non riuscita.');
-      }
+        this.errorMessage = this.extractErrorMessage(
+          err,
+          'Creazione materiale non riuscita.',
+        );
+      },
     });
   }
 
@@ -145,34 +151,41 @@ export class AdminFilamentStockComponent implements OnInit {
       materialCode: (material.materialCode || '').trim(),
       isFlexible: !!material.isFlexible,
       isTechnical: !!material.isTechnical,
-      technicalTypeLabel: material.isTechnical ? (material.technicalTypeLabel || '').trim() : ''
+      technicalTypeLabel: material.isTechnical
+        ? (material.technicalTypeLabel || '').trim()
+        : '',
     };
 
-    this.adminOperationsService.updateFilamentMaterial(material.id, payload).subscribe({
-      next: (updated) => {
-        this.materials = this.sortMaterials(
-          this.materials.map((m) => (m.id === updated.id ? updated : m))
-        );
-        this.variants = this.variants.map((variant) => {
-          if (variant.materialTypeId !== updated.id) {
-            return variant;
-          }
-          return {
-            ...variant,
-            materialCode: updated.materialCode,
-            materialIsFlexible: updated.isFlexible,
-            materialIsTechnical: updated.isTechnical,
-            materialTechnicalTypeLabel: updated.technicalTypeLabel
-          };
-        });
-        this.savingMaterialIds.delete(material.id);
-        this.successMessage = 'Materiale aggiornato.';
-      },
-      error: (err) => {
-        this.savingMaterialIds.delete(material.id);
-        this.errorMessage = this.extractErrorMessage(err, 'Aggiornamento materiale non riuscito.');
-      }
-    });
+    this.adminOperationsService
+      .updateFilamentMaterial(material.id, payload)
+      .subscribe({
+        next: (updated) => {
+          this.materials = this.sortMaterials(
+            this.materials.map((m) => (m.id === updated.id ? updated : m)),
+          );
+          this.variants = this.variants.map((variant) => {
+            if (variant.materialTypeId !== updated.id) {
+              return variant;
+            }
+            return {
+              ...variant,
+              materialCode: updated.materialCode,
+              materialIsFlexible: updated.isFlexible,
+              materialIsTechnical: updated.isTechnical,
+              materialTechnicalTypeLabel: updated.technicalTypeLabel,
+            };
+          });
+          this.savingMaterialIds.delete(material.id);
+          this.successMessage = 'Materiale aggiornato.';
+        },
+        error: (err) => {
+          this.savingMaterialIds.delete(material.id);
+          this.errorMessage = this.extractErrorMessage(
+            err,
+            'Aggiornamento materiale non riuscito.',
+          );
+        },
+      });
   }
 
   createVariant(): void {
@@ -189,7 +202,8 @@ export class AdminFilamentStockComponent implements OnInit {
       next: (created) => {
         this.variants = this.sortVariants([...this.variants, created]);
         this.newVariant = {
-          materialTypeId: this.newVariant.materialTypeId || this.materials[0]?.id || 0,
+          materialTypeId:
+            this.newVariant.materialTypeId || this.materials[0]?.id || 0,
           variantDisplayName: '',
           colorName: '',
           colorHex: '',
@@ -200,15 +214,18 @@ export class AdminFilamentStockComponent implements OnInit {
           costChfPerKg: 0,
           stockSpools: 0,
           spoolNetKg: 1,
-          isActive: true
+          isActive: true,
         };
         this.creatingVariant = false;
         this.successMessage = 'Variante aggiunta.';
       },
       error: (err) => {
         this.creatingVariant = false;
-        this.errorMessage = this.extractErrorMessage(err, 'Creazione variante non riuscita.');
-      }
+        this.errorMessage = this.extractErrorMessage(
+          err,
+          'Creazione variante non riuscita.',
+        );
+      },
     });
   }
 
@@ -222,30 +239,43 @@ export class AdminFilamentStockComponent implements OnInit {
     this.savingVariantIds.add(variant.id);
 
     const payload = this.toVariantPayload(variant);
-    this.adminOperationsService.updateFilamentVariant(variant.id, payload).subscribe({
-      next: (updated) => {
-        this.variants = this.sortVariants(
-          this.variants.map((v) => (v.id === updated.id ? updated : v))
-        );
-        this.savingVariantIds.delete(variant.id);
-        this.successMessage = 'Variante aggiornata.';
-      },
-      error: (err) => {
-        this.savingVariantIds.delete(variant.id);
-        this.errorMessage = this.extractErrorMessage(err, 'Aggiornamento variante non riuscito.');
-      }
-    });
+    this.adminOperationsService
+      .updateFilamentVariant(variant.id, payload)
+      .subscribe({
+        next: (updated) => {
+          this.variants = this.sortVariants(
+            this.variants.map((v) => (v.id === updated.id ? updated : v)),
+          );
+          this.savingVariantIds.delete(variant.id);
+          this.successMessage = 'Variante aggiornata.';
+        },
+        error: (err) => {
+          this.savingVariantIds.delete(variant.id);
+          this.errorMessage = this.extractErrorMessage(
+            err,
+            'Aggiornamento variante non riuscito.',
+          );
+        },
+      });
   }
 
   isLowStock(variant: AdminFilamentVariant): boolean {
-    return this.computeStockFilamentGrams(variant.stockSpools, variant.spoolNetKg) < 1000;
+    return (
+      this.computeStockFilamentGrams(variant.stockSpools, variant.spoolNetKg) <
+      1000
+    );
   }
 
   computeStockKg(stockSpools?: number, spoolNetKg?: number): number {
     const spools = Number(stockSpools ?? 0);
     const netKg = Number(spoolNetKg ?? 0);
 
-    if (!Number.isFinite(spools) || !Number.isFinite(netKg) || spools < 0 || netKg < 0) {
+    if (
+      !Number.isFinite(spools) ||
+      !Number.isFinite(netKg) ||
+      spools < 0 ||
+      netKg < 0
+    ) {
       return 0;
     }
     return spools * netKg;
@@ -298,7 +328,7 @@ export class AdminFilamentStockComponent implements OnInit {
 
     this.adminOperationsService.deleteFilamentVariant(variant.id).subscribe({
       next: () => {
-        this.variants = this.variants.filter(v => v.id !== variant.id);
+        this.variants = this.variants.filter((v) => v.id !== variant.id);
         this.expandedVariantIds.delete(variant.id);
         this.deletingVariantIds.delete(variant.id);
         this.variantToDelete = null;
@@ -306,8 +336,11 @@ export class AdminFilamentStockComponent implements OnInit {
       },
       error: (err) => {
         this.deletingVariantIds.delete(variant.id);
-        this.errorMessage = this.extractErrorMessage(err, 'Eliminazione variante non riuscita.');
-      }
+        this.errorMessage = this.extractErrorMessage(
+          err,
+          'Eliminazione variante non riuscita.',
+        );
+      },
     });
   }
 
@@ -319,7 +352,9 @@ export class AdminFilamentStockComponent implements OnInit {
     this.quickInsertCollapsed = !this.quickInsertCollapsed;
   }
 
-  private toVariantPayload(source: AdminUpsertFilamentVariantPayload | AdminFilamentVariant): AdminUpsertFilamentVariantPayload {
+  private toVariantPayload(
+    source: AdminUpsertFilamentVariantPayload | AdminFilamentVariant,
+  ): AdminUpsertFilamentVariantPayload {
     return {
       materialTypeId: Number(source.materialTypeId),
       variantDisplayName: (source.variantDisplayName || '').trim(),
@@ -332,21 +367,31 @@ export class AdminFilamentStockComponent implements OnInit {
       costChfPerKg: Number(source.costChfPerKg ?? 0),
       stockSpools: Number(source.stockSpools ?? 0),
       spoolNetKg: Number(source.spoolNetKg ?? 0),
-      isActive: source.isActive !== false
+      isActive: source.isActive !== false,
     };
   }
 
-  private sortMaterials(materials: AdminFilamentMaterialType[]): AdminFilamentMaterialType[] {
-    return [...materials].sort((a, b) => a.materialCode.localeCompare(b.materialCode));
+  private sortMaterials(
+    materials: AdminFilamentMaterialType[],
+  ): AdminFilamentMaterialType[] {
+    return [...materials].sort((a, b) =>
+      a.materialCode.localeCompare(b.materialCode),
+    );
   }
 
-  private sortVariants(variants: AdminFilamentVariant[]): AdminFilamentVariant[] {
+  private sortVariants(
+    variants: AdminFilamentVariant[],
+  ): AdminFilamentVariant[] {
     return [...variants].sort((a, b) => {
-      const byMaterial = (a.materialCode || '').localeCompare(b.materialCode || '');
+      const byMaterial = (a.materialCode || '').localeCompare(
+        b.materialCode || '',
+      );
       if (byMaterial !== 0) {
         return byMaterial;
       }
-      return (a.variantDisplayName || '').localeCompare(b.variantDisplayName || '');
+      return (a.variantDisplayName || '').localeCompare(
+        b.variantDisplayName || '',
+      );
     });
   }
 
