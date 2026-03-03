@@ -1,9 +1,5 @@
 import { Subject } from 'rxjs';
-import {
-  DefaultUrlSerializer,
-  Router,
-  UrlTree,
-} from '@angular/router';
+import { DefaultUrlSerializer, Router, UrlTree } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { LanguageService } from './language.service';
 

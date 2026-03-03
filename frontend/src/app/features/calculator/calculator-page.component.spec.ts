@@ -88,8 +88,12 @@ describe('CalculatorPageComponent', () => {
     component.result.set(createResult('session-1', 'persisted notes'));
 
     estimator.updateLineItem.and.returnValue(of({ ok: true }));
-    estimator.getQuoteSession.and.returnValue(of({ session: { id: 'session-1' } }));
-    estimator.mapSessionToQuoteResult.and.returnValue(createResult('session-1'));
+    estimator.getQuoteSession.and.returnValue(
+      of({ session: { id: 'session-1' } }),
+    );
+    estimator.mapSessionToQuoteResult.and.returnValue(
+      createResult('session-1'),
+    );
 
     component.onItemChange({
       id: 'line-1',
