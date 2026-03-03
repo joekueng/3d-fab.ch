@@ -100,11 +100,11 @@ public class OrcaProfileResolver {
 
         String displayName = machine.getPrinterDisplayName();
         if (displayName.toLowerCase().contains("bambulab a1") || displayName.toLowerCase().contains("bambu lab a1")) {
-            BigDecimal normalizedNozzle = normalizeNozzle(nozzleDiameterMm);
-            if (normalizedNozzle == null) {
+            String nozzleForProfile = formatNozzleForProfileName(nozzleDiameterMm);
+            if (nozzleForProfile == null) {
                 return "Bambu Lab A1 0.4 nozzle";
             }
-            return "Bambu Lab A1 " + normalizedNozzle.toPlainString() + " nozzle";
+            return "Bambu Lab A1 " + nozzleForProfile + " nozzle";
         }
 
         return displayName;
@@ -129,6 +129,18 @@ public class OrcaProfileResolver {
             return null;
         }
         return nozzleDiameterMm.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private String formatNozzleForProfileName(BigDecimal nozzleDiameterMm) {
+        BigDecimal normalizedNozzle = normalizeNozzle(nozzleDiameterMm);
+        if (normalizedNozzle == null) {
+            return null;
+        }
+        BigDecimal stripped = normalizedNozzle.stripTrailingZeros();
+        if (stripped.scale() < 0) {
+            stripped = stripped.setScale(0);
+        }
+        return stripped.toPlainString();
     }
 
     public record ResolvedProfiles(
