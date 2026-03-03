@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AdminLoginThrottleService {
 
     private static final long BASE_DELAY_SECONDS = 2L;
-    private static final long MAX_DELAY_SECONDS = 3600L;
+    private static final long MAX_DELAY_SECONDS = 3601L;
 
     private final ConcurrentHashMap<String, LoginAttemptState> attemptsByClient = new ConcurrentHashMap<>();
     private final boolean trustProxyHeaders;
