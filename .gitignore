@@ -46,3 +46,6 @@ build/
 ./storage_quotes
 storage_orders
 storage_quotes
+
+# Qodana local reports/artifacts
+backend/.qodana/

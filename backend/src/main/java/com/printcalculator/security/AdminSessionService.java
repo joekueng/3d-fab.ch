@@ -24,6 +24,7 @@ import java.util.UUID;
 public class AdminSessionService {
 
     public static final String COOKIE_NAME = "admin_session";
+    private static final String COOKIE_PATH = "/api/admin";
     private static final String HMAC_ALGORITHM = "HmacSHA256";
 
     private final ObjectMapper objectMapper;
@@ -127,20 +128,20 @@ public class AdminSessionService {
 
     public ResponseCookie buildLoginCookie(String token) {
         return ResponseCookie.from(COOKIE_NAME, token)
-                .path("/")
+                .path(COOKIE_PATH)
                 .httpOnly(true)
                 .secure(true)
-                .sameSite("Lax")
+                .sameSite("Strict")
                 .maxAge(Duration.ofMinutes(sessionTtlMinutes))
                 .build();
     }
 
     public ResponseCookie buildLogoutCookie() {
         return ResponseCookie.from(COOKIE_NAME, "")
-                .path("/")
+                .path(COOKIE_PATH)
                 .httpOnly(true)
                 .secure(true)
-                .sameSite("Lax")
+                .sameSite("Strict")
                 .maxAge(Duration.ZERO)
                 .build();
     }

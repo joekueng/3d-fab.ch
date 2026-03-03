@@ -1,6 +1,7 @@
 package com.printcalculator.security;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -14,6 +15,13 @@ public class AdminLoginThrottleService {
     private static final long MAX_DELAY_SECONDS = 3600L;
 
     private final ConcurrentHashMap<String, LoginAttemptState> attemptsByClient = new ConcurrentHashMap<>();
+    private final boolean trustProxyHeaders;
+
+    public AdminLoginThrottleService(
+            @Value("${admin.auth.trust-proxy-headers:false}") boolean trustProxyHeaders
+    ) {
+        this.trustProxyHeaders = trustProxyHeaders;
+    }
 
     public OptionalLong getRemainingLockSeconds(String clientKey) {
         LoginAttemptState state = attemptsByClient.get(clientKey);
@@ -47,17 +55,19 @@ public class AdminLoginThrottleService {
     }
 
     public String resolveClientKey(HttpServletRequest request) {
-        String forwardedFor = request.getHeader("X-Forwarded-For");
-        if (forwardedFor != null && !forwardedFor.isBlank()) {
-            String[] parts = forwardedFor.split(",");
-            if (parts.length > 0 && !parts[0].trim().isEmpty()) {
-                return parts[0].trim();
+        if (trustProxyHeaders) {
+            String forwardedFor = request.getHeader("X-Forwarded-For");
+            if (forwardedFor != null && !forwardedFor.isBlank()) {
+                String[] parts = forwardedFor.split(",");
+                if (parts.length > 0 && !parts[0].trim().isEmpty()) {
+                    return parts[0].trim();
+                }
             }
-        }
 
-        String realIp = request.getHeader("X-Real-IP");
-        if (realIp != null && !realIp.isBlank()) {
-            return realIp.trim();
+            String realIp = request.getHeader("X-Real-IP");
+            if (realIp != null && !realIp.isBlank()) {
+                return realIp.trim();
+            }
         }
 
         String remoteAddress = request.getRemoteAddr();

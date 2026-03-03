@@ -58,7 +58,8 @@ class AdminAuthSecurityTest {
         assertTrue(setCookie.contains("admin_session="));
         assertTrue(setCookie.contains("HttpOnly"));
         assertTrue(setCookie.contains("Secure"));
-        assertTrue(setCookie.contains("SameSite=Lax"));
+        assertTrue(setCookie.contains("SameSite=Strict"));
+        assertTrue(setCookie.contains("Path=/api/admin"));
     }
 
     @Test
