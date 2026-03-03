@@ -7,6 +7,7 @@ import com.printcalculator.repository.CustomQuoteRequestRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -14,13 +15,18 @@ import org.springframework.web.multipart.MultipartFile;
 import jakarta.validation.Valid;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/api/custom-quote-requests")
@@ -31,7 +37,8 @@ public class CustomQuoteRequestController {
     private final com.printcalculator.service.ClamAVService clamAVService;
     
     // TODO: Inject Storage Service
-    private static final String STORAGE_ROOT = "storage_requests";
+    private static final Path STORAGE_ROOT = Paths.get("storage_requests").toAbsolutePath().normalize();
+    private static final Pattern SAFE_EXTENSION_PATTERN = Pattern.compile("^[a-z0-9]{1,10}$");
     private static final Set<String> FORBIDDEN_COMPRESSED_EXTENSIONS = Set.of(
             "zip", "rar", "7z", "tar", "gz", "tgz", "bz2", "tbz2", "xz", "txz", "zst"
     );
@@ -116,8 +123,7 @@ public class CustomQuoteRequestController {
                 
                 // Generate path
                 UUID fileUuid = UUID.randomUUID();
-                String ext = getExtension(file.getOriginalFilename());
-                String storedFilename = fileUuid.toString() + "." + ext;
+                String storedFilename = fileUuid + ".upload";
                 
                 // Note: We don't have attachment ID yet.
                 // We'll save attachment first to get ID.
@@ -126,14 +132,22 @@ public class CustomQuoteRequestController {
                 
                 attachment = attachmentRepo.save(attachment);
                 
-                String relativePath = "quote-requests/" + request.getId() + "/attachments/" + attachment.getId() + "/" + storedFilename;
-                attachment.setStoredRelativePath(relativePath);
+                Path relativePath = Path.of(
+                        "quote-requests",
+                        request.getId().toString(),
+                        "attachments",
+                        attachment.getId().toString(),
+                        storedFilename
+                );
+                attachment.setStoredRelativePath(relativePath.toString());
                 attachmentRepo.save(attachment);
                 
                 // Save file to disk
-                Path absolutePath = Paths.get(STORAGE_ROOT, relativePath);
+                Path absolutePath = resolveWithinStorageRoot(relativePath);
                 Files.createDirectories(absolutePath.getParent());
-                Files.copy(file.getInputStream(), absolutePath);
+                try (InputStream inputStream = file.getInputStream()) {
+                    Files.copy(inputStream, absolutePath, StandardCopyOption.REPLACE_EXISTING);
+                }
             }
         }
         
@@ -151,9 +165,16 @@ public class CustomQuoteRequestController {
     // Helper
     private String getExtension(String filename) {
         if (filename == null) return "dat";
-        int i = filename.lastIndexOf('.');
-        if (i > 0) {
-            return filename.substring(i + 1).toLowerCase();
+        String cleaned = StringUtils.cleanPath(filename);
+        if (cleaned.contains("..")) {
+            return "dat";
+        }
+        int i = cleaned.lastIndexOf('.');
+        if (i > 0 && i < cleaned.length() - 1) {
+            String ext = cleaned.substring(i + 1).toLowerCase(Locale.ROOT);
+            if (SAFE_EXTENSION_PATTERN.matcher(ext).matches()) {
+                return ext;
+            }
         }
         return "dat";
     }
@@ -165,5 +186,21 @@ public class CustomQuoteRequestController {
         }
         String mime = file.getContentType();
         return mime != null && FORBIDDEN_COMPRESSED_MIME_TYPES.contains(mime.toLowerCase());
+    }
+
+    private Path resolveWithinStorageRoot(Path relativePath) {
+        try {
+            Path normalizedRelative = relativePath.normalize();
+            if (normalizedRelative.isAbsolute()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid attachment path");
+            }
+            Path absolutePath = STORAGE_ROOT.resolve(normalizedRelative).normalize();
+            if (!absolutePath.startsWith(STORAGE_ROOT)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid attachment path");
+            }
+            return absolutePath;
+        } catch (InvalidPathException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid attachment path");
+        }
     }
 }

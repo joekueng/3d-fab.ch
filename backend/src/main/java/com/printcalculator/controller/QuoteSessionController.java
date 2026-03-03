@@ -19,15 +19,19 @@ import com.printcalculator.service.SlicerService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.Optional;
+import java.util.Locale;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 
@@ -42,6 +47,7 @@ import org.springframework.core.io.UrlResource;
 @RequestMapping("/api/quote-sessions")
 
 public class QuoteSessionController {
+    private static final Path QUOTE_STORAGE_ROOT = Paths.get("storage_quotes").toAbsolutePath().normalize();
 
     private final QuoteSessionRepository sessionRepo;
     private final QuoteLineItemRepository lineItemRepo;
@@ -121,19 +127,24 @@ public class QuoteSessionController {
 
         // 1. Define Persistent Storage Path
         // Structure: storage_quotes/{sessionId}/{uuid}.{ext}
-        String storageDir = "storage_quotes/" + session.getId();
-        Files.createDirectories(Paths.get(storageDir));
-        
+        Path sessionStorageDir = QUOTE_STORAGE_ROOT.resolve(session.getId().toString()).normalize();
+        if (!sessionStorageDir.startsWith(QUOTE_STORAGE_ROOT)) {
+            throw new IOException("Invalid quote session storage path");
+        }
+        Files.createDirectories(sessionStorageDir);
+
         String originalFilename = file.getOriginalFilename();
-        String ext = originalFilename != null && originalFilename.contains(".") 
-                     ? originalFilename.substring(originalFilename.lastIndexOf(".")) 
-                     : ".stl";
-        
-        String storedFilename = UUID.randomUUID() + ext;
-        Path persistentPath = Paths.get(storageDir, storedFilename);
-        
+        String ext = getSafeExtension(originalFilename, "stl");
+        String storedFilename = UUID.randomUUID() + "." + ext;
+        Path persistentPath = sessionStorageDir.resolve(storedFilename).normalize();
+        if (!persistentPath.startsWith(sessionStorageDir)) {
+            throw new IOException("Invalid quote line-item storage path");
+        }
+
         // Save file
-        Files.copy(file.getInputStream(), persistentPath);
+        try (InputStream inputStream = file.getInputStream()) {
+            Files.copy(inputStream, persistentPath, StandardCopyOption.REPLACE_EXISTING);
+        }
 
         try {
             // Apply Basic/Advanced Logic
@@ -191,7 +202,7 @@ public class QuoteSessionController {
             QuoteLineItem item = new QuoteLineItem();
             item.setQuoteSession(session);
             item.setOriginalFilename(file.getOriginalFilename());
-            item.setStoredPath(persistentPath.toString()); // SAVE PATH
+            item.setStoredPath(QUOTE_STORAGE_ROOT.relativize(persistentPath).toString()); // SAVE PATH (relative to root)
             item.setQuantity(1);
             item.setColorCode(selectedVariant.getColorName());
             item.setFilamentVariant(selectedVariant);
@@ -460,16 +471,54 @@ public class QuoteSessionController {
             return ResponseEntity.notFound().build();
         }
 
-        Path path = Paths.get(item.getStoredPath());
-        if (!Files.exists(path)) {
+        Path path = resolveStoredQuotePath(item.getStoredPath(), sessionId);
+        if (path == null || !Files.exists(path)) {
             return ResponseEntity.notFound().build();
         }
 
-        org.springframework.core.io.Resource resource = new org.springframework.core.io.UrlResource(path.toUri());
+        org.springframework.core.io.Resource resource = new UrlResource(path.toUri());
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + item.getOriginalFilename() + "\"")
                 .body(resource);
+    }
+
+    private String getSafeExtension(String filename, String fallback) {
+        if (filename == null) {
+            return fallback;
+        }
+        String cleaned = StringUtils.cleanPath(filename);
+        if (cleaned.contains("..")) {
+            return fallback;
+        }
+        int index = cleaned.lastIndexOf('.');
+        if (index <= 0 || index >= cleaned.length() - 1) {
+            return fallback;
+        }
+        String ext = cleaned.substring(index + 1).toLowerCase(Locale.ROOT);
+        return switch (ext) {
+            case "stl" -> "stl";
+            case "3mf" -> "3mf";
+            case "step", "stp" -> "step";
+            default -> fallback;
+        };
+    }
+
+    private Path resolveStoredQuotePath(String storedPath, UUID expectedSessionId) {
+        if (storedPath == null || storedPath.isBlank()) {
+            return null;
+        }
+        try {
+            Path raw = Path.of(storedPath).normalize();
+            Path resolved = raw.isAbsolute() ? raw : QUOTE_STORAGE_ROOT.resolve(raw).normalize();
+            Path expectedSessionRoot = QUOTE_STORAGE_ROOT.resolve(expectedSessionId.toString()).normalize();
+            if (!resolved.startsWith(expectedSessionRoot)) {
+                return null;
+            }
+            return resolved;
+        } catch (InvalidPathException e) {
+            return null;
+        }
     }
 }

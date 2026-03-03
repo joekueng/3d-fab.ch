@@ -11,18 +11,17 @@ import com.printcalculator.service.StorageService;
 import com.printcalculator.service.TwintPaymentService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import jakarta.validation.Valid;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.nio.file.Files;
+
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
+
 import java.util.List;
 import java.util.UUID;
 import java.util.Map;
@@ -30,10 +29,13 @@ import java.util.HashMap;
 import java.util.Base64;
 import java.util.stream.Collectors;
 import java.net.URI;
+import java.util.Locale;
+import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
+    private static final Pattern SAFE_EXTENSION_PATTERN = Pattern.compile("^[a-z0-9]{1,10}$");
 
     private final OrderService orderService;
     private final OrderRepository orderRepo;
@@ -104,15 +106,21 @@ public class OrderController {
         }
         
         String relativePath = item.getStoredRelativePath();
+        Path destinationRelativePath;
         if (relativePath == null || relativePath.equals("PENDING")) {
              String ext = getExtension(file.getOriginalFilename());
-             String storedFilename = UUID.randomUUID().toString() + "." + ext;
-             relativePath = "orders/" + orderId + "/3d-files/" + orderItemId + "/" + storedFilename;
-             item.setStoredRelativePath(relativePath);
+             String storedFilename = UUID.randomUUID() + "." + ext;
+             destinationRelativePath = Path.of("orders", orderId.toString(), "3d-files", orderItemId.toString(), storedFilename);
+             item.setStoredRelativePath(destinationRelativePath.toString());
              item.setStoredFilename(storedFilename);
+        } else {
+            destinationRelativePath = resolveOrderItemRelativePath(relativePath, orderId, orderItemId);
+            if (destinationRelativePath == null) {
+                return ResponseEntity.badRequest().build();
+            }
         }
-        
-        storageService.store(file, Paths.get(relativePath));
+
+        storageService.store(file, destinationRelativePath);
         item.setFileSizeBytes(file.getSize());
         item.setMimeType(file.getContentType());
         orderItemRepo.save(item);
@@ -158,9 +166,9 @@ public class OrderController {
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
         if (isConfirmation) {
-            String relativePath = buildConfirmationPdfRelativePath(order);
+            Path relativePath = buildConfirmationPdfRelativePath(order);
             try {
-                byte[] existingPdf = storageService.loadAsResource(Paths.get(relativePath)).getInputStream().readAllBytes();
+                byte[] existingPdf = storageService.loadAsResource(relativePath).getInputStream().readAllBytes();
                 return ResponseEntity.ok()
                         .header("Content-Disposition", "attachment; filename=\"confirmation-" + getDisplayOrderNumber(order) + ".pdf\"")
                         .contentType(MediaType.APPLICATION_PDF)
@@ -182,8 +190,13 @@ public class OrderController {
                 .body(pdf);
     }
 
-    private String buildConfirmationPdfRelativePath(Order order) {
-        return "orders/" + order.getId() + "/documents/confirmation-" + getDisplayOrderNumber(order) + ".pdf";
+    private Path buildConfirmationPdfRelativePath(Order order) {
+        return Path.of(
+                "orders",
+                order.getId().toString(),
+                "documents",
+                "confirmation-" + getDisplayOrderNumber(order) + ".pdf"
+        );
     }
 
     @GetMapping("/{orderId}/twint")
@@ -236,11 +249,36 @@ public class OrderController {
     
     private String getExtension(String filename) {
         if (filename == null) return "stl";
-        int i = filename.lastIndexOf('.');
-        if (i > 0) {
-            return filename.substring(i + 1);
+        String cleaned = StringUtils.cleanPath(filename);
+        if (cleaned.contains("..")) {
+            return "stl";
+        }
+        int i = cleaned.lastIndexOf('.');
+        if (i > 0 && i < cleaned.length() - 1) {
+            String ext = cleaned.substring(i + 1).toLowerCase(Locale.ROOT);
+            if (SAFE_EXTENSION_PATTERN.matcher(ext).matches()) {
+                return ext;
+            }
         }
         return "stl";
+    }
+
+    private Path resolveOrderItemRelativePath(String storedRelativePath, UUID orderId, UUID orderItemId) {
+        try {
+            Path candidate = Path.of(storedRelativePath).normalize();
+            if (candidate.isAbsolute()) {
+                return null;
+            }
+
+            Path expectedPrefix = Path.of("orders", orderId.toString(), "3d-files", orderItemId.toString());
+            if (!candidate.startsWith(expectedPrefix)) {
+                return null;
+            }
+
+            return candidate;
+        } catch (InvalidPathException e) {
+            return null;
+        }
     }
 
     private OrderDto convertToDto(Order order, List<OrderItem> items) {

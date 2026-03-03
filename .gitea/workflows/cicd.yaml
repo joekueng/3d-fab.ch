@@ -28,7 +28,7 @@ jobs:
         with:
           # In Gitea, pr-mode funziona se il runner ha accesso ai dati del clone
           pr-mode: ${{ gitea.event_name == 'pull_request' }}
-          use-caches: true
+          use-caches: false
           # Nota: Gitea ha un supporto limitato per i commenti automatici
           # rispetto a GitHub, ma l'analisi verrà eseguita correttamente.
           post-pr-comment: false
