@@ -9,23 +9,65 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  prettier:
+  prettier-autofix:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node 22
         uses: actions/setup-node@v4
         with:
           node-version: '22'
 
-      - name: Check formatting with Prettier
+      - name: Apply formatting with Prettier
         shell: bash
         run: |
-          npx --yes prettier@3.6.2 --check \
+          npx --yes prettier@3.6.2 --write \
             "frontend/src/**/*.{ts,html,scss,css,json}" \
             ".gitea/workflows/*.{yml,yaml}"
+
+      - name: Commit and push formatting changes
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "No formatting changes to commit."
+            exit 0
+          fi
+
+          if ! command -v jq >/dev/null 2>&1; then
+            apt-get update
+            apt-get install -y --no-install-recommends jq
+          fi
+
+          EVENT_FILE="${GITHUB_EVENT_PATH:-}"
+          if [[ -z "$EVENT_FILE" || ! -f "$EVENT_FILE" ]]; then
+            echo "Event payload not found, skipping auto-push."
+            exit 0
+          fi
+
+          HEAD_REPO="$(jq -r '.pull_request.head.repo.full_name // empty' "$EVENT_FILE")"
+          BASE_REPO="$(jq -r '.repository.full_name // empty' "$EVENT_FILE")"
+          PR_BRANCH="$(jq -r '.pull_request.head.ref // empty' "$EVENT_FILE")"
+
+          if [[ -z "$PR_BRANCH" ]]; then
+            echo "PR branch not found in event payload, skipping auto-push."
+            exit 0
+          fi
+
+          if [[ -n "$HEAD_REPO" && -n "$BASE_REPO" && "$HEAD_REPO" != "$BASE_REPO" ]]; then
+            echo "PR from fork ($HEAD_REPO), skipping auto-push."
+            exit 0
+          fi
+
+          git config user.name "printcalc-ci"
+          git config user.email "ci@printcalculator.local"
+
+          git add frontend/src .gitea/workflows
+          git commit -m "style: apply prettier formatting"
+          git push origin "HEAD:${PR_BRANCH}"
 
   qodana:
     runs-on: ubuntu-latest
