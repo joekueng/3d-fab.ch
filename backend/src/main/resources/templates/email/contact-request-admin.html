@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Nuova richiesta di contatto</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 640px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #222222;
+        }
+
+        p {
+            color: #444444;
+            line-height: 1.5;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        th,
+        td {
+            text-align: left;
+            vertical-align: top;
+            border-bottom: 1px solid #eeeeee;
+            padding: 10px 6px;
+            color: #333333;
+            word-break: break-word;
+        }
+
+        th {
+            width: 35%;
+            color: #222222;
+            background: #fafafa;
+        }
+
+        .footer {
+            margin-top: 24px;
+            font-size: 12px;
+            color: #888888;
+            border-top: 1px solid #eeeeee;
+            padding-top: 12px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Nuova richiesta di contatto</h1>
+    <p>E' stata ricevuta una nuova richiesta dal form contatti/su misura.</p>
+
+    <table>
+        <tr>
+            <th>ID richiesta</th>
+            <td th:text="${requestId}">00000000-0000-0000-0000-000000000000</td>
+        </tr>
+        <tr>
+            <th>Data</th>
+            <td th:text="${createdAt}">2026-03-03T10:00:00Z</td>
+        </tr>
+        <tr>
+            <th>Tipo richiesta</th>
+            <td th:text="${requestType}">PRINT_SERVICE</td>
+        </tr>
+        <tr>
+            <th>Tipo cliente</th>
+            <td th:text="${customerType}">PRIVATE</td>
+        </tr>
+        <tr>
+            <th>Nome</th>
+            <td th:text="${name}">Mario Rossi</td>
+        </tr>
+        <tr>
+            <th>Azienda</th>
+            <td th:text="${companyName}">3D Fab SA</td>
+        </tr>
+        <tr>
+            <th>Contatto</th>
+            <td th:text="${contactPerson}">Mario Rossi</td>
+        </tr>
+        <tr>
+            <th>Email</th>
+            <td th:text="${email}">cliente@example.com</td>
+        </tr>
+        <tr>
+            <th>Telefono</th>
+            <td th:text="${phone}">+41 00 000 00 00</td>
+        </tr>
+        <tr>
+            <th>Messaggio</th>
+            <td th:text="${message}">Testo richiesta cliente...</td>
+        </tr>
+        <tr>
+            <th>Allegati</th>
+            <td th:text="${attachmentsCount}">0</td>
+        </tr>
+    </table>
+
+    <div class="footer">
+        <p>&copy; <span th:text="${currentYear}">2026</span> 3D-Fab - notifica automatica.</p>
+    </div>
+</div>
+</body>
+</html>

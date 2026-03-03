@@ -30,6 +30,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Locale;
@@ -144,9 +146,13 @@ public class AdminOrderController {
         if (relativePath == null || relativePath.isBlank() || "PENDING".equals(relativePath)) {
             throw new ResponseStatusException(NOT_FOUND, "File not available");
         }
+        Path safeRelativePath = resolveOrderItemRelativePath(relativePath, orderId, orderItemId);
+        if (safeRelativePath == null) {
+            throw new ResponseStatusException(NOT_FOUND, "File not available");
+        }
 
         try {
-            Resource resource = storageService.loadAsResource(Paths.get(relativePath));
+            Resource resource = storageService.loadAsResource(safeRelativePath);
             MediaType contentType = MediaType.APPLICATION_OCTET_STREAM;
             if (item.getMimeType() != null && !item.getMimeType().isBlank()) {
                 try {
@@ -276,9 +282,9 @@ public class AdminOrderController {
     private ResponseEntity<byte[]> generateDocument(Order order, boolean isConfirmation) {
         String displayOrderNumber = getDisplayOrderNumber(order);
         if (isConfirmation) {
-            String relativePath = "orders/" + order.getId() + "/documents/confirmation-" + displayOrderNumber + ".pdf";
+            Path relativePath = buildConfirmationPdfRelativePath(order.getId(), displayOrderNumber);
             try {
-                byte[] existingPdf = storageService.loadAsResource(Paths.get(relativePath)).getInputStream().readAllBytes();
+                byte[] existingPdf = storageService.loadAsResource(relativePath).getInputStream().readAllBytes();
                 return ResponseEntity.ok()
                         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"confirmation-" + displayOrderNumber + ".pdf\"")
                         .contentType(MediaType.APPLICATION_PDF)
@@ -297,5 +303,25 @@ public class AdminOrderController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + prefix + displayOrderNumber + ".pdf\"")
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdf);
+    }
+
+    private Path resolveOrderItemRelativePath(String storedRelativePath, UUID orderId, UUID orderItemId) {
+        try {
+            Path candidate = Path.of(storedRelativePath).normalize();
+            if (candidate.isAbsolute()) {
+                return null;
+            }
+            Path expectedPrefix = Path.of("orders", orderId.toString(), "3d-files", orderItemId.toString());
+            if (!candidate.startsWith(expectedPrefix)) {
+                return null;
+            }
+            return candidate;
+        } catch (InvalidPathException e) {
+            return null;
+        }
+    }
+
+    private Path buildConfirmationPdfRelativePath(UUID orderId, String orderNumber) {
+        return Path.of("orders", orderId.toString(), "documents", "confirmation-" + orderNumber + ".pdf");
     }
 }

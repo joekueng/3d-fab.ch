@@ -15,13 +15,17 @@ public class TwintPaymentService {
     private final String twintPaymentUrl;
 
     public TwintPaymentService(
-            @Value("${payment.twint.url:https://go.twint.ch/1/e/tw?tw=acq.gERQQytOTnyIMuQHUqn4hlxgciHE5X7nnqHnNSPAr2OF2K3uBlXJDr2n9JU3sgxa.}")
+            @Value("${payment.twint.url:}")
             String twintPaymentUrl
     ) {
         this.twintPaymentUrl = twintPaymentUrl;
     }
 
     public String getTwintPaymentUrl(com.printcalculator.entity.Order order) {
+        if (twintPaymentUrl == null || twintPaymentUrl.isBlank()) {
+            throw new IllegalStateException("TWINT_PAYMENT_URL is not configured");
+        }
+
         StringBuilder urlBuilder = new StringBuilder(twintPaymentUrl);
         
         if (order != null) {

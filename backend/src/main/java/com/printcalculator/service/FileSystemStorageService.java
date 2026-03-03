@@ -21,10 +21,12 @@ import java.nio.file.StandardCopyOption;
 public class FileSystemStorageService implements StorageService {
 
     private final Path rootLocation;
+    private final Path normalizedRootLocation;
     private final ClamAVService clamAVService;
 
     public FileSystemStorageService(@Value("${storage.location:storage_orders}") String storageLocation, ClamAVService clamAVService) {
         this.rootLocation = Paths.get(storageLocation);
+        this.normalizedRootLocation = this.rootLocation.toAbsolutePath().normalize();
         this.clamAVService = clamAVService;
     }
 
@@ -39,10 +41,7 @@ public class FileSystemStorageService implements StorageService {
 
     @Override
     public void store(MultipartFile file, Path destinationRelativePath) throws IOException {
-        Path destinationFile = this.rootLocation.resolve(destinationRelativePath).normalize().toAbsolutePath();
-        if (!destinationFile.getParent().startsWith(this.rootLocation.toAbsolutePath())) {
-            throw new StorageException("Cannot store file outside current directory.");
-        }
+        Path destinationFile = resolveInsideStorage(destinationRelativePath);
 
         // 1. Salva prima il file su disco per evitare problemi di stream con file grandi
         Files.createDirectories(destinationFile.getParent());
@@ -63,32 +62,46 @@ public class FileSystemStorageService implements StorageService {
 
     @Override
     public void store(Path source, Path destinationRelativePath) throws IOException {
-        Path destinationFile = this.rootLocation.resolve(destinationRelativePath).normalize().toAbsolutePath();
-        if (!destinationFile.getParent().startsWith(this.rootLocation.toAbsolutePath())) {
-             throw new StorageException("Cannot store file outside current directory.");
-        }
+        Path destinationFile = resolveInsideStorage(destinationRelativePath);
         Files.createDirectories(destinationFile.getParent());
         Files.copy(source, destinationFile, StandardCopyOption.REPLACE_EXISTING);
     }
 
     @Override
     public void delete(Path path) throws IOException {
-        Path file = rootLocation.resolve(path);
+        Path file = resolveInsideStorage(path);
         Files.deleteIfExists(file);
     }
 
     @Override
     public Resource loadAsResource(Path path) throws IOException {
         try {
-            Path file = rootLocation.resolve(path);
+            Path file = resolveInsideStorage(path);
             Resource resource = new UrlResource(file.toUri());
             if (resource.exists() || resource.isReadable()) {
                 return resource;
             } else {
-                throw new RuntimeException("Could not read file: " + path);
+                throw new StorageException("Could not read file: " + path);
             }
         } catch (MalformedURLException e) {
-            throw new RuntimeException("Could not read file: " + path, e);
+            throw new StorageException("Could not read file: " + path, e);
         }
+    }
+
+    private Path resolveInsideStorage(Path relativePath) {
+        if (relativePath == null) {
+            throw new StorageException("Path is required.");
+        }
+
+        Path normalizedRelative = relativePath.normalize();
+        if (normalizedRelative.isAbsolute()) {
+            throw new StorageException("Cannot access absolute paths.");
+        }
+
+        Path resolved = normalizedRootLocation.resolve(normalizedRelative).normalize();
+        if (!resolved.startsWith(normalizedRootLocation)) {
+            throw new StorageException("Cannot access files outside storage root.");
+        }
+        return resolved;
     }
 }

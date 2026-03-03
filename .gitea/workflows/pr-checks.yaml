@@ -108,7 +108,15 @@ jobs:
       - name: Run Gitleaks (secrets scan)
         shell: bash
         run: |
-          gitleaks detect --source . --no-git --redact --exit-code 1
+          set +e
+          gitleaks detect --source . --no-git --redact --exit-code 1 \
+            --report-format json --report-path /tmp/gitleaks-report.json
+          rc=$?
+          if [[ $rc -ne 0 ]]; then
+            echo "Gitleaks findings:"
+            cat /tmp/gitleaks-report.json
+          fi
+          exit $rc
 
   test-backend:
     runs-on: ubuntu-latest
@@ -121,6 +129,7 @@ jobs:
         with:
           java-version: "21"
           distribution: "temurin"
+          cache: gradle
 
       - name: Run Tests with Gradle
         run: |
