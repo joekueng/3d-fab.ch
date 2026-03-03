@@ -46,6 +46,7 @@ public class ProfileManager {
         
         // Material Aliases
         profileAliases.put("pla_basic", "Bambu PLA Basic @BBL A1");
+        profileAliases.put("pla_tough", "Bambu PLA Tough @BBL A1");
         profileAliases.put("petg_basic", "Bambu PETG Basic @BBL A1");
         profileAliases.put("tpu_95a", "Bambu TPU 95A @BBL A1");
         

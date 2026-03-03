@@ -175,6 +175,7 @@ public class QuoteCalculator {
 
     private String detectMaterialCode(String profileName) {
         String lower = profileName.toLowerCase();
+        if (lower.contains("pla tough") || lower.contains("pla_tough")) return "PLA TOUGH";
         if (lower.contains("petg")) return "PETG";
         if (lower.contains("tpu")) return "TPU";
         if (lower.contains("abs")) return "ABS";

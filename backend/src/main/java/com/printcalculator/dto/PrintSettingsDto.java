@@ -8,7 +8,7 @@ public class PrintSettingsDto {
     private String complexityMode;
     
     // Common
-    private String material; // e.g. "PLA", "PETG"
+    private String material; // e.g. "PLA", "PLA TOUGH", "PETG"
     private String color;    // e.g. "White", "#FFFFFF"
     private Long filamentVariantId;
     private Long printerMachineId;
