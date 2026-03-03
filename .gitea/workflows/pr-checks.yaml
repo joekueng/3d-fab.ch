@@ -88,7 +88,8 @@ jobs:
       - name: Run Semgrep (SAST)
         shell: bash
         run: |
-          python3 -m semgrep --config auto --error \
+          semgrep --version
+          semgrep --config auto --error \
             --exclude frontend/node_modules \
             --exclude backend/build \
             backend/src frontend/src
