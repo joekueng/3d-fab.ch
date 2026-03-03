@@ -16,6 +16,7 @@ import com.printcalculator.repository.NozzleOptionRepository;
 import com.printcalculator.repository.PrinterMachineRepository;
 import com.printcalculator.service.OrcaProfileResolver;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -54,13 +55,13 @@ public class OptionsController {
     }
 
     @GetMapping("/api/calculator/options")
+    @Transactional(readOnly = true)
     public ResponseEntity<OptionsResponse> getOptions(
             @RequestParam(value = "printerMachineId", required = false) Long printerMachineId,
             @RequestParam(value = "nozzleDiameter", required = false) Double nozzleDiameter
     ) {
         List<FilamentMaterialType> types = materialRepo.findAll();
-        List<FilamentVariant> allVariants = variantRepo.findAll().stream()
-                .filter(v -> Boolean.TRUE.equals(v.getIsActive()))
+        List<FilamentVariant> allVariants = variantRepo.findByIsActiveTrue().stream()
                 .sorted(Comparator
                         .comparing((FilamentVariant v) -> safeMaterialCode(v.getFilamentMaterialType()), String.CASE_INSENSITIVE_ORDER)
                         .thenComparing(v -> safeString(v.getVariantDisplayName()), String.CASE_INSENSITIVE_ORDER))

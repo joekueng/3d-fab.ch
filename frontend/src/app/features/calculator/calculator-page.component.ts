@@ -226,9 +226,10 @@ export class CalculatorPageComponent implements OnInit {
     this.step.set('quote');
   }
 
-  onItemChange(event: {id?: string, fileName: string, quantity: number}) {
+  onItemChange(event: {id?: string, index: number, fileName: string, quantity: number}) {
       // 1. Update local form for consistency (UI feedback)
       if (this.uploadForm) {
+          this.uploadForm.updateItemQuantityByIndex(event.index, event.quantity);
           this.uploadForm.updateItemQuantityByName(event.fileName, event.quantity);
       }
       

@@ -199,11 +199,28 @@ export class UploadFormComponent implements OnInit {
       }
   }
 
-  updateItemQuantityByName(fileName: string, quantity: number) {
+  updateItemQuantityByIndex(index: number, quantity: number) {
+      if (!Number.isInteger(index) || index < 0) return;
+      const normalizedQty = this.normalizeQuantity(quantity);
+
       this.items.update(current => {
+          if (index >= current.length) return current;
+          const updated = [...current];
+          updated[index] = { ...updated[index], quantity: normalizedQty };
+          return updated;
+      });
+  }
+
+  updateItemQuantityByName(fileName: string, quantity: number) {
+      const targetName = this.normalizeFileName(fileName);
+      const normalizedQty = this.normalizeQuantity(quantity);
+
+      this.items.update(current => {
+          let matched = false;
           return current.map(item => {
-              if (item.file.name === fileName) {
-                  return { ...item, quantity };
+              if (!matched && this.normalizeFileName(item.file.name) === targetName) {
+                  matched = true;
+                  return { ...item, quantity: normalizedQty };
               }
               return item;
           });
@@ -239,14 +256,9 @@ export class UploadFormComponent implements OnInit {
 
   updateItemQuantity(index: number, event: Event) {
       const input = event.target as HTMLInputElement;
-      let val = parseInt(input.value, 10);
-      if (isNaN(val) || val < 1) val = 1;
-
-      this.items.update(current => {
-          const updated = [...current];
-          updated[index] = { ...updated[index], quantity: val };
-          return updated;
-      });
+      const parsed = parseInt(input.value, 10);
+      const quantity = Number.isFinite(parsed) ? parsed : 1;
+      this.updateItemQuantityByIndex(index, quantity);
   }
 
   updateItemColor(index: number, newSelection: string | { colorName: string; filamentVariantId?: number }) {
@@ -386,5 +398,20 @@ export class UploadFormComponent implements OnInit {
       this.form.markAllAsTouched();
       this.form.get('itemsTouched')?.setValue(true);
     }
+  }
+
+  private normalizeQuantity(quantity: number): number {
+      if (!Number.isFinite(quantity) || quantity < 1) {
+          return 1;
+      }
+      return Math.floor(quantity);
+  }
+
+  private normalizeFileName(fileName: string): string {
+      return (fileName || '')
+          .split(/[\\/]/)
+          .pop()
+          ?.trim()
+          .toLowerCase() ?? '';
   }
 }

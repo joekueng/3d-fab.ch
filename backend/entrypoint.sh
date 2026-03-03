@@ -5,8 +5,6 @@ echo "DB_URL: $DB_URL"
 echo "DB_USERNAME: $DB_USERNAME"
 echo "SPRING_DATASOURCE_URL: $SPRING_DATASOURCE_URL"
 echo "SLICER_PATH: $SLICER_PATH"
-echo "--- ALL ENV VARS ---"
-env
 echo "----------------------------------------------------------------"
 
 # Determine which environment variables to use for database connection

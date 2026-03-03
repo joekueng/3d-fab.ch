@@ -47,6 +47,10 @@
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   z-index: 1000;
   width: 230px; /* Increased size */
+  max-height: min(62vh, 360px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
   
   // Little triangle arrow
   &::before {
@@ -67,12 +71,19 @@
     transform: translate(-50%, -50%);
     width: 280px; /* Provide enough width for touch targets */
     max-width: 90vw; /* Safety constraint */
+    max-height: min(72vh, 420px);
     box-shadow: 0 10px 25px rgba(0,0,0,0.2); /* Stronger shadow for modal feel */
 
     /* Hide arrow on mobile since it's detached from trigger */
     &::before {
       display: none;
     }
+  }
+}
+
+@media (max-height: 720px) {
+  .color-popup {
+    max-height: min(56vh, 300px);
   }
 }
 
