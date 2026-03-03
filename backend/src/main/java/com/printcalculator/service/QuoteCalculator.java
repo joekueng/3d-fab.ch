@@ -21,6 +21,8 @@ import java.util.List;
 
 @Service
 public class QuoteCalculator {
+    private static final BigDecimal SETUP_FEE_DOUBLE_THRESHOLD_CHF = BigDecimal.TEN;
+    private static final BigDecimal SETUP_FEE_MULTIPLIER_BELOW_THRESHOLD = BigDecimal.valueOf(2);
 
     private final PricingPolicyRepository pricingRepo;
     private final PricingPolicyMachineHourTierRepository tierRepo;
@@ -109,6 +111,21 @@ public class QuoteCalculator {
         BigDecimal rawCost = calculateMachineCost(policy, hours);
         BigDecimal markupFactor = BigDecimal.ONE.add(policy.getMarkupPercent().divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP));
         return rawCost.multiply(markupFactor).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    public BigDecimal calculateSessionSetupFee(PricingPolicy policy) {
+        if (policy == null || policy.getFixedJobFeeChf() == null) {
+            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+        }
+
+        BigDecimal baseSetupFee = policy.getFixedJobFeeChf();
+        if (baseSetupFee.compareTo(SETUP_FEE_DOUBLE_THRESHOLD_CHF) < 0) {
+            return baseSetupFee
+                    .multiply(SETUP_FEE_MULTIPLIER_BELOW_THRESHOLD)
+                    .setScale(2, RoundingMode.HALF_UP);
+        }
+
+        return baseSetupFee.setScale(2, RoundingMode.HALF_UP);
     }
 
     private BigDecimal calculateMachineCost(PricingPolicy policy, BigDecimal hours) {

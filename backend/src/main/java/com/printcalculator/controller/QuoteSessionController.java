@@ -97,7 +97,7 @@ public class QuoteSessionController {
         session.setExpiresAt(OffsetDateTime.now().plusDays(30)); 
         
         var policy = pricingRepo.findFirstByIsActiveTrueOrderByValidFromDesc();
-        session.setSetupCostChf(policy != null ? policy.getFixedJobFeeChf() : BigDecimal.ZERO);
+        session.setSetupCostChf(quoteCalculator.calculateSessionSetupFee(policy));
         
         session = sessionRepo.save(session);
         return ResponseEntity.ok(session);
