@@ -1,0 +1,72 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [main, int, dev]
+
+concurrency:
+  group: print-calculator-pr-${{ gitea.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prettier:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Check formatting with Prettier
+        shell: bash
+        run: |
+          npx --yes prettier@3.6.2 --check \
+            "frontend/src/**/*.{ts,html,scss,css,json}" \
+            ".gitea/workflows/*.{yml,yaml}"
+
+  qodana:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Prepare Qodana directories
+        shell: bash
+        run: |
+          mkdir -p .qodana/caches .qodana/results
+
+      - name: Qodana Scan
+        uses: JetBrains/qodana-action@v2025.3
+        env:
+          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
+        with:
+          cache-dir: .qodana/caches
+          results-dir: .qodana/results
+          args: -i,backend
+          pr-mode: true
+          use-caches: false
+          post-pr-comment: false
+          use-annotations: true
+
+  test-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Run Tests with Gradle
+        run: |
+          cd backend
+          chmod +x gradlew
+          ./gradlew test

@@ -1,47 +1,14 @@
-name: Build, Test, Deploy and Analysis
+name: Build and Deploy
 
 on:
   push:
     branches: [main, int, dev]
-  pull_request:
-    branches: [main, int, dev]
-  workflow_dispatch:
 
 concurrency:
-  group: print-calculator-${{ gitea.ref }}
+  group: print-calculator-deploy-${{ gitea.ref }}
   cancel-in-progress: true
 
 jobs:
-  # --- JOB DI ANALISI (In parallelo) ---
-  qodana:
-    if: ${{ gitea.event_name == 'pull_request' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Fondamentale per Qodana per analizzare la storia
-
-      - name: Prepare Qodana directories
-        shell: bash
-        run: |
-          mkdir -p .qodana/caches .qodana/results
-
-      - name: 'Qodana Scan'
-        uses: JetBrains/qodana-action@v2025.3
-        env:
-          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
-        with:
-          cache-dir: .qodana/caches
-          results-dir: .qodana/results
-          args: -i,backend
-          # In Gitea, pr-mode funziona se il runner ha accesso ai dati del clone
-          pr-mode: ${{ gitea.event_name == 'pull_request' }}
-          use-caches: false
-          # Nota: Gitea ha un supporto limitato per i commenti automatici
-          # rispetto a GitHub, ma l'analisi verrà eseguita correttamente.
-          post-pr-comment: false
-          use-annotations: true
   test-backend:
     runs-on: ubuntu-latest
     steps:
@@ -61,6 +28,7 @@ jobs:
           ./gradlew test
 
   build-and-push:
+    needs: test-backend
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -138,21 +106,15 @@ jobs:
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
 
-          # 1) Prende il secret base64 e rimuove spazi/newline/CR
           printf '%s' "${{ secrets.SSH_PRIVATE_KEY_B64 }}" | tr -d '\r\n\t ' > /tmp/key.b64
-
-          # 2) (debug sicuro) stampa solo la lunghezza della base64
           echo "b64_len=$(wc -c < /tmp/key.b64)"
 
-          # 3) Decodifica in chiave privata
           base64 -d /tmp/key.b64 > ~/.ssh/id_ed25519
 
-          # 4) Rimuove eventuali CRLF dentro la chiave (se proviene da Windows)
           tr -d '\r' < ~/.ssh/id_ed25519 > ~/.ssh/id_ed25519.clean
           mv ~/.ssh/id_ed25519.clean ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
 
-          # 5) Validazione: se fallisce qui, la chiave NON è valida/corrotta
           ssh-keygen -y -f ~/.ssh/id_ed25519 >/dev/null
 
           ssh-keyscan -H "${{ secrets.SERVER_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
@@ -160,7 +122,6 @@ jobs:
       - name: Write env and compose to server
         shell: bash
         run: |
-          # 1. Recalculate TAG and OWNER_LOWER (jobs don't share ENV)
           if [[ "${{ gitea.ref }}" == "refs/heads/main" ]]; then
             DEPLOY_TAG="prod"
           elif [[ "${{ gitea.ref }}" == "refs/heads/int" ]]; then
@@ -170,10 +131,8 @@ jobs:
           fi
           DEPLOY_OWNER=$(echo '${{ gitea.repository_owner }}' | tr '[:upper:]' '[:lower:]')
 
-          # 2. Start with the static env file content
           cat "deploy/envs/${{ env.ENV }}.env" > /tmp/full_env.env
 
-          # 3. Determine DB credentials
           if [[ "${{ env.ENV }}" == "prod" ]]; then
             DB_URL="${{ secrets.DB_URL_PROD }}"
             DB_USER="${{ secrets.DB_USERNAME_PROD }}"
@@ -188,10 +147,9 @@ jobs:
             DB_PASS="${{ secrets.DB_PASSWORD_DEV }}"
           fi
 
-          # 4. Append DB and Docker credentials (quoted)
           printf '\nDB_URL="%s"\nDB_USERNAME="%s"\nDB_PASSWORD="%s"\n' \
             "$DB_URL" "$DB_USER" "$DB_PASS" >> /tmp/full_env.env
-          
+
           printf 'REGISTRY_URL="%s"\nREPO_OWNER="%s"\nTAG="%s"\n' \
             "${{ secrets.REGISTRY_URL }}" "$DEPLOY_OWNER" "$DEPLOY_TAG" >> /tmp/full_env.env
 
@@ -200,25 +158,17 @@ jobs:
           printf 'ADMIN_PASSWORD="%s"\nADMIN_SESSION_SECRET="%s"\nADMIN_SESSION_TTL_MINUTES="%s"\n' \
             "${{ secrets.ADMIN_PASSWORD }}" "${{ secrets.ADMIN_SESSION_SECRET }}" "$ADMIN_TTL" >> /tmp/full_env.env
 
-          # 5. Debug: print content (for debug purposes)
           echo "Preparing to send env file with variables:"
           grep -Ev "PASSWORD|SECRET" /tmp/full_env.env || true
 
-          # 5. Send env to server
           ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" \
             "setenv ${{ env.ENV }}" < /tmp/full_env.env
 
-          # 6. Send docker-compose.deploy.yml to server
           ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" \
             "setcompose ${{ env.ENV }}" < docker-compose.deploy.yml
-            
-
 
       - name: Trigger deploy on Unraid (forced command key)
         shell: bash
         run: |
           set -euo pipefail
-
-          # Aggiungiamo le opzioni di verbosità se dovesse fallire ancora, 
-          # e assicuriamoci che l'input sia pulito
           ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" "deploy ${{ env.ENV }}"
