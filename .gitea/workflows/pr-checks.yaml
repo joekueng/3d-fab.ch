@@ -77,18 +77,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Prepare Qodana directories
-        shell: bash
-        run: |
-          mkdir -p .qodana/caches .qodana/results
-
       - name: Qodana Scan
         uses: JetBrains/qodana-action@v2025.3
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
         with:
-          cache-dir: .qodana/caches
-          results-dir: .qodana/results
+          cache-dir: /tmp
+          results-dir: /tmp
           args: -i,backend
           pr-mode: true
           use-caches: false
