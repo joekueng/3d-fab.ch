@@ -3,6 +3,7 @@ package com.printcalculator.repository;
 import com.printcalculator.entity.FilamentMaterialType;
 import com.printcalculator.entity.MaterialOrcaProfileMap;
 import com.printcalculator.entity.PrinterMachineProfile;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -14,5 +15,6 @@ public interface MaterialOrcaProfileMapRepository extends JpaRepository<Material
             FilamentMaterialType filamentMaterialType
     );
 
+    @EntityGraph(attributePaths = {"filamentMaterialType"})
     List<MaterialOrcaProfileMap> findByPrinterMachineProfileAndIsActiveTrue(PrinterMachineProfile printerMachineProfile);
 }
