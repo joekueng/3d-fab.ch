@@ -1,5 +1,6 @@
 import {
   Component,
+  computed,
   signal,
   ViewChild,
   ElementRef,
@@ -12,6 +13,7 @@ import { map } from 'rxjs/operators';
 
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
 import { AppAlertComponent } from '../../shared/components/app-alert/app-alert.component';
+import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { UploadFormComponent } from './components/upload-form/upload-form.component';
 import { QuoteResultComponent } from './components/quote-result/quote-result.component';
 import {
@@ -31,6 +33,7 @@ import { LanguageService } from '../../core/services/language.service';
     TranslateModule,
     AppCardComponent,
     AppAlertComponent,
+    AppButtonComponent,
     UploadFormComponent,
     QuoteResultComponent,
     SuccessStateComponent,
@@ -47,6 +50,9 @@ export class CalculatorPageComponent implements OnInit {
   result = signal<QuoteResult | null>(null);
   error = signal<boolean>(false);
   errorKey = signal<string>('CALC.ERROR_GENERIC');
+  isZeroQuoteError = computed(
+    () => this.error() && this.errorKey() === 'CALC.ERROR_ZERO_PRICE',
+  );
 
   orderSuccess = signal(false);
 
@@ -318,7 +324,10 @@ export class CalculatorPageComponent implements OnInit {
   private currentRequest: QuoteRequest | null = null;
 
   onConsult() {
-    if (!this.currentRequest) return;
+    if (!this.currentRequest) {
+      this.router.navigate(['/', this.languageService.selectedLang(), 'contact']);
+      return;
+    }
 
     const req = this.currentRequest;
     let details = `Richiesta Preventivo:\n`;
@@ -349,7 +358,16 @@ export class CalculatorPageComponent implements OnInit {
   }
 
   private isInvalidQuote(result: QuoteResult): boolean {
-    return !Number.isFinite(result.totalPrice) || result.totalPrice <= 0;
+    const invalidPrice =
+      !Number.isFinite(result.totalPrice) || result.totalPrice <= 0;
+    const invalidWeight =
+      !Number.isFinite(result.totalWeight) || result.totalWeight <= 0;
+    const invalidTime =
+      !Number.isFinite(result.totalTimeHours) ||
+      !Number.isFinite(result.totalTimeMinutes) ||
+      (result.totalTimeHours <= 0 && result.totalTimeMinutes <= 0);
+
+    return invalidPrice || invalidWeight || invalidTime;
   }
 
   private setQuoteError(key: string): void {

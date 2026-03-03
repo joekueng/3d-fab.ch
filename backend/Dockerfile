@@ -10,6 +10,8 @@ RUN ./gradlew bootJar -x test --no-daemon
 
 # Stage 2: Runtime Environment
 FROM eclipse-temurin:21-jre-jammy
+ARG ORCA_VERSION=2.3.1
+ARG ORCA_DOWNLOAD_URL
 
 # Install system dependencies for OrcaSlicer (same as before)
 RUN apt-get update && apt-get install -y \
@@ -25,7 +27,12 @@ RUN apt-get update && apt-get install -y \
 
 # Install OrcaSlicer
 WORKDIR /opt
-RUN wget -q https://github.com/SoftFever/OrcaSlicer/releases/download/v2.2.0/OrcaSlicer_Linux_V2.2.0.AppImage -O OrcaSlicer.AppImage \
+RUN set -eux; \
+    ORCA_URL="${ORCA_DOWNLOAD_URL:-}"; \
+    if [ -z "${ORCA_URL}" ]; then \
+      ORCA_URL="https://github.com/OrcaSlicer/OrcaSlicer/releases/download/v${ORCA_VERSION}/OrcaSlicer_Linux_V${ORCA_VERSION}.AppImage"; \
+    fi; \
+    wget -q "${ORCA_URL}" -O OrcaSlicer.AppImage \
     && 7z x OrcaSlicer.AppImage -o/opt/orcaslicer \
     && chmod -R +x /opt/orcaslicer \
     && rm OrcaSlicer.AppImage

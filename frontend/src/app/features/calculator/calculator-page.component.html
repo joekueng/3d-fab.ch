@@ -4,6 +4,13 @@
 
   @if (error()) {
     <app-alert type="error">{{ errorKey() | translate }}</app-alert>
+    @if (isZeroQuoteError()) {
+      <div class="error-action">
+        <app-button variant="outline" (click)="onConsult()">
+          {{ "QUOTE.CONSULT" | translate }}
+        </app-button>
+      </div>
+    }
   }
 </div>
 
@@ -65,6 +72,16 @@
           (proceed)="onProceed()"
           (itemChange)="onItemChange($event)"
         ></app-quote-result>
+      } @else if (isZeroQuoteError()) {
+        <app-card class="zero-result-card">
+          <h3>{{ "CALC.ZERO_RESULT_TITLE" | translate }}</h3>
+          <p>{{ "CALC.ZERO_RESULT_HELP" | translate }}</p>
+          <div class="zero-result-action">
+            <app-button variant="outline" (click)="onConsult()">
+              {{ "QUOTE.CONSULT" | translate }}
+            </app-button>
+          </div>
+        </app-card>
       } @else {
         <app-card>
           <h3>{{ "CALC.BENEFITS_TITLE" | translate }}</h3>

@@ -116,7 +116,9 @@
     "FALLBACK_MATERIAL": "PLA (fallback)",
     "FALLBACK_QUALITY_STANDARD": "Standard",
     "ERR_FILE_TOO_LARGE": "Certains fichiers dépassent la limite de 200MB et n'ont pas été ajoutés.",
-    "ERROR_ZERO_PRICE": "Quelque chose s'est mal passé. Essayez un autre format ou contactez-nous."
+    "ERROR_ZERO_PRICE": "Un problème est survenu pendant le calcul. Essayez un autre format ou contactez-nous directement via Demander une consultation.",
+    "ZERO_RESULT_TITLE": "Résultat invalide",
+    "ZERO_RESULT_HELP": "Le calcul a renvoyé des valeurs nulles invalides. Essayez un autre format de fichier ou contactez-nous directement via Demander une consultation."
   },
   "QUOTE": {
     "PROCEED_ORDER": "Procéder à la commande",
