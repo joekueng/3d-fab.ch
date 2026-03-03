@@ -1,5 +1,11 @@
 import { inject } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivateFn, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
+import {
+  ActivatedRouteSnapshot,
+  CanActivateFn,
+  Router,
+  RouterStateSnapshot,
+  UrlTree,
+} from '@angular/router';
 import { catchError, map, Observable, of } from 'rxjs';
 import { AdminAuthService } from '../services/admin-auth.service';
 
@@ -17,7 +23,7 @@ function resolveLang(route: ActivatedRouteSnapshot): string {
 
 export const adminAuthGuard: CanActivateFn = (
   route: ActivatedRouteSnapshot,
-  state: RouterStateSnapshot
+  state: RouterStateSnapshot,
 ): Observable<boolean | UrlTree> => {
   const authService = inject(AdminAuthService);
   const router = inject(Router);
@@ -29,13 +35,15 @@ export const adminAuthGuard: CanActivateFn = (
         return true;
       }
       return router.createUrlTree(['/', lang, 'admin', 'login'], {
-        queryParams: { redirect: state.url }
+        queryParams: { redirect: state.url },
       });
     }),
-    catchError(() => of(
-      router.createUrlTree(['/', lang, 'admin', 'login'], {
-        queryParams: { redirect: state.url }
-      })
-    ))
+    catchError(() =>
+      of(
+        router.createUrlTree(['/', lang, 'admin', 'login'], {
+          queryParams: { redirect: state.url },
+        }),
+      ),
+    ),
   );
 };

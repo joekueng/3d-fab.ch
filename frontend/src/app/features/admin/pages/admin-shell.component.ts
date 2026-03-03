@@ -1,6 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import {
+  ActivatedRoute,
+  Router,
+  RouterLink,
+  RouterLinkActive,
+  RouterOutlet,
+} from '@angular/router';
 import { AdminAuthService } from '../services/admin-auth.service';
 
 const SUPPORTED_LANGS = new Set(['it', 'en', 'de', 'fr']);
@@ -10,7 +16,7 @@ const SUPPORTED_LANGS = new Set(['it', 'en', 'de', 'fr']);
   standalone: true,
   imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './admin-shell.component.html',
-  styleUrl: './admin-shell.component.scss'
+  styleUrl: './admin-shell.component.scss',
 })
 export class AdminShellComponent {
   private readonly adminAuthService = inject(AdminAuthService);
@@ -24,7 +30,7 @@ export class AdminShellComponent {
       },
       error: () => {
         void this.router.navigate(['/', this.resolveLang(), 'admin', 'login']);
-      }
+      },
     });
   }
 

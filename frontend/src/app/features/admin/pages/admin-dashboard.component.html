@@ -5,7 +5,9 @@
       <p>Seleziona un ordine a sinistra e gestiscilo nel dettaglio a destra.</p>
     </div>
     <div class="header-actions">
-      <button type="button" (click)="loadOrders()" [disabled]="loading">Aggiorna</button>
+      <button type="button" (click)="loadOrders()" [disabled]="loading">
+        Aggiorna
+      </button>
     </div>
   </header>
 
@@ -32,7 +34,12 @@
             [ngModel]="paymentStatusFilter"
             (ngModelChange)="onPaymentStatusFilterChange($event)"
           >
-            <option *ngFor="let option of paymentStatusFilterOptions" [ngValue]="option">{{ option }}</option>
+            <option
+              *ngFor="let option of paymentStatusFilterOptions"
+              [ngValue]="option"
+            >
+              {{ option }}
+            </option>
           </select>
         </label>
         <label class="toolbar-field" for="order-status-filter">
@@ -42,7 +49,12 @@
             [ngModel]="orderStatusFilter"
             (ngModelChange)="onOrderStatusFilterChange($event)"
           >
-            <option *ngFor="let option of orderStatusFilterOptions" [ngValue]="option">{{ option }}</option>
+            <option
+              *ngFor="let option of orderStatusFilterOptions"
+              [ngValue]="option"
+            >
+              {{ option }}
+            </option>
           </select>
         </label>
       </div>
@@ -65,12 +77,16 @@
             >
               <td>{{ order.orderNumber }}</td>
               <td>{{ order.customerEmail }}</td>
-              <td>{{ order.paymentStatus || 'PENDING' }}</td>
+              <td>{{ order.paymentStatus || "PENDING" }}</td>
               <td>{{ order.status }}</td>
-              <td>{{ order.totalChf | currency:'CHF':'symbol':'1.2-2' }}</td>
+              <td>
+                {{ order.totalChf | currency: "CHF" : "symbol" : "1.2-2" }}
+              </td>
             </tr>
             <tr class="no-results" *ngIf="filteredOrders.length === 0">
-              <td colspan="5">Nessun ordine trovato per i filtri selezionati.</td>
+              <td colspan="5">
+                Nessun ordine trovato per i filtri selezionati.
+              </td>
             </tr>
           </tbody>
         </table>
@@ -80,39 +96,74 @@
     <section class="detail-panel" *ngIf="selectedOrder">
       <div class="detail-header">
         <h2>Dettaglio ordine {{ selectedOrder.orderNumber }}</h2>
-        <p class="order-uuid">UUID: <code>{{ selectedOrder.id }}</code></p>
+        <p class="order-uuid">
+          UUID: <code>{{ selectedOrder.id }}</code>
+        </p>
         <p *ngIf="detailLoading">Caricamento dettaglio...</p>
       </div>
 
       <div class="meta-grid">
-        <div><strong>Cliente</strong><span>{{ selectedOrder.customerEmail }}</span></div>
-        <div><strong>Stato pagamento</strong><span>{{ selectedOrder.paymentStatus || 'PENDING' }}</span></div>
-        <div><strong>Stato ordine</strong><span>{{ selectedOrder.status }}</span></div>
-        <div><strong>Totale</strong><span>{{ selectedOrder.totalChf | currency:'CHF':'symbol':'1.2-2' }}</span></div>
+        <div>
+          <strong>Cliente</strong><span>{{ selectedOrder.customerEmail }}</span>
+        </div>
+        <div>
+          <strong>Stato pagamento</strong
+          ><span>{{ selectedOrder.paymentStatus || "PENDING" }}</span>
+        </div>
+        <div>
+          <strong>Stato ordine</strong><span>{{ selectedOrder.status }}</span>
+        </div>
+        <div>
+          <strong>Totale</strong
+          ><span>{{
+            selectedOrder.totalChf | currency: "CHF" : "symbol" : "1.2-2"
+          }}</span>
+        </div>
       </div>
 
       <div class="actions-block">
         <div class="status-editor">
           <label for="order-status">Stato ordine</label>
-          <select id="order-status" [value]="selectedStatus" (change)="onStatusChange($event)">
-            <option *ngFor="let option of orderStatusOptions" [value]="option">{{ option }}</option>
+          <select
+            id="order-status"
+            [value]="selectedStatus"
+            (change)="onStatusChange($event)"
+          >
+            <option *ngFor="let option of orderStatusOptions" [value]="option">
+              {{ option }}
+            </option>
           </select>
-          <button type="button" (click)="updateStatus()" [disabled]="updatingStatus">
-            {{ updatingStatus ? 'Salvataggio...' : 'Aggiorna stato' }}
+          <button
+            type="button"
+            (click)="updateStatus()"
+            [disabled]="updatingStatus"
+          >
+            {{ updatingStatus ? "Salvataggio..." : "Aggiorna stato" }}
           </button>
         </div>
 
         <div class="status-editor">
           <label for="payment-method">Metodo pagamento</label>
-          <select id="payment-method" [value]="selectedPaymentMethod" (change)="onPaymentMethodChange($event)">
-            <option *ngFor="let option of paymentMethodOptions" [value]="option">{{ option }}</option>
+          <select
+            id="payment-method"
+            [value]="selectedPaymentMethod"
+            (change)="onPaymentMethodChange($event)"
+          >
+            <option
+              *ngFor="let option of paymentMethodOptions"
+              [value]="option"
+            >
+              {{ option }}
+            </option>
           </select>
           <button
             type="button"
             (click)="confirmPayment()"
-            [disabled]="confirmingPayment || selectedOrder.paymentStatus === 'COMPLETED'"
+            [disabled]="
+              confirmingPayment || selectedOrder.paymentStatus === 'COMPLETED'
+            "
           >
-            {{ confirmingPayment ? 'Invio...' : 'Conferma pagamento' }}
+            {{ confirmingPayment ? "Invio..." : "Conferma pagamento" }}
           </button>
         </div>
       </div>
@@ -132,17 +183,26 @@
       <div class="items">
         <div class="item" *ngFor="let item of selectedOrder.items">
           <div class="item-main">
-            <p class="file-name"><strong>{{ item.originalFilename }}</strong></p>
+            <p class="file-name">
+              <strong>{{ item.originalFilename }}</strong>
+            </p>
             <p class="item-meta">
-              Qta: {{ item.quantity }} |
-              Colore:
-              <span class="color-swatch" *ngIf="isHexColor(item.colorCode)" [style.background-color]="item.colorCode"></span>
-              <span>{{ item.colorCode || '-' }}</span>
-              |
-              Riga: {{ item.lineTotalChf | currency:'CHF':'symbol':'1.2-2' }}
+              Qta: {{ item.quantity }} | Colore:
+              <span
+                class="color-swatch"
+                *ngIf="isHexColor(item.colorCode)"
+                [style.background-color]="item.colorCode"
+              ></span>
+              <span>{{ item.colorCode || "-" }}</span>
+              | Riga:
+              {{ item.lineTotalChf | currency: "CHF" : "symbol" : "1.2-2" }}
             </p>
           </div>
-          <button type="button" class="ghost" (click)="downloadItemFile(item.id, item.originalFilename)">
+          <button
+            type="button"
+            class="ghost"
+            (click)="downloadItemFile(item.id, item.originalFilename)"
+          >
             Scarica file
           </button>
         </div>
@@ -160,21 +220,52 @@
   <p>Caricamento ordini...</p>
 </ng-template>
 
-<div class="modal-backdrop" *ngIf="showPrintDetails && selectedOrder" (click)="closePrintDetails()">
+<div
+  class="modal-backdrop"
+  *ngIf="showPrintDetails && selectedOrder"
+  (click)="closePrintDetails()"
+>
   <div class="modal-card" (click)="$event.stopPropagation()">
     <header class="modal-header">
       <h3>Dettagli stampa ordine {{ selectedOrder.orderNumber }}</h3>
-      <button type="button" class="ghost close-btn" (click)="closePrintDetails()">Chiudi</button>
+      <button
+        type="button"
+        class="ghost close-btn"
+        (click)="closePrintDetails()"
+      >
+        Chiudi
+      </button>
     </header>
 
     <div class="modal-grid">
-      <div><strong>Qualità</strong><span>{{ getQualityLabel(selectedOrder.printLayerHeightMm) }}</span></div>
-      <div><strong>Materiale</strong><span>{{ selectedOrder.printMaterialCode || '-' }}</span></div>
-      <div><strong>Layer height</strong><span>{{ selectedOrder.printLayerHeightMm || '-' }} mm</span></div>
-      <div><strong>Nozzle</strong><span>{{ selectedOrder.printNozzleDiameterMm || '-' }} mm</span></div>
-      <div><strong>Infill pattern</strong><span>{{ selectedOrder.printInfillPattern || '-' }}</span></div>
-      <div><strong>Infill %</strong><span>{{ selectedOrder.printInfillPercent ?? '-' }}</span></div>
-      <div><strong>Supporti</strong><span>{{ selectedOrder.printSupportsEnabled ? 'Sì' : 'No' }}</span></div>
+      <div>
+        <strong>Qualità</strong
+        ><span>{{ getQualityLabel(selectedOrder.printLayerHeightMm) }}</span>
+      </div>
+      <div>
+        <strong>Materiale</strong
+        ><span>{{ selectedOrder.printMaterialCode || "-" }}</span>
+      </div>
+      <div>
+        <strong>Layer height</strong
+        ><span>{{ selectedOrder.printLayerHeightMm || "-" }} mm</span>
+      </div>
+      <div>
+        <strong>Nozzle</strong
+        ><span>{{ selectedOrder.printNozzleDiameterMm || "-" }} mm</span>
+      </div>
+      <div>
+        <strong>Infill pattern</strong
+        ><span>{{ selectedOrder.printInfillPattern || "-" }}</span>
+      </div>
+      <div>
+        <strong>Infill %</strong
+        ><span>{{ selectedOrder.printInfillPercent ?? "-" }}</span>
+      </div>
+      <div>
+        <strong>Supporti</strong
+        ><span>{{ selectedOrder.printSupportsEnabled ? "Sì" : "No" }}</span>
+      </div>
     </div>
 
     <h4>Colori file</h4>
@@ -182,8 +273,12 @@
       <div class="file-color-row" *ngFor="let item of selectedOrder.items">
         <span class="filename">{{ item.originalFilename }}</span>
         <span class="file-color">
-          <span class="color-swatch" *ngIf="isHexColor(item.colorCode)" [style.background-color]="item.colorCode"></span>
-          {{ item.colorCode || '-' }}
+          <span
+            class="color-swatch"
+            *ngIf="isHexColor(item.colorCode)"
+            [style.background-color]="item.colorCode"
+          ></span>
+          {{ item.colorCode || "-" }}
         </span>
       </div>
     </div>

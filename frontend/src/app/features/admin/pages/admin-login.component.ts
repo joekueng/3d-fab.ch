@@ -3,7 +3,10 @@ import { Component, inject, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-import { AdminAuthResponse, AdminAuthService } from '../services/admin-auth.service';
+import {
+  AdminAuthResponse,
+  AdminAuthService,
+} from '../services/admin-auth.service';
 
 const SUPPORTED_LANGS = new Set(['it', 'en', 'de', 'fr']);
 
@@ -12,7 +15,7 @@ const SUPPORTED_LANGS = new Set(['it', 'en', 'de', 'fr']);
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './admin-login.component.html',
-  styleUrl: './admin-login.component.scss'
+  styleUrl: './admin-login.component.scss',
 })
 export class AdminLoginComponent implements OnDestroy {
   private readonly authService = inject(AdminAuthService);
@@ -26,7 +29,11 @@ export class AdminLoginComponent implements OnDestroy {
   private lockTimer: ReturnType<typeof setInterval> | null = null;
 
   submit(): void {
-    if (!this.password.trim() || this.loading || this.lockSecondsRemaining > 0) {
+    if (
+      !this.password.trim() ||
+      this.loading ||
+      this.lockSecondsRemaining > 0
+    ) {
       return;
     }
 
@@ -53,7 +60,7 @@ export class AdminLoginComponent implements OnDestroy {
       error: (error: HttpErrorResponse) => {
         this.loading = false;
         this.handleLoginFailure(this.extractRetryAfterSeconds(error));
-      }
+      },
     });
   }
 

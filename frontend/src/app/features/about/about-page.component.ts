@@ -28,7 +28,7 @@ interface PassionChip {
   standalone: true,
   imports: [TranslateModule, AppLocationsComponent],
   templateUrl: './about-page.component.html',
-  styleUrl: './about-page.component.scss'
+  styleUrl: './about-page.component.scss',
 })
 export class AboutPageComponent {
   selectedMember: MemberId | null = null;
@@ -43,14 +43,22 @@ export class AboutPageComponent {
     { id: 'woodworking', labelKey: 'ABOUT.PASSION_WOODWORKING' },
     { id: 'print-3d', labelKey: 'ABOUT.PASSION_PRINT_3D' },
     { id: 'ski', labelKey: 'ABOUT.PASSION_SKI' },
-    { id: 'software-development', labelKey: 'ABOUT.PASSION_SOFTWARE_DEVELOPMENT' },
+    {
+      id: 'software-development',
+      labelKey: 'ABOUT.PASSION_SOFTWARE_DEVELOPMENT',
+    },
     { id: 'snowboard', labelKey: 'ABOUT.PASSION_SNOWBOARD' },
     { id: 'van-life', labelKey: 'ABOUT.PASSION_VAN_LIFE' },
     { id: 'self-hosting', labelKey: 'ABOUT.PASSION_SELF_HOSTING' },
-    { id: 'snowboard-instructor', labelKey: 'ABOUT.PASSION_SNOWBOARD_INSTRUCTOR' }
+    {
+      id: 'snowboard-instructor',
+      labelKey: 'ABOUT.PASSION_SNOWBOARD_INSTRUCTOR',
+    },
   ];
 
-  private readonly memberPassions: Readonly<Record<MemberId, ReadonlyArray<PassionId>>> = {
+  private readonly memberPassions: Readonly<
+    Record<MemberId, ReadonlyArray<PassionId>>
+  > = {
     joe: [
       'bike-trial',
       'mountain',
@@ -59,7 +67,7 @@ export class AboutPageComponent {
       'print-3d',
       'travel',
       'coffee',
-      'software-development'
+      'software-development',
     ],
     matteo: [
       'bike-trial',
@@ -69,8 +77,8 @@ export class AboutPageComponent {
       'electronics',
       'print-3d',
       'woodworking',
-      'van-life'
-    ]
+      'van-life',
+    ],
   };
 
   get activeMember(): MemberId | null {

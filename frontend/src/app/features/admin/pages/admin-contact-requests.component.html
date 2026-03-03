@@ -5,7 +5,9 @@
       <p>Richieste preventivo personalizzato ricevute dal sito.</p>
       <span class="total-pill">{{ requests.length }} richieste</span>
     </div>
-    <button type="button" (click)="loadRequests()" [disabled]="loading">Aggiorna</button>
+    <button type="button" (click)="loadRequests()" [disabled]="loading">
+      Aggiorna
+    </button>
   </header>
 
   <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
@@ -32,10 +34,19 @@
               [class.selected]="isSelected(request.id)"
               (click)="openDetails(request.id)"
             >
-              <td class="created-at">{{ request.createdAt | date:'short' }}</td>
+              <td class="created-at">
+                {{ request.createdAt | date: "short" }}
+              </td>
               <td class="name-cell">
-                <p class="primary">{{ request.name || request.companyName || '-' }}</p>
-                <p class="secondary" *ngIf="request.name && request.companyName">{{ request.companyName }}</p>
+                <p class="primary">
+                  {{ request.name || request.companyName || "-" }}
+                </p>
+                <p
+                  class="secondary"
+                  *ngIf="request.name && request.companyName"
+                >
+                  {{ request.companyName }}
+                </p>
               </td>
               <td class="email-cell">{{ request.email }}</td>
               <td>
@@ -45,7 +56,11 @@
                 <span class="chip chip-light">{{ request.customerType }}</span>
               </td>
               <td>
-                <span class="chip" [ngClass]="getStatusChipClass(request.status)">{{ request.status }}</span>
+                <span
+                  class="chip"
+                  [ngClass]="getStatusChipClass(request.status)"
+                  >{{ request.status }}</span
+                >
               </td>
             </tr>
             <tr class="empty-row" *ngIf="requests.length === 0">
@@ -60,25 +75,58 @@
       <header class="detail-header">
         <div>
           <h3>Dettaglio richiesta</h3>
-          <p class="request-id"><span>ID</span><code>{{ selectedRequest.id }}</code></p>
+          <p class="request-id">
+            <span>ID</span><code>{{ selectedRequest.id }}</code>
+          </p>
         </div>
         <div class="detail-chips">
-          <span class="chip" [ngClass]="getStatusChipClass(selectedRequest.status)">{{ selectedRequest.status }}</span>
-          <span class="chip chip-neutral">{{ selectedRequest.requestType }}</span>
-          <span class="chip chip-light">{{ selectedRequest.customerType }}</span>
+          <span
+            class="chip"
+            [ngClass]="getStatusChipClass(selectedRequest.status)"
+            >{{ selectedRequest.status }}</span
+          >
+          <span class="chip chip-neutral">{{
+            selectedRequest.requestType
+          }}</span>
+          <span class="chip chip-light">{{
+            selectedRequest.customerType
+          }}</span>
         </div>
       </header>
 
-      <p class="loading-detail" *ngIf="detailLoading">Caricamento dettaglio...</p>
+      <p class="loading-detail" *ngIf="detailLoading">
+        Caricamento dettaglio...
+      </p>
 
       <dl class="meta-grid">
-        <div class="meta-item"><dt>Creata</dt><dd>{{ selectedRequest.createdAt | date:'medium' }}</dd></div>
-        <div class="meta-item"><dt>Aggiornata</dt><dd>{{ selectedRequest.updatedAt | date:'medium' }}</dd></div>
-        <div class="meta-item"><dt>Email</dt><dd>{{ selectedRequest.email }}</dd></div>
-        <div class="meta-item"><dt>Telefono</dt><dd>{{ selectedRequest.phone || '-' }}</dd></div>
-        <div class="meta-item"><dt>Nome</dt><dd>{{ selectedRequest.name || '-' }}</dd></div>
-        <div class="meta-item"><dt>Azienda</dt><dd>{{ selectedRequest.companyName || '-' }}</dd></div>
-        <div class="meta-item"><dt>Referente</dt><dd>{{ selectedRequest.contactPerson || '-' }}</dd></div>
+        <div class="meta-item">
+          <dt>Creata</dt>
+          <dd>{{ selectedRequest.createdAt | date: "medium" }}</dd>
+        </div>
+        <div class="meta-item">
+          <dt>Aggiornata</dt>
+          <dd>{{ selectedRequest.updatedAt | date: "medium" }}</dd>
+        </div>
+        <div class="meta-item">
+          <dt>Email</dt>
+          <dd>{{ selectedRequest.email }}</dd>
+        </div>
+        <div class="meta-item">
+          <dt>Telefono</dt>
+          <dd>{{ selectedRequest.phone || "-" }}</dd>
+        </div>
+        <div class="meta-item">
+          <dt>Nome</dt>
+          <dd>{{ selectedRequest.name || "-" }}</dd>
+        </div>
+        <div class="meta-item">
+          <dt>Azienda</dt>
+          <dd>{{ selectedRequest.companyName || "-" }}</dd>
+        </div>
+        <div class="meta-item">
+          <dt>Referente</dt>
+          <dd>{{ selectedRequest.contactPerson || "-" }}</dd>
+        </div>
       </dl>
 
       <div class="status-editor">
@@ -87,36 +135,61 @@
           <select
             id="contact-request-status"
             [ngModel]="selectedStatus"
-            (ngModelChange)="selectedStatus = $event">
-            <option *ngFor="let status of statusOptions" [ngValue]="status">{{ status }}</option>
+            (ngModelChange)="selectedStatus = $event"
+          >
+            <option *ngFor="let status of statusOptions" [ngValue]="status">
+              {{ status }}
+            </option>
           </select>
         </div>
         <button
           type="button"
           (click)="updateRequestStatus()"
-          [disabled]="!selectedRequest || updatingStatus || !selectedStatus || selectedStatus === selectedRequest.status">
-          {{ updatingStatus ? 'Salvataggio...' : 'Aggiorna stato' }}
+          [disabled]="
+            !selectedRequest ||
+            updatingStatus ||
+            !selectedStatus ||
+            selectedStatus === selectedRequest.status
+          "
+        >
+          {{ updatingStatus ? "Salvataggio..." : "Aggiorna stato" }}
         </button>
       </div>
 
       <div class="message-box">
         <h4>Messaggio</h4>
-        <p>{{ selectedRequest.message || '-' }}</p>
+        <p>{{ selectedRequest.message || "-" }}</p>
       </div>
 
       <div class="attachments">
         <h4>Allegati</h4>
-        <div class="attachment-list" *ngIf="selectedRequest.attachments.length > 0; else noAttachmentsTpl">
-          <article class="attachment-item" *ngFor="let attachment of selectedRequest.attachments">
+        <div
+          class="attachment-list"
+          *ngIf="selectedRequest.attachments.length > 0; else noAttachmentsTpl"
+        >
+          <article
+            class="attachment-item"
+            *ngFor="let attachment of selectedRequest.attachments"
+          >
             <div>
               <p class="filename">{{ attachment.originalFilename }}</p>
               <p class="meta">
                 {{ formatFileSize(attachment.fileSizeBytes) }}
-                <span *ngIf="attachment.mimeType"> | {{ attachment.mimeType }}</span>
-                <span *ngIf="attachment.createdAt"> | {{ attachment.createdAt | date:'short' }}</span>
+                <span *ngIf="attachment.mimeType">
+                  | {{ attachment.mimeType }}</span
+                >
+                <span *ngIf="attachment.createdAt">
+                  | {{ attachment.createdAt | date: "short" }}</span
+                >
               </p>
             </div>
-            <button type="button" class="ghost" (click)="downloadAttachment(attachment)">Scarica file</button>
+            <button
+              type="button"
+              class="ghost"
+              (click)="downloadAttachment(attachment)"
+            >
+              Scarica file
+            </button>
           </article>
         </div>
       </div>

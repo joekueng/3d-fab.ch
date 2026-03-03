@@ -1,7 +1,12 @@
 import { Component, input, output, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { PRODUCT_COLORS, getColorHex, ColorCategory, ColorOption } from '../../../core/constants/colors.const';
+import {
+  PRODUCT_COLORS,
+  getColorHex,
+  ColorCategory,
+  ColorOption,
+} from '../../../core/constants/colors.const';
 import { VariantOption } from '../../../features/calculator/services/quote-estimator.service';
 
 @Component({
@@ -9,7 +14,7 @@ import { VariantOption } from '../../../features/calculator/services/quote-estim
   standalone: true,
   imports: [CommonModule, TranslateModule],
   templateUrl: './color-selector.component.html',
-  styleUrl: './color-selector.component.scss'
+  styleUrl: './color-selector.component.scss',
 })
 export class ColorSelectorComponent {
   selectedColor = input<string>('Black');
@@ -20,32 +25,32 @@ export class ColorSelectorComponent {
   isOpen = signal(false);
 
   categories = computed(() => {
-      const vars = this.variants();
-      if (vars && vars.length > 0) {
-          const byFinish = new Map<string, ColorOption[]>();
-          vars.forEach(v => {
-              const finish = v.finishType || 'AVAILABLE_COLORS';
-              const bucket = byFinish.get(finish) || [];
-              bucket.push({
-                  label: v.colorName,
-                  value: v.colorName,
-                  hex: v.hexColor,
-                  variantId: v.id,
-                  outOfStock: v.isOutOfStock
-              });
-              byFinish.set(finish, bucket);
-          });
+    const vars = this.variants();
+    if (vars && vars.length > 0) {
+      const byFinish = new Map<string, ColorOption[]>();
+      vars.forEach((v) => {
+        const finish = v.finishType || 'AVAILABLE_COLORS';
+        const bucket = byFinish.get(finish) || [];
+        bucket.push({
+          label: v.colorName,
+          value: v.colorName,
+          hex: v.hexColor,
+          variantId: v.id,
+          outOfStock: v.isOutOfStock,
+        });
+        byFinish.set(finish, bucket);
+      });
 
-          return Array.from(byFinish.entries()).map(([finish, colors]) => ({
-              name: finish,
-              colors
-          })) as ColorCategory[];
-      }
-      return PRODUCT_COLORS;
+      return Array.from(byFinish.entries()).map(([finish, colors]) => ({
+        name: finish,
+        colors,
+      })) as ColorCategory[];
+    }
+    return PRODUCT_COLORS;
   });
 
   toggleOpen() {
-    this.isOpen.update(v => !v);
+    this.isOpen.update((v) => !v);
   }
 
   selectColor(color: ColorOption) {
@@ -53,24 +58,24 @@ export class ColorSelectorComponent {
 
     this.colorSelected.emit({
       colorName: color.value,
-      filamentVariantId: color.variantId
+      filamentVariantId: color.variantId,
     });
     this.isOpen.set(false);
   }
 
   // Helper to find hex for the current selected value
   getCurrentHex(): string {
-     // Check in dynamic variants first
-     const vars = this.variants();
-     if (vars && vars.length > 0) {
-         const found = vars.find(v => v.colorName === this.selectedColor());
-         if (found) return found.hexColor;
-     }
+    // Check in dynamic variants first
+    const vars = this.variants();
+    if (vars && vars.length > 0) {
+      const found = vars.find((v) => v.colorName === this.selectedColor());
+      if (found) return found.hexColor;
+    }
 
     return getColorHex(this.selectedColor());
   }
 
   close() {
-      this.isOpen.set(false);
+    this.isOpen.set(false);
   }
 }

@@ -1,6 +1,6 @@
-.hero { 
+.hero {
   padding: var(--space-8) 0;
-  text-align: center; 
+  text-align: center;
 
   .section-title {
     font-size: 2.5rem;
@@ -25,7 +25,7 @@
   margin-bottom: var(--space-6);
   padding-bottom: var(--space-4);
   border-bottom: 1px solid var(--color-border);
-  
+
   h3 {
     font-size: 1.25rem;
     font-weight: 600;
@@ -39,10 +39,12 @@
   flex-direction: column;
   gap: var(--space-4);
   margin-bottom: var(--space-4);
-  
-  @media(min-width: 768px) {
+
+  @media (min-width: 768px) {
     flex-direction: row;
-    & > * { flex: 1; }
+    & > * {
+      flex: 1;
+    }
   }
 
   &.no-margin {
@@ -53,7 +55,7 @@
     display: grid;
     grid-template-columns: 1.5fr 2fr 1fr;
     gap: var(--space-4);
-    
+
     @media (max-width: 768px) {
       grid-template-columns: 1fr;
     }
@@ -120,7 +122,7 @@ app-toggle-selector.user-type-selector-compact {
     &:checked ~ .checkmark {
       background-color: var(--color-brand);
       border-color: var(--color-brand);
-      
+
       &:after {
         display: block;
       }
@@ -197,12 +199,16 @@ app-toggle-selector.user-type-selector-compact {
   padding: var(--space-4) 0;
   border-bottom: 1px solid var(--color-border);
 
-  &:first-child { padding-top: 0; }
-  &:last-child { border-bottom: none; }
+  &:first-child {
+    padding-top: 0;
+  }
+  &:last-child {
+    border-bottom: none;
+  }
 
   .item-details {
     flex: 1;
-    
+
     .item-name {
       display: block;
       font-weight: 600;
@@ -218,7 +224,7 @@ app-toggle-selector.user-type-selector-compact {
       gap: var(--space-2);
       font-size: 0.85rem;
       color: var(--color-text-muted);
-      
+
       .color-dot {
         width: 14px;
         height: 14px;
@@ -227,11 +233,11 @@ app-toggle-selector.user-type-selector-compact {
         border: 1px solid var(--color-border);
       }
     }
-    
+
     .item-specs-sub {
       font-size: 0.8rem;
-       color: var(--color-text-muted);
-       margin-top: 2px;
+      color: var(--color-text-muted);
+      margin-top: 2px;
     }
   }
 
@@ -282,7 +288,7 @@ app-toggle-selector.user-type-selector-compact {
 
 .actions {
   margin-top: var(--space-8);
-  
+
   app-button {
     width: 100%;
   }
@@ -298,4 +304,6 @@ app-toggle-selector.user-type-selector-compact {
   font-weight: 500;
 }
 
-.mb-6 { margin-bottom: var(--space-6); }
+.mb-6 {
+  margin-bottom: var(--space-6);
+}

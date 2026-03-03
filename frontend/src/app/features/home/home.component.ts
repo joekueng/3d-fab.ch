@@ -8,27 +8,33 @@ import { AppCardComponent } from '../../shared/components/app-card/app-card.comp
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslateModule, AppButtonComponent, AppCardComponent],
+  imports: [
+    CommonModule,
+    RouterLink,
+    TranslateModule,
+    AppButtonComponent,
+    AppCardComponent,
+  ],
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.scss']
+  styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent {
   readonly shopGalleryImages = [
     {
       src: 'assets/images/home/supporto-bici.jpg',
-      alt: 'HOME.SHOP_IMAGE_ALT_1'
-    }
+      alt: 'HOME.SHOP_IMAGE_ALT_1',
+    },
   ];
 
   readonly founderImages = [
     {
       src: 'assets/images/home/da-cambiare.jpg',
-      alt: 'HOME.FOUNDER_IMAGE_ALT_1'
+      alt: 'HOME.FOUNDER_IMAGE_ALT_1',
     },
     {
       src: 'assets/images/home/vino.JPG',
-      alt: 'HOME.FOUNDER_IMAGE_ALT_2'
-    }
+      alt: 'HOME.FOUNDER_IMAGE_ALT_2',
+    },
   ];
 
   founderImageIndex = 0;

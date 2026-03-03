@@ -10,9 +10,9 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +30,7 @@ public class SlicerService {
     private static final Pattern SIZE_Y_PATTERN = Pattern.compile("(?m)^\\s*size_y\\s*=\\s*([-+]?\\d+(?:\\.\\d+)?)\\s*$");
     private static final Pattern SIZE_Z_PATTERN = Pattern.compile("(?m)^\\s*size_z\\s*=\\s*([-+]?\\d+(?:\\.\\d+)?)\\s*$");
 
-    private final String slicerPath;
+    private final String trustedSlicerPath;
     private final ProfileManager profileManager;
     private final GCodeParser gCodeParser;
     private final ObjectMapper mapper;
@@ -40,7 +40,7 @@ public class SlicerService {
             ProfileManager profileManager,
             GCodeParser gCodeParser,
             ObjectMapper mapper) {
-        this.slicerPath = slicerPath;
+        this.trustedSlicerPath = normalizeExecutablePath(slicerPath);
         this.profileManager = profileManager;
         this.gCodeParser = gCodeParser;
         this.mapper = mapper;
@@ -83,17 +83,24 @@ public class SlicerService {
                 basename = basename.substring(0, basename.length() - 4);
             }
             Path slicerLogPath = tempDir.resolve("orcaslicer.log");
+            String machineProfilePath = requireSafeArgument(mFile.getAbsolutePath(), "machine profile path");
+            String processProfilePath = requireSafeArgument(pFile.getAbsolutePath(), "process profile path");
+            String filamentProfilePath = requireSafeArgument(fFile.getAbsolutePath(), "filament profile path");
+            String outputDirPath = requireSafeArgument(tempDir.toAbsolutePath().toString(), "output directory path");
+            String inputStlPath = requireSafeArgument(inputStl.getAbsolutePath(), "input STL path");
 
             // 3. Run slicer. Retry with arrange only for out-of-volume style failures.
             for (boolean useArrange : new boolean[]{false, true}) {
-                List<String> command = new ArrayList<>();
-                command.add(slicerPath);
+                // Build process arguments explicitly to avoid shell interpretation and command injection.
+                ProcessBuilder pb = new ProcessBuilder();
+                List<String> command = pb.command();
+                command.add(trustedSlicerPath);
                 command.add("--load-settings");
-                command.add(mFile.getAbsolutePath());
+                command.add(machineProfilePath);
                 command.add("--load-settings");
-                command.add(pFile.getAbsolutePath());
+                command.add(processProfilePath);
                 command.add("--load-filaments");
-                command.add(fFile.getAbsolutePath());
+                command.add(filamentProfilePath);
                 command.add("--ensure-on-bed");
                 if (useArrange) {
                     command.add("--arrange");
@@ -102,13 +109,12 @@ public class SlicerService {
                 command.add("--slice");
                 command.add("0");
                 command.add("--outputdir");
-                command.add(tempDir.toAbsolutePath().toString());
-                command.add(inputStl.getAbsolutePath());
+                command.add(outputDirPath);
+                command.add(inputStlPath);
 
                 logger.info("Executing Slicer" + (useArrange ? " (retry with arrange)" : "") + ": " + String.join(" ", command));
 
                 Files.deleteIfExists(slicerLogPath);
-                ProcessBuilder pb = new ProcessBuilder(command);
                 pb.directory(tempDir.toFile());
                 pb.redirectErrorStream(true);
                 pb.redirectOutput(slicerLogPath.toFile());
@@ -157,17 +163,17 @@ public class SlicerService {
     }
 
     public Optional<ModelDimensions> inspectModelDimensions(File inputModel) {
-        Path tempDir = null;
+            Path tempDir = null;
         try {
             tempDir = Files.createTempDirectory("slicer_info_");
             Path infoLogPath = tempDir.resolve("orcaslicer-info.log");
+            String inputModelPath = requireSafeArgument(inputModel.getAbsolutePath(), "input model path");
 
-            List<String> command = new ArrayList<>();
-            command.add(slicerPath);
-            command.add("--info");
-            command.add(inputModel.getAbsolutePath());
-
-            ProcessBuilder pb = new ProcessBuilder(command);
+            ProcessBuilder pb = new ProcessBuilder();
+            List<String> infoCommand = pb.command();
+            infoCommand.add(trustedSlicerPath);
+            infoCommand.add("--info");
+            infoCommand.add(inputModelPath);
             pb.directory(tempDir.toFile());
             pb.redirectErrorStream(true);
             pb.redirectOutput(infoLogPath.toFile());
@@ -266,5 +272,39 @@ public class SlicerService {
         return normalized.contains("nothing to be sliced")
                 || normalized.contains("no object is fully inside the print volume")
                 || normalized.contains("calc_exclude_triangles");
+    }
+
+    private String normalizeExecutablePath(String configuredPath) {
+        if (configuredPath == null || configuredPath.isBlank()) {
+            throw new IllegalArgumentException("slicer.path is required");
+        }
+        if (containsControlChars(configuredPath)) {
+            throw new IllegalArgumentException("slicer.path contains invalid control characters");
+        }
+        try {
+            return Path.of(configuredPath.trim()).normalize().toString();
+        } catch (InvalidPathException e) {
+            throw new IllegalArgumentException("Invalid slicer.path: " + configuredPath, e);
+        }
+    }
+
+    private String requireSafeArgument(String value, String argName) throws IOException {
+        if (value == null || value.isBlank()) {
+            throw new IOException("Missing required argument: " + argName);
+        }
+        if (containsControlChars(value)) {
+            throw new IOException("Invalid control characters in " + argName);
+        }
+        return value;
+    }
+
+    private boolean containsControlChars(String value) {
+        for (int i = 0; i < value.length(); i++) {
+            char ch = value.charAt(i);
+            if (ch == '\0' || ch == '\n' || ch == '\r') {
+                return true;
+            }
+        }
+        return false;
     }
 }

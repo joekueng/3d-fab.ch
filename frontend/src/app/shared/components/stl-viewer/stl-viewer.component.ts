@@ -1,4 +1,13 @@
-import { Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, ViewChild, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  SimpleChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import * as THREE from 'three';
@@ -12,13 +21,14 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
   standalone: true,
   imports: [CommonModule, TranslateModule],
   templateUrl: './stl-viewer.component.html',
-  styleUrl: './stl-viewer.component.scss'
+  styleUrl: './stl-viewer.component.scss',
 })
 export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
   @Input() file: File | null = null;
   @Input() color: string = '#facf0a'; // Default Brand Color
 
-  @ViewChild('rendererContainer', { static: true }) rendererContainer!: ElementRef;
+  @ViewChild('rendererContainer', { static: true })
+  rendererContainer!: ElementRef;
 
   private scene!: THREE.Scene;
   private camera!: THREE.PerspectiveCamera;
@@ -38,7 +48,7 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
     if (changes['file'] && this.file) {
       this.loadFile(this.file);
     }
-    
+
     if (changes['color'] && this.currentMesh && !changes['file']) {
       this.applyColorStyle(this.color);
     }
@@ -83,7 +93,11 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
     this.camera.position.z = 100;
 
     // Renderer
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
+    this.renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: false,
+      powerPreference: 'high-performance',
+    });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -106,12 +120,12 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
 
     // Handle resize
     const resizeObserver = new ResizeObserver(() => {
-        if (!this.rendererContainer) return;
-        const w = this.rendererContainer.nativeElement.clientWidth;
-        const h = this.rendererContainer.nativeElement.clientHeight;
-        this.camera.aspect = w / h;
-        this.camera.updateProjectionMatrix();
-        this.renderer.setSize(w, h);
+      if (!this.rendererContainer) return;
+      const w = this.rendererContainer.nativeElement.clientWidth;
+      const h = this.rendererContainer.nativeElement.clientHeight;
+      this.camera.aspect = w / h;
+      this.camera.updateProjectionMatrix();
+      this.renderer.setSize(w, h);
     });
     resizeObserver.observe(this.rendererContainer.nativeElement);
   }
@@ -126,7 +140,7 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
       try {
         const loader = new STLLoader();
         const geometry = loader.parse(event.target?.result as ArrayBuffer);
-        
+
         this.clearCurrentMesh();
 
         geometry.computeVertexNormals();
@@ -136,12 +150,12 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
           roughness: 0.42,
           metalness: 0.05,
           emissive: 0x000000,
-          emissiveIntensity: 0
+          emissiveIntensity: 0,
         });
-        
+
         this.currentMesh = new THREE.Mesh(geometry, material);
         this.applyColorStyle(this.color);
-        
+
         // Center geometry
         geometry.computeBoundingBox();
         geometry.center();
@@ -150,11 +164,11 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
         const boundingBox = geometry.boundingBox!;
         const size = new THREE.Vector3();
         boundingBox.getSize(size);
-        
+
         this.dimensions = {
-            x: Math.round(size.x * 10) / 10,
-            y: Math.round(size.y * 10) / 10,
-            z: Math.round(size.z * 10) / 10
+          x: Math.round(size.x * 10) / 10,
+          y: Math.round(size.y * 10) / 10,
+          z: Math.round(size.z * 10) / 10,
         };
 
         // Rotate to stand upright (usually necessary for STLs)
@@ -165,16 +179,15 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
         // Adjust camera to fit object
         const maxDim = Math.max(size.x, size.y, size.z);
         const fov = this.camera.fov * (Math.PI / 180);
-        
+
         // Calculate distance towards camera (z-axis)
         let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
         cameraZ *= 1.72;
-        
+
         this.camera.position.set(cameraZ * 0.65, cameraZ * 0.95, cameraZ * 1.1);
         this.camera.lookAt(0, 0, 0);
         this.camera.updateProjectionMatrix();
         this.controls.update();
-        
       } catch (err) {
         console.error('Error loading STL:', err);
       } finally {
@@ -186,14 +199,14 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
 
   private animate() {
     this.animationId = requestAnimationFrame(() => this.animate());
-    
+
     if (this.currentMesh && this.autoRotate) {
       this.currentMesh.rotation.z += 0.0025;
     }
 
     if (this.controls) this.controls.update();
     if (this.renderer && this.scene && this.camera) {
-        this.renderer.render(this.scene, this.camera);
+      this.renderer.render(this.scene, this.camera);
     }
   }
 

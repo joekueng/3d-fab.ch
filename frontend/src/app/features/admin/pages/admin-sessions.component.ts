@@ -3,7 +3,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import {
   AdminOperationsService,
   AdminQuoteSession,
-  AdminQuoteSessionDetail
+  AdminQuoteSessionDetail,
 } from '../services/admin-operations.service';
 
 @Component({
@@ -11,7 +11,7 @@ import {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './admin-sessions.component.html',
-  styleUrl: './admin-sessions.component.scss'
+  styleUrl: './admin-sessions.component.scss',
 })
 export class AdminSessionsComponent implements OnInit {
   private readonly adminOperationsService = inject(AdminOperationsService);
@@ -41,7 +41,7 @@ export class AdminSessionsComponent implements OnInit {
       error: () => {
         this.loading = false;
         this.errorMessage = 'Impossibile caricare le sessioni.';
-      }
+      },
     });
   }
 
@@ -51,7 +51,7 @@ export class AdminSessionsComponent implements OnInit {
     }
 
     const confirmed = window.confirm(
-      `Vuoi eliminare la sessione ${session.id}? Questa azione non si puo annullare.`
+      `Vuoi eliminare la sessione ${session.id}? Questa azione non si puo annullare.`,
     );
     if (!confirmed) {
       return;
@@ -69,8 +69,11 @@ export class AdminSessionsComponent implements OnInit {
       },
       error: (err) => {
         this.deletingSessionIds.delete(session.id);
-        this.errorMessage = this.extractErrorMessage(err, 'Impossibile eliminare la sessione.');
-      }
+        this.errorMessage = this.extractErrorMessage(
+          err,
+          'Impossibile eliminare la sessione.',
+        );
+      },
     });
   }
 
@@ -85,7 +88,10 @@ export class AdminSessionsComponent implements OnInit {
     }
 
     this.expandedSessionId = session.id;
-    if (this.sessionDetailsById[session.id] || this.loadingDetailSessionIds.has(session.id)) {
+    if (
+      this.sessionDetailsById[session.id] ||
+      this.loadingDetailSessionIds.has(session.id)
+    ) {
       return;
     }
 
@@ -94,14 +100,17 @@ export class AdminSessionsComponent implements OnInit {
       next: (detail) => {
         this.sessionDetailsById = {
           ...this.sessionDetailsById,
-          [session.id]: detail
+          [session.id]: detail,
         };
         this.loadingDetailSessionIds.delete(session.id);
       },
       error: (err) => {
         this.loadingDetailSessionIds.delete(session.id);
-        this.errorMessage = this.extractErrorMessage(err, 'Impossibile caricare il dettaglio sessione.');
-      }
+        this.errorMessage = this.extractErrorMessage(
+          err,
+          'Impossibile caricare il dettaglio sessione.',
+        );
+      },
     });
   }
 

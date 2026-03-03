@@ -15,8 +15,11 @@
           required
         />
 
-        <button type="submit" [disabled]="loading || !password.trim() || lockSecondsRemaining > 0">
-          {{ loading ? 'Accesso...' : 'Accedi' }}
+        <button
+          type="submit"
+          [disabled]="loading || !password.trim() || lockSecondsRemaining > 0"
+        >
+          {{ loading ? "Accesso..." : "Accedi" }}
         </button>
       </form>
 

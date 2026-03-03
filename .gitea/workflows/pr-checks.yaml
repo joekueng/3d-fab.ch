@@ -20,7 +20,7 @@ jobs:
       - name: Setup Node 22
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
 
       - name: Apply formatting with Prettier
         shell: bash
@@ -69,7 +69,7 @@ jobs:
           git commit -m "style: apply prettier formatting"
           git push origin "HEAD:${PR_BRANCH}"
 
-  qodana:
+  security-sast:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -77,23 +77,46 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Prepare Qodana directories
+      - name: Install Python and Semgrep
         shell: bash
         run: |
-          mkdir -p .qodana/caches .qodana/results
+          apt-get update
+          apt-get install -y --no-install-recommends python3 python3-pip
+          python3 -m pip install --upgrade pip
+          python3 -m pip install semgrep
 
-      - name: Qodana Scan
-        uses: JetBrains/qodana-action@v2025.3
-        env:
-          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
-        with:
-          cache-dir: .qodana/caches
-          results-dir: .qodana/results
-          args: -i,backend
-          pr-mode: true
-          use-caches: false
-          post-pr-comment: false
-          use-annotations: true
+      - name: Run Semgrep (SAST)
+        shell: bash
+        run: |
+          semgrep --version
+          semgrep --config auto --error \
+            --exclude frontend/node_modules \
+            --exclude backend/build \
+            backend/src frontend/src
+
+      - name: Install Gitleaks
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="8.24.2"
+          curl -sSL "https://github.com/gitleaks/gitleaks/releases/download/v${VERSION}/gitleaks_${VERSION}_linux_x64.tar.gz" \
+            -o /tmp/gitleaks.tar.gz
+          tar -xzf /tmp/gitleaks.tar.gz -C /tmp
+          install -m 0755 /tmp/gitleaks /usr/local/bin/gitleaks
+          gitleaks version
+
+      - name: Run Gitleaks (secrets scan)
+        shell: bash
+        run: |
+          set +e
+          gitleaks detect --source . --no-git --redact --exit-code 1 \
+            --report-format json --report-path /tmp/gitleaks-report.json
+          rc=$?
+          if [[ $rc -ne 0 ]]; then
+            echo "Gitleaks findings:"
+            cat /tmp/gitleaks-report.json
+          fi
+          exit $rc
 
   test-backend:
     runs-on: ubuntu-latest
@@ -104,8 +127,9 @@ jobs:
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
-          distribution: 'temurin'
+          java-version: "21"
+          distribution: "temurin"
+          cache: gradle
 
       - name: Run Tests with Gradle
         run: |

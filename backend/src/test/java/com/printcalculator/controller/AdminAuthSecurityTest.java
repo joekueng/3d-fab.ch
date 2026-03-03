@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 @TestPropertySource(properties = {
         "admin.password=test-admin-password",
-        "admin.session.secret=0123456789abcdef0123456789abcdef",
+        "admin.session.secret=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
         "admin.session.ttl-minutes=60"
 })
 class AdminAuthSecurityTest {

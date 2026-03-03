@@ -2,14 +2,22 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { RouterLink } from '@angular/router';
-import { AppToggleSelectorComponent, ToggleOption } from '../app-toggle-selector/app-toggle-selector.component';
+import {
+  AppToggleSelectorComponent,
+  ToggleOption,
+} from '../app-toggle-selector/app-toggle-selector.component';
 
 @Component({
   selector: 'app-locations',
   standalone: true,
-  imports: [CommonModule, TranslateModule, RouterLink, AppToggleSelectorComponent],
+  imports: [
+    CommonModule,
+    TranslateModule,
+    RouterLink,
+    AppToggleSelectorComponent,
+  ],
   templateUrl: './app-locations.component.html',
-  styleUrl: './app-locations.component.scss'
+  styleUrl: './app-locations.component.scss',
 })
 export class AppLocationsComponent {
   selectedLocation: 'ticino' | 'bienne' = 'ticino';

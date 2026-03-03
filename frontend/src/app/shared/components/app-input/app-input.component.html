@@ -1,9 +1,11 @@
 <div class="form-group">
-  @if (label()) { 
+  @if (label()) {
     <label [for]="id()">
       {{ label() }}
-      @if (required()) { <span class="required-mark">*</span> }
-    </label> 
+      @if (required()) {
+        <span class="required-mark">*</span>
+      }
+    </label>
   }
   <input
     [id]="id()"
@@ -15,5 +17,7 @@
     [disabled]="disabled"
     class="form-control"
   />
-  @if (error()) { <span class="error-text">{{ error() }}</span> }
+  @if (error()) {
+    <span class="error-text">{{ error() }}</span>
+  }
 </div>

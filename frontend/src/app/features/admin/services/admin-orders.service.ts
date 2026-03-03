@@ -38,7 +38,7 @@ export interface AdminUpdateOrderStatusPayload {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AdminOrdersService {
   private readonly http = inject(HttpClient);
@@ -49,35 +49,54 @@ export class AdminOrdersService {
   }
 
   getOrder(orderId: string): Observable<AdminOrder> {
-    return this.http.get<AdminOrder>(`${this.baseUrl}/${orderId}`, { withCredentials: true });
+    return this.http.get<AdminOrder>(`${this.baseUrl}/${orderId}`, {
+      withCredentials: true,
+    });
   }
 
   confirmPayment(orderId: string, method: string): Observable<AdminOrder> {
-    return this.http.post<AdminOrder>(`${this.baseUrl}/${orderId}/payments/confirm`, { method }, { withCredentials: true });
+    return this.http.post<AdminOrder>(
+      `${this.baseUrl}/${orderId}/payments/confirm`,
+      { method },
+      { withCredentials: true },
+    );
   }
 
-  updateOrderStatus(orderId: string, payload: AdminUpdateOrderStatusPayload): Observable<AdminOrder> {
-    return this.http.post<AdminOrder>(`${this.baseUrl}/${orderId}/status`, payload, { withCredentials: true });
+  updateOrderStatus(
+    orderId: string,
+    payload: AdminUpdateOrderStatusPayload,
+  ): Observable<AdminOrder> {
+    return this.http.post<AdminOrder>(
+      `${this.baseUrl}/${orderId}/status`,
+      payload,
+      { withCredentials: true },
+    );
   }
 
-  downloadOrderItemFile(orderId: string, orderItemId: string): Observable<Blob> {
-    return this.http.get(`${this.baseUrl}/${orderId}/items/${orderItemId}/file`, {
-      withCredentials: true,
-      responseType: 'blob'
-    });
+  downloadOrderItemFile(
+    orderId: string,
+    orderItemId: string,
+  ): Observable<Blob> {
+    return this.http.get(
+      `${this.baseUrl}/${orderId}/items/${orderItemId}/file`,
+      {
+        withCredentials: true,
+        responseType: 'blob',
+      },
+    );
   }
 
   downloadOrderConfirmation(orderId: string): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/${orderId}/documents/confirmation`, {
       withCredentials: true,
-      responseType: 'blob'
+      responseType: 'blob',
     });
   }
 
   downloadOrderInvoice(orderId: string): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/${orderId}/documents/invoice`, {
       withCredentials: true,
-      responseType: 'blob'
+      responseType: 'blob',
     });
   }
 }

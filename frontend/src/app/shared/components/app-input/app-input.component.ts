@@ -1,5 +1,9 @@
 import { Component, input, forwardRef } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
+import {
+  ControlValueAccessor,
+  NG_VALUE_ACCESSOR,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -10,11 +14,11 @@ import { CommonModule } from '@angular/common';
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => AppInputComponent),
-      multi: true
-    }
+      multi: true,
+    },
   ],
   templateUrl: './app-input.component.html',
-  styleUrl: './app-input.component.scss'
+  styleUrl: './app-input.component.scss',
 })
 export class AppInputComponent implements ControlValueAccessor {
   label = input<string>('');
@@ -30,11 +34,19 @@ export class AppInputComponent implements ControlValueAccessor {
   onChange: any = () => {};
   onTouched: any = () => {};
 
-  writeValue(obj: any): void { this.value = obj || ''; }
-  registerOnChange(fn: any): void { this.onChange = fn; }
-  registerOnTouched(fn: any): void { this.onTouched = fn; }
-  setDisabledState(isDisabled: boolean): void { this.disabled = isDisabled; }
-  
+  writeValue(obj: any): void {
+    this.value = obj || '';
+  }
+  registerOnChange(fn: any): void {
+    this.onChange = fn;
+  }
+  registerOnTouched(fn: any): void {
+    this.onTouched = fn;
+  }
+  setDisabledState(isDisabled: boolean): void {
+    this.disabled = isDisabled;
+  }
+
   onInput(event: Event) {
     const val = (event.target as HTMLInputElement).value;
     this.value = val;
