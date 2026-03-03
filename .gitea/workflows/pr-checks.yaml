@@ -77,21 +77,18 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install Semgrep
+      - name: Install Python and Semgrep
         shell: bash
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install semgrep
+          apt-get update
+          apt-get install -y --no-install-recommends python3 python3-pip
+          python3 -m pip install --upgrade pip
+          python3 -m pip install semgrep
 
       - name: Run Semgrep (SAST)
         shell: bash
         run: |
-          semgrep --config auto --error \
+          python3 -m semgrep --config auto --error \
             --exclude frontend/node_modules \
             --exclude backend/build \
             backend/src frontend/src
