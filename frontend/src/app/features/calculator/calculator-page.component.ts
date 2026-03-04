@@ -351,7 +351,11 @@ export class CalculatorPageComponent implements OnInit {
 
   onConsult() {
     if (!this.currentRequest) {
-      this.router.navigate(['/', this.languageService.selectedLang(), 'contact']);
+      this.router.navigate([
+        '/',
+        this.languageService.selectedLang(),
+        'contact',
+      ]);
       return;
     }
 
