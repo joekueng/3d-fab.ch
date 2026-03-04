@@ -96,7 +96,9 @@
           <td>{{ row.cadTotalChf | currency: "CHF" }}</td>
           <td>{{ row.grandTotalChf | currency: "CHF" }}</td>
           <td>{{ row.sessionStatus }}</td>
-          <td class="notes-cell" [title]="row.notes || ''">{{ row.notes || "-" }}</td>
+          <td class="notes-cell" [title]="row.notes || ''">
+            {{ row.notes || "-" }}
+          </td>
           <td>
             <span
               *ngIf="row.convertedOrderId; else noOrder"
@@ -110,10 +112,18 @@
             <ng-template #noOrder>-</ng-template>
           </td>
           <td class="actions">
-            <button type="button" class="ghost" (click)="openCheckout(row.checkoutPath)">
+            <button
+              type="button"
+              class="ghost"
+              (click)="openCheckout(row.checkoutPath)"
+            >
               Apri checkout
             </button>
-            <button type="button" class="ghost" (click)="copyCheckout(row.checkoutPath)">
+            <button
+              type="button"
+              class="ghost"
+              (click)="copyCheckout(row.checkoutPath)"
+            >
               Copia link
             </button>
             <button

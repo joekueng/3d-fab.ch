@@ -277,7 +277,9 @@ export class CalculatorPageComponent implements OnInit {
       const segments = this.cadSessionLocked()
         ? ['/', this.languageService.selectedLang(), 'checkout', 'cad']
         : ['/', this.languageService.selectedLang(), 'checkout'];
-      this.router.navigate(segments, { queryParams: { session: res.sessionId } });
+      this.router.navigate(segments, {
+        queryParams: { session: res.sessionId },
+      });
     } else {
       console.error('No session ID found in quote result');
       // Fallback or error handling
@@ -356,7 +358,11 @@ export class CalculatorPageComponent implements OnInit {
 
   onConsult() {
     if (!this.currentRequest) {
-      this.router.navigate(['/', this.languageService.selectedLang(), 'contact']);
+      this.router.navigate([
+        '/',
+        this.languageService.selectedLang(),
+        'contact',
+      ]);
       return;
     }
 
