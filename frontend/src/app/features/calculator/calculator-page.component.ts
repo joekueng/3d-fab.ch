@@ -48,6 +48,7 @@ export class CalculatorPageComponent implements OnInit {
   loading = signal(false);
   uploadProgress = signal(0);
   result = signal<QuoteResult | null>(null);
+  cadSessionLocked = signal(false);
   error = signal<boolean>(false);
   errorKey = signal<string>('CALC.ERROR_GENERIC');
   isZeroQuoteError = computed(
@@ -100,6 +101,8 @@ export class CalculatorPageComponent implements OnInit {
         this.error.set(false);
         this.errorKey.set('CALC.ERROR_GENERIC');
         this.result.set(result);
+        const isCadSession = data?.session?.status === 'CAD_ACTIVE';
+        this.cadSessionLocked.set(isCadSession);
         this.step.set('quote');
 
         // 2. Determine Mode (Heuristic)
@@ -206,6 +209,7 @@ export class CalculatorPageComponent implements OnInit {
     this.error.set(false);
     this.errorKey.set('CALC.ERROR_GENERIC');
     this.result.set(null);
+    this.cadSessionLocked.set(false);
     this.orderSuccess.set(false);
 
     // Auto-scroll on mobile to make analysis visible
@@ -270,10 +274,12 @@ export class CalculatorPageComponent implements OnInit {
   onProceed() {
     const res = this.result();
     if (res && res.sessionId) {
-      this.router.navigate(
-        ['/', this.languageService.selectedLang(), 'checkout'],
-        { queryParams: { session: res.sessionId } },
-      );
+      const segments = this.cadSessionLocked()
+        ? ['/', this.languageService.selectedLang(), 'checkout', 'cad']
+        : ['/', this.languageService.selectedLang(), 'checkout'];
+      this.router.navigate(segments, {
+        queryParams: { session: res.sessionId },
+      });
     } else {
       console.error('No session ID found in quote result');
       // Fallback or error handling
@@ -343,6 +349,7 @@ export class CalculatorPageComponent implements OnInit {
   onNewQuote() {
     this.step.set('upload');
     this.result.set(null);
+    this.cadSessionLocked.set(false);
     this.orderSuccess.set(false);
     this.mode.set('easy'); // Reset to default
   }

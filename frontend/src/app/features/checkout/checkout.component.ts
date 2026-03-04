@@ -162,6 +162,22 @@ export class CheckoutComponent implements OnInit {
     });
   }
 
+  isCadSession(): boolean {
+    return this.quoteSession()?.session?.status === 'CAD_ACTIVE';
+  }
+
+  cadRequestId(): string | null {
+    return this.quoteSession()?.session?.sourceRequestId ?? null;
+  }
+
+  cadHours(): number {
+    return this.quoteSession()?.session?.cadHours ?? 0;
+  }
+
+  cadTotal(): number {
+    return this.quoteSession()?.cadTotalChf ?? 0;
+  }
+
   onSubmit() {
     if (this.checkoutForm.invalid) {
       return;

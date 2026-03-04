@@ -23,14 +23,16 @@
           <div
             class="mode-option"
             [class.active]="mode() === 'easy'"
-            (click)="mode.set('easy')"
+            [class.disabled]="cadSessionLocked()"
+            (click)="!cadSessionLocked() && mode.set('easy')"
           >
             {{ "CALC.MODE_EASY" | translate }}
           </div>
           <div
             class="mode-option"
             [class.active]="mode() === 'advanced'"
-            (click)="mode.set('advanced')"
+            [class.disabled]="cadSessionLocked()"
+            (click)="!cadSessionLocked() && mode.set('advanced')"
           >
             {{ "CALC.MODE_ADVANCED" | translate }}
           </div>
@@ -39,6 +41,7 @@
         <app-upload-form
           #uploadForm
           [mode]="mode()"
+          [lockedSettings]="cadSessionLocked()"
           [loading]="loading()"
           [uploadProgress]="uploadProgress()"
           (submitRequest)="onCalculate($event)"

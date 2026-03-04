@@ -16,6 +16,7 @@ type PassionId =
   | 'woodworking'
   | 'van-life'
   | 'coffee'
+  | 'cooking'
   | 'software-development';
 
 interface PassionChip {
@@ -50,6 +51,7 @@ export class AboutPageComponent {
     { id: 'snowboard', labelKey: 'ABOUT.PASSION_SNOWBOARD' },
     { id: 'van-life', labelKey: 'ABOUT.PASSION_VAN_LIFE' },
     { id: 'self-hosting', labelKey: 'ABOUT.PASSION_SELF_HOSTING' },
+    { id: 'cooking', labelKey: 'ABOUT.PASSION_COOKING' },
     {
       id: 'snowboard-instructor',
       labelKey: 'ABOUT.PASSION_SNOWBOARD_INSTRUCTOR',
@@ -67,6 +69,7 @@ export class AboutPageComponent {
       'print-3d',
       'travel',
       'coffee',
+      'cooking',
       'software-development',
     ],
     matteo: [

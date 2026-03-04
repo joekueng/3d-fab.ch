@@ -14,6 +14,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import com.printcalculator.entity.Order;
 import com.printcalculator.entity.OrderItem;
@@ -95,6 +97,17 @@ public class InvoicePdfRenderingService {
             return line;
         }).collect(Collectors.toList());
 
+        if (order.getCadTotalChf() != null && order.getCadTotalChf().compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal cadHours = order.getCadHours() != null ? order.getCadHours() : BigDecimal.ZERO;
+            BigDecimal cadHourlyRate = order.getCadHourlyRateChf() != null ? order.getCadHourlyRateChf() : BigDecimal.ZERO;
+            Map<String, Object> cadLine = new HashMap<>();
+            cadLine.put("description", "Servizio CAD (" + formatCadHours(cadHours) + "h)");
+            cadLine.put("quantity", 1);
+            cadLine.put("unitPriceFormatted", String.format("CHF %.2f", cadHourlyRate));
+            cadLine.put("lineTotalFormatted", String.format("CHF %.2f", order.getCadTotalChf()));
+            invoiceLineItems.add(cadLine);
+        }
+
         Map<String, Object> setupLine = new HashMap<>();
         setupLine.put("description", "Costo Setup");
         setupLine.put("quantity", 1);
@@ -139,5 +152,9 @@ public class InvoicePdfRenderingService {
         }
         
         return generateInvoicePdfBytesFromTemplate(vars, qrBillSvg);
+    }
+
+    private String formatCadHours(BigDecimal hours) {
+        return hours.setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
     }
 }

@@ -599,7 +599,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS ux_customers_email
 CREATE TABLE IF NOT EXISTS quote_sessions
 (
     quote_session_id   uuid PRIMARY KEY        DEFAULT gen_random_uuid(),
-    status             text           NOT NULL CHECK (status IN ('ACTIVE', 'EXPIRED', 'CONVERTED')),
+    status             text           NOT NULL CHECK (status IN ('ACTIVE', 'CAD_ACTIVE', 'EXPIRED', 'CONVERTED')),
     pricing_version    text           NOT NULL,
 
     -- Parametri "globali" (dalla tua UI avanzata)
@@ -612,6 +612,9 @@ CREATE TABLE IF NOT EXISTS quote_sessions
     notes              text,
 
     setup_cost_chf     numeric(12, 2) NOT NULL DEFAULT 0.00,
+    source_request_id  uuid,
+    cad_hours          numeric(10, 2),
+    cad_hourly_rate_chf numeric(10, 2),
 
     created_at         timestamptz    NOT NULL DEFAULT now(),
     expires_at         timestamptz    NOT NULL,
@@ -623,6 +626,25 @@ CREATE INDEX IF NOT EXISTS ix_quote_sessions_status
 
 CREATE INDEX IF NOT EXISTS ix_quote_sessions_expires_at
     ON quote_sessions (expires_at);
+
+CREATE INDEX IF NOT EXISTS ix_quote_sessions_source_request
+    ON quote_sessions (source_request_id);
+
+ALTER TABLE quote_sessions
+    ADD COLUMN IF NOT EXISTS source_request_id uuid;
+
+ALTER TABLE quote_sessions
+    ADD COLUMN IF NOT EXISTS cad_hours numeric(10, 2);
+
+ALTER TABLE quote_sessions
+    ADD COLUMN IF NOT EXISTS cad_hourly_rate_chf numeric(10, 2);
+
+ALTER TABLE quote_sessions
+    DROP CONSTRAINT IF EXISTS quote_sessions_status_check;
+
+ALTER TABLE quote_sessions
+    ADD CONSTRAINT quote_sessions_status_check
+        CHECK (status IN ('ACTIVE', 'CAD_ACTIVE', 'EXPIRED', 'CONVERTED'));
 
 -- =========================
 -- QUOTE LINE ITEMS (1 file = 1 riga)
@@ -676,6 +698,7 @@ CREATE TABLE IF NOT EXISTS orders
 (
     order_id                 uuid PRIMARY KEY        DEFAULT gen_random_uuid(),
     source_quote_session_id  uuid REFERENCES quote_sessions (quote_session_id),
+    source_request_id        uuid,
 
     status                   text           NOT NULL CHECK (status IN (
                                                                        'PENDING_PAYMENT', 'PAID', 'IN_PRODUCTION',
@@ -717,6 +740,10 @@ CREATE TABLE IF NOT EXISTS orders
     discount_chf             numeric(12, 2) NOT NULL DEFAULT 0.00,
 
     subtotal_chf             numeric(12, 2) NOT NULL DEFAULT 0.00,
+    is_cad_order             boolean        NOT NULL DEFAULT false,
+    cad_hours                numeric(10, 2),
+    cad_hourly_rate_chf      numeric(10, 2),
+    cad_total_chf            numeric(12, 2) NOT NULL DEFAULT 0.00,
     total_chf                numeric(12, 2) NOT NULL DEFAULT 0.00,
 
     created_at               timestamptz    NOT NULL DEFAULT now(),
@@ -729,6 +756,24 @@ CREATE INDEX IF NOT EXISTS ix_orders_status
 
 CREATE INDEX IF NOT EXISTS ix_orders_customer_email
     ON orders (lower(customer_email));
+
+CREATE INDEX IF NOT EXISTS ix_orders_source_request
+    ON orders (source_request_id);
+
+ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS source_request_id uuid;
+
+ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS is_cad_order boolean NOT NULL DEFAULT false;
+
+ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS cad_hours numeric(10, 2);
+
+ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS cad_hourly_rate_chf numeric(10, 2);
+
+ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS cad_total_chf numeric(12, 2) NOT NULL DEFAULT 0.00;
 
 -- =========================
 -- ORDER ITEMS (1 file 3D = 1 riga, file salvato su disco)
@@ -849,3 +894,17 @@ CREATE TABLE IF NOT EXISTS custom_quote_request_attachments
 
 CREATE INDEX IF NOT EXISTS ix_custom_quote_attachments_request
     ON custom_quote_request_attachments (request_id);
+
+ALTER TABLE quote_sessions
+    DROP CONSTRAINT IF EXISTS fk_quote_sessions_source_request;
+
+ALTER TABLE quote_sessions
+    ADD CONSTRAINT fk_quote_sessions_source_request
+        FOREIGN KEY (source_request_id) REFERENCES custom_quote_requests (request_id);
+
+ALTER TABLE orders
+    DROP CONSTRAINT IF EXISTS fk_orders_source_request;
+
+ALTER TABLE orders
+    ADD CONSTRAINT fk_orders_source_request
+        FOREIGN KEY (source_request_id) REFERENCES custom_quote_requests (request_id);

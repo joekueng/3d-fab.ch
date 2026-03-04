@@ -15,6 +15,7 @@ import com.printcalculator.repository.QuoteLineItemRepository;
 import com.printcalculator.repository.QuoteSessionRepository;
 import com.printcalculator.service.OrcaProfileResolver;
 import com.printcalculator.service.QuoteCalculator;
+import com.printcalculator.service.QuoteSessionTotalsService;
 import com.printcalculator.service.SlicerService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +43,9 @@ import java.util.Optional;
 import java.util.Locale;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.web.server.ResponseStatusException;
+
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @RestController
 @RequestMapping("/api/quote-sessions")
@@ -59,6 +63,7 @@ public class QuoteSessionController {
     private final OrcaProfileResolver orcaProfileResolver;
     private final com.printcalculator.repository.PricingPolicyRepository pricingRepo;
     private final com.printcalculator.service.ClamAVService clamAVService;
+    private final QuoteSessionTotalsService quoteSessionTotalsService;
 
     public QuoteSessionController(QuoteSessionRepository sessionRepo,
                                   QuoteLineItemRepository lineItemRepo,
@@ -69,7 +74,8 @@ public class QuoteSessionController {
                                   FilamentVariantRepository variantRepo,
                                   OrcaProfileResolver orcaProfileResolver,
                                   com.printcalculator.repository.PricingPolicyRepository pricingRepo,
-                                  com.printcalculator.service.ClamAVService clamAVService) {
+                                  com.printcalculator.service.ClamAVService clamAVService,
+                                  QuoteSessionTotalsService quoteSessionTotalsService) {
         this.sessionRepo = sessionRepo;
         this.lineItemRepo = lineItemRepo;
         this.slicerService = slicerService;
@@ -80,6 +86,7 @@ public class QuoteSessionController {
         this.orcaProfileResolver = orcaProfileResolver;
         this.pricingRepo = pricingRepo;
         this.clamAVService = clamAVService;
+        this.quoteSessionTotalsService = quoteSessionTotalsService;
     }
 
     // 1. Start a new empty session
@@ -121,6 +128,9 @@ public class QuoteSessionController {
     // Helper to add item
     private QuoteLineItem addItemToSession(QuoteSession session, MultipartFile file, com.printcalculator.dto.PrintSettingsDto settings) throws IOException {
         if (file.isEmpty()) throw new IllegalArgumentException("File is empty");
+        if ("CONVERTED".equals(session.getStatus())) {
+            throw new ResponseStatusException(BAD_REQUEST, "Cannot modify a converted session");
+        }
 
         // Scan for virus
         clamAVService.scan(file.getInputStream());
@@ -148,8 +158,14 @@ public class QuoteSessionController {
 
         Path convertedPersistentPath = null;
         try {
-            // Apply Basic/Advanced Logic
-            applyPrintSettings(settings);
+            boolean cadSession = "CAD_ACTIVE".equals(session.getStatus());
+
+            // In CAD sessions, print settings are locked server-side.
+            if (cadSession) {
+                enforceCadPrintSettings(session, settings);
+            } else {
+                applyPrintSettings(settings);
+            }
 
             BigDecimal nozzleDiameter = BigDecimal.valueOf(settings.getNozzleDiameter() != null ? settings.getNozzleDiameter() : 0.4);
 
@@ -159,14 +175,27 @@ public class QuoteSessionController {
             // Resolve selected filament variant
             FilamentVariant selectedVariant = resolveFilamentVariant(settings);
 
+            if (cadSession
+                    && session.getMaterialCode() != null
+                    && selectedVariant.getFilamentMaterialType() != null
+                    && selectedVariant.getFilamentMaterialType().getMaterialCode() != null) {
+                String lockedMaterial = normalizeRequestedMaterialCode(session.getMaterialCode());
+                String selectedMaterial = normalizeRequestedMaterialCode(selectedVariant.getFilamentMaterialType().getMaterialCode());
+                if (!lockedMaterial.equals(selectedMaterial)) {
+                    throw new ResponseStatusException(BAD_REQUEST, "Selected filament does not match locked CAD material");
+                }
+            }
+
             // Update session global settings from the most recent item added
-            session.setMaterialCode(selectedVariant.getFilamentMaterialType().getMaterialCode());
-            session.setNozzleDiameterMm(nozzleDiameter);
-            session.setLayerHeightMm(BigDecimal.valueOf(settings.getLayerHeight() != null ? settings.getLayerHeight() : 0.2));
-            session.setInfillPattern(settings.getInfillPattern());
-            session.setInfillPercent(settings.getInfillDensity() != null ? settings.getInfillDensity().intValue() : 20);
-            session.setSupportsEnabled(settings.getSupportsEnabled() != null ? settings.getSupportsEnabled() : false);
-            sessionRepo.save(session);
+            if (!cadSession) {
+                session.setMaterialCode(selectedVariant.getFilamentMaterialType().getMaterialCode());
+                session.setNozzleDiameterMm(nozzleDiameter);
+                session.setLayerHeightMm(BigDecimal.valueOf(settings.getLayerHeight() != null ? settings.getLayerHeight() : 0.2));
+                session.setInfillPattern(settings.getInfillPattern());
+                session.setInfillPercent(settings.getInfillDensity() != null ? settings.getInfillDensity().intValue() : 20);
+                session.setSupportsEnabled(settings.getSupportsEnabled() != null ? settings.getSupportsEnabled() : false);
+                sessionRepo.save(session);
+            }
 
             OrcaProfileResolver.ResolvedProfiles profiles = orcaProfileResolver.resolve(machine, nozzleDiameter, selectedVariant);
             String machineProfile = profiles.machineProfileName();
@@ -290,6 +319,16 @@ public class QuoteSessionController {
         }
     }
 
+    private void enforceCadPrintSettings(QuoteSession session, com.printcalculator.dto.PrintSettingsDto settings) {
+        settings.setComplexityMode("ADVANCED");
+        settings.setMaterial(session.getMaterialCode() != null ? session.getMaterialCode() : "PLA");
+        settings.setNozzleDiameter(session.getNozzleDiameterMm() != null ? session.getNozzleDiameterMm().doubleValue() : 0.4);
+        settings.setLayerHeight(session.getLayerHeightMm() != null ? session.getLayerHeightMm().doubleValue() : 0.2);
+        settings.setInfillPattern(session.getInfillPattern() != null ? session.getInfillPattern() : "grid");
+        settings.setInfillDensity(session.getInfillPercent() != null ? session.getInfillPercent().doubleValue() : 20.0);
+        settings.setSupportsEnabled(Boolean.TRUE.equals(session.getSupportsEnabled()));
+    }
+
     private PrinterMachine resolvePrinterMachine(Long printerMachineId) {
         if (printerMachineId != null) {
             PrinterMachine selected = machineRepo.findById(printerMachineId)
@@ -344,6 +383,32 @@ public class QuoteSessionController {
                 .replaceAll("\\s+", " ");
     }
 
+    private int parsePositiveQuantity(Object raw) {
+        if (raw == null) {
+            throw new ResponseStatusException(BAD_REQUEST, "Quantity is required");
+        }
+
+        int quantity;
+        if (raw instanceof Number number) {
+            double numericValue = number.doubleValue();
+            if (!Double.isFinite(numericValue)) {
+                throw new ResponseStatusException(BAD_REQUEST, "Quantity must be a finite number");
+            }
+            quantity = (int) Math.floor(numericValue);
+        } else {
+            try {
+                quantity = Integer.parseInt(String.valueOf(raw).trim());
+            } catch (NumberFormatException ex) {
+                throw new ResponseStatusException(BAD_REQUEST, "Quantity must be an integer");
+            }
+        }
+
+        if (quantity < 1) {
+            throw new ResponseStatusException(BAD_REQUEST, "Quantity must be >= 1");
+        }
+        return quantity;
+    }
+
     // 3. Update Line Item
     @PatchMapping("/line-items/{lineItemId}")
     @Transactional
@@ -353,12 +418,20 @@ public class QuoteSessionController {
     ) {
         QuoteLineItem item = lineItemRepo.findById(lineItemId)
                 .orElseThrow(() -> new RuntimeException("Item not found"));
+
+        QuoteSession session = item.getQuoteSession();
+        if ("CONVERTED".equals(session.getStatus())) {
+            throw new ResponseStatusException(BAD_REQUEST, "Cannot modify a converted session");
+        }
         
         if (updates.containsKey("quantity")) {
-            item.setQuantity((Integer) updates.get("quantity"));
+            item.setQuantity(parsePositiveQuantity(updates.get("quantity")));
         }
         if (updates.containsKey("color_code")) {
-            item.setColorCode((String) updates.get("color_code"));
+            Object colorValue = updates.get("color_code");
+            if (colorValue != null) {
+                item.setColorCode(String.valueOf(colorValue));
+            }
         }
         
         // Recalculate price if needed? 
@@ -394,25 +467,7 @@ public class QuoteSessionController {
                 .orElseThrow(() -> new RuntimeException("Session not found"));
         
         List<QuoteLineItem> items = lineItemRepo.findByQuoteSessionId(id);
-        
-        // Calculate Totals and global session hours
-        BigDecimal itemsTotal = BigDecimal.ZERO;
-        BigDecimal totalSeconds = BigDecimal.ZERO;
-
-        for (QuoteLineItem item : items) {
-            BigDecimal lineTotal = item.getUnitPriceChf().multiply(BigDecimal.valueOf(item.getQuantity()));
-            itemsTotal = itemsTotal.add(lineTotal);
-            
-            if (item.getPrintTimeSeconds() != null) {
-                totalSeconds = totalSeconds.add(BigDecimal.valueOf(item.getPrintTimeSeconds()).multiply(BigDecimal.valueOf(item.getQuantity())));
-            }
-        }
-        
-        BigDecimal totalHours = totalSeconds.divide(BigDecimal.valueOf(3600), 4, RoundingMode.HALF_UP);
-        com.printcalculator.entity.PricingPolicy policy = pricingRepo.findFirstByIsActiveTrueOrderByValidFromDesc();
-        BigDecimal globalMachineCost = quoteCalculator.calculateSessionMachineCost(policy, totalHours);
-        
-        itemsTotal = itemsTotal.add(globalMachineCost);
+        QuoteSessionTotalsService.QuoteSessionTotals totals = quoteSessionTotalsService.compute(session, items);
         
         // Map items to DTO to embed distributed machine cost
         List<Map<String, Object>> itemsDto = new ArrayList<>();
@@ -428,57 +483,28 @@ public class QuoteSessionController {
             dto.put("status", item.getStatus());
             dto.put("convertedStoredPath", extractConvertedStoredPath(item));
             
-            BigDecimal unitPrice = item.getUnitPriceChf();
-            if (totalSeconds.compareTo(BigDecimal.ZERO) > 0 && item.getPrintTimeSeconds() != null) {
-                BigDecimal itemSeconds = BigDecimal.valueOf(item.getPrintTimeSeconds()).multiply(BigDecimal.valueOf(item.getQuantity()));
-                BigDecimal share = itemSeconds.divide(totalSeconds, 8, RoundingMode.HALF_UP);
-                BigDecimal itemMachineCost = globalMachineCost.multiply(share);
-                BigDecimal unitMachineCost = itemMachineCost.divide(BigDecimal.valueOf(item.getQuantity()), 2, RoundingMode.HALF_UP);
+            BigDecimal unitPrice = item.getUnitPriceChf() != null ? item.getUnitPriceChf() : BigDecimal.ZERO;
+            int quantity = item.getQuantity() != null && item.getQuantity() > 0 ? item.getQuantity() : 1;
+            if (totals.totalPrintSeconds().compareTo(BigDecimal.ZERO) > 0 && item.getPrintTimeSeconds() != null) {
+                BigDecimal itemSeconds = BigDecimal.valueOf(item.getPrintTimeSeconds()).multiply(BigDecimal.valueOf(quantity));
+                BigDecimal share = itemSeconds.divide(totals.totalPrintSeconds(), 8, RoundingMode.HALF_UP);
+                BigDecimal itemMachineCost = totals.globalMachineCostChf().multiply(share);
+                BigDecimal unitMachineCost = itemMachineCost.divide(BigDecimal.valueOf(quantity), 2, RoundingMode.HALF_UP);
                 unitPrice = unitPrice.add(unitMachineCost);
             }
             dto.put("unitPriceChf", unitPrice);
             itemsDto.add(dto);
         }
         
-        BigDecimal setupFee = session.getSetupCostChf() != null ? session.getSetupCostChf() : BigDecimal.ZERO;
-        
-        // Calculate shipping cost based on dimensions
-        boolean exceedsBaseSize = false;
-        for (QuoteLineItem item : items) {
-            BigDecimal x = item.getBoundingBoxXMm() != null ? item.getBoundingBoxXMm() : BigDecimal.ZERO;
-            BigDecimal y = item.getBoundingBoxYMm() != null ? item.getBoundingBoxYMm() : BigDecimal.ZERO;
-            BigDecimal z = item.getBoundingBoxZMm() != null ? item.getBoundingBoxZMm() : BigDecimal.ZERO;
-            
-            BigDecimal[] dims = {x, y, z};
-            java.util.Arrays.sort(dims);
-            
-            if (dims[2].compareTo(BigDecimal.valueOf(250.0)) > 0 ||
-                dims[1].compareTo(BigDecimal.valueOf(176.0)) > 0 ||
-                dims[0].compareTo(BigDecimal.valueOf(20.0)) > 0) {
-                exceedsBaseSize = true;
-                break;
-            }
-        }
-        int totalQuantity = items.stream()
-                .mapToInt(i -> i.getQuantity() != null ? i.getQuantity() : 1)
-                .sum();
-
-        BigDecimal shippingCostChf;
-        if (exceedsBaseSize) {
-            shippingCostChf = totalQuantity > 5 ? BigDecimal.valueOf(9.00) : BigDecimal.valueOf(4.00);
-        } else {
-            shippingCostChf = BigDecimal.valueOf(2.00);
-        }
-
-        BigDecimal grandTotal = itemsTotal.add(setupFee).add(shippingCostChf);
-        
         Map<String, Object> response = new HashMap<>();
         response.put("session", session);
         response.put("items", itemsDto);
-        response.put("itemsTotalChf", itemsTotal); // Includes the base cost of all items + the global tiered machine cost
-        response.put("shippingCostChf", shippingCostChf);
-        response.put("globalMachineCostChf", globalMachineCost); // Provide it so frontend knows how much it was (optional now)
-        response.put("grandTotalChf", grandTotal);
+        response.put("printItemsTotalChf", totals.printItemsTotalChf());
+        response.put("cadTotalChf", totals.cadTotalChf());
+        response.put("itemsTotalChf", totals.itemsTotalChf());
+        response.put("shippingCostChf", totals.shippingCostChf());
+        response.put("globalMachineCostChf", totals.globalMachineCostChf());
+        response.put("grandTotalChf", totals.grandTotalChf());
         
         return ResponseEntity.ok(response);
     }

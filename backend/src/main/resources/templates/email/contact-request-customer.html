@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${emailTitle}">Contact request received</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 640px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #222222;
+        }
+
+        h2 {
+            margin-top: 18px;
+            color: #222222;
+            font-size: 18px;
+        }
+
+        p {
+            color: #444444;
+            line-height: 1.5;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        th,
+        td {
+            text-align: left;
+            vertical-align: top;
+            border-bottom: 1px solid #eeeeee;
+            padding: 10px 6px;
+            color: #333333;
+            word-break: break-word;
+        }
+
+        th {
+            width: 35%;
+            color: #222222;
+            background: #fafafa;
+        }
+
+        .footer {
+            margin-top: 24px;
+            font-size: 12px;
+            color: #888888;
+            border-top: 1px solid #eeeeee;
+            padding-top: 12px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1 th:text="${headlineText}">We received your contact request</h1>
+    <p th:text="${greetingText}">Hi customer,</p>
+    <p th:text="${introText}">Thank you for contacting us. Our team will reply as soon as possible.</p>
+    <p>
+        <strong th:text="${requestIdHintText}">Please keep this request ID for future order references:</strong>
+        <span th:text="${requestId}">00000000-0000-0000-0000-000000000000</span>
+    </p>
+    <h2 th:text="${detailsTitleText}">Request details</h2>
+
+    <table>
+        <tr>
+            <th th:text="${labelRequestId}">Request ID</th>
+            <td th:text="${requestId}">00000000-0000-0000-0000-000000000000</td>
+        </tr>
+        <tr>
+            <th th:text="${labelDate}">Date</th>
+            <td th:text="${createdAt}">2026-03-03T10:00:00Z</td>
+        </tr>
+        <tr>
+            <th th:text="${labelRequestType}">Request type</th>
+            <td th:text="${requestType}">custom</td>
+        </tr>
+        <tr>
+            <th th:text="${labelCustomerType}">Customer type</th>
+            <td th:text="${customerType}">PRIVATE</td>
+        </tr>
+        <tr>
+            <th th:text="${labelName}">Name</th>
+            <td th:text="${name}">Mario Rossi</td>
+        </tr>
+        <tr>
+            <th th:text="${labelCompany}">Company</th>
+            <td th:text="${companyName}">3D Fab SA</td>
+        </tr>
+        <tr>
+            <th th:text="${labelContactPerson}">Contact person</th>
+            <td th:text="${contactPerson}">Mario Rossi</td>
+        </tr>
+        <tr>
+            <th th:text="${labelEmail}">Email</th>
+            <td th:text="${email}">cliente@example.com</td>
+        </tr>
+        <tr>
+            <th th:text="${labelPhone}">Phone</th>
+            <td th:text="${phone}">+41 00 000 00 00</td>
+        </tr>
+        <tr>
+            <th th:text="${labelMessage}">Message</th>
+            <td th:text="${message}">Testo richiesta cliente...</td>
+        </tr>
+        <tr>
+            <th th:text="${labelAttachments}">Attachments</th>
+            <td th:text="${attachmentsCount}">0</td>
+        </tr>
+    </table>
+    <p th:text="${supportText}">If you need help, reply to this email.</p>
+
+    <div class="footer">
+        <p>&copy; <span th:text="${currentYear}">2026</span> <span th:text="${footerText}">Automated request-receipt confirmation from 3D-Fab.</span></p>
+    </div>
+</div>
+</body>
+</html>

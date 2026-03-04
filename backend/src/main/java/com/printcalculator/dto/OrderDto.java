@@ -23,6 +23,11 @@ public class OrderDto {
     private BigDecimal shippingCostChf;
     private BigDecimal discountChf;
     private BigDecimal subtotalChf;
+    private Boolean isCadOrder;
+    private UUID sourceRequestId;
+    private BigDecimal cadHours;
+    private BigDecimal cadHourlyRateChf;
+    private BigDecimal cadTotalChf;
     private BigDecimal totalChf;
     private OffsetDateTime createdAt;
     private String printMaterialCode;
@@ -84,6 +89,21 @@ public class OrderDto {
 
     public BigDecimal getSubtotalChf() { return subtotalChf; }
     public void setSubtotalChf(BigDecimal subtotalChf) { this.subtotalChf = subtotalChf; }
+
+    public Boolean getIsCadOrder() { return isCadOrder; }
+    public void setIsCadOrder(Boolean isCadOrder) { this.isCadOrder = isCadOrder; }
+
+    public UUID getSourceRequestId() { return sourceRequestId; }
+    public void setSourceRequestId(UUID sourceRequestId) { this.sourceRequestId = sourceRequestId; }
+
+    public BigDecimal getCadHours() { return cadHours; }
+    public void setCadHours(BigDecimal cadHours) { this.cadHours = cadHours; }
+
+    public BigDecimal getCadHourlyRateChf() { return cadHourlyRateChf; }
+    public void setCadHourlyRateChf(BigDecimal cadHourlyRateChf) { this.cadHourlyRateChf = cadHourlyRateChf; }
+
+    public BigDecimal getCadTotalChf() { return cadTotalChf; }
+    public void setCadTotalChf(BigDecimal cadTotalChf) { this.cadTotalChf = cadTotalChf; }
 
     public BigDecimal getTotalChf() { return totalChf; }
     public void setTotalChf(BigDecimal totalChf) { this.totalChf = totalChf; }

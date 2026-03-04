@@ -1,6 +1,12 @@
 <div class="checkout-page">
   <div class="container hero">
     <h1 class="section-title">{{ "CHECKOUT.TITLE" | translate }}</h1>
+    <p class="cad-subtitle" *ngIf="isCadSession()">
+      Servizio CAD
+      <ng-container *ngIf="cadRequestId()">
+        riferito alla richiesta contatto #{{ cadRequestId() }}
+      </ng-container>
+    </p>
   </div>
 
   <div class="container">
@@ -258,6 +264,17 @@
                   {{ item.unitPriceChf | currency: "CHF" }}
                   {{ "CHECKOUT.PER_PIECE" | translate }}
                 </small>
+              </div>
+            </div>
+            <div class="summary-item cad-summary-item" *ngIf="cadTotal() > 0">
+              <div class="item-details">
+                <span class="item-name">Servizio CAD</span>
+                <div class="item-specs-sub">{{ cadHours() }}h</div>
+              </div>
+              <div class="item-price">
+                <span class="item-total-price">
+                  {{ cadTotal() | currency: "CHF" }}
+                </span>
               </div>
             </div>
           </div>

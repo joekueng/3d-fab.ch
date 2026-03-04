@@ -76,7 +76,12 @@
         <div>
           <h3>Dettaglio richiesta</h3>
           <p class="request-id">
-            <span>ID</span><code>{{ selectedRequest.id }}</code>
+            <span>ID</span>
+            <code
+              [title]="selectedRequest.id"
+              [appCopyOnClick]="selectedRequest.id"
+              >{{ selectedRequest.id }}</code
+            >
           </p>
         </div>
         <div class="detail-chips">

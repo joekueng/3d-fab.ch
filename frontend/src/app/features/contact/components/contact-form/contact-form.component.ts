@@ -11,6 +11,7 @@ import { AppInputComponent } from '../../../../shared/components/app-input/app-i
 import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
 import { QuoteEstimatorService } from '../../../calculator/services/quote-estimator.service';
 import { QuoteRequestService } from '../../../../core/services/quote-request.service';
+import { LanguageService } from '../../../../core/services/language.service';
 
 interface FilePreview {
   file: File;
@@ -53,6 +54,7 @@ export class ContactFormComponent implements OnDestroy {
   ];
 
   private quoteRequestService = inject(QuoteRequestService);
+  private languageService = inject(LanguageService);
 
   constructor(
     private fb: FormBuilder,
@@ -257,6 +259,7 @@ export class ContactFormComponent implements OnDestroy {
       const requestDto: any = {
         requestType: formVal.requestType,
         customerType: isCompany ? 'BUSINESS' : 'PRIVATE',
+        language: this.languageService.selectedLang(),
         email: formVal.email,
         phone: formVal.phone,
         message: formVal.message,

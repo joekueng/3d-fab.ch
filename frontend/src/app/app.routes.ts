@@ -29,6 +29,13 @@ const appChildRoutes: Routes = [
       import('./features/contact/contact.routes').then((m) => m.CONTACT_ROUTES),
   },
   {
+    path: 'checkout/cad',
+    loadComponent: () =>
+      import('./features/checkout/checkout.component').then(
+        (m) => m.CheckoutComponent,
+      ),
+  },
+  {
     path: 'checkout',
     loadComponent: () =>
       import('./features/checkout/checkout.component').then(

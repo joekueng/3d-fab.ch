@@ -97,7 +97,12 @@
       <div class="detail-header">
         <h2>Dettaglio ordine {{ selectedOrder.orderNumber }}</h2>
         <p class="order-uuid">
-          UUID: <code>{{ selectedOrder.id }}</code>
+          UUID:
+          <code
+            [title]="selectedOrder.id"
+            [appCopyOnClick]="selectedOrder.id"
+            >{{ selectedOrder.id }}</code
+          >
         </p>
         <p *ngIf="detailLoading">Caricamento dettaglio...</p>
       </div>

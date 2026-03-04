@@ -119,6 +119,23 @@ public class Order {
     @Column(name = "subtotal_chf", nullable = false, precision = 12, scale = 2)
     private BigDecimal subtotalChf;
 
+    @ColumnDefault("false")
+    @Column(name = "is_cad_order", nullable = false)
+    private Boolean isCadOrder;
+
+    @Column(name = "source_request_id")
+    private UUID sourceRequestId;
+
+    @Column(name = "cad_hours", precision = 10, scale = 2)
+    private BigDecimal cadHours;
+
+    @Column(name = "cad_hourly_rate_chf", precision = 10, scale = 2)
+    private BigDecimal cadHourlyRateChf;
+
+    @ColumnDefault("0.00")
+    @Column(name = "cad_total_chf", nullable = false, precision = 12, scale = 2)
+    private BigDecimal cadTotalChf;
+
     @ColumnDefault("0.00")
     @Column(name = "total_chf", nullable = false, precision = 12, scale = 2)
     private BigDecimal totalChf;
@@ -398,6 +415,46 @@ public class Order {
 
     public void setSubtotalChf(BigDecimal subtotalChf) {
         this.subtotalChf = subtotalChf;
+    }
+
+    public Boolean getIsCadOrder() {
+        return isCadOrder;
+    }
+
+    public void setIsCadOrder(Boolean isCadOrder) {
+        this.isCadOrder = isCadOrder;
+    }
+
+    public UUID getSourceRequestId() {
+        return sourceRequestId;
+    }
+
+    public void setSourceRequestId(UUID sourceRequestId) {
+        this.sourceRequestId = sourceRequestId;
+    }
+
+    public BigDecimal getCadHours() {
+        return cadHours;
+    }
+
+    public void setCadHours(BigDecimal cadHours) {
+        this.cadHours = cadHours;
+    }
+
+    public BigDecimal getCadHourlyRateChf() {
+        return cadHourlyRateChf;
+    }
+
+    public void setCadHourlyRateChf(BigDecimal cadHourlyRateChf) {
+        this.cadHourlyRateChf = cadHourlyRateChf;
+    }
+
+    public BigDecimal getCadTotalChf() {
+        return cadTotalChf;
+    }
+
+    public void setCadTotalChf(BigDecimal cadTotalChf) {
+        this.cadTotalChf = cadTotalChf;
     }
 
     public BigDecimal getTotalChf() {

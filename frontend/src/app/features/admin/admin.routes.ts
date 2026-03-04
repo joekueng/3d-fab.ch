@@ -50,6 +50,13 @@ export const ADMIN_ROUTES: Routes = [
             (m) => m.AdminSessionsComponent,
           ),
       },
+      {
+        path: 'cad-invoices',
+        loadComponent: () =>
+          import('./pages/admin-cad-invoices.component').then(
+            (m) => m.AdminCadInvoicesComponent,
+          ),
+      },
     ],
   },
 ];
