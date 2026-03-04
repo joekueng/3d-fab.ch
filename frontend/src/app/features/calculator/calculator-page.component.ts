@@ -8,8 +8,8 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { forkJoin } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
 import { AppAlertComponent } from '../../shared/components/app-alert/app-alert.component';
@@ -128,15 +128,18 @@ export class CalculatorPageComponent implements OnInit {
 
     // Download all files
     const downloads = items.map((item) =>
-      this.estimator.getLineItemContent(session.id, item.id).pipe(
-        map((blob: Blob) => {
+      forkJoin({
+        originalBlob: this.estimator.getLineItemContent(session.id, item.id),
+        previewBlob: this.estimator
+          .getLineItemContent(session.id, item.id, true)
+          .pipe(catchError(() => of(null))),
+      }).pipe(
+        map(({ originalBlob, previewBlob }) => {
           return {
-            blob,
+            originalBlob,
+            previewBlob,
             fileName: item.originalFilename,
-            // We need to match the file object to the item so we can set colors ideally.
-            // UploadForm.setFiles takes File[].
-            // We might need to handle matching but UploadForm just pushes them.
-            // If order is preserved, we are good. items from backend are list.
+            hasConvertedPreview: !!item.convertedStoredPath,
           };
         }),
       ),
@@ -146,13 +149,25 @@ export class CalculatorPageComponent implements OnInit {
       next: (results: any[]) => {
         const files = results.map(
           (res) =>
-            new File([res.blob], res.fileName, {
+            new File([res.originalBlob], res.fileName, {
               type: 'application/octet-stream',
             }),
         );
 
         if (this.uploadForm) {
           this.uploadForm.setFiles(files);
+          results.forEach((res, index) => {
+            if (!res.hasConvertedPreview || !res.previewBlob) {
+              return;
+            }
+            const previewName = res.fileName
+              .replace(/\.[^.]+$/, '')
+              .concat('.stl');
+            const previewFile = new File([res.previewBlob], previewName, {
+              type: 'model/stl',
+            });
+            this.uploadForm.setPreviewFileByIndex(index, previewFile);
+          });
           this.uploadForm.patchSettings(session);
 
           // Also restore colors?
@@ -230,6 +245,17 @@ export class CalculatorPageComponent implements OnInit {
               queryParams: { session: res.sessionId },
               queryParamsHandling: 'merge', // merge with existing params like 'mode' if any
               replaceUrl: true, // prevent cluttering history, or false if we want back button to work. replaceUrl seems safer for "state update"
+            });
+            this.estimator.getQuoteSession(res.sessionId).subscribe({
+              next: (sessionData) => {
+                this.restoreFilesAndSettings(
+                  sessionData.session,
+                  sessionData.items || [],
+                );
+              },
+              error: (err) => {
+                console.warn('Failed to refresh files for preview', err);
+              },
             });
           }
         }

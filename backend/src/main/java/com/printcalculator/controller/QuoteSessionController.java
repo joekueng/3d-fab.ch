@@ -426,6 +426,7 @@ public class QuoteSessionController {
             dto.put("colorCode", item.getColorCode());
             dto.put("filamentVariantId", item.getFilamentVariant() != null ? item.getFilamentVariant().getId() : null);
             dto.put("status", item.getStatus());
+            dto.put("convertedStoredPath", extractConvertedStoredPath(item));
             
             BigDecimal unitPrice = item.getUnitPriceChf();
             if (totalSeconds.compareTo(BigDecimal.ZERO) > 0 && item.getPrintTimeSeconds() != null) {
@@ -486,7 +487,8 @@ public class QuoteSessionController {
     @GetMapping(value = "/{sessionId}/line-items/{lineItemId}/content")
     public ResponseEntity<org.springframework.core.io.Resource> downloadLineItemContent(
             @PathVariable UUID sessionId,
-            @PathVariable UUID lineItemId
+            @PathVariable UUID lineItemId,
+            @RequestParam(name = "preview", required = false, defaultValue = "false") boolean preview
     ) throws IOException {
         QuoteLineItem item = lineItemRepo.findById(lineItemId)
                 .orElseThrow(() -> new RuntimeException("Item not found"));
@@ -495,20 +497,32 @@ public class QuoteSessionController {
             return ResponseEntity.badRequest().build();
         }
 
-        if (item.getStoredPath() == null) {
+        String targetStoredPath = item.getStoredPath();
+        if (preview) {
+            String convertedPath = extractConvertedStoredPath(item);
+            if (convertedPath != null && !convertedPath.isBlank()) {
+                targetStoredPath = convertedPath;
+            }
+        }
+
+        if (targetStoredPath == null) {
             return ResponseEntity.notFound().build();
         }
 
-        Path path = resolveStoredQuotePath(item.getStoredPath(), sessionId);
+        Path path = resolveStoredQuotePath(targetStoredPath, sessionId);
         if (path == null || !Files.exists(path)) {
             return ResponseEntity.notFound().build();
         }
 
         org.springframework.core.io.Resource resource = new UrlResource(path.toUri());
+        String downloadName = item.getOriginalFilename();
+        if (preview) {
+            downloadName = path.getFileName().toString();
+        }
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + item.getOriginalFilename() + "\"")
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + downloadName + "\"")
                 .body(resource);
     }
 
@@ -548,5 +562,18 @@ public class QuoteSessionController {
         } catch (InvalidPathException e) {
             return null;
         }
+    }
+
+    private String extractConvertedStoredPath(QuoteLineItem item) {
+        Map<String, Object> breakdown = item.getPricingBreakdown();
+        if (breakdown == null) {
+            return null;
+        }
+        Object converted = breakdown.get("convertedStoredPath");
+        if (converted == null) {
+            return null;
+        }
+        String path = String.valueOf(converted).trim();
+        return path.isEmpty() ? null : path;
     }
 }

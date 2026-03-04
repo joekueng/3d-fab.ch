@@ -2,13 +2,13 @@
   <div class="section">
     @if (selectedFile()) {
       <div class="viewer-wrapper">
-        @if (!isStepFile(selectedFile())) {
+        @if (!canPreviewSelectedFile()) {
           <div class="step-warning">
             <p>{{ "CALC.STEP_WARNING" | translate }}</p>
           </div>
         } @else {
           <app-stl-viewer
-            [file]="selectedFile()"
+            [file]="getSelectedPreviewFile()"
             [color]="getSelectedFileColor()"
           >
           </app-stl-viewer>
