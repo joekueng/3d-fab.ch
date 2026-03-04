@@ -39,6 +39,8 @@ export interface QuoteResult {
   items: QuoteItem[];
   setupCost: number;
   globalMachineCost: number;
+  cadHours?: number;
+  cadTotal?: number;
   currency: string;
   totalPrice: number;
   totalTimeHours: number;
@@ -463,6 +465,8 @@ export class QuoteEstimatorService {
       })),
       setupCost: session.setupCostChf || 0,
       globalMachineCost: sessionData.globalMachineCostChf || 0,
+      cadHours: session.cadHours || 0,
+      cadTotal: sessionData.cadTotalChf || 0,
       currency: 'CHF', // Fixed for now
       totalPrice:
         (sessionData.itemsTotalChf || 0) +

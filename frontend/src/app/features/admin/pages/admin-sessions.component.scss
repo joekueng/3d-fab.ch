@@ -103,6 +103,22 @@ td {
   padding: var(--space-4);
 }
 
+.detail-session-id {
+  margin-bottom: var(--space-3);
+  display: grid;
+  gap: 4px;
+}
+
+.detail-session-id code {
+  display: block;
+  max-width: 100%;
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-neutral-100);
+  overflow-wrap: anywhere;
+}
+
 .detail-summary {
   display: flex;
   flex-wrap: wrap;

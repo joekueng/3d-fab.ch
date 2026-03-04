@@ -49,6 +49,13 @@
               </button>
               <button
                 type="button"
+                class="btn-secondary"
+                (click)="copySessionUuid(session.id)"
+              >
+                Copia UUID
+              </button>
+              <button
+                type="button"
                 class="btn-danger"
                 (click)="deleteSession(session)"
                 [disabled]="
@@ -78,6 +85,11 @@
                 "
                 class="detail-box"
               >
+                <div class="detail-session-id">
+                  <strong>UUID sessione:</strong>
+                  <code>{{ detail.session.id }}</code>
+                </div>
+
                 <div class="detail-summary">
                   <div>
                     <strong>Elementi:</strong> {{ detail.items.length }}

@@ -120,8 +120,9 @@ export class QuoteResultComponent implements OnDestroy {
   totals = computed(() => {
     const currentItems = this.items();
     const setup = this.result().setupCost;
+    const cad = this.result().cadTotal || 0;
 
-    let price = setup;
+    let price = setup + cad;
     let time = 0;
     let weight = 0;
 

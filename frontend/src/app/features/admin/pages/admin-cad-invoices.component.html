@@ -1,0 +1,128 @@
+<section class="cad-page">
+  <header class="page-header">
+    <div>
+      <h1>Fatture CAD</h1>
+      <p>
+        Crea un checkout CAD partendo da una sessione esistente (opzionale) e
+        gestisci lo stato fino all'ordine.
+      </p>
+    </div>
+    <button type="button" (click)="loadCadInvoices()" [disabled]="loading">
+      Aggiorna
+    </button>
+  </header>
+
+  <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+  <p class="success" *ngIf="successMessage">{{ successMessage }}</p>
+
+  <section class="create-box">
+    <h2>Crea nuova fattura CAD</h2>
+    <div class="form-grid">
+      <label>
+        <span>ID Sessione (opzionale)</span>
+        <input
+          [(ngModel)]="form.sessionId"
+          placeholder="UUID sessione quote"
+          type="text"
+        />
+      </label>
+      <label>
+        <span>ID Richiesta Contatto (opzionale)</span>
+        <input
+          [(ngModel)]="form.sourceRequestId"
+          placeholder="UUID richiesta contatto"
+          type="text"
+        />
+      </label>
+      <label>
+        <span>Ore CAD</span>
+        <input [(ngModel)]="form.cadHours" min="0.1" step="0.1" type="number" />
+      </label>
+      <label>
+        <span>Tariffa CAD CHF/h (opzionale)</span>
+        <input
+          [(ngModel)]="form.cadHourlyRateChf"
+          placeholder="Se vuoto usa pricing policy attiva"
+          min="0"
+          step="0.05"
+          type="number"
+        />
+      </label>
+      <label class="notes-field">
+        <span>Nota (opzionale)</span>
+        <textarea
+          [(ngModel)]="form.notes"
+          placeholder="Nota visibile nel checkout CAD (es. dettagli lavorazione)"
+          rows="3"
+        ></textarea>
+      </label>
+    </div>
+    <div class="create-actions">
+      <button type="button" (click)="createCadInvoice()" [disabled]="creating">
+        {{ creating ? "Creazione..." : "Crea link checkout CAD" }}
+      </button>
+    </div>
+  </section>
+
+  <section class="table-wrap" *ngIf="!loading; else loadingTpl">
+    <table>
+      <thead>
+        <tr>
+          <th>Sessione</th>
+          <th>Richiesta</th>
+          <th>Ore CAD</th>
+          <th>Tariffa</th>
+          <th>Totale CAD</th>
+          <th>Totale ordine</th>
+          <th>Stato sessione</th>
+          <th>Nota</th>
+          <th>Ordine</th>
+          <th>Azioni</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of invoices">
+          <td [title]="row.sessionId">{{ row.sessionId | slice: 0 : 8 }}</td>
+          <td>{{ row.sourceRequestId || "-" }}</td>
+          <td>{{ row.cadHours }}</td>
+          <td>{{ row.cadHourlyRateChf | currency: "CHF" }}</td>
+          <td>{{ row.cadTotalChf | currency: "CHF" }}</td>
+          <td>{{ row.grandTotalChf | currency: "CHF" }}</td>
+          <td>{{ row.sessionStatus }}</td>
+          <td class="notes-cell" [title]="row.notes || ''">{{ row.notes || "-" }}</td>
+          <td>
+            <span *ngIf="row.convertedOrderId; else noOrder">
+              {{ row.convertedOrderId | slice: 0 : 8 }} ({{
+                row.convertedOrderStatus || "-"
+              }})
+            </span>
+            <ng-template #noOrder>-</ng-template>
+          </td>
+          <td class="actions">
+            <button type="button" class="ghost" (click)="openCheckout(row.checkoutPath)">
+              Apri checkout
+            </button>
+            <button type="button" class="ghost" (click)="copyCheckout(row.checkoutPath)">
+              Copia link
+            </button>
+            <button
+              type="button"
+              class="ghost"
+              *ngIf="row.convertedOrderId"
+              (click)="downloadInvoice(row.convertedOrderId)"
+            >
+              Scarica fattura
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="invoices.length === 0">
+          <td colspan="10">Nessuna fattura CAD trovata.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</section>
+
+<ng-template #loadingTpl>
+  <p>Caricamento fatture CAD...</p>
+</ng-template>

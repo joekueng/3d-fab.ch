@@ -3,6 +3,8 @@ package com.printcalculator.controller.admin;
 import com.printcalculator.dto.AdminContactRequestDto;
 import com.printcalculator.dto.AdminContactRequestAttachmentDto;
 import com.printcalculator.dto.AdminContactRequestDetailDto;
+import com.printcalculator.dto.AdminCadInvoiceCreateRequest;
+import com.printcalculator.dto.AdminCadInvoiceDto;
 import com.printcalculator.dto.AdminFilamentStockDto;
 import com.printcalculator.dto.AdminQuoteSessionDto;
 import com.printcalculator.dto.AdminUpdateContactRequestStatusRequest;
@@ -10,13 +12,18 @@ import com.printcalculator.entity.CustomQuoteRequest;
 import com.printcalculator.entity.CustomQuoteRequestAttachment;
 import com.printcalculator.entity.FilamentVariant;
 import com.printcalculator.entity.FilamentVariantStockKg;
+import com.printcalculator.entity.Order;
+import com.printcalculator.entity.QuoteLineItem;
 import com.printcalculator.entity.QuoteSession;
 import com.printcalculator.repository.CustomQuoteRequestAttachmentRepository;
 import com.printcalculator.repository.CustomQuoteRequestRepository;
 import com.printcalculator.repository.FilamentVariantRepository;
 import com.printcalculator.repository.FilamentVariantStockKgRepository;
 import com.printcalculator.repository.OrderRepository;
+import com.printcalculator.repository.PricingPolicyRepository;
+import com.printcalculator.repository.QuoteLineItemRepository;
 import com.printcalculator.repository.QuoteSessionRepository;
+import com.printcalculator.service.QuoteSessionTotalsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -31,6 +38,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,6 +47,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -75,7 +84,10 @@ public class AdminOperationsController {
     private final CustomQuoteRequestRepository customQuoteRequestRepo;
     private final CustomQuoteRequestAttachmentRepository customQuoteRequestAttachmentRepo;
     private final QuoteSessionRepository quoteSessionRepo;
+    private final QuoteLineItemRepository quoteLineItemRepo;
     private final OrderRepository orderRepo;
+    private final PricingPolicyRepository pricingRepo;
+    private final QuoteSessionTotalsService quoteSessionTotalsService;
 
     public AdminOperationsController(
             FilamentVariantStockKgRepository filamentStockRepo,
@@ -83,14 +95,20 @@ public class AdminOperationsController {
             CustomQuoteRequestRepository customQuoteRequestRepo,
             CustomQuoteRequestAttachmentRepository customQuoteRequestAttachmentRepo,
             QuoteSessionRepository quoteSessionRepo,
-            OrderRepository orderRepo
+            QuoteLineItemRepository quoteLineItemRepo,
+            OrderRepository orderRepo,
+            PricingPolicyRepository pricingRepo,
+            QuoteSessionTotalsService quoteSessionTotalsService
     ) {
         this.filamentStockRepo = filamentStockRepo;
         this.filamentVariantRepo = filamentVariantRepo;
         this.customQuoteRequestRepo = customQuoteRequestRepo;
         this.customQuoteRequestAttachmentRepo = customQuoteRequestAttachmentRepo;
         this.quoteSessionRepo = quoteSessionRepo;
+        this.quoteLineItemRepo = quoteLineItemRepo;
         this.orderRepo = orderRepo;
+        this.pricingRepo = pricingRepo;
+        this.quoteSessionTotalsService = quoteSessionTotalsService;
     }
 
     @GetMapping("/filament-stock")
@@ -279,6 +297,83 @@ public class AdminOperationsController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/cad-invoices")
+    public ResponseEntity<List<AdminCadInvoiceDto>> getCadInvoices() {
+        List<AdminCadInvoiceDto> response = quoteSessionRepo.findByStatusInOrderByCreatedAtDesc(List.of("CAD_ACTIVE", "CONVERTED"))
+                .stream()
+                .filter(this::isCadSessionRecord)
+                .map(this::toCadInvoiceDto)
+                .toList();
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/cad-invoices")
+    @Transactional
+    public ResponseEntity<AdminCadInvoiceDto> createOrUpdateCadInvoice(
+            @RequestBody AdminCadInvoiceCreateRequest payload
+    ) {
+        if (payload == null || payload.getCadHours() == null) {
+            throw new ResponseStatusException(BAD_REQUEST, "cadHours is required");
+        }
+
+        BigDecimal cadHours = payload.getCadHours().setScale(2, RoundingMode.HALF_UP);
+        if (cadHours.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new ResponseStatusException(BAD_REQUEST, "cadHours must be > 0");
+        }
+
+        BigDecimal cadRate = payload.getCadHourlyRateChf();
+        if (cadRate == null || cadRate.compareTo(BigDecimal.ZERO) <= 0) {
+            var policy = pricingRepo.findFirstByIsActiveTrueOrderByValidFromDesc();
+            cadRate = policy != null && policy.getCadCostChfPerHour() != null
+                    ? policy.getCadCostChfPerHour()
+                    : BigDecimal.ZERO;
+        }
+        cadRate = cadRate.setScale(2, RoundingMode.HALF_UP);
+
+        QuoteSession session;
+        if (payload.getSessionId() != null) {
+            session = quoteSessionRepo.findById(payload.getSessionId())
+                    .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Session not found"));
+        } else {
+            session = new QuoteSession();
+            session.setStatus("CAD_ACTIVE");
+            session.setPricingVersion("v1");
+            session.setMaterialCode("PLA");
+            session.setNozzleDiameterMm(BigDecimal.valueOf(0.4));
+            session.setLayerHeightMm(BigDecimal.valueOf(0.2));
+            session.setInfillPattern("grid");
+            session.setInfillPercent(20);
+            session.setSupportsEnabled(false);
+            session.setSetupCostChf(BigDecimal.ZERO);
+            session.setCreatedAt(OffsetDateTime.now());
+            session.setExpiresAt(OffsetDateTime.now().plusDays(30));
+        }
+
+        if ("CONVERTED".equals(session.getStatus())) {
+            throw new ResponseStatusException(CONFLICT, "Session already converted to order");
+        }
+
+        if (payload.getSourceRequestId() != null) {
+            if (!customQuoteRequestRepo.existsById(payload.getSourceRequestId())) {
+                throw new ResponseStatusException(NOT_FOUND, "Source request not found");
+            }
+            session.setSourceRequestId(payload.getSourceRequestId());
+        } else {
+            session.setSourceRequestId(null);
+        }
+
+        session.setStatus("CAD_ACTIVE");
+        session.setCadHours(cadHours);
+        session.setCadHourlyRateChf(cadRate);
+        if (payload.getNotes() != null) {
+            String trimmedNotes = payload.getNotes().trim();
+            session.setNotes(trimmedNotes.isEmpty() ? null : trimmedNotes);
+        }
+
+        QuoteSession saved = quoteSessionRepo.save(session);
+        return ResponseEntity.ok(toCadInvoiceDto(saved));
+    }
+
     @DeleteMapping("/sessions/{sessionId}")
     @Transactional
     public ResponseEntity<Void> deleteQuoteSession(@PathVariable UUID sessionId) {
@@ -347,6 +442,48 @@ public class AdminOperationsController {
         dto.setCreatedAt(session.getCreatedAt());
         dto.setExpiresAt(session.getExpiresAt());
         dto.setConvertedOrderId(session.getConvertedOrderId());
+        dto.setSourceRequestId(session.getSourceRequestId());
+        dto.setCadHours(session.getCadHours());
+        dto.setCadHourlyRateChf(session.getCadHourlyRateChf());
+        dto.setCadTotalChf(quoteSessionTotalsService.calculateCadTotal(session));
+        return dto;
+    }
+
+    private boolean isCadSessionRecord(QuoteSession session) {
+        if ("CAD_ACTIVE".equals(session.getStatus())) {
+            return true;
+        }
+        if (!"CONVERTED".equals(session.getStatus())) {
+            return false;
+        }
+        BigDecimal cadHours = session.getCadHours() != null ? session.getCadHours() : BigDecimal.ZERO;
+        return cadHours.compareTo(BigDecimal.ZERO) > 0 || session.getSourceRequestId() != null;
+    }
+
+    private AdminCadInvoiceDto toCadInvoiceDto(QuoteSession session) {
+        List<QuoteLineItem> items = quoteLineItemRepo.findByQuoteSessionId(session.getId());
+        QuoteSessionTotalsService.QuoteSessionTotals totals = quoteSessionTotalsService.compute(session, items);
+
+        AdminCadInvoiceDto dto = new AdminCadInvoiceDto();
+        dto.setSessionId(session.getId());
+        dto.setSessionStatus(session.getStatus());
+        dto.setSourceRequestId(session.getSourceRequestId());
+        dto.setCadHours(session.getCadHours() != null ? session.getCadHours() : BigDecimal.ZERO);
+        dto.setCadHourlyRateChf(session.getCadHourlyRateChf() != null ? session.getCadHourlyRateChf() : BigDecimal.ZERO);
+        dto.setCadTotalChf(totals.cadTotalChf());
+        dto.setPrintItemsTotalChf(totals.printItemsTotalChf());
+        dto.setSetupCostChf(totals.setupCostChf());
+        dto.setShippingCostChf(totals.shippingCostChf());
+        dto.setGrandTotalChf(totals.grandTotalChf());
+        dto.setConvertedOrderId(session.getConvertedOrderId());
+        dto.setCheckoutPath("/checkout/cad?session=" + session.getId());
+        dto.setNotes(session.getNotes());
+        dto.setCreatedAt(session.getCreatedAt());
+
+        if (session.getConvertedOrderId() != null) {
+            Order order = orderRepo.findById(session.getConvertedOrderId()).orElse(null);
+            dto.setConvertedOrderStatus(order != null ? order.getStatus() : null);
+        }
         return dto;
     }
 

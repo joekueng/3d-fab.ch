@@ -7,7 +7,6 @@ import com.printcalculator.repository.OrderItemRepository;
 import com.printcalculator.repository.OrderRepository;
 import com.printcalculator.repository.QuoteLineItemRepository;
 import com.printcalculator.repository.QuoteSessionRepository;
-import com.printcalculator.repository.PricingPolicyRepository;
 import com.printcalculator.event.OrderCreatedEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -35,8 +34,7 @@ public class OrderService {
     private final QrBillService qrBillService;
     private final ApplicationEventPublisher eventPublisher;
     private final PaymentService paymentService;
-    private final QuoteCalculator quoteCalculator;
-    private final PricingPolicyRepository pricingRepo;
+    private final QuoteSessionTotalsService quoteSessionTotalsService;
 
     public OrderService(OrderRepository orderRepo,
                         OrderItemRepository orderItemRepo,
@@ -48,8 +46,7 @@ public class OrderService {
                         QrBillService qrBillService,
                         ApplicationEventPublisher eventPublisher,
                         PaymentService paymentService,
-                        QuoteCalculator quoteCalculator,
-                        PricingPolicyRepository pricingRepo) {
+                        QuoteSessionTotalsService quoteSessionTotalsService) {
         this.orderRepo = orderRepo;
         this.orderItemRepo = orderItemRepo;
         this.quoteSessionRepo = quoteSessionRepo;
@@ -60,8 +57,7 @@ public class OrderService {
         this.qrBillService = qrBillService;
         this.eventPublisher = eventPublisher;
         this.paymentService = paymentService;
-        this.quoteCalculator = quoteCalculator;
-        this.pricingRepo = pricingRepo;
+        this.quoteSessionTotalsService = quoteSessionTotalsService;
     }
 
     @Transactional
@@ -148,60 +144,31 @@ public class OrderService {
         }
 
         List<QuoteLineItem> quoteItems = quoteLineItemRepo.findByQuoteSessionId(quoteSessionId);
+        QuoteSessionTotalsService.QuoteSessionTotals totals = quoteSessionTotalsService.compute(session, quoteItems);
+        BigDecimal cadTotal = totals.cadTotalChf();
 
         BigDecimal subtotal = BigDecimal.ZERO;
         order.setSubtotalChf(BigDecimal.ZERO);
         order.setTotalChf(BigDecimal.ZERO);
         order.setDiscountChf(BigDecimal.ZERO);
         order.setSetupCostChf(session.getSetupCostChf() != null ? session.getSetupCostChf() : BigDecimal.ZERO);
-        
-        // Calculate shipping cost based on dimensions before initial save
-        boolean exceedsBaseSize = false;
-        for (QuoteLineItem item : quoteItems) {
-            BigDecimal x = item.getBoundingBoxXMm() != null ? item.getBoundingBoxXMm() : BigDecimal.ZERO;
-            BigDecimal y = item.getBoundingBoxYMm() != null ? item.getBoundingBoxYMm() : BigDecimal.ZERO;
-            BigDecimal z = item.getBoundingBoxZMm() != null ? item.getBoundingBoxZMm() : BigDecimal.ZERO;
-            
-            BigDecimal[] dims = {x, y, z};
-            java.util.Arrays.sort(dims);
-            
-            if (dims[2].compareTo(BigDecimal.valueOf(250.0)) > 0 ||
-                dims[1].compareTo(BigDecimal.valueOf(176.0)) > 0 ||
-                dims[0].compareTo(BigDecimal.valueOf(20.0)) > 0) {
-                exceedsBaseSize = true;
-                break;
-            }
-        }
-        int totalQuantity = quoteItems.stream()
-                .mapToInt(i -> i.getQuantity() != null ? i.getQuantity() : 1)
-                .sum();
-
-        if (exceedsBaseSize) {
-            order.setShippingCostChf(totalQuantity > 5 ? BigDecimal.valueOf(9.00) : BigDecimal.valueOf(4.00));
-        } else {
-            order.setShippingCostChf(BigDecimal.valueOf(2.00));
-        }
+        order.setShippingCostChf(totals.shippingCostChf());
+        order.setIsCadOrder(cadTotal.compareTo(BigDecimal.ZERO) > 0 || "CAD_ACTIVE".equals(session.getStatus()));
+        order.setSourceRequestId(session.getSourceRequestId());
+        order.setCadHours(session.getCadHours() != null ? session.getCadHours() : BigDecimal.ZERO);
+        order.setCadHourlyRateChf(session.getCadHourlyRateChf() != null ? session.getCadHourlyRateChf() : BigDecimal.ZERO);
+        order.setCadTotalChf(cadTotal);
 
         order = orderRepo.save(order);
 
         List<OrderItem> savedItems = new ArrayList<>();
 
-        // Calculate global machine cost upfront
-        BigDecimal totalSeconds = BigDecimal.ZERO;
-        for (QuoteLineItem qItem : quoteItems) {
-            if (qItem.getPrintTimeSeconds() != null) {
-                totalSeconds = totalSeconds.add(BigDecimal.valueOf(qItem.getPrintTimeSeconds()).multiply(BigDecimal.valueOf(qItem.getQuantity())));
-            }
-        }
-        BigDecimal totalHours = totalSeconds.divide(BigDecimal.valueOf(3600), 4, RoundingMode.HALF_UP);
-        PricingPolicy policy = pricingRepo.findFirstByIsActiveTrueOrderByValidFromDesc();
-        BigDecimal globalMachineCost = quoteCalculator.calculateSessionMachineCost(policy, totalHours);
-
         for (QuoteLineItem qItem : quoteItems) {
             OrderItem oItem = new OrderItem();
             oItem.setOrder(order);
             oItem.setOriginalFilename(qItem.getOriginalFilename());
-            oItem.setQuantity(qItem.getQuantity());
+            int quantity = qItem.getQuantity() != null && qItem.getQuantity() > 0 ? qItem.getQuantity() : 1;
+            oItem.setQuantity(quantity);
             oItem.setColorCode(qItem.getColorCode());
             oItem.setFilamentVariant(qItem.getFilamentVariant());
             if (qItem.getFilamentVariant() != null
@@ -212,17 +179,17 @@ public class OrderService {
                 oItem.setMaterialCode(session.getMaterialCode());
             }
 
-            BigDecimal distributedUnitPrice = qItem.getUnitPriceChf();
-            if (totalSeconds.compareTo(BigDecimal.ZERO) > 0 && qItem.getPrintTimeSeconds() != null) {
-                BigDecimal itemSeconds = BigDecimal.valueOf(qItem.getPrintTimeSeconds()).multiply(BigDecimal.valueOf(qItem.getQuantity()));
-                BigDecimal share = itemSeconds.divide(totalSeconds, 8, RoundingMode.HALF_UP);
-                BigDecimal itemMachineCost = globalMachineCost.multiply(share);
-                BigDecimal unitMachineCost = itemMachineCost.divide(BigDecimal.valueOf(qItem.getQuantity()), 2, RoundingMode.HALF_UP);
+            BigDecimal distributedUnitPrice = qItem.getUnitPriceChf() != null ? qItem.getUnitPriceChf() : BigDecimal.ZERO;
+            if (totals.totalPrintSeconds().compareTo(BigDecimal.ZERO) > 0 && qItem.getPrintTimeSeconds() != null) {
+                BigDecimal itemSeconds = BigDecimal.valueOf(qItem.getPrintTimeSeconds()).multiply(BigDecimal.valueOf(quantity));
+                BigDecimal share = itemSeconds.divide(totals.totalPrintSeconds(), 8, RoundingMode.HALF_UP);
+                BigDecimal itemMachineCost = totals.globalMachineCostChf().multiply(share);
+                BigDecimal unitMachineCost = itemMachineCost.divide(BigDecimal.valueOf(quantity), 2, RoundingMode.HALF_UP);
                 distributedUnitPrice = distributedUnitPrice.add(unitMachineCost);
             }
 
             oItem.setUnitPriceChf(distributedUnitPrice);
-            oItem.setLineTotalChf(distributedUnitPrice.multiply(BigDecimal.valueOf(qItem.getQuantity())));
+            oItem.setLineTotalChf(distributedUnitPrice.multiply(BigDecimal.valueOf(quantity)));
             oItem.setPrintTimeSeconds(qItem.getPrintTimeSeconds());
             oItem.setMaterialGrams(qItem.getMaterialGrams());
             oItem.setBoundingBoxXMm(qItem.getBoundingBoxXMm());
@@ -260,9 +227,12 @@ public class OrderService {
             subtotal = subtotal.add(oItem.getLineTotalChf());
         }
 
-        order.setSubtotalChf(subtotal);
+        order.setSubtotalChf(subtotal.add(cadTotal));
         
-        BigDecimal total = subtotal.add(order.getSetupCostChf()).add(order.getShippingCostChf()).subtract(order.getDiscountChf() != null ? order.getDiscountChf() : BigDecimal.ZERO);
+        BigDecimal total = order.getSubtotalChf()
+                .add(order.getSetupCostChf())
+                .add(order.getShippingCostChf())
+                .subtract(order.getDiscountChf() != null ? order.getDiscountChf() : BigDecimal.ZERO);
         order.setTotalChf(total);
 
         session.setConvertedOrderId(order.getId());

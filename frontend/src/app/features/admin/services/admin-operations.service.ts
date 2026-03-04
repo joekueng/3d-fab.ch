@@ -115,6 +115,10 @@ export interface AdminQuoteSession {
   createdAt: string;
   expiresAt: string;
   convertedOrderId?: string;
+  sourceRequestId?: string;
+  cadHours?: number;
+  cadHourlyRateChf?: number;
+  cadTotalChf?: number;
 }
 
 export interface AdminQuoteSessionDetailItem {
@@ -136,12 +140,43 @@ export interface AdminQuoteSessionDetail {
     setupCostChf?: number;
     supportsEnabled?: boolean;
     notes?: string;
+    sourceRequestId?: string;
+    cadHours?: number;
+    cadHourlyRateChf?: number;
   };
   items: AdminQuoteSessionDetailItem[];
+  printItemsTotalChf: number;
+  cadTotalChf: number;
   itemsTotalChf: number;
   shippingCostChf: number;
   globalMachineCostChf: number;
   grandTotalChf: number;
+}
+
+export interface AdminCreateCadInvoicePayload {
+  sessionId?: string;
+  sourceRequestId?: string;
+  cadHours: number;
+  cadHourlyRateChf?: number;
+  notes?: string;
+}
+
+export interface AdminCadInvoice {
+  sessionId: string;
+  sessionStatus: string;
+  sourceRequestId?: string;
+  cadHours: number;
+  cadHourlyRateChf: number;
+  cadTotalChf: number;
+  printItemsTotalChf: number;
+  setupCostChf: number;
+  shippingCostChf: number;
+  grandTotalChf: number;
+  convertedOrderId?: string;
+  convertedOrderStatus?: string;
+  checkoutPath: string;
+  notes?: string;
+  createdAt: string;
 }
 
 @Injectable({
@@ -276,6 +311,22 @@ export class AdminOperationsService {
   getSessionDetail(sessionId: string): Observable<AdminQuoteSessionDetail> {
     return this.http.get<AdminQuoteSessionDetail>(
       `${environment.apiUrl}/api/quote-sessions/${sessionId}`,
+      { withCredentials: true },
+    );
+  }
+
+  listCadInvoices(): Observable<AdminCadInvoice[]> {
+    return this.http.get<AdminCadInvoice[]>(`${this.baseUrl}/cad-invoices`, {
+      withCredentials: true,
+    });
+  }
+
+  createCadInvoice(
+    payload: AdminCreateCadInvoicePayload,
+  ): Observable<AdminCadInvoice> {
+    return this.http.post<AdminCadInvoice>(
+      `${this.baseUrl}/cad-invoices`,
+      payload,
       { withCredentials: true },
     );
   }

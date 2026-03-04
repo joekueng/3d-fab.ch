@@ -198,6 +198,10 @@
                 <span>{{ "PAYMENT.SUBTOTAL" | translate }}</span>
                 <span>{{ o.subtotalChf | currency: "CHF" }}</span>
               </div>
+              <div class="total-row" *ngIf="o.cadTotalChf > 0">
+                <span>Servizio CAD ({{ o.cadHours || 0 }}h)</span>
+                <span>{{ o.cadTotalChf | currency: "CHF" }}</span>
+              </div>
               <div class="total-row">
                 <span>{{ "PAYMENT.SHIPPING" | translate }}</span>
                 <span>{{ o.shippingCostChf | currency: "CHF" }}</span>

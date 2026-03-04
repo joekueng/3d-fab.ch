@@ -199,18 +199,20 @@ tbody tr.selected {
 .request-id {
   margin: var(--space-2) 0 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
   gap: 8px;
   font-size: 0.8rem;
   color: var(--color-text-muted);
 }
 
 .request-id code {
-  display: inline-block;
-  max-width: 260px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: block;
+  max-width: 100%;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
   color: var(--color-text);
   background: var(--color-neutral-100);
   border: 1px solid var(--color-border);

@@ -8,6 +8,11 @@
   }
 }
 
+.cad-subtitle {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
 .checkout-layout {
   display: grid;
   grid-template-columns: 1fr 420px;
@@ -258,6 +263,13 @@ app-toggle-selector.user-type-selector-compact {
       line-height: 1.2;
     }
   }
+}
+
+.cad-summary-item {
+  background: var(--color-neutral-100);
+  border-radius: var(--radius-sm);
+  padding-left: var(--space-3);
+  padding-right: var(--space-3);
 }
 
 .summary-totals {
