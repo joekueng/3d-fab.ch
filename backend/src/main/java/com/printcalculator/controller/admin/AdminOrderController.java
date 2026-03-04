@@ -101,13 +101,16 @@ public class AdminOrderController {
 
     @PostMapping("/{orderId}/payments/confirm")
     @Transactional
-    public ResponseEntity<OrderDto> confirmPayment(
+    public ResponseEntity<OrderDto> updatePaymentMethod(
             @PathVariable UUID orderId,
             @RequestBody(required = false) Map<String, String> payload
     ) {
         getOrderOrThrow(orderId);
         String method = payload != null ? payload.get("method") : null;
-        paymentService.confirmPayment(orderId, method);
+        if (method == null || method.isBlank()) {
+            throw new ResponseStatusException(BAD_REQUEST, "Payment method is required");
+        }
+        paymentService.updatePaymentMethod(orderId, method);
         return ResponseEntity.ok(toOrderDto(getOrderOrThrow(orderId)));
     }
 

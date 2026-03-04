@@ -98,4 +98,20 @@ public class PaymentService {
 
         return payment;
     }
+
+    @Transactional
+    public Payment updatePaymentMethod(UUID orderId, String method) {
+        if (method == null || method.isBlank()) {
+            throw new IllegalArgumentException("Payment method is required");
+        }
+
+        Order order = orderRepo.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found with id " + orderId));
+
+        Payment payment = paymentRepo.findByOrder_Id(orderId)
+                .orElseGet(() -> getOrCreatePaymentForOrder(order, "OTHER"));
+
+        payment.setMethod(method.trim().toUpperCase());
+        return paymentRepo.save(payment);
+    }
 }
