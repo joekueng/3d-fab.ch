@@ -132,14 +132,14 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  confirmPayment(): void {
+  updatePaymentMethod(): void {
     if (!this.selectedOrder || this.confirmingPayment) {
       return;
     }
 
     this.confirmingPayment = true;
     this.adminOrdersService
-      .confirmPayment(this.selectedOrder.id, this.selectedPaymentMethod)
+      .updatePaymentMethod(this.selectedOrder.id, this.selectedPaymentMethod)
       .subscribe({
         next: (updatedOrder) => {
           this.confirmingPayment = false;
@@ -147,7 +147,7 @@ export class AdminDashboardComponent implements OnInit {
         },
         error: () => {
           this.confirmingPayment = false;
-          this.errorMessage = 'Conferma pagamento non riuscita.';
+          this.errorMessage = 'Aggiornamento metodo pagamento non riuscito.';
         },
       });
   }

@@ -163,12 +163,12 @@
           </select>
           <button
             type="button"
-            (click)="confirmPayment()"
-            [disabled]="
-              confirmingPayment || selectedOrder.paymentStatus === 'COMPLETED'
-            "
+            (click)="updatePaymentMethod()"
+            [disabled]="confirmingPayment"
           >
-            {{ confirmingPayment ? "Invio..." : "Conferma pagamento" }}
+            {{
+              confirmingPayment ? "Salvataggio..." : "Cambia metodo pagamento"
+            }}
           </button>
         </div>
       </div>

@@ -59,7 +59,7 @@ export class AdminOrdersService {
     });
   }
 
-  confirmPayment(orderId: string, method: string): Observable<AdminOrder> {
+  updatePaymentMethod(orderId: string, method: string): Observable<AdminOrder> {
     return this.http.post<AdminOrder>(
       `${this.baseUrl}/${orderId}/payments/confirm`,
       { method },
