@@ -32,6 +32,7 @@ import { getColorHex } from '../../../../core/constants/colors.const';
 
 interface FormItem {
   file: File;
+  previewFile?: File;
   quantity: number;
   color: string;
   filamentVariantId?: number;
@@ -96,10 +97,22 @@ export class UploadFormComponent implements OnInit {
 
   acceptedFormats = '.stl,.3mf,.step,.stp';
 
-  isStepFile(file: File | null): boolean {
+  isStlFile(file: File | null): boolean {
     if (!file) return false;
     const name = file.name.toLowerCase();
     return name.endsWith('.stl');
+  }
+
+  canPreviewSelectedFile(): boolean {
+    return this.isStlFile(this.getSelectedPreviewFile());
+  }
+
+  getSelectedPreviewFile(): File | null {
+    const selected = this.selectedFile();
+    if (!selected) return null;
+    const item = this.items().find((i) => i.file === selected);
+    if (!item) return null;
+    return item.previewFile ?? item.file;
   }
 
   constructor() {
@@ -262,6 +275,7 @@ export class UploadFormComponent implements OnInit {
         const defaultSelection = this.getDefaultVariantSelection();
         validItems.push({
           file,
+          previewFile: this.isStlFile(file) ? file : undefined,
           quantity: 1,
           color: defaultSelection.colorName,
           filamentVariantId: defaultSelection.filamentVariantId,
@@ -390,6 +404,7 @@ export class UploadFormComponent implements OnInit {
     for (const file of files) {
       validItems.push({
         file,
+        previewFile: this.isStlFile(file) ? file : undefined,
         quantity: 1,
         color: defaultSelection.colorName,
         filamentVariantId: defaultSelection.filamentVariantId,
@@ -402,6 +417,16 @@ export class UploadFormComponent implements OnInit {
       // Auto select last added
       this.selectedFile.set(validItems[validItems.length - 1].file);
     }
+  }
+
+  setPreviewFileByIndex(index: number, previewFile: File) {
+    if (!Number.isInteger(index) || index < 0) return;
+    this.items.update((current) => {
+      if (index >= current.length) return current;
+      const updated = [...current];
+      updated[index] = { ...updated[index], previewFile };
+      return updated;
+    });
   }
 
   private getDefaultVariantSelection(): {

@@ -2,8 +2,14 @@ package com.printcalculator.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.printcalculator.exception.ModelProcessingException;
 import com.printcalculator.model.ModelDimensions;
 import com.printcalculator.model.PrintStats;
+import org.lwjgl.PointerBuffer;
+import org.lwjgl.assimp.AIFace;
+import org.lwjgl.assimp.AIMesh;
+import org.lwjgl.assimp.AIScene;
+import org.lwjgl.assimp.AIVector3D;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
@@ -11,7 +17,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -19,7 +24,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
+import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -37,6 +42,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+
+import static org.lwjgl.assimp.Assimp.aiGetErrorString;
+import static org.lwjgl.assimp.Assimp.aiImportFile;
+import static org.lwjgl.assimp.Assimp.aiProcess_JoinIdenticalVertices;
+import static org.lwjgl.assimp.Assimp.aiProcess_PreTransformVertices;
+import static org.lwjgl.assimp.Assimp.aiProcess_SortByPType;
+import static org.lwjgl.assimp.Assimp.aiProcess_Triangulate;
+import static org.lwjgl.assimp.Assimp.aiReleaseImport;
 
 @Service
 public class SlicerService {
@@ -144,7 +157,10 @@ public class SlicerService {
 
                 if (!finished) {
                     process.destroyForcibly();
-                    throw new IOException("Slicer timed out");
+                    throw new ModelProcessingException(
+                            "SLICER_TIMEOUT",
+                            "Model processing timed out. Try another format or contact us directly via Request Consultation."
+                    );
                 }
 
                 if (process.exitValue() != 0) {
@@ -156,7 +172,11 @@ public class SlicerService {
                         logger.warning("Slicer reported model out of printable area, retrying with arrange.");
                         continue;
                     }
-                    throw new IOException("Slicer failed with exit code " + process.exitValue() + ": " + error);
+                    logger.warning("Slicer failed with exit code " + process.exitValue() + ". Log: " + error);
+                    throw new ModelProcessingException(
+                            "SLICER_EXECUTION_FAILED",
+                            "Unable to process this model. Try another format or contact us directly via Request Consultation."
+                    );
                 }
 
                 File gcodeFile = tempDir.resolve(basename + ".gcode").toFile();
@@ -165,14 +185,20 @@ public class SlicerService {
                     if (alt.exists()) {
                         gcodeFile = alt;
                     } else {
-                        throw new IOException("GCode output not found in " + tempDir);
+                        throw new ModelProcessingException(
+                                "SLICER_OUTPUT_MISSING",
+                                "Unable to generate slicing output for this model. Try another format or contact us directly via Request Consultation."
+                        );
                     }
                 }
 
                 return gCodeParser.parse(gcodeFile);
             }
 
-            throw new IOException("Slicer failed after retry");
+            throw new ModelProcessingException(
+                    "SLICER_FAILED_AFTER_RETRY",
+                    "Unable to process this model. Try another format or contact us directly via Request Consultation."
+            );
 
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -305,6 +331,31 @@ public class SlicerService {
         return convertedStlPaths;
     }
 
+    public Path convert3mfToPersistentStl(File input3mf, Path destinationStl) throws IOException {
+        Path tempDir = Files.createTempDirectory("slicer_convert_");
+        try {
+            List<String> convertedPaths = convert3mfToStlInputPaths(input3mf, tempDir);
+            if (convertedPaths.isEmpty()) {
+                throw new ModelProcessingException(
+                        "MODEL_CONVERSION_FAILED",
+                        "Unable to process this 3MF file. Try another format or contact us directly via Request Consultation."
+                );
+            }
+            Path source = Path.of(convertedPaths.get(0));
+            Path parent = destinationStl.toAbsolutePath().normalize().getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+            Files.copy(source, destinationStl, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            return destinationStl;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Interrupted during 3MF conversion", e);
+        } finally {
+            deleteRecursively(tempDir);
+        }
+    }
+
     private List<String> convert3mfToStlInputPaths(File input3mf, Path tempDir) throws IOException, InterruptedException {
         Path conversionOutputDir = tempDir.resolve("converted-from-3mf");
         Files.createDirectories(conversionOutputDir);
@@ -319,30 +370,145 @@ public class SlicerService {
         );
         String input3mfPath = requireSafeArgument(input3mf.getAbsolutePath(), "input 3MF path");
 
-        Path convertedStl = Path.of(conversionOutputStlPath);
-        String stlLog = runAssimpExport(input3mfPath, conversionOutputStlPath, tempDir.resolve("assimp-convert-stl.log"));
-        if (hasRenderableGeometry(convertedStl)) {
-            return List.of(convertedStl.toString());
+        String stlLog = "";
+        String objLog = "";
+
+        Path lwjglConvertedStl = conversionOutputDir.resolve("converted-lwjgl.stl");
+        try {
+            long lwjglTriangles = convert3mfToStlWithLwjglAssimp(input3mf.toPath(), lwjglConvertedStl);
+            if (lwjglTriangles > 0 && hasRenderableGeometry(lwjglConvertedStl)) {
+                logger.info("Converted 3MF to STL via LWJGL Assimp. Triangles: " + lwjglTriangles);
+                return List.of(lwjglConvertedStl.toString());
+            }
+            logger.warning("LWJGL Assimp conversion produced no renderable geometry.");
+        } catch (Exception | LinkageError e) {
+            logger.warning("LWJGL Assimp conversion failed, falling back to assimp CLI: " + e.getMessage());
         }
 
-        logger.warning("Assimp STL conversion produced empty geometry. Retrying conversion to OBJ.");
+        Path convertedStl = Path.of(conversionOutputStlPath);
+        try {
+            stlLog = runAssimpExport(input3mfPath, conversionOutputStlPath, tempDir.resolve("assimp-convert-stl.log"));
+            if (hasRenderableGeometry(convertedStl)) {
+                return List.of(convertedStl.toString());
+            }
+            logger.warning("Assimp STL conversion produced empty geometry.");
+        } catch (IOException e) {
+            stlLog = e.getMessage() != null ? e.getMessage() : "";
+            logger.warning("Assimp STL conversion failed, trying alternate conversion paths: " + stlLog);
+        }
+
+        logger.warning("Retrying 3MF conversion to OBJ.");
 
         Path convertedObj = Path.of(conversionOutputObjPath);
-        String objLog = runAssimpExport(input3mfPath, conversionOutputObjPath, tempDir.resolve("assimp-convert-obj.log"));
-        if (hasRenderableGeometry(convertedObj)) {
-            return List.of(convertedObj.toString());
+        try {
+            objLog = runAssimpExport(input3mfPath, conversionOutputObjPath, tempDir.resolve("assimp-convert-obj.log"));
+            if (hasRenderableGeometry(convertedObj)) {
+                Path stlFromObj = conversionOutputDir.resolve("converted-from-obj.stl");
+                runAssimpExport(
+                        convertedObj.toString(),
+                        stlFromObj.toString(),
+                        tempDir.resolve("assimp-convert-obj-to-stl.log")
+                );
+                if (hasRenderableGeometry(stlFromObj)) {
+                    return List.of(stlFromObj.toString());
+                }
+                logger.warning("Assimp OBJ->STL conversion produced empty geometry.");
+            }
+            logger.warning("Assimp OBJ conversion produced empty geometry.");
+        } catch (IOException e) {
+            objLog = e.getMessage() != null ? e.getMessage() : "";
+            logger.warning("Assimp OBJ conversion failed: " + objLog);
         }
 
         Path fallbackStl = conversionOutputDir.resolve("converted-fallback.stl");
-        long fallbackTriangles = convert3mfArchiveToAsciiStl(input3mf.toPath(), fallbackStl);
-        if (fallbackTriangles > 0 && hasRenderableGeometry(fallbackStl)) {
-            logger.warning("Assimp conversion produced empty geometry. Fallback 3MF XML extractor generated "
-                    + fallbackTriangles + " triangles.");
-            return List.of(fallbackStl.toString());
+        try {
+            long fallbackTriangles = convert3mfArchiveToAsciiStl(input3mf.toPath(), fallbackStl);
+            if (fallbackTriangles > 0 && hasRenderableGeometry(fallbackStl)) {
+                logger.warning("Assimp conversion produced empty geometry. Fallback 3MF XML extractor generated "
+                        + fallbackTriangles + " triangles.");
+                return List.of(fallbackStl.toString());
+            }
+            logger.warning("3MF XML fallback completed but produced no renderable triangles.");
+        } catch (IOException e) {
+            logger.warning("3MF XML fallback conversion failed: " + e.getMessage());
         }
 
-        throw new IOException("3MF conversion produced no renderable geometry (STL+OBJ). STL log: "
-                + stlLog + " OBJ log: " + objLog);
+        throw new ModelProcessingException(
+                "MODEL_CONVERSION_FAILED",
+                "Unable to process this 3MF file. Try another format or contact us directly via Request Consultation."
+        );
+    }
+
+    private long convert3mfToStlWithLwjglAssimp(Path input3mf, Path outputStl) throws IOException {
+        int flags = aiProcess_Triangulate
+                | aiProcess_JoinIdenticalVertices
+                | aiProcess_PreTransformVertices
+                | aiProcess_SortByPType;
+        AIScene scene = aiImportFile(input3mf.toString(), flags);
+        if (scene == null) {
+            throw new IOException("LWJGL Assimp import failed: " + aiGetErrorString());
+        }
+
+        long triangleCount = 0L;
+        try (BufferedWriter writer = Files.newBufferedWriter(outputStl, StandardCharsets.UTF_8)) {
+            writer.write("solid converted\n");
+
+            int meshCount = scene.mNumMeshes();
+            PointerBuffer meshPointers = scene.mMeshes();
+            if (meshCount <= 0 || meshPointers == null) {
+                throw new IOException("LWJGL Assimp import contains no meshes");
+            }
+
+            for (int meshIndex = 0; meshIndex < meshCount; meshIndex++) {
+                long meshPtr = meshPointers.get(meshIndex);
+                if (meshPtr == 0L) {
+                    continue;
+                }
+                AIMesh mesh = AIMesh.create(meshPtr);
+                AIVector3D.Buffer vertices = mesh.mVertices();
+                AIFace.Buffer faces = mesh.mFaces();
+                if (vertices == null || faces == null) {
+                    continue;
+                }
+
+                int vertexCount = mesh.mNumVertices();
+                int faceCount = mesh.mNumFaces();
+                for (int faceIndex = 0; faceIndex < faceCount; faceIndex++) {
+                    AIFace face = faces.get(faceIndex);
+                    if (face.mNumIndices() != 3) {
+                        continue;
+                    }
+                    IntBuffer indices = face.mIndices();
+                    if (indices == null || indices.remaining() < 3) {
+                        continue;
+                    }
+                    int i0 = indices.get(0);
+                    int i1 = indices.get(1);
+                    int i2 = indices.get(2);
+                    if (i0 < 0 || i1 < 0 || i2 < 0
+                            || i0 >= vertexCount
+                            || i1 >= vertexCount
+                            || i2 >= vertexCount) {
+                        continue;
+                    }
+
+                    Vec3 p1 = toVec3(vertices.get(i0));
+                    Vec3 p2 = toVec3(vertices.get(i1));
+                    Vec3 p3 = toVec3(vertices.get(i2));
+                    writeAsciiFacet(writer, p1, p2, p3);
+                    triangleCount++;
+                }
+            }
+
+            writer.write("endsolid converted\n");
+        } finally {
+            aiReleaseImport(scene);
+        }
+
+        if (triangleCount <= 0) {
+            throw new IOException("LWJGL Assimp conversion produced no triangles");
+        }
+        return triangleCount;
     }
 
     private String runAssimpExport(String input3mfPath, String outputModelPath, Path conversionLogPath)
@@ -581,6 +747,10 @@ public class SlicerService {
         writer.write("  vertex " + p3.x() + " " + p3.y() + " " + p3.z() + "\n");
         writer.write(" endloop\n");
         writer.write("endfacet\n");
+    }
+
+    private Vec3 toVec3(AIVector3D v) {
+        return new Vec3(v.x(), v.y(), v.z());
     }
 
     private Vec3 computeNormal(Vec3 a, Vec3 b, Vec3 c) {

@@ -416,10 +416,15 @@ export class QuoteEstimatorService {
   }
 
   // Session File Retrieval
-  getLineItemContent(sessionId: string, lineItemId: string): Observable<Blob> {
+  getLineItemContent(
+    sessionId: string,
+    lineItemId: string,
+    preview = false,
+  ): Observable<Blob> {
     const headers: any = {};
+    const previewQuery = preview ? '?preview=true' : '';
     return this.http.get(
-      `${environment.apiUrl}/api/quote-sessions/${sessionId}/line-items/${lineItemId}/content`,
+      `${environment.apiUrl}/api/quote-sessions/${sessionId}/line-items/${lineItemId}/content${previewQuery}`,
       {
         headers,
         responseType: 'blob',

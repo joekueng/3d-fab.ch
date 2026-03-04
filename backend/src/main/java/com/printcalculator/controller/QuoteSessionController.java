@@ -120,7 +120,7 @@ public class QuoteSessionController {
 
     // Helper to add item
     private QuoteLineItem addItemToSession(QuoteSession session, MultipartFile file, com.printcalculator.dto.PrintSettingsDto settings) throws IOException {
-        if (file.isEmpty()) throw new IOException("File is empty");
+        if (file.isEmpty()) throw new IllegalArgumentException("File is empty");
 
         // Scan for virus
         clamAVService.scan(file.getInputStream());
@@ -146,6 +146,7 @@ public class QuoteSessionController {
             Files.copy(inputStream, persistentPath, StandardCopyOption.REPLACE_EXISTING);
         }
 
+        Path convertedPersistentPath = null;
         try {
             // Apply Basic/Advanced Logic
             applyPrintSettings(settings);
@@ -182,10 +183,21 @@ public class QuoteSessionController {
             if (settings.getLayerHeight() != null) processOverrides.put("layer_height", String.valueOf(settings.getLayerHeight()));
             if (settings.getInfillDensity() != null) processOverrides.put("sparse_infill_density", settings.getInfillDensity() + "%");
             if (settings.getInfillPattern() != null) processOverrides.put("sparse_infill_pattern", settings.getInfillPattern());
+
+            Path slicerInputPath = persistentPath;
+            if ("3mf".equals(ext)) {
+                String convertedFilename = UUID.randomUUID() + "-converted.stl";
+                convertedPersistentPath = sessionStorageDir.resolve(convertedFilename).normalize();
+                if (!convertedPersistentPath.startsWith(sessionStorageDir)) {
+                    throw new IOException("Invalid converted STL storage path");
+                }
+                slicerService.convert3mfToPersistentStl(persistentPath.toFile(), convertedPersistentPath);
+                slicerInputPath = convertedPersistentPath;
+            }
             
             // 3. Slice (Use persistent path)
             PrintStats stats = slicerService.slice(
-                persistentPath.toFile(), 
+                slicerInputPath.toFile(),
                 machineProfile, 
                 filamentProfile, 
                 processProfile, 
@@ -193,7 +205,7 @@ public class QuoteSessionController {
                 processOverrides
             );
 
-            Optional<ModelDimensions> modelDimensions = slicerService.inspectModelDimensions(persistentPath.toFile());
+            Optional<ModelDimensions> modelDimensions = slicerService.inspectModelDimensions(slicerInputPath.toFile());
             
             // 4. Calculate Quote
             QuoteResult result = quoteCalculator.calculate(stats, machine.getPrinterDisplayName(), selectedVariant);
@@ -216,6 +228,9 @@ public class QuoteSessionController {
             Map<String, Object> breakdown = new HashMap<>();
             breakdown.put("machine_cost", result.getTotalPrice()); // Excludes setup fee which is at session level
             breakdown.put("setup_fee", 0);
+            if (convertedPersistentPath != null) {
+                breakdown.put("convertedStoredPath", QUOTE_STORAGE_ROOT.relativize(convertedPersistentPath).toString());
+            }
             item.setPricingBreakdown(breakdown);
             
             // Dimensions for shipping/package checks are computed server-side from the uploaded model.
@@ -237,6 +252,9 @@ public class QuoteSessionController {
         } catch (Exception e) {
             // Cleanup if failed
             Files.deleteIfExists(persistentPath);
+            if (convertedPersistentPath != null) {
+                Files.deleteIfExists(convertedPersistentPath);
+            }
             throw e;
         }
     }
@@ -408,6 +426,7 @@ public class QuoteSessionController {
             dto.put("colorCode", item.getColorCode());
             dto.put("filamentVariantId", item.getFilamentVariant() != null ? item.getFilamentVariant().getId() : null);
             dto.put("status", item.getStatus());
+            dto.put("convertedStoredPath", extractConvertedStoredPath(item));
             
             BigDecimal unitPrice = item.getUnitPriceChf();
             if (totalSeconds.compareTo(BigDecimal.ZERO) > 0 && item.getPrintTimeSeconds() != null) {
@@ -468,7 +487,8 @@ public class QuoteSessionController {
     @GetMapping(value = "/{sessionId}/line-items/{lineItemId}/content")
     public ResponseEntity<org.springframework.core.io.Resource> downloadLineItemContent(
             @PathVariable UUID sessionId,
-            @PathVariable UUID lineItemId
+            @PathVariable UUID lineItemId,
+            @RequestParam(name = "preview", required = false, defaultValue = "false") boolean preview
     ) throws IOException {
         QuoteLineItem item = lineItemRepo.findById(lineItemId)
                 .orElseThrow(() -> new RuntimeException("Item not found"));
@@ -477,20 +497,32 @@ public class QuoteSessionController {
             return ResponseEntity.badRequest().build();
         }
 
-        if (item.getStoredPath() == null) {
+        String targetStoredPath = item.getStoredPath();
+        if (preview) {
+            String convertedPath = extractConvertedStoredPath(item);
+            if (convertedPath != null && !convertedPath.isBlank()) {
+                targetStoredPath = convertedPath;
+            }
+        }
+
+        if (targetStoredPath == null) {
             return ResponseEntity.notFound().build();
         }
 
-        Path path = resolveStoredQuotePath(item.getStoredPath(), sessionId);
+        Path path = resolveStoredQuotePath(targetStoredPath, sessionId);
         if (path == null || !Files.exists(path)) {
             return ResponseEntity.notFound().build();
         }
 
         org.springframework.core.io.Resource resource = new UrlResource(path.toUri());
+        String downloadName = item.getOriginalFilename();
+        if (preview) {
+            downloadName = path.getFileName().toString();
+        }
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + item.getOriginalFilename() + "\"")
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + downloadName + "\"")
                 .body(resource);
     }
 
@@ -530,5 +562,18 @@ public class QuoteSessionController {
         } catch (InvalidPathException e) {
             return null;
         }
+    }
+
+    private String extractConvertedStoredPath(QuoteLineItem item) {
+        Map<String, Object> breakdown = item.getPricingBreakdown();
+        if (breakdown == null) {
+            return null;
+        }
+        Object converted = breakdown.get("convertedStoredPath");
+        if (converted == null) {
+            return null;
+        }
+        String path = String.valueOf(converted).trim();
+        return path.isEmpty() ? null : path;
     }
 }
