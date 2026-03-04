@@ -434,6 +434,17 @@ export class QuoteEstimatorService {
     );
   }
 
+  getLineItemStlPreview(sessionId: string, lineItemId: string): Observable<Blob> {
+    const headers: any = {};
+    return this.http.get(
+      `${environment.apiUrl}/api/quote-sessions/${sessionId}/line-items/${lineItemId}/stl-preview`,
+      {
+        headers,
+        responseType: 'blob',
+      },
+    );
+  }
+
   mapSessionToQuoteResult(sessionData: any): QuoteResult {
     const session = sessionData.session;
     const items = sessionData.items || [];

@@ -552,6 +552,47 @@ public class QuoteSessionController {
                 .body(resource);
     }
 
+    // 7. Download STL preview for checkout (only when original file is STL)
+    @GetMapping(value = "/{sessionId}/line-items/{lineItemId}/stl-preview")
+    public ResponseEntity<Resource> downloadLineItemStlPreview(
+            @PathVariable UUID sessionId,
+            @PathVariable UUID lineItemId
+    ) throws IOException {
+        QuoteLineItem item = lineItemRepo.findById(lineItemId)
+                .orElseThrow(() -> new RuntimeException("Item not found"));
+
+        if (!item.getQuoteSession().getId().equals(sessionId)) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        // Only expose preview for native STL uploads.
+        if (!"stl".equals(getSafeExtension(item.getOriginalFilename(), ""))) {
+            return ResponseEntity.notFound().build();
+        }
+
+        String targetStoredPath = item.getStoredPath();
+        if (targetStoredPath == null || targetStoredPath.isBlank()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Path path = resolveStoredQuotePath(targetStoredPath, sessionId);
+        if (path == null || !Files.exists(path)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        if (!"stl".equals(getSafeExtension(path.getFileName().toString(), ""))) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Resource resource = new UrlResource(path.toUri());
+        String downloadName = path.getFileName().toString();
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("model/stl"))
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + downloadName + "\"")
+                .body(resource);
+    }
+
     private String getSafeExtension(String filename, String fallback) {
         if (filename == null) {
             return fallback;

@@ -255,6 +255,39 @@
                   {{ item.printTimeSeconds / 3600 | number: "1.1-1" }}h |
                   {{ item.materialGrams | number: "1.0-0" }}g
                 </div>
+                <div class="item-preview" *ngIf="isStlItem(item)">
+                  <ng-container *ngIf="previewFile(item) as itemPreview; else previewState">
+                    <button
+                      type="button"
+                      class="preview-trigger"
+                      (click)="openPreview(item)"
+                      [attr.aria-label]="'CHECKOUT.PREVIEW_OPEN' | translate"
+                    >
+                      <div class="preview-surface">
+                        <app-stl-viewer
+                          [file]="itemPreview"
+                          [height]="116"
+                          [color]="previewColor(item)"
+                          [borderRadius]="'var(--radius-lg)'"
+                        ></app-stl-viewer>
+                        <span class="preview-pill">{{
+                          "CHECKOUT.PREVIEW_OPEN" | translate
+                        }}</span>
+                      </div>
+                    </button>
+                  </ng-container>
+                  <ng-template #previewState>
+                    <div class="preview-state" *ngIf="isPreviewLoading(item)">
+                      {{ "CHECKOUT.PREVIEW_LOADING" | translate }}
+                    </div>
+                    <div
+                      class="preview-state preview-state-error"
+                      *ngIf="!isPreviewLoading(item) && hasPreviewError(item)"
+                    >
+                      {{ "CHECKOUT.PREVIEW_UNAVAILABLE" | translate }}
+                    </div>
+                  </ng-template>
+                </div>
               </div>
               <div class="item-price">
                 <span class="item-total-price">
@@ -300,5 +333,32 @@
         </app-card>
       </div>
     </div>
+  </div>
+</div>
+
+<div
+  class="preview-modal-backdrop"
+  *ngIf="previewModalOpen()"
+  (click)="closePreview()"
+>
+  <div class="preview-modal" (click)="$event.stopPropagation()">
+    <div class="preview-modal-header">
+      <h4>{{ selectedPreviewName() }}</h4>
+      <button
+        type="button"
+        class="preview-modal-close"
+        (click)="closePreview()"
+        [attr.aria-label]="'CHECKOUT.PREVIEW_CLOSE' | translate"
+      >
+        ×
+      </button>
+    </div>
+    <app-stl-viewer
+      *ngIf="selectedPreviewFile() as preview"
+      [file]="preview"
+      [height]="460"
+      [color]="selectedPreviewColor()"
+      [borderRadius]="'var(--radius-lg)'"
+    ></app-stl-viewer>
   </div>
 </div>

@@ -17,6 +17,7 @@ import {
   ToggleOption,
 } from '../../shared/components/app-toggle-selector/app-toggle-selector.component';
 import { LanguageService } from '../../core/services/language.service';
+import { StlViewerComponent } from '../../shared/components/stl-viewer/stl-viewer.component';
 
 @Component({
   selector: 'app-checkout',
@@ -29,6 +30,7 @@ import { LanguageService } from '../../core/services/language.service';
     AppButtonComponent,
     AppCardComponent,
     AppToggleSelectorComponent,
+    StlViewerComponent,
   ],
   templateUrl: './checkout.component.html',
   styleUrls: ['./checkout.component.scss'],
@@ -46,6 +48,13 @@ export class CheckoutComponent implements OnInit {
   error: string | null = null;
   isSubmitting = signal(false); // Add signal for submit state
   quoteSession = signal<any>(null); // Add signal for session details
+  previewFiles = signal<Record<string, File>>({});
+  previewLoading = signal<Record<string, boolean>>({});
+  previewErrors = signal<Record<string, boolean>>({});
+  previewModalOpen = signal(false);
+  selectedPreviewFile = signal<File | null>(null);
+  selectedPreviewName = signal('');
+  selectedPreviewColor = signal('#c9ced6');
 
   userTypeOptions: ToggleOption[] = [
     { label: 'CONTACT.TYPE_PRIVATE', value: 'PRIVATE' },
@@ -153,6 +162,7 @@ export class CheckoutComponent implements OnInit {
     this.quoteService.getQuoteSession(this.sessionId).subscribe({
       next: (session) => {
         this.quoteSession.set(session);
+        this.loadStlPreviews(session);
         console.log('Loaded session:', session);
       },
       error: (err) => {
@@ -176,6 +186,94 @@ export class CheckoutComponent implements OnInit {
 
   cadTotal(): number {
     return this.quoteSession()?.cadTotalChf ?? 0;
+  }
+
+  isStlItem(item: any): boolean {
+    const name = String(item?.originalFilename ?? '').toLowerCase();
+    return name.endsWith('.stl');
+  }
+
+  previewFile(item: any): File | null {
+    const id = String(item?.id ?? '');
+    if (!id) {
+      return null;
+    }
+    return this.previewFiles()[id] ?? null;
+  }
+
+  previewColor(item: any): string {
+    const raw = String(item?.colorCode ?? '').trim();
+    return raw || '#c9ced6';
+  }
+
+  isPreviewLoading(item: any): boolean {
+    const id = String(item?.id ?? '');
+    if (!id) {
+      return false;
+    }
+    return !!this.previewLoading()[id];
+  }
+
+  hasPreviewError(item: any): boolean {
+    const id = String(item?.id ?? '');
+    if (!id) {
+      return false;
+    }
+    return !!this.previewErrors()[id];
+  }
+
+  openPreview(item: any): void {
+    const file = this.previewFile(item);
+    if (!file) {
+      return;
+    }
+    this.selectedPreviewFile.set(file);
+    this.selectedPreviewName.set(String(item?.originalFilename ?? file.name));
+    this.selectedPreviewColor.set(this.previewColor(item));
+    this.previewModalOpen.set(true);
+  }
+
+  closePreview(): void {
+    this.previewModalOpen.set(false);
+    this.selectedPreviewFile.set(null);
+    this.selectedPreviewName.set('');
+    this.selectedPreviewColor.set('#c9ced6');
+  }
+
+  private loadStlPreviews(session: any): void {
+    if (!this.sessionId || !Array.isArray(session?.items)) {
+      return;
+    }
+
+    for (const item of session.items) {
+      if (!this.isStlItem(item)) {
+        continue;
+      }
+
+      const id = String(item?.id ?? '');
+      if (!id || this.previewFiles()[id] || this.previewLoading()[id]) {
+        continue;
+      }
+
+      this.previewLoading.update((prev) => ({ ...prev, [id]: true }));
+      this.previewErrors.update((prev) => ({ ...prev, [id]: false }));
+
+      this.quoteService.getLineItemStlPreview(this.sessionId, id).subscribe({
+        next: (blob) => {
+          const originalName = String(item?.originalFilename ?? `${id}.stl`);
+          const stlName = originalName.toLowerCase().endsWith('.stl')
+            ? originalName
+            : `${originalName}.stl`;
+          const previewFile = new File([blob], stlName, { type: 'model/stl' });
+          this.previewFiles.update((prev) => ({ ...prev, [id]: previewFile }));
+          this.previewLoading.update((prev) => ({ ...prev, [id]: false }));
+        },
+        error: () => {
+          this.previewErrors.update((prev) => ({ ...prev, [id]: true }));
+          this.previewLoading.update((prev) => ({ ...prev, [id]: false }));
+        },
+      });
+    }
   }
 
   onSubmit() {
