@@ -1,4 +1,9 @@
-<div class="viewer-container" #rendererContainer>
+<div
+  class="viewer-container"
+  #rendererContainer
+  [style.height.px]="height"
+  [style.border-radius]="borderRadius"
+>
   @if (loading) {
     <div class="loading-overlay">
       <div class="spinner"></div>

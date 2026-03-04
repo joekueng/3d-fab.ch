@@ -26,6 +26,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
   @Input() file: File | null = null;
   @Input() color: string = '#facf0a'; // Default Brand Color
+  @Input() height = 300;
+  @Input() borderRadius = 'var(--radius-lg)';
 
   @ViewChild('rendererContainer', { static: true })
   rendererContainer!: ElementRef;
@@ -176,7 +178,7 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
 
         this.scene.add(this.currentMesh);
 
-        // Adjust camera to fit object
+        // Adjust camera to fit object and keep it visually centered
         const maxDim = Math.max(size.x, size.y, size.z);
         const fov = this.camera.fov * (Math.PI / 180);
 
@@ -184,7 +186,12 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
         let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
         cameraZ *= 1.72;
 
-        this.camera.position.set(cameraZ * 0.65, cameraZ * 0.95, cameraZ * 1.1);
+        this.camera.position.set(
+          cameraZ * 0.68,
+          cameraZ * 0.62,
+          cameraZ * 1.08,
+        );
+        this.controls.target.set(0, 0, 0);
         this.camera.lookAt(0, 0, 0);
         this.camera.updateProjectionMatrix();
         this.controls.update();
