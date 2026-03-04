@@ -16,7 +16,6 @@ ARG ORCA_DOWNLOAD_URL
 # Install system dependencies for OrcaSlicer (same as before)
 RUN apt-get update && apt-get install -y \
     wget \
-    p7zip-full \
     assimp-utils \
     libgl1 \
     libglib2.0-0 \
@@ -33,13 +32,13 @@ RUN set -eux; \
       wget -q "${ORCA_URL}" -O OrcaSlicer.AppImage; \
     else \
       CANDIDATES="\
-https://github.com/OrcaSlicer/OrcaSlicer/releases/download/v${ORCA_VERSION}/OrcaSlicer_Linux_AppImage_Ubuntu2404_V${ORCA_VERSION}.AppImage \
 https://github.com/OrcaSlicer/OrcaSlicer/releases/download/v${ORCA_VERSION}/OrcaSlicer_Linux_AppImage_Ubuntu2204_V${ORCA_VERSION}.AppImage \
 https://github.com/OrcaSlicer/OrcaSlicer/releases/download/v${ORCA_VERSION}/OrcaSlicer_Linux_AppImage_V${ORCA_VERSION}.AppImage \
+https://github.com/OrcaSlicer/OrcaSlicer/releases/download/v${ORCA_VERSION}/OrcaSlicer_Linux_AppImage_Ubuntu2404_V${ORCA_VERSION}.AppImage \
 https://github.com/OrcaSlicer/OrcaSlicer/releases/download/v${ORCA_VERSION}/OrcaSlicer_Linux_V${ORCA_VERSION}.AppImage \
-https://github.com/SoftFever/OrcaSlicer/releases/download/v${ORCA_VERSION}/OrcaSlicer_Linux_AppImage_Ubuntu2404_V${ORCA_VERSION}.AppImage \
 https://github.com/SoftFever/OrcaSlicer/releases/download/v${ORCA_VERSION}/OrcaSlicer_Linux_AppImage_Ubuntu2204_V${ORCA_VERSION}.AppImage \
 https://github.com/SoftFever/OrcaSlicer/releases/download/v${ORCA_VERSION}/OrcaSlicer_Linux_AppImage_V${ORCA_VERSION}.AppImage \
+https://github.com/SoftFever/OrcaSlicer/releases/download/v${ORCA_VERSION}/OrcaSlicer_Linux_AppImage_Ubuntu2404_V${ORCA_VERSION}.AppImage \
 https://github.com/SoftFever/OrcaSlicer/releases/download/v${ORCA_VERSION}/OrcaSlicer_Linux_V${ORCA_VERSION}.AppImage"; \
       ok=0; \
       for url in $CANDIDATES; do \
@@ -56,7 +55,10 @@ https://github.com/SoftFever/OrcaSlicer/releases/download/v${ORCA_VERSION}/OrcaS
         exit 1; \
       fi; \
     fi \
-    && 7z x OrcaSlicer.AppImage -o/opt/orcaslicer \
+    && chmod +x OrcaSlicer.AppImage \
+    && rm -rf /opt/orcaslicer /opt/squashfs-root \
+    && ./OrcaSlicer.AppImage --appimage-extract >/dev/null \
+    && mv /opt/squashfs-root /opt/orcaslicer \
     && chmod -R +x /opt/orcaslicer \
     && rm OrcaSlicer.AppImage
 
