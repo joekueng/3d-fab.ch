@@ -331,6 +331,31 @@ public class SlicerService {
         return convertedStlPaths;
     }
 
+    public Path convert3mfToPersistentStl(File input3mf, Path destinationStl) throws IOException {
+        Path tempDir = Files.createTempDirectory("slicer_convert_");
+        try {
+            List<String> convertedPaths = convert3mfToStlInputPaths(input3mf, tempDir);
+            if (convertedPaths.isEmpty()) {
+                throw new ModelProcessingException(
+                        "MODEL_CONVERSION_FAILED",
+                        "Unable to process this 3MF file. Try another format or contact us directly via Request Consultation."
+                );
+            }
+            Path source = Path.of(convertedPaths.get(0));
+            Path parent = destinationStl.toAbsolutePath().normalize().getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+            Files.copy(source, destinationStl, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            return destinationStl;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Interrupted during 3MF conversion", e);
+        } finally {
+            deleteRecursively(tempDir);
+        }
+    }
+
     private List<String> convert3mfToStlInputPaths(File input3mf, Path tempDir) throws IOException, InterruptedException {
         Path conversionOutputDir = tempDir.resolve("converted-from-3mf");
         Files.createDirectories(conversionOutputDir);
@@ -378,7 +403,16 @@ public class SlicerService {
         try {
             objLog = runAssimpExport(input3mfPath, conversionOutputObjPath, tempDir.resolve("assimp-convert-obj.log"));
             if (hasRenderableGeometry(convertedObj)) {
-                return List.of(convertedObj.toString());
+                Path stlFromObj = conversionOutputDir.resolve("converted-from-obj.stl");
+                runAssimpExport(
+                        convertedObj.toString(),
+                        stlFromObj.toString(),
+                        tempDir.resolve("assimp-convert-obj-to-stl.log")
+                );
+                if (hasRenderableGeometry(stlFromObj)) {
+                    return List.of(stlFromObj.toString());
+                }
+                logger.warning("Assimp OBJ->STL conversion produced empty geometry.");
             }
             logger.warning("Assimp OBJ conversion produced empty geometry.");
         } catch (IOException e) {

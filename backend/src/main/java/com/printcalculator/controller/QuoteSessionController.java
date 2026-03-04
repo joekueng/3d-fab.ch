@@ -146,6 +146,7 @@ public class QuoteSessionController {
             Files.copy(inputStream, persistentPath, StandardCopyOption.REPLACE_EXISTING);
         }
 
+        Path convertedPersistentPath = null;
         try {
             // Apply Basic/Advanced Logic
             applyPrintSettings(settings);
@@ -182,10 +183,21 @@ public class QuoteSessionController {
             if (settings.getLayerHeight() != null) processOverrides.put("layer_height", String.valueOf(settings.getLayerHeight()));
             if (settings.getInfillDensity() != null) processOverrides.put("sparse_infill_density", settings.getInfillDensity() + "%");
             if (settings.getInfillPattern() != null) processOverrides.put("sparse_infill_pattern", settings.getInfillPattern());
+
+            Path slicerInputPath = persistentPath;
+            if ("3mf".equals(ext)) {
+                String convertedFilename = UUID.randomUUID() + "-converted.stl";
+                convertedPersistentPath = sessionStorageDir.resolve(convertedFilename).normalize();
+                if (!convertedPersistentPath.startsWith(sessionStorageDir)) {
+                    throw new IOException("Invalid converted STL storage path");
+                }
+                slicerService.convert3mfToPersistentStl(persistentPath.toFile(), convertedPersistentPath);
+                slicerInputPath = convertedPersistentPath;
+            }
             
             // 3. Slice (Use persistent path)
             PrintStats stats = slicerService.slice(
-                persistentPath.toFile(), 
+                slicerInputPath.toFile(),
                 machineProfile, 
                 filamentProfile, 
                 processProfile, 
@@ -193,7 +205,7 @@ public class QuoteSessionController {
                 processOverrides
             );
 
-            Optional<ModelDimensions> modelDimensions = slicerService.inspectModelDimensions(persistentPath.toFile());
+            Optional<ModelDimensions> modelDimensions = slicerService.inspectModelDimensions(slicerInputPath.toFile());
             
             // 4. Calculate Quote
             QuoteResult result = quoteCalculator.calculate(stats, machine.getPrinterDisplayName(), selectedVariant);
@@ -216,6 +228,9 @@ public class QuoteSessionController {
             Map<String, Object> breakdown = new HashMap<>();
             breakdown.put("machine_cost", result.getTotalPrice()); // Excludes setup fee which is at session level
             breakdown.put("setup_fee", 0);
+            if (convertedPersistentPath != null) {
+                breakdown.put("convertedStoredPath", QUOTE_STORAGE_ROOT.relativize(convertedPersistentPath).toString());
+            }
             item.setPricingBreakdown(breakdown);
             
             // Dimensions for shipping/package checks are computed server-side from the uploaded model.
@@ -237,6 +252,9 @@ public class QuoteSessionController {
         } catch (Exception e) {
             // Cleanup if failed
             Files.deleteIfExists(persistentPath);
+            if (convertedPersistentPath != null) {
+                Files.deleteIfExists(convertedPersistentPath);
+            }
             throw e;
         }
     }
