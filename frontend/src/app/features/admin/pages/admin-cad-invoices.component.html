@@ -82,8 +82,15 @@
       </thead>
       <tbody>
         <tr *ngFor="let row of invoices">
-          <td [title]="row.sessionId">{{ row.sessionId | slice: 0 : 8 }}</td>
-          <td>{{ row.sourceRequestId || "-" }}</td>
+          <td [title]="row.sessionId" [appCopyOnClick]="row.sessionId">
+            {{ row.sessionId | slice: 0 : 8 }}
+          </td>
+          <td
+            [title]="row.sourceRequestId || ''"
+            [appCopyOnClick]="row.sourceRequestId"
+          >
+            {{ row.sourceRequestId || "-" }}
+          </td>
           <td>{{ row.cadHours }}</td>
           <td>{{ row.cadHourlyRateChf | currency: "CHF" }}</td>
           <td>{{ row.cadTotalChf | currency: "CHF" }}</td>
@@ -91,7 +98,11 @@
           <td>{{ row.sessionStatus }}</td>
           <td class="notes-cell" [title]="row.notes || ''">{{ row.notes || "-" }}</td>
           <td>
-            <span *ngIf="row.convertedOrderId; else noOrder">
+            <span
+              *ngIf="row.convertedOrderId; else noOrder"
+              [title]="row.convertedOrderId || ''"
+              [appCopyOnClick]="row.convertedOrderId"
+            >
               {{ row.convertedOrderId | slice: 0 : 8 }} ({{
                 row.convertedOrderStatus || "-"
               }})

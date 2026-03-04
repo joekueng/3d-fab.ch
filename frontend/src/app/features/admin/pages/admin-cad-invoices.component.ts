@@ -6,11 +6,12 @@ import {
   AdminOperationsService,
 } from '../services/admin-operations.service';
 import { AdminOrdersService } from '../services/admin-orders.service';
+import { CopyOnClickDirective } from '../../../shared/directives/copy-on-click.directive';
 
 @Component({
   selector: 'app-admin-cad-invoices',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CopyOnClickDirective],
   templateUrl: './admin-cad-invoices.component.html',
   styleUrl: './admin-cad-invoices.component.scss',
 })

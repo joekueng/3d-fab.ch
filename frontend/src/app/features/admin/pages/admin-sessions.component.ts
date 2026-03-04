@@ -5,11 +5,12 @@ import {
   AdminQuoteSession,
   AdminQuoteSessionDetail,
 } from '../services/admin-operations.service';
+import { CopyOnClickDirective } from '../../../shared/directives/copy-on-click.directive';
 
 @Component({
   selector: 'app-admin-sessions',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, CopyOnClickDirective],
   templateUrl: './admin-sessions.component.html',
   styleUrl: './admin-sessions.component.scss',
 })
@@ -133,42 +134,6 @@ export class AdminSessionsComponent implements OnInit {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     return `${hours}h ${minutes}m`;
-  }
-
-  copySessionUuid(sessionId: string): void {
-    if (!sessionId) {
-      return;
-    }
-
-    if (navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(sessionId).then(
-        () => {
-          this.errorMessage = null;
-          this.successMessage = 'UUID sessione copiato.';
-        },
-        () => {
-          this.errorMessage = 'Impossibile copiare UUID sessione.';
-        },
-      );
-      return;
-    }
-
-    // Fallback for older browsers.
-    const textarea = document.createElement('textarea');
-    textarea.value = sessionId;
-    textarea.style.position = 'fixed';
-    textarea.style.opacity = '0';
-    document.body.appendChild(textarea);
-    textarea.select();
-    try {
-      document.execCommand('copy');
-      this.errorMessage = null;
-      this.successMessage = 'UUID sessione copiato.';
-    } catch {
-      this.errorMessage = 'Impossibile copiare UUID sessione.';
-    } finally {
-      document.body.removeChild(textarea);
-    }
   }
 
   private extractErrorMessage(error: unknown, fallback: string): string {

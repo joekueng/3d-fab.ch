@@ -33,12 +33,23 @@
       <tbody>
         <ng-container *ngFor="let session of sessions">
           <tr>
-            <td [title]="session.id">{{ session.id | slice: 0 : 8 }}</td>
+            <td [title]="session.id" [appCopyOnClick]="session.id">
+              {{ session.id | slice: 0 : 8 }}
+            </td>
             <td>{{ session.createdAt | date: "short" }}</td>
             <td>{{ session.expiresAt | date: "short" }}</td>
             <td>{{ session.materialCode }}</td>
             <td>{{ session.status }}</td>
-            <td>{{ session.convertedOrderId || "-" }}</td>
+            <td
+              [title]="session.convertedOrderId || ''"
+              [appCopyOnClick]="session.convertedOrderId"
+            >
+              {{
+                session.convertedOrderId
+                  ? (session.convertedOrderId | slice: 0 : 8)
+                  : "-"
+              }}
+            </td>
             <td class="actions">
               <button
                 type="button"
@@ -46,13 +57,6 @@
                 (click)="toggleSessionDetail(session)"
               >
                 {{ isDetailOpen(session.id) ? "Nascondi" : "Vedi" }}
-              </button>
-              <button
-                type="button"
-                class="btn-secondary"
-                (click)="copySessionUuid(session.id)"
-              >
-                Copia UUID
               </button>
               <button
                 type="button"
@@ -87,7 +91,11 @@
               >
                 <div class="detail-session-id">
                   <strong>UUID sessione:</strong>
-                  <code>{{ detail.session.id }}</code>
+                  <code
+                    [title]="detail.session.id"
+                    [appCopyOnClick]="detail.session.id"
+                    >{{ detail.session.id }}</code
+                  >
                 </div>
 
                 <div class="detail-summary">
