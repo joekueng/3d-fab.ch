@@ -27,6 +27,7 @@ import java.util.UUID;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Base64;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.net.URI;
 import java.util.Locale;
@@ -36,6 +37,11 @@ import java.util.regex.Pattern;
 @RequestMapping("/api/orders")
 public class OrderController {
     private static final Pattern SAFE_EXTENSION_PATTERN = Pattern.compile("^[a-z0-9]{1,10}$");
+    private static final Set<String> PERSONAL_DATA_REDACTED_STATUSES = Set.of(
+            "IN_PRODUCTION",
+            "SHIPPED",
+            "COMPLETED"
+    );
 
     private final OrderService orderService;
     private final OrderRepository orderRepo;
@@ -292,10 +298,13 @@ public class OrderController {
             dto.setPaymentMethod(p.getMethod());
         });
 
-        dto.setCustomerEmail(order.getCustomerEmail());
-        dto.setCustomerPhone(order.getCustomerPhone());
+        boolean redactPersonalData = shouldRedactPersonalData(order.getStatus());
+        if (!redactPersonalData) {
+            dto.setCustomerEmail(order.getCustomerEmail());
+            dto.setCustomerPhone(order.getCustomerPhone());
+            dto.setBillingCustomerType(order.getBillingCustomerType());
+        }
         dto.setPreferredLanguage(order.getPreferredLanguage());
-        dto.setBillingCustomerType(order.getBillingCustomerType());
         dto.setCurrency(order.getCurrency());
         dto.setSetupCostChf(order.getSetupCostChf());
         dto.setShippingCostChf(order.getShippingCostChf());
@@ -310,30 +319,32 @@ public class OrderController {
         dto.setCreatedAt(order.getCreatedAt());
         dto.setShippingSameAsBilling(order.getShippingSameAsBilling());
 
-        AddressDto billing = new AddressDto();
-        billing.setFirstName(order.getBillingFirstName());
-        billing.setLastName(order.getBillingLastName());
-        billing.setCompanyName(order.getBillingCompanyName());
-        billing.setContactPerson(order.getBillingContactPerson());
-        billing.setAddressLine1(order.getBillingAddressLine1());
-        billing.setAddressLine2(order.getBillingAddressLine2());
-        billing.setZip(order.getBillingZip());
-        billing.setCity(order.getBillingCity());
-        billing.setCountryCode(order.getBillingCountryCode());
-        dto.setBillingAddress(billing);
+        if (!redactPersonalData) {
+            AddressDto billing = new AddressDto();
+            billing.setFirstName(order.getBillingFirstName());
+            billing.setLastName(order.getBillingLastName());
+            billing.setCompanyName(order.getBillingCompanyName());
+            billing.setContactPerson(order.getBillingContactPerson());
+            billing.setAddressLine1(order.getBillingAddressLine1());
+            billing.setAddressLine2(order.getBillingAddressLine2());
+            billing.setZip(order.getBillingZip());
+            billing.setCity(order.getBillingCity());
+            billing.setCountryCode(order.getBillingCountryCode());
+            dto.setBillingAddress(billing);
 
-        if (!order.getShippingSameAsBilling()) {
-            AddressDto shipping = new AddressDto();
-            shipping.setFirstName(order.getShippingFirstName());
-            shipping.setLastName(order.getShippingLastName());
-            shipping.setCompanyName(order.getShippingCompanyName());
-            shipping.setContactPerson(order.getShippingContactPerson());
-            shipping.setAddressLine1(order.getShippingAddressLine1());
-            shipping.setAddressLine2(order.getShippingAddressLine2());
-            shipping.setZip(order.getShippingZip());
-            shipping.setCity(order.getShippingCity());
-            shipping.setCountryCode(order.getShippingCountryCode());
-            dto.setShippingAddress(shipping);
+            if (!order.getShippingSameAsBilling()) {
+                AddressDto shipping = new AddressDto();
+                shipping.setFirstName(order.getShippingFirstName());
+                shipping.setLastName(order.getShippingLastName());
+                shipping.setCompanyName(order.getShippingCompanyName());
+                shipping.setContactPerson(order.getShippingContactPerson());
+                shipping.setAddressLine1(order.getShippingAddressLine1());
+                shipping.setAddressLine2(order.getShippingAddressLine2());
+                shipping.setZip(order.getShippingZip());
+                shipping.setCity(order.getShippingCity());
+                shipping.setCountryCode(order.getShippingCountryCode());
+                dto.setShippingAddress(shipping);
+            }
         }
 
         List<OrderItemDto> itemDtos = items.stream().map(i -> {
@@ -352,6 +363,13 @@ public class OrderController {
         dto.setItems(itemDtos);
 
         return dto;
+    }
+
+    private boolean shouldRedactPersonalData(String status) {
+        if (status == null || status.isBlank()) {
+            return false;
+        }
+        return PERSONAL_DATA_REDACTED_STATUSES.contains(status.trim().toUpperCase(Locale.ROOT));
     }
 
     private String getDisplayOrderNumber(Order order) {

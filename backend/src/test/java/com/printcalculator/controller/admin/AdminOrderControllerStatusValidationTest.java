@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ResponseStatusException;
@@ -47,6 +48,8 @@ class AdminOrderControllerStatusValidationTest {
     private InvoicePdfRenderingService invoicePdfRenderingService;
     @Mock
     private QrBillService qrBillService;
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     private AdminOrderController controller;
 
@@ -59,7 +62,8 @@ class AdminOrderControllerStatusValidationTest {
                 paymentService,
                 storageService,
                 invoicePdfRenderingService,
-                qrBillService
+                qrBillService,
+                eventPublisher
         );
     }
 
@@ -92,6 +96,7 @@ class AdminOrderControllerStatusValidationTest {
         order.setStatus("PENDING_PAYMENT");
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(orderItemRepository.findByOrder_Id(orderId)).thenReturn(List.of());
         when(paymentRepository.findByOrder_Id(orderId)).thenReturn(Optional.empty());
 
