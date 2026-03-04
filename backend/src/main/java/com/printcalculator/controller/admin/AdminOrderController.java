@@ -8,6 +8,7 @@ import com.printcalculator.entity.Order;
 import com.printcalculator.entity.OrderItem;
 import com.printcalculator.entity.Payment;
 import com.printcalculator.entity.QuoteSession;
+import com.printcalculator.event.OrderShippedEvent;
 import com.printcalculator.repository.OrderItemRepository;
 import com.printcalculator.repository.OrderRepository;
 import com.printcalculator.repository.PaymentRepository;
@@ -15,6 +16,7 @@ import com.printcalculator.service.InvoicePdfRenderingService;
 import com.printcalculator.service.PaymentService;
 import com.printcalculator.service.QrBillService;
 import com.printcalculator.service.StorageService;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -61,6 +63,7 @@ public class AdminOrderController {
     private final StorageService storageService;
     private final InvoicePdfRenderingService invoiceService;
     private final QrBillService qrBillService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public AdminOrderController(
             OrderRepository orderRepo,
@@ -69,7 +72,8 @@ public class AdminOrderController {
             PaymentService paymentService,
             StorageService storageService,
             InvoicePdfRenderingService invoiceService,
-            QrBillService qrBillService
+            QrBillService qrBillService,
+            ApplicationEventPublisher eventPublisher
     ) {
         this.orderRepo = orderRepo;
         this.orderItemRepo = orderItemRepo;
@@ -78,6 +82,7 @@ public class AdminOrderController {
         this.storageService = storageService;
         this.invoiceService = invoiceService;
         this.qrBillService = qrBillService;
+        this.eventPublisher = eventPublisher;
     }
 
     @GetMapping
@@ -124,10 +129,16 @@ public class AdminOrderController {
                     "Invalid order status. Allowed values: " + String.join(", ", ALLOWED_ORDER_STATUSES)
             );
         }
+        String previousStatus = order.getStatus();
         order.setStatus(normalizedStatus);
-        orderRepo.save(order);
+        Order savedOrder = orderRepo.save(order);
 
-        return ResponseEntity.ok(toOrderDto(order));
+        // Notify customer only on transition to SHIPPED.
+        if (!"SHIPPED".equals(previousStatus) && "SHIPPED".equals(normalizedStatus)) {
+            eventPublisher.publishEvent(new OrderShippedEvent(this, savedOrder));
+        }
+
+        return ResponseEntity.ok(toOrderDto(savedOrder));
     }
 
     @GetMapping("/{orderId}/items/{orderItemId}/file")

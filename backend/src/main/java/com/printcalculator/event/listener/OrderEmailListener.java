@@ -4,6 +4,7 @@ import com.printcalculator.entity.Order;
 import com.printcalculator.entity.OrderItem;
 import com.printcalculator.entity.Payment;
 import com.printcalculator.event.OrderCreatedEvent;
+import com.printcalculator.event.OrderShippedEvent;
 import com.printcalculator.event.PaymentConfirmedEvent;
 import com.printcalculator.event.PaymentReportedEvent;
 import com.printcalculator.repository.OrderItemRepository;
@@ -95,6 +96,19 @@ public class OrderEmailListener {
         }
     }
 
+    @Async
+    @EventListener
+    public void handleOrderShippedEvent(OrderShippedEvent event) {
+        Order order = event.getOrder();
+        log.info("Processing OrderShippedEvent for order id: {}", order.getId());
+
+        try {
+            sendOrderShippedEmail(order);
+        } catch (Exception e) {
+            log.error("Failed to send order shipped email for order id: {}", order.getId(), e);
+        }
+    }
+
     private void sendCustomerConfirmationEmail(Order order) {
         String language = resolveLanguage(order.getPreferredLanguage());
         String orderNumber = getDisplayOrderNumber(order);
@@ -150,6 +164,21 @@ public class OrderEmailListener {
                 templateData,
                 buildPaidInvoiceAttachmentName(language, orderNumber),
                 pdf
+        );
+    }
+
+    private void sendOrderShippedEmail(Order order) {
+        String language = resolveLanguage(order.getPreferredLanguage());
+        String orderNumber = getDisplayOrderNumber(order);
+
+        Map<String, Object> templateData = buildBaseTemplateData(order, language);
+        String subject = applyOrderShippedTexts(templateData, language, orderNumber);
+
+        emailNotificationService.sendEmail(
+                order.getCustomer().getEmail(),
+                subject,
+                "order-shipped",
+                templateData
         );
     }
 
@@ -377,6 +406,63 @@ public class OrderEmailListener {
                 templateData.put("labelOrderNumber", "Numero ordine");
                 templateData.put("labelTotal", "Totale");
                 yield "Pagamento confermato (Ordine #" + orderNumber + ") - 3D-Fab";
+            }
+        };
+    }
+
+    private String applyOrderShippedTexts(Map<String, Object> templateData, String language, String orderNumber) {
+        return switch (language) {
+            case "en" -> {
+                templateData.put("emailTitle", "Order Shipped");
+                templateData.put("headlineText", "Your order #" + orderNumber + " has been shipped");
+                templateData.put("greetingText", "Hi " + templateData.get("customerName") + ",");
+                templateData.put("introText", "Good news: your package has left our workshop and is on its way.");
+                templateData.put("statusText", "Current status: Shipped.");
+                templateData.put("orderDetailsCtaText", "View order status");
+                templateData.put("supportText", "If you need assistance, reply to this email.");
+                templateData.put("footerText", "Automated message from 3D-Fab.");
+                templateData.put("labelOrderNumber", "Order number");
+                templateData.put("labelTotal", "Total");
+                yield "Your order has been shipped (Order #" + orderNumber + ") - 3D-Fab";
+            }
+            case "de" -> {
+                templateData.put("emailTitle", "Bestellung versandt");
+                templateData.put("headlineText", "Ihre Bestellung #" + orderNumber + " wurde versandt");
+                templateData.put("greetingText", "Hallo " + templateData.get("customerName") + ",");
+                templateData.put("introText", "Gute Nachricht: Ihr Paket hat unsere Werkstatt verlassen und ist unterwegs.");
+                templateData.put("statusText", "Aktueller Status: Versandt.");
+                templateData.put("orderDetailsCtaText", "Bestellstatus ansehen");
+                templateData.put("supportText", "Wenn Sie Hilfe benoetigen, antworten Sie auf diese E-Mail.");
+                templateData.put("footerText", "Automatische Nachricht von 3D-Fab.");
+                templateData.put("labelOrderNumber", "Bestellnummer");
+                templateData.put("labelTotal", "Gesamtbetrag");
+                yield "Ihre Bestellung wurde versandt (Bestellung #" + orderNumber + ") - 3D-Fab";
+            }
+            case "fr" -> {
+                templateData.put("emailTitle", "Commande expediee");
+                templateData.put("headlineText", "Votre commande #" + orderNumber + " a ete expediee");
+                templateData.put("greetingText", "Bonjour " + templateData.get("customerName") + ",");
+                templateData.put("introText", "Bonne nouvelle: votre colis a quitte notre atelier et est en route.");
+                templateData.put("statusText", "Statut actuel: Expediee.");
+                templateData.put("orderDetailsCtaText", "Voir le statut de la commande");
+                templateData.put("supportText", "Si vous avez besoin d'aide, repondez a cet email.");
+                templateData.put("footerText", "Message automatique de 3D-Fab.");
+                templateData.put("labelOrderNumber", "Numero de commande");
+                templateData.put("labelTotal", "Total");
+                yield "Votre commande a ete expediee (Commande #" + orderNumber + ") - 3D-Fab";
+            }
+            default -> {
+                templateData.put("emailTitle", "Ordine spedito");
+                templateData.put("headlineText", "Il tuo ordine #" + orderNumber + " e' stato spedito");
+                templateData.put("greetingText", "Ciao " + templateData.get("customerName") + ",");
+                templateData.put("introText", "Buone notizie: il tuo pacco e' partito dal nostro laboratorio ed e' in viaggio.");
+                templateData.put("statusText", "Stato attuale: spedito.");
+                templateData.put("orderDetailsCtaText", "Visualizza stato ordine");
+                templateData.put("supportText", "Se hai bisogno di assistenza, rispondi a questa email.");
+                templateData.put("footerText", "Messaggio automatico di 3D-Fab.");
+                templateData.put("labelOrderNumber", "Numero ordine");
+                templateData.put("labelTotal", "Totale");
+                yield "Il tuo ordine e' stato spedito (Ordine #" + orderNumber + ") - 3D-Fab";
             }
         };
     }
