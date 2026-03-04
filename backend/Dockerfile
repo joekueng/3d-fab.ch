@@ -29,10 +29,33 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /opt
 RUN set -eux; \
     ORCA_URL="${ORCA_DOWNLOAD_URL:-}"; \
-    if [ -z "${ORCA_URL}" ]; then \
-      ORCA_URL="https://github.com/OrcaSlicer/OrcaSlicer/releases/download/v${ORCA_VERSION}/OrcaSlicer_Linux_V${ORCA_VERSION}.AppImage"; \
-    fi; \
-    wget -q "${ORCA_URL}" -O OrcaSlicer.AppImage \
+    if [ -n "${ORCA_URL}" ]; then \
+      wget -q "${ORCA_URL}" -O OrcaSlicer.AppImage; \
+    else \
+      CANDIDATES="\
+https://github.com/OrcaSlicer/OrcaSlicer/releases/download/v${ORCA_VERSION}/OrcaSlicer_Linux_AppImage_Ubuntu2404_V${ORCA_VERSION}.AppImage \
+https://github.com/OrcaSlicer/OrcaSlicer/releases/download/v${ORCA_VERSION}/OrcaSlicer_Linux_AppImage_Ubuntu2204_V${ORCA_VERSION}.AppImage \
+https://github.com/OrcaSlicer/OrcaSlicer/releases/download/v${ORCA_VERSION}/OrcaSlicer_Linux_AppImage_V${ORCA_VERSION}.AppImage \
+https://github.com/OrcaSlicer/OrcaSlicer/releases/download/v${ORCA_VERSION}/OrcaSlicer_Linux_V${ORCA_VERSION}.AppImage \
+https://github.com/SoftFever/OrcaSlicer/releases/download/v${ORCA_VERSION}/OrcaSlicer_Linux_AppImage_Ubuntu2404_V${ORCA_VERSION}.AppImage \
+https://github.com/SoftFever/OrcaSlicer/releases/download/v${ORCA_VERSION}/OrcaSlicer_Linux_AppImage_Ubuntu2204_V${ORCA_VERSION}.AppImage \
+https://github.com/SoftFever/OrcaSlicer/releases/download/v${ORCA_VERSION}/OrcaSlicer_Linux_AppImage_V${ORCA_VERSION}.AppImage \
+https://github.com/SoftFever/OrcaSlicer/releases/download/v${ORCA_VERSION}/OrcaSlicer_Linux_V${ORCA_VERSION}.AppImage"; \
+      ok=0; \
+      for url in $CANDIDATES; do \
+        if wget -q --spider "$url"; then \
+          wget -q "$url" -O OrcaSlicer.AppImage; \
+          ok=1; \
+          break; \
+        fi; \
+      done; \
+      if [ "$ok" -ne 1 ]; then \
+        echo "Failed to find OrcaSlicer AppImage for version ${ORCA_VERSION}" >&2; \
+        echo "Tried URLs:" >&2; \
+        for url in $CANDIDATES; do echo " - $url" >&2; done; \
+        exit 1; \
+      fi; \
+    fi \
     && 7z x OrcaSlicer.AppImage -o/opt/orcaslicer \
     && chmod -R +x /opt/orcaslicer \
     && rm OrcaSlicer.AppImage
