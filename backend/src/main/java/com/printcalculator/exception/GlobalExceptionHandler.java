@@ -17,6 +17,20 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(ModelProcessingException.class)
+    public ResponseEntity<Object> handleModelProcessingException(
+            ModelProcessingException ex, WebRequest request) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.UNPROCESSABLE_ENTITY.value());
+        body.put("error", "Unprocessable Entity");
+        body.put("code", ex.getCode());
+        body.put("message", ex.getMessage());
+        body.put("path", extractPath(request));
+
+        return new ResponseEntity<>(body, HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
     @ExceptionHandler(VirusDetectedException.class)
     public ResponseEntity<Object> handleVirusDetectedException(
             VirusDetectedException ex, WebRequest request) {
@@ -57,5 +71,13 @@ public class GlobalExceptionHandler {
         body.put("error", "Bad Request");
 
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
+    private String extractPath(WebRequest request) {
+        String raw = request.getDescription(false);
+        if (raw == null) {
+            return "";
+        }
+        return raw.startsWith("uri=") ? raw.substring(4) : raw;
     }
 }

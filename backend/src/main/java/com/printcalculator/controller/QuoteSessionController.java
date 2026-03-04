@@ -120,7 +120,7 @@ public class QuoteSessionController {
 
     // Helper to add item
     private QuoteLineItem addItemToSession(QuoteSession session, MultipartFile file, com.printcalculator.dto.PrintSettingsDto settings) throws IOException {
-        if (file.isEmpty()) throw new IOException("File is empty");
+        if (file.isEmpty()) throw new IllegalArgumentException("File is empty");
 
         // Scan for virus
         clamAVService.scan(file.getInputStream());

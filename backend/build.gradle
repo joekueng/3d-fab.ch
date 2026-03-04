@@ -42,6 +42,15 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'net.codecrete.qrbill:qrbill-generator:3.4.0'
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
+	implementation platform('org.lwjgl:lwjgl-bom:3.3.4')
+	implementation 'org.lwjgl:lwjgl'
+	implementation 'org.lwjgl:lwjgl-assimp'
+	runtimeOnly 'org.lwjgl:lwjgl::natives-linux'
+	runtimeOnly 'org.lwjgl:lwjgl::natives-macos'
+	runtimeOnly 'org.lwjgl:lwjgl::natives-macos-arm64'
+	runtimeOnly 'org.lwjgl:lwjgl-assimp::natives-linux'
+	runtimeOnly 'org.lwjgl:lwjgl-assimp::natives-macos'
+	runtimeOnly 'org.lwjgl:lwjgl-assimp::natives-macos-arm64'
 
 
 
