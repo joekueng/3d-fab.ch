@@ -166,7 +166,9 @@
             (click)="updatePaymentMethod()"
             [disabled]="confirmingPayment"
           >
-            {{ confirmingPayment ? "Salvataggio..." : "Cambia metodo pagamento" }}
+            {{
+              confirmingPayment ? "Salvataggio..." : "Cambia metodo pagamento"
+            }}
           </button>
         </div>
       </div>
