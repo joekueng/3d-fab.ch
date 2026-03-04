@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '../services/language.service';
-import {routes} from '../../app.routes';
+import { routes } from '../../app.routes';
 
 @Component({
   selector: 'app-navbar',
