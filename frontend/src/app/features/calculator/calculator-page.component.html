@@ -4,13 +4,6 @@
 
   @if (error()) {
     <app-alert type="error">{{ errorKey() | translate }}</app-alert>
-    @if (isZeroQuoteError()) {
-      <div class="error-action">
-        <app-button variant="outline" (click)="onConsult()">
-          {{ "QUOTE.CONSULT" | translate }}
-        </app-button>
-      </div>
-    }
   }
 </div>
 
