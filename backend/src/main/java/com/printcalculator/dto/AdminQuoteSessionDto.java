@@ -1,6 +1,7 @@
 package com.printcalculator.dto;
 
 import java.time.OffsetDateTime;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 public class AdminQuoteSessionDto {
@@ -10,6 +11,10 @@ public class AdminQuoteSessionDto {
     private OffsetDateTime createdAt;
     private OffsetDateTime expiresAt;
     private UUID convertedOrderId;
+    private UUID sourceRequestId;
+    private BigDecimal cadHours;
+    private BigDecimal cadHourlyRateChf;
+    private BigDecimal cadTotalChf;
 
     public UUID getId() {
         return id;
@@ -57,5 +62,37 @@ public class AdminQuoteSessionDto {
 
     public void setConvertedOrderId(UUID convertedOrderId) {
         this.convertedOrderId = convertedOrderId;
+    }
+
+    public UUID getSourceRequestId() {
+        return sourceRequestId;
+    }
+
+    public void setSourceRequestId(UUID sourceRequestId) {
+        this.sourceRequestId = sourceRequestId;
+    }
+
+    public BigDecimal getCadHours() {
+        return cadHours;
+    }
+
+    public void setCadHours(BigDecimal cadHours) {
+        this.cadHours = cadHours;
+    }
+
+    public BigDecimal getCadHourlyRateChf() {
+        return cadHourlyRateChf;
+    }
+
+    public void setCadHourlyRateChf(BigDecimal cadHourlyRateChf) {
+        this.cadHourlyRateChf = cadHourlyRateChf;
+    }
+
+    public BigDecimal getCadTotalChf() {
+        return cadTotalChf;
+    }
+
+    public void setCadTotalChf(BigDecimal cadTotalChf) {
+        this.cadTotalChf = cadTotalChf;
     }
 }

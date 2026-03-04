@@ -5,6 +5,7 @@ import {
   signal,
   OnInit,
   inject,
+  effect,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -57,6 +58,7 @@ interface FormItem {
 })
 export class UploadFormComponent implements OnInit {
   mode = input<'easy' | 'advanced'>('easy');
+  lockedSettings = input<boolean>(false);
   loading = input<boolean>(false);
   uploadProgress = input<number>(0);
   submitRequest = output<QuoteRequest>();
@@ -138,6 +140,10 @@ export class UploadFormComponent implements OnInit {
     this.form.get('quality')?.valueChanges.subscribe((quality) => {
       if (this.mode() !== 'easy' || this.isPatchingSettings) return;
       this.applyAdvancedPresetFromQuality(quality);
+    });
+
+    effect(() => {
+      this.applySettingsLock(this.lockedSettings());
     });
   }
 
@@ -520,7 +526,7 @@ export class UploadFormComponent implements OnInit {
         this.form.value,
       );
       this.submitRequest.emit({
-        ...this.form.value,
+        ...this.form.getRawValue(),
         items: this.items(), // Pass the items array explicitly AFTER form value to prevent overwrite
         mode: this.mode(),
       });
@@ -553,5 +559,27 @@ export class UploadFormComponent implements OnInit {
 
   private normalizeFileName(fileName: string): string {
     return (fileName || '').split(/[\\/]/).pop()?.trim().toLowerCase() ?? '';
+  }
+
+  private applySettingsLock(locked: boolean): void {
+    const controlsToLock = [
+      'material',
+      'quality',
+      'nozzleDiameter',
+      'infillPattern',
+      'layerHeight',
+      'infillDensity',
+      'supportEnabled',
+    ];
+
+    controlsToLock.forEach((name) => {
+      const control = this.form.get(name);
+      if (!control) return;
+      if (locked) {
+        control.disable({ emitEvent: false });
+      } else {
+        control.enable({ emitEvent: false });
+      }
+    });
   }
 }

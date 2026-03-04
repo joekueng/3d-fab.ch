@@ -301,6 +301,11 @@ public class OrderController {
         dto.setShippingCostChf(order.getShippingCostChf());
         dto.setDiscountChf(order.getDiscountChf());
         dto.setSubtotalChf(order.getSubtotalChf());
+        dto.setIsCadOrder(order.getIsCadOrder());
+        dto.setSourceRequestId(order.getSourceRequestId());
+        dto.setCadHours(order.getCadHours());
+        dto.setCadHourlyRateChf(order.getCadHourlyRateChf());
+        dto.setCadTotalChf(order.getCadTotalChf());
         dto.setTotalChf(order.getTotalChf());
         dto.setCreatedAt(order.getCreatedAt());
         dto.setShippingSameAsBilling(order.getShippingSameAsBilling());

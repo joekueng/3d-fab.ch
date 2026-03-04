@@ -28,6 +28,12 @@
           : { cost: (result().setupCost | currency: result().currency) }
     }}</small
     ><br />
+    @if ((result().cadTotal || 0) > 0) {
+      <small class="shipping-note" style="color: #666">
+        Servizio CAD: {{ result().cadTotal | currency: result().currency }}
+      </small>
+      <br />
+    }
     <small class="shipping-note" style="color: #666">{{
       "CALC.SHIPPING_NOTE" | translate
     }}</small>

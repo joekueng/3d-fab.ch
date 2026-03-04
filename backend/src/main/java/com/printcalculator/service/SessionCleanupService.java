@@ -45,9 +45,8 @@ public class SessionCleanupService {
             // "rimangono in memoria... cancella quelle vecchie di 7 giorni".
             // Implementation plan said: status != 'ORDERED'.
             
-            // User specified statuses: ACTIVE, EXPIRED, CONVERTED.
-            // We should NOT delete sessions that have been converted to an order.
-            if ("CONVERTED".equals(session.getStatus())) {
+            // CAD_ACTIVE sessions are managed manually from back-office and must be preserved.
+            if ("CONVERTED".equals(session.getStatus()) || "CAD_ACTIVE".equals(session.getStatus())) {
                 continue;
             }
 

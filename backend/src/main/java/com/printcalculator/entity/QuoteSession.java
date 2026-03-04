@@ -61,6 +61,15 @@ public class QuoteSession {
     @Column(name = "converted_order_id")
     private UUID convertedOrderId;
 
+    @Column(name = "source_request_id")
+    private UUID sourceRequestId;
+
+    @Column(name = "cad_hours", precision = 10, scale = 2)
+    private BigDecimal cadHours;
+
+    @Column(name = "cad_hourly_rate_chf", precision = 10, scale = 2)
+    private BigDecimal cadHourlyRateChf;
+
     public UUID getId() {
         return id;
     }
@@ -171,6 +180,30 @@ public class QuoteSession {
 
     public void setConvertedOrderId(UUID convertedOrderId) {
         this.convertedOrderId = convertedOrderId;
+    }
+
+    public UUID getSourceRequestId() {
+        return sourceRequestId;
+    }
+
+    public void setSourceRequestId(UUID sourceRequestId) {
+        this.sourceRequestId = sourceRequestId;
+    }
+
+    public BigDecimal getCadHours() {
+        return cadHours;
+    }
+
+    public void setCadHours(BigDecimal cadHours) {
+        this.cadHours = cadHours;
+    }
+
+    public BigDecimal getCadHourlyRateChf() {
+        return cadHourlyRateChf;
+    }
+
+    public void setCadHourlyRateChf(BigDecimal cadHourlyRateChf) {
+        this.cadHourlyRateChf = cadHourlyRateChf;
     }
 
 }

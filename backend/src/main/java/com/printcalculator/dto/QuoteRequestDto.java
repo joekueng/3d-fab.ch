@@ -7,6 +7,7 @@ import jakarta.validation.constraints.AssertTrue;
 public class QuoteRequestDto {
     private String requestType; // "PRINT_SERVICE" or "DESIGN_SERVICE"
     private String customerType; // "PRIVATE" or "BUSINESS"
+    private String language; // "it" | "en" | "de" | "fr"
     private String email;
     private String phone;
     private String name;

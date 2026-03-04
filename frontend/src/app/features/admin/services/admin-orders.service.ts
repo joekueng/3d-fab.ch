@@ -24,6 +24,11 @@ export interface AdminOrder {
   customerEmail: string;
   totalChf: number;
   createdAt: string;
+  isCadOrder?: boolean;
+  sourceRequestId?: string;
+  cadHours?: number;
+  cadHourlyRateChf?: number;
+  cadTotalChf?: number;
   printMaterialCode?: string;
   printNozzleDiameterMm?: number;
   printLayerHeightMm?: number;

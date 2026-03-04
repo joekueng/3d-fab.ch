@@ -7,11 +7,12 @@ import {
   AdminContactRequestDetail,
   AdminOperationsService,
 } from '../services/admin-operations.service';
+import { CopyOnClickDirective } from '../../../shared/directives/copy-on-click.directive';
 
 @Component({
   selector: 'app-admin-contact-requests',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CopyOnClickDirective],
   templateUrl: './admin-contact-requests.component.html',
   styleUrl: './admin-contact-requests.component.scss',
 })

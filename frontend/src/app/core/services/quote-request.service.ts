@@ -6,6 +6,7 @@ import { environment } from '../../../environments/environment';
 export interface QuoteRequestDto {
   requestType: string;
   customerType: string;
+  language?: 'it' | 'en' | 'de' | 'fr';
   email: string;
   phone?: string;
   name?: string;
