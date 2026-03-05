@@ -571,16 +571,22 @@ export class CalculatorPageComponent implements OnInit {
       a.mode === b.mode &&
       a.material === this.normalizeString(b.material) &&
       a.quality === this.normalizeString(b.quality) &&
-      Math.abs(a.nozzleDiameter - this.normalizeNumber(b.nozzleDiameter, 0.4, 2)) < 0.0001 &&
-      Math.abs(a.layerHeight - this.normalizeNumber(b.layerHeight, 0.2, 3)) < 0.0001 &&
-      Math.abs(a.infillDensity - this.normalizeNumber(b.infillDensity, 20, 2)) < 0.0001 &&
+      Math.abs(
+        a.nozzleDiameter - this.normalizeNumber(b.nozzleDiameter, 0.4, 2),
+      ) < 0.0001 &&
+      Math.abs(a.layerHeight - this.normalizeNumber(b.layerHeight, 0.2, 3)) <
+        0.0001 &&
+      Math.abs(a.infillDensity - this.normalizeNumber(b.infillDensity, 20, 2)) <
+        0.0001 &&
       a.infillPattern === this.normalizeString(b.infillPattern) &&
       a.supportEnabled === Boolean(b.supportEnabled)
     );
   }
 
   private normalizeString(value: string): string {
-    return String(value || '').trim().toLowerCase();
+    return String(value || '')
+      .trim()
+      .toLowerCase();
   }
 
   private normalizeNumber(

@@ -286,7 +286,8 @@ export class UploadFormComponent implements OnInit {
       );
       const anyPla = this.materials().find(
         (m) =>
-          typeof m.value === 'string' && m.value.toUpperCase().startsWith('PLA'),
+          typeof m.value === 'string' &&
+          m.value.toUpperCase().startsWith('PLA'),
       );
       const preferredMaterial = exactPla ?? anyPla ?? this.materials()[0];
       this.form.get('material')?.setValue(preferredMaterial.value);

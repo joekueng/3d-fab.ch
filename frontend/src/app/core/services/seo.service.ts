@@ -1,11 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { Inject, Injectable } from '@angular/core';
 import { Title, Meta } from '@angular/platform-browser';
-import {
-  ActivatedRouteSnapshot,
-  NavigationEnd,
-  Router,
-} from '@angular/router';
+import { ActivatedRouteSnapshot, NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 
 @Injectable({
@@ -25,7 +21,11 @@ export class SeoService {
   ) {
     this.applyRouteSeo(this.router.routerState.snapshot.root);
     this.router.events
-      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+      .pipe(
+        filter(
+          (event): event is NavigationEnd => event instanceof NavigationEnd,
+        ),
+      )
       .subscribe(() => {
         this.applyRouteSeo(this.router.routerState.snapshot.root);
       });
@@ -56,7 +56,9 @@ export class SeoService {
     this.updateLangAndAlternates(cleanPath);
   }
 
-  private getMergedRouteData(snapshot: ActivatedRouteSnapshot): Record<string, unknown> {
+  private getMergedRouteData(
+    snapshot: ActivatedRouteSnapshot,
+  ): Record<string, unknown> {
     const merged: Record<string, unknown> = {};
     let cursor: ActivatedRouteSnapshot | null = snapshot;
     while (cursor) {
@@ -90,10 +92,13 @@ export class SeoService {
   private updateLangAndAlternates(path: string): void {
     const segments = path.split('/').filter(Boolean);
     const firstSegment = segments[0]?.toLowerCase();
-    const hasLang = Boolean(firstSegment && this.supportedLangs.has(firstSegment));
+    const hasLang = Boolean(
+      firstSegment && this.supportedLangs.has(firstSegment),
+    );
     const lang = hasLang ? firstSegment : 'it';
     const suffixSegments = hasLang ? segments.slice(1) : segments;
-    const suffix = suffixSegments.length > 0 ? `/${suffixSegments.join('/')}` : '';
+    const suffix =
+      suffixSegments.length > 0 ? `/${suffixSegments.join('/')}` : '';
 
     this.document.documentElement.lang = lang;
 
@@ -102,7 +107,10 @@ export class SeoService {
       .forEach((node) => node.remove());
 
     for (const alt of ['it', 'en', 'de', 'fr']) {
-      this.appendAlternateLink(alt, `${this.document.location.origin}/${alt}${suffix}`);
+      this.appendAlternateLink(
+        alt,
+        `${this.document.location.origin}/${alt}${suffix}`,
+      );
     }
     this.appendAlternateLink(
       'x-default',
