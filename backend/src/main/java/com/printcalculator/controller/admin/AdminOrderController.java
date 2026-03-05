@@ -18,6 +18,7 @@ import com.printcalculator.service.payment.QrBillService;
 import com.printcalculator.service.storage.StorageService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -32,8 +33,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -46,6 +50,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 @RequestMapping("/api/admin/orders")
 @Transactional(readOnly = true)
 public class AdminOrderController {
+    private static final Path QUOTE_STORAGE_ROOT = Paths.get("storage_quotes").toAbsolutePath().normalize();
     private static final List<String> ALLOWED_ORDER_STATUSES = List.of(
             "PENDING_PAYMENT",
             "PAID",
@@ -58,6 +63,7 @@ public class AdminOrderController {
     private final OrderRepository orderRepo;
     private final OrderItemRepository orderItemRepo;
     private final PaymentRepository paymentRepo;
+    private final QuoteLineItemRepository quoteLineItemRepo;
     private final PaymentService paymentService;
     private final StorageService storageService;
     private final InvoicePdfRenderingService invoiceService;
@@ -68,6 +74,7 @@ public class AdminOrderController {
             OrderRepository orderRepo,
             OrderItemRepository orderItemRepo,
             PaymentRepository paymentRepo,
+            QuoteLineItemRepository quoteLineItemRepo,
             PaymentService paymentService,
             StorageService storageService,
             InvoicePdfRenderingService invoiceService,
@@ -77,6 +84,7 @@ public class AdminOrderController {
         this.orderRepo = orderRepo;
         this.orderItemRepo = orderItemRepo;
         this.paymentRepo = paymentRepo;
+        this.quoteLineItemRepo = quoteLineItemRepo;
         this.paymentService = paymentService;
         this.storageService = storageService;
         this.invoiceService = invoiceService;
@@ -277,12 +285,6 @@ public class AdminOrderController {
             idto.setOriginalFilename(i.getOriginalFilename());
             idto.setMaterialCode(i.getMaterialCode());
             idto.setColorCode(i.getColorCode());
-            idto.setQuality(i.getQuality());
-            idto.setNozzleDiameterMm(i.getNozzleDiameterMm());
-            idto.setLayerHeightMm(i.getLayerHeightMm());
-            idto.setInfillPercent(i.getInfillPercent());
-            idto.setInfillPattern(i.getInfillPattern());
-            idto.setSupportsEnabled(i.getSupportsEnabled());
             idto.setQuantity(i.getQuantity());
             idto.setPrintTimeSeconds(i.getPrintTimeSeconds());
             idto.setMaterialGrams(i.getMaterialGrams());
@@ -340,6 +342,98 @@ public class AdminOrderController {
                 return null;
             }
             return candidate;
+        } catch (InvalidPathException e) {
+            return null;
+        }
+    }
+
+    private Resource loadOrderItemResourceWithRecovery(OrderItem item, Path safeRelativePath) {
+        try {
+            return storageService.loadAsResource(safeRelativePath);
+        } catch (Exception primaryFailure) {
+            Path sourceQuotePath = resolveFallbackQuoteItemPath(item);
+            if (sourceQuotePath == null) {
+                throw new ResponseStatusException(NOT_FOUND, "File not available");
+            }
+            try {
+                storageService.store(sourceQuotePath, safeRelativePath);
+                return storageService.loadAsResource(safeRelativePath);
+            } catch (Exception copyFailure) {
+                try {
+                    Resource quoteResource = new UrlResource(sourceQuotePath.toUri());
+                    if (quoteResource.exists() || quoteResource.isReadable()) {
+                        return quoteResource;
+                    }
+                } catch (Exception ignored) {
+                    // fall through to 404
+                }
+                throw new ResponseStatusException(NOT_FOUND, "File not available");
+            }
+        }
+    }
+
+    private Path resolveFallbackQuoteItemPath(OrderItem orderItem) {
+        Order order = orderItem.getOrder();
+        QuoteSession sourceSession = order != null ? order.getSourceQuoteSession() : null;
+        UUID sourceSessionId = sourceSession != null ? sourceSession.getId() : null;
+        if (sourceSessionId == null) {
+            return null;
+        }
+
+        String targetFilename = normalizeFilename(orderItem.getOriginalFilename());
+        if (targetFilename == null) {
+            return null;
+        }
+
+        return quoteLineItemRepo.findByQuoteSessionId(sourceSessionId).stream()
+                .filter(q -> targetFilename.equals(normalizeFilename(q.getOriginalFilename())))
+                .sorted(Comparator.comparingInt((QuoteLineItem q) -> scoreQuoteMatch(orderItem, q)).reversed())
+                .map(q -> resolveStoredQuotePath(q.getStoredPath(), sourceSessionId))
+                .filter(path -> path != null && Files.exists(path))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private int scoreQuoteMatch(OrderItem orderItem, QuoteLineItem quoteItem) {
+        int score = 0;
+        if (orderItem.getQuantity() != null && orderItem.getQuantity().equals(quoteItem.getQuantity())) {
+            score += 4;
+        }
+        if (orderItem.getPrintTimeSeconds() != null && orderItem.getPrintTimeSeconds().equals(quoteItem.getPrintTimeSeconds())) {
+            score += 3;
+        }
+        if (orderItem.getMaterialCode() != null
+                && quoteItem.getMaterialCode() != null
+                && orderItem.getMaterialCode().equalsIgnoreCase(quoteItem.getMaterialCode())) {
+            score += 3;
+        }
+        if (orderItem.getMaterialGrams() != null
+                && quoteItem.getMaterialGrams() != null
+                && orderItem.getMaterialGrams().compareTo(quoteItem.getMaterialGrams()) == 0) {
+            score += 2;
+        }
+        return score;
+    }
+
+    private String normalizeFilename(String filename) {
+        if (filename == null || filename.isBlank()) {
+            return null;
+        }
+        return filename.trim();
+    }
+
+    private Path resolveStoredQuotePath(String storedPath, UUID expectedSessionId) {
+        if (storedPath == null || storedPath.isBlank()) {
+            return null;
+        }
+        try {
+            Path raw = Path.of(storedPath).normalize();
+            Path resolved = raw.isAbsolute() ? raw : QUOTE_STORAGE_ROOT.resolve(raw).normalize();
+            Path expectedSessionRoot = QUOTE_STORAGE_ROOT.resolve(expectedSessionId.toString()).normalize();
+            if (!resolved.startsWith(expectedSessionRoot)) {
+                return null;
+            }
+            return resolved;
         } catch (InvalidPathException e) {
             return null;
         }

@@ -13,6 +13,7 @@ services:
       - CLAMAV_HOST=${CLAMAV_HOST}
       - CLAMAV_PORT=${CLAMAV_PORT}
       - CLAMAV_ENABLED=${CLAMAV_ENABLED}
+      - TWINT_PAYMENT_URL=${TWINT_PAYMENT_URL:-}
       - MAIL_HOST=${MAIL_HOST:-mail.infomaniak.com}
       - MAIL_PORT=${MAIL_PORT:-587}
       - MAIL_USERNAME=${MAIL_USERNAME:-info@3d-fab.ch}
