@@ -184,3 +184,14 @@
     white-space: pre-wrap; /* Preserve line breaks */
   }
 }
+
+.recalc-banner {
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-4);
+  padding: var(--space-3);
+  border: 1px solid #f0c95a;
+  background: #fff8e1;
+  border-radius: var(--radius-md);
+  color: #6f5b1a;
+  font-size: 0.9rem;
+}

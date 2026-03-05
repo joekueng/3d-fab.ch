@@ -1,4 +1,4 @@
-package com.printcalculator.service;
+package com.printcalculator.service.storage;
 
 import com.printcalculator.exception.VirusDetectedException;
 import org.slf4j.Logger;

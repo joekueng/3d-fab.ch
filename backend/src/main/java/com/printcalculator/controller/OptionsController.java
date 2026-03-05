@@ -3,17 +3,16 @@ package com.printcalculator.controller;
 import com.printcalculator.dto.OptionsResponse;
 import com.printcalculator.entity.FilamentMaterialType;
 import com.printcalculator.entity.FilamentVariant;
-import com.printcalculator.entity.LayerHeightOption;
 import com.printcalculator.entity.MaterialOrcaProfileMap;
 import com.printcalculator.entity.NozzleOption;
 import com.printcalculator.entity.PrinterMachine;
 import com.printcalculator.entity.PrinterMachineProfile;
 import com.printcalculator.repository.FilamentMaterialTypeRepository;
 import com.printcalculator.repository.FilamentVariantRepository;
-import com.printcalculator.repository.LayerHeightOptionRepository;
 import com.printcalculator.repository.MaterialOrcaProfileMapRepository;
 import com.printcalculator.repository.NozzleOptionRepository;
 import com.printcalculator.repository.PrinterMachineRepository;
+import com.printcalculator.service.NozzleLayerHeightPolicyService;
 import com.printcalculator.service.OrcaProfileResolver;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,26 +32,26 @@ public class OptionsController {
 
     private final FilamentMaterialTypeRepository materialRepo;
     private final FilamentVariantRepository variantRepo;
-    private final LayerHeightOptionRepository layerHeightRepo;
     private final NozzleOptionRepository nozzleRepo;
     private final PrinterMachineRepository printerMachineRepo;
     private final MaterialOrcaProfileMapRepository materialOrcaMapRepo;
     private final OrcaProfileResolver orcaProfileResolver;
+    private final NozzleLayerHeightPolicyService nozzleLayerHeightPolicyService;
 
     public OptionsController(FilamentMaterialTypeRepository materialRepo,
                              FilamentVariantRepository variantRepo,
-                             LayerHeightOptionRepository layerHeightRepo,
                              NozzleOptionRepository nozzleRepo,
                              PrinterMachineRepository printerMachineRepo,
                              MaterialOrcaProfileMapRepository materialOrcaMapRepo,
-                             OrcaProfileResolver orcaProfileResolver) {
+                             OrcaProfileResolver orcaProfileResolver,
+                             NozzleLayerHeightPolicyService nozzleLayerHeightPolicyService) {
         this.materialRepo = materialRepo;
         this.variantRepo = variantRepo;
-        this.layerHeightRepo = layerHeightRepo;
         this.nozzleRepo = nozzleRepo;
         this.printerMachineRepo = printerMachineRepo;
         this.materialOrcaMapRepo = materialOrcaMapRepo;
         this.orcaProfileResolver = orcaProfileResolver;
+        this.nozzleLayerHeightPolicyService = nozzleLayerHeightPolicyService;
     }
 
     @GetMapping("/api/calculator/options")
@@ -116,15 +116,6 @@ public class OptionsController {
                 new OptionsResponse.InfillPatternOption("cubic", "Cubic")
         );
 
-        List<OptionsResponse.LayerHeightOptionDTO> layers = layerHeightRepo.findAll().stream()
-                .filter(l -> Boolean.TRUE.equals(l.getIsActive()))
-                .sorted(Comparator.comparing(LayerHeightOption::getLayerHeightMm))
-                .map(l -> new OptionsResponse.LayerHeightOptionDTO(
-                        l.getLayerHeightMm().doubleValue(),
-                        String.format("%.2f mm", l.getLayerHeightMm())
-                ))
-                .toList();
-
         List<OptionsResponse.NozzleOptionDTO> nozzles = nozzleRepo.findAll().stream()
                 .filter(n -> Boolean.TRUE.equals(n.getIsActive()))
                 .sorted(Comparator.comparing(NozzleOption::getNozzleDiameterMm))
@@ -137,7 +128,31 @@ public class OptionsController {
                 ))
                 .toList();
 
-        return ResponseEntity.ok(new OptionsResponse(materialOptions, qualities, patterns, layers, nozzles));
+        Map<BigDecimal, List<BigDecimal>> rulesByNozzle = nozzleLayerHeightPolicyService.getActiveRulesByNozzle();
+        BigDecimal selectedNozzle = nozzleLayerHeightPolicyService.resolveNozzle(
+                nozzleDiameter != null ? BigDecimal.valueOf(nozzleDiameter) : null
+        );
+
+        List<OptionsResponse.LayerHeightOptionDTO> layers = toLayerDtos(rulesByNozzle.getOrDefault(selectedNozzle, List.of()));
+        if (layers.isEmpty()) {
+            layers = rulesByNozzle.values().stream().findFirst().map(this::toLayerDtos).orElse(List.of());
+        }
+
+        List<OptionsResponse.NozzleLayerHeightOptionsDTO> layerHeightsByNozzle = rulesByNozzle.entrySet().stream()
+                .map(entry -> new OptionsResponse.NozzleLayerHeightOptionsDTO(
+                        entry.getKey().doubleValue(),
+                        toLayerDtos(entry.getValue())
+                ))
+                .toList();
+
+        return ResponseEntity.ok(new OptionsResponse(
+                materialOptions,
+                qualities,
+                patterns,
+                layers,
+                nozzles,
+                layerHeightsByNozzle
+        ));
     }
 
     private Set<Long> resolveCompatibleMaterialTypeIds(Long printerMachineId, Double nozzleDiameter) {
@@ -152,9 +167,9 @@ public class OptionsController {
             return Set.of();
         }
 
-        BigDecimal nozzle = nozzleDiameter != null
-                ? BigDecimal.valueOf(nozzleDiameter)
-                : BigDecimal.valueOf(0.40);
+        BigDecimal nozzle = nozzleLayerHeightPolicyService.resolveNozzle(
+                nozzleDiameter != null ? BigDecimal.valueOf(nozzleDiameter) : null
+        );
 
         PrinterMachineProfile machineProfile = orcaProfileResolver
                 .resolveMachineProfile(machine, nozzle)
@@ -170,6 +185,16 @@ public class OptionsController {
                 .filter(m -> m != null && m.getId() != null)
                 .map(FilamentMaterialType::getId)
                 .collect(Collectors.toSet());
+    }
+
+    private List<OptionsResponse.LayerHeightOptionDTO> toLayerDtos(List<BigDecimal> layers) {
+        return layers.stream()
+                .sorted(Comparator.naturalOrder())
+                .map(layer -> new OptionsResponse.LayerHeightOptionDTO(
+                        layer.doubleValue(),
+                        String.format("%.2f mm", layer)
+                ))
+                .toList();
     }
 
     private String resolveHexColor(FilamentVariant variant) {

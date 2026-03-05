@@ -62,6 +62,21 @@ export class UploadFormComponent implements OnInit {
   loading = input<boolean>(false);
   uploadProgress = input<number>(0);
   submitRequest = output<QuoteRequest>();
+  itemQuantityChange = output<{
+    index: number;
+    fileName: string;
+    quantity: number;
+  }>();
+  printSettingsChange = output<{
+    mode: 'easy' | 'advanced';
+    material: string;
+    quality: string;
+    nozzleDiameter: number;
+    layerHeight: number;
+    infillDensity: number;
+    infillPattern: string;
+    supportEnabled: boolean;
+  }>();
 
   private estimator = inject(QuoteEstimatorService);
   private fb = inject(FormBuilder);
@@ -81,6 +96,8 @@ export class UploadFormComponent implements OnInit {
 
   // Store full material options to lookup variants/colors if needed later
   private fullMaterialOptions: MaterialOption[] = [];
+  private allLayerHeights: SimpleOption[] = [];
+  private layerHeightsByNozzle: Record<string, SimpleOption[]> = {};
   private isPatchingSettings = false;
 
   // Computed variants for valid material
@@ -141,6 +158,14 @@ export class UploadFormComponent implements OnInit {
       if (this.mode() !== 'easy' || this.isPatchingSettings) return;
       this.applyAdvancedPresetFromQuality(quality);
     });
+    this.form.get('nozzleDiameter')?.valueChanges.subscribe((nozzle) => {
+      if (this.isPatchingSettings) return;
+      this.updateLayerHeightOptionsForNozzle(nozzle, true);
+    });
+    this.form.valueChanges.subscribe(() => {
+      if (this.isPatchingSettings) return;
+      this.emitPrintSettingsChange();
+    });
 
     effect(() => {
       this.applySettingsLock(this.lockedSettings());
@@ -187,6 +212,7 @@ export class UploadFormComponent implements OnInit {
 
     const preset = presets[normalized] || presets['standard'];
     this.form.patchValue(preset, { emitEvent: false });
+    this.updateLayerHeightOptionsForNozzle(preset.nozzleDiameter, true);
   }
 
   ngOnInit() {
@@ -204,9 +230,19 @@ export class UploadFormComponent implements OnInit {
         this.infillPatterns.set(
           options.infillPatterns.map((p) => ({ label: p.label, value: p.id })),
         );
-        this.layerHeights.set(
-          options.layerHeights.map((l) => ({ label: l.label, value: l.value })),
-        );
+        this.allLayerHeights = options.layerHeights.map((l) => ({
+          label: l.label,
+          value: l.value,
+        }));
+        this.layerHeightsByNozzle = {};
+        (options.layerHeightsByNozzle || []).forEach((entry) => {
+          this.layerHeightsByNozzle[this.toNozzleKey(entry.nozzleDiameter)] =
+            entry.layerHeights.map((layer) => ({
+              label: layer.label,
+              value: layer.value,
+            }));
+        });
+        this.layerHeights.set(this.allLayerHeights);
         this.nozzleDiameters.set(
           options.nozzleDiameters.map((n) => ({
             label: n.label,
@@ -231,6 +267,11 @@ export class UploadFormComponent implements OnInit {
             value: 'standard',
           },
         ]);
+        this.allLayerHeights = [{ label: '0.20 mm', value: 0.2 }];
+        this.layerHeightsByNozzle = {
+          [this.toNozzleKey(0.4)]: this.allLayerHeights,
+        };
+        this.layerHeights.set(this.allLayerHeights);
         this.nozzleDiameters.set([{ label: '0.4 mm', value: 0.4 }]);
         this.setDefaults();
       },
@@ -240,7 +281,16 @@ export class UploadFormComponent implements OnInit {
   private setDefaults() {
     // Set Defaults if available
     if (this.materials().length > 0 && !this.form.get('material')?.value) {
-      this.form.get('material')?.setValue(this.materials()[0].value);
+      const exactPla = this.materials().find(
+        (m) => typeof m.value === 'string' && m.value.toUpperCase() === 'PLA',
+      );
+      const anyPla = this.materials().find(
+        (m) =>
+          typeof m.value === 'string' &&
+          m.value.toUpperCase().startsWith('PLA'),
+      );
+      const preferredMaterial = exactPla ?? anyPla ?? this.materials()[0];
+      this.form.get('material')?.setValue(preferredMaterial.value);
     }
     if (this.qualities().length > 0 && !this.form.get('quality')?.value) {
       // Try to find 'standard' or use first
@@ -255,18 +305,20 @@ export class UploadFormComponent implements OnInit {
     ) {
       this.form.get('nozzleDiameter')?.setValue(0.4); // Prefer 0.4
     }
-    if (
-      this.layerHeights().length > 0 &&
-      !this.form.get('layerHeight')?.value
-    ) {
-      this.form.get('layerHeight')?.setValue(0.2); // Prefer 0.2
-    }
+
+    this.updateLayerHeightOptionsForNozzle(
+      this.form.get('nozzleDiameter')?.value,
+      true,
+    );
+
     if (
       this.infillPatterns().length > 0 &&
       !this.form.get('infillPattern')?.value
     ) {
       this.form.get('infillPattern')?.setValue(this.infillPatterns()[0].value);
     }
+
+    this.emitPrintSettingsChange();
   }
 
   onFilesDropped(newFiles: File[]) {
@@ -369,7 +421,15 @@ export class UploadFormComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     const parsed = parseInt(input.value, 10);
     const quantity = Number.isFinite(parsed) ? parsed : 1;
+    const currentItem = this.items()[index];
+    if (!currentItem) return;
+    const normalizedQty = this.normalizeQuantity(quantity);
     this.updateItemQuantityByIndex(index, quantity);
+    this.itemQuantityChange.emit({
+      index,
+      fileName: currentItem.file.name,
+      quantity: normalizedQty,
+    });
   }
 
   updateItemColor(
@@ -514,6 +574,11 @@ export class UploadFormComponent implements OnInit {
     this.isPatchingSettings = true;
     this.form.patchValue(patch, { emitEvent: false });
     this.isPatchingSettings = false;
+    this.updateLayerHeightOptionsForNozzle(
+      this.form.get('nozzleDiameter')?.value,
+      true,
+    );
+    this.emitPrintSettingsChange();
   }
 
   onSubmit() {
@@ -559,6 +624,86 @@ export class UploadFormComponent implements OnInit {
 
   private normalizeFileName(fileName: string): string {
     return (fileName || '').split(/[\\/]/).pop()?.trim().toLowerCase() ?? '';
+  }
+
+  private updateLayerHeightOptionsForNozzle(
+    nozzleValue: unknown,
+    preserveCurrent: boolean,
+  ): void {
+    const key = this.toNozzleKey(nozzleValue);
+    const nozzleSpecific = this.layerHeightsByNozzle[key] || [];
+    const available =
+      nozzleSpecific.length > 0 ? nozzleSpecific : this.allLayerHeights;
+    this.layerHeights.set(available);
+
+    const control = this.form.get('layerHeight');
+    if (!control) return;
+
+    const currentValue = Number(control.value);
+    const currentAllowed = available.some(
+      (option) => Math.abs(Number(option.value) - currentValue) < 0.0001,
+    );
+    if (preserveCurrent && currentAllowed) {
+      return;
+    }
+
+    const preferred = available.find(
+      (option) => Math.abs(Number(option.value) - 0.2) < 0.0001,
+    );
+    const next = preferred ?? available[0];
+    if (next) {
+      control.setValue(next.value, { emitEvent: false });
+    }
+  }
+
+  private toNozzleKey(value: unknown): string {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) return '';
+    return numeric.toFixed(2);
+  }
+
+  getCurrentRequestDraft(): QuoteRequest | null {
+    if (this.items().length === 0) return null;
+    const raw = this.form.getRawValue();
+    return {
+      items: this.items(),
+      material: raw.material,
+      quality: raw.quality,
+      notes: raw.notes,
+      infillDensity: raw.infillDensity,
+      infillPattern: raw.infillPattern,
+      supportEnabled: raw.supportEnabled,
+      layerHeight: raw.layerHeight,
+      nozzleDiameter: raw.nozzleDiameter,
+      mode: this.mode(),
+    };
+  }
+
+  getCurrentPrintSettings(): {
+    mode: 'easy' | 'advanced';
+    material: string;
+    quality: string;
+    nozzleDiameter: number;
+    layerHeight: number;
+    infillDensity: number;
+    infillPattern: string;
+    supportEnabled: boolean;
+  } {
+    const raw = this.form.getRawValue();
+    return {
+      mode: this.mode(),
+      material: String(raw.material || 'PLA'),
+      quality: String(raw.quality || 'standard'),
+      nozzleDiameter: Number(raw.nozzleDiameter ?? 0.4),
+      layerHeight: Number(raw.layerHeight ?? 0.2),
+      infillDensity: Number(raw.infillDensity ?? 20),
+      infillPattern: String(raw.infillPattern || 'grid'),
+      supportEnabled: Boolean(raw.supportEnabled),
+    };
+  }
+
+  private emitPrintSettingsChange(): void {
+    this.printSettingsChange.emit(this.getCurrentPrintSettings());
   }
 
   private applySettingsLock(locked: boolean): void {

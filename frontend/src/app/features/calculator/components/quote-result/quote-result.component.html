@@ -45,6 +45,12 @@
       <p>{{ result().notes }}</p>
     </div>
   }
+  @if (recalculationRequired()) {
+    <div class="recalc-banner">
+      Hai modificato i parametri di stampa. Ricalcola il preventivo prima di
+      procedere con l'ordine.
+    </div>
+  }
 
   <div class="divider"></div>
 
@@ -104,13 +110,21 @@
 
     <div class="actions-right">
       @if (!hasQuantityOverLimit()) {
-        <app-button (click)="proceed.emit()">
+        <app-button
+          [disabled]="recalculationRequired()"
+          (click)="proceed.emit()"
+        >
           {{ "QUOTE.PROCEED_ORDER" | translate }}
         </app-button>
       } @else {
         <small class="limit-note">{{
           "QUOTE.MAX_QTY_NOTICE" | translate: { max: directOrderLimit }
         }}</small>
+      }
+      @if (recalculationRequired()) {
+        <small class="limit-note">
+          Ricalcola il preventivo per riattivare il checkout.
+        </small>
       }
     </div>
   </div>
