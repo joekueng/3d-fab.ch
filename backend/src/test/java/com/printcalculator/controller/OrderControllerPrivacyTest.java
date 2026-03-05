@@ -2,14 +2,12 @@ package com.printcalculator.controller;
 
 import com.printcalculator.dto.OrderDto;
 import com.printcalculator.entity.Order;
-import com.printcalculator.repository.CustomerRepository;
 import com.printcalculator.repository.OrderItemRepository;
 import com.printcalculator.repository.OrderRepository;
 import com.printcalculator.repository.PaymentRepository;
-import com.printcalculator.repository.QuoteLineItemRepository;
-import com.printcalculator.repository.QuoteSessionRepository;
 import com.printcalculator.service.payment.InvoicePdfRenderingService;
 import com.printcalculator.service.OrderService;
+import com.printcalculator.service.order.OrderControllerService;
 import com.printcalculator.service.payment.PaymentService;
 import com.printcalculator.service.payment.QrBillService;
 import com.printcalculator.service.storage.StorageService;
@@ -41,12 +39,6 @@ class OrderControllerPrivacyTest {
     @Mock
     private OrderItemRepository orderItemRepo;
     @Mock
-    private QuoteSessionRepository quoteSessionRepo;
-    @Mock
-    private QuoteLineItemRepository quoteLineItemRepo;
-    @Mock
-    private CustomerRepository customerRepo;
-    @Mock
     private StorageService storageService;
     @Mock
     private InvoicePdfRenderingService invoiceService;
@@ -63,13 +55,10 @@ class OrderControllerPrivacyTest {
 
     @BeforeEach
     void setUp() {
-        controller = new OrderController(
+        OrderControllerService orderControllerService = new OrderControllerService(
                 orderService,
                 orderRepo,
                 orderItemRepo,
-                quoteSessionRepo,
-                quoteLineItemRepo,
-                customerRepo,
                 storageService,
                 invoiceService,
                 qrBillService,
@@ -77,6 +66,7 @@ class OrderControllerPrivacyTest {
                 paymentService,
                 paymentRepo
         );
+        controller = new OrderController(orderControllerService);
     }
 
     @Test

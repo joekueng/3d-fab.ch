@@ -189,14 +189,30 @@ export class QuoteResultComponent implements OnDestroy {
     this.quantityTimers.clear();
   }
 
-  getItemDifferenceLabel(fileName: string): string {
+  getItemDifferenceLabel(fileName: string, materialCode?: string): string {
     const differences =
       this.itemSettingsDiffByFileName()[fileName]?.differences || [];
     if (differences.length === 0) return '';
 
-    const materialOnly = differences.find(
+    const normalizedMaterial = String(materialCode || '')
+      .trim()
+      .toLowerCase();
+
+    const filtered = differences.filter((entry) => {
+      const normalized = String(entry || '')
+        .trim()
+        .toLowerCase();
+      const isMaterialOnly = !normalized.includes(':');
+      return !(isMaterialOnly && normalized === normalizedMaterial);
+    });
+
+    if (filtered.length === 0) {
+      return '';
+    }
+
+    const materialOnly = filtered.find(
       (entry) => !entry.includes(':') && entry.trim().length > 0,
     );
-    return materialOnly || differences.join(' | ');
+    return materialOnly || filtered.join(' | ');
   }
 }

@@ -6,6 +6,8 @@ import com.printcalculator.entity.Order;
 import com.printcalculator.repository.OrderItemRepository;
 import com.printcalculator.repository.OrderRepository;
 import com.printcalculator.repository.PaymentRepository;
+import com.printcalculator.repository.QuoteLineItemRepository;
+import com.printcalculator.service.order.AdminOrderControllerService;
 import com.printcalculator.service.payment.InvoicePdfRenderingService;
 import com.printcalculator.service.payment.PaymentService;
 import com.printcalculator.service.payment.QrBillService;
@@ -41,6 +43,8 @@ class AdminOrderControllerStatusValidationTest {
     @Mock
     private PaymentRepository paymentRepository;
     @Mock
+    private QuoteLineItemRepository quoteLineItemRepository;
+    @Mock
     private PaymentService paymentService;
     @Mock
     private StorageService storageService;
@@ -55,16 +59,18 @@ class AdminOrderControllerStatusValidationTest {
 
     @BeforeEach
     void setUp() {
-        controller = new AdminOrderController(
+        AdminOrderControllerService adminOrderControllerService = new AdminOrderControllerService(
                 orderRepository,
                 orderItemRepository,
                 paymentRepository,
+                quoteLineItemRepository,
                 paymentService,
                 storageService,
                 invoicePdfRenderingService,
                 qrBillService,
                 eventPublisher
         );
+        controller = new AdminOrderController(adminOrderControllerService);
     }
 
     @Test

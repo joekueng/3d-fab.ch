@@ -63,11 +63,11 @@
           <span class="file-details">
             {{ item.unitTime / 3600 | number: "1.1-1" }}h |
             {{ item.unitWeight | number: "1.0-0" }}g |
-            materiale: {{ item.material || "N/D" }}
-            @if (getItemDifferenceLabel(item.fileName)) {
+            <span class="material-chip">{{ item.material || "N/D" }}</span>
+            @if (getItemDifferenceLabel(item.fileName, item.material)) {
               |
               <small class="item-settings-diff">
-                {{ getItemDifferenceLabel(item.fileName) }}
+                {{ getItemDifferenceLabel(item.fileName, item.material) }}
               </small>
             }
           </span>
@@ -110,7 +110,7 @@
 
   <div class="actions">
     <div class="actions-left">
-      <app-button variant="outline" (click)="consult.emit()">
+      <app-button variant="secondary" (click)="consult.emit()">
         {{ "QUOTE.CONSULT" | translate }}
       </app-button>
     </div>
