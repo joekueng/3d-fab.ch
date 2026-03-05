@@ -284,8 +284,8 @@
         <span class="filename">{{ item.originalFilename }}</span>
         <span class="file-color">
           {{ item.materialCode || "-" }} | {{ item.nozzleDiameterMm ?? "-" }} mm
-          | {{ item.layerHeightMm ?? "-" }} mm | {{ item.infillPercent ?? "-" }}%
-          | {{ item.infillPattern || "-" }} |
+          | {{ item.layerHeightMm ?? "-" }} mm |
+          {{ item.infillPercent ?? "-" }}% | {{ item.infillPattern || "-" }} |
           {{ item.supportsEnabled ? "Supporti ON" : "Supporti OFF" }}
         </span>
       </div>

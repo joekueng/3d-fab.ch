@@ -127,16 +127,22 @@ export class QuoteEstimatorService {
 
   getOptions(): Observable<OptionsResponse> {
     const headers: any = {};
-    return this.http.get<OptionsResponse>(`${environment.apiUrl}/api/calculator/options`, {
-      headers,
-    });
+    return this.http.get<OptionsResponse>(
+      `${environment.apiUrl}/api/calculator/options`,
+      {
+        headers,
+      },
+    );
   }
 
   getQuoteSession(sessionId: string): Observable<any> {
     const headers: any = {};
-    return this.http.get(`${environment.apiUrl}/api/quote-sessions/${sessionId}`, {
-      headers,
-    });
+    return this.http.get(
+      `${environment.apiUrl}/api/quote-sessions/${sessionId}`,
+      {
+        headers,
+      },
+    );
   }
 
   updateLineItem(lineItemId: string, changes: any): Observable<any> {
@@ -175,10 +181,13 @@ export class QuoteEstimatorService {
 
   getOrderInvoice(orderId: string): Observable<Blob> {
     const headers: any = {};
-    return this.http.get(`${environment.apiUrl}/api/orders/${orderId}/invoice`, {
-      headers,
-      responseType: 'blob',
-    });
+    return this.http.get(
+      `${environment.apiUrl}/api/orders/${orderId}/invoice`,
+      {
+        headers,
+        responseType: 'blob',
+      },
+    );
   }
 
   getOrderConfirmation(orderId: string): Observable<Blob> {
@@ -226,7 +235,8 @@ export class QuoteEstimatorService {
 
             const emitProgress = () => {
               const avg = Math.round(
-                uploadProgress.reduce((sum, value) => sum + value, 0) / totalItems,
+                uploadProgress.reduce((sum, value) => sum + value, 0) /
+                  totalItems,
               );
               observer.next(avg);
             };
@@ -239,7 +249,9 @@ export class QuoteEstimatorService {
 
               const hasFailure = uploadResults.some((entry) => !entry.success);
               if (hasFailure) {
-                observer.error('One or more files failed during upload/analysis');
+                observer.error(
+                  'One or more files failed during upload/analysis',
+                );
                 return;
               }
 
@@ -412,8 +424,13 @@ export class QuoteEstimatorService {
     };
   }
 
-  private buildSettingsPayload(request: QuoteRequest, item: QuoteRequestItem): any {
-    const normalizedQuality = this.normalizeQuality(item.quality || request.quality);
+  private buildSettingsPayload(
+    request: QuoteRequest,
+    item: QuoteRequestItem,
+  ): any {
+    const normalizedQuality = this.normalizeQuality(
+      item.quality || request.quality,
+    );
     const easyPreset =
       request.mode === 'easy'
         ? this.buildEasyModePreset(normalizedQuality)
@@ -427,7 +444,10 @@ export class QuoteEstimatorService {
       quality: easyPreset ? easyPreset.quality : normalizedQuality,
       supportsEnabled: item.supportEnabled ?? request.supportEnabled ?? false,
       layerHeight:
-        easyPreset?.layerHeight ?? item.layerHeight ?? request.layerHeight ?? 0.2,
+        easyPreset?.layerHeight ??
+        item.layerHeight ??
+        request.layerHeight ??
+        0.2,
       infillDensity:
         easyPreset?.infillDensity ??
         item.infillDensity ??
@@ -447,7 +467,9 @@ export class QuoteEstimatorService {
   }
 
   private normalizeQuality(value: string | undefined): string {
-    const normalized = String(value || 'standard').trim().toLowerCase();
+    const normalized = String(value || 'standard')
+      .trim()
+      .toLowerCase();
     if (normalized === 'high' || normalized === 'high_definition') {
       return 'extra_fine';
     }

@@ -197,16 +197,28 @@ export class UploadFormComponent implements OnInit {
         this.fullMaterialOptions = options.materials || [];
 
         this.materials.set(
-          (options.materials || []).map((m) => ({ label: m.label, value: m.code })),
+          (options.materials || []).map((m) => ({
+            label: m.label,
+            value: m.code,
+          })),
         );
         this.qualities.set(
-          (options.qualities || []).map((q) => ({ label: q.label, value: q.id })),
+          (options.qualities || []).map((q) => ({
+            label: q.label,
+            value: q.id,
+          })),
         );
         this.infillPatterns.set(
-          (options.infillPatterns || []).map((p) => ({ label: p.label, value: p.id })),
+          (options.infillPatterns || []).map((p) => ({
+            label: p.label,
+            value: p.id,
+          })),
         );
         this.nozzleDiameters.set(
-          (options.nozzleDiameters || []).map((n) => ({ label: n.label, value: n.value })),
+          (options.nozzleDiameters || []).map((n) => ({
+            label: n.label,
+            value: n.value,
+          })),
         );
 
         this.allLayerHeights = (options.layerHeights || []).map((l) => ({
@@ -282,12 +294,19 @@ export class UploadFormComponent implements OnInit {
     return this.items()[index] || null;
   }
 
-  getVariantsForMaterial(materialCode: string | null | undefined): VariantOption[] {
-    const normalized = String(materialCode || '').trim().toUpperCase();
+  getVariantsForMaterial(
+    materialCode: string | null | undefined,
+  ): VariantOption[] {
+    const normalized = String(materialCode || '')
+      .trim()
+      .toUpperCase();
     if (!normalized) return [];
 
     const found = this.fullMaterialOptions.find(
-      (m) => String(m.code || '').trim().toUpperCase() === normalized,
+      (m) =>
+        String(m.code || '')
+          .trim()
+          .toUpperCase() === normalized,
     );
     return found?.variants || [];
   }
@@ -462,7 +481,9 @@ export class UploadFormComponent implements OnInit {
     const colorName =
       typeof newSelection === 'string' ? newSelection : newSelection.colorName;
     const filamentVariantId =
-      typeof newSelection === 'string' ? undefined : newSelection.filamentVariantId;
+      typeof newSelection === 'string'
+        ? undefined
+        : newSelection.filamentVariantId;
 
     this.items.update((current) => {
       if (index < 0 || index >= current.length) {
@@ -709,11 +730,17 @@ export class UploadFormComponent implements OnInit {
         });
     }
 
-    if (this.nozzleDiameters().length > 0 && !this.form.get('nozzleDiameter')?.value) {
+    if (
+      this.nozzleDiameters().length > 0 &&
+      !this.form.get('nozzleDiameter')?.value
+    ) {
       this.form.get('nozzleDiameter')?.setValue(0.4, { emitEvent: false });
     }
 
-    if (this.infillPatterns().length > 0 && !this.form.get('infillPattern')?.value) {
+    if (
+      this.infillPatterns().length > 0 &&
+      !this.form.get('infillPattern')?.value
+    ) {
       this.form
         .get('infillPattern')
         ?.setValue(this.infillPatterns()[0].value, { emitEvent: false });
@@ -726,7 +753,9 @@ export class UploadFormComponent implements OnInit {
     );
 
     if (this.mode() === 'easy') {
-      this.applyEasyPresetFromQuality(String(this.form.get('quality')?.value || 'standard'));
+      this.applyEasyPresetFromQuality(
+        String(this.form.get('quality')?.value || 'standard'),
+      );
     }
 
     this.emitPrintSettingsChange();
@@ -817,9 +846,18 @@ export class UploadFormComponent implements OnInit {
     return {
       material,
       quality,
-      nozzleDiameter: this.normalizeNumber(this.form.get('nozzleDiameter')?.value, 0.4),
-      layerHeight: this.normalizeNumber(this.form.get('layerHeight')?.value, 0.2),
-      infillDensity: this.normalizeNumber(this.form.get('infillDensity')?.value, 20),
+      nozzleDiameter: this.normalizeNumber(
+        this.form.get('nozzleDiameter')?.value,
+        0.4,
+      ),
+      layerHeight: this.normalizeNumber(
+        this.form.get('layerHeight')?.value,
+        0.2,
+      ),
+      infillDensity: this.normalizeNumber(
+        this.form.get('infillDensity')?.value,
+        20,
+      ),
       infillPattern: String(this.form.get('infillPattern')?.value || 'grid'),
       supportEnabled: Boolean(this.form.get('supportEnabled')?.value),
     };
@@ -829,7 +867,9 @@ export class UploadFormComponent implements OnInit {
     item: FormItem,
     defaults: ReturnType<UploadFormComponent['getCurrentGlobalItemDefaults']>,
   ): QuoteRequestItem {
-    const quality = this.normalizeQualityValue(item.quality || defaults.quality);
+    const quality = this.normalizeQualityValue(
+      item.quality || defaults.quality,
+    );
 
     if (this.mode() === 'easy') {
       const preset = this.easyModePresetForQuality(quality);
@@ -856,10 +896,16 @@ export class UploadFormComponent implements OnInit {
       color: item.color,
       filamentVariantId: item.filamentVariantId,
       supportEnabled: item.supportEnabled,
-      infillDensity: this.normalizeNumber(item.infillDensity, defaults.infillDensity),
+      infillDensity: this.normalizeNumber(
+        item.infillDensity,
+        defaults.infillDensity,
+      ),
       infillPattern: item.infillPattern || defaults.infillPattern,
       layerHeight: this.normalizeNumber(item.layerHeight, defaults.layerHeight),
-      nozzleDiameter: this.normalizeNumber(item.nozzleDiameter, defaults.nozzleDiameter),
+      nozzleDiameter: this.normalizeNumber(
+        item.nozzleDiameter,
+        defaults.nozzleDiameter,
+      ),
     };
   }
 
@@ -1029,11 +1075,15 @@ export class UploadFormComponent implements OnInit {
       return;
     }
 
-    const currentLayer = this.normalizeNumber(this.form.get('layerHeight')?.value, options[0].value as number);
+    const currentLayer = this.normalizeNumber(
+      this.form.get('layerHeight')?.value,
+      options[0].value as number,
+    );
     const allowed = options.some(
       (option) =>
-        Math.abs(this.normalizeNumber(option.value, currentLayer) - currentLayer) <
-        0.0001,
+        Math.abs(
+          this.normalizeNumber(option.value, currentLayer) - currentLayer,
+        ) < 0.0001,
     );
 
     if (allowed) {
@@ -1076,13 +1126,17 @@ export class UploadFormComponent implements OnInit {
     this.items().forEach((item) => {
       const differences: string[] = [];
 
-      if (this.normalizeText(item.material) !== this.normalizeText(baseline.material)) {
+      if (
+        this.normalizeText(item.material) !==
+        this.normalizeText(baseline.material)
+      ) {
         differences.push(item.material.toUpperCase());
       }
 
       if (this.mode() === 'easy') {
         if (
-          this.normalizeText(item.quality) !== this.normalizeText(baseline.quality)
+          this.normalizeText(item.quality) !==
+          this.normalizeText(baseline.quality)
         ) {
           differences.push(`quality:${item.quality}`);
         }
@@ -1173,19 +1227,28 @@ export class UploadFormComponent implements OnInit {
     return (
       this.normalizeText(a.material) === this.normalizeText(b.material) &&
       this.normalizeText(a.quality) === this.normalizeText(b.quality) &&
-      Math.abs(this.normalizeNumber(a.nozzleDiameter, 0.4) - this.normalizeNumber(b.nozzleDiameter, 0.4)) <
-        0.0001 &&
-      Math.abs(this.normalizeNumber(a.layerHeight, 0.2) - this.normalizeNumber(b.layerHeight, 0.2)) <
-        0.0001 &&
-      Math.abs(this.normalizeNumber(a.infillDensity, 20) - this.normalizeNumber(b.infillDensity, 20)) <
-        0.0001 &&
-      this.normalizeText(a.infillPattern) === this.normalizeText(b.infillPattern) &&
+      Math.abs(
+        this.normalizeNumber(a.nozzleDiameter, 0.4) -
+          this.normalizeNumber(b.nozzleDiameter, 0.4),
+      ) < 0.0001 &&
+      Math.abs(
+        this.normalizeNumber(a.layerHeight, 0.2) -
+          this.normalizeNumber(b.layerHeight, 0.2),
+      ) < 0.0001 &&
+      Math.abs(
+        this.normalizeNumber(a.infillDensity, 20) -
+          this.normalizeNumber(b.infillDensity, 20),
+      ) < 0.0001 &&
+      this.normalizeText(a.infillPattern) ===
+        this.normalizeText(b.infillPattern) &&
       Boolean(a.supportEnabled) === Boolean(b.supportEnabled)
     );
   }
 
   private normalizeQualityValue(value: any): string {
-    const normalized = String(value || 'standard').trim().toLowerCase();
+    const normalized = String(value || 'standard')
+      .trim()
+      .toLowerCase();
     if (normalized === 'high' || normalized === 'high_definition') {
       return 'extra_fine';
     }
