@@ -210,7 +210,8 @@ export class CheckoutComponent implements OnInit {
       },
       {
         labelKey: 'CHECKOUT.SETUP_FEE',
-        amount: session?.baseSetupCostChf ?? session?.session?.setupCostChf ?? 0,
+        amount:
+          session?.baseSetupCostChf ?? session?.session?.setupCostChf ?? 0,
       },
       {
         label: 'Cambio Ugello',
