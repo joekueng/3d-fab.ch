@@ -126,15 +126,39 @@
 
 .actions {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
   gap: var(--space-3);
+  margin-top: var(--space-2);
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.actions-left,
+.actions-right {
+  display: flex;
+  align-items: center;
+}
+
+.actions-right {
+  justify-content: flex-end;
+
+  @media (max-width: 640px) {
+    justify-content: flex-start;
+  }
 }
 
 .limit-note {
   font-size: 0.8rem;
   color: var(--color-text-muted);
-  text-align: center;
-  margin-top: calc(var(--space-2) * -1);
+  text-align: right;
+
+  @media (max-width: 640px) {
+    text-align: left;
+  }
 }
 
 .notes-section {

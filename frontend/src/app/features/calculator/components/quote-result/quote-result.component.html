@@ -96,18 +96,22 @@
   </div>
 
   <div class="actions">
-    <app-button variant="outline" (click)="consult.emit()">
-      {{ "QUOTE.CONSULT" | translate }}
-    </app-button>
-
-    @if (!hasQuantityOverLimit()) {
-      <app-button (click)="proceed.emit()">
-        {{ "QUOTE.PROCEED_ORDER" | translate }}
+    <div class="actions-left">
+      <app-button variant="outline" (click)="consult.emit()">
+        {{ "QUOTE.CONSULT" | translate }}
       </app-button>
-    } @else {
-      <small class="limit-note">{{
-        "QUOTE.MAX_QTY_NOTICE" | translate: { max: directOrderLimit }
-      }}</small>
-    }
+    </div>
+
+    <div class="actions-right">
+      @if (!hasQuantityOverLimit()) {
+        <app-button (click)="proceed.emit()">
+          {{ "QUOTE.PROCEED_ORDER" | translate }}
+        </app-button>
+      } @else {
+        <small class="limit-note">{{
+          "QUOTE.MAX_QTY_NOTICE" | translate: { max: directOrderLimit }
+        }}</small>
+      }
+    </div>
   </div>
 </app-card>
