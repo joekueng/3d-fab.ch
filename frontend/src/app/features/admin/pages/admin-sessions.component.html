@@ -149,7 +149,9 @@
                         {{ item.layerHeightMm ?? "-" }} mm |
                         {{ item.infillPercent ?? "-" }}% |
                         {{ item.infillPattern || "-" }} |
-                        {{ item.supportsEnabled ? "Supporti ON" : "Supporti OFF" }}
+                        {{
+                          item.supportsEnabled ? "Supporti ON" : "Supporti OFF"
+                        }}
                       </td>
                       <td>{{ item.status }}</td>
                       <td>{{ item.unitPriceChf | currency: "CHF" }}</td>

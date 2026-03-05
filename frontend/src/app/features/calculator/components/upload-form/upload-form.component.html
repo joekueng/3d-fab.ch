@@ -226,7 +226,12 @@
                 <label>
                   {{ "CALC.LAYER_HEIGHT" | translate }}
                   <select formControlName="layerHeight">
-                    @for (l of getLayerHeightOptionsForNozzle(form.get('nozzleDiameter')?.value); track l.value) {
+                    @for (
+                      l of getLayerHeightOptionsForNozzle(
+                        form.get("nozzleDiameter")?.value
+                      );
+                      track l.value
+                    ) {
                       <option [value]="l.value">{{ l.label }}</option>
                     }
                   </select>

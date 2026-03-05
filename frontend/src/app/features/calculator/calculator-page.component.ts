@@ -72,7 +72,10 @@ export class CalculatorPageComponent implements OnInit {
     Record<string, { differences: string[] }>
   >({});
   private baselinePrintSettings: TrackedPrintSettings | null = null;
-  private baselineItemSettingsByFileName = new Map<string, TrackedPrintSettings>();
+  private baselineItemSettingsByFileName = new Map<
+    string,
+    TrackedPrintSettings
+  >();
 
   @ViewChild('uploadForm') uploadForm!: UploadFormComponent;
   @ViewChild('resultCol') resultCol!: ElementRef;
@@ -528,7 +531,9 @@ export class CalculatorPageComponent implements OnInit {
     });
   }
 
-  private toTrackedSettingsFromRequest(req: QuoteRequest): TrackedPrintSettings {
+  private toTrackedSettingsFromRequest(
+    req: QuoteRequest,
+  ): TrackedPrintSettings {
     return {
       mode: req.mode,
       material: this.normalizeString(req.material || 'PLA'),
@@ -590,17 +595,17 @@ export class CalculatorPageComponent implements OnInit {
     item: any,
     fallback: TrackedPrintSettings,
   ): TrackedPrintSettings {
-    const layer = this.normalizeNumber(item?.layerHeightMm, fallback.layerHeight, 3);
+    const layer = this.normalizeNumber(
+      item?.layerHeightMm,
+      fallback.layerHeight,
+      3,
+    );
     return {
       mode: this.mode(),
       material: this.normalizeString(item?.materialCode || fallback.material),
       quality: this.normalizeString(
         item?.quality ||
-          (layer >= 0.24
-            ? 'draft'
-            : layer <= 0.12
-              ? 'extra_fine'
-              : 'standard'),
+          (layer >= 0.24 ? 'draft' : layer <= 0.12 ? 'extra_fine' : 'standard'),
       ),
       nozzleDiameter: this.normalizeNumber(
         item?.nozzleDiameterMm,
@@ -616,9 +621,7 @@ export class CalculatorPageComponent implements OnInit {
       infillPattern: this.normalizeString(
         item?.infillPattern || fallback.infillPattern,
       ),
-      supportEnabled: Boolean(
-        item?.supportsEnabled ?? fallback.supportEnabled,
-      ),
+      supportEnabled: Boolean(item?.supportsEnabled ?? fallback.supportEnabled),
     };
   }
 

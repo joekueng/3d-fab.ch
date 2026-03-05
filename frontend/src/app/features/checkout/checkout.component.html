@@ -259,7 +259,10 @@
                   {{ item.printTimeSeconds / 3600 | number: "1.1-1" }}h |
                   {{ item.materialGrams | number: "1.0-0" }}g
                 </div>
-                <div class="item-preview" *ngIf="isCadSession() && isStlItem(item)">
+                <div
+                  class="item-preview"
+                  *ngIf="isCadSession() && isStlItem(item)"
+                >
                   <ng-container
                     *ngIf="previewFile(item) as itemPreview; else previewState"
                   >
