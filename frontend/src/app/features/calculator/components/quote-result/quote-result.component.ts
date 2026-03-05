@@ -35,9 +35,16 @@ export class QuoteResultComponent implements OnDestroy {
   readonly quantityAutoRefreshMs = 2000;
 
   result = input.required<QuoteResult>();
+  recalculationRequired = input<boolean>(false);
   consult = output<void>();
   proceed = output<void>();
   itemChange = output<{
+    id?: string;
+    index: number;
+    fileName: string;
+    quantity: number;
+  }>();
+  itemQuantityPreviewChange = output<{
     id?: string;
     index: number;
     fileName: string;
@@ -85,6 +92,13 @@ export class QuoteResultComponent implements OnDestroy {
       const updated = [...current];
       updated[index] = { ...updated[index], quantity: normalizedQty };
       return updated;
+    });
+
+    this.itemQuantityPreviewChange.emit({
+      id: item.id,
+      index,
+      fileName: item.fileName,
+      quantity: normalizedQty,
     });
 
     this.scheduleQuantityRefresh(index, key);
