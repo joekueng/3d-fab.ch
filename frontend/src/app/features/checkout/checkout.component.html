@@ -323,31 +323,13 @@
             </div>
           </div>
 
-          <div class="summary-totals" *ngIf="quoteSession() as session">
-            <div class="total-row">
-              <span>{{ "CHECKOUT.SUBTOTAL" | translate }}</span>
-              <span>{{ session.itemsTotalChf | currency: "CHF" }}</span>
-            </div>
-            <div class="total-row">
-              <span>{{ "CHECKOUT.SETUP_FEE" | translate }}</span>
-              <span>{{
-                (session.baseSetupCostChf ?? session.session.setupCostChf)
-                  | currency: "CHF"
-              }}</span>
-            </div>
-            <div class="total-row" *ngIf="(session.nozzleChangeCostChf || 0) > 0">
-              <span>Cambio Ugello</span>
-              <span>{{ session.nozzleChangeCostChf | currency: "CHF" }}</span>
-            </div>
-            <div class="total-row">
-              <span>{{ "CHECKOUT.SHIPPING" | translate }}</span>
-              <span>{{ session.shippingCostChf | currency: "CHF" }}</span>
-            </div>
-            <div class="grand-total">
-              <span>{{ "CHECKOUT.TOTAL" | translate }}</span>
-              <span>{{ session.grandTotalChf | currency: "CHF" }}</span>
-            </div>
-          </div>
+          <app-price-breakdown
+            *ngIf="quoteSession() as session"
+            [rows]="checkoutPriceBreakdownRows(session)"
+            [total]="session.grandTotalChf || 0"
+            [currency]="'CHF'"
+            [totalLabelKey]="'CHECKOUT.TOTAL'"
+          ></app-price-breakdown>
         </app-card>
       </div>
     </div>

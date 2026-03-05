@@ -16,6 +16,10 @@ import {
   AppToggleSelectorComponent,
   ToggleOption,
 } from '../../shared/components/app-toggle-selector/app-toggle-selector.component';
+import {
+  PriceBreakdownComponent,
+  PriceBreakdownRow,
+} from '../../shared/components/price-breakdown/price-breakdown.component';
 import { LanguageService } from '../../core/services/language.service';
 import { StlViewerComponent } from '../../shared/components/stl-viewer/stl-viewer.component';
 import { getColorHex } from '../../core/constants/colors.const';
@@ -31,6 +35,7 @@ import { getColorHex } from '../../core/constants/colors.const';
     AppButtonComponent,
     AppCardComponent,
     AppToggleSelectorComponent,
+    PriceBreakdownComponent,
     StlViewerComponent,
   ],
   templateUrl: './checkout.component.html',
@@ -195,6 +200,28 @@ export class CheckoutComponent implements OnInit {
 
   cadTotal(): number {
     return this.quoteSession()?.cadTotalChf ?? 0;
+  }
+
+  checkoutPriceBreakdownRows(session: any): PriceBreakdownRow[] {
+    return [
+      {
+        labelKey: 'CHECKOUT.SUBTOTAL',
+        amount: session?.itemsTotalChf ?? 0,
+      },
+      {
+        labelKey: 'CHECKOUT.SETUP_FEE',
+        amount: session?.baseSetupCostChf ?? session?.session?.setupCostChf ?? 0,
+      },
+      {
+        label: 'Cambio Ugello',
+        amount: session?.nozzleChangeCostChf ?? 0,
+        visible: (session?.nozzleChangeCostChf ?? 0) > 0,
+      },
+      {
+        labelKey: 'CHECKOUT.SHIPPING',
+        amount: session?.shippingCostChf ?? 0,
+      },
+    ];
   }
 
   itemMaterial(item: any): string {

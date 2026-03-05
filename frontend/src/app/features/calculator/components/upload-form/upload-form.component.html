@@ -49,7 +49,7 @@
                     type="number"
                     min="1"
                     [value]="item.quantity"
-                    (change)="updateItemQuantity(i, $event)"
+                    (input)="updateItemQuantity(i, $event)"
                     class="qty-input"
                     (click)="$event.stopPropagation()"
                   />

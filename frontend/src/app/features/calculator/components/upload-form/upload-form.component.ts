@@ -138,7 +138,7 @@ export class UploadFormComponent implements OnInit {
       layerHeight: [0.2, [Validators.min(0.05), Validators.max(1.0)]],
       nozzleDiameter: [0.4, Validators.required],
       infillPattern: ['grid', Validators.required],
-      supportEnabled: [false],
+      supportEnabled: [true],
     });
 
     this.form.get('material')?.valueChanges.subscribe((value) => {
@@ -188,6 +188,19 @@ export class UploadFormComponent implements OnInit {
       this.applyGlobalSettingsToAllItems();
       this.emitPrintSettingsChange();
       this.emitItemSettingsDiffChange();
+    });
+
+    effect(() => {
+      if (this.mode() !== 'advanced') {
+        return;
+      }
+
+      if (this.items().length > 0 || this.sameSettingsForAll()) {
+        return;
+      }
+
+      this.sameSettingsForAll.set(true);
+      this.form.get('syncAllItems')?.setValue(true, { emitEvent: false });
     });
   }
 
@@ -408,10 +421,6 @@ export class UploadFormComponent implements OnInit {
     this.items.update((current) => {
       if (index >= current.length) return current;
 
-      if (this.sameSettingsForAll()) {
-        return current.map((item) => ({ ...item, quantity: normalizedQty }));
-      }
-
       return current.map((item, idx) =>
         idx === index ? { ...item, quantity: normalizedQty } : item,
       );
@@ -426,10 +435,6 @@ export class UploadFormComponent implements OnInit {
       let matched = false;
 
       return current.map((item) => {
-        if (this.sameSettingsForAll()) {
-          return { ...item, quantity: normalizedQty };
-        }
-
         if (!matched && this.normalizeFileName(item.file.name) === targetName) {
           matched = true;
           return { ...item, quantity: normalizedQty };
