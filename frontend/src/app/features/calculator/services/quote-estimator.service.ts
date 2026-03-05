@@ -384,8 +384,9 @@ export class QuoteEstimatorService {
     );
 
     const grandTotal = Number(sessionData?.grandTotalChf);
-    const effectiveSetupCost =
-      Number(sessionData?.setupCostChf ?? session?.setupCostChf ?? 0);
+    const effectiveSetupCost = Number(
+      sessionData?.setupCostChf ?? session?.setupCostChf ?? 0,
+    );
     const fallbackTotal =
       Number(sessionData?.itemsTotalChf || 0) +
       effectiveSetupCost +
