@@ -8,8 +8,15 @@ export interface QuoteRequest {
   items: {
     file: File;
     quantity: number;
+    material?: string;
+    quality?: string;
     color?: string;
     filamentVariantId?: number;
+    supportEnabled?: boolean;
+    infillDensity?: number;
+    infillPattern?: string;
+    layerHeight?: number;
+    nozzleDiameter?: number;
     material?: string;
     quality?: string;
     nozzleDiameter?: number;
@@ -37,8 +44,14 @@ export interface QuoteItem {
   unitWeight: number; // grams
   quantity: number;
   material?: string;
+  quality?: string;
   color?: string;
   filamentVariantId?: number;
+  supportEnabled?: boolean;
+  infillDensity?: number;
+  infillPattern?: string;
+  layerHeight?: number;
+  nozzleDiameter?: number;
 }
 
 export interface QuoteResult {
@@ -109,18 +122,12 @@ export interface NumericOption {
   label: string;
 }
 
-export interface NozzleLayerHeightsOption {
-  nozzleDiameter: number;
-  layerHeights: NumericOption[];
-}
-
 export interface OptionsResponse {
   materials: MaterialOption[];
   qualities: QualityOption[];
   infillPatterns: InfillOption[];
   layerHeights: NumericOption[];
   nozzleDiameters: NumericOption[];
-  layerHeightsByNozzle?: NozzleLayerHeightsOption[];
 }
 
 // UI Option for Select Component
@@ -157,7 +164,7 @@ export class QuoteEstimatorService {
 
     if (normalized === 'draft') {
       return {
-        quality: 'draft',
+        quality: 'extra_fine',
         layerHeight: 0.24,
         infillDensity: 12,
         infillPattern: 'grid',
@@ -303,9 +310,10 @@ export class QuoteEstimatorService {
               const formData = new FormData();
               formData.append('file', item.file);
 
+              const effectiveQuality = item.quality || request.quality;
               const easyPreset =
                 request.mode === 'easy'
-                  ? this.buildEasyModePreset(request.quality)
+                  ? this.buildEasyModePreset(effectiveQuality)
                   : null;
 
               const settings = {
@@ -315,6 +323,10 @@ export class QuoteEstimatorService {
                     : request.mode.toUpperCase(),
                 material: item.material || request.material,
                 filamentVariantId: item.filamentVariantId,
+                quantity: item.quantity,
+                quality: easyPreset ? easyPreset.quality : effectiveQuality,
+                supportsEnabled:
+                  item.supportEnabled ?? request.supportEnabled ?? false,
                 quality: easyPreset
                   ? easyPreset.quality
                   : item.quality || request.quality,
@@ -325,15 +337,19 @@ export class QuoteEstimatorService {
                 color: item.color || '#FFFFFF',
                 layerHeight: easyPreset
                   ? easyPreset.layerHeight
+                  : (item.layerHeight ?? request.layerHeight),
                   : item.layerHeight ?? request.layerHeight,
                 infillDensity: easyPreset
                   ? easyPreset.infillDensity
+                  : (item.infillDensity ?? request.infillDensity),
                   : item.infillDensity ?? request.infillDensity,
                 infillPattern: easyPreset
                   ? easyPreset.infillPattern
+                  : (item.infillPattern ?? request.infillPattern),
                   : item.infillPattern ?? request.infillPattern,
                 nozzleDiameter: easyPreset
                   ? easyPreset.nozzleDiameter
+                  : (item.nozzleDiameter ?? request.nozzleDiameter),
                   : item.nozzleDiameter ?? request.nozzleDiameter,
               };
 
@@ -492,6 +508,11 @@ export class QuoteEstimatorService {
         material: item.materialCode || session.materialCode,
         color: item.colorCode,
         filamentVariantId: item.filamentVariantId,
+        supportEnabled: item.supportsEnabled,
+        infillDensity: item.infillPercent,
+        infillPattern: item.infillPattern,
+        layerHeight: item.layerHeightMm,
+        nozzleDiameter: item.nozzleDiameterMm,
       })),
       setupCost: session.setupCostChf || 0,
       globalMachineCost: sessionData.globalMachineCostChf || 0,

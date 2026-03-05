@@ -16,7 +16,6 @@ import {
 } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AppInputComponent } from '../../../../shared/components/app-input/app-input.component';
-import { AppSelectComponent } from '../../../../shared/components/app-select/app-select.component';
 import { AppDropzoneComponent } from '../../../../shared/components/app-dropzone/app-dropzone.component';
 import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
 import { StlViewerComponent } from '../../../../shared/components/stl-viewer/stl-viewer.component';
@@ -35,8 +34,15 @@ interface FormItem {
   file: File;
   previewFile?: File;
   quantity: number;
+  material?: string;
+  quality?: string;
   color: string;
   filamentVariantId?: number;
+  supportEnabled?: boolean;
+  infillDensity?: number;
+  infillPattern?: string;
+  layerHeight?: number;
+  nozzleDiameter?: number;
   printSettings: ItemPrintSettings;
 }
 
@@ -64,7 +70,6 @@ type ItemPrintSettingsUpdate = Partial<ItemPrintSettings>;
     ReactiveFormsModule,
     TranslateModule,
     AppInputComponent,
-    AppSelectComponent,
     AppDropzoneComponent,
     AppButtonComponent,
     StlViewerComponent,
@@ -117,6 +122,7 @@ export class UploadFormComponent implements OnInit {
   private allLayerHeights: SimpleOption[] = [];
   private layerHeightsByNozzle: Record<string, SimpleOption[]> = {};
   private isPatchingSettings = false;
+  sameSettingsForAll = signal(true);
 
   // Computed variants for valid material
   currentMaterialVariants = signal<VariantOption[]>([]);
@@ -152,6 +158,24 @@ export class UploadFormComponent implements OnInit {
     return item.previewFile ?? item.file;
   }
 
+  getSelectedItemIndex(): number {
+    const selected = this.selectedFile();
+    if (!selected) return -1;
+    return this.items().findIndex((item) => item.file === selected);
+  }
+
+  getSelectedItem(): FormItem | null {
+    const index = this.getSelectedItemIndex();
+    if (index < 0) return null;
+    return this.items()[index] ?? null;
+  }
+
+  getVariantsForMaterial(materialCode: string | null | undefined): VariantOption[] {
+    if (!materialCode) return [];
+    const found = this.fullMaterialOptions.find((m) => m.code === materialCode);
+    return found?.variants ?? [];
+  }
+
   constructor() {
     this.form = this.fb.group({
       itemsTouched: [false], // Hack to track touched state for custom items list
@@ -168,14 +192,50 @@ export class UploadFormComponent implements OnInit {
       supportEnabled: [false],
     });
 
-    // Listen to material changes to update variants
-    this.form.get('material')?.valueChanges.subscribe(() => {
+    // Listen to material changes to update variants and propagate when "all files equal" is active.
+    this.form.get('material')?.valueChanges.subscribe((materialCode) => {
       this.updateVariants();
+      if (this.sameSettingsForAll() && !this.isPatchingSettings) {
+        this.applyGlobalMaterialToAll(String(materialCode || 'PLA'));
+      }
     });
 
     this.form.get('quality')?.valueChanges.subscribe((quality) => {
       if (this.mode() !== 'easy' || this.isPatchingSettings) return;
       this.applyAdvancedPresetFromQuality(quality);
+      if (this.sameSettingsForAll()) {
+        this.applyGlobalFieldToAll('quality', String(quality || 'standard'));
+      }
+    });
+
+    this.form.get('nozzleDiameter')?.valueChanges.subscribe((value) => {
+      if (!this.sameSettingsForAll() || this.isPatchingSettings) return;
+      this.applyGlobalFieldToAll(
+        'nozzleDiameter',
+        Number.isFinite(Number(value)) ? Number(value) : 0.4,
+      );
+    });
+    this.form.get('layerHeight')?.valueChanges.subscribe((value) => {
+      if (!this.sameSettingsForAll() || this.isPatchingSettings) return;
+      this.applyGlobalFieldToAll(
+        'layerHeight',
+        Number.isFinite(Number(value)) ? Number(value) : 0.2,
+      );
+    });
+    this.form.get('infillDensity')?.valueChanges.subscribe((value) => {
+      if (!this.sameSettingsForAll() || this.isPatchingSettings) return;
+      this.applyGlobalFieldToAll(
+        'infillDensity',
+        Number.isFinite(Number(value)) ? Number(value) : 15,
+      );
+    });
+    this.form.get('infillPattern')?.valueChanges.subscribe((value) => {
+      if (!this.sameSettingsForAll() || this.isPatchingSettings) return;
+      this.applyGlobalFieldToAll('infillPattern', String(value || 'grid'));
+    });
+    this.form.get('supportEnabled')?.valueChanges.subscribe((value) => {
+      if (!this.sameSettingsForAll() || this.isPatchingSettings) return;
+      this.applyGlobalFieldToAll('supportEnabled', !!value);
     });
     this.form.get('nozzleDiameter')?.valueChanges.subscribe((nozzle) => {
       if (this.isPatchingSettings) return;
@@ -346,18 +406,26 @@ export class UploadFormComponent implements OnInit {
     const MAX_SIZE = 200 * 1024 * 1024; // 200MB
     const validItems: FormItem[] = [];
     let hasError = false;
+    const defaults = this.getCurrentGlobalItemDefaults();
 
     for (const file of newFiles) {
       if (file.size > MAX_SIZE) {
         hasError = true;
       } else {
-        const defaultSelection = this.getDefaultVariantSelection();
+        const defaultSelection = this.getDefaultVariantSelection(defaults.material);
         validItems.push({
           file,
           previewFile: this.isStlFile(file) ? file : undefined,
           quantity: 1,
+          material: defaults.material,
+          quality: defaults.quality,
           color: defaultSelection.colorName,
           filamentVariantId: defaultSelection.filamentVariantId,
+          supportEnabled: defaults.supportEnabled,
+          infillDensity: defaults.infillDensity,
+          infillPattern: defaults.infillPattern,
+          layerHeight: defaults.layerHeight,
+          nozzleDiameter: defaults.nozzleDiameter,
           printSettings: this.getCurrentItemPrintSettings(),
         });
       }
@@ -391,19 +459,25 @@ export class UploadFormComponent implements OnInit {
 
     this.items.update((current) => {
       if (index >= current.length) return current;
-      const updated = [...current];
-      updated[index] = { ...updated[index], quantity: normalizedQty };
-      return updated;
+      const applyToAll = this.sameSettingsForAll();
+      return current.map((item, idx) => {
+        if (!applyToAll && idx !== index) return item;
+        return { ...item, quantity: normalizedQty };
+      });
     });
   }
 
   updateItemQuantityByName(fileName: string, quantity: number) {
     const targetName = this.normalizeFileName(fileName);
     const normalizedQty = this.normalizeQuantity(quantity);
+    const applyToAll = this.sameSettingsForAll();
 
     this.items.update((current) => {
       let matched = false;
       return current.map((item) => {
+        if (applyToAll) {
+          return { ...item, quantity: normalizedQty };
+        }
         if (!matched && this.normalizeFileName(item.file.name) === targetName) {
           matched = true;
           return { ...item, quantity: normalizedQty };
@@ -429,7 +503,7 @@ export class UploadFormComponent implements OnInit {
 
     const item = this.items().find((i) => i.file === file);
     if (item) {
-      const vars = this.currentMaterialVariants();
+      const vars = this.getVariantsForMaterial(item.material);
       if (vars && vars.length > 0) {
         const found = item.filamentVariantId
           ? vars.find((v) => v.id === item.filamentVariantId)
@@ -468,11 +542,206 @@ export class UploadFormComponent implements OnInit {
         : newSelection.filamentVariantId;
     this.items.update((current) => {
       const updated = [...current];
-      updated[index] = {
-        ...updated[index],
-        color: colorName,
-        filamentVariantId,
-      };
+      const applyToAll = this.sameSettingsForAll();
+      return updated.map((item, idx) => {
+        if (!applyToAll && idx !== index) return item;
+        return {
+          ...item,
+          color: colorName,
+          filamentVariantId,
+        };
+      });
+    });
+  }
+
+  updateItemMaterial(index: number, materialCode: string) {
+    if (!Number.isInteger(index) || index < 0) return;
+    const variants = this.getVariantsForMaterial(materialCode);
+    const fallback = variants.find((v) => !v.isOutOfStock) || variants[0];
+
+    this.items.update((current) => {
+      if (index >= current.length) return current;
+      const applyToAll = this.sameSettingsForAll();
+      return current.map((item, idx) => {
+        if (!applyToAll && idx !== index) return item;
+        const next = { ...item, material: materialCode };
+        if (fallback) {
+          next.color = fallback.colorName;
+          next.filamentVariantId = fallback.id;
+        } else {
+          next.filamentVariantId = undefined;
+        }
+        return next;
+      });
+    });
+  }
+
+  updateSelectedItemNumberField(
+    field:
+      | 'nozzleDiameter'
+      | 'layerHeight'
+      | 'infillDensity'
+      | 'quantity',
+    value: number,
+  ) {
+    const index = this.getSelectedItemIndex();
+    if (index < 0) return;
+    const normalized =
+      field === 'quantity'
+        ? this.normalizeQuantity(value)
+        : Number.isFinite(value)
+          ? value
+          : undefined;
+
+    this.items.update((current) => {
+      if (index >= current.length) return current;
+      const applyToAll = this.sameSettingsForAll();
+      return current.map((item, idx) => {
+        if (!applyToAll && idx !== index) return item;
+        return {
+          ...item,
+          [field]: normalized,
+        };
+      });
+    });
+  }
+
+  updateSelectedItemStringField(
+    field: 'quality' | 'infillPattern',
+    value: string,
+  ) {
+    const index = this.getSelectedItemIndex();
+    if (index < 0) return;
+    this.items.update((current) => {
+      if (index >= current.length) return current;
+      const applyToAll = this.sameSettingsForAll();
+      return current.map((item, idx) => {
+        if (!applyToAll && idx !== index) return item;
+        return {
+          ...item,
+          [field]: value,
+        };
+      });
+    });
+  }
+
+  updateSelectedItemSupport(value: boolean) {
+    const index = this.getSelectedItemIndex();
+    if (index < 0) return;
+    this.items.update((current) => {
+      if (index >= current.length) return current;
+      const applyToAll = this.sameSettingsForAll();
+      return current.map((item, idx) => {
+        if (!applyToAll && idx !== index) return item;
+        return {
+          ...item,
+          supportEnabled: value,
+        };
+      });
+    });
+  }
+
+  onSameSettingsToggle(enabled: boolean) {
+    this.sameSettingsForAll.set(enabled);
+    if (!enabled) {
+      // Keep per-file values aligned with what the user sees in global controls
+      // right before switching to single-file mode.
+      this.syncAllItemsWithGlobalForm();
+      return;
+    }
+
+    const selected = this.getSelectedItem() ?? this.items()[0];
+    if (!selected) return;
+
+    const normalizedQuality = this.normalizeQualityValue(
+      selected.quality ?? this.form.get('quality')?.value,
+    );
+
+    this.isPatchingSettings = true;
+    this.form.patchValue(
+      {
+        material: selected.material || this.form.get('material')?.value || 'PLA',
+        quality: normalizedQuality,
+        nozzleDiameter:
+          selected.nozzleDiameter ?? this.form.get('nozzleDiameter')?.value ?? 0.4,
+        layerHeight:
+          selected.layerHeight ?? this.form.get('layerHeight')?.value ?? 0.2,
+        infillDensity:
+          selected.infillDensity ?? this.form.get('infillDensity')?.value ?? 15,
+        infillPattern:
+          selected.infillPattern || this.form.get('infillPattern')?.value || 'grid',
+        supportEnabled:
+          selected.supportEnabled ??
+          this.form.get('supportEnabled')?.value ??
+          false,
+      },
+      { emitEvent: false },
+    );
+    this.isPatchingSettings = false;
+
+    const sharedPatch: Partial<FormItem> = {
+      quantity: selected.quantity,
+      material: selected.material,
+      quality: normalizedQuality,
+      color: selected.color,
+      filamentVariantId: selected.filamentVariantId,
+      supportEnabled: selected.supportEnabled,
+      infillDensity: selected.infillDensity,
+      infillPattern: selected.infillPattern,
+      layerHeight: selected.layerHeight,
+      nozzleDiameter: selected.nozzleDiameter,
+    };
+
+    this.items.update((current) =>
+      current.map((item) => ({
+        ...item,
+        ...sharedPatch,
+      })),
+    );
+  }
+
+  private applyGlobalMaterialToAll(materialCode: string): void {
+    const normalizedMaterial = materialCode || 'PLA';
+    const variants = this.getVariantsForMaterial(normalizedMaterial);
+    const fallback = variants.find((v) => !v.isOutOfStock) || variants[0];
+    this.items.update((current) =>
+      current.map((item) => ({
+        ...item,
+        material: normalizedMaterial,
+        color: fallback ? fallback.colorName : item.color,
+        filamentVariantId: fallback ? fallback.id : item.filamentVariantId,
+      })),
+    );
+  }
+
+  private applyGlobalFieldToAll(
+    field:
+      | 'quality'
+      | 'nozzleDiameter'
+      | 'layerHeight'
+      | 'infillDensity'
+      | 'infillPattern'
+      | 'supportEnabled',
+    value: string | number | boolean,
+  ): void {
+    this.items.update((current) =>
+      current.map((item) => ({
+        ...item,
+        [field]: value,
+      })),
+    );
+  }
+
+  patchItemSettingsByIndex(index: number, patch: Partial<FormItem>) {
+    if (!Number.isInteger(index) || index < 0) return;
+    const normalizedPatch: Partial<FormItem> = { ...patch };
+    if (normalizedPatch.quality !== undefined && normalizedPatch.quality !== null) {
+      normalizedPatch.quality = this.normalizeQualityValue(normalizedPatch.quality);
+    }
+    this.items.update((current) => {
+      if (index >= current.length) return current;
+      const updated = [...current];
+      updated[index] = { ...updated[index], ...normalizedPatch };
       return updated;
     });
     this.emitItemSettingsDiffChange();
@@ -528,15 +797,22 @@ export class UploadFormComponent implements OnInit {
 
   setFiles(files: File[]) {
     const validItems: FormItem[] = [];
-    const defaultSelection = this.getDefaultVariantSelection();
+    const defaults = this.getCurrentGlobalItemDefaults();
+    const defaultSelection = this.getDefaultVariantSelection(defaults.material);
     for (const file of files) {
       validItems.push({
         file,
         previewFile: this.isStlFile(file) ? file : undefined,
         quantity: 1,
+        material: defaults.material,
+        quality: defaults.quality,
         color: defaultSelection.colorName,
         filamentVariantId: defaultSelection.filamentVariantId,
-        printSettings: this.getCurrentItemPrintSettings(),
+        supportEnabled: defaults.supportEnabled,
+        infillDensity: defaults.infillDensity,
+        infillPattern: defaults.infillPattern,
+        layerHeight: defaults.layerHeight,
+        nozzleDiameter: defaults.nozzleDiameter,
       });
     }
 
@@ -559,11 +835,28 @@ export class UploadFormComponent implements OnInit {
     });
   }
 
-  private getDefaultVariantSelection(): {
+  private getCurrentGlobalItemDefaults(): Omit<FormItem, 'file' | 'previewFile' | 'quantity' | 'color' | 'filamentVariantId'> & {
+    material: string;
+    quality: string;
+  } {
+    return {
+      material: this.form.get('material')?.value || 'PLA',
+      quality: this.normalizeQualityValue(this.form.get('quality')?.value),
+      supportEnabled: !!this.form.get('supportEnabled')?.value,
+      infillDensity: Number(this.form.get('infillDensity')?.value ?? 15),
+      infillPattern: this.form.get('infillPattern')?.value || 'grid',
+      layerHeight: Number(this.form.get('layerHeight')?.value ?? 0.2),
+      nozzleDiameter: Number(this.form.get('nozzleDiameter')?.value ?? 0.4),
+    };
+  }
+
+  private getDefaultVariantSelection(materialCode?: string): {
     colorName: string;
     filamentVariantId?: number;
   } {
-    const vars = this.currentMaterialVariants();
+    const vars = materialCode
+      ? this.getVariantsForMaterial(materialCode)
+      : this.currentMaterialVariants();
     if (vars && vars.length > 0) {
       const preferred = vars.find((v) => !v.isOutOfStock) || vars[0];
       return {
@@ -673,13 +966,15 @@ export class UploadFormComponent implements OnInit {
     console.log('Form Valid:', this.form.valid, 'Items:', this.items().length);
 
     if (this.form.valid && this.items().length > 0) {
+      const items = this.items();
+      const firstItemMaterial = items[0]?.material;
       console.log(
         'UploadFormComponent: Emitting submitRequest',
         this.form.value,
       );
       this.submitRequest.emit({
         ...this.form.getRawValue(),
-        items: this.toQuoteRequestItems(), // Include per-item print settings overrides
+        items: this.items(), // Pass the items array explicitly AFTER form value to prevent overwrite
         mode: this.mode(),
       });
     } else {
@@ -711,325 +1006,6 @@ export class UploadFormComponent implements OnInit {
 
   private normalizeFileName(fileName: string): string {
     return (fileName || '').split(/[\\/]/).pop()?.trim().toLowerCase() ?? '';
-  }
-
-  private updateLayerHeightOptionsForNozzle(
-    nozzleValue: unknown,
-    preserveCurrent: boolean,
-  ): void {
-    const key = this.toNozzleKey(nozzleValue);
-    const nozzleSpecific = this.layerHeightsByNozzle[key] || [];
-    const available =
-      nozzleSpecific.length > 0 ? nozzleSpecific : this.allLayerHeights;
-    this.layerHeights.set(available);
-
-    const control = this.form.get('layerHeight');
-    if (!control) return;
-
-    const currentValue = Number(control.value);
-    const currentAllowed = available.some(
-      (option) => Math.abs(Number(option.value) - currentValue) < 0.0001,
-    );
-    if (preserveCurrent && currentAllowed) {
-      return;
-    }
-
-    const preferred = available.find(
-      (option) => Math.abs(Number(option.value) - 0.2) < 0.0001,
-    );
-    const next = preferred ?? available[0];
-    if (next) {
-      control.setValue(next.value, { emitEvent: false });
-    }
-  }
-
-  private toNozzleKey(value: unknown): string {
-    const numeric = Number(value);
-    if (!Number.isFinite(numeric)) return '';
-    return numeric.toFixed(2);
-  }
-
-  getCurrentRequestDraft(): QuoteRequest | null {
-    if (this.items().length === 0) return null;
-    const raw = this.form.getRawValue();
-    return {
-      items: this.toQuoteRequestItems(),
-      material: raw.material,
-      quality: raw.quality,
-      notes: raw.notes,
-      infillDensity: raw.infillDensity,
-      infillPattern: raw.infillPattern,
-      supportEnabled: raw.supportEnabled,
-      layerHeight: raw.layerHeight,
-      nozzleDiameter: raw.nozzleDiameter,
-      mode: this.mode(),
-    };
-  }
-
-  getCurrentPrintSettings(): {
-    mode: 'easy' | 'advanced';
-    material: string;
-    quality: string;
-    nozzleDiameter: number;
-    layerHeight: number;
-    infillDensity: number;
-    infillPattern: string;
-    supportEnabled: boolean;
-  } {
-    const raw = this.form.getRawValue();
-    return {
-      mode: this.mode(),
-      material: String(raw.material || 'PLA'),
-      quality: String(raw.quality || 'standard'),
-      nozzleDiameter: Number(raw.nozzleDiameter ?? 0.4),
-      layerHeight: Number(raw.layerHeight ?? 0.2),
-      infillDensity: Number(raw.infillDensity ?? 20),
-      infillPattern: String(raw.infillPattern || 'grid'),
-      supportEnabled: Boolean(raw.supportEnabled),
-    };
-  }
-
-  private emitPrintSettingsChange(): void {
-    this.printSettingsChange.emit(this.getCurrentPrintSettings());
-  }
-
-  private loadSelectedItemSettingsIntoForm(): void {
-    const selected = this.selectedFile();
-    if (!selected) return;
-    const item = this.items().find((current) => current.file === selected);
-    if (!item) return;
-
-    this.isPatchingSettings = true;
-    this.form.patchValue(
-      {
-        material: item.printSettings.material,
-        quality: item.printSettings.quality,
-        nozzleDiameter: item.printSettings.nozzleDiameter,
-        layerHeight: item.printSettings.layerHeight,
-        infillDensity: item.printSettings.infillDensity,
-        infillPattern: item.printSettings.infillPattern,
-        supportEnabled: item.printSettings.supportEnabled,
-      },
-      { emitEvent: false },
-    );
-    this.isPatchingSettings = false;
-    this.updateLayerHeightOptionsForNozzle(
-      item.printSettings.nozzleDiameter,
-      true,
-    );
-    this.updateVariants();
-  }
-
-  private syncSelectedItemSettingsFromForm(): void {
-    const currentSettings = this.getCurrentItemPrintSettings();
-
-    if (this.shouldApplySettingsToAllItems()) {
-      this.applyCurrentSettingsToAllItems(currentSettings);
-      return;
-    }
-
-    const selected = this.selectedFile();
-    if (!selected) return;
-
-    this.items.update((current) =>
-      current.map((item) => {
-        if (item.file !== selected) {
-          return item;
-        }
-        const variants = this.getVariantsForMaterialCode(currentSettings.material);
-        const fallback = variants.find((v) => !v.isOutOfStock) || variants[0];
-        const byId =
-          item.filamentVariantId != null
-            ? variants.find((v) => v.id === item.filamentVariantId)
-            : null;
-        const byColor = variants.find((v) => v.colorName === item.color);
-        const selectedVariant = byId || byColor || fallback;
-        return {
-          ...item,
-          printSettings: { ...currentSettings },
-          color: selectedVariant ? selectedVariant.colorName : item.color,
-          filamentVariantId: selectedVariant ? selectedVariant.id : undefined,
-        };
-      }),
-    );
-  }
-
-  private emitItemSettingsDiffChange(): void {
-    const currentItems = this.items();
-    if (currentItems.length === 0) {
-      this.itemSettingsDiffChange.emit({});
-      return;
-    }
-
-    const signatureCounts = new Map<string, number>();
-    currentItems.forEach((item) => {
-      const signature = this.settingsSignature(item.printSettings);
-      signatureCounts.set(signature, (signatureCounts.get(signature) || 0) + 1);
-    });
-
-    let dominantSignature = '';
-    let dominantCount = 0;
-    signatureCounts.forEach((count, signature) => {
-      if (count > dominantCount) {
-        dominantCount = count;
-        dominantSignature = signature;
-      }
-    });
-
-    const hasDominant = dominantCount > 1;
-    const dominantSettings = hasDominant
-      ? currentItems.find(
-          (item) =>
-            this.settingsSignature(item.printSettings) === dominantSignature,
-        )?.printSettings
-      : null;
-
-    const diffByFileName: Record<string, ItemSettingsDiffInfo> = {};
-    currentItems.forEach((item) => {
-      const differences = dominantSettings
-        ? this.describeSettingsDifferences(dominantSettings, item.printSettings)
-        : [];
-      diffByFileName[item.file.name] = {
-        differences,
-      };
-    });
-
-    this.itemSettingsDiffChange.emit(diffByFileName);
-  }
-
-  private sameItemPrintSettings(
-    a: ItemPrintSettings,
-    b: ItemPrintSettings,
-  ): boolean {
-    return (
-      a.material.trim().toUpperCase() === b.material.trim().toUpperCase() &&
-      a.quality.trim().toLowerCase() === b.quality.trim().toLowerCase() &&
-      Math.abs(a.nozzleDiameter - b.nozzleDiameter) < 0.0001 &&
-      Math.abs(a.layerHeight - b.layerHeight) < 0.0001 &&
-      Math.abs(a.infillDensity - b.infillDensity) < 0.0001 &&
-      a.infillPattern.trim().toLowerCase() ===
-        b.infillPattern.trim().toLowerCase() &&
-      Boolean(a.supportEnabled) === Boolean(b.supportEnabled)
-    );
-  }
-
-  private settingsSignature(settings: ItemPrintSettings): string {
-    return JSON.stringify({
-      material: settings.material.trim().toUpperCase(),
-      quality: settings.quality.trim().toLowerCase(),
-      nozzleDiameter: Number(settings.nozzleDiameter.toFixed(2)),
-      layerHeight: Number(settings.layerHeight.toFixed(3)),
-      infillDensity: Number(settings.infillDensity.toFixed(2)),
-      infillPattern: settings.infillPattern.trim().toLowerCase(),
-      supportEnabled: Boolean(settings.supportEnabled),
-    });
-  }
-
-  private describeSettingsDifferences(
-    baseline: ItemPrintSettings,
-    current: ItemPrintSettings,
-  ): string[] {
-    if (this.sameItemPrintSettings(baseline, current)) {
-      return [];
-    }
-
-    const differences: string[] = [];
-    if (baseline.material.trim().toUpperCase() !== current.material.trim().toUpperCase()) {
-      differences.push(`${current.material}`);
-    }
-    if (baseline.quality.trim().toLowerCase() !== current.quality.trim().toLowerCase()) {
-      differences.push(`Qualita: ${current.quality}`);
-    }
-    if (Math.abs(baseline.nozzleDiameter - current.nozzleDiameter) >= 0.0001) {
-      differences.push(`Nozzle: ${current.nozzleDiameter.toFixed(1)} mm`);
-    }
-    if (Math.abs(baseline.layerHeight - current.layerHeight) >= 0.0001) {
-      differences.push(`Layer: ${current.layerHeight.toFixed(2)} mm`);
-    }
-    if (Math.abs(baseline.infillDensity - current.infillDensity) >= 0.0001) {
-      differences.push(`Infill: ${current.infillDensity}%`);
-    }
-    if (
-      baseline.infillPattern.trim().toLowerCase() !==
-      current.infillPattern.trim().toLowerCase()
-    ) {
-      differences.push(`Pattern: ${current.infillPattern}`);
-    }
-    if (Boolean(baseline.supportEnabled) !== Boolean(current.supportEnabled)) {
-      differences.push(
-        `Supporti: ${current.supportEnabled ? 'attivi' : 'disattivi'}`,
-      );
-    }
-    return differences;
-  }
-
-  private toQuoteRequestItems(): QuoteRequest['items'] {
-    return this.items().map((item) => ({
-      file: item.file,
-      quantity: item.quantity,
-      color: item.color,
-      filamentVariantId: item.filamentVariantId,
-      material: item.printSettings.material,
-      quality: item.printSettings.quality,
-      nozzleDiameter: item.printSettings.nozzleDiameter,
-      layerHeight: item.printSettings.layerHeight,
-      infillDensity: item.printSettings.infillDensity,
-      infillPattern: item.printSettings.infillPattern,
-      supportEnabled: item.printSettings.supportEnabled,
-    }));
-  }
-
-  private getCurrentItemPrintSettings(): ItemPrintSettings {
-    const settings = this.getCurrentPrintSettings();
-    return {
-      material: settings.material,
-      quality: settings.quality,
-      nozzleDiameter: settings.nozzleDiameter,
-      layerHeight: settings.layerHeight,
-      infillDensity: settings.infillDensity,
-      infillPattern: settings.infillPattern,
-      supportEnabled: settings.supportEnabled,
-    };
-  }
-
-  private shouldApplySettingsToAllItems(): boolean {
-    return this.parseBooleanControlValue(this.form.get('syncAllItems')?.value);
-  }
-
-  private applyCurrentSettingsToAllItems(currentSettings: ItemPrintSettings): void {
-    this.items.update((current) =>
-      current.map((item) => {
-        const variants = this.getVariantsForMaterialCode(currentSettings.material);
-        const fallback = variants.find((v) => !v.isOutOfStock) || variants[0];
-        const byId =
-          item.filamentVariantId != null
-            ? variants.find((v) => v.id === item.filamentVariantId)
-            : null;
-        const byColor = variants.find((v) => v.colorName === item.color);
-        const selectedVariant = byId || byColor || fallback;
-
-        return {
-          ...item,
-          printSettings: { ...currentSettings },
-          color: selectedVariant ? selectedVariant.colorName : item.color,
-          filamentVariantId: selectedVariant ? selectedVariant.id : undefined,
-        };
-      }),
-    );
-  }
-
-  private parseBooleanControlValue(raw: unknown): boolean {
-    if (this.items().length <= 1) {
-      return false;
-    }
-    if (raw === true || raw === 1) {
-      return true;
-    }
-    if (typeof raw === 'string') {
-      const normalized = raw.trim().toLowerCase();
-      return normalized === 'true' || normalized === '1' || normalized === 'on';
-    }
-    return false;
   }
 
   private applySettingsLock(locked: boolean): void {

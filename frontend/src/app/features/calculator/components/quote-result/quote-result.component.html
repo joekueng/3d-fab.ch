@@ -62,7 +62,8 @@
           <span class="file-name">{{ item.fileName }}</span>
           <span class="file-details">
             {{ item.unitTime / 3600 | number: "1.1-1" }}h |
-            {{ item.unitWeight | number: "1.0-0" }}g
+            {{ item.unitWeight | number: "1.0-0" }}g |
+            materiale: {{ item.material || "N/D" }}
             @if (getItemDifferenceLabel(item.fileName)) {
               |
               <small class="item-settings-diff">
