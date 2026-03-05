@@ -277,6 +277,12 @@ public class AdminOrderController {
             idto.setOriginalFilename(i.getOriginalFilename());
             idto.setMaterialCode(i.getMaterialCode());
             idto.setColorCode(i.getColorCode());
+            idto.setQuality(i.getQuality());
+            idto.setNozzleDiameterMm(i.getNozzleDiameterMm());
+            idto.setLayerHeightMm(i.getLayerHeightMm());
+            idto.setInfillPercent(i.getInfillPercent());
+            idto.setInfillPattern(i.getInfillPattern());
+            idto.setSupportsEnabled(i.getSupportsEnabled());
             idto.setQuantity(i.getQuantity());
             idto.setPrintTimeSeconds(i.getPrintTimeSeconds());
             idto.setMaterialGrams(i.getMaterialGrams());

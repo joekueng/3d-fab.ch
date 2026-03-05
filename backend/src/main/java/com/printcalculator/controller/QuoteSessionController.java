@@ -268,6 +268,15 @@ public class QuoteSessionController {
             item.setQuantity(1);
             item.setColorCode(selectedVariant.getColorName());
             item.setFilamentVariant(selectedVariant);
+            item.setMaterialCode(selectedVariant.getFilamentMaterialType() != null
+                    ? selectedVariant.getFilamentMaterialType().getMaterialCode()
+                    : normalizeRequestedMaterialCode(settings.getMaterial()));
+            item.setQuality(resolveQuality(settings, layerHeight));
+            item.setNozzleDiameterMm(nozzleDiameter);
+            item.setLayerHeightMm(layerHeight);
+            item.setInfillPercent(settings.getInfillDensity() != null ? settings.getInfillDensity().intValue() : 20);
+            item.setInfillPattern(settings.getInfillPattern());
+            item.setSupportsEnabled(settings.getSupportsEnabled() != null ? settings.getSupportsEnabled() : false);
             item.setStatus("READY"); // or CALCULATED
             
             item.setPrintTimeSeconds((int) stats.printTimeSeconds());
@@ -324,6 +333,8 @@ public class QuoteSessionController {
                     settings.setInfillDensity(15.0);
                     settings.setInfillPattern("grid");
                     break;
+                case "extra_fine":
+                case "high_definition":
                 case "high":
                     settings.setLayerHeight(0.12);
                     settings.setInfillDensity(20.0);
@@ -504,6 +515,13 @@ public class QuoteSessionController {
             dto.put("materialGrams", item.getMaterialGrams());
             dto.put("colorCode", item.getColorCode());
             dto.put("filamentVariantId", item.getFilamentVariant() != null ? item.getFilamentVariant().getId() : null);
+            dto.put("materialCode", item.getMaterialCode());
+            dto.put("quality", item.getQuality());
+            dto.put("nozzleDiameterMm", item.getNozzleDiameterMm());
+            dto.put("layerHeightMm", item.getLayerHeightMm());
+            dto.put("infillPercent", item.getInfillPercent());
+            dto.put("infillPattern", item.getInfillPattern());
+            dto.put("supportsEnabled", item.getSupportsEnabled());
             dto.put("status", item.getStatus());
             dto.put("convertedStoredPath", extractConvertedStoredPath(item));
             
@@ -666,5 +684,21 @@ public class QuoteSessionController {
         }
         String path = String.valueOf(converted).trim();
         return path.isEmpty() ? null : path;
+    }
+
+    private String resolveQuality(com.printcalculator.dto.PrintSettingsDto settings, BigDecimal layerHeight) {
+        if (settings.getQuality() != null && !settings.getQuality().isBlank()) {
+            return settings.getQuality().trim().toLowerCase(Locale.ROOT);
+        }
+        if (layerHeight == null) {
+            return "standard";
+        }
+        if (layerHeight.compareTo(BigDecimal.valueOf(0.24)) >= 0) {
+            return "draft";
+        }
+        if (layerHeight.compareTo(BigDecimal.valueOf(0.12)) <= 0) {
+            return "extra_fine";
+        }
+        return "standard";
     }
 }

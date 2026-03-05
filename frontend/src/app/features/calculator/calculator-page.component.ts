@@ -25,6 +25,17 @@ import { SuccessStateComponent } from '../../shared/components/success-state/suc
 import { Router, ActivatedRoute } from '@angular/router';
 import { LanguageService } from '../../core/services/language.service';
 
+type TrackedPrintSettings = {
+  mode: 'easy' | 'advanced';
+  material: string;
+  quality: string;
+  nozzleDiameter: number;
+  layerHeight: number;
+  infillDensity: number;
+  infillPattern: string;
+  supportEnabled: boolean;
+};
+
 @Component({
   selector: 'app-calculator-page',
   standalone: true,
@@ -57,16 +68,11 @@ export class CalculatorPageComponent implements OnInit {
 
   orderSuccess = signal(false);
   requiresRecalculation = signal(false);
-  private baselinePrintSettings: {
-    mode: 'easy' | 'advanced';
-    material: string;
-    quality: string;
-    nozzleDiameter: number;
-    layerHeight: number;
-    infillDensity: number;
-    infillPattern: string;
-    supportEnabled: boolean;
-  } | null = null;
+  itemSettingsDiffByFileName = signal<
+    Record<string, { differences: string[] }>
+  >({});
+  private baselinePrintSettings: TrackedPrintSettings | null = null;
+  private baselineItemSettingsByFileName = new Map<string, TrackedPrintSettings>();
 
   @ViewChild('uploadForm') uploadForm!: UploadFormComponent;
   @ViewChild('resultCol') resultCol!: ElementRef;
@@ -115,7 +121,12 @@ export class CalculatorPageComponent implements OnInit {
         this.baselinePrintSettings = this.toTrackedSettingsFromSession(
           data.session,
         );
+        this.baselineItemSettingsByFileName = this.buildBaselineMapFromSession(
+          data.items || [],
+          this.baselinePrintSettings,
+        );
         this.requiresRecalculation.set(false);
+        this.itemSettingsDiffByFileName.set({});
         const isCadSession = data?.session?.status === 'CAD_ACTIVE';
         this.cadSessionLocked.set(isCadSession);
         this.step.set('quote');
@@ -188,23 +199,33 @@ export class CalculatorPageComponent implements OnInit {
           });
           this.uploadForm.patchSettings(session);
 
-          // Also restore colors?
-          // setFiles inits with 'Black'. We need to update them if they differ.
-          // items has colorCode.
-          setTimeout(() => {
-            if (this.uploadForm) {
-              items.forEach((item, index) => {
-                // Assuming index matches.
-                // Need to be careful if items order changed, but usually ID sort or insert order.
-                if (item.colorCode) {
-                  this.uploadForm.updateItemColor(index, {
-                    colorName: item.colorCode,
-                    filamentVariantId: item.filamentVariantId,
-                  });
-                }
+          items.forEach((item, index) => {
+            const tracked = this.toTrackedSettingsFromSessionItem(
+              item,
+              this.toTrackedSettingsFromSession(session),
+            );
+            this.uploadForm.setItemPrintSettingsByIndex(index, {
+              material: tracked.material.toUpperCase(),
+              quality: tracked.quality,
+              nozzleDiameter: tracked.nozzleDiameter,
+              layerHeight: tracked.layerHeight,
+              infillDensity: tracked.infillDensity,
+              infillPattern: tracked.infillPattern,
+              supportEnabled: tracked.supportEnabled,
+            });
+
+            if (item.colorCode) {
+              this.uploadForm.updateItemColor(index, {
+                colorName: item.colorCode,
+                filamentVariantId: item.filamentVariantId,
               });
             }
           });
+
+          const selected = this.uploadForm.selectedFile();
+          if (selected) {
+            this.uploadForm.selectFile(selected);
+          }
         }
         this.loading.set(false);
       },
@@ -254,7 +275,10 @@ export class CalculatorPageComponent implements OnInit {
           this.errorKey.set('CALC.ERROR_GENERIC');
           this.result.set(res);
           this.baselinePrintSettings = this.toTrackedSettingsFromRequest(req);
+          this.baselineItemSettingsByFileName =
+            this.buildBaselineMapFromRequest(req);
           this.requiresRecalculation.set(false);
+          this.itemSettingsDiffByFileName.set({});
           this.loading.set(false);
           this.uploadProgress.set(100);
           this.step.set('quote');
@@ -395,7 +419,12 @@ export class CalculatorPageComponent implements OnInit {
     this.step.set('upload');
     this.result.set(null);
     this.requiresRecalculation.set(false);
+    this.itemSettingsDiffByFileName.set({});
     this.baselinePrintSettings = null;
+    this.baselineItemSettingsByFileName = new Map<
+      string,
+      TrackedPrintSettings
+    >();
     this.cadSessionLocked.set(false);
     this.orderSuccess.set(false);
     this.switchMode('easy'); // Reset to default and sync URL
@@ -403,21 +432,16 @@ export class CalculatorPageComponent implements OnInit {
 
   private currentRequest: QuoteRequest | null = null;
 
-  onUploadPrintSettingsChange(settings: {
-    mode: 'easy' | 'advanced';
-    material: string;
-    quality: string;
-    nozzleDiameter: number;
-    layerHeight: number;
-    infillDensity: number;
-    infillPattern: string;
-    supportEnabled: boolean;
-  }) {
+  onUploadPrintSettingsChange(_: TrackedPrintSettings) {
+    void _;
     if (!this.result()) return;
-    if (!this.baselinePrintSettings) return;
-    this.requiresRecalculation.set(
-      !this.sameTrackedSettings(this.baselinePrintSettings, settings),
-    );
+    this.refreshRecalculationRequirement();
+  }
+
+  onItemSettingsDiffChange(
+    diffByFileName: Record<string, { differences: string[] }>,
+  ) {
+    this.itemSettingsDiffByFileName.set(diffByFileName || {});
   }
 
   onConsult() {
@@ -478,7 +502,12 @@ export class CalculatorPageComponent implements OnInit {
     this.error.set(true);
     this.result.set(null);
     this.requiresRecalculation.set(false);
+    this.itemSettingsDiffByFileName.set({});
     this.baselinePrintSettings = null;
+    this.baselineItemSettingsByFileName = new Map<
+      string,
+      TrackedPrintSettings
+    >();
   }
 
   switchMode(nextMode: 'easy' | 'advanced'): void {
@@ -499,16 +528,7 @@ export class CalculatorPageComponent implements OnInit {
     });
   }
 
-  private toTrackedSettingsFromRequest(req: QuoteRequest): {
-    mode: 'easy' | 'advanced';
-    material: string;
-    quality: string;
-    nozzleDiameter: number;
-    layerHeight: number;
-    infillDensity: number;
-    infillPattern: string;
-    supportEnabled: boolean;
-  } {
+  private toTrackedSettingsFromRequest(req: QuoteRequest): TrackedPrintSettings {
     return {
       mode: req.mode,
       material: this.normalizeString(req.material || 'PLA'),
@@ -521,16 +541,37 @@ export class CalculatorPageComponent implements OnInit {
     };
   }
 
-  private toTrackedSettingsFromSession(session: any): {
-    mode: 'easy' | 'advanced';
-    material: string;
-    quality: string;
-    nozzleDiameter: number;
-    layerHeight: number;
-    infillDensity: number;
-    infillPattern: string;
-    supportEnabled: boolean;
-  } {
+  private toTrackedSettingsFromItem(
+    req: QuoteRequest,
+    item: QuoteRequest['items'][number],
+  ): TrackedPrintSettings {
+    return {
+      mode: req.mode,
+      material: this.normalizeString(item.material || req.material || 'PLA'),
+      quality: this.normalizeString(item.quality || req.quality || 'standard'),
+      nozzleDiameter: this.normalizeNumber(
+        item.nozzleDiameter ?? req.nozzleDiameter,
+        0.4,
+        2,
+      ),
+      layerHeight: this.normalizeNumber(
+        item.layerHeight ?? req.layerHeight,
+        0.2,
+        3,
+      ),
+      infillDensity: this.normalizeNumber(
+        item.infillDensity ?? req.infillDensity,
+        20,
+        2,
+      ),
+      infillPattern: this.normalizeString(
+        item.infillPattern || req.infillPattern || 'grid',
+      ),
+      supportEnabled: Boolean(item.supportEnabled ?? req.supportEnabled),
+    };
+  }
+
+  private toTrackedSettingsFromSession(session: any): TrackedPrintSettings {
     const layer = this.normalizeNumber(session?.layerHeightMm, 0.2, 3);
     return {
       mode: this.mode(),
@@ -545,27 +586,111 @@ export class CalculatorPageComponent implements OnInit {
     };
   }
 
+  private toTrackedSettingsFromSessionItem(
+    item: any,
+    fallback: TrackedPrintSettings,
+  ): TrackedPrintSettings {
+    const layer = this.normalizeNumber(item?.layerHeightMm, fallback.layerHeight, 3);
+    return {
+      mode: this.mode(),
+      material: this.normalizeString(item?.materialCode || fallback.material),
+      quality: this.normalizeString(
+        item?.quality ||
+          (layer >= 0.24
+            ? 'draft'
+            : layer <= 0.12
+              ? 'extra_fine'
+              : 'standard'),
+      ),
+      nozzleDiameter: this.normalizeNumber(
+        item?.nozzleDiameterMm,
+        fallback.nozzleDiameter,
+        2,
+      ),
+      layerHeight: layer,
+      infillDensity: this.normalizeNumber(
+        item?.infillPercent,
+        fallback.infillDensity,
+        2,
+      ),
+      infillPattern: this.normalizeString(
+        item?.infillPattern || fallback.infillPattern,
+      ),
+      supportEnabled: Boolean(
+        item?.supportsEnabled ?? fallback.supportEnabled,
+      ),
+    };
+  }
+
+  private buildBaselineMapFromRequest(
+    req: QuoteRequest,
+  ): Map<string, TrackedPrintSettings> {
+    const map = new Map<string, TrackedPrintSettings>();
+    req.items.forEach((item) => {
+      map.set(
+        this.normalizeFileName(item.file?.name || ''),
+        this.toTrackedSettingsFromItem(req, item),
+      );
+    });
+    return map;
+  }
+
+  private buildBaselineMapFromSession(
+    items: any[],
+    defaultSettings: TrackedPrintSettings | null,
+  ): Map<string, TrackedPrintSettings> {
+    const map = new Map<string, TrackedPrintSettings>();
+    const fallback = defaultSettings ?? this.defaultTrackedSettings();
+    items.forEach((item) => {
+      map.set(
+        this.normalizeFileName(item?.originalFilename || ''),
+        this.toTrackedSettingsFromSessionItem(item, fallback),
+      );
+    });
+    return map;
+  }
+
+  private defaultTrackedSettings(): TrackedPrintSettings {
+    return {
+      mode: this.mode(),
+      material: 'pla',
+      quality: 'standard',
+      nozzleDiameter: 0.4,
+      layerHeight: 0.2,
+      infillDensity: 20,
+      infillPattern: 'grid',
+      supportEnabled: false,
+    };
+  }
+
+  private refreshRecalculationRequirement(): void {
+    if (!this.result()) return;
+
+    const draft = this.uploadForm?.getCurrentRequestDraft();
+    if (!draft || draft.items.length === 0) {
+      this.requiresRecalculation.set(false);
+      return;
+    }
+
+    const fallback = this.baselinePrintSettings;
+    if (!fallback) {
+      this.requiresRecalculation.set(false);
+      return;
+    }
+
+    const changed = draft.items.some((item) => {
+      const key = this.normalizeFileName(item.file?.name || '');
+      const baseline = this.baselineItemSettingsByFileName.get(key) || fallback;
+      const current = this.toTrackedSettingsFromItem(draft, item);
+      return !this.sameTrackedSettings(baseline, current);
+    });
+
+    this.requiresRecalculation.set(changed);
+  }
+
   private sameTrackedSettings(
-    a: {
-      mode: 'easy' | 'advanced';
-      material: string;
-      quality: string;
-      nozzleDiameter: number;
-      layerHeight: number;
-      infillDensity: number;
-      infillPattern: string;
-      supportEnabled: boolean;
-    },
-    b: {
-      mode: 'easy' | 'advanced';
-      material: string;
-      quality: string;
-      nozzleDiameter: number;
-      layerHeight: number;
-      infillDensity: number;
-      infillPattern: string;
-      supportEnabled: boolean;
-    },
+    a: TrackedPrintSettings,
+    b: TrackedPrintSettings,
   ): boolean {
     return (
       a.mode === b.mode &&
@@ -581,6 +706,10 @@ export class CalculatorPageComponent implements OnInit {
       a.infillPattern === this.normalizeString(b.infillPattern) &&
       a.supportEnabled === Boolean(b.supportEnabled)
     );
+  }
+
+  private normalizeFileName(fileName: string): string {
+    return (fileName || '').split(/[\\/]/).pop()?.trim().toLowerCase() ?? '';
   }
 
   private normalizeString(value: string): string {

@@ -10,6 +10,13 @@ export interface QuoteRequest {
     quantity: number;
     color?: string;
     filamentVariantId?: number;
+    material?: string;
+    quality?: string;
+    nozzleDiameter?: number;
+    layerHeight?: number;
+    infillDensity?: number;
+    infillPattern?: string;
+    supportEnabled?: boolean;
   }[];
   material: string;
   quality: string;
@@ -150,7 +157,7 @@ export class QuoteEstimatorService {
 
     if (normalized === 'draft') {
       return {
-        quality: 'extra_fine',
+        quality: 'draft',
         layerHeight: 0.24,
         infillDensity: 12,
         infillPattern: 'grid',
@@ -306,23 +313,28 @@ export class QuoteEstimatorService {
                   request.mode === 'easy'
                     ? 'ADVANCED'
                     : request.mode.toUpperCase(),
-                material: request.material,
+                material: item.material || request.material,
                 filamentVariantId: item.filamentVariantId,
-                quality: easyPreset ? easyPreset.quality : request.quality,
-                supportsEnabled: request.supportEnabled,
+                quality: easyPreset
+                  ? easyPreset.quality
+                  : item.quality || request.quality,
+                supportsEnabled:
+                  easyPreset != null
+                    ? request.supportEnabled
+                    : item.supportEnabled ?? request.supportEnabled,
                 color: item.color || '#FFFFFF',
                 layerHeight: easyPreset
                   ? easyPreset.layerHeight
-                  : request.layerHeight,
+                  : item.layerHeight ?? request.layerHeight,
                 infillDensity: easyPreset
                   ? easyPreset.infillDensity
-                  : request.infillDensity,
+                  : item.infillDensity ?? request.infillDensity,
                 infillPattern: easyPreset
                   ? easyPreset.infillPattern
-                  : request.infillPattern,
+                  : item.infillPattern ?? request.infillPattern,
                 nozzleDiameter: easyPreset
                   ? easyPreset.nozzleDiameter
-                  : request.nozzleDiameter,
+                  : item.nozzleDiameter ?? request.nozzleDiameter,
               };
 
               const settingsBlob = new Blob([JSON.stringify(settings)], {
@@ -477,9 +489,7 @@ export class QuoteEstimatorService {
         unitTime: item.printTimeSeconds,
         unitWeight: item.materialGrams,
         quantity: item.quantity,
-        material: session.materialCode, // Assumption: session has one material for all? or items have it?
-        // Backend model QuoteSession has materialCode.
-        // But line items might have different colors.
+        material: item.materialCode || session.materialCode,
         color: item.colorCode,
         filamentVariantId: item.filamentVariantId,
       })),

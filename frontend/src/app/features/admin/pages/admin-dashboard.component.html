@@ -192,13 +192,18 @@
               <strong>{{ item.originalFilename }}</strong>
             </p>
             <p class="item-meta">
-              Qta: {{ item.quantity }} | Colore:
+              Qta: {{ item.quantity }} | Materiale:
+              {{ item.materialCode || "-" }} | Colore:
               <span
                 class="color-swatch"
                 *ngIf="isHexColor(item.colorCode)"
                 [style.background-color]="item.colorCode"
               ></span>
               <span>{{ item.colorCode || "-" }}</span>
+              | Nozzle: {{ item.nozzleDiameterMm ?? "-" }} mm | Layer:
+              {{ item.layerHeightMm ?? "-" }} mm | Infill:
+              {{ item.infillPercent ?? "-" }}% | Supporti:
+              {{ item.supportsEnabled ? "Sì" : "No" }}
               | Riga:
               {{ item.lineTotalChf | currency: "CHF" : "symbol" : "1.2-2" }}
             </p>
@@ -273,17 +278,15 @@
       </div>
     </div>
 
-    <h4>Colori file</h4>
+    <h4>Parametri per file</h4>
     <div class="file-color-list">
       <div class="file-color-row" *ngFor="let item of selectedOrder.items">
         <span class="filename">{{ item.originalFilename }}</span>
         <span class="file-color">
-          <span
-            class="color-swatch"
-            *ngIf="isHexColor(item.colorCode)"
-            [style.background-color]="item.colorCode"
-          ></span>
-          {{ item.colorCode || "-" }}
+          {{ item.materialCode || "-" }} | {{ item.nozzleDiameterMm ?? "-" }} mm
+          | {{ item.layerHeightMm ?? "-" }} mm | {{ item.infillPercent ?? "-" }}%
+          | {{ item.infillPattern || "-" }} |
+          {{ item.supportsEnabled ? "Supporti ON" : "Supporti OFF" }}
         </span>
       </div>
     </div>

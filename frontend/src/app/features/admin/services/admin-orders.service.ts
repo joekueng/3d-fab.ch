@@ -8,6 +8,12 @@ export interface AdminOrderItem {
   originalFilename: string;
   materialCode: string;
   colorCode: string;
+  quality?: string;
+  nozzleDiameterMm?: number;
+  layerHeightMm?: number;
+  infillPercent?: number;
+  infillPattern?: string;
+  supportsEnabled?: boolean;
   quantity: number;
   printTimeSeconds: number;
   materialGrams: number;

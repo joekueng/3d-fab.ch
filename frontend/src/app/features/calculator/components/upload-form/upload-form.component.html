@@ -63,7 +63,7 @@
                   <app-color-selector
                     [selectedColor]="item.color"
                     [selectedVariantId]="item.filamentVariantId ?? null"
-                    [variants]="currentMaterialVariants()"
+                    [variants]="getVariantsForItem(item)"
                     (colorSelected)="updateItemColor(i, $event)"
                   >
                   </app-color-selector>
@@ -144,6 +144,15 @@
       ></app-select>
     }
   </div>
+
+  @if (items().length > 1) {
+    <div class="checkbox-row sync-all-row">
+      <input type="checkbox" formControlName="syncAllItems" id="syncAllItems" />
+      <label for="syncAllItems">
+        Uguale per tutti i pezzi
+      </label>
+    </div>
+  }
 
   <!-- Global quantity removed, now per item -->
 

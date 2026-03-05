@@ -245,6 +245,10 @@
                   <span
                     >{{ "CHECKOUT.QTY" | translate }}: {{ item.quantity }}</span
                   >
+                  <span>
+                    {{ "CHECKOUT.MATERIAL" | translate }}:
+                    {{ itemMaterial(item) }}
+                  </span>
                   <span
                     *ngIf="item.colorCode"
                     class="color-dot"
@@ -255,7 +259,7 @@
                   {{ item.printTimeSeconds / 3600 | number: "1.1-1" }}h |
                   {{ item.materialGrams | number: "1.0-0" }}g
                 </div>
-                <div class="item-preview" *ngIf="isStlItem(item)">
+                <div class="item-preview" *ngIf="isCadSession() && isStlItem(item)">
                   <ng-container
                     *ngIf="previewFile(item) as itemPreview; else previewState"
                   >

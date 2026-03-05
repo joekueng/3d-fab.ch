@@ -182,6 +182,12 @@ public class OrderService {
             } else {
                 oItem.setMaterialCode(session.getMaterialCode());
             }
+            oItem.setQuality(qItem.getQuality());
+            oItem.setNozzleDiameterMm(qItem.getNozzleDiameterMm());
+            oItem.setLayerHeightMm(qItem.getLayerHeightMm());
+            oItem.setInfillPercent(qItem.getInfillPercent());
+            oItem.setInfillPattern(qItem.getInfillPattern());
+            oItem.setSupportsEnabled(qItem.getSupportsEnabled());
 
             BigDecimal distributedUnitPrice = qItem.getUnitPriceChf() != null ? qItem.getUnitPriceChf() : BigDecimal.ZERO;
             if (totals.totalPrintSeconds().compareTo(BigDecimal.ZERO) > 0 && qItem.getPrintTimeSeconds() != null) {

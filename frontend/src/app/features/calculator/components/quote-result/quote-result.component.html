@@ -63,6 +63,12 @@
           <span class="file-details">
             {{ item.unitTime / 3600 | number: "1.1-1" }}h |
             {{ item.unitWeight | number: "1.0-0" }}g
+            @if (getItemDifferenceLabel(item.fileName)) {
+              |
+              <small class="item-settings-diff">
+                {{ getItemDifferenceLabel(item.fileName) }}
+              </small>
+            }
           </span>
         </div>
 

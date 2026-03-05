@@ -162,7 +162,11 @@ export class CheckoutComponent implements OnInit {
     this.quoteService.getQuoteSession(this.sessionId).subscribe({
       next: (session) => {
         this.quoteSession.set(session);
-        this.loadStlPreviews(session);
+        if (this.isCadSessionData(session)) {
+          this.loadStlPreviews(session);
+        } else {
+          this.resetPreviewState();
+        }
         console.log('Loaded session:', session);
       },
       error: (err) => {
@@ -173,7 +177,7 @@ export class CheckoutComponent implements OnInit {
   }
 
   isCadSession(): boolean {
-    return this.quoteSession()?.session?.status === 'CAD_ACTIVE';
+    return this.isCadSessionData(this.quoteSession());
   }
 
   cadRequestId(): string | null {
@@ -186,6 +190,12 @@ export class CheckoutComponent implements OnInit {
 
   cadTotal(): number {
     return this.quoteSession()?.cadTotalChf ?? 0;
+  }
+
+  itemMaterial(item: any): string {
+    return String(
+      item?.materialCode ?? this.quoteSession()?.session?.materialCode ?? '-',
+    );
   }
 
   isStlItem(item: any): boolean {
@@ -241,7 +251,11 @@ export class CheckoutComponent implements OnInit {
   }
 
   private loadStlPreviews(session: any): void {
-    if (!this.sessionId || !Array.isArray(session?.items)) {
+    if (
+      !this.sessionId ||
+      !this.isCadSessionData(session) ||
+      !Array.isArray(session?.items)
+    ) {
       return;
     }
 
@@ -274,6 +288,17 @@ export class CheckoutComponent implements OnInit {
         },
       });
     }
+  }
+
+  private isCadSessionData(session: any): boolean {
+    return session?.session?.status === 'CAD_ACTIVE';
+  }
+
+  private resetPreviewState(): void {
+    this.previewFiles.set({});
+    this.previewLoading.set({});
+    this.previewErrors.set({});
+    this.closePreview();
   }
 
   onSubmit() {

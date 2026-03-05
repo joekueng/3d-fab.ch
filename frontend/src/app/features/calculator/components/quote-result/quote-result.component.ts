@@ -36,6 +36,9 @@ export class QuoteResultComponent implements OnDestroy {
 
   result = input.required<QuoteResult>();
   recalculationRequired = input<boolean>(false);
+  itemSettingsDiffByFileName = input<Record<string, { differences: string[] }>>(
+    {},
+  );
   consult = output<void>();
   proceed = output<void>();
   itemChange = output<{
@@ -184,5 +187,16 @@ export class QuoteResultComponent implements OnDestroy {
   private clearAllQuantityTimers(): void {
     this.quantityTimers.forEach((timer) => clearTimeout(timer));
     this.quantityTimers.clear();
+  }
+
+  getItemDifferenceLabel(fileName: string): string {
+    const differences =
+      this.itemSettingsDiffByFileName()[fileName]?.differences || [];
+    if (differences.length === 0) return '';
+
+    const materialOnly = differences.find(
+      (entry) => !entry.includes(':') && entry.trim().length > 0,
+    );
+    return materialOnly || differences.join(' | ');
   }
 }

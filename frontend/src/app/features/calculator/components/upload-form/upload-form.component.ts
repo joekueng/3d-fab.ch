@@ -37,7 +37,24 @@ interface FormItem {
   quantity: number;
   color: string;
   filamentVariantId?: number;
+  printSettings: ItemPrintSettings;
 }
+
+interface ItemPrintSettings {
+  material: string;
+  quality: string;
+  nozzleDiameter: number;
+  layerHeight: number;
+  infillDensity: number;
+  infillPattern: string;
+  supportEnabled: boolean;
+}
+
+interface ItemSettingsDiffInfo {
+  differences: string[];
+}
+
+type ItemPrintSettingsUpdate = Partial<ItemPrintSettings>;
 
 @Component({
   selector: 'app-upload-form',
@@ -67,6 +84,7 @@ export class UploadFormComponent implements OnInit {
     fileName: string;
     quantity: number;
   }>();
+  itemSettingsDiffChange = output<Record<string, ItemSettingsDiffInfo>>();
   printSettingsChange = output<{
     mode: 'easy' | 'advanced';
     material: string;
@@ -108,7 +126,7 @@ export class UploadFormComponent implements OnInit {
     if (matCode && this.fullMaterialOptions.length > 0) {
       const found = this.fullMaterialOptions.find((m) => m.code === matCode);
       this.currentMaterialVariants.set(found ? found.variants : []);
-      this.syncItemVariantSelections();
+      this.syncSelectedItemVariantSelection();
     } else {
       this.currentMaterialVariants.set([]);
     }
@@ -137,6 +155,7 @@ export class UploadFormComponent implements OnInit {
   constructor() {
     this.form = this.fb.group({
       itemsTouched: [false], // Hack to track touched state for custom items list
+      syncAllItems: [true],
       material: ['', Validators.required],
       quality: ['', Validators.required],
       items: [[]], // Track items in form for validation if needed
@@ -164,7 +183,9 @@ export class UploadFormComponent implements OnInit {
     });
     this.form.valueChanges.subscribe(() => {
       if (this.isPatchingSettings) return;
+      this.syncSelectedItemSettingsFromForm();
       this.emitPrintSettingsChange();
+      this.emitItemSettingsDiffChange();
     });
 
     effect(() => {
@@ -337,6 +358,7 @@ export class UploadFormComponent implements OnInit {
           quantity: 1,
           color: defaultSelection.colorName,
           filamentVariantId: defaultSelection.filamentVariantId,
+          printSettings: this.getCurrentItemPrintSettings(),
         });
       }
     }
@@ -349,7 +371,8 @@ export class UploadFormComponent implements OnInit {
       this.items.update((current) => [...current, ...validItems]);
       this.form.get('itemsTouched')?.setValue(true);
       // Auto select last added
-      this.selectedFile.set(validItems[validItems.length - 1].file);
+      this.selectFile(validItems[validItems.length - 1].file);
+      this.emitItemSettingsDiffChange();
     }
   }
 
@@ -396,6 +419,7 @@ export class UploadFormComponent implements OnInit {
     } else {
       this.selectedFile.set(file);
     }
+    this.loadSelectedItemSettingsIntoForm();
   }
 
   // Helper to get color of currently selected file
@@ -451,17 +475,55 @@ export class UploadFormComponent implements OnInit {
       };
       return updated;
     });
+    this.emitItemSettingsDiffChange();
+  }
+
+  setItemPrintSettingsByIndex(index: number, update: ItemPrintSettingsUpdate) {
+    if (!Number.isInteger(index) || index < 0) return;
+
+    let selectedItemUpdated = false;
+    this.items.update((current) => {
+      if (index >= current.length) return current;
+      const updated = [...current];
+      const target = updated[index];
+      if (!target) return current;
+
+      const merged: ItemPrintSettings = {
+        ...target.printSettings,
+        ...update,
+      };
+
+      updated[index] = {
+        ...target,
+        printSettings: merged,
+      };
+      selectedItemUpdated = target.file === this.selectedFile();
+      return updated;
+    });
+
+    if (selectedItemUpdated) {
+      this.loadSelectedItemSettingsIntoForm();
+      this.emitPrintSettingsChange();
+    }
+    this.emitItemSettingsDiffChange();
   }
 
   removeItem(index: number) {
+    let nextSelected: File | null = null;
     this.items.update((current) => {
       const updated = [...current];
       const removed = updated.splice(index, 1)[0];
       if (this.selectedFile() === removed.file) {
-        this.selectedFile.set(null);
+        nextSelected = updated.length > 0 ? updated[Math.max(0, index - 1)].file : null;
       }
       return updated;
     });
+    if (nextSelected) {
+      this.selectFile(nextSelected);
+    } else if (this.items().length === 0) {
+      this.selectedFile.set(null);
+    }
+    this.emitItemSettingsDiffChange();
   }
 
   setFiles(files: File[]) {
@@ -474,6 +536,7 @@ export class UploadFormComponent implements OnInit {
         quantity: 1,
         color: defaultSelection.colorName,
         filamentVariantId: defaultSelection.filamentVariantId,
+        printSettings: this.getCurrentItemPrintSettings(),
       });
     }
 
@@ -481,7 +544,8 @@ export class UploadFormComponent implements OnInit {
       this.items.set(validItems);
       this.form.get('itemsTouched')?.setValue(true);
       // Auto select last added
-      this.selectedFile.set(validItems[validItems.length - 1].file);
+      this.selectFile(validItems[validItems.length - 1].file);
+      this.emitItemSettingsDiffChange();
     }
   }
 
@@ -510,25 +574,48 @@ export class UploadFormComponent implements OnInit {
     return { colorName: 'Black' };
   }
 
-  private syncItemVariantSelections(): void {
+  getVariantsForItem(item: FormItem): VariantOption[] {
+    return this.getVariantsForMaterialCode(item.printSettings.material);
+  }
+
+  private getVariantsForMaterialCode(materialCodeRaw: string): VariantOption[] {
+    const materialCode = String(materialCodeRaw || '').toUpperCase();
+    if (!materialCode) {
+      return [];
+    }
+    const material = this.fullMaterialOptions.find(
+      (option) => String(option.code || '').toUpperCase() === materialCode,
+    );
+    return material?.variants || [];
+  }
+
+  private syncSelectedItemVariantSelection(): void {
     const vars = this.currentMaterialVariants();
     if (!vars || vars.length === 0) {
+      return;
+    }
+
+    const selected = this.selectedFile();
+    if (!selected) {
       return;
     }
 
     const fallback = vars.find((v) => !v.isOutOfStock) || vars[0];
     this.items.update((current) =>
       current.map((item) => {
+        if (item.file !== selected) {
+          return item;
+        }
         const byId =
           item.filamentVariantId != null
             ? vars.find((v) => v.id === item.filamentVariantId)
             : null;
         const byColor = vars.find((v) => v.colorName === item.color);
-        const selected = byId || byColor || fallback;
+        const selectedVariant = byId || byColor || fallback;
         return {
           ...item,
-          color: selected.colorName,
-          filamentVariantId: selected.id,
+          color: selectedVariant.colorName,
+          filamentVariantId: selectedVariant.id,
         };
       }),
     );
@@ -592,7 +679,7 @@ export class UploadFormComponent implements OnInit {
       );
       this.submitRequest.emit({
         ...this.form.getRawValue(),
-        items: this.items(), // Pass the items array explicitly AFTER form value to prevent overwrite
+        items: this.toQuoteRequestItems(), // Include per-item print settings overrides
         mode: this.mode(),
       });
     } else {
@@ -666,7 +753,7 @@ export class UploadFormComponent implements OnInit {
     if (this.items().length === 0) return null;
     const raw = this.form.getRawValue();
     return {
-      items: this.items(),
+      items: this.toQuoteRequestItems(),
       material: raw.material,
       quality: raw.quality,
       notes: raw.notes,
@@ -706,8 +793,248 @@ export class UploadFormComponent implements OnInit {
     this.printSettingsChange.emit(this.getCurrentPrintSettings());
   }
 
+  private loadSelectedItemSettingsIntoForm(): void {
+    const selected = this.selectedFile();
+    if (!selected) return;
+    const item = this.items().find((current) => current.file === selected);
+    if (!item) return;
+
+    this.isPatchingSettings = true;
+    this.form.patchValue(
+      {
+        material: item.printSettings.material,
+        quality: item.printSettings.quality,
+        nozzleDiameter: item.printSettings.nozzleDiameter,
+        layerHeight: item.printSettings.layerHeight,
+        infillDensity: item.printSettings.infillDensity,
+        infillPattern: item.printSettings.infillPattern,
+        supportEnabled: item.printSettings.supportEnabled,
+      },
+      { emitEvent: false },
+    );
+    this.isPatchingSettings = false;
+    this.updateLayerHeightOptionsForNozzle(
+      item.printSettings.nozzleDiameter,
+      true,
+    );
+    this.updateVariants();
+  }
+
+  private syncSelectedItemSettingsFromForm(): void {
+    const currentSettings = this.getCurrentItemPrintSettings();
+
+    if (this.shouldApplySettingsToAllItems()) {
+      this.applyCurrentSettingsToAllItems(currentSettings);
+      return;
+    }
+
+    const selected = this.selectedFile();
+    if (!selected) return;
+
+    this.items.update((current) =>
+      current.map((item) => {
+        if (item.file !== selected) {
+          return item;
+        }
+        const variants = this.getVariantsForMaterialCode(currentSettings.material);
+        const fallback = variants.find((v) => !v.isOutOfStock) || variants[0];
+        const byId =
+          item.filamentVariantId != null
+            ? variants.find((v) => v.id === item.filamentVariantId)
+            : null;
+        const byColor = variants.find((v) => v.colorName === item.color);
+        const selectedVariant = byId || byColor || fallback;
+        return {
+          ...item,
+          printSettings: { ...currentSettings },
+          color: selectedVariant ? selectedVariant.colorName : item.color,
+          filamentVariantId: selectedVariant ? selectedVariant.id : undefined,
+        };
+      }),
+    );
+  }
+
+  private emitItemSettingsDiffChange(): void {
+    const currentItems = this.items();
+    if (currentItems.length === 0) {
+      this.itemSettingsDiffChange.emit({});
+      return;
+    }
+
+    const signatureCounts = new Map<string, number>();
+    currentItems.forEach((item) => {
+      const signature = this.settingsSignature(item.printSettings);
+      signatureCounts.set(signature, (signatureCounts.get(signature) || 0) + 1);
+    });
+
+    let dominantSignature = '';
+    let dominantCount = 0;
+    signatureCounts.forEach((count, signature) => {
+      if (count > dominantCount) {
+        dominantCount = count;
+        dominantSignature = signature;
+      }
+    });
+
+    const hasDominant = dominantCount > 1;
+    const dominantSettings = hasDominant
+      ? currentItems.find(
+          (item) =>
+            this.settingsSignature(item.printSettings) === dominantSignature,
+        )?.printSettings
+      : null;
+
+    const diffByFileName: Record<string, ItemSettingsDiffInfo> = {};
+    currentItems.forEach((item) => {
+      const differences = dominantSettings
+        ? this.describeSettingsDifferences(dominantSettings, item.printSettings)
+        : [];
+      diffByFileName[item.file.name] = {
+        differences,
+      };
+    });
+
+    this.itemSettingsDiffChange.emit(diffByFileName);
+  }
+
+  private sameItemPrintSettings(
+    a: ItemPrintSettings,
+    b: ItemPrintSettings,
+  ): boolean {
+    return (
+      a.material.trim().toUpperCase() === b.material.trim().toUpperCase() &&
+      a.quality.trim().toLowerCase() === b.quality.trim().toLowerCase() &&
+      Math.abs(a.nozzleDiameter - b.nozzleDiameter) < 0.0001 &&
+      Math.abs(a.layerHeight - b.layerHeight) < 0.0001 &&
+      Math.abs(a.infillDensity - b.infillDensity) < 0.0001 &&
+      a.infillPattern.trim().toLowerCase() ===
+        b.infillPattern.trim().toLowerCase() &&
+      Boolean(a.supportEnabled) === Boolean(b.supportEnabled)
+    );
+  }
+
+  private settingsSignature(settings: ItemPrintSettings): string {
+    return JSON.stringify({
+      material: settings.material.trim().toUpperCase(),
+      quality: settings.quality.trim().toLowerCase(),
+      nozzleDiameter: Number(settings.nozzleDiameter.toFixed(2)),
+      layerHeight: Number(settings.layerHeight.toFixed(3)),
+      infillDensity: Number(settings.infillDensity.toFixed(2)),
+      infillPattern: settings.infillPattern.trim().toLowerCase(),
+      supportEnabled: Boolean(settings.supportEnabled),
+    });
+  }
+
+  private describeSettingsDifferences(
+    baseline: ItemPrintSettings,
+    current: ItemPrintSettings,
+  ): string[] {
+    if (this.sameItemPrintSettings(baseline, current)) {
+      return [];
+    }
+
+    const differences: string[] = [];
+    if (baseline.material.trim().toUpperCase() !== current.material.trim().toUpperCase()) {
+      differences.push(`${current.material}`);
+    }
+    if (baseline.quality.trim().toLowerCase() !== current.quality.trim().toLowerCase()) {
+      differences.push(`Qualita: ${current.quality}`);
+    }
+    if (Math.abs(baseline.nozzleDiameter - current.nozzleDiameter) >= 0.0001) {
+      differences.push(`Nozzle: ${current.nozzleDiameter.toFixed(1)} mm`);
+    }
+    if (Math.abs(baseline.layerHeight - current.layerHeight) >= 0.0001) {
+      differences.push(`Layer: ${current.layerHeight.toFixed(2)} mm`);
+    }
+    if (Math.abs(baseline.infillDensity - current.infillDensity) >= 0.0001) {
+      differences.push(`Infill: ${current.infillDensity}%`);
+    }
+    if (
+      baseline.infillPattern.trim().toLowerCase() !==
+      current.infillPattern.trim().toLowerCase()
+    ) {
+      differences.push(`Pattern: ${current.infillPattern}`);
+    }
+    if (Boolean(baseline.supportEnabled) !== Boolean(current.supportEnabled)) {
+      differences.push(
+        `Supporti: ${current.supportEnabled ? 'attivi' : 'disattivi'}`,
+      );
+    }
+    return differences;
+  }
+
+  private toQuoteRequestItems(): QuoteRequest['items'] {
+    return this.items().map((item) => ({
+      file: item.file,
+      quantity: item.quantity,
+      color: item.color,
+      filamentVariantId: item.filamentVariantId,
+      material: item.printSettings.material,
+      quality: item.printSettings.quality,
+      nozzleDiameter: item.printSettings.nozzleDiameter,
+      layerHeight: item.printSettings.layerHeight,
+      infillDensity: item.printSettings.infillDensity,
+      infillPattern: item.printSettings.infillPattern,
+      supportEnabled: item.printSettings.supportEnabled,
+    }));
+  }
+
+  private getCurrentItemPrintSettings(): ItemPrintSettings {
+    const settings = this.getCurrentPrintSettings();
+    return {
+      material: settings.material,
+      quality: settings.quality,
+      nozzleDiameter: settings.nozzleDiameter,
+      layerHeight: settings.layerHeight,
+      infillDensity: settings.infillDensity,
+      infillPattern: settings.infillPattern,
+      supportEnabled: settings.supportEnabled,
+    };
+  }
+
+  private shouldApplySettingsToAllItems(): boolean {
+    return this.parseBooleanControlValue(this.form.get('syncAllItems')?.value);
+  }
+
+  private applyCurrentSettingsToAllItems(currentSettings: ItemPrintSettings): void {
+    this.items.update((current) =>
+      current.map((item) => {
+        const variants = this.getVariantsForMaterialCode(currentSettings.material);
+        const fallback = variants.find((v) => !v.isOutOfStock) || variants[0];
+        const byId =
+          item.filamentVariantId != null
+            ? variants.find((v) => v.id === item.filamentVariantId)
+            : null;
+        const byColor = variants.find((v) => v.colorName === item.color);
+        const selectedVariant = byId || byColor || fallback;
+
+        return {
+          ...item,
+          printSettings: { ...currentSettings },
+          color: selectedVariant ? selectedVariant.colorName : item.color,
+          filamentVariantId: selectedVariant ? selectedVariant.id : undefined,
+        };
+      }),
+    );
+  }
+
+  private parseBooleanControlValue(raw: unknown): boolean {
+    if (this.items().length <= 1) {
+      return false;
+    }
+    if (raw === true || raw === 1) {
+      return true;
+    }
+    if (typeof raw === 'string') {
+      const normalized = raw.trim().toLowerCase();
+      return normalized === 'true' || normalized === '1' || normalized === 'on';
+    }
+    return false;
+  }
+
   private applySettingsLock(locked: boolean): void {
     const controlsToLock = [
+      'syncAllItems',
       'material',
       'quality',
       'nozzleDiameter',
