@@ -37,7 +37,10 @@
       <div class="cap-cards">
         <app-card>
           <div class="card-image-placeholder">
-            <img src="assets/images/home/prototipi.jpg" alt="Prototipazione 3D" />
+            <img
+              src="assets/images/home/prototipi.jpg"
+              [attr.alt]="'HOME.CAP_1_TITLE' | translate"
+            />
           </div>
           <h3>{{ "HOME.CAP_1_TITLE" | translate }}</h3>
           <p class="text-muted">{{ "HOME.CAP_1_TEXT" | translate }}</p>
@@ -46,7 +49,7 @@
           <div class="card-image-placeholder">
             <img
               src="assets/images/home/original-vs-3dprinted.jpg"
-              alt="Confronto pezzo originale e stampato in 3D"
+              [attr.alt]="'HOME.CAP_2_TITLE' | translate"
             />
           </div>
           <h3>{{ "HOME.CAP_2_TITLE" | translate }}</h3>
@@ -54,14 +57,20 @@
         </app-card>
         <app-card>
           <div class="card-image-placeholder">
-            <img src="assets/images/home/serie.jpg" alt="Piccole serie stampate in 3D" />
+            <img
+              src="assets/images/home/serie.jpg"
+              [attr.alt]="'HOME.CAP_3_TITLE' | translate"
+            />
           </div>
           <h3>{{ "HOME.CAP_3_TITLE" | translate }}</h3>
           <p class="text-muted">{{ "HOME.CAP_3_TEXT" | translate }}</p>
         </app-card>
         <app-card>
           <div class="card-image-placeholder">
-            <img src="assets/images/home/cad.jpg" alt="Servizio CAD per stampa 3D" />
+            <img
+              src="assets/images/home/cad.jpg"
+              [attr.alt]="'HOME.CAP_4_TITLE' | translate"
+            />
           </div>
           <h3>{{ "HOME.CAP_4_TITLE" | translate }}</h3>
           <p class="text-muted">{{ "HOME.CAP_4_TEXT" | translate }}</p>
