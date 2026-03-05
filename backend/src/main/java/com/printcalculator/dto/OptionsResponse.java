@@ -7,7 +7,8 @@ public record OptionsResponse(
     List<QualityOption> qualities,
     List<InfillPatternOption> infillPatterns,
     List<LayerHeightOptionDTO> layerHeights,
-    List<NozzleOptionDTO> nozzleDiameters
+    List<NozzleOptionDTO> nozzleDiameters,
+    List<NozzleLayerHeightOptionsDTO> layerHeightsByNozzle
 ) {
     public record MaterialOption(String code, String label, List<VariantOption> variants) {}
     public record VariantOption(
@@ -24,4 +25,5 @@ public record OptionsResponse(
     public record InfillPatternOption(String id, String label) {}
     public record LayerHeightOptionDTO(double value, String label) {}
     public record NozzleOptionDTO(double value, String label) {}
+    public record NozzleLayerHeightOptionsDTO(double nozzleDiameter, List<LayerHeightOptionDTO> layerHeights) {}
 }

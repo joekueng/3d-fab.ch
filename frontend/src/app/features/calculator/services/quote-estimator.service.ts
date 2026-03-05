@@ -102,12 +102,18 @@ export interface NumericOption {
   label: string;
 }
 
+export interface NozzleLayerHeightsOption {
+  nozzleDiameter: number;
+  layerHeights: NumericOption[];
+}
+
 export interface OptionsResponse {
   materials: MaterialOption[];
   qualities: QualityOption[];
   infillPatterns: InfillOption[];
   layerHeights: NumericOption[];
   nozzleDiameters: NumericOption[];
+  layerHeightsByNozzle?: NozzleLayerHeightsOption[];
 }
 
 // UI Option for Select Component

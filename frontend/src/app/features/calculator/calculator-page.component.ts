@@ -42,7 +42,7 @@ import { LanguageService } from '../../core/services/language.service';
   styleUrl: './calculator-page.component.scss',
 })
 export class CalculatorPageComponent implements OnInit {
-  mode = signal<any>('easy');
+  mode = signal<'easy' | 'advanced'>('easy');
   step = signal<'upload' | 'quote' | 'details' | 'success'>('upload');
 
   loading = signal(false);
@@ -56,6 +56,17 @@ export class CalculatorPageComponent implements OnInit {
   );
 
   orderSuccess = signal(false);
+  requiresRecalculation = signal(false);
+  private baselinePrintSettings: {
+    mode: 'easy' | 'advanced';
+    material: string;
+    quality: string;
+    nozzleDiameter: number;
+    layerHeight: number;
+    infillDensity: number;
+    infillPattern: string;
+    supportEnabled: boolean;
+  } | null = null;
 
   @ViewChild('uploadForm') uploadForm!: UploadFormComponent;
   @ViewChild('resultCol') resultCol!: ElementRef;
@@ -101,6 +112,10 @@ export class CalculatorPageComponent implements OnInit {
         this.error.set(false);
         this.errorKey.set('CALC.ERROR_GENERIC');
         this.result.set(result);
+        this.baselinePrintSettings = this.toTrackedSettingsFromSession(
+          data.session,
+        );
+        this.requiresRecalculation.set(false);
         const isCadSession = data?.session?.status === 'CAD_ACTIVE';
         this.cadSessionLocked.set(isCadSession);
         this.step.set('quote');
@@ -238,6 +253,8 @@ export class CalculatorPageComponent implements OnInit {
           this.error.set(false);
           this.errorKey.set('CALC.ERROR_GENERIC');
           this.result.set(res);
+          this.baselinePrintSettings = this.toTrackedSettingsFromRequest(req);
+          this.requiresRecalculation.set(false);
           this.loading.set(false);
           this.uploadProgress.set(100);
           this.step.set('quote');
@@ -295,9 +312,10 @@ export class CalculatorPageComponent implements OnInit {
     index: number;
     fileName: string;
     quantity: number;
+    source?: 'left' | 'right';
   }) {
     // 1. Update local form for consistency (UI feedback)
-    if (this.uploadForm) {
+    if (event.source !== 'left' && this.uploadForm) {
       this.uploadForm.updateItemQuantityByIndex(event.index, event.quantity);
       this.uploadForm.updateItemQuantityByName(event.fileName, event.quantity);
     }
@@ -340,6 +358,33 @@ export class CalculatorPageComponent implements OnInit {
     }
   }
 
+  onUploadItemQuantityChange(event: {
+    index: number;
+    fileName: string;
+    quantity: number;
+  }) {
+    const resultItems = this.result()?.items || [];
+    const byIndex = resultItems[event.index];
+    const byName = resultItems.find((item) => item.fileName === event.fileName);
+    const id = byIndex?.id ?? byName?.id;
+
+    this.onItemChange({
+      ...event,
+      id,
+      source: 'left',
+    });
+  }
+
+  onQuoteItemQuantityPreviewChange(event: {
+    index: number;
+    fileName: string;
+    quantity: number;
+  }) {
+    if (!this.uploadForm) return;
+    this.uploadForm.updateItemQuantityByIndex(event.index, event.quantity);
+    this.uploadForm.updateItemQuantityByName(event.fileName, event.quantity);
+  }
+
   onSubmitOrder(orderData: any) {
     console.log('Order Submitted:', orderData);
     this.orderSuccess.set(true);
@@ -349,15 +394,37 @@ export class CalculatorPageComponent implements OnInit {
   onNewQuote() {
     this.step.set('upload');
     this.result.set(null);
+    this.requiresRecalculation.set(false);
+    this.baselinePrintSettings = null;
     this.cadSessionLocked.set(false);
     this.orderSuccess.set(false);
-    this.mode.set('easy'); // Reset to default
+    this.switchMode('easy'); // Reset to default and sync URL
   }
 
   private currentRequest: QuoteRequest | null = null;
 
+  onUploadPrintSettingsChange(settings: {
+    mode: 'easy' | 'advanced';
+    material: string;
+    quality: string;
+    nozzleDiameter: number;
+    layerHeight: number;
+    infillDensity: number;
+    infillPattern: string;
+    supportEnabled: boolean;
+  }) {
+    if (!this.result()) return;
+    if (!this.baselinePrintSettings) return;
+    this.requiresRecalculation.set(
+      !this.sameTrackedSettings(this.baselinePrintSettings, settings),
+    );
+  }
+
   onConsult() {
-    if (!this.currentRequest) {
+    const currentFormRequest = this.uploadForm?.getCurrentRequestDraft();
+    const req = currentFormRequest ?? this.currentRequest;
+
+    if (!req) {
       this.router.navigate([
         '/',
         this.languageService.selectedLang(),
@@ -366,7 +433,6 @@ export class CalculatorPageComponent implements OnInit {
       return;
     }
 
-    const req = this.currentRequest;
     let details = `Richiesta Preventivo:\n`;
     details += `- Materiale: ${req.material}\n`;
     details += `- Qualità: ${req.quality}\n`;
@@ -411,5 +477,120 @@ export class CalculatorPageComponent implements OnInit {
     this.errorKey.set(key);
     this.error.set(true);
     this.result.set(null);
+    this.requiresRecalculation.set(false);
+    this.baselinePrintSettings = null;
+  }
+
+  switchMode(nextMode: 'easy' | 'advanced'): void {
+    if (this.cadSessionLocked()) return;
+
+    const targetPath = nextMode === 'easy' ? 'basic' : 'advanced';
+    const currentPath = this.route.snapshot.routeConfig?.path;
+
+    this.mode.set(nextMode);
+
+    if (currentPath === targetPath) {
+      return;
+    }
+
+    this.router.navigate(['..', targetPath], {
+      relativeTo: this.route,
+      queryParamsHandling: 'preserve',
+    });
+  }
+
+  private toTrackedSettingsFromRequest(req: QuoteRequest): {
+    mode: 'easy' | 'advanced';
+    material: string;
+    quality: string;
+    nozzleDiameter: number;
+    layerHeight: number;
+    infillDensity: number;
+    infillPattern: string;
+    supportEnabled: boolean;
+  } {
+    return {
+      mode: req.mode,
+      material: this.normalizeString(req.material || 'PLA'),
+      quality: this.normalizeString(req.quality || 'standard'),
+      nozzleDiameter: this.normalizeNumber(req.nozzleDiameter, 0.4, 2),
+      layerHeight: this.normalizeNumber(req.layerHeight, 0.2, 3),
+      infillDensity: this.normalizeNumber(req.infillDensity, 20, 2),
+      infillPattern: this.normalizeString(req.infillPattern || 'grid'),
+      supportEnabled: Boolean(req.supportEnabled),
+    };
+  }
+
+  private toTrackedSettingsFromSession(session: any): {
+    mode: 'easy' | 'advanced';
+    material: string;
+    quality: string;
+    nozzleDiameter: number;
+    layerHeight: number;
+    infillDensity: number;
+    infillPattern: string;
+    supportEnabled: boolean;
+  } {
+    const layer = this.normalizeNumber(session?.layerHeightMm, 0.2, 3);
+    return {
+      mode: this.mode(),
+      material: this.normalizeString(session?.materialCode || 'PLA'),
+      quality:
+        layer >= 0.24 ? 'draft' : layer <= 0.12 ? 'extra_fine' : 'standard',
+      nozzleDiameter: this.normalizeNumber(session?.nozzleDiameterMm, 0.4, 2),
+      layerHeight: layer,
+      infillDensity: this.normalizeNumber(session?.infillPercent, 20, 2),
+      infillPattern: this.normalizeString(session?.infillPattern || 'grid'),
+      supportEnabled: Boolean(session?.supportsEnabled),
+    };
+  }
+
+  private sameTrackedSettings(
+    a: {
+      mode: 'easy' | 'advanced';
+      material: string;
+      quality: string;
+      nozzleDiameter: number;
+      layerHeight: number;
+      infillDensity: number;
+      infillPattern: string;
+      supportEnabled: boolean;
+    },
+    b: {
+      mode: 'easy' | 'advanced';
+      material: string;
+      quality: string;
+      nozzleDiameter: number;
+      layerHeight: number;
+      infillDensity: number;
+      infillPattern: string;
+      supportEnabled: boolean;
+    },
+  ): boolean {
+    return (
+      a.mode === b.mode &&
+      a.material === this.normalizeString(b.material) &&
+      a.quality === this.normalizeString(b.quality) &&
+      Math.abs(a.nozzleDiameter - this.normalizeNumber(b.nozzleDiameter, 0.4, 2)) < 0.0001 &&
+      Math.abs(a.layerHeight - this.normalizeNumber(b.layerHeight, 0.2, 3)) < 0.0001 &&
+      Math.abs(a.infillDensity - this.normalizeNumber(b.infillDensity, 20, 2)) < 0.0001 &&
+      a.infillPattern === this.normalizeString(b.infillPattern) &&
+      a.supportEnabled === Boolean(b.supportEnabled)
+    );
+  }
+
+  private normalizeString(value: string): string {
+    return String(value || '').trim().toLowerCase();
+  }
+
+  private normalizeNumber(
+    value: unknown,
+    fallback: number,
+    decimals: number,
+  ): number {
+    const numeric = Number(value);
+    const resolved = Number.isFinite(numeric) ? numeric : fallback;
+    const factor = 10 ** decimals;
+    return Math.round(resolved * factor) / factor;
   }
 }

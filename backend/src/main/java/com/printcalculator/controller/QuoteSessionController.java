@@ -14,9 +14,11 @@ import com.printcalculator.repository.PrinterMachineRepository;
 import com.printcalculator.repository.QuoteLineItemRepository;
 import com.printcalculator.repository.QuoteSessionRepository;
 import com.printcalculator.service.OrcaProfileResolver;
+import com.printcalculator.service.NozzleLayerHeightPolicyService;
 import com.printcalculator.service.QuoteCalculator;
 import com.printcalculator.service.QuoteSessionTotalsService;
 import com.printcalculator.service.SlicerService;
+import com.printcalculator.service.storage.ClamAVService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,8 +63,9 @@ public class QuoteSessionController {
     private final FilamentMaterialTypeRepository materialRepo;
     private final FilamentVariantRepository variantRepo;
     private final OrcaProfileResolver orcaProfileResolver;
+    private final NozzleLayerHeightPolicyService nozzleLayerHeightPolicyService;
     private final com.printcalculator.repository.PricingPolicyRepository pricingRepo;
-    private final com.printcalculator.service.ClamAVService clamAVService;
+    private final ClamAVService clamAVService;
     private final QuoteSessionTotalsService quoteSessionTotalsService;
 
     public QuoteSessionController(QuoteSessionRepository sessionRepo,
@@ -73,8 +76,9 @@ public class QuoteSessionController {
                                   FilamentMaterialTypeRepository materialRepo,
                                   FilamentVariantRepository variantRepo,
                                   OrcaProfileResolver orcaProfileResolver,
+                                  NozzleLayerHeightPolicyService nozzleLayerHeightPolicyService,
                                   com.printcalculator.repository.PricingPolicyRepository pricingRepo,
-                                  com.printcalculator.service.ClamAVService clamAVService,
+                                  ClamAVService clamAVService,
                                   QuoteSessionTotalsService quoteSessionTotalsService) {
         this.sessionRepo = sessionRepo;
         this.lineItemRepo = lineItemRepo;
@@ -84,6 +88,7 @@ public class QuoteSessionController {
         this.materialRepo = materialRepo;
         this.variantRepo = variantRepo;
         this.orcaProfileResolver = orcaProfileResolver;
+        this.nozzleLayerHeightPolicyService = nozzleLayerHeightPolicyService;
         this.pricingRepo = pricingRepo;
         this.clamAVService = clamAVService;
         this.quoteSessionTotalsService = quoteSessionTotalsService;
@@ -167,7 +172,23 @@ public class QuoteSessionController {
                 applyPrintSettings(settings);
             }
 
-            BigDecimal nozzleDiameter = BigDecimal.valueOf(settings.getNozzleDiameter() != null ? settings.getNozzleDiameter() : 0.4);
+            BigDecimal nozzleDiameter = nozzleLayerHeightPolicyService.resolveNozzle(
+                    settings.getNozzleDiameter() != null ? BigDecimal.valueOf(settings.getNozzleDiameter()) : null
+            );
+            BigDecimal layerHeight = nozzleLayerHeightPolicyService.resolveLayer(
+                    settings.getLayerHeight() != null ? BigDecimal.valueOf(settings.getLayerHeight()) : null,
+                    nozzleDiameter
+            );
+            if (!nozzleLayerHeightPolicyService.isAllowed(nozzleDiameter, layerHeight)) {
+                throw new ResponseStatusException(
+                        BAD_REQUEST,
+                        "Layer height " + layerHeight.stripTrailingZeros().toPlainString()
+                                + " is not allowed for nozzle " + nozzleDiameter.stripTrailingZeros().toPlainString()
+                                + ". Allowed: " + nozzleLayerHeightPolicyService.allowedLayersLabel(nozzleDiameter)
+                );
+            }
+            settings.setNozzleDiameter(nozzleDiameter.doubleValue());
+            settings.setLayerHeight(layerHeight.doubleValue());
 
             // Pick machine (selected machine if provided, otherwise first active)
             PrinterMachine machine = resolvePrinterMachine(settings.getPrinterMachineId());
@@ -190,7 +211,7 @@ public class QuoteSessionController {
             if (!cadSession) {
                 session.setMaterialCode(selectedVariant.getFilamentMaterialType().getMaterialCode());
                 session.setNozzleDiameterMm(nozzleDiameter);
-                session.setLayerHeightMm(BigDecimal.valueOf(settings.getLayerHeight() != null ? settings.getLayerHeight() : 0.2));
+                session.setLayerHeightMm(layerHeight);
                 session.setInfillPattern(settings.getInfillPattern());
                 session.setInfillPercent(settings.getInfillDensity() != null ? settings.getInfillDensity().intValue() : 20);
                 session.setSupportsEnabled(settings.getSupportsEnabled() != null ? settings.getSupportsEnabled() : false);
@@ -209,7 +230,7 @@ public class QuoteSessionController {
             
             // Build overrides map from settings
             Map<String, String> processOverrides = new HashMap<>();
-            if (settings.getLayerHeight() != null) processOverrides.put("layer_height", String.valueOf(settings.getLayerHeight()));
+            processOverrides.put("layer_height", layerHeight.stripTrailingZeros().toPlainString());
             if (settings.getInfillDensity() != null) processOverrides.put("sparse_infill_density", settings.getInfillDensity() + "%");
             if (settings.getInfillPattern() != null) processOverrides.put("sparse_infill_pattern", settings.getInfillPattern());
 
@@ -289,6 +310,10 @@ public class QuoteSessionController {
     }
 
     private void applyPrintSettings(com.printcalculator.dto.PrintSettingsDto settings) {
+        if (settings.getNozzleDiameter() == null) {
+            settings.setNozzleDiameter(0.40);
+        }
+
         if ("BASIC".equalsIgnoreCase(settings.getComplexityMode())) {
             // Set defaults based on Quality
             String quality = settings.getQuality() != null ? settings.getQuality().toLowerCase() : "standard";
@@ -313,7 +338,6 @@ public class QuoteSessionController {
             }
         } else {
             // ADVANCED Mode: Use values from Frontend, set defaults if missing
-            if (settings.getLayerHeight() == null) settings.setLayerHeight(0.20);
             if (settings.getInfillDensity() == null) settings.setInfillDensity(20.0);
             if (settings.getInfillPattern() == null) settings.setInfillPattern("grid");
         }

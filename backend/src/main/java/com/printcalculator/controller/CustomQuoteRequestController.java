@@ -5,7 +5,7 @@ import com.printcalculator.entity.CustomQuoteRequest;
 import com.printcalculator.entity.CustomQuoteRequestAttachment;
 import com.printcalculator.repository.CustomQuoteRequestAttachmentRepository;
 import com.printcalculator.repository.CustomQuoteRequestRepository;
-import com.printcalculator.service.ClamAVService;
+import com.printcalculator.service.storage.ClamAVService;
 import com.printcalculator.service.email.EmailNotificationService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
