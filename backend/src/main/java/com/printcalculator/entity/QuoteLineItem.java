@@ -51,35 +51,17 @@ public class QuoteLineItem {
     @Column(name = "quality", length = Integer.MAX_VALUE)
     private String quality;
 
-    @Column(name = "nozzle_diameter_mm", precision = 4, scale = 2)
-    private BigDecimal nozzleDiameterMm;
-
-    @Column(name = "layer_height_mm", precision = 5, scale = 3)
-    private BigDecimal layerHeightMm;
-
-    @Column(name = "infill_percent")
-    private Integer infillPercent;
-
-    @Column(name = "infill_pattern", length = Integer.MAX_VALUE)
-    private String infillPattern;
-
-    @Column(name = "supports_enabled")
-    private Boolean supportsEnabled;
-
-    @Column(name = "material_code", length = Integer.MAX_VALUE)
-    private String materialCode;
-
     @Column(name = "nozzle_diameter_mm", precision = 5, scale = 2)
     private BigDecimal nozzleDiameterMm;
 
     @Column(name = "layer_height_mm", precision = 6, scale = 3)
     private BigDecimal layerHeightMm;
 
-    @Column(name = "infill_pattern", length = Integer.MAX_VALUE)
-    private String infillPattern;
-
     @Column(name = "infill_percent")
     private Integer infillPercent;
+
+    @Column(name = "infill_pattern", length = Integer.MAX_VALUE)
+    private String infillPattern;
 
     @Column(name = "supports_enabled")
     private Boolean supportsEnabled;
@@ -222,54 +204,6 @@ public class QuoteLineItem {
 
     public void setInfillPattern(String infillPattern) {
         this.infillPattern = infillPattern;
-    }
-
-    public Boolean getSupportsEnabled() {
-        return supportsEnabled;
-    }
-
-    public void setSupportsEnabled(Boolean supportsEnabled) {
-        this.supportsEnabled = supportsEnabled;
-    }
-
-    public String getMaterialCode() {
-        return materialCode;
-    }
-
-    public void setMaterialCode(String materialCode) {
-        this.materialCode = materialCode;
-    }
-
-    public BigDecimal getNozzleDiameterMm() {
-        return nozzleDiameterMm;
-    }
-
-    public void setNozzleDiameterMm(BigDecimal nozzleDiameterMm) {
-        this.nozzleDiameterMm = nozzleDiameterMm;
-    }
-
-    public BigDecimal getLayerHeightMm() {
-        return layerHeightMm;
-    }
-
-    public void setLayerHeightMm(BigDecimal layerHeightMm) {
-        this.layerHeightMm = layerHeightMm;
-    }
-
-    public String getInfillPattern() {
-        return infillPattern;
-    }
-
-    public void setInfillPattern(String infillPattern) {
-        this.infillPattern = infillPattern;
-    }
-
-    public Integer getInfillPercent() {
-        return infillPercent;
-    }
-
-    public void setInfillPercent(Integer infillPercent) {
-        this.infillPercent = infillPercent;
     }
 
     public Boolean getSupportsEnabled() {
