@@ -1,0 +1,80 @@
+package com.printcalculator.service.quote;
+
+import com.printcalculator.entity.QuoteLineItem;
+import com.printcalculator.entity.QuoteSession;
+import com.printcalculator.service.QuoteSessionTotalsService;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Service
+public class QuoteSessionResponseAssembler {
+    private final QuoteStorageService quoteStorageService;
+
+    public QuoteSessionResponseAssembler(QuoteStorageService quoteStorageService) {
+        this.quoteStorageService = quoteStorageService;
+    }
+
+    public Map<String, Object> assemble(QuoteSession session,
+                                        List<QuoteLineItem> items,
+                                        QuoteSessionTotalsService.QuoteSessionTotals totals) {
+        List<Map<String, Object>> itemsDto = new ArrayList<>();
+        for (QuoteLineItem item : items) {
+            itemsDto.add(toItemDto(item, totals));
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("session", session);
+        response.put("items", itemsDto);
+        response.put("printItemsTotalChf", totals.printItemsTotalChf());
+        response.put("cadTotalChf", totals.cadTotalChf());
+        response.put("itemsTotalChf", totals.itemsTotalChf());
+        response.put("baseSetupCostChf", totals.baseSetupCostChf());
+        response.put("nozzleChangeCostChf", totals.nozzleChangeCostChf());
+        response.put("setupCostChf", totals.setupCostChf());
+        response.put("shippingCostChf", totals.shippingCostChf());
+        response.put("globalMachineCostChf", totals.globalMachineCostChf());
+        response.put("grandTotalChf", totals.grandTotalChf());
+        return response;
+    }
+
+    private Map<String, Object> toItemDto(QuoteLineItem item, QuoteSessionTotalsService.QuoteSessionTotals totals) {
+        Map<String, Object> dto = new HashMap<>();
+        dto.put("id", item.getId());
+        dto.put("originalFilename", item.getOriginalFilename());
+        dto.put("quantity", item.getQuantity());
+        dto.put("printTimeSeconds", item.getPrintTimeSeconds());
+        dto.put("materialGrams", item.getMaterialGrams());
+        dto.put("colorCode", item.getColorCode());
+        dto.put("filamentVariantId", item.getFilamentVariant() != null ? item.getFilamentVariant().getId() : null);
+        dto.put("materialCode", item.getMaterialCode());
+        dto.put("quality", item.getQuality());
+        dto.put("nozzleDiameterMm", item.getNozzleDiameterMm());
+        dto.put("layerHeightMm", item.getLayerHeightMm());
+        dto.put("infillPercent", item.getInfillPercent());
+        dto.put("infillPattern", item.getInfillPattern());
+        dto.put("supportsEnabled", item.getSupportsEnabled());
+        dto.put("status", item.getStatus());
+        dto.put("convertedStoredPath", quoteStorageService.extractConvertedStoredPath(item));
+        dto.put("unitPriceChf", resolveDistributedUnitPrice(item, totals));
+        return dto;
+    }
+
+    private BigDecimal resolveDistributedUnitPrice(QuoteLineItem item, QuoteSessionTotalsService.QuoteSessionTotals totals) {
+        BigDecimal unitPrice = item.getUnitPriceChf() != null ? item.getUnitPriceChf() : BigDecimal.ZERO;
+        int quantity = item.getQuantity() != null && item.getQuantity() > 0 ? item.getQuantity() : 1;
+        if (totals.totalPrintSeconds().compareTo(BigDecimal.ZERO) > 0 && item.getPrintTimeSeconds() != null) {
+            BigDecimal itemSeconds = BigDecimal.valueOf(item.getPrintTimeSeconds()).multiply(BigDecimal.valueOf(quantity));
+            BigDecimal share = itemSeconds.divide(totals.totalPrintSeconds(), 8, RoundingMode.HALF_UP);
+            BigDecimal itemMachineCost = totals.globalMachineCostChf().multiply(share);
+            BigDecimal unitMachineCost = itemMachineCost.divide(BigDecimal.valueOf(quantity), 2, RoundingMode.HALF_UP);
+            unitPrice = unitPrice.add(unitMachineCost);
+        }
+        return unitPrice;
+    }
+}

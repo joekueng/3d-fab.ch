@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { TranslateModule } from '@ngx-translate/core';
 import { QuoteResultComponent } from './quote-result.component';
 import { QuoteResult } from '../../services/quote-estimator.service';
@@ -38,7 +39,11 @@ describe('QuoteResultComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [QuoteResultComponent, TranslateModule.forRoot()],
+      imports: [
+        QuoteResultComponent,
+        TranslateModule.forRoot(),
+        HttpClientTestingModule,
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(QuoteResultComponent);

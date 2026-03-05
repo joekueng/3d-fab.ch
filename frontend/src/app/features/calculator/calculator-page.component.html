@@ -47,6 +47,7 @@
           (submitRequest)="onCalculate($event)"
           (itemQuantityChange)="onUploadItemQuantityChange($event)"
           (printSettingsChange)="onUploadPrintSettingsChange($event)"
+          (itemSettingsDiffChange)="onItemSettingsDiffChange($event)"
         ></app-upload-form>
       </app-card>
     </div>
@@ -67,6 +68,7 @@
         <app-quote-result
           [result]="result()!"
           [recalculationRequired]="requiresRecalculation()"
+          [itemSettingsDiffByFileName]="itemSettingsDiffByFileName()"
           (consult)="onConsult()"
           (proceed)="onProceed()"
           (itemQuantityPreviewChange)="onQuoteItemQuantityPreviewChange($event)"

@@ -127,7 +127,15 @@ export interface AdminQuoteSessionDetailItem {
   quantity: number;
   printTimeSeconds?: number;
   materialGrams?: number;
+  materialCode?: string;
+  quality?: string;
+  nozzleDiameterMm?: number;
+  layerHeightMm?: number;
+  infillPercent?: number;
+  infillPattern?: string;
+  supportsEnabled?: boolean;
   colorCode?: string;
+  filamentVariantId?: number;
   status: string;
   unitPriceChf: number;
 }

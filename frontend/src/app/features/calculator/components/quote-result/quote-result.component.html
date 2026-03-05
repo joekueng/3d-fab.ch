@@ -5,11 +5,11 @@
   <div class="result-grid">
     <app-summary-card
       class="item full-width"
-      [label]="'CALC.COST' | translate"
+      [label]="'CHECKOUT.SUBTOTAL' | translate"
       [large]="true"
       [highlight]="true"
     >
-      {{ totals().price | currency: result().currency }}
+      {{ costBreakdown().subtotal | currency: result().currency }}
     </app-summary-card>
 
     <app-summary-card [label]="'CALC.TIME' | translate">
@@ -22,18 +22,6 @@
   </div>
 
   <div class="setup-note">
-    <small>{{
-      "CALC.SETUP_NOTE"
-        | translate
-          : { cost: (result().setupCost | currency: result().currency) }
-    }}</small
-    ><br />
-    @if ((result().cadTotal || 0) > 0) {
-      <small class="shipping-note" style="color: #666">
-        Servizio CAD: {{ result().cadTotal | currency: result().currency }}
-      </small>
-      <br />
-    }
     <small class="shipping-note" style="color: #666">{{
       "CALC.SHIPPING_NOTE" | translate
     }}</small>
@@ -62,7 +50,14 @@
           <span class="file-name">{{ item.fileName }}</span>
           <span class="file-details">
             {{ item.unitTime / 3600 | number: "1.1-1" }}h |
-            {{ item.unitWeight | number: "1.0-0" }}g
+            {{ item.unitWeight | number: "1.0-0" }}g |
+            {{ item.material || "N/D" }}
+            @if (getItemDifferenceLabel(item.fileName, item.material)) {
+              |
+              <small class="item-settings-diff">
+                {{ getItemDifferenceLabel(item.fileName, item.material) }}
+              </small>
+            }
           </span>
         </div>
 
@@ -101,9 +96,28 @@
     }
   </div>
 
+  <div class="cost-breakdown">
+    <div class="cost-row">
+      <span>Costo di Avvio</span>
+      <span>{{ costBreakdown().baseSetup | currency: result().currency }}</span>
+    </div>
+    @if (costBreakdown().nozzleChange > 0) {
+      <div class="cost-row">
+        <span>Cambio Ugello</span>
+        <span>{{
+          costBreakdown().nozzleChange | currency: result().currency
+        }}</span>
+      </div>
+    }
+    <div class="cost-total">
+      <span>Totale</span>
+      <span>{{ costBreakdown().total | currency: result().currency }}</span>
+    </div>
+  </div>
+
   <div class="actions">
     <div class="actions-left">
-      <app-button variant="outline" (click)="consult.emit()">
+      <app-button variant="secondary" (click)="consult.emit()">
         {{ "QUOTE.CONSULT" | translate }}
       </app-button>
     </div>

@@ -8,6 +8,16 @@ public class OrderItemDto {
     private String originalFilename;
     private String materialCode;
     private String colorCode;
+    private Long filamentVariantId;
+    private String filamentVariantDisplayName;
+    private String filamentColorName;
+    private String filamentColorHex;
+    private String quality;
+    private BigDecimal nozzleDiameterMm;
+    private BigDecimal layerHeightMm;
+    private Integer infillPercent;
+    private String infillPattern;
+    private Boolean supportsEnabled;
     private Integer quantity;
     private Integer printTimeSeconds;
     private BigDecimal materialGrams;
@@ -26,6 +36,36 @@ public class OrderItemDto {
 
     public String getColorCode() { return colorCode; }
     public void setColorCode(String colorCode) { this.colorCode = colorCode; }
+
+    public Long getFilamentVariantId() { return filamentVariantId; }
+    public void setFilamentVariantId(Long filamentVariantId) { this.filamentVariantId = filamentVariantId; }
+
+    public String getFilamentVariantDisplayName() { return filamentVariantDisplayName; }
+    public void setFilamentVariantDisplayName(String filamentVariantDisplayName) { this.filamentVariantDisplayName = filamentVariantDisplayName; }
+
+    public String getFilamentColorName() { return filamentColorName; }
+    public void setFilamentColorName(String filamentColorName) { this.filamentColorName = filamentColorName; }
+
+    public String getFilamentColorHex() { return filamentColorHex; }
+    public void setFilamentColorHex(String filamentColorHex) { this.filamentColorHex = filamentColorHex; }
+
+    public String getQuality() { return quality; }
+    public void setQuality(String quality) { this.quality = quality; }
+
+    public BigDecimal getNozzleDiameterMm() { return nozzleDiameterMm; }
+    public void setNozzleDiameterMm(BigDecimal nozzleDiameterMm) { this.nozzleDiameterMm = nozzleDiameterMm; }
+
+    public BigDecimal getLayerHeightMm() { return layerHeightMm; }
+    public void setLayerHeightMm(BigDecimal layerHeightMm) { this.layerHeightMm = layerHeightMm; }
+
+    public Integer getInfillPercent() { return infillPercent; }
+    public void setInfillPercent(Integer infillPercent) { this.infillPercent = infillPercent; }
+
+    public String getInfillPattern() { return infillPattern; }
+    public void setInfillPattern(String infillPattern) { this.infillPattern = infillPattern; }
+
+    public Boolean getSupportsEnabled() { return supportsEnabled; }
+    public void setSupportsEnabled(Boolean supportsEnabled) { this.supportsEnabled = supportsEnabled; }
 
     public Integer getQuantity() { return quantity; }
     public void setQuantity(Integer quantity) { this.quantity = quantity; }

@@ -660,6 +660,12 @@ CREATE TABLE IF NOT EXISTS quote_line_items
     quantity           integer     NOT NULL DEFAULT 1 CHECK (quantity >= 1),
     color_code         text,  -- es: white/black o codice interno
     filament_variant_id bigint REFERENCES filament_variant (filament_variant_id),
+    material_code      text,
+    nozzle_diameter_mm numeric(5, 2),
+    layer_height_mm    numeric(6, 3),
+    infill_pattern     text,
+    infill_percent     integer CHECK (infill_percent BETWEEN 0 AND 100),
+    supports_enabled   boolean,
 
     -- Output slicing / calcolo
     bounding_box_x_mm  numeric(10, 3),
@@ -679,6 +685,24 @@ CREATE TABLE IF NOT EXISTS quote_line_items
 
 CREATE INDEX IF NOT EXISTS ix_quote_line_items_session
     ON quote_line_items (quote_session_id);
+
+ALTER TABLE quote_line_items
+    ADD COLUMN IF NOT EXISTS material_code text;
+
+ALTER TABLE quote_line_items
+    ADD COLUMN IF NOT EXISTS nozzle_diameter_mm numeric(5, 2);
+
+ALTER TABLE quote_line_items
+    ADD COLUMN IF NOT EXISTS layer_height_mm numeric(6, 3);
+
+ALTER TABLE quote_line_items
+    ADD COLUMN IF NOT EXISTS infill_pattern text;
+
+ALTER TABLE quote_line_items
+    ADD COLUMN IF NOT EXISTS infill_percent integer;
+
+ALTER TABLE quote_line_items
+    ADD COLUMN IF NOT EXISTS supports_enabled boolean;
 
 -- Vista utile per totale quote
 CREATE OR REPLACE VIEW quote_session_totals AS

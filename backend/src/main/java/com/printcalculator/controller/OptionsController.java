@@ -12,8 +12,10 @@ import com.printcalculator.repository.FilamentVariantRepository;
 import com.printcalculator.repository.MaterialOrcaProfileMapRepository;
 import com.printcalculator.repository.NozzleOptionRepository;
 import com.printcalculator.repository.PrinterMachineRepository;
+import com.printcalculator.repository.PrinterMachineProfileRepository;
 import com.printcalculator.service.NozzleLayerHeightPolicyService;
 import com.printcalculator.service.OrcaProfileResolver;
+import com.printcalculator.service.ProfileManager;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,8 +24,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -34,23 +39,29 @@ public class OptionsController {
     private final FilamentVariantRepository variantRepo;
     private final NozzleOptionRepository nozzleRepo;
     private final PrinterMachineRepository printerMachineRepo;
+    private final PrinterMachineProfileRepository printerMachineProfileRepo;
     private final MaterialOrcaProfileMapRepository materialOrcaMapRepo;
     private final OrcaProfileResolver orcaProfileResolver;
+    private final ProfileManager profileManager;
     private final NozzleLayerHeightPolicyService nozzleLayerHeightPolicyService;
 
     public OptionsController(FilamentMaterialTypeRepository materialRepo,
                              FilamentVariantRepository variantRepo,
                              NozzleOptionRepository nozzleRepo,
                              PrinterMachineRepository printerMachineRepo,
+                             PrinterMachineProfileRepository printerMachineProfileRepo,
                              MaterialOrcaProfileMapRepository materialOrcaMapRepo,
                              OrcaProfileResolver orcaProfileResolver,
+                             ProfileManager profileManager,
                              NozzleLayerHeightPolicyService nozzleLayerHeightPolicyService) {
         this.materialRepo = materialRepo;
         this.variantRepo = variantRepo;
         this.nozzleRepo = nozzleRepo;
         this.printerMachineRepo = printerMachineRepo;
+        this.printerMachineProfileRepo = printerMachineProfileRepo;
         this.materialOrcaMapRepo = materialOrcaMapRepo;
         this.orcaProfileResolver = orcaProfileResolver;
+        this.profileManager = profileManager;
         this.nozzleLayerHeightPolicyService = nozzleLayerHeightPolicyService;
     }
 
@@ -116,8 +127,27 @@ public class OptionsController {
                 new OptionsResponse.InfillPatternOption("cubic", "Cubic")
         );
 
+        PrinterMachine targetMachine = resolveMachine(printerMachineId);
+
+        Set<BigDecimal> supportedMachineNozzles = targetMachine != null
+                ? printerMachineProfileRepo.findByPrinterMachineAndIsActiveTrue(targetMachine).stream()
+                .map(PrinterMachineProfile::getNozzleDiameterMm)
+                .filter(v -> v != null)
+                .map(nozzleLayerHeightPolicyService::normalizeNozzle)
+                .collect(Collectors.toCollection(LinkedHashSet::new))
+                : Set.of();
+
+        boolean restrictNozzlesByMachineProfile = !supportedMachineNozzles.isEmpty();
+
         List<OptionsResponse.NozzleOptionDTO> nozzles = nozzleRepo.findAll().stream()
                 .filter(n -> Boolean.TRUE.equals(n.getIsActive()))
+                .filter(n -> {
+                    if (!restrictNozzlesByMachineProfile) {
+                        return true;
+                    }
+                    BigDecimal normalized = nozzleLayerHeightPolicyService.normalizeNozzle(n.getNozzleDiameterMm());
+                    return normalized != null && supportedMachineNozzles.contains(normalized);
+                })
                 .sorted(Comparator.comparing(NozzleOption::getNozzleDiameterMm))
                 .map(n -> new OptionsResponse.NozzleOptionDTO(
                         n.getNozzleDiameterMm().doubleValue(),
@@ -129,16 +159,62 @@ public class OptionsController {
                 .toList();
 
         Map<BigDecimal, List<BigDecimal>> rulesByNozzle = nozzleLayerHeightPolicyService.getActiveRulesByNozzle();
+        Set<BigDecimal> visibleNozzlesFromOptions = nozzles.stream()
+                .map(OptionsResponse.NozzleOptionDTO::value)
+                .map(BigDecimal::valueOf)
+                .map(nozzleLayerHeightPolicyService::normalizeNozzle)
+                .filter(v -> v != null)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        Map<BigDecimal, List<BigDecimal>> effectiveRulesByNozzle = new LinkedHashMap<>();
+        for (BigDecimal nozzle : visibleNozzlesFromOptions) {
+            List<BigDecimal> policyLayers = rulesByNozzle.getOrDefault(nozzle, List.of());
+            List<BigDecimal> compatibleProcessLayers = resolveCompatibleProcessLayers(targetMachine, nozzle);
+            List<BigDecimal> effective = mergePolicyAndProcessLayers(policyLayers, compatibleProcessLayers);
+            if (!effective.isEmpty()) {
+                effectiveRulesByNozzle.put(nozzle, effective);
+            }
+        }
+        if (effectiveRulesByNozzle.isEmpty()) {
+            for (BigDecimal nozzle : visibleNozzlesFromOptions) {
+                List<BigDecimal> policyLayers = rulesByNozzle.getOrDefault(nozzle, List.of());
+                if (!policyLayers.isEmpty()) {
+                    effectiveRulesByNozzle.put(nozzle, policyLayers);
+                }
+            }
+        }
+
+        Set<BigDecimal> visibleNozzles = new LinkedHashSet<>(effectiveRulesByNozzle.keySet());
+        nozzles = nozzles.stream()
+                .filter(option -> {
+                    BigDecimal normalized = nozzleLayerHeightPolicyService.normalizeNozzle(
+                            BigDecimal.valueOf(option.value())
+                    );
+                    return normalized != null && visibleNozzles.contains(normalized);
+                })
+                .toList();
+
         BigDecimal selectedNozzle = nozzleLayerHeightPolicyService.resolveNozzle(
                 nozzleDiameter != null ? BigDecimal.valueOf(nozzleDiameter) : null
         );
-
-        List<OptionsResponse.LayerHeightOptionDTO> layers = toLayerDtos(rulesByNozzle.getOrDefault(selectedNozzle, List.of()));
-        if (layers.isEmpty()) {
-            layers = rulesByNozzle.values().stream().findFirst().map(this::toLayerDtos).orElse(List.of());
+        if (!visibleNozzles.isEmpty() && !visibleNozzles.contains(selectedNozzle)) {
+            selectedNozzle = visibleNozzles.iterator().next();
         }
 
-        List<OptionsResponse.NozzleLayerHeightOptionsDTO> layerHeightsByNozzle = rulesByNozzle.entrySet().stream()
+        List<OptionsResponse.LayerHeightOptionDTO> layers = toLayerDtos(
+                effectiveRulesByNozzle.getOrDefault(selectedNozzle, List.of())
+        );
+        if (layers.isEmpty()) {
+            if (!visibleNozzles.isEmpty()) {
+                BigDecimal fallbackNozzle = visibleNozzles.iterator().next();
+                layers = toLayerDtos(effectiveRulesByNozzle.getOrDefault(fallbackNozzle, List.of()));
+            }
+            if (layers.isEmpty()) {
+                layers = rulesByNozzle.values().stream().findFirst().map(this::toLayerDtos).orElse(List.of());
+            }
+        }
+
+        List<OptionsResponse.NozzleLayerHeightOptionsDTO> layerHeightsByNozzle = effectiveRulesByNozzle.entrySet().stream()
                 .map(entry -> new OptionsResponse.NozzleLayerHeightOptionsDTO(
                         entry.getKey().doubleValue(),
                         toLayerDtos(entry.getValue())
@@ -156,13 +232,7 @@ public class OptionsController {
     }
 
     private Set<Long> resolveCompatibleMaterialTypeIds(Long printerMachineId, Double nozzleDiameter) {
-        PrinterMachine machine = null;
-        if (printerMachineId != null) {
-            machine = printerMachineRepo.findById(printerMachineId).orElse(null);
-        }
-        if (machine == null) {
-            machine = printerMachineRepo.findFirstByIsActiveTrue().orElse(null);
-        }
+        PrinterMachine machine = resolveMachine(printerMachineId);
         if (machine == null) {
             return Set.of();
         }
@@ -187,6 +257,17 @@ public class OptionsController {
                 .collect(Collectors.toSet());
     }
 
+    private PrinterMachine resolveMachine(Long printerMachineId) {
+        PrinterMachine machine = null;
+        if (printerMachineId != null) {
+            machine = printerMachineRepo.findById(printerMachineId).orElse(null);
+        }
+        if (machine == null) {
+            machine = printerMachineRepo.findFirstByIsActiveTrue().orElse(null);
+        }
+        return machine;
+    }
+
     private List<OptionsResponse.LayerHeightOptionDTO> toLayerDtos(List<BigDecimal> layers) {
         return layers.stream()
                 .sorted(Comparator.naturalOrder())
@@ -195,6 +276,52 @@ public class OptionsController {
                         String.format("%.2f mm", layer)
                 ))
                 .toList();
+    }
+
+    private List<BigDecimal> resolveCompatibleProcessLayers(PrinterMachine machine, BigDecimal nozzle) {
+        if (machine == null || nozzle == null) {
+            return List.of();
+        }
+        PrinterMachineProfile profile = orcaProfileResolver.resolveMachineProfile(machine, nozzle).orElse(null);
+        if (profile == null || profile.getOrcaMachineProfileName() == null) {
+            return List.of();
+        }
+        return profileManager.findCompatibleProcessLayers(profile.getOrcaMachineProfileName());
+    }
+
+    private List<BigDecimal> mergePolicyAndProcessLayers(List<BigDecimal> policyLayers,
+                                                         List<BigDecimal> processLayers) {
+        if ((processLayers == null || processLayers.isEmpty())
+                && (policyLayers == null || policyLayers.isEmpty())) {
+            return List.of();
+        }
+
+        if (processLayers == null || processLayers.isEmpty()) {
+            return policyLayers != null ? policyLayers : List.of();
+        }
+
+        if (policyLayers == null || policyLayers.isEmpty()) {
+            return processLayers;
+        }
+
+        Set<BigDecimal> allowedByPolicy = policyLayers.stream()
+                .map(nozzleLayerHeightPolicyService::normalizeLayer)
+                .filter(v -> v != null)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        List<BigDecimal> intersection = processLayers.stream()
+                .map(nozzleLayerHeightPolicyService::normalizeLayer)
+                .filter(v -> v != null && allowedByPolicy.contains(v))
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        if (!intersection.isEmpty()) {
+            return intersection;
+        }
+
+        return processLayers.stream()
+                .map(nozzleLayerHeightPolicyService::normalizeLayer)
+                .filter(v -> v != null)
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     private String resolveHexColor(FilamentVariant variant) {
