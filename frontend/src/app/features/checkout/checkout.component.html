@@ -331,11 +331,14 @@
             <div class="total-row">
               <span>{{ "CHECKOUT.SETUP_FEE" | translate }}</span>
               <span>{{
-                (session.baseSetupCostChf ?? session.session.setupCostChf)
+                session.baseSetupCostChf ?? session.session.setupCostChf
                   | currency: "CHF"
               }}</span>
             </div>
-            <div class="total-row" *ngIf="(session.nozzleChangeCostChf || 0) > 0">
+            <div
+              class="total-row"
+              *ngIf="(session.nozzleChangeCostChf || 0) > 0"
+            >
               <span>Cambio Ugello</span>
               <span>{{ session.nozzleChangeCostChf | currency: "CHF" }}</span>
             </div>
