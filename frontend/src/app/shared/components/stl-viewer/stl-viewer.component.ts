@@ -186,7 +186,11 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
         let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
         cameraZ *= 1.72;
 
-        this.camera.position.set(cameraZ * 0.68, cameraZ * 0.62, cameraZ * 1.08);
+        this.camera.position.set(
+          cameraZ * 0.68,
+          cameraZ * 0.62,
+          cameraZ * 1.08,
+        );
         this.controls.target.set(0, 0, 0);
         this.camera.lookAt(0, 0, 0);
         this.camera.updateProjectionMatrix();

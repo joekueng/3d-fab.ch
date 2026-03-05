@@ -434,7 +434,10 @@ export class QuoteEstimatorService {
     );
   }
 
-  getLineItemStlPreview(sessionId: string, lineItemId: string): Observable<Blob> {
+  getLineItemStlPreview(
+    sessionId: string,
+    lineItemId: string,
+  ): Observable<Blob> {
     const headers: any = {};
     return this.http.get(
       `${environment.apiUrl}/api/quote-sessions/${sessionId}/line-items/${lineItemId}/stl-preview`,
