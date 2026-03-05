@@ -18,6 +18,7 @@ import {
 } from '../../shared/components/app-toggle-selector/app-toggle-selector.component';
 import { LanguageService } from '../../core/services/language.service';
 import { StlViewerComponent } from '../../shared/components/stl-viewer/stl-viewer.component';
+import { getColorHex } from '../../core/constants/colors.const';
 
 @Component({
   selector: 'app-checkout',
@@ -55,6 +56,8 @@ export class CheckoutComponent implements OnInit {
   selectedPreviewFile = signal<File | null>(null);
   selectedPreviewName = signal('');
   selectedPreviewColor = signal('#c9ced6');
+  private variantHexById = new Map<number, string>();
+  private variantHexByColorName = new Map<string, string>();
 
   userTypeOptions: ToggleOption[] = [
     { label: 'CONTACT.TYPE_PRIVATE', value: 'PRIVATE' },
@@ -128,6 +131,8 @@ export class CheckoutComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.loadMaterialColorPalette();
+
     this.route.queryParams.subscribe((params) => {
       this.sessionId = params['session'];
       if (!this.sessionId) {
@@ -212,8 +217,40 @@ export class CheckoutComponent implements OnInit {
   }
 
   previewColor(item: any): string {
+    return this.itemColorSwatch(item);
+  }
+
+  itemColorLabel(item: any): string {
     const raw = String(item?.colorCode ?? '').trim();
-    return raw || '#c9ced6';
+    return raw || '-';
+  }
+
+  itemColorSwatch(item: any): string {
+    const variantId = Number(item?.filamentVariantId);
+    if (Number.isFinite(variantId) && this.variantHexById.has(variantId)) {
+      return this.variantHexById.get(variantId)!;
+    }
+
+    const raw = String(item?.colorCode ?? '').trim();
+    if (!raw) {
+      return '#c9ced6';
+    }
+
+    if (this.isHexColor(raw)) {
+      return raw;
+    }
+
+    const byName = this.variantHexByColorName.get(raw.toLowerCase());
+    if (byName) {
+      return byName;
+    }
+
+    const fallback = getColorHex(raw);
+    if (fallback && fallback !== '#facf0a') {
+      return fallback;
+    }
+
+    return '#c9ced6';
   }
 
   isPreviewLoading(item: any): boolean {
@@ -248,6 +285,41 @@ export class CheckoutComponent implements OnInit {
     this.selectedPreviewFile.set(null);
     this.selectedPreviewName.set('');
     this.selectedPreviewColor.set('#c9ced6');
+  }
+
+  private loadMaterialColorPalette(): void {
+    this.quoteService.getOptions().subscribe({
+      next: (options) => {
+        this.variantHexById.clear();
+        this.variantHexByColorName.clear();
+
+        for (const material of options?.materials || []) {
+          for (const variant of material?.variants || []) {
+            const variantId = Number(variant?.id);
+            const colorHex = String(variant?.hexColor || '').trim();
+            const colorName = String(variant?.colorName || '').trim();
+
+            if (Number.isFinite(variantId) && colorHex) {
+              this.variantHexById.set(variantId, colorHex);
+            }
+            if (colorName && colorHex) {
+              this.variantHexByColorName.set(colorName.toLowerCase(), colorHex);
+            }
+          }
+        }
+      },
+      error: () => {
+        this.variantHexById.clear();
+        this.variantHexByColorName.clear();
+      },
+    });
+  }
+
+  private isHexColor(value?: string): boolean {
+    return (
+      typeof value === 'string' &&
+      /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value)
+    );
   }
 
   private loadStlPreviews(session: any): void {

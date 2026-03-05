@@ -317,6 +317,12 @@ public class OrderControllerService {
             itemDto.setOriginalFilename(item.getOriginalFilename());
             itemDto.setMaterialCode(item.getMaterialCode());
             itemDto.setColorCode(item.getColorCode());
+            if (item.getFilamentVariant() != null) {
+                itemDto.setFilamentVariantId(item.getFilamentVariant().getId());
+                itemDto.setFilamentVariantDisplayName(item.getFilamentVariant().getVariantDisplayName());
+                itemDto.setFilamentColorName(item.getFilamentVariant().getColorName());
+                itemDto.setFilamentColorHex(item.getFilamentVariant().getColorHex());
+            }
             itemDto.setQuality(item.getQuality());
             itemDto.setNozzleDiameterMm(item.getNozzleDiameterMm());
             itemDto.setLayerHeightMm(item.getLayerHeightMm());

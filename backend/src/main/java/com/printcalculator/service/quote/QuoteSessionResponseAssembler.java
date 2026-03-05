@@ -34,6 +34,9 @@ public class QuoteSessionResponseAssembler {
         response.put("printItemsTotalChf", totals.printItemsTotalChf());
         response.put("cadTotalChf", totals.cadTotalChf());
         response.put("itemsTotalChf", totals.itemsTotalChf());
+        response.put("baseSetupCostChf", totals.baseSetupCostChf());
+        response.put("nozzleChangeCostChf", totals.nozzleChangeCostChf());
+        response.put("setupCostChf", totals.setupCostChf());
         response.put("shippingCostChf", totals.shippingCostChf());
         response.put("globalMachineCostChf", totals.globalMachineCostChf());
         response.put("grandTotalChf", totals.grandTotalChf());

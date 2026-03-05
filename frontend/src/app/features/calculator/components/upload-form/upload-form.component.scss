@@ -194,6 +194,48 @@
   }
 }
 
+.easy-global-controls {
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-1);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+
+  @media (min-width: 640px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.easy-global-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+
+  span {
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  select {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 0.55rem 0.75rem;
+    background: var(--color-bg-card);
+    font-size: 0.96rem;
+    font-weight: 600;
+    color: var(--color-text);
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-brand);
+      box-shadow: 0 0 0 2px rgba(250, 207, 10, 0.25);
+    }
+  }
+}
+
 .sync-settings {
   margin-top: var(--space-4);
   margin-bottom: var(--space-4);

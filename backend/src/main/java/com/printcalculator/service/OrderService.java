@@ -157,7 +157,7 @@ public class OrderService {
         order.setSubtotalChf(BigDecimal.ZERO);
         order.setTotalChf(BigDecimal.ZERO);
         order.setDiscountChf(BigDecimal.ZERO);
-        order.setSetupCostChf(session.getSetupCostChf() != null ? session.getSetupCostChf() : BigDecimal.ZERO);
+        order.setSetupCostChf(totals.setupCostChf());
         order.setShippingCostChf(totals.shippingCostChf());
         order.setIsCadOrder(cadTotal.compareTo(BigDecimal.ZERO) > 0 || "CAD_ACTIVE".equals(session.getStatus()));
         order.setSourceRequestId(session.getSourceRequestId());

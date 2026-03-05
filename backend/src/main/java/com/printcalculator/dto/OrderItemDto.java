@@ -8,6 +8,10 @@ public class OrderItemDto {
     private String originalFilename;
     private String materialCode;
     private String colorCode;
+    private Long filamentVariantId;
+    private String filamentVariantDisplayName;
+    private String filamentColorName;
+    private String filamentColorHex;
     private String quality;
     private BigDecimal nozzleDiameterMm;
     private BigDecimal layerHeightMm;
@@ -32,6 +36,18 @@ public class OrderItemDto {
 
     public String getColorCode() { return colorCode; }
     public void setColorCode(String colorCode) { this.colorCode = colorCode; }
+
+    public Long getFilamentVariantId() { return filamentVariantId; }
+    public void setFilamentVariantId(Long filamentVariantId) { this.filamentVariantId = filamentVariantId; }
+
+    public String getFilamentVariantDisplayName() { return filamentVariantDisplayName; }
+    public void setFilamentVariantDisplayName(String filamentVariantDisplayName) { this.filamentVariantDisplayName = filamentVariantDisplayName; }
+
+    public String getFilamentColorName() { return filamentColorName; }
+    public void setFilamentColorName(String filamentColorName) { this.filamentColorName = filamentColorName; }
+
+    public String getFilamentColorHex() { return filamentColorHex; }
+    public void setFilamentColorHex(String filamentColorHex) { this.filamentColorHex = filamentColorHex; }
 
     public String getQuality() { return quality; }
     public void setQuality(String quality) { this.quality = quality; }

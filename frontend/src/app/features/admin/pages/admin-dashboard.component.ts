@@ -3,6 +3,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   AdminOrder,
+  AdminOrderItem,
   AdminOrdersService,
 } from '../services/admin-orders.service';
 import { CopyOnClickDirective } from '../../../shared/directives/copy-on-click.directive';
@@ -271,6 +272,68 @@ export class AdminDashboardComponent implements OnInit {
       typeof value === 'string' &&
       /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value)
     );
+  }
+
+  getItemMaterialLabel(item: AdminOrderItem): string {
+    const variantName = (item.filamentVariantDisplayName || '').trim();
+    const materialCode = (item.materialCode || '').trim();
+    if (!variantName) {
+      return materialCode || '-';
+    }
+    if (!materialCode) {
+      return variantName;
+    }
+    const normalizedVariant = variantName.toLowerCase();
+    const normalizedCode = materialCode.toLowerCase();
+    return normalizedVariant.includes(normalizedCode)
+      ? variantName
+      : `${variantName} (${materialCode})`;
+  }
+
+  getItemColorLabel(item: AdminOrderItem): string {
+    const colorName = (item.filamentColorName || '').trim();
+    const colorCode = (item.colorCode || '').trim();
+    return colorName || colorCode || '-';
+  }
+
+  getItemColorHex(item: AdminOrderItem): string | null {
+    const variantHex = (item.filamentColorHex || '').trim();
+    if (this.isHexColor(variantHex)) {
+      return variantHex;
+    }
+    const code = (item.colorCode || '').trim();
+    if (this.isHexColor(code)) {
+      return code;
+    }
+    return null;
+  }
+
+  getItemColorCodeSuffix(item: AdminOrderItem): string | null {
+    const colorHex = this.getItemColorHex(item);
+    if (!colorHex) {
+      return null;
+    }
+    return colorHex === this.getItemColorLabel(item) ? null : colorHex;
+  }
+
+  formatSupports(value?: boolean): string {
+    if (value === true) {
+      return 'Sì';
+    }
+    if (value === false) {
+      return 'No';
+    }
+    return '-';
+  }
+
+  formatSupportsState(value?: boolean): string {
+    if (value === true) {
+      return 'Supporti ON';
+    }
+    if (value === false) {
+      return 'Supporti OFF';
+    }
+    return 'Supporti -';
   }
 
   isSelected(orderId: string): boolean {

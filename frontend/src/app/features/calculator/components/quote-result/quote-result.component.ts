@@ -134,17 +134,37 @@ export class QuoteResultComponent implements OnDestroy {
     this.items().some((item) => item.quantity > this.directOrderLimit),
   );
 
-  totals = computed(() => {
+  costBreakdown = computed(() => {
     const currentItems = this.items();
-    const setup = this.result().setupCost;
     const cad = this.result().cadTotal || 0;
 
-    let price = setup + cad;
+    let subtotal = cad;
+    currentItems.forEach((item) => {
+      subtotal += item.unitPrice * item.quantity;
+    });
+
+    const nozzleChange = Math.max(0, this.result().nozzleChangeCost || 0);
+    const baseSetupRaw =
+      this.result().baseSetupCost != null
+        ? this.result().baseSetupCost
+        : this.result().setupCost - nozzleChange;
+    const baseSetup = Math.max(0, baseSetupRaw || 0);
+    const total = subtotal + baseSetup + nozzleChange;
+
+    return {
+      subtotal: Math.round(subtotal * 100) / 100,
+      baseSetup: Math.round(baseSetup * 100) / 100,
+      nozzleChange: Math.round(nozzleChange * 100) / 100,
+      total: Math.round(total * 100) / 100,
+    };
+  });
+
+  totals = computed(() => {
+    const currentItems = this.items();
     let time = 0;
     let weight = 0;
 
     currentItems.forEach((i) => {
-      price += i.unitPrice * i.quantity;
       time += i.unitTime * i.quantity;
       weight += i.unitWeight * i.quantity;
     });
@@ -153,7 +173,7 @@ export class QuoteResultComponent implements OnDestroy {
     const minutes = Math.ceil((time % 3600) / 60);
 
     return {
-      price: Math.round(price * 100) / 100,
+      price: this.costBreakdown().total,
       hours,
       minutes,
       weight: Math.ceil(weight),

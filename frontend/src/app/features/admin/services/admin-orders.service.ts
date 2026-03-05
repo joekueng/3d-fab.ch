@@ -8,6 +8,10 @@ export interface AdminOrderItem {
   originalFilename: string;
   materialCode: string;
   colorCode: string;
+  filamentVariantId?: number;
+  filamentVariantDisplayName?: string;
+  filamentColorName?: string;
+  filamentColorHex?: string;
   quality?: string;
   nozzleDiameterMm?: number;
   layerHeightMm?: number;

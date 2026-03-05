@@ -51,6 +51,8 @@ export interface QuoteItem {
 export interface QuoteResult {
   sessionId?: string;
   items: QuoteItem[];
+  baseSetupCost?: number;
+  nozzleChangeCost?: number;
   setupCost: number;
   globalMachineCost: number;
   cadHours?: number;
@@ -382,9 +384,11 @@ export class QuoteEstimatorService {
     );
 
     const grandTotal = Number(sessionData?.grandTotalChf);
+    const effectiveSetupCost =
+      Number(sessionData?.setupCostChf ?? session?.setupCostChf ?? 0);
     const fallbackTotal =
       Number(sessionData?.itemsTotalChf || 0) +
-      Number(session?.setupCostChf || 0) +
+      effectiveSetupCost +
       Number(sessionData?.shippingCostChf || 0);
 
     return {
@@ -411,7 +415,11 @@ export class QuoteEstimatorService {
             ? Number(item.nozzleDiameterMm)
             : undefined,
       })),
-      setupCost: Number(session?.setupCostChf || 0),
+      baseSetupCost: Number(
+        sessionData?.baseSetupCostChf ?? session?.setupCostChf ?? 0,
+      ),
+      nozzleChangeCost: Number(sessionData?.nozzleChangeCostChf ?? 0),
+      setupCost: effectiveSetupCost,
       globalMachineCost: Number(sessionData?.globalMachineCostChf || 0),
       cadHours: Number(session?.cadHours || 0),
       cadTotal: Number(sessionData?.cadTotalChf || 0),

@@ -11,6 +11,7 @@ import com.printcalculator.model.QuoteResult;
 import com.printcalculator.repository.QuoteLineItemRepository;
 import com.printcalculator.repository.QuoteSessionRepository;
 import com.printcalculator.service.OrcaProfileResolver;
+import com.printcalculator.service.ProfileManager;
 import com.printcalculator.service.QuoteCalculator;
 import com.printcalculator.service.SlicerService;
 import com.printcalculator.service.storage.ClamAVService;
@@ -41,6 +42,7 @@ public class QuoteSessionItemService {
     private final ClamAVService clamAVService;
     private final QuoteStorageService quoteStorageService;
     private final QuoteSessionSettingsService settingsService;
+    private final ProfileManager profileManager;
 
     public QuoteSessionItemService(QuoteLineItemRepository lineItemRepo,
                                    QuoteSessionRepository sessionRepo,
@@ -49,7 +51,8 @@ public class QuoteSessionItemService {
                                    OrcaProfileResolver orcaProfileResolver,
                                    ClamAVService clamAVService,
                                    QuoteStorageService quoteStorageService,
-                                   QuoteSessionSettingsService settingsService) {
+                                   QuoteSessionSettingsService settingsService,
+                                   ProfileManager profileManager) {
         this.lineItemRepo = lineItemRepo;
         this.sessionRepo = sessionRepo;
         this.slicerService = slicerService;
@@ -58,6 +61,7 @@ public class QuoteSessionItemService {
         this.clamAVService = clamAVService;
         this.quoteStorageService = quoteStorageService;
         this.settingsService = settingsService;
+        this.profileManager = profileManager;
     }
 
     public QuoteLineItem addItemToSession(QuoteSession session, MultipartFile file, PrintSettingsDto settings) throws IOException {
@@ -109,7 +113,12 @@ public class QuoteSessionItemService {
             }
 
             OrcaProfileResolver.ResolvedProfiles profiles = orcaProfileResolver.resolve(machine, nozzleDiameter, selectedVariant);
-            String processProfile = resolveProcessProfile(settings);
+            String processProfile = resolveProcessProfile(
+                    settings,
+                    profiles.machineProfileName(),
+                    nozzleDiameter,
+                    layerHeight
+            );
 
             Map<String, String> processOverrides = new HashMap<>();
             processOverrides.put("layer_height", layerHeight.stripTrailingZeros().toPlainString());
@@ -180,7 +189,29 @@ public class QuoteSessionItemService {
         }
     }
 
-    private String resolveProcessProfile(PrintSettingsDto settings) {
+    private String resolveProcessProfile(PrintSettingsDto settings,
+                                         String machineProfileName,
+                                         BigDecimal nozzleDiameter,
+                                         BigDecimal layerHeight) {
+        if (machineProfileName == null || machineProfileName.isBlank() || layerHeight == null) {
+            return resolveLegacyProcessProfile(settings);
+        }
+
+        String qualityHint = settingsService.resolveQuality(settings, layerHeight);
+        return profileManager
+                .findCompatibleProcessProfileName(machineProfileName, layerHeight, qualityHint)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Layer height " + layerHeight.stripTrailingZeros().toPlainString()
+                                + " is not available for nozzle "
+                                + (nozzleDiameter != null
+                                ? nozzleDiameter.stripTrailingZeros().toPlainString()
+                                : "-")
+                                + " on printer profile " + machineProfileName
+                ));
+    }
+
+    private String resolveLegacyProcessProfile(PrintSettingsDto settings) {
         if (settings.getLayerHeight() == null) {
             return "standard";
         }

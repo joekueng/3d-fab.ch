@@ -249,11 +249,13 @@
                     {{ "CHECKOUT.MATERIAL" | translate }}:
                     {{ itemMaterial(item) }}
                   </span>
-                  <span
-                    *ngIf="item.colorCode"
-                    class="color-dot"
-                    [style.background-color]="item.colorCode"
-                  ></span>
+                  <span class="item-color" *ngIf="itemColorLabel(item) !== '-'">
+                    <span
+                      class="color-dot"
+                      [style.background-color]="itemColorSwatch(item)"
+                    ></span>
+                    <span class="color-name">{{ itemColorLabel(item) }}</span>
+                  </span>
                 </div>
                 <div class="item-specs-sub">
                   {{ item.printTimeSeconds / 3600 | number: "1.1-1" }}h |
@@ -328,7 +330,14 @@
             </div>
             <div class="total-row">
               <span>{{ "CHECKOUT.SETUP_FEE" | translate }}</span>
-              <span>{{ session.session.setupCostChf | currency: "CHF" }}</span>
+              <span>{{
+                (session.baseSetupCostChf ?? session.session.setupCostChf)
+                  | currency: "CHF"
+              }}</span>
+            </div>
+            <div class="total-row" *ngIf="(session.nozzleChangeCostChf || 0) > 0">
+              <span>Cambio Ugello</span>
+              <span>{{ session.nozzleChangeCostChf | currency: "CHF" }}</span>
             </div>
             <div class="total-row">
               <span>{{ "CHECKOUT.SHIPPING" | translate }}</span>

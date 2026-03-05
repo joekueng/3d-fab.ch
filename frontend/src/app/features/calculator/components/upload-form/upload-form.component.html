@@ -107,7 +107,27 @@
         >.
       </p>
 
-      @if (mode() === "advanced") {
+      @if (mode() === "easy") {
+        <div class="easy-global-controls">
+          <label class="easy-global-field">
+            <span>{{ "CALC.MATERIAL" | translate }}</span>
+            <select formControlName="material">
+              @for (mat of materials(); track mat.value) {
+                <option [value]="mat.value">{{ mat.label }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="easy-global-field">
+            <span>{{ "CALC.QUALITY" | translate }}</span>
+            <select formControlName="quality">
+              @for (quality of qualities(); track quality.value) {
+                <option [value]="quality.value">{{ quality.label }}</option>
+              }
+            </select>
+          </label>
+        </div>
+      } @else {
         <div class="sync-settings">
           <label class="sync-settings-toggle">
             <input

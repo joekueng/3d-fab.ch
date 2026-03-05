@@ -193,17 +193,22 @@
             </p>
             <p class="item-meta">
               Qta: {{ item.quantity }} | Materiale:
-              {{ item.materialCode || "-" }} | Colore:
+              {{ getItemMaterialLabel(item) }} | Colore:
               <span
                 class="color-swatch"
-                *ngIf="isHexColor(item.colorCode)"
-                [style.background-color]="item.colorCode"
+                *ngIf="getItemColorHex(item) as colorHex"
+                [style.background-color]="colorHex"
               ></span>
-              <span>{{ item.colorCode || "-" }}</span>
+              <span>
+                {{ getItemColorLabel(item) }}
+                <ng-container *ngIf="getItemColorCodeSuffix(item) as colorCode">
+                  ({{ colorCode }})
+                </ng-container>
+              </span>
               | Nozzle: {{ item.nozzleDiameterMm ?? "-" }} mm | Layer:
               {{ item.layerHeightMm ?? "-" }} mm | Infill:
               {{ item.infillPercent ?? "-" }}% | Supporti:
-              {{ item.supportsEnabled ? "Sì" : "No" }}
+              {{ formatSupports(item.supportsEnabled) }}
               | Riga:
               {{ item.lineTotalChf | currency: "CHF" : "symbol" : "1.2-2" }}
             </p>
@@ -283,10 +288,11 @@
       <div class="file-color-row" *ngFor="let item of selectedOrder.items">
         <span class="filename">{{ item.originalFilename }}</span>
         <span class="file-color">
-          {{ item.materialCode || "-" }} | {{ item.nozzleDiameterMm ?? "-" }} mm
+          {{ getItemMaterialLabel(item) }} | Colore:
+          {{ getItemColorLabel(item) }} | {{ item.nozzleDiameterMm ?? "-" }} mm
           | {{ item.layerHeightMm ?? "-" }} mm |
           {{ item.infillPercent ?? "-" }}% | {{ item.infillPattern || "-" }} |
-          {{ item.supportsEnabled ? "Supporti ON" : "Supporti OFF" }}
+          {{ formatSupportsState(item.supportsEnabled) }}
         </span>
       </div>
     </div>
