@@ -5,6 +5,7 @@
     [rows]="priceBreakdownRows()"
     [total]="costBreakdown().total"
     [currency]="result().currency"
+    [totalSuffix]="'*'"
     [totalLabelKey]="'CHECKOUT.TOTAL'"
   ></app-price-breakdown>
 
@@ -68,6 +69,7 @@
               [ngModel]="item.quantity"
               (ngModelChange)="updateQuantity(i, $event)"
               (blur)="flushQuantityUpdate(i)"
+              (keydown.enter)="flushQuantityUpdate(i)"
               class="qty-input"
             />
           </div>

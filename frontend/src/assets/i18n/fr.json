@@ -110,7 +110,7 @@
     "PROCESSING": "Traitement...",
     "NOTES_PLACEHOLDER": "Instructions spécifiques...",
     "SETUP_NOTE": "* Inclut {{cost}} comme coût de setup",
-    "SHIPPING_NOTE": "** Frais d'expédition exclus, calculés à l'étape suivante",
+    "SHIPPING_NOTE": "* Frais d'expédition exclus, calculés à l'étape suivante",
     "STEP_WARNING": "La visualisation 3D n'est pas compatible avec les fichiers STEP et 3MF",
     "REMOVE_FILE": "Supprimer le fichier",
     "FALLBACK_MATERIAL": "PLA (fallback)",

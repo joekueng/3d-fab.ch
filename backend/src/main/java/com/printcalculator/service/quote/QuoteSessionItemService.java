@@ -239,7 +239,7 @@ public class QuoteSessionItemService {
         item.setQuoteSession(session);
         item.setOriginalFilename(originalFilename);
         item.setStoredPath(quoteStorageService.toStoredPath(persistentPath));
-        item.setQuantity(1);
+        item.setQuantity(normalizeQuantity(settings.getQuantity()));
         item.setColorCode(selectedVariant.getColorName());
         item.setFilamentVariant(selectedVariant);
         item.setMaterialCode(selectedVariant.getFilamentMaterialType() != null
@@ -278,5 +278,12 @@ public class QuoteSessionItemService {
         item.setCreatedAt(OffsetDateTime.now());
         item.setUpdatedAt(OffsetDateTime.now());
         return item;
+    }
+
+    private int normalizeQuantity(Integer quantity) {
+        if (quantity == null || quantity < 1) {
+            return 1;
+        }
+        return quantity;
     }
 }

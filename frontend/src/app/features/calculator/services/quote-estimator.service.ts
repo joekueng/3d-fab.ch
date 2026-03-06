@@ -447,6 +447,7 @@ export class QuoteEstimatorService {
 
     return {
       complexityMode: request.mode === 'easy' ? 'BASIC' : 'ADVANCED',
+      quantity: this.normalizeQuantity(item.quantity),
       material: String(item.material || request.material || 'PLA'),
       color: item.color || '#FFFFFF',
       filamentVariantId: item.filamentVariantId,
@@ -473,6 +474,14 @@ export class QuoteEstimatorService {
         request.nozzleDiameter ??
         0.4,
     };
+  }
+
+  private normalizeQuantity(value: number | undefined): number {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric) || numeric < 1) {
+      return 1;
+    }
+    return Math.floor(numeric);
   }
 
   private normalizeQuality(value: string | undefined): string {
