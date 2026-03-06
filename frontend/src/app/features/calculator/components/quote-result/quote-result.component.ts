@@ -13,6 +13,10 @@ import { TranslateModule } from '@ngx-translate/core';
 import { AppCardComponent } from '../../../../shared/components/app-card/app-card.component';
 import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
 import { SummaryCardComponent } from '../../../../shared/components/summary-card/summary-card.component';
+import {
+  PriceBreakdownComponent,
+  PriceBreakdownRow,
+} from '../../../../shared/components/price-breakdown/price-breakdown.component';
 import { QuoteResult, QuoteItem } from '../../services/quote-estimator.service';
 
 @Component({
@@ -25,6 +29,7 @@ import { QuoteResult, QuoteItem } from '../../services/quote-estimator.service';
     AppCardComponent,
     AppButtonComponent,
     SummaryCardComponent,
+    PriceBreakdownComponent,
   ],
   templateUrl: './quote-result.component.html',
   styleUrl: './quote-result.component.scss',
@@ -157,6 +162,26 @@ export class QuoteResultComponent implements OnDestroy {
       nozzleChange: Math.round(nozzleChange * 100) / 100,
       total: Math.round(total * 100) / 100,
     };
+  });
+
+  priceBreakdownRows = computed<PriceBreakdownRow[]>(() => {
+    const breakdown = this.costBreakdown();
+
+    return [
+      {
+        labelKey: 'CHECKOUT.SUBTOTAL',
+        amount: breakdown.subtotal,
+      },
+      {
+        labelKey: 'CHECKOUT.SETUP_FEE',
+        amount: breakdown.baseSetup,
+      },
+      {
+        label: 'Cambio Ugello',
+        amount: breakdown.nozzleChange,
+        visible: breakdown.nozzleChange > 0,
+      },
+    ];
   });
 
   totals = computed(() => {

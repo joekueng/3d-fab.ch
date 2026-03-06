@@ -1,17 +1,14 @@
 <app-card>
   <h3 class="title">{{ "CALC.RESULT" | translate }}</h3>
 
-  <!-- Summary Grid (NOW ON TOP) -->
-  <div class="result-grid">
-    <app-summary-card
-      class="item full-width"
-      [label]="'CHECKOUT.SUBTOTAL' | translate"
-      [large]="true"
-      [highlight]="true"
-    >
-      {{ costBreakdown().subtotal | currency: result().currency }}
-    </app-summary-card>
+  <app-price-breakdown
+    [rows]="priceBreakdownRows()"
+    [total]="costBreakdown().total"
+    [currency]="result().currency"
+    [totalLabelKey]="'CHECKOUT.TOTAL'"
+  ></app-price-breakdown>
 
+  <div class="result-grid">
     <app-summary-card [label]="'CALC.TIME' | translate">
       {{ totals().hours }}h {{ totals().minutes }}m
     </app-summary-card>
@@ -94,25 +91,6 @@
         </div>
       </div>
     }
-  </div>
-
-  <div class="cost-breakdown">
-    <div class="cost-row">
-      <span>Costo di Avvio</span>
-      <span>{{ costBreakdown().baseSetup | currency: result().currency }}</span>
-    </div>
-    @if (costBreakdown().nozzleChange > 0) {
-      <div class="cost-row">
-        <span>Cambio Ugello</span>
-        <span>{{
-          costBreakdown().nozzleChange | currency: result().currency
-        }}</span>
-      </div>
-    }
-    <div class="cost-total">
-      <span>Totale</span>
-      <span>{{ costBreakdown().total | currency: result().currency }}</span>
-    </div>
   </div>
 
   <div class="actions">
