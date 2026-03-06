@@ -7,6 +7,7 @@ public class PrintSettingsDto {
     // Common
     private String material; // e.g. "PLA", "PLA TOUGH", "PETG"
     private String color;    // e.g. "White", "#FFFFFF"
+    private Integer quantity;
     private Long filamentVariantId;
     private Long printerMachineId;
     
@@ -56,6 +57,14 @@ public class PrintSettingsDto {
 
     public void setFilamentVariantId(Long filamentVariantId) {
         this.filamentVariantId = filamentVariantId;
+    }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
     }
 
     public Long getPrinterMachineId() {

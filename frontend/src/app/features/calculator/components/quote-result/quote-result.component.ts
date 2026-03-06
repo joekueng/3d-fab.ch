@@ -1,6 +1,5 @@
 import {
   Component,
-  OnDestroy,
   input,
   output,
   signal,
@@ -34,10 +33,9 @@ import { QuoteResult, QuoteItem } from '../../services/quote-estimator.service';
   templateUrl: './quote-result.component.html',
   styleUrl: './quote-result.component.scss',
 })
-export class QuoteResultComponent implements OnDestroy {
+export class QuoteResultComponent {
   readonly maxInputQuantity = 500;
   readonly directOrderLimit = 100;
-  readonly quantityAutoRefreshMs = 2000;
 
   result = input.required<QuoteResult>();
   recalculationRequired = input<boolean>(false);
@@ -62,13 +60,10 @@ export class QuoteResultComponent implements OnDestroy {
   // Local mutable state for items to handle quantity changes
   items = signal<QuoteItem[]>([]);
   private lastSentQuantities = new Map<string, number>();
-  private quantityTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
   constructor() {
     effect(
       () => {
-        this.clearAllQuantityTimers();
-
         // Initialize local items when result inputs change
         // We map to new objects to avoid mutating the input directly if it was a reference
         const nextItems = this.result().items.map((i) => ({ ...i }));
@@ -84,17 +79,12 @@ export class QuoteResultComponent implements OnDestroy {
     );
   }
 
-  ngOnDestroy(): void {
-    this.clearAllQuantityTimers();
-  }
-
   updateQuantity(index: number, newQty: number | string) {
     const normalizedQty = this.normalizeQuantity(newQty);
     if (normalizedQty === null) return;
 
     const item = this.items()[index];
     if (!item) return;
-    const key = item.id ?? item.fileName;
 
     this.items.update((current) => {
       const updated = [...current];
@@ -108,8 +98,6 @@ export class QuoteResultComponent implements OnDestroy {
       fileName: item.fileName,
       quantity: normalizedQty,
     });
-
-    this.scheduleQuantityRefresh(index, key);
   }
 
   flushQuantityUpdate(index: number): void {
@@ -117,7 +105,6 @@ export class QuoteResultComponent implements OnDestroy {
     if (!item) return;
 
     const key = item.id ?? item.fileName;
-    this.clearQuantityRefreshTimer(key);
 
     const normalizedQty = this.normalizeQuantity(item.quantity);
     if (normalizedQty === null) return;
@@ -211,27 +198,6 @@ export class QuoteResultComponent implements OnDestroy {
       return null;
     }
     return Math.min(qty, this.maxInputQuantity);
-  }
-
-  private scheduleQuantityRefresh(index: number, key: string): void {
-    this.clearQuantityRefreshTimer(key);
-    const timer = setTimeout(() => {
-      this.quantityTimers.delete(key);
-      this.flushQuantityUpdate(index);
-    }, this.quantityAutoRefreshMs);
-    this.quantityTimers.set(key, timer);
-  }
-
-  private clearQuantityRefreshTimer(key: string): void {
-    const timer = this.quantityTimers.get(key);
-    if (!timer) return;
-    clearTimeout(timer);
-    this.quantityTimers.delete(key);
-  }
-
-  private clearAllQuantityTimers(): void {
-    this.quantityTimers.forEach((timer) => clearTimeout(timer));
-    this.quantityTimers.clear();
   }
 
   getItemDifferenceLabel(fileName: string, materialCode?: string): string {

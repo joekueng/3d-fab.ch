@@ -90,7 +90,7 @@
     "PROCESSING": "Processing...",
     "NOTES_PLACEHOLDER": "Specific instructions...",
     "SETUP_NOTE": "* Includes {{cost}} as setup cost",
-    "SHIPPING_NOTE": "** Shipping costs excluded, calculated at the next step",
+    "SHIPPING_NOTE": "* Shipping costs excluded, calculated at the next step",
     "ERROR_ZERO_PRICE": "Something went wrong during the calculation. Try another format or contact us directly via Request Consultation.",
     "ZERO_RESULT_TITLE": "Invalid Result",
     "ZERO_RESULT_HELP": "The calculation returned invalid zero values. Try another file format or contact us directly via Request Consultation."

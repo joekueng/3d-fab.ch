@@ -20,6 +20,6 @@
         {{ totalLabelKey() ? (totalLabelKey() | translate) : "" }}
       </ng-template>
     </span>
-    <span>{{ total() | currency: currency() }}</span>
+    <span>{{ total() | currency: currency() }}{{ totalSuffix() }}</span>
   </div>
 </div>

@@ -20,6 +20,7 @@ export class PriceBreakdownComponent {
   rows = input<PriceBreakdownRow[]>([]);
   total = input.required<number>();
   currency = input<string>('CHF');
+  totalSuffix = input<string>('');
   totalLabel = input<string>('');
   totalLabelKey = input<string>('');
 
