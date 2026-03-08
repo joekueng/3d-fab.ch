@@ -12,9 +12,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Logger;
 
 @Service
 public class NozzleLayerHeightPolicyService {
+    private static final Logger logger = Logger.getLogger(NozzleLayerHeightPolicyService.class.getName());
     private static final BigDecimal DEFAULT_NOZZLE = BigDecimal.valueOf(0.40).setScale(2, RoundingMode.HALF_UP);
     private static final BigDecimal DEFAULT_LAYER = BigDecimal.valueOf(0.20).setScale(3, RoundingMode.HALF_UP);
 
@@ -27,7 +29,8 @@ public class NozzleLayerHeightPolicyService {
     public Map<BigDecimal, List<BigDecimal>> getActiveRulesByNozzle() {
         List<NozzleLayerHeightOption> rules = ruleRepo.findByIsActiveTrueOrderByNozzleDiameterMmAscLayerHeightMmAsc();
         if (rules.isEmpty()) {
-            return fallbackRules();
+            logger.warning("No active nozzle->layer rules found in DB (table nozzle_layer_height_option is empty)");
+            return Map.of();
         }
 
         Map<BigDecimal, List<BigDecimal>> byNozzle = new LinkedHashMap<>();
@@ -120,24 +123,4 @@ public class NozzleLayerHeightPolicyService {
         }
     }
 
-    private Map<BigDecimal, List<BigDecimal>> fallbackRules() {
-        Map<BigDecimal, List<BigDecimal>> fallback = new LinkedHashMap<>();
-        fallback.put(scaleNozzle(0.20), scaleLayers(0.04, 0.06, 0.08, 0.10, 0.12));
-        fallback.put(scaleNozzle(0.40), scaleLayers(0.08, 0.12, 0.16, 0.20, 0.24, 0.28));
-        fallback.put(scaleNozzle(0.60), scaleLayers(0.16, 0.20, 0.24, 0.30, 0.36));
-        fallback.put(scaleNozzle(0.80), scaleLayers(0.20, 0.28, 0.36, 0.40, 0.48, 0.56));
-        return fallback;
-    }
-
-    private BigDecimal scaleNozzle(double value) {
-        return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP);
-    }
-
-    private List<BigDecimal> scaleLayers(double... values) {
-        List<BigDecimal> scaled = new ArrayList<>();
-        for (double value : values) {
-            scaled.add(BigDecimal.valueOf(value).setScale(3, RoundingMode.HALF_UP));
-        }
-        return scaled;
-    }
 }
