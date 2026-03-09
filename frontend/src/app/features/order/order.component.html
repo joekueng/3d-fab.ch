@@ -1,5 +1,5 @@
-<div class="container hero">
-  <h1>
+<div class="container ui-page-hero ui-page-hero--spacious">
+  <h1 class="ui-page-title">
     {{ "TRACKING.TITLE" | translate }}
     <ng-container *ngIf="order()">
       <br /><span class="order-id-title"
@@ -7,7 +7,7 @@
       >
     </ng-container>
   </h1>
-  <p class="subtitle">{{ "TRACKING.SUBTITLE" | translate }}</p>
+  <p class="ui-page-subtitle subtitle">{{ "TRACKING.SUBTITLE" | translate }}</p>
 </div>
 
 <div class="container">
@@ -69,18 +69,18 @@
         </div>
       </app-card>
 
-      <div class="payment-layout">
+      <div class="payment-layout ui-two-column-layout">
         <div class="payment-main">
           <app-card class="mb-6">
-            <div class="card-header-simple">
-              <h3>{{ "PAYMENT.METHOD" | translate }}</h3>
+            <div class="ui-card-header">
+              <h3 class="ui-card-title">{{ "PAYMENT.METHOD" | translate }}</h3>
             </div>
 
             <div class="payment-selection">
-              <div class="methods-grid">
+              <div class="ui-choice-grid">
                 <div
-                  class="type-option"
-                  [class.selected]="selectedPaymentMethod === 'twint'"
+                  class="ui-choice-card"
+                  [class.is-selected]="selectedPaymentMethod === 'twint'"
                   (click)="selectPayment('twint')"
                 >
                   <span class="method-name">{{
@@ -88,8 +88,8 @@
                   }}</span>
                 </div>
                 <div
-                  class="type-option"
-                  [class.selected]="selectedPaymentMethod === 'bill'"
+                  class="ui-choice-card"
+                  [class.is-selected]="selectedPaymentMethod === 'bill'"
                   (click)="selectPayment('bill')"
                 >
                   <span class="method-name">{{
@@ -100,7 +100,7 @@
             </div>
 
             <div
-              class="payment-details fade-in text-center"
+              class="payment-details ui-soft-panel fade-in text-center"
               *ngIf="selectedPaymentMethod === 'twint'"
             >
               <div class="details-header">
@@ -119,22 +119,9 @@
                   {{ "PAYMENT.BILLING_INFO_HINT" | translate }}
                 </p>
                 <div class="twint-mobile-action twint-button-container">
-                  <button
-                    style="
-                      width: auto;
-                      height: 58px;
-                      border-radius: 6px;
-                      display: flex;
-                      justify-content: center;
-                      cursor: pointer;
-                      background-color: transparent;
-                      border: none;
-                      align-items: center;
-                    "
-                    (click)="openTwintPayment()"
-                  >
+                  <button type="button" class="twint-launch-button" (click)="openTwintPayment()">
                     <img
-                      style="width: auto; height: 58px"
+                      class="twint-launch-button__image"
                       [attr.alt]="'PAYMENT.TWINT_BUTTON_ALT' | translate"
                       [src]="getTwintButtonImageUrl()"
                     />
@@ -148,7 +135,7 @@
             </div>
 
             <div
-              class="payment-details fade-in text-center"
+              class="payment-details ui-soft-panel fade-in text-center"
               *ngIf="selectedPaymentMethod === 'bill'"
             >
               <div class="details-header">
@@ -167,7 +154,7 @@
               </div>
             </div>
 
-            <div class="actions">
+            <div class="ui-actions">
               <app-button
                 variant="outline"
                 (click)="completeOrder()"
@@ -188,9 +175,11 @@
 
         <div class="payment-summary">
           <app-card class="sticky-card">
-            <div class="card-header-simple">
-              <h3>{{ "PAYMENT.SUMMARY_TITLE" | translate }}</h3>
-              <p class="order-id">#{{ getDisplayOrderNumber(o) }}</p>
+            <div class="ui-card-header">
+              <h3 class="ui-card-title">{{ "PAYMENT.SUMMARY_TITLE" | translate }}</h3>
+              <p class="ui-card-subtitle order-id">
+                #{{ getDisplayOrderNumber(o) }}
+              </p>
             </div>
 
             <app-price-breakdown

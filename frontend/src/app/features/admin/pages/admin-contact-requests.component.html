@@ -1,11 +1,18 @@
-<section class="section-card">
-  <header class="section-header">
-    <div class="header-copy">
-      <h2>Richieste di contatto</h2>
-      <p>Richieste preventivo personalizzato ricevute dal sito.</p>
-      <span class="total-pill">{{ requests.length }} richieste</span>
+<section class="section-card ui-section-card">
+  <header class="section-header ui-section-header">
+    <div class="header-copy ui-section-header__copy">
+      <h2 class="ui-section-header__title">Richieste di contatto</h2>
+      <p class="ui-section-header__description">
+        Richieste preventivo personalizzato ricevute dal sito.
+      </p>
+      <span class="total-pill ui-pill">{{ requests.length }} richieste</span>
     </div>
-    <button type="button" (click)="loadRequests()" [disabled]="loading">
+    <button
+      type="button"
+      class="ui-button"
+      (click)="loadRequests()"
+      [disabled]="loading"
+    >
       Aggiorna
     </button>
   </header>
@@ -13,11 +20,11 @@
   <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
   <p class="success" *ngIf="successMessage">{{ successMessage }}</p>
 
-  <div class="workspace" *ngIf="!loading; else loadingTpl">
+  <div class="workspace ui-split-workspace" *ngIf="!loading; else loadingTpl">
     <section class="list-panel">
       <h3>Lista richieste</h3>
-      <div class="table-wrap">
-        <table class="requests-table">
+      <div class="table-wrap ui-table-wrap">
+        <table class="requests-table ui-data-table">
           <thead>
             <tr>
               <th>Data</th>
@@ -50,14 +57,18 @@
               </td>
               <td class="email-cell">{{ request.email }}</td>
               <td>
-                <span class="chip chip-neutral">{{ request.requestType }}</span>
+                <span class="ui-status-chip ui-status-chip--neutral">{{
+                  request.requestType
+                }}</span>
               </td>
               <td>
-                <span class="chip chip-light">{{ request.customerType }}</span>
+                <span class="ui-status-chip ui-status-chip--neutral">{{
+                  request.customerType
+                }}</span>
               </td>
               <td>
                 <span
-                  class="chip"
+                  class="ui-status-chip"
                   [ngClass]="getStatusChipClass(request.status)"
                   >{{ request.status }}</span
                 >
@@ -71,13 +82,14 @@
       </div>
     </section>
 
-    <section class="detail-panel" *ngIf="selectedRequest">
+    <section class="detail-panel ui-detail-panel" *ngIf="selectedRequest">
       <header class="detail-header">
         <div>
           <h3>Dettaglio richiesta</h3>
           <p class="request-id">
             <span>ID</span>
             <code
+              class="ui-code-pill"
               [title]="selectedRequest.id"
               [appCopyOnClick]="selectedRequest.id"
               >{{ selectedRequest.id }}</code
@@ -86,14 +98,14 @@
         </div>
         <div class="detail-chips">
           <span
-            class="chip"
+            class="ui-status-chip"
             [ngClass]="getStatusChipClass(selectedRequest.status)"
             >{{ selectedRequest.status }}</span
           >
-          <span class="chip chip-neutral">{{
+          <span class="ui-status-chip ui-status-chip--neutral">{{
             selectedRequest.requestType
           }}</span>
-          <span class="chip chip-light">{{
+          <span class="ui-status-chip ui-status-chip--neutral">{{
             selectedRequest.customerType
           }}</span>
         </div>
@@ -103,32 +115,32 @@
         Caricamento dettaglio...
       </p>
 
-      <dl class="meta-grid">
-        <div class="meta-item">
+      <dl class="meta-grid ui-meta-grid">
+        <div class="meta-item ui-meta-item">
           <dt>Creata</dt>
           <dd>{{ selectedRequest.createdAt | date: "medium" }}</dd>
         </div>
-        <div class="meta-item">
+        <div class="meta-item ui-meta-item">
           <dt>Aggiornata</dt>
           <dd>{{ selectedRequest.updatedAt | date: "medium" }}</dd>
         </div>
-        <div class="meta-item">
+        <div class="meta-item ui-meta-item">
           <dt>Email</dt>
           <dd>{{ selectedRequest.email }}</dd>
         </div>
-        <div class="meta-item">
+        <div class="meta-item ui-meta-item">
           <dt>Telefono</dt>
           <dd>{{ selectedRequest.phone || "-" }}</dd>
         </div>
-        <div class="meta-item">
+        <div class="meta-item ui-meta-item">
           <dt>Nome</dt>
           <dd>{{ selectedRequest.name || "-" }}</dd>
         </div>
-        <div class="meta-item">
+        <div class="meta-item ui-meta-item">
           <dt>Azienda</dt>
           <dd>{{ selectedRequest.companyName || "-" }}</dd>
         </div>
-        <div class="meta-item">
+        <div class="meta-item ui-meta-item">
           <dt>Referente</dt>
           <dd>{{ selectedRequest.contactPerson || "-" }}</dd>
         </div>
@@ -138,6 +150,7 @@
         <div class="status-editor-field">
           <label for="contact-request-status">Stato richiesta</label>
           <select
+            class="ui-form-control"
             id="contact-request-status"
             [ngModel]="selectedStatus"
             (ngModelChange)="selectedStatus = $event"
@@ -148,6 +161,7 @@
           </select>
         </div>
         <button
+          class="ui-button"
           type="button"
           (click)="updateRequestStatus()"
           [disabled]="
@@ -190,7 +204,7 @@
             </div>
             <button
               type="button"
-              class="ghost"
+              class="ui-button ui-button--ghost"
               (click)="downloadAttachment(attachment)"
             >
               Scarica file
@@ -200,7 +214,10 @@
       </div>
     </section>
 
-    <section class="detail-panel empty" *ngIf="!selectedRequest">
+    <section
+      class="detail-panel ui-detail-panel ui-detail-panel--empty"
+      *ngIf="!selectedRequest"
+    >
       <h3>Nessuna richiesta selezionata</h3>
       <p>Seleziona una riga dalla lista per vedere il dettaglio.</p>
     </section>
