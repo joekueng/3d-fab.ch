@@ -35,45 +35,33 @@
         </p>
       </div>
       <div class="cap-cards">
-        <app-card>
+        <app-card
+          *ngFor="let card of capabilityCards(); trackBy: trackCapability"
+        >
           <div class="card-image-placeholder">
-            <img
-              src="assets/images/home/prototipi.jpg"
-              [attr.alt]="'HOME.CAP_1_TITLE' | translate"
-            />
+            @if (card.image; as image) {
+              <picture>
+                @if (image.source.avifUrl) {
+                  <source [srcset]="image.source.avifUrl" type="image/avif" />
+                }
+                @if (image.source.webpUrl) {
+                  <source [srcset]="image.source.webpUrl" type="image/webp" />
+                }
+                <img
+                  [src]="image.source.fallbackUrl"
+                  [attr.alt]="image.altText || (card.titleKey | translate)"
+                  width="640"
+                  height="400"
+                />
+              </picture>
+            } @else {
+              <div class="card-image-fallback">
+                <span>{{ card.titleKey | translate }}</span>
+              </div>
+            }
           </div>
-          <h3>{{ "HOME.CAP_1_TITLE" | translate }}</h3>
-          <p class="text-muted">{{ "HOME.CAP_1_TEXT" | translate }}</p>
-        </app-card>
-        <app-card>
-          <div class="card-image-placeholder">
-            <img
-              src="assets/images/home/original-vs-3dprinted.jpg"
-              [attr.alt]="'HOME.CAP_2_TITLE' | translate"
-            />
-          </div>
-          <h3>{{ "HOME.CAP_2_TITLE" | translate }}</h3>
-          <p class="text-muted">{{ "HOME.CAP_2_TEXT" | translate }}</p>
-        </app-card>
-        <app-card>
-          <div class="card-image-placeholder">
-            <img
-              src="assets/images/home/serie.jpg"
-              [attr.alt]="'HOME.CAP_3_TITLE' | translate"
-            />
-          </div>
-          <h3>{{ "HOME.CAP_3_TITLE" | translate }}</h3>
-          <p class="text-muted">{{ "HOME.CAP_3_TEXT" | translate }}</p>
-        </app-card>
-        <app-card>
-          <div class="card-image-placeholder">
-            <img
-              src="assets/images/home/cad.jpg"
-              [attr.alt]="'HOME.CAP_4_TITLE' | translate"
-            />
-          </div>
-          <h3>{{ "HOME.CAP_4_TITLE" | translate }}</h3>
-          <p class="text-muted">{{ "HOME.CAP_4_TEXT" | translate }}</p>
+          <h3>{{ card.titleKey | translate }}</h3>
+          <p class="text-muted">{{ card.textKey | translate }}</p>
         </app-card>
       </div>
     </div>
@@ -153,9 +141,24 @@
       >
         <figure
           class="shop-gallery-item"
-          *ngFor="let image of shopGalleryImages"
+          *ngFor="let image of shopGalleryImages(); trackBy: trackMediaAsset"
         >
-          <img [src]="image.src" [alt]="image.alt | translate" />
+          <picture>
+            <source
+              *ngIf="image.source.avifUrl"
+              [srcset]="image.source.avifUrl"
+              type="image/avif"
+            />
+            <source
+              *ngIf="image.source.webpUrl"
+              [srcset]="image.source.webpUrl"
+              type="image/webp"
+            />
+            <img
+              [src]="image.source.fallbackUrl"
+              [attr.alt]="image.altText || ('HOME.SEC_SHOP_TITLE' | translate)"
+            />
+          </picture>
         </figure>
       </div>
       <div class="shop-cards">
@@ -193,29 +196,43 @@
       </div>
       <div class="about-media">
         <div class="about-feature-image">
-          <img
-            class="about-feature-photo"
-            [src]="founderImages[founderImageIndex].src"
-            [alt]="founderImages[founderImageIndex].alt | translate"
-            width="1200"
-            height="900"
-          />
-          <button
-            type="button"
-            class="founder-nav founder-nav-prev"
-            (click)="prevFounderImage()"
-            [attr.aria-label]="'HOME.FOUNDER_PREV_ARIA' | translate"
-          >
-            ‹
-          </button>
-          <button
-            type="button"
-            class="founder-nav founder-nav-next"
-            (click)="nextFounderImage()"
-            [attr.aria-label]="'HOME.FOUNDER_NEXT_ARIA' | translate"
-          >
-            ›
-          </button>
+          @if (currentFounderImage(); as image) {
+            <picture>
+              @if (image.source.avifUrl) {
+                <source [srcset]="image.source.avifUrl" type="image/avif" />
+              }
+              @if (image.source.webpUrl) {
+                <source [srcset]="image.source.webpUrl" type="image/webp" />
+              }
+              <img
+                class="about-feature-photo"
+                [src]="image.source.fallbackUrl"
+                [attr.alt]="
+                  image.altText || ('HOME.SEC_ABOUT_TITLE' | translate)
+                "
+                width="1200"
+                height="900"
+              />
+            </picture>
+          }
+          @if (founderImages().length > 1) {
+            <button
+              type="button"
+              class="founder-nav founder-nav-prev"
+              (click)="prevFounderImage()"
+              [attr.aria-label]="'HOME.FOUNDER_PREV_ARIA' | translate"
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              class="founder-nav founder-nav-next"
+              (click)="nextFounderImage()"
+              [attr.aria-label]="'HOME.FOUNDER_NEXT_ARIA' | translate"
+            >
+              ›
+            </button>
+          }
         </div>
       </div>
     </div>

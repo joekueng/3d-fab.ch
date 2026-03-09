@@ -1,9 +1,7 @@
 .section-card {
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: clamp(12px, 2vw, 24px);
-  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
 }
 
 .section-header {
@@ -11,7 +9,6 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: var(--space-4);
-  margin-bottom: var(--space-4);
 }
 
 .section-header h2 {
@@ -26,7 +23,6 @@
 .alerts {
   display: grid;
   gap: var(--space-2);
-  margin-bottom: var(--space-3);
 }
 
 .content {
@@ -374,7 +370,7 @@ button:disabled {
 
 @media (max-width: 760px) {
   .section-card {
-    padding: var(--space-4);
+    gap: var(--space-4);
   }
 
   .form-grid {
@@ -402,11 +398,5 @@ button:disabled {
   .panel button,
   .subpanel button {
     width: 100%;
-  }
-}
-
-@media (max-width: 520px) {
-  .section-card {
-    padding: var(--space-3);
   }
 }

@@ -13,16 +13,25 @@ FROM eclipse-temurin:21-jre-jammy
 ARG ORCA_VERSION=2.3.1
 ARG ORCA_DOWNLOAD_URL
 
-# Install system dependencies for OrcaSlicer (same as before)
-RUN apt-get update && apt-get install -y \
+# Install system dependencies for OrcaSlicer and media processing.
+# The build fails fast if the packaged ffmpeg lacks JPEG/WebP/AVIF encoders.
+RUN set -eux; \
+    apt-get update; \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    ffmpeg \
     wget \
     assimp-utils \
     libgl1 \
     libglib2.0-0 \
     libgtk-3-0 \
     libdbus-1-3 \
-    libwebkit2gtk-4.0-37 \
-    && rm -rf /var/lib/apt/lists/*
+    libwebkit2gtk-4.0-37; \
+    ffmpeg -hide_banner -encoders > /tmp/ffmpeg-encoders.txt; \
+    grep -Eq '[[:space:]]mjpeg[[:space:]]' /tmp/ffmpeg-encoders.txt; \
+    grep -Eq '[[:space:]](libwebp|webp)[[:space:]]' /tmp/ffmpeg-encoders.txt; \
+    grep -Eq '[[:space:]](libaom-av1|librav1e|libsvtav1)[[:space:]]' /tmp/ffmpeg-encoders.txt; \
+    rm -f /tmp/ffmpeg-encoders.txt; \
+    rm -rf /var/lib/apt/lists/*
 
 # Install OrcaSlicer
 WORKDIR /opt

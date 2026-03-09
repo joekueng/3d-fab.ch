@@ -57,6 +57,13 @@ export const ADMIN_ROUTES: Routes = [
             (m) => m.AdminCadInvoicesComponent,
           ),
       },
+      {
+        path: 'home-media',
+        loadComponent: () =>
+          import('./pages/admin-home-media.component').then(
+            (m) => m.AdminHomeMediaComponent,
+          ),
+      },
     ],
   },
 ];

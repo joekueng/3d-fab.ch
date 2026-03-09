@@ -1,6 +1,15 @@
-import { Component } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslateModule } from '@ngx-translate/core';
 import { AppLocationsComponent } from '../../shared/components/app-locations/app-locations.component';
+import {
+  buildPublicMediaUsageScopeKey,
+  PublicMediaDisplayImage,
+  PublicMediaService,
+  PublicMediaUsageCollectionMap,
+} from '../../core/services/public-media.service';
+
+const EMPTY_MEDIA_COLLECTIONS: PublicMediaUsageCollectionMap = {};
 
 type MemberId = 'joe' | 'matteo';
 type PassionId =
@@ -32,6 +41,39 @@ interface PassionChip {
   styleUrl: './about-page.component.scss',
 })
 export class AboutPageComponent {
+  private readonly publicMediaService = inject(PublicMediaService);
+  private readonly mediaByUsage = toSignal(
+    this.publicMediaService.getUsageCollections([
+      {
+        usageType: 'ABOUT_MEMBER',
+        usageKey: 'joe',
+      },
+      {
+        usageType: 'ABOUT_MEMBER',
+        usageKey: 'matteo',
+      },
+    ]),
+    { initialValue: EMPTY_MEDIA_COLLECTIONS },
+  );
+
+  readonly joeImage = computed<PublicMediaDisplayImage | null>(() => {
+    const image = this.publicMediaService.pickPrimaryUsage(
+      this.mediaByUsage()[
+        buildPublicMediaUsageScopeKey('ABOUT_MEMBER', 'joe')
+      ] ?? [],
+    );
+    return image ? this.publicMediaService.toDisplayImage(image, 'card') : null;
+  });
+
+  readonly matteoImage = computed<PublicMediaDisplayImage | null>(() => {
+    const image = this.publicMediaService.pickPrimaryUsage(
+      this.mediaByUsage()[
+        buildPublicMediaUsageScopeKey('ABOUT_MEMBER', 'matteo')
+      ] ?? [],
+    );
+    return image ? this.publicMediaService.toDisplayImage(image, 'card') : null;
+  });
+
   selectedMember: MemberId | null = null;
   hoveredMember: MemberId | null = null;
 
