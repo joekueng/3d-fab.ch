@@ -1,70 +1,80 @@
-<section class="section-card">
-  <header class="section-header">
-    <div class="header-copy">
-      <p class="eyebrow">Back-office media</p>
-      <h2>Media home</h2>
+<section class="section-card ui-section-card ui-stack ui-stack--roomy">
+  <header class="section-header ui-section-header">
+    <div class="header-copy ui-section-header__copy">
+      <p class="eyebrow ui-eyebrow ui-eyebrow--compact">Back-office media</p>
+      <h2 class="ui-section-header__title">Media home</h2>
     </div>
-    <div class="header-side">
-      <div class="header-stats">
-        <article class="stat-chip">
+    <div class="header-side ui-stack ui-stack--dense">
+      <div class="header-stats ui-inline-actions">
+        <article class="stat-chip ui-stat-chip">
           <strong>{{ configuredSectionCount }}</strong>
           <span>sezioni gestite</span>
         </article>
-        <article class="stat-chip">
+        <article class="stat-chip ui-stat-chip">
           <strong>{{ activeImageCount }}</strong>
           <span>immagini attive</span>
         </article>
       </div>
-      <button type="button" (click)="loadHomeMedia()" [disabled]="loading">
+      <button
+        type="button"
+        class="ui-button"
+        (click)="loadHomeMedia()"
+        [disabled]="loading"
+      >
         Aggiorna
       </button>
     </div>
   </header>
 
-  <p class="status-banner status-banner-error" *ngIf="errorMessage">
+  <p class="status-banner ui-banner ui-banner--error" *ngIf="errorMessage">
     {{ errorMessage }}
   </p>
-  <p class="status-banner status-banner-success" *ngIf="successMessage">
+  <p class="status-banner ui-banner ui-banner--success" *ngIf="successMessage">
     {{ successMessage }}
   </p>
 
-  <div class="group-stack" *ngIf="!loading; else loadingTpl">
-    <section class="group-card" *ngFor="let group of sectionGroups">
-      <header class="group-header">
+  <div class="group-stack ui-stack" *ngIf="!loading; else loadingTpl">
+    <section
+      class="group-card ui-subpanel ui-subpanel--warm"
+      *ngFor="let group of sectionGroups"
+    >
+      <header class="group-header ui-row ui-row--between">
         <h3>{{ group.title }}</h3>
       </header>
 
-      <div class="sections">
+      <div class="sections ui-stack ui-stack--dense">
         <section
-          class="media-panel"
+          class="media-panel ui-subpanel ui-subpanel--elevated"
           *ngFor="
             let section of getSectionsForGroup(group.id);
             trackBy: trackSection
           "
         >
-          <header class="media-panel-header">
-            <div class="media-panel-copy">
-              <div class="title-row">
+          <header
+            class="media-panel-header ui-row ui-row--between ui-row--wrap"
+          >
+            <div class="media-panel-copy ui-stack ui-stack--dense">
+              <div class="title-row ui-row ui-row--center ui-row--wrap">
                 <h4>{{ section.title }}</h4>
-                <span class="count-pill">
+                <span class="count-pill ui-pill ui-pill--soft">
                   {{ section.items.length }}
                   {{ section.items.length === 1 ? "attiva" : "attive" }}
                 </span>
               </div>
             </div>
-            <div class="media-panel-meta">
-              <span class="usage-pill"
+            <div class="media-panel-meta ui-row ui-row--wrap ui-row--end">
+              <span class="usage-pill ui-pill ui-pill--neutral"
                 >{{ section.usageType }} / {{ section.usageKey }}</span
               >
-              <span class="layout-pill">
+              <span class="layout-pill ui-pill ui-pill--light">
                 Variante {{ section.preferredVariantName }}
               </span>
             </div>
           </header>
 
-          <div class="workspace">
-            <div class="upload-panel">
-              <div class="panel-heading">
+          <div class="workspace ui-workspace-compact">
+            <div class="upload-panel ui-subpanel ui-subpanel--soft">
+              <div class="panel-heading ui-stack ui-stack--dense">
                 <h5>
                   {{
                     getFormState(section.usageKey).replacingUsageId
@@ -74,9 +84,9 @@
                 </h5>
               </div>
 
-              <div class="form-grid">
-                <div class="form-field form-field--wide">
-                  <span>File immagine</span>
+              <div class="form-grid ui-form-grid ui-form-grid--two">
+                <div class="form-field form-field--wide ui-form-field">
+                  <span class="ui-form-caption">File immagine</span>
                   <input
                     [id]="'media-file-' + section.usageKey"
                     class="sr-only"
@@ -85,11 +95,13 @@
                     (change)="onFileSelected(section.usageKey, $event)"
                   />
                   <label
-                    class="file-picker"
+                    class="file-picker ui-file-picker"
                     [for]="'media-file-' + section.usageKey"
                   >
-                    <span class="file-picker-button">Scegli file</span>
-                    <span class="file-picker-name">
+                    <span class="file-picker-button ui-file-picker__button"
+                      >Scegli file</span
+                    >
+                    <span class="file-picker-name ui-file-picker__name">
                       {{
                         getFormState(section.usageKey).file?.name ||
                           "Nessun file selezionato"
@@ -107,16 +119,18 @@
                   <img [src]="previewUrl" alt="" />
                 </div>
 
-                <div class="language-toolbar form-field--wide">
-                  <div class="language-copy">
+                <div
+                  class="language-toolbar form-field--wide ui-language-toolbar"
+                >
+                  <div class="language-copy ui-language-toolbar__copy">
                     <span>Testi localizzati</span>
                     <p>IT / EN / DE / FR obbligatorie</p>
                   </div>
-                  <div class="language-toggle">
+                  <div class="language-toggle ui-language-toolbar__toggle">
                     <button
                       *ngFor="let language of mediaLanguages"
                       type="button"
-                      class="language-toggle-btn"
+                      class="language-toggle-btn ui-language-toolbar__button"
                       [class.active]="
                         getFormState(section.usageKey).activeLanguage ===
                         language
@@ -134,8 +148,8 @@
                   </div>
                 </div>
 
-                <label class="form-field">
-                  <span>
+                <label class="form-field ui-form-field">
+                  <span class="ui-form-caption">
                     Titolo ({{
                       mediaLanguageLabels[
                         getFormState(section.usageKey).activeLanguage
@@ -143,14 +157,15 @@
                     }})
                   </span>
                   <input
+                    class="ui-form-control"
                     type="text"
                     [(ngModel)]="getActiveTranslation(section.usageKey).title"
                     placeholder="Titolo immagine"
                   />
                 </label>
 
-                <label class="form-field">
-                  <span>
+                <label class="form-field ui-form-field">
+                  <span class="ui-form-caption">
                     Alt text ({{
                       mediaLanguageLabels[
                         getFormState(section.usageKey).activeLanguage
@@ -158,15 +173,17 @@
                     }})
                   </span>
                   <input
+                    class="ui-form-control"
                     type="text"
                     [(ngModel)]="getActiveTranslation(section.usageKey).altText"
                     placeholder="Testo alternativo"
                   />
                 </label>
 
-                <label class="form-field">
-                  <span>Sort order</span>
+                <label class="form-field ui-form-field">
+                  <span class="ui-form-caption">Sort order</span>
                   <input
+                    class="ui-form-control"
                     type="number"
                     [(ngModel)]="getFormState(section.usageKey).sortOrder"
                     min="0"
@@ -183,9 +200,10 @@
                 </label>
               </div>
 
-              <div class="upload-actions">
+              <div class="upload-actions ui-row ui-row--wrap">
                 <button
                   type="button"
+                  class="ui-button"
                   (click)="uploadForSection(section.usageKey)"
                   [disabled]="
                     getFormState(section.usageKey).saving ||
@@ -202,7 +220,7 @@
                 </button>
                 <button
                   type="button"
-                  class="ghost"
+                  class="ui-button ui-button--ghost"
                   (click)="prepareAdd(section.usageKey)"
                   [disabled]="getFormState(section.usageKey).saving"
                 >
@@ -210,7 +228,7 @@
                 </button>
                 <button
                   type="button"
-                  class="ghost"
+                  class="ui-button ui-button--ghost"
                   *ngIf="getFormState(section.usageKey).replacingUsageId"
                   (click)="cancelReplace(section.usageKey)"
                   [disabled]="getFormState(section.usageKey).saving"
@@ -220,21 +238,21 @@
               </div>
             </div>
 
-            <div class="list-panel">
-              <div class="panel-heading">
+            <div class="list-panel ui-subpanel ui-subpanel--soft">
+              <div class="panel-heading ui-stack ui-stack--dense">
                 <h5>Immagini attive</h5>
               </div>
 
               <div
-                class="media-list"
+                class="media-list ui-media-list"
                 *ngIf="section.items.length; else emptySectionState"
               >
                 <article
-                  class="media-item"
+                  class="media-item ui-media-item"
                   *ngFor="let item of section.items; trackBy: trackItem"
                 >
                   <div class="thumb-wrap">
-                    <div class="thumb">
+                    <div class="thumb ui-thumb">
                       <img
                         *ngIf="item.previewUrl; else noPreviewTpl"
                         [src]="item.previewUrl"
@@ -243,8 +261,10 @@
                     </div>
                   </div>
 
-                  <div class="media-copy">
-                    <div class="media-copy-top">
+                  <div class="media-copy ui-stack ui-stack--dense">
+                    <div
+                      class="media-copy-top ui-row ui-row--between ui-row--center ui-row--wrap"
+                    >
                       <div>
                         <h6>
                           {{
@@ -259,7 +279,9 @@
                           {{ item.mediaAssetId }}
                         </p>
                       </div>
-                      <span class="primary-badge" *ngIf="item.isPrimary"
+                      <span
+                        class="primary-badge ui-pill ui-pill--accent"
+                        *ngIf="item.isPrimary"
                         >Primaria</span
                       >
                     </div>
@@ -283,10 +305,11 @@
                       {{ item.createdAt | date: "short" }}
                     </p>
 
-                    <div class="sort-editor">
+                    <div class="sort-editor ui-row ui-row--wrap">
                       <label>
-                        <span>Nuovo ordine</span>
+                        <span class="ui-form-caption">Nuovo ordine</span>
                         <input
+                          class="ui-form-control"
                           type="number"
                           [(ngModel)]="item.draftSortOrder"
                           min="0"
@@ -294,7 +317,7 @@
                       </label>
                       <button
                         type="button"
-                        class="ghost"
+                        class="ui-button ui-button--ghost"
                         (click)="saveSortOrder(item)"
                         [disabled]="
                           isUsageBusy(item.usageId) ||
@@ -305,10 +328,10 @@
                       </button>
                     </div>
 
-                    <div class="item-actions">
+                    <div class="item-actions ui-row ui-row--wrap">
                       <button
                         type="button"
-                        class="ghost"
+                        class="ui-button ui-button--ghost"
                         (click)="prepareReplace(section.usageKey, item)"
                         [disabled]="isUsageBusy(item.usageId)"
                       >
@@ -316,7 +339,7 @@
                       </button>
                       <button
                         type="button"
-                        class="ghost"
+                        class="ui-button ui-button--ghost"
                         (click)="setPrimary(item)"
                         [disabled]="isUsageBusy(item.usageId) || item.isPrimary"
                       >
@@ -324,7 +347,7 @@
                       </button>
                       <button
                         type="button"
-                        class="ghost danger"
+                        class="ui-button ui-button--ghost-danger"
                         (click)="removeFromHome(item)"
                         [disabled]="isUsageBusy(item.usageId)"
                       >
@@ -342,18 +365,18 @@
   </div>
 
   <ng-template #emptySectionState>
-    <p class="empty-state">
+    <p class="empty-state ui-empty-state">
       Nessuna immagine attiva collegata a questa sezione home.
     </p>
   </ng-template>
 
   <ng-template #noPreviewTpl>
-    <div class="thumb thumb-empty">
+    <div class="thumb thumb-empty ui-thumb ui-thumb--empty">
       <span>Preview non disponibile</span>
     </div>
   </ng-template>
 </section>
 
 <ng-template #loadingTpl>
-  <p class="loading-state">Caricamento media home...</p>
+  <p class="loading-state ui-empty-state">Caricamento media home...</p>
 </ng-template>
