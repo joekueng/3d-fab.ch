@@ -22,9 +22,7 @@ interface HomeMediaSectionConfig {
   usageKey: HomeSectionKey;
   groupId: 'galleries' | 'capabilities';
   title: string;
-  description: string;
   preferredVariantName: 'card' | 'hero';
-  collectionHint: string;
 }
 
 interface HomeMediaFormState {
@@ -58,7 +56,6 @@ interface HomeMediaSectionView extends HomeMediaSectionConfig {
 interface HomeMediaSectionGroup {
   id: HomeMediaSectionConfig['groupId'];
   title: string;
-  description: string;
 }
 
 @Component({
@@ -75,14 +72,10 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
     {
       id: 'galleries',
       title: 'Gallery e visual principali',
-      description:
-        'Sezioni che possono avere piu immagini attive e che impattano slider o gallery della home.',
     },
     {
       id: 'capabilities',
       title: 'Cosa puoi ottenere',
-      description:
-        'Le quattro card della sezione servizi della home. Qui di solito e consigliata una sola immagine per card.',
     },
   ];
 
@@ -92,59 +85,42 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
       usageKey: 'shop-gallery',
       groupId: 'galleries',
       title: 'Home: gallery shop',
-      description:
-        'Immagini della sezione shop nella home. Non modifica il catalogo shop reale.',
       preferredVariantName: 'card',
-      collectionHint: 'Gallery orizzontale. Consigliate piu immagini in formato card.',
     },
     {
       usageType: 'HOME_SECTION',
       usageKey: 'founders-gallery',
       groupId: 'galleries',
       title: 'Home: gallery founders',
-      description:
-        'Immagini del carousel founders nella home. Prev/next usa l’ordine configurato qui.',
       preferredVariantName: 'hero',
-      collectionHint: 'Hero slider. Consigliate immagini ampie con soggetto centrale.',
     },
     {
       usageType: 'HOME_SECTION',
       usageKey: 'capability-prototyping',
       groupId: 'capabilities',
       title: 'Home: prototipazione veloce',
-      description:
-        'Card "Prototipazione veloce" nella sezione Cosa puoi ottenere.',
       preferredVariantName: 'card',
-      collectionHint: 'Card singola. Consigliata una sola immagine 16:10.',
     },
     {
       usageType: 'HOME_SECTION',
       usageKey: 'capability-custom-parts',
       groupId: 'capabilities',
       title: 'Home: pezzi personalizzati',
-      description:
-        'Card "Pezzi personalizzati" nella sezione Cosa puoi ottenere.',
       preferredVariantName: 'card',
-      collectionHint: 'Card singola. Consigliata una sola immagine 16:10.',
     },
     {
       usageType: 'HOME_SECTION',
       usageKey: 'capability-small-series',
       groupId: 'capabilities',
       title: 'Home: piccole serie',
-      description: 'Card "Piccole serie" nella sezione Cosa puoi ottenere.',
       preferredVariantName: 'card',
-      collectionHint: 'Card singola. Consigliata una sola immagine 16:10.',
     },
     {
       usageType: 'HOME_SECTION',
       usageKey: 'capability-cad',
       groupId: 'capabilities',
       title: 'Home: consulenza e CAD',
-      description:
-        'Card "Consulenza e CAD" nella sezione Cosa puoi ottenere.',
       preferredVariantName: 'card',
-      collectionHint: 'Card singola. Consigliata una sola immagine 16:10.',
     },
   ];
 

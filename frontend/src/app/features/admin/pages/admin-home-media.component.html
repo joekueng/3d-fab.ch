@@ -3,10 +3,6 @@
     <div class="header-copy">
       <p class="eyebrow">Back-office media</p>
       <h2>Media home</h2>
-      <p>
-        Gestisci gallery, founders e le card "Cosa puoi ottenere" senza
-        toccare codice o asset statici locali.
-      </p>
     </div>
     <div class="header-side">
       <div class="header-stats">
@@ -35,10 +31,7 @@
   <div class="group-stack" *ngIf="!loading; else loadingTpl">
     <section class="group-card" *ngFor="let group of sectionGroups">
       <header class="group-header">
-        <div>
-          <h3>{{ group.title }}</h3>
-          <p>{{ group.description }}</p>
-        </div>
+        <h3>{{ group.title }}</h3>
       </header>
 
       <div class="sections">
@@ -58,7 +51,6 @@
                   {{ section.items.length === 1 ? "attiva" : "attive" }}
                 </span>
               </div>
-              <p>{{ section.description }}</p>
             </div>
             <div class="media-panel-meta">
               <span class="usage-pill"
@@ -73,27 +65,38 @@
           <div class="workspace">
             <div class="upload-panel">
               <div class="panel-heading">
-                <div>
-                  <h5>
-                    {{
-                      getFormState(section.usageKey).replacingUsageId
-                        ? "Sostituisci immagine"
-                        : "Carica immagine"
-                    }}
-                  </h5>
-                  <p>{{ section.collectionHint }}</p>
-                </div>
+                <h5>
+                  {{
+                    getFormState(section.usageKey).replacingUsageId
+                      ? "Sostituisci immagine"
+                      : "Carica immagine"
+                  }}
+                </h5>
               </div>
 
               <div class="form-grid">
-                <label class="form-field form-field--wide">
+                <div class="form-field form-field--wide">
                   <span>File immagine</span>
                   <input
+                    [id]="'media-file-' + section.usageKey"
+                    class="sr-only"
                     type="file"
                     accept=".jpg,.jpeg,.png,.webp"
                     (change)="onFileSelected(section.usageKey, $event)"
                   />
-                </label>
+                  <label
+                    class="file-picker"
+                    [for]="'media-file-' + section.usageKey"
+                  >
+                    <span class="file-picker-button">Scegli file</span>
+                    <span class="file-picker-name">
+                      {{
+                        getFormState(section.usageKey).file?.name ||
+                          "Nessun file selezionato"
+                      }}
+                    </span>
+                  </label>
+                </div>
 
                 <div
                   class="preview-card form-field--wide"
@@ -136,7 +139,8 @@
                     type="checkbox"
                     [(ngModel)]="getFormState(section.usageKey).isPrimary"
                   />
-                  <span>Immagine primaria</span>
+                  <span class="toggle-mark" aria-hidden="true"></span>
+                  <span>Primaria</span>
                 </label>
               </div>
 
@@ -179,10 +183,7 @@
 
             <div class="list-panel">
               <div class="panel-heading">
-                <div>
-                  <h5>Immagini attive</h5>
-                  <p>Ordina, sostituisci o rimuovi i media attualmente collegati.</p>
-                </div>
+                <h5>Immagini attive</h5>
               </div>
 
               <div
