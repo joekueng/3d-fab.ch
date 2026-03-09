@@ -145,7 +145,10 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
   }
 
   get activeImageCount(): number {
-    return this.sections.reduce((total, section) => total + section.items.length, 0);
+    return this.sections.reduce(
+      (total, section) => total + section.items.length,
+      0,
+    );
   }
 
   ngOnInit(): void {
@@ -170,11 +173,13 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
           items: this.buildSectionItems(assets, config),
         }));
         this.loading = false;
-        (Object.keys(this.formStateByKey) as HomeSectionKey[]).forEach((key) => {
-          if (!this.formStateByKey[key].saving) {
-            this.resetForm(key);
-          }
-        });
+        (Object.keys(this.formStateByKey) as HomeSectionKey[]).forEach(
+          (key) => {
+            if (!this.formStateByKey[key].saving) {
+              this.resetForm(key);
+            }
+          },
+        );
       },
       error: (error) => {
         this.loading = false;
@@ -236,7 +241,9 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
     this.errorMessage = null;
     this.successMessage = null;
 
-    const createUsagePayload = (mediaAssetId: string): AdminCreateMediaUsagePayload => ({
+    const createUsagePayload = (
+      mediaAssetId: string,
+    ): AdminCreateMediaUsagePayload => ({
       usageType: section.usageType,
       usageKey: section.usageKey,
       mediaAssetId,
@@ -259,10 +266,13 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
           if (!formState.replacingUsageId) {
             return of(null);
           }
-          return this.adminMediaService.updateUsage(formState.replacingUsageId, {
-            isActive: false,
-            isPrimary: false,
-          });
+          return this.adminMediaService.updateUsage(
+            formState.replacingUsageId,
+            {
+              isActive: false,
+              isPrimary: false,
+            },
+          );
         }),
       )
       .subscribe({
@@ -371,7 +381,9 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
     return this.actingUsageIds.has(usageId);
   }
 
-  getSectionsForGroup(groupId: HomeMediaSectionGroup['id']): HomeMediaSectionView[] {
+  getSectionsForGroup(
+    groupId: HomeMediaSectionGroup['id'],
+  ): HomeMediaSectionView[] {
     return this.sections.filter((section) => section.groupId === groupId);
   }
 
@@ -455,8 +467,7 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
   private resetForm(sectionKey: HomeSectionKey): void {
     const formState = this.getFormState(sectionKey);
     const section = this.sections.find((item) => item.usageKey === sectionKey);
-    const nextSortOrder =
-      (section?.items.at(-1)?.sortOrder ?? -1) + 1;
+    const nextSortOrder = (section?.items.at(-1)?.sortOrder ?? -1) + 1;
 
     this.revokePreviewUrl(formState.previewUrl);
     this.formStateByKey[sectionKey] = {

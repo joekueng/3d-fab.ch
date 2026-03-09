@@ -49,7 +49,9 @@
               }
               <img
                 [src]="image.source.fallbackUrl"
-                [attr.alt]="image.altText || ('ABOUT.MEMBER_JOE_ALT' | translate)"
+                [attr.alt]="
+                  image.altText || ('ABOUT.MEMBER_JOE_ALT' | translate)
+                "
               />
             </picture>
           }
