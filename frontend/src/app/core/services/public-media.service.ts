@@ -91,9 +91,12 @@ export class PublicMediaService {
   private readonly injector = inject(Injector);
   private readonly languageService = inject(LanguageService);
   private readonly baseUrl = `${environment.apiUrl}/api/public/media`;
-  private readonly selectedLang$ = toObservable(this.languageService.currentLang, {
-    injector: this.injector,
-  }).pipe(distinctUntilChanged());
+  private readonly selectedLang$ = toObservable(
+    this.languageService.currentLang,
+    {
+      injector: this.injector,
+    },
+  ).pipe(distinctUntilChanged());
 
   getUsageMedia(
     usageType: PublicMediaUsageType,

@@ -418,9 +418,7 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
     this.getFormState(sectionKey).activeLanguage = language;
   }
 
-  getActiveTranslation(
-    sectionKey: HomeSectionKey,
-  ): AdminMediaTranslation {
+  getActiveTranslation(sectionKey: HomeSectionKey): AdminMediaTranslation {
     const formState = this.getFormState(sectionKey);
     return formState.translations[formState.activeLanguage];
   }
@@ -585,7 +583,9 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
   }
 
   private normalizeTranslations(
-    translations: Partial<Record<AdminMediaLanguage, Partial<AdminMediaTranslation>>>,
+    translations: Partial<
+      Record<AdminMediaLanguage, Partial<AdminMediaTranslation>>
+    >,
   ): Record<AdminMediaLanguage, AdminMediaTranslation> {
     return {
       it: {
