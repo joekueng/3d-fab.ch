@@ -6,16 +6,18 @@
 } @else {
   <form [formGroup]="form" (ngSubmit)="onSubmit()">
     <!-- Request Type -->
-    <div class="form-group">
-      <label>{{ "CONTACT.REQ_TYPE_LABEL" | translate }} *</label>
-      <select formControlName="requestType" class="form-control">
+    <div class="ui-form-group">
+      <label class="ui-form-label"
+        >{{ "CONTACT.REQ_TYPE_LABEL" | translate }} *</label
+      >
+      <select formControlName="requestType" class="ui-form-control">
         <option *ngFor="let type of requestTypes" [value]="type.value">
           {{ type.label | translate }}
         </option>
       </select>
     </div>
 
-    <div class="row">
+    <div class="ui-form-row">
       <!-- Phone -->
       <app-input
         formControlName="email"
@@ -35,22 +37,12 @@
     </div>
 
     <!-- User Type Selector (Segmented Control) -->
-    <div class="user-type-selector">
-      <div
-        class="type-option"
-        [class.selected]="!isCompany"
-        (click)="setCompanyMode(false)"
-      >
-        {{ "CONTACT.TYPE_PRIVATE" | translate }}
-      </div>
-      <div
-        class="type-option"
-        [class.selected]="isCompany"
-        (click)="setCompanyMode(true)"
-      >
-        {{ "CONTACT.TYPE_COMPANY" | translate }}
-      </div>
-    </div>
+    <app-toggle-selector
+      class="mb-4"
+      [options]="customerTypeOptions"
+      [selectedValue]="isCompany"
+      (selectionChange)="setCompanyMode($event)"
+    ></app-toggle-selector>
 
     <!-- Personal Name (Only if NOT Company) -->
     <app-input
@@ -61,7 +53,7 @@
     ></app-input>
 
     <!-- Company Fields (Only if Company) -->
-    <div *ngIf="isCompany" class="company-fields">
+    <div *ngIf="isCompany" class="ui-field-stack ui-field-stack--indented">
       <app-input
         formControlName="companyName"
         [label]="('CONTACT.COMPANY_NAME' | translate) + ' *'"
@@ -74,20 +66,24 @@
       ></app-input>
     </div>
 
-    <div class="form-group">
-      <label>{{ "CONTACT.LABEL_MESSAGE" | translate }}</label>
+    <div class="ui-form-group">
+      <label class="ui-form-label">{{
+        "CONTACT.LABEL_MESSAGE" | translate
+      }}</label>
       <textarea
         formControlName="message"
-        class="form-control"
+        class="ui-form-control"
         rows="4"
       ></textarea>
     </div>
 
     <!-- File Upload Section -->
-    <div class="form-group">
-      <label>{{ "CONTACT.UPLOAD_LABEL" | translate }}</label>
-      <p class="hint">{{ "CONTACT.UPLOAD_HINT" | translate }}</p>
-      <p class="hint upload-privacy-note">
+    <div class="ui-form-group">
+      <label class="ui-form-label">{{
+        "CONTACT.UPLOAD_LABEL" | translate
+      }}</label>
+      <p class="ui-form-hint">{{ "CONTACT.UPLOAD_HINT" | translate }}</p>
+      <p class="ui-form-hint upload-privacy-note">
         {{ "LEGAL.CONSENT.UPLOAD_NOTICE_PREFIX" | translate }}
         <a href="/privacy" target="_blank" rel="noopener">{{
           "LEGAL.CONSENT.UPLOAD_NOTICE_LINK" | translate
@@ -160,9 +156,9 @@
     </div>
 
     <div class="legal-consent">
-      <label class="checkbox-container">
+      <label class="ui-checkbox">
         <input type="checkbox" formControlName="acceptLegal" />
-        <span class="checkmark"></span>
+        <span class="ui-checkbox__mark"></span>
         <span>
           {{ "LEGAL.CONSENT.LABEL_PREFIX" | translate }}
           <a href="/terms" target="_blank" rel="noopener">{{
@@ -185,7 +181,7 @@
       </div>
     </div>
 
-    <div class="actions">
+    <div class="ui-actions ui-actions--end">
       <app-button type="submit" [disabled]="form.invalid || sent()">
         {{
           sent()

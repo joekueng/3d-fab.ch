@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, input } from '@angular/core';
 
 @Component({
   selector: 'app-card',
@@ -6,4 +6,7 @@ import { Component } from '@angular/core';
   templateUrl: './app-card.component.html',
   styleUrl: './app-card.component.scss',
 })
-export class AppCardComponent {}
+export class AppCardComponent {
+  title = input<string>('');
+  subtitle = input<string>('');
+}

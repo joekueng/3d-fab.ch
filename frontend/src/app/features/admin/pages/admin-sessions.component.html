@@ -1,12 +1,14 @@
-<section class="section-card">
-  <header class="section-header">
-    <div>
-      <h2>Sessioni quote</h2>
-      <p>Sessioni create dal configuratore con stato e conversione ordine.</p>
+<section class="section-card ui-section-card">
+  <header class="section-header ui-section-header">
+    <div class="ui-section-header__copy">
+      <h2 class="ui-section-header__title">Sessioni quote</h2>
+      <p class="ui-section-header__description">
+        Sessioni create dal configuratore con stato e conversione ordine.
+      </p>
     </div>
     <button
       type="button"
-      class="btn-primary"
+      class="ui-button"
       (click)="loadSessions()"
       [disabled]="loading"
     >
@@ -17,8 +19,8 @@
   <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
   <p class="success" *ngIf="successMessage">{{ successMessage }}</p>
 
-  <div class="table-wrap" *ngIf="!loading; else loadingTpl">
-    <table>
+  <div class="table-wrap ui-table-wrap" *ngIf="!loading; else loadingTpl">
+    <table class="ui-data-table">
       <thead>
         <tr>
           <th>Sessione</th>
@@ -53,14 +55,14 @@
             <td class="actions">
               <button
                 type="button"
-                class="btn-secondary"
+                class="ui-button ui-button--ghost"
                 (click)="toggleSessionDetail(session)"
               >
                 {{ isDetailOpen(session.id) ? "Nascondi" : "Vedi" }}
               </button>
               <button
                 type="button"
-                class="btn-danger"
+                class="ui-button ui-button--danger"
                 (click)="deleteSession(session)"
                 [disabled]="
                   isDeletingSession(session.id) || !!session.convertedOrderId
@@ -92,6 +94,7 @@
                 <div class="detail-session-id">
                   <strong>UUID sessione:</strong>
                   <code
+                    class="ui-code-pill"
                     [title]="detail.session.id"
                     [appCopyOnClick]="detail.session.id"
                     >{{ detail.session.id }}</code

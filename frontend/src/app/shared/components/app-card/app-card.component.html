@@ -1,3 +1,15 @@
 <div class="card">
-  <ng-content></ng-content>
+  @if (title() || subtitle()) {
+    <header class="card-header">
+      @if (title()) {
+        <h3 class="card-title">{{ title() }}</h3>
+      }
+      @if (subtitle()) {
+        <p class="card-subtitle">{{ subtitle() }}</p>
+      }
+    </header>
+  }
+  <div class="card-body">
+    <ng-content></ng-content>
+  </div>
 </div>
