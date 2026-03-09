@@ -119,7 +119,11 @@
                   {{ "PAYMENT.BILLING_INFO_HINT" | translate }}
                 </p>
                 <div class="twint-mobile-action twint-button-container">
-                  <button type="button" class="twint-launch-button" (click)="openTwintPayment()">
+                  <button
+                    type="button"
+                    class="twint-launch-button"
+                    (click)="openTwintPayment()"
+                  >
                     <img
                       class="twint-launch-button__image"
                       [attr.alt]="'PAYMENT.TWINT_BUTTON_ALT' | translate"
@@ -176,7 +180,9 @@
         <div class="payment-summary">
           <app-card class="sticky-card">
             <div class="ui-card-header">
-              <h3 class="ui-card-title">{{ "PAYMENT.SUMMARY_TITLE" | translate }}</h3>
+              <h3 class="ui-card-title">
+                {{ "PAYMENT.SUMMARY_TITLE" | translate }}
+              </h3>
               <p class="ui-card-subtitle order-id">
                 #{{ getDisplayOrderNumber(o) }}
               </p>

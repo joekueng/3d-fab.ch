@@ -22,7 +22,9 @@
           <!-- Contact Info Card -->
           <app-card class="mb-6">
             <div class="ui-card-header">
-              <h3 class="ui-card-title">{{ "CHECKOUT.CONTACT_INFO" | translate }}</h3>
+              <h3 class="ui-card-title">
+                {{ "CHECKOUT.CONTACT_INFO" | translate }}
+              </h3>
             </div>
             <div class="ui-form-row">
               <app-input
@@ -48,7 +50,9 @@
           <!-- Billing Address Card -->
           <app-card class="mb-6">
             <div class="ui-card-header">
-              <h3 class="ui-card-title">{{ "CHECKOUT.BILLING_ADDR" | translate }}</h3>
+              <h3 class="ui-card-title">
+                {{ "CHECKOUT.BILLING_ADDR" | translate }}
+              </h3>
             </div>
             <div formGroupName="billingAddress">
               <!-- User Type Selector -->
@@ -140,7 +144,9 @@
             class="mb-6"
           >
             <div class="ui-card-header">
-              <h3 class="ui-card-title">{{ "CHECKOUT.SHIPPING_ADDR" | translate }}</h3>
+              <h3 class="ui-card-title">
+                {{ "CHECKOUT.SHIPPING_ADDR" | translate }}
+              </h3>
             </div>
             <div formGroupName="shippingAddress">
               <div class="ui-form-row">
@@ -154,7 +160,10 @@
                 ></app-input>
               </div>
 
-              <div *ngIf="isCompany" class="ui-field-stack ui-field-stack--indented">
+              <div
+                *ngIf="isCompany"
+                class="ui-field-stack ui-field-stack--indented"
+              >
                 <app-input
                   formControlName="companyName"
                   [label]="'CHECKOUT.COMPANY_OPTIONAL' | translate"
@@ -237,7 +246,9 @@
       <div class="checkout-summary-section">
         <app-card class="sticky-card">
           <div class="ui-card-header">
-            <h3 class="ui-card-title">{{ "CHECKOUT.SUMMARY_TITLE" | translate }}</h3>
+            <h3 class="ui-card-title">
+              {{ "CHECKOUT.SUMMARY_TITLE" | translate }}
+            </h3>
           </div>
 
           <div class="summary-items" *ngIf="quoteSession() as session">
