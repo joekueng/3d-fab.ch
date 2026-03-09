@@ -3,6 +3,8 @@ package com.printcalculator.service;
 import com.printcalculator.entity.PricingPolicy;
 import com.printcalculator.entity.QuoteLineItem;
 import com.printcalculator.entity.QuoteSession;
+import com.printcalculator.entity.NozzleOption;
+import com.printcalculator.repository.NozzleOptionRepository;
 import com.printcalculator.repository.PricingPolicyRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,13 +22,15 @@ import static org.mockito.Mockito.when;
 class QuoteSessionTotalsServiceTest {
     private PricingPolicyRepository pricingRepo;
     private QuoteCalculator quoteCalculator;
+    private NozzleOptionRepository nozzleOptionRepo;
     private QuoteSessionTotalsService service;
 
     @BeforeEach
     void setUp() {
         pricingRepo = mock(PricingPolicyRepository.class);
         quoteCalculator = mock(QuoteCalculator.class);
-        service = new QuoteSessionTotalsService(pricingRepo, quoteCalculator);
+        nozzleOptionRepo = mock(NozzleOptionRepository.class);
+        service = new QuoteSessionTotalsService(pricingRepo, quoteCalculator, nozzleOptionRepo);
     }
 
     @Test
@@ -75,6 +79,51 @@ class QuoteSessionTotalsServiceTest {
         assertAmountEquals("113.00", totals.itemsTotalChf());
         assertAmountEquals("2.00", totals.shippingCostChf());
         assertAmountEquals("120.00", totals.grandTotalChf());
+    }
+
+    @Test
+    void compute_WithRepeatedNozzleAcrossItems_ShouldChargeNozzleFeeOnlyOncePerType() {
+        QuoteSession session = new QuoteSession();
+        session.setSetupCostChf(new BigDecimal("2.00"));
+
+        QuoteLineItem itemA = createItem(new BigDecimal("10.00"), 3, 3600, "0.60");
+        QuoteLineItem itemB = createItem(new BigDecimal("4.00"), 2, 1200, "0.60");
+        QuoteLineItem itemC = createItem(new BigDecimal("5.00"), 1, 600, "0.80");
+
+        PricingPolicy policy = new PricingPolicy();
+        when(pricingRepo.findFirstByIsActiveTrueOrderByValidFromDesc()).thenReturn(policy);
+        when(quoteCalculator.calculateSessionMachineCost(eq(policy), any(BigDecimal.class))).thenReturn(BigDecimal.ZERO);
+        when(nozzleOptionRepo.findFirstByNozzleDiameterMmAndIsActiveTrue(new BigDecimal("0.60")))
+                .thenReturn(java.util.Optional.of(nozzleOption("0.60", "1.50")));
+        when(nozzleOptionRepo.findFirstByNozzleDiameterMmAndIsActiveTrue(new BigDecimal("0.80")))
+                .thenReturn(java.util.Optional.of(nozzleOption("0.80", "1.50")));
+
+        QuoteSessionTotalsService.QuoteSessionTotals totals = service.compute(session, List.of(itemA, itemB, itemC));
+
+        assertAmountEquals("43.00", totals.itemsTotalChf());
+        assertAmountEquals("3.00", totals.nozzleChangeCostChf());
+        assertAmountEquals("5.00", totals.setupCostChf());
+        assertAmountEquals("50.00", totals.grandTotalChf());
+    }
+
+    private QuoteLineItem createItem(BigDecimal unitPrice, int quantity, int printSeconds, String nozzleMm) {
+        QuoteLineItem item = new QuoteLineItem();
+        item.setQuantity(quantity);
+        item.setUnitPriceChf(unitPrice);
+        item.setPrintTimeSeconds(printSeconds);
+        item.setNozzleDiameterMm(new BigDecimal(nozzleMm));
+        item.setBoundingBoxXMm(new BigDecimal("10"));
+        item.setBoundingBoxYMm(new BigDecimal("10"));
+        item.setBoundingBoxZMm(new BigDecimal("10"));
+        return item;
+    }
+
+    private NozzleOption nozzleOption(String diameterMm, String feeChf) {
+        NozzleOption option = new NozzleOption();
+        option.setNozzleDiameterMm(new BigDecimal(diameterMm));
+        option.setExtraNozzleChangeFeeChf(new BigDecimal(feeChf));
+        option.setIsActive(true);
+        return option;
     }
 
     private void assertAmountEquals(String expected, BigDecimal actual) {

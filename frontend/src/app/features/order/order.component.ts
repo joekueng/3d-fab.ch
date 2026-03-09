@@ -6,6 +6,10 @@ import { AppCardComponent } from '../../shared/components/app-card/app-card.comp
 import { QuoteEstimatorService } from '../calculator/services/quote-estimator.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
+import {
+  PriceBreakdownComponent,
+  PriceBreakdownRow,
+} from '../../shared/components/price-breakdown/price-breakdown.component';
 
 @Component({
   selector: 'app-order',
@@ -15,6 +19,7 @@ import { environment } from '../../../environments/environment';
     AppButtonComponent,
     AppCardComponent,
     TranslateModule,
+    PriceBreakdownComponent,
   ],
   templateUrl: './order.component.html',
   styleUrl: './order.component.scss',
@@ -169,6 +174,28 @@ export class OrderComponent implements OnInit {
       return this.extractOrderNumber(order.id);
     }
     return this.translate.instant('ORDER.NOT_AVAILABLE');
+  }
+
+  orderPriceBreakdownRows(order: any): PriceBreakdownRow[] {
+    return [
+      {
+        labelKey: 'PAYMENT.SUBTOTAL',
+        amount: order?.subtotalChf ?? 0,
+      },
+      {
+        label: `Servizio CAD (${order?.cadHours || 0}h)`,
+        amount: order?.cadTotalChf ?? 0,
+        visible: (order?.cadTotalChf ?? 0) > 0,
+      },
+      {
+        labelKey: 'PAYMENT.SHIPPING',
+        amount: order?.shippingCostChf ?? 0,
+      },
+      {
+        labelKey: 'PAYMENT.SETUP_FEE',
+        amount: order?.setupCostChf ?? 0,
+      },
+    ];
   }
 
   private extractOrderNumber(orderId: string): string {

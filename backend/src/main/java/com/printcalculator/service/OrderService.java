@@ -8,6 +8,10 @@ import com.printcalculator.repository.OrderRepository;
 import com.printcalculator.repository.QuoteLineItemRepository;
 import com.printcalculator.repository.QuoteSessionRepository;
 import com.printcalculator.event.OrderCreatedEvent;
+import com.printcalculator.service.payment.InvoicePdfRenderingService;
+import com.printcalculator.service.payment.PaymentService;
+import com.printcalculator.service.payment.QrBillService;
+import com.printcalculator.service.storage.StorageService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +20,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
@@ -23,6 +28,7 @@ import java.util.*;
 
 @Service
 public class OrderService {
+    private static final Path QUOTE_STORAGE_ROOT = Paths.get("storage_quotes").toAbsolutePath().normalize();
 
     private final OrderRepository orderRepo;
     private final OrderItemRepository orderItemRepo;
@@ -151,7 +157,7 @@ public class OrderService {
         order.setSubtotalChf(BigDecimal.ZERO);
         order.setTotalChf(BigDecimal.ZERO);
         order.setDiscountChf(BigDecimal.ZERO);
-        order.setSetupCostChf(session.getSetupCostChf() != null ? session.getSetupCostChf() : BigDecimal.ZERO);
+        order.setSetupCostChf(totals.setupCostChf());
         order.setShippingCostChf(totals.shippingCostChf());
         order.setIsCadOrder(cadTotal.compareTo(BigDecimal.ZERO) > 0 || "CAD_ACTIVE".equals(session.getStatus()));
         order.setSourceRequestId(session.getSourceRequestId());
@@ -178,6 +184,12 @@ public class OrderService {
             } else {
                 oItem.setMaterialCode(session.getMaterialCode());
             }
+            oItem.setQuality(qItem.getQuality());
+            oItem.setNozzleDiameterMm(qItem.getNozzleDiameterMm());
+            oItem.setLayerHeightMm(qItem.getLayerHeightMm());
+            oItem.setInfillPercent(qItem.getInfillPercent());
+            oItem.setInfillPattern(qItem.getInfillPattern());
+            oItem.setSupportsEnabled(qItem.getSupportsEnabled());
 
             BigDecimal distributedUnitPrice = qItem.getUnitPriceChf() != null ? qItem.getUnitPriceChf() : BigDecimal.ZERO;
             if (totals.totalPrintSeconds().compareTo(BigDecimal.ZERO) > 0 && qItem.getPrintTimeSeconds() != null) {
@@ -210,16 +222,15 @@ public class OrderService {
             String relativePath = "orders/" + order.getId() + "/3d-files/" + oItem.getId() + "/" + storedFilename;
             oItem.setStoredRelativePath(relativePath);
 
-            if (qItem.getStoredPath() != null) {
-                try {
-                    Path sourcePath = Paths.get(qItem.getStoredPath());
-                    if (Files.exists(sourcePath)) {
-                        storageService.store(sourcePath, Paths.get(relativePath));
-                        oItem.setFileSizeBytes(Files.size(sourcePath));
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            Path sourcePath = resolveStoredQuotePath(qItem.getStoredPath(), session.getId());
+            if (sourcePath == null || !Files.exists(sourcePath)) {
+                throw new IllegalStateException("Source file not available for quote line item " + qItem.getId());
+            }
+            try {
+                storageService.store(sourcePath, Paths.get(relativePath));
+                oItem.setFileSizeBytes(Files.size(sourcePath));
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to copy quote file for line item " + qItem.getId(), e);
             }
 
             oItem = orderItemRepo.save(oItem);
@@ -289,6 +300,23 @@ public class OrderService {
             return filename.substring(i + 1);
         }
         return "stl";
+    }
+
+    private Path resolveStoredQuotePath(String storedPath, UUID expectedSessionId) {
+        if (storedPath == null || storedPath.isBlank()) {
+            return null;
+        }
+        try {
+            Path raw = Path.of(storedPath).normalize();
+            Path resolved = raw.isAbsolute() ? raw : QUOTE_STORAGE_ROOT.resolve(raw).normalize();
+            Path expectedSessionRoot = QUOTE_STORAGE_ROOT.resolve(expectedSessionId.toString()).normalize();
+            if (!resolved.startsWith(expectedSessionRoot)) {
+                return null;
+            }
+            return resolved;
+        } catch (InvalidPathException e) {
+            return null;
+        }
     }
 
     private String getDisplayOrderNumber(Order order) {

@@ -1,4 +1,4 @@
-package com.printcalculator.service;
+package com.printcalculator.service.payment;
 
 import io.nayuki.qrcodegen.QrCode;
 import org.springframework.beans.factory.annotation.Value;

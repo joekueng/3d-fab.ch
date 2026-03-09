@@ -13,11 +13,9 @@
           >
           </app-stl-viewer>
         }
-        <!-- Close button removed as requested -->
       </div>
     }
 
-    <!-- Initial Dropzone (Visible only when no files) -->
     @if (items().length === 0) {
       <app-dropzone
         [label]="'CALC.UPLOAD_LABEL'"
@@ -29,7 +27,6 @@
       </app-dropzone>
     }
 
-    <!-- New File List with Details -->
     @if (items().length > 0) {
       <div class="items-grid">
         @for (item of items(); track item.file.name; let i = $index) {
@@ -52,7 +49,7 @@
                     type="number"
                     min="1"
                     [value]="item.quantity"
-                    (change)="updateItemQuantity(i, $event)"
+                    (input)="updateItemQuantity(i, $event)"
                     class="qty-input"
                     (click)="$event.stopPropagation()"
                   />
@@ -63,7 +60,7 @@
                   <app-color-selector
                     [selectedColor]="item.color"
                     [selectedVariantId]="item.filamentVariantId ?? null"
-                    [variants]="currentMaterialVariants()"
+                    [variants]="getVariantsForMaterial(item.material)"
                     (colorSelected)="updateItemColor(i, $event)"
                   >
                   </app-color-selector>
@@ -83,7 +80,6 @@
         }
       </div>
 
-      <!-- "Add Files" Button (Visible only when files exist) -->
       <div class="add-more-container">
         <input
           #additionalInput
@@ -102,79 +98,192 @@
           + {{ "CALC.ADD_FILES" | translate }}
         </button>
       </div>
+
+      <p class="upload-privacy-note">
+        {{ "LEGAL.CONSENT.UPLOAD_NOTICE_PREFIX" | translate }}
+        <a href="/privacy" target="_blank" rel="noopener">{{
+          "LEGAL.CONSENT.UPLOAD_NOTICE_LINK" | translate
+        }}</a
+        >.
+      </p>
+
+      @if (mode() === "easy") {
+        <div class="easy-global-controls">
+          <label class="easy-global-field">
+            <span>{{ "CALC.MATERIAL" | translate }}</span>
+            <select formControlName="material">
+              @for (mat of materials(); track mat.value) {
+                <option [value]="mat.value">{{ mat.label }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="easy-global-field">
+            <span>{{ "CALC.QUALITY" | translate }}</span>
+            <select formControlName="quality">
+              @for (quality of qualities(); track quality.value) {
+                <option [value]="quality.value">{{ quality.label }}</option>
+              }
+            </select>
+          </label>
+        </div>
+      } @else {
+        <div class="sync-settings">
+          <label class="sync-settings-toggle">
+            <input
+              type="checkbox"
+              [checked]="sameSettingsForAll()"
+              [disabled]="lockedSettings()"
+              (change)="onSameSettingsToggle($any($event.target).checked)"
+            />
+            <span class="sync-settings-copy">
+              <span class="sync-settings-title">
+                Stesse impostazioni per tutti i file
+              </span>
+              <span class="sync-settings-subtitle">Colore escluso</span>
+            </span>
+          </label>
+        </div>
+
+        @if (sameSettingsForAll()) {
+          <div class="item-settings-panel">
+            <h4 class="item-settings-title">Impostazioni globali</h4>
+
+            <div class="item-settings-grid">
+              <label>
+                {{ "CALC.MATERIAL" | translate }}
+                <select formControlName="material">
+                  @for (mat of materials(); track mat.value) {
+                    <option [value]="mat.value">{{ mat.label }}</option>
+                  }
+                </select>
+              </label>
+
+              <label>
+                {{ "CALC.NOZZLE" | translate }}
+                <select formControlName="nozzleDiameter">
+                  @for (n of nozzleDiameters(); track n.value) {
+                    <option [value]="n.value">{{ n.label }}</option>
+                  }
+                </select>
+              </label>
+            </div>
+
+            <div class="item-settings-grid">
+              <label>
+                {{ "CALC.PATTERN" | translate }}
+                <select formControlName="infillPattern">
+                  @for (p of infillPatterns(); track p.value) {
+                    <option [value]="p.value">{{ p.label }}</option>
+                  }
+                </select>
+              </label>
+
+              <label>
+                {{ "CALC.LAYER_HEIGHT" | translate }}
+                <select formControlName="layerHeight">
+                  @for (l of layerHeights(); track l.value) {
+                    <option [value]="l.value">{{ l.label }}</option>
+                  }
+                </select>
+              </label>
+            </div>
+
+            <div class="item-settings-grid">
+              <label>
+                {{ "CALC.INFILL" | translate }}
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  formControlName="infillDensity"
+                />
+              </label>
+
+              <label class="item-settings-checkbox">
+                <input type="checkbox" formControlName="supportEnabled" />
+                <span>{{ "CALC.SUPPORT" | translate }}</span>
+              </label>
+            </div>
+          </div>
+        } @else {
+          @if (getSelectedItem(); as selectedItem) {
+            <div class="item-settings-panel">
+              <h4 class="item-settings-title">
+                Impostazioni file: {{ selectedItem.file.name }}
+              </h4>
+
+              <div class="item-settings-grid">
+                <label>
+                  {{ "CALC.MATERIAL" | translate }}
+                  <select formControlName="material">
+                    @for (mat of materials(); track mat.value) {
+                      <option [value]="mat.value">{{ mat.label }}</option>
+                    }
+                  </select>
+                </label>
+
+                <label>
+                  {{ "CALC.NOZZLE" | translate }}
+                  <select formControlName="nozzleDiameter">
+                    @for (n of nozzleDiameters(); track n.value) {
+                      <option [value]="n.value">{{ n.label }}</option>
+                    }
+                  </select>
+                </label>
+              </div>
+
+              <div class="item-settings-grid">
+                <label>
+                  {{ "CALC.PATTERN" | translate }}
+                  <select formControlName="infillPattern">
+                    @for (p of infillPatterns(); track p.value) {
+                      <option [value]="p.value">{{ p.label }}</option>
+                    }
+                  </select>
+                </label>
+
+                <label>
+                  {{ "CALC.LAYER_HEIGHT" | translate }}
+                  <select formControlName="layerHeight">
+                    @for (
+                      l of getLayerHeightOptionsForNozzle(
+                        form.get("nozzleDiameter")?.value
+                      );
+                      track l.value
+                    ) {
+                      <option [value]="l.value">{{ l.label }}</option>
+                    }
+                  </select>
+                </label>
+              </div>
+
+              <div class="item-settings-grid">
+                <label>
+                  {{ "CALC.INFILL" | translate }}
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    formControlName="infillDensity"
+                  />
+                </label>
+
+                <label class="item-settings-checkbox">
+                  <input type="checkbox" formControlName="supportEnabled" />
+                  <span>{{ "CALC.SUPPORT" | translate }}</span>
+                </label>
+              </div>
+            </div>
+          }
+        }
+      }
     }
 
     @if (items().length === 0 && form.get("itemsTouched")?.value) {
       <div class="error-msg">{{ "CALC.ERR_FILE_REQUIRED" | translate }}</div>
     }
-
-    <p class="upload-privacy-note">
-      {{ "LEGAL.CONSENT.UPLOAD_NOTICE_PREFIX" | translate }}
-      <a href="/privacy" target="_blank" rel="noopener">{{
-        "LEGAL.CONSENT.UPLOAD_NOTICE_LINK" | translate
-      }}</a
-      >.
-    </p>
   </div>
-
-  <div class="grid">
-    @if (lockedSettings()) {
-      <p class="upload-privacy-note">
-        Parametri stampa bloccati per sessione CAD: materiale, nozzle, layer,
-        infill e supporti sono definiti dal back-office.
-      </p>
-    }
-    <app-select
-      formControlName="material"
-      [label]="'CALC.MATERIAL' | translate"
-      [options]="materials()"
-    ></app-select>
-
-    @if (mode() === "easy") {
-      <app-select
-        formControlName="quality"
-        [label]="'CALC.QUALITY' | translate"
-        [options]="qualities()"
-      ></app-select>
-    } @else {
-      <app-select
-        formControlName="nozzleDiameter"
-        [label]="'CALC.NOZZLE' | translate"
-        [options]="nozzleDiameters()"
-      ></app-select>
-    }
-  </div>
-
-  <!-- Global quantity removed, now per item -->
-
-  @if (mode() === "advanced") {
-    <div class="grid">
-      <app-select
-        formControlName="infillPattern"
-        [label]="'CALC.PATTERN' | translate"
-        [options]="infillPatterns()"
-      ></app-select>
-
-      <app-select
-        formControlName="layerHeight"
-        [label]="'CALC.LAYER_HEIGHT' | translate"
-        [options]="layerHeights()"
-      ></app-select>
-    </div>
-
-    <div class="grid">
-      <app-input
-        formControlName="infillDensity"
-        type="number"
-        [label]="'CALC.INFILL' | translate"
-      ></app-input>
-
-      <div class="checkbox-row">
-        <input type="checkbox" formControlName="supportEnabled" id="support" />
-        <label for="support">{{ "CALC.SUPPORT" | translate }}</label>
-      </div>
-    </div>
-  }
 
   <app-input
     formControlName="notes"
@@ -183,7 +292,6 @@
   ></app-input>
 
   <div class="actions">
-    <!-- Progress Bar (Only when uploading i.e. progress < 100) -->
     @if (loading() && uploadProgress() < 100) {
       <div class="progress-container">
         <div class="progress-bar">

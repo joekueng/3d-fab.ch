@@ -1,0 +1,25 @@
+<div class="price-breakdown">
+  <div class="price-row" *ngFor="let row of visibleRows()">
+    <span>
+      <ng-container *ngIf="row.label; else translatedRowLabel">
+        {{ row.label }}
+      </ng-container>
+      <ng-template #translatedRowLabel>
+        {{ row.labelKey ? (row.labelKey | translate) : "" }}
+      </ng-template>
+    </span>
+    <span>{{ row.amount | currency: currency() }}</span>
+  </div>
+
+  <div class="price-total">
+    <span>
+      <ng-container *ngIf="totalLabel(); else translatedTotalLabel">
+        {{ totalLabel() }}
+      </ng-container>
+      <ng-template #translatedTotalLabel>
+        {{ totalLabelKey() ? (totalLabelKey() | translate) : "" }}
+      </ng-template>
+    </span>
+    <span>{{ total() | currency: currency() }}{{ totalSuffix() }}</span>
+  </div>
+</div>

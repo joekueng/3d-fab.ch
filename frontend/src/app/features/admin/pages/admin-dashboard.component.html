@@ -192,13 +192,23 @@
               <strong>{{ item.originalFilename }}</strong>
             </p>
             <p class="item-meta">
-              Qta: {{ item.quantity }} | Colore:
+              Qta: {{ item.quantity }} | Materiale:
+              {{ getItemMaterialLabel(item) }} | Colore:
               <span
                 class="color-swatch"
-                *ngIf="isHexColor(item.colorCode)"
-                [style.background-color]="item.colorCode"
+                *ngIf="getItemColorHex(item) as colorHex"
+                [style.background-color]="colorHex"
               ></span>
-              <span>{{ item.colorCode || "-" }}</span>
+              <span>
+                {{ getItemColorLabel(item) }}
+                <ng-container *ngIf="getItemColorCodeSuffix(item) as colorCode">
+                  ({{ colorCode }})
+                </ng-container>
+              </span>
+              | Nozzle: {{ item.nozzleDiameterMm ?? "-" }} mm | Layer:
+              {{ item.layerHeightMm ?? "-" }} mm | Infill:
+              {{ item.infillPercent ?? "-" }}% | Supporti:
+              {{ formatSupports(item.supportsEnabled) }}
               | Riga:
               {{ item.lineTotalChf | currency: "CHF" : "symbol" : "1.2-2" }}
             </p>
@@ -273,17 +283,16 @@
       </div>
     </div>
 
-    <h4>Colori file</h4>
+    <h4>Parametri per file</h4>
     <div class="file-color-list">
       <div class="file-color-row" *ngFor="let item of selectedOrder.items">
         <span class="filename">{{ item.originalFilename }}</span>
         <span class="file-color">
-          <span
-            class="color-swatch"
-            *ngIf="isHexColor(item.colorCode)"
-            [style.background-color]="item.colorCode"
-          ></span>
-          {{ item.colorCode || "-" }}
+          {{ getItemMaterialLabel(item) }} | Colore:
+          {{ getItemColorLabel(item) }} | {{ item.nozzleDiameterMm ?? "-" }} mm
+          | {{ item.layerHeightMm ?? "-" }} mm |
+          {{ item.infillPercent ?? "-" }}% | {{ item.infillPattern || "-" }} |
+          {{ formatSupportsState(item.supportsEnabled) }}
         </span>
       </div>
     </div>

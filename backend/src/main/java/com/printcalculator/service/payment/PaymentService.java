@@ -1,4 +1,4 @@
-package com.printcalculator.service;
+package com.printcalculator.service.payment;
 
 import com.printcalculator.entity.Order;
 import com.printcalculator.entity.Payment;
@@ -65,7 +65,7 @@ public class PaymentService {
         payment.setReportedAt(OffsetDateTime.now());
         
         // We intentionally do not update the payment method here based on user input,
-        // because the user cannot reliably determine the actual method without an integration.
+        // because the system cannot reliably determine the actual method without an integration.
         // It will be updated by the backoffice admin manually.
 
         payment = paymentRepo.save(payment);

@@ -1,12 +1,9 @@
-package com.printcalculator.service;
+package com.printcalculator.service.payment;
 
 import com.printcalculator.entity.Order;
 import net.codecrete.qrbill.generator.Bill;
-import net.codecrete.qrbill.generator.GraphicsFormat;
 import net.codecrete.qrbill.generator.QRBill;
 import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
 
 @Service
 public class QrBillService {

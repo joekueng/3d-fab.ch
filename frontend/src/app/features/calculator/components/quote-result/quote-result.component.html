@@ -1,17 +1,15 @@
 <app-card>
   <h3 class="title">{{ "CALC.RESULT" | translate }}</h3>
 
-  <!-- Summary Grid (NOW ON TOP) -->
-  <div class="result-grid">
-    <app-summary-card
-      class="item full-width"
-      [label]="'CALC.COST' | translate"
-      [large]="true"
-      [highlight]="true"
-    >
-      {{ totals().price | currency: result().currency }}
-    </app-summary-card>
+  <app-price-breakdown
+    [rows]="priceBreakdownRows()"
+    [total]="costBreakdown().total"
+    [currency]="result().currency"
+    [totalSuffix]="'*'"
+    [totalLabelKey]="'CHECKOUT.TOTAL'"
+  ></app-price-breakdown>
 
+  <div class="result-grid">
     <app-summary-card [label]="'CALC.TIME' | translate">
       {{ totals().hours }}h {{ totals().minutes }}m
     </app-summary-card>
@@ -22,18 +20,6 @@
   </div>
 
   <div class="setup-note">
-    <small>{{
-      "CALC.SETUP_NOTE"
-        | translate
-          : { cost: (result().setupCost | currency: result().currency) }
-    }}</small
-    ><br />
-    @if ((result().cadTotal || 0) > 0) {
-      <small class="shipping-note" style="color: #666">
-        Servizio CAD: {{ result().cadTotal | currency: result().currency }}
-      </small>
-      <br />
-    }
     <small class="shipping-note" style="color: #666">{{
       "CALC.SHIPPING_NOTE" | translate
     }}</small>
@@ -43,6 +29,12 @@
     <div class="notes-section">
       <label>{{ "CALC.NOTES" | translate }}:</label>
       <p>{{ result().notes }}</p>
+    </div>
+  }
+  @if (recalculationRequired()) {
+    <div class="recalc-banner">
+      Hai modificato i parametri di stampa. Ricalcola il preventivo prima di
+      procedere con l'ordine.
     </div>
   }
 
@@ -56,7 +48,14 @@
           <span class="file-name">{{ item.fileName }}</span>
           <span class="file-details">
             {{ item.unitTime / 3600 | number: "1.1-1" }}h |
-            {{ item.unitWeight | number: "1.0-0" }}g
+            {{ item.unitWeight | number: "1.0-0" }}g |
+            {{ item.material || "N/D" }}
+            @if (getItemDifferenceLabel(item.fileName, item.material)) {
+              |
+              <small class="item-settings-diff">
+                {{ getItemDifferenceLabel(item.fileName, item.material) }}
+              </small>
+            }
           </span>
         </div>
 
@@ -70,6 +69,7 @@
               [ngModel]="item.quantity"
               (ngModelChange)="updateQuantity(i, $event)"
               (blur)="flushQuantityUpdate(i)"
+              (keydown.enter)="flushQuantityUpdate(i)"
               class="qty-input"
             />
           </div>
@@ -97,20 +97,28 @@
 
   <div class="actions">
     <div class="actions-left">
-      <app-button variant="outline" (click)="consult.emit()">
+      <app-button variant="secondary" (click)="consult.emit()">
         {{ "QUOTE.CONSULT" | translate }}
       </app-button>
     </div>
 
     <div class="actions-right">
       @if (!hasQuantityOverLimit()) {
-        <app-button (click)="proceed.emit()">
+        <app-button
+          [disabled]="recalculationRequired()"
+          (click)="proceed.emit()"
+        >
           {{ "QUOTE.PROCEED_ORDER" | translate }}
         </app-button>
       } @else {
         <small class="limit-note">{{
           "QUOTE.MAX_QTY_NOTICE" | translate: { max: directOrderLimit }
         }}</small>
+      }
+      @if (recalculationRequired()) {
+        <small class="limit-note">
+          Ricalcola il preventivo per riattivare il checkout.
+        </small>
       }
     </div>
   </div>

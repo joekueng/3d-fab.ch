@@ -24,7 +24,7 @@
             class="mode-option"
             [class.active]="mode() === 'easy'"
             [class.disabled]="cadSessionLocked()"
-            (click)="!cadSessionLocked() && mode.set('easy')"
+            (click)="switchMode('easy')"
           >
             {{ "CALC.MODE_EASY" | translate }}
           </div>
@@ -32,7 +32,7 @@
             class="mode-option"
             [class.active]="mode() === 'advanced'"
             [class.disabled]="cadSessionLocked()"
-            (click)="!cadSessionLocked() && mode.set('advanced')"
+            (click)="switchMode('advanced')"
           >
             {{ "CALC.MODE_ADVANCED" | translate }}
           </div>
@@ -45,6 +45,9 @@
           [loading]="loading()"
           [uploadProgress]="uploadProgress()"
           (submitRequest)="onCalculate($event)"
+          (itemQuantityChange)="onUploadItemQuantityChange($event)"
+          (printSettingsChange)="onUploadPrintSettingsChange($event)"
+          (itemSettingsDiffChange)="onItemSettingsDiffChange($event)"
         ></app-upload-form>
       </app-card>
     </div>
@@ -64,8 +67,11 @@
       } @else if (result()) {
         <app-quote-result
           [result]="result()!"
+          [recalculationRequired]="requiresRecalculation()"
+          [itemSettingsDiffByFileName]="itemSettingsDiffByFileName()"
           (consult)="onConsult()"
           (proceed)="onProceed()"
+          (itemQuantityPreviewChange)="onQuoteItemQuantityPreviewChange($event)"
           (itemChange)="onItemChange($event)"
         ></app-quote-result>
       } @else if (isZeroQuoteError()) {

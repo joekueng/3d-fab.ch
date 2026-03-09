@@ -1,6 +1,5 @@
 import {
   Component,
-  OnDestroy,
   input,
   output,
   signal,
@@ -13,6 +12,10 @@ import { TranslateModule } from '@ngx-translate/core';
 import { AppCardComponent } from '../../../../shared/components/app-card/app-card.component';
 import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
 import { SummaryCardComponent } from '../../../../shared/components/summary-card/summary-card.component';
+import {
+  PriceBreakdownComponent,
+  PriceBreakdownRow,
+} from '../../../../shared/components/price-breakdown/price-breakdown.component';
 import { QuoteResult, QuoteItem } from '../../services/quote-estimator.service';
 
 @Component({
@@ -25,19 +28,29 @@ import { QuoteResult, QuoteItem } from '../../services/quote-estimator.service';
     AppCardComponent,
     AppButtonComponent,
     SummaryCardComponent,
+    PriceBreakdownComponent,
   ],
   templateUrl: './quote-result.component.html',
   styleUrl: './quote-result.component.scss',
 })
-export class QuoteResultComponent implements OnDestroy {
+export class QuoteResultComponent {
   readonly maxInputQuantity = 500;
   readonly directOrderLimit = 100;
-  readonly quantityAutoRefreshMs = 2000;
 
   result = input.required<QuoteResult>();
+  recalculationRequired = input<boolean>(false);
+  itemSettingsDiffByFileName = input<Record<string, { differences: string[] }>>(
+    {},
+  );
   consult = output<void>();
   proceed = output<void>();
   itemChange = output<{
+    id?: string;
+    index: number;
+    fileName: string;
+    quantity: number;
+  }>();
+  itemQuantityPreviewChange = output<{
     id?: string;
     index: number;
     fileName: string;
@@ -47,13 +60,10 @@ export class QuoteResultComponent implements OnDestroy {
   // Local mutable state for items to handle quantity changes
   items = signal<QuoteItem[]>([]);
   private lastSentQuantities = new Map<string, number>();
-  private quantityTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
   constructor() {
     effect(
       () => {
-        this.clearAllQuantityTimers();
-
         // Initialize local items when result inputs change
         // We map to new objects to avoid mutating the input directly if it was a reference
         const nextItems = this.result().items.map((i) => ({ ...i }));
@@ -69,17 +79,12 @@ export class QuoteResultComponent implements OnDestroy {
     );
   }
 
-  ngOnDestroy(): void {
-    this.clearAllQuantityTimers();
-  }
-
   updateQuantity(index: number, newQty: number | string) {
     const normalizedQty = this.normalizeQuantity(newQty);
     if (normalizedQty === null) return;
 
     const item = this.items()[index];
     if (!item) return;
-    const key = item.id ?? item.fileName;
 
     this.items.update((current) => {
       const updated = [...current];
@@ -87,7 +92,12 @@ export class QuoteResultComponent implements OnDestroy {
       return updated;
     });
 
-    this.scheduleQuantityRefresh(index, key);
+    this.itemQuantityPreviewChange.emit({
+      id: item.id,
+      index,
+      fileName: item.fileName,
+      quantity: normalizedQty,
+    });
   }
 
   flushQuantityUpdate(index: number): void {
@@ -95,7 +105,6 @@ export class QuoteResultComponent implements OnDestroy {
     if (!item) return;
 
     const key = item.id ?? item.fileName;
-    this.clearQuantityRefreshTimer(key);
 
     const normalizedQty = this.normalizeQuantity(item.quantity);
     if (normalizedQty === null) return;
@@ -117,17 +126,57 @@ export class QuoteResultComponent implements OnDestroy {
     this.items().some((item) => item.quantity > this.directOrderLimit),
   );
 
-  totals = computed(() => {
+  costBreakdown = computed(() => {
     const currentItems = this.items();
-    const setup = this.result().setupCost;
     const cad = this.result().cadTotal || 0;
 
-    let price = setup + cad;
+    let subtotal = cad;
+    currentItems.forEach((item) => {
+      subtotal += item.unitPrice * item.quantity;
+    });
+
+    const nozzleChange = Math.max(0, this.result().nozzleChangeCost || 0);
+    const baseSetupRaw =
+      this.result().baseSetupCost != null
+        ? this.result().baseSetupCost
+        : this.result().setupCost - nozzleChange;
+    const baseSetup = Math.max(0, baseSetupRaw || 0);
+    const total = subtotal + baseSetup + nozzleChange;
+
+    return {
+      subtotal: Math.round(subtotal * 100) / 100,
+      baseSetup: Math.round(baseSetup * 100) / 100,
+      nozzleChange: Math.round(nozzleChange * 100) / 100,
+      total: Math.round(total * 100) / 100,
+    };
+  });
+
+  priceBreakdownRows = computed<PriceBreakdownRow[]>(() => {
+    const breakdown = this.costBreakdown();
+
+    return [
+      {
+        labelKey: 'CHECKOUT.SUBTOTAL',
+        amount: breakdown.subtotal,
+      },
+      {
+        labelKey: 'CHECKOUT.SETUP_FEE',
+        amount: breakdown.baseSetup,
+      },
+      {
+        label: 'Cambio Ugello',
+        amount: breakdown.nozzleChange,
+        visible: breakdown.nozzleChange > 0,
+      },
+    ];
+  });
+
+  totals = computed(() => {
+    const currentItems = this.items();
     let time = 0;
     let weight = 0;
 
     currentItems.forEach((i) => {
-      price += i.unitPrice * i.quantity;
       time += i.unitTime * i.quantity;
       weight += i.unitWeight * i.quantity;
     });
@@ -136,7 +185,7 @@ export class QuoteResultComponent implements OnDestroy {
     const minutes = Math.ceil((time % 3600) / 60);
 
     return {
-      price: Math.round(price * 100) / 100,
+      price: this.costBreakdown().total,
       hours,
       minutes,
       weight: Math.ceil(weight),
@@ -151,24 +200,30 @@ export class QuoteResultComponent implements OnDestroy {
     return Math.min(qty, this.maxInputQuantity);
   }
 
-  private scheduleQuantityRefresh(index: number, key: string): void {
-    this.clearQuantityRefreshTimer(key);
-    const timer = setTimeout(() => {
-      this.quantityTimers.delete(key);
-      this.flushQuantityUpdate(index);
-    }, this.quantityAutoRefreshMs);
-    this.quantityTimers.set(key, timer);
-  }
+  getItemDifferenceLabel(fileName: string, materialCode?: string): string {
+    const differences =
+      this.itemSettingsDiffByFileName()[fileName]?.differences || [];
+    if (differences.length === 0) return '';
 
-  private clearQuantityRefreshTimer(key: string): void {
-    const timer = this.quantityTimers.get(key);
-    if (!timer) return;
-    clearTimeout(timer);
-    this.quantityTimers.delete(key);
-  }
+    const normalizedMaterial = String(materialCode || '')
+      .trim()
+      .toLowerCase();
 
-  private clearAllQuantityTimers(): void {
-    this.quantityTimers.forEach((timer) => clearTimeout(timer));
-    this.quantityTimers.clear();
+    const filtered = differences.filter((entry) => {
+      const normalized = String(entry || '')
+        .trim()
+        .toLowerCase();
+      const isMaterialOnly = !normalized.includes(':');
+      return !(isMaterialOnly && normalized === normalizedMaterial);
+    });
+
+    if (filtered.length === 0) {
+      return '';
+    }
+
+    const materialOnly = filtered.find(
+      (entry) => !entry.includes(':') && entry.trim().length > 0,
+    );
+    return materialOnly || filtered.join(' | ');
   }
 }

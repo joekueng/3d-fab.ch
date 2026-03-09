@@ -3,22 +3,29 @@ package com.printcalculator.service;
 import com.printcalculator.entity.PricingPolicy;
 import com.printcalculator.entity.QuoteLineItem;
 import com.printcalculator.entity.QuoteSession;
+import com.printcalculator.repository.NozzleOptionRepository;
 import com.printcalculator.repository.PricingPolicyRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.LinkedHashSet;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class QuoteSessionTotalsService {
     private final PricingPolicyRepository pricingRepo;
     private final QuoteCalculator quoteCalculator;
+    private final NozzleOptionRepository nozzleOptionRepo;
 
-    public QuoteSessionTotalsService(PricingPolicyRepository pricingRepo, QuoteCalculator quoteCalculator) {
+    public QuoteSessionTotalsService(PricingPolicyRepository pricingRepo,
+                                     QuoteCalculator quoteCalculator,
+                                     NozzleOptionRepository nozzleOptionRepo) {
         this.pricingRepo = pricingRepo;
         this.quoteCalculator = quoteCalculator;
+        this.nozzleOptionRepo = nozzleOptionRepo;
     }
 
     public QuoteSessionTotals compute(QuoteSession session, List<QuoteLineItem> items) {
@@ -43,7 +50,9 @@ public class QuoteSessionTotalsService {
         BigDecimal cadTotal = calculateCadTotal(session);
         BigDecimal itemsTotal = printItemsTotal.add(cadTotal);
 
-        BigDecimal setupFee = session.getSetupCostChf() != null ? session.getSetupCostChf() : BigDecimal.ZERO;
+        BigDecimal baseSetupFee = session.getSetupCostChf() != null ? session.getSetupCostChf() : BigDecimal.ZERO;
+        BigDecimal nozzleChangeCost = calculateNozzleChangeCost(items);
+        BigDecimal setupFee = baseSetupFee.add(nozzleChangeCost).setScale(2, RoundingMode.HALF_UP);
         BigDecimal shippingCost = calculateShippingCost(items);
         BigDecimal grandTotal = itemsTotal.add(setupFee).add(shippingCost);
 
@@ -52,6 +61,8 @@ public class QuoteSessionTotalsService {
                 globalMachineCost,
                 cadTotal,
                 itemsTotal,
+                baseSetupFee.setScale(2, RoundingMode.HALF_UP),
+                nozzleChangeCost,
                 setupFee,
                 shippingCost,
                 grandTotal,
@@ -104,6 +115,36 @@ public class QuoteSessionTotalsService {
         return BigDecimal.valueOf(2.00);
     }
 
+    private BigDecimal calculateNozzleChangeCost(List<QuoteLineItem> items) {
+        if (items == null || items.isEmpty()) {
+            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+        }
+
+        Set<BigDecimal> uniqueNozzles = new LinkedHashSet<>();
+        for (QuoteLineItem item : items) {
+            if (item == null || item.getNozzleDiameterMm() == null) {
+                continue;
+            }
+            uniqueNozzles.add(item.getNozzleDiameterMm().setScale(2, RoundingMode.HALF_UP));
+        }
+
+        BigDecimal totalFee = BigDecimal.ZERO;
+        for (BigDecimal nozzle : uniqueNozzles) {
+            BigDecimal nozzleFee = nozzleOptionRepo
+                    .findFirstByNozzleDiameterMmAndIsActiveTrue(nozzle)
+                    .map(option -> option.getExtraNozzleChangeFeeChf() != null
+                            ? option.getExtraNozzleChangeFeeChf()
+                            : BigDecimal.ZERO)
+                    .orElse(BigDecimal.ZERO);
+
+            if (nozzleFee.compareTo(BigDecimal.ZERO) > 0) {
+                totalFee = totalFee.add(nozzleFee);
+            }
+        }
+
+        return totalFee.setScale(2, RoundingMode.HALF_UP);
+    }
+
     private int normalizeQuantity(Integer quantity) {
         if (quantity == null || quantity < 1) {
             return 1;
@@ -116,6 +157,8 @@ public class QuoteSessionTotalsService {
             BigDecimal globalMachineCostChf,
             BigDecimal cadTotalChf,
             BigDecimal itemsTotalChf,
+            BigDecimal baseSetupCostChf,
+            BigDecimal nozzleChangeCostChf,
             BigDecimal setupCostChf,
             BigDecimal shippingCostChf,
             BigDecimal grandTotalChf,

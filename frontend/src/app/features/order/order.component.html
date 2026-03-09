@@ -193,28 +193,12 @@
               <p class="order-id">#{{ getDisplayOrderNumber(o) }}</p>
             </div>
 
-            <div class="summary-totals">
-              <div class="total-row">
-                <span>{{ "PAYMENT.SUBTOTAL" | translate }}</span>
-                <span>{{ o.subtotalChf | currency: "CHF" }}</span>
-              </div>
-              <div class="total-row" *ngIf="o.cadTotalChf > 0">
-                <span>Servizio CAD ({{ o.cadHours || 0 }}h)</span>
-                <span>{{ o.cadTotalChf | currency: "CHF" }}</span>
-              </div>
-              <div class="total-row">
-                <span>{{ "PAYMENT.SHIPPING" | translate }}</span>
-                <span>{{ o.shippingCostChf | currency: "CHF" }}</span>
-              </div>
-              <div class="total-row">
-                <span>{{ "PAYMENT.SETUP_FEE" | translate }}</span>
-                <span>{{ o.setupCostChf | currency: "CHF" }}</span>
-              </div>
-              <div class="grand-total-row">
-                <span>{{ "PAYMENT.TOTAL" | translate }}</span>
-                <span>{{ o.totalChf | currency: "CHF" }}</span>
-              </div>
-            </div>
+            <app-price-breakdown
+              [rows]="orderPriceBreakdownRows(o)"
+              [total]="o.totalChf || 0"
+              [currency]="'CHF'"
+              [totalLabelKey]="'PAYMENT.TOTAL'"
+            ></app-price-breakdown>
           </app-card>
         </div>
       </div>

@@ -4,17 +4,23 @@ import com.printcalculator.entity.PrinterMachine;
 import com.printcalculator.model.PrintStats;
 import com.printcalculator.model.QuoteResult;
 import com.printcalculator.repository.PrinterMachineRepository;
+import com.printcalculator.service.NozzleLayerHeightPolicyService;
 import com.printcalculator.service.QuoteCalculator;
 import com.printcalculator.service.SlicerService;
+import com.printcalculator.service.storage.ClamAVService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Map;
-import java.util.HashMap;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @RestController
 public class QuoteController {
@@ -22,17 +28,23 @@ public class QuoteController {
     private final SlicerService slicerService;
     private final QuoteCalculator quoteCalculator;
     private final PrinterMachineRepository machineRepo;
-    private final com.printcalculator.service.ClamAVService clamAVService;
+    private final ClamAVService clamAVService;
+    private final NozzleLayerHeightPolicyService nozzleLayerHeightPolicyService;
 
     // Defaults (using aliases defined in ProfileManager)
     private static final String DEFAULT_FILAMENT = "pla_basic";
     private static final String DEFAULT_PROCESS = "standard";
 
-    public QuoteController(SlicerService slicerService, QuoteCalculator quoteCalculator, PrinterMachineRepository machineRepo, com.printcalculator.service.ClamAVService clamAVService) {
+    public QuoteController(SlicerService slicerService,
+                           QuoteCalculator quoteCalculator,
+                           PrinterMachineRepository machineRepo,
+                           ClamAVService clamAVService,
+                           NozzleLayerHeightPolicyService nozzleLayerHeightPolicyService) {
         this.slicerService = slicerService;
         this.quoteCalculator = quoteCalculator;
         this.machineRepo = machineRepo;
         this.clamAVService = clamAVService;
+        this.nozzleLayerHeightPolicyService = nozzleLayerHeightPolicyService;
     }
 
     @PostMapping("/api/quote")
@@ -69,15 +81,27 @@ public class QuoteController {
         if (infillPattern != null && !infillPattern.isEmpty()) {
             processOverrides.put("sparse_infill_pattern", infillPattern);
         }
+        BigDecimal normalizedNozzle = nozzleLayerHeightPolicyService.resolveNozzle(
+                nozzleDiameter != null ? BigDecimal.valueOf(nozzleDiameter) : null
+        );
         if (layerHeight != null) {
-            processOverrides.put("layer_height", String.valueOf(layerHeight));
+            BigDecimal normalizedLayer = nozzleLayerHeightPolicyService.normalizeLayer(BigDecimal.valueOf(layerHeight));
+            if (!nozzleLayerHeightPolicyService.isAllowed(normalizedNozzle, normalizedLayer)) {
+                throw new ResponseStatusException(
+                        BAD_REQUEST,
+                        "Layer height " + normalizedLayer.stripTrailingZeros().toPlainString()
+                                + " is not allowed for nozzle " + normalizedNozzle.stripTrailingZeros().toPlainString()
+                                + ". Allowed: " + nozzleLayerHeightPolicyService.allowedLayersLabel(normalizedNozzle)
+                );
+            }
+            processOverrides.put("layer_height", normalizedLayer.stripTrailingZeros().toPlainString());
         }
         if (supportEnabled != null) {
             processOverrides.put("enable_support", supportEnabled ? "1" : "0");
         }
 
         if (nozzleDiameter != null) {
-            machineOverrides.put("nozzle_diameter", String.valueOf(nozzleDiameter));
+            machineOverrides.put("nozzle_diameter", normalizedNozzle.stripTrailingZeros().toPlainString());
             // Also need to ensure the printer profile is compatible or just override?
             // Usually nozzle diameter changes require a different printer profile or deep overrides.
             // For now, we trust the override key works on the base profile.
