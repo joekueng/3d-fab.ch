@@ -350,7 +350,27 @@ public class AdminMediaControllerService {
                 }
                 String extension = GENERATED_FORMAT_EXTENSIONS.get(format);
                 Path outputFile = generatedDirectory.resolve(preset.name() + "." + extension);
-                mediaFfmpegService.generateVariant(sourceFile, outputFile, dimensions.widthPx(), dimensions.heightPx(), format);
+                try {
+                    mediaFfmpegService.generateVariant(
+                            sourceFile,
+                            outputFile,
+                            dimensions.widthPx(),
+                            dimensions.heightPx(),
+                            format
+                    );
+                } catch (IOException e) {
+                    if (FORMAT_AVIF.equals(format)) {
+                        skippedFormats.add(format);
+                        logger.warn(
+                                "Skipping AVIF variant generation for asset {} preset '{}' because FFmpeg AVIF generation failed: {}",
+                                asset.getId(),
+                                preset.name(),
+                                e.getMessage()
+                        );
+                        continue;
+                    }
+                    throw e;
+                }
 
                 MediaVariant variant = new MediaVariant();
                 variant.setMediaAsset(asset);
