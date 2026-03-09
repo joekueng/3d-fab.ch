@@ -43,6 +43,22 @@ public class QuoteSessionResponseAssembler {
         return response;
     }
 
+    public Map<String, Object> emptyCart() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("session", null);
+        response.put("items", List.of());
+        response.put("printItemsTotalChf", BigDecimal.ZERO);
+        response.put("cadTotalChf", BigDecimal.ZERO);
+        response.put("itemsTotalChf", BigDecimal.ZERO);
+        response.put("baseSetupCostChf", BigDecimal.ZERO);
+        response.put("nozzleChangeCostChf", BigDecimal.ZERO);
+        response.put("setupCostChf", BigDecimal.ZERO);
+        response.put("shippingCostChf", BigDecimal.ZERO);
+        response.put("globalMachineCostChf", BigDecimal.ZERO);
+        response.put("grandTotalChf", BigDecimal.ZERO);
+        return response;
+    }
+
     private Map<String, Object> toItemDto(QuoteLineItem item, QuoteSessionTotalsService.QuoteSessionTotals totals) {
         Map<String, Object> dto = new HashMap<>();
         dto.put("id", item.getId());
