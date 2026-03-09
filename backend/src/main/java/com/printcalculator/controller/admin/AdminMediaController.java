@@ -53,6 +53,13 @@ public class AdminMediaController {
         return ResponseEntity.ok(adminMediaControllerService.getAsset(mediaAssetId));
     }
 
+    @GetMapping("/usages")
+    public ResponseEntity<List<AdminMediaUsageDto>> getUsages(@RequestParam String usageType,
+                                                              @RequestParam String usageKey,
+                                                              @RequestParam(required = false) UUID ownerId) {
+        return ResponseEntity.ok(adminMediaControllerService.getUsages(usageType, usageKey, ownerId));
+    }
+
     @PatchMapping("/assets/{mediaAssetId}")
     @Transactional
     public ResponseEntity<AdminMediaAssetDto> updateAsset(@PathVariable UUID mediaAssetId,

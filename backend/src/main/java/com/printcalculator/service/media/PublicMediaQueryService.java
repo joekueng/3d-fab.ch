@@ -14,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.OffsetDateTime;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -48,22 +49,40 @@ public class PublicMediaQueryService {
     public List<PublicMediaUsageDto> getUsageMedia(String usageType, String usageKey, String language) {
         String normalizedUsageType = normalizeUsageType(usageType);
         String normalizedUsageKey = normalizeUsageKey(usageKey);
+        return getUsageMediaMap(normalizedUsageType, List.of(normalizedUsageKey), language)
+                .getOrDefault(normalizedUsageKey, List.of());
+    }
+
+    public Map<String, List<PublicMediaUsageDto>> getUsageMediaMap(String usageType,
+                                                                   List<String> usageKeys,
+                                                                   String language) {
+        String normalizedUsageType = normalizeUsageType(usageType);
         String normalizedLanguage = normalizeLanguage(language);
+        List<String> normalizedUsageKeys = (usageKeys == null
+                ? List.<String>of()
+                : usageKeys)
+                .stream()
+                .filter(Objects::nonNull)
+                .map(this::normalizeUsageKey)
+                .distinct()
+                .toList();
+
+        if (normalizedUsageKeys.isEmpty()) {
+            return Map.of();
+        }
 
         List<MediaUsage> usages = mediaUsageRepository
-                .findByUsageTypeAndUsageKeyAndIsActiveTrueOrderBySortOrderAscCreatedAtAsc(
-                        normalizedUsageType,
-                        normalizedUsageKey
-                )
+                .findActiveByUsageTypeAndUsageKeys(normalizedUsageType, normalizedUsageKeys)
                 .stream()
                 .filter(this::isPublicReadyUsage)
                 .sorted(Comparator
-                        .comparing(MediaUsage::getSortOrder, Comparator.nullsLast(Integer::compareTo))
+                        .comparing(MediaUsage::getUsageKey, Comparator.nullsLast(String::compareTo))
+                        .thenComparing(MediaUsage::getSortOrder, Comparator.nullsLast(Integer::compareTo))
                         .thenComparing(MediaUsage::getCreatedAt, Comparator.nullsLast(OffsetDateTime::compareTo)))
                 .toList();
 
         if (usages.isEmpty()) {
-            return List.of();
+            return Map.of();
         }
 
         List<UUID> assetIds = usages.stream()
@@ -79,13 +98,16 @@ public class PublicMediaQueryService {
                 .filter(variant -> !Objects.equals("ORIGINAL", variant.getFormat()))
                 .collect(Collectors.groupingBy(variant -> variant.getMediaAsset().getId()));
 
-        return usages.stream()
-                .map(usage -> toDto(
-                        usage,
-                        variantsByAssetId.getOrDefault(usage.getMediaAsset().getId(), List.of()),
-                        normalizedLanguage
-                ))
-                .toList();
+        Map<String, List<PublicMediaUsageDto>> result = new LinkedHashMap<>();
+        for (MediaUsage usage : usages) {
+            result.computeIfAbsent(usage.getUsageKey(), ignored -> new java.util.ArrayList<>())
+                    .add(toDto(
+                            usage,
+                            variantsByAssetId.getOrDefault(usage.getMediaAsset().getId(), List.of()),
+                            normalizedLanguage
+                    ));
+        }
+        return result;
     }
 
     private boolean isPublicReadyUsage(MediaUsage usage) {

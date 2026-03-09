@@ -10,7 +10,15 @@ import java.util.UUID;
 public interface ShopCategoryRepository extends JpaRepository<ShopCategory, UUID> {
     Optional<ShopCategory> findBySlug(String slug);
 
+    Optional<ShopCategory> findBySlugIgnoreCase(String slug);
+
+    Optional<ShopCategory> findBySlugAndIsActiveTrue(String slug);
+
     boolean existsBySlugIgnoreCase(String slug);
 
+    boolean existsByParentCategory_Id(UUID parentCategoryId);
+
     List<ShopCategory> findAllByOrderBySortOrderAscNameAsc();
+
+    List<ShopCategory> findAllByIsActiveTrueOrderBySortOrderAscNameAsc();
 }
