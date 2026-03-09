@@ -8,7 +8,6 @@
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-sm);
-  padding: var(--space-6);
   transition:
     box-shadow 0.2s ease,
     transform 0.2s ease,
@@ -21,4 +20,24 @@
     box-shadow: var(--shadow-md);
     border-color: var(--color-neutral-300);
   }
+}
+
+.card-header {
+  padding: var(--space-6) var(--space-6) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.card-title {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.card-subtitle {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.card-body {
+  padding: var(--space-6);
 }

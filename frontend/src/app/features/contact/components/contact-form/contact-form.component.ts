@@ -9,6 +9,10 @@ import {
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AppInputComponent } from '../../../../shared/components/app-input/app-input.component';
 import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
+import {
+  AppToggleSelectorComponent,
+  ToggleOption,
+} from '../../../../shared/components/app-toggle-selector/app-toggle-selector.component';
 import { QuoteEstimatorService } from '../../../calculator/services/quote-estimator.service';
 import { QuoteRequestService } from '../../../../core/services/quote-request.service';
 import { LanguageService } from '../../../../core/services/language.service';
@@ -30,6 +34,7 @@ import { SuccessStateComponent } from '../../../../shared/components/success-sta
     TranslateModule,
     AppInputComponent,
     AppButtonComponent,
+    AppToggleSelectorComponent,
     SuccessStateComponent,
   ],
   templateUrl: './contact-form.component.html',
@@ -51,6 +56,10 @@ export class ContactFormComponent implements OnDestroy {
     { value: 'series', label: 'CONTACT.REQ_TYPE_SERIES' },
     { value: 'consult', label: 'CONTACT.REQ_TYPE_CONSULT' },
     { value: 'question', label: 'CONTACT.REQ_TYPE_QUESTION' },
+  ];
+  customerTypeOptions: ToggleOption[] = [
+    { label: 'CONTACT.TYPE_PRIVATE', value: false },
+    { label: 'CONTACT.TYPE_COMPANY', value: true },
   ];
 
   private quoteRequestService = inject(QuoteRequestService);
