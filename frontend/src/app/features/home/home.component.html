@@ -1,16 +1,19 @@
 <main class="home-page">
   <section class="hero">
-    <div class="container hero-grid">
+    <div class="container hero-grid ui-content-grid ui-content-grid--spacious">
       <div class="hero-copy">
-        <p class="eyebrow">{{ "HOME.HERO_EYEBROW" | translate }}</p>
-        <h1 class="hero-title" [innerHTML]="'HOME.HERO_TITLE' | translate"></h1>
-        <p class="hero-lead">
+        <p class="eyebrow ui-eyebrow">{{ "HOME.HERO_EYEBROW" | translate }}</p>
+        <h1
+          class="hero-title ui-hero-display"
+          [innerHTML]="'HOME.HERO_TITLE' | translate"
+        ></h1>
+        <p class="hero-lead ui-copy-lead">
           {{ "HOME.HERO_LEAD" | translate }}
         </p>
-        <p class="hero-subtitle">
+        <p class="hero-subtitle ui-copy-subtitle">
           {{ "HOME.HERO_SUBTITLE" | translate }}
         </p>
-        <div class="hero-actions">
+        <div class="hero-actions ui-inline-actions ui-inline-actions--wide">
           <app-button variant="primary" routerLink="/calculator/basic">{{
             "HOME.BTN_CALCULATE" | translate
           }}</app-button>
@@ -25,12 +28,14 @@
     </div>
   </section>
 
-  <section class="section capabilities">
+  <section class="section capabilities ui-section-block">
     <div class="capabilities-bg"></div>
     <div class="container">
-      <div class="section-head">
-        <h2 class="section-title">{{ "HOME.SEC_CAP_TITLE" | translate }}</h2>
-        <p class="section-subtitle">
+      <div class="section-head ui-section-head">
+        <h2 class="section-title ui-section-display-title">
+          {{ "HOME.SEC_CAP_TITLE" | translate }}
+        </h2>
+        <p class="section-subtitle ui-section-display-subtitle">
           {{ "HOME.SEC_CAP_SUBTITLE" | translate }}
         </p>
       </div>
@@ -38,7 +43,7 @@
         <app-card
           *ngFor="let card of capabilityCards(); trackBy: trackCapability"
         >
-          <div class="card-image-placeholder">
+          <div class="card-image-placeholder ui-bleed-media">
             @if (card.image; as image) {
               <picture>
                 @if (image.source.avifUrl) {
@@ -55,23 +60,27 @@
                 />
               </picture>
             } @else {
-              <div class="card-image-fallback">
+              <div class="card-image-fallback ui-bleed-media__fallback">
                 <span>{{ card.titleKey | translate }}</span>
               </div>
             }
           </div>
           <h3>{{ card.titleKey | translate }}</h3>
-          <p class="text-muted">{{ card.textKey | translate }}</p>
+          <p class="text-muted ui-text-muted">{{ card.textKey | translate }}</p>
         </app-card>
       </div>
     </div>
   </section>
 
-  <section class="section calculator">
-    <div class="container calculator-grid">
+  <section class="section calculator ui-section-block">
+    <div
+      class="container calculator-grid ui-content-grid ui-content-grid--start ui-content-grid--split"
+    >
       <div class="calculator-copy">
-        <h2 class="section-title">{{ "HOME.SEC_CALC_TITLE" | translate }}</h2>
-        <p class="section-subtitle">
+        <h2 class="section-title ui-section-display-title">
+          {{ "HOME.SEC_CALC_TITLE" | translate }}
+        </h2>
+        <p class="section-subtitle ui-section-display-subtitle">
           {{ "HOME.SEC_CALC_SUBTITLE" | translate }}
         </p>
         <ul class="calculator-list">
@@ -79,23 +88,25 @@
         </ul>
       </div>
       <app-card class="quote-card">
-        <div class="quote-header">
+        <div class="quote-header ui-row ui-row--between">
           <div>
-            <p class="quote-eyebrow">
+            <p class="quote-eyebrow ui-eyebrow ui-eyebrow--compact">
               {{ "HOME.CARD_CALC_EYEBROW" | translate }}
             </p>
             <h3 class="quote-title">
               {{ "HOME.CARD_CALC_TITLE" | translate }}
             </h3>
           </div>
-          <span class="quote-tag">{{ "HOME.CARD_CALC_TAG" | translate }}</span>
+          <span class="quote-tag ui-pill ui-pill--accent">{{
+            "HOME.CARD_CALC_TAG" | translate
+          }}</span>
         </div>
-        <ul class="quote-steps">
+        <ul class="quote-steps ui-feature-list ui-feature-list--bullets">
           <li>{{ "HOME.CARD_CALC_STEP_1" | translate }}</li>
           <li>{{ "HOME.CARD_CALC_STEP_2" | translate }}</li>
           <li>{{ "HOME.CARD_CALC_STEP_3" | translate }}</li>
         </ul>
-        <div class="quote-actions">
+        <div class="quote-actions ui-actions ui-actions--stack">
           <app-button
             variant="primary"
             [fullWidth]="true"
@@ -113,10 +124,12 @@
     </div>
   </section>
 
-  <section class="section shop">
-    <div class="container split">
+  <section class="section shop ui-section-block">
+    <div class="container split ui-content-grid ui-content-grid--start ui-content-grid--split">
       <div class="shop-copy">
-        <h2 class="section-title">{{ "HOME.SEC_SHOP_TITLE" | translate }}</h2>
+        <h2 class="section-title ui-section-display-title">
+          {{ "HOME.SEC_SHOP_TITLE" | translate }}
+        </h2>
         <p>
           {{ "HOME.SEC_SHOP_TEXT" | translate }}
         </p>
@@ -125,7 +138,7 @@
           <li>{{ "HOME.SEC_SHOP_LIST_2" | translate }}</li>
           <li>{{ "HOME.SEC_SHOP_LIST_3" | translate }}</li>
         </ul>
-        <div class="shop-actions">
+        <div class="shop-actions ui-inline-actions">
           <app-button variant="primary" routerLink="/shop">{{
             "HOME.BTN_DISCOVER" | translate
           }}</app-button>
@@ -135,12 +148,12 @@
         </div>
       </div>
       <div
-        class="shop-gallery"
+        class="shop-gallery ui-gallery-strip"
         tabindex="0"
         [attr.aria-label]="'HOME.SHOP_GALLERY_ARIA' | translate"
       >
         <figure
-          class="shop-gallery-item"
+          class="shop-gallery-item ui-gallery-card"
           *ngFor="let image of shopGalleryImages(); trackBy: trackMediaAsset"
         >
           <picture>
@@ -164,28 +177,36 @@
       <div class="shop-cards">
         <app-card>
           <h3>{{ "HOME.CARD_SHOP_1_TITLE" | translate }}</h3>
-          <p class="text-muted">{{ "HOME.CARD_SHOP_1_TEXT" | translate }}</p>
+          <p class="text-muted ui-text-muted">
+            {{ "HOME.CARD_SHOP_1_TEXT" | translate }}
+          </p>
         </app-card>
         <app-card>
           <h3>{{ "HOME.CARD_SHOP_2_TITLE" | translate }}</h3>
-          <p class="text-muted">{{ "HOME.CARD_SHOP_2_TEXT" | translate }}</p>
+          <p class="text-muted ui-text-muted">
+            {{ "HOME.CARD_SHOP_2_TEXT" | translate }}
+          </p>
         </app-card>
         <app-card>
           <h3>{{ "HOME.CARD_SHOP_3_TITLE" | translate }}</h3>
-          <p class="text-muted">{{ "HOME.CARD_SHOP_3_TEXT" | translate }}</p>
+          <p class="text-muted ui-text-muted">
+            {{ "HOME.CARD_SHOP_3_TEXT" | translate }}
+          </p>
         </app-card>
       </div>
     </div>
   </section>
 
-  <section class="section about">
-    <div class="container about-grid">
+  <section class="section about ui-section-block">
+    <div class="container about-grid ui-content-grid ui-content-grid--start ui-content-grid--split">
       <div class="about-copy">
-        <h2 class="section-title">{{ "HOME.SEC_ABOUT_TITLE" | translate }}</h2>
+        <h2 class="section-title ui-section-display-title">
+          {{ "HOME.SEC_ABOUT_TITLE" | translate }}
+        </h2>
         <p>
           {{ "HOME.SEC_ABOUT_TEXT" | translate }}
         </p>
-        <div class="about-actions">
+        <div class="about-actions ui-inline-actions">
           <app-button variant="primary" routerLink="/about">{{
             "HOME.SEC_ABOUT_TITLE" | translate
           }}</app-button>
@@ -195,7 +216,7 @@
         </div>
       </div>
       <div class="about-media">
-        <div class="about-feature-image">
+        <div class="about-feature-image ui-media-frame ui-media-frame--wide">
           @if (currentFounderImage(); as image) {
             <picture>
               @if (image.source.avifUrl) {
@@ -218,7 +239,7 @@
           @if (founderImages().length > 1) {
             <button
               type="button"
-              class="founder-nav founder-nav-prev"
+              class="founder-nav founder-nav-prev ui-nav-button"
               (click)="prevFounderImage()"
               [attr.aria-label]="'HOME.FOUNDER_PREV_ARIA' | translate"
             >
@@ -226,7 +247,7 @@
             </button>
             <button
               type="button"
-              class="founder-nav founder-nav-next"
+              class="founder-nav founder-nav-next ui-nav-button"
               (click)="nextFounderImage()"
               [attr.aria-label]="'HOME.FOUNDER_NEXT_ARIA' | translate"
             >
