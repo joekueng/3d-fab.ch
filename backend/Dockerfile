@@ -15,6 +15,7 @@ ARG ORCA_DOWNLOAD_URL
 
 # Install system dependencies for OrcaSlicer (same as before)
 RUN apt-get update && apt-get install -y \
+    ffmpeg \
     wget \
     assimp-utils \
     libgl1 \

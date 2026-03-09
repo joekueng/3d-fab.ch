@@ -919,6 +919,62 @@ CREATE TABLE IF NOT EXISTS custom_quote_request_attachments
 CREATE INDEX IF NOT EXISTS ix_custom_quote_attachments_request
     ON custom_quote_request_attachments (request_id);
 
+CREATE TABLE IF NOT EXISTS media_asset
+(
+    media_asset_id     uuid PRIMARY KEY     DEFAULT gen_random_uuid(),
+    original_filename  text        NOT NULL,
+    storage_key        text        NOT NULL UNIQUE,
+    mime_type          text        NOT NULL,
+    file_size_bytes    bigint      NOT NULL CHECK (file_size_bytes >= 0),
+    sha256_hex         text        NOT NULL,
+    width_px           integer,
+    height_px          integer,
+    status             text        NOT NULL CHECK (status IN ('UPLOADED', 'PROCESSING', 'READY', 'FAILED', 'ARCHIVED')),
+    visibility         text        NOT NULL CHECK (visibility IN ('PUBLIC', 'PRIVATE')),
+    title              text,
+    alt_text           text,
+    created_at         timestamptz NOT NULL DEFAULT now(),
+    updated_at         timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS ix_media_asset_status_visibility_created_at
+    ON media_asset (status, visibility, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS media_variant
+(
+    media_variant_id  uuid PRIMARY KEY     DEFAULT gen_random_uuid(),
+    media_asset_id    uuid        NOT NULL REFERENCES media_asset (media_asset_id) ON DELETE CASCADE,
+    variant_name      text        NOT NULL,
+    format            text        NOT NULL CHECK (format IN ('ORIGINAL', 'JPEG', 'WEBP', 'AVIF')),
+    storage_key       text        NOT NULL UNIQUE,
+    mime_type         text        NOT NULL,
+    width_px          integer     NOT NULL,
+    height_px         integer     NOT NULL,
+    file_size_bytes   bigint      NOT NULL CHECK (file_size_bytes >= 0),
+    is_generated      boolean     NOT NULL DEFAULT true,
+    created_at        timestamptz NOT NULL DEFAULT now(),
+    CONSTRAINT uq_media_variant_asset_name_format UNIQUE (media_asset_id, variant_name, format)
+);
+
+CREATE INDEX IF NOT EXISTS ix_media_variant_asset
+    ON media_variant (media_asset_id);
+
+CREATE TABLE IF NOT EXISTS media_usage
+(
+    media_usage_id    uuid PRIMARY KEY     DEFAULT gen_random_uuid(),
+    usage_type        text        NOT NULL,
+    usage_key         text        NOT NULL,
+    owner_id          uuid,
+    media_asset_id    uuid        NOT NULL REFERENCES media_asset (media_asset_id) ON DELETE CASCADE,
+    sort_order        integer     NOT NULL DEFAULT 0,
+    is_primary        boolean     NOT NULL DEFAULT false,
+    is_active         boolean     NOT NULL DEFAULT true,
+    created_at        timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS ix_media_usage_scope
+    ON media_usage (usage_type, usage_key, is_active, sort_order);
+
 ALTER TABLE quote_sessions
     DROP CONSTRAINT IF EXISTS fk_quote_sessions_source_request;
 

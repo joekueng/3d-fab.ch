@@ -11,7 +11,7 @@ Un'applicazione Full Stack (Angular + Spring Boot) per calcolare preventivi di s
 
 ## Stack Tecnologico
 
-- **Backend**: Java 21, Spring Boot 3.4, PostgreSQL, Flyway.
+- **Backend**: Java 21, Spring Boot 3.4, PostgreSQL.
 - **Frontend**: Angular 19, Angular Material, Three.js.
 - **Slicer**: OrcaSlicer (invocato via CLI).
 
@@ -21,14 +21,20 @@ Un'applicazione Full Stack (Angular + Spring Boot) per calcolare preventivi di s
 *   **Node.js 22** e **npm** installati.
 *   **PostgreSQL** attivo.
 *   **OrcaSlicer** installato sul sistema.
+*   **FFmpeg** installato sul sistema o presente nell'immagine Docker del backend.
 
 ## Avvio Rapido
 
 ### 1. Database
-Crea un database PostgreSQL chiamato `printcalc`. Le tabelle verranno create automaticamente al primo avvio tramite Flyway.
+Crea un database PostgreSQL chiamato `printcalc`. Lo schema viene gestito dal progetto tramite configurazione JPA/SQL del repository.
 
 ### 2. Backend
-Configura il percorso di OrcaSlicer in `backend/src/main/resources/application.properties` o tramite la variabile d'ambiente `SLICER_PATH`.
+Configura il percorso di OrcaSlicer in `backend/src/main/resources/application.properties` o tramite la variabile d'ambiente `SLICER_PATH`. Per il media service pubblico puoi configurare anche:
+
+- `MEDIA_STORAGE_ROOT` per la root `storage_media` usata dal backend (`original/`, `public/`, `private/`)
+- `MEDIA_PUBLIC_BASE_URL` per gli URL assoluti restituiti dalle API admin, ad esempio `https://example.com/media`
+- `MEDIA_FFMPEG_PATH` per il binario `ffmpeg`
+- `MEDIA_UPLOAD_MAX_FILE_SIZE_BYTES` per il limite per asset immagine
 
 ```bash
 cd backend
@@ -57,11 +63,29 @@ I prezzi non sono più gestiti tramite variabili d'ambiente fisse ma tramite tab
 *   `/backend`: API Spring Boot.
 *   `/frontend`: Applicazione Angular.
 *   `/backend/profiles`: Contiene i file di configurazione per OrcaSlicer.
+*   `/storage_media`: Originali e varianti media pubbliche/private su filesystem.
+
+## Media pubblici
+
+Il backend salva sempre l'originale in `storage_media/original/` e precomputa le varianti pubbliche in `storage_media/public/`. La cartella `storage_media/private/` è predisposta per asset non pubblici.
+
+Nel deploy Docker il volume media atteso è `/mnt/cache/appdata/print-calculator/${ENV}/storage_media:/app/storage_media`.
+
+Nginx non deve passare dal backend per i file pubblici. Configurazione attesa:
+
+```nginx
+location /media/ {
+    alias /mnt/cache/appdata/print-calculator/${ENV}/storage_media/public/;
+}
+```
 
 ## Troubleshooting
 
 ### Percorso OrcaSlicer
 Assicurati che `slicer.path` punti al binario corretto. Su macOS è solitamente `/Applications/OrcaSlicer.app/Contents/MacOS/OrcaSlicer`. Su Linux è il percorso all'AppImage (estratta o meno).
+
+### FFmpeg e media pubblici
+Verifica che `MEDIA_FFMPEG_PATH` punti a un `ffmpeg` con supporto JPEG, WebP e AVIF. Se gli URL media restituiti dalle API admin non sono raggiungibili, controlla che `MEDIA_PUBLIC_BASE_URL` corrisponda al `location /media/` esposto da Nginx e che il volume `storage_media` sia montato correttamente.
 
 ### Database connection
 Verifica le credenziali in `application.properties`. Se usi Docker, puoi passare `DB_URL`, `DB_USERNAME` e `DB_PASSWORD` come variabili d'ambiente.
