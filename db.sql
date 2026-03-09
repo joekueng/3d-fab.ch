@@ -969,11 +969,43 @@ CREATE TABLE IF NOT EXISTS media_usage
     sort_order        integer     NOT NULL DEFAULT 0,
     is_primary        boolean     NOT NULL DEFAULT false,
     is_active         boolean     NOT NULL DEFAULT true,
+    title_it          text,
+    title_en          text,
+    title_de          text,
+    title_fr          text,
+    alt_text_it       text,
+    alt_text_en       text,
+    alt_text_de       text,
+    alt_text_fr       text,
     created_at        timestamptz NOT NULL DEFAULT now()
 );
 
 CREATE INDEX IF NOT EXISTS ix_media_usage_scope
     ON media_usage (usage_type, usage_key, is_active, sort_order);
+
+ALTER TABLE media_usage
+    ADD COLUMN IF NOT EXISTS title_it text;
+
+ALTER TABLE media_usage
+    ADD COLUMN IF NOT EXISTS title_en text;
+
+ALTER TABLE media_usage
+    ADD COLUMN IF NOT EXISTS title_de text;
+
+ALTER TABLE media_usage
+    ADD COLUMN IF NOT EXISTS title_fr text;
+
+ALTER TABLE media_usage
+    ADD COLUMN IF NOT EXISTS alt_text_it text;
+
+ALTER TABLE media_usage
+    ADD COLUMN IF NOT EXISTS alt_text_en text;
+
+ALTER TABLE media_usage
+    ADD COLUMN IF NOT EXISTS alt_text_de text;
+
+ALTER TABLE media_usage
+    ADD COLUMN IF NOT EXISTS alt_text_fr text;
 
 ALTER TABLE quote_sessions
     DROP CONSTRAINT IF EXISTS fk_quote_sessions_source_request;

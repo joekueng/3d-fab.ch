@@ -3,6 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 
+export type AdminMediaLanguage = 'it' | 'en' | 'de' | 'fr';
+
+export interface AdminMediaTranslation {
+  title: string;
+  altText: string;
+}
+
 export interface AdminMediaVariant {
   id: string;
   variantName: string;
@@ -26,6 +33,7 @@ export interface AdminMediaUsage {
   sortOrder: number;
   isPrimary: boolean;
   isActive: boolean;
+  translations: Record<AdminMediaLanguage, AdminMediaTranslation>;
   createdAt: string;
 }
 
@@ -62,6 +70,7 @@ export interface AdminCreateMediaUsagePayload {
   sortOrder?: number;
   isPrimary?: boolean;
   isActive?: boolean;
+  translations: Record<AdminMediaLanguage, AdminMediaTranslation>;
 }
 
 export interface AdminUpdateMediaUsagePayload {
@@ -72,6 +81,7 @@ export interface AdminUpdateMediaUsagePayload {
   sortOrder?: number;
   isPrimary?: boolean;
   isActive?: boolean;
+  translations?: Record<AdminMediaLanguage, AdminMediaTranslation>;
 }
 
 @Injectable({

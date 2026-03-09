@@ -1,6 +1,7 @@
 package com.printcalculator.dto;
 
 import java.time.OffsetDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 public class AdminMediaUsageDto {
@@ -12,6 +13,7 @@ public class AdminMediaUsageDto {
     private Integer sortOrder;
     private Boolean isPrimary;
     private Boolean isActive;
+    private Map<String, MediaTextTranslationDto> translations;
     private OffsetDateTime createdAt;
 
     public UUID getId() {
@@ -76,6 +78,14 @@ public class AdminMediaUsageDto {
 
     public void setIsActive(Boolean active) {
         isActive = active;
+    }
+
+    public Map<String, MediaTextTranslationDto> getTranslations() {
+        return translations;
+    }
+
+    public void setTranslations(Map<String, MediaTextTranslationDto> translations) {
+        this.translations = translations;
     }
 
     public OffsetDateTime getCreatedAt() {

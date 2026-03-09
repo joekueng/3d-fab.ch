@@ -1,6 +1,7 @@
 package com.printcalculator.service.media;
 
 import com.printcalculator.dto.PublicMediaUsageDto;
+import com.printcalculator.dto.MediaTextTranslationDto;
 import com.printcalculator.entity.MediaAsset;
 import com.printcalculator.entity.MediaUsage;
 import com.printcalculator.entity.MediaVariant;
@@ -47,12 +48,20 @@ class PublicMediaQueryServiceTest {
 
     @Test
     void getUsageMedia_shouldReturnOnlyActiveReadyPublicUsagesOrderedBySortOrder() {
-        MediaAsset readyPublicAsset = buildAsset("READY", "PUBLIC", "Shop hero", "Shop alt");
+        MediaAsset readyPublicAsset = buildAsset("READY", "PUBLIC", "Shop hero fallback", "Shop alt fallback");
         MediaAsset draftAsset = buildAsset("PROCESSING", "PUBLIC", "Draft", "Draft alt");
         MediaAsset privateAsset = buildAsset("READY", "PRIVATE", "Private", "Private alt");
 
         MediaUsage usageSecond = buildUsage(readyPublicAsset, "HOME_SECTION", "shop-gallery", 2, false, true);
         MediaUsage usageFirst = buildUsage(readyPublicAsset, "HOME_SECTION", "shop-gallery", 1, true, true);
+        applyTranslation(usageSecond, "it", "Shop hero IT", "Shop alt IT");
+        applyTranslation(usageSecond, "en", "Shop hero EN", "Shop alt EN");
+        applyTranslation(usageSecond, "de", "Shop hero DE", "Shop alt DE");
+        applyTranslation(usageSecond, "fr", "Shop hero FR", "Shop alt FR");
+        applyTranslation(usageFirst, "it", "Shop hero IT", "Shop alt IT");
+        applyTranslation(usageFirst, "en", "Shop hero EN", "Shop alt EN");
+        applyTranslation(usageFirst, "de", "Shop hero DE", "Shop alt DE");
+        applyTranslation(usageFirst, "fr", "Shop hero FR", "Shop alt FR");
         MediaUsage usageDraft = buildUsage(draftAsset, "HOME_SECTION", "shop-gallery", 0, false, true);
         MediaUsage usagePrivate = buildUsage(privateAsset, "HOME_SECTION", "shop-gallery", 3, false, true);
 
@@ -67,20 +76,21 @@ class PublicMediaQueryServiceTest {
                         buildVariant(readyPublicAsset, "hero", "JPEG", "asset/hero.jpg")
                 ));
 
-        List<PublicMediaUsageDto> result = service.getUsageMedia("home_section", "shop-gallery");
+        List<PublicMediaUsageDto> result = service.getUsageMedia("home_section", "shop-gallery", "en");
 
         assertEquals(2, result.size());
         assertEquals(1, result.get(0).getSortOrder());
         assertEquals(Boolean.TRUE, result.get(0).getIsPrimary());
-        assertEquals("Shop hero", result.get(0).getTitle());
+        assertEquals("Shop hero EN", result.get(0).getTitle());
+        assertEquals("Shop alt EN", result.get(0).getAltText());
         assertEquals("https://cdn.example/media/asset/thumb.jpg", result.get(0).getThumb().getJpegUrl());
         assertEquals("https://cdn.example/media/asset/thumb.webp", result.get(0).getThumb().getWebpUrl());
         assertEquals("https://cdn.example/media/asset/hero.avif", result.get(0).getHero().getAvifUrl());
     }
 
     @Test
-    void getUsageMedia_shouldReturnNullForMissingFormatsOrPresets() {
-        MediaAsset asset = buildAsset("READY", "PUBLIC", "Joe portrait", null);
+    void getUsageMedia_shouldReturnNullForMissingFormatsOrPresetsAndFallbackToAssetMetadata() {
+        MediaAsset asset = buildAsset("READY", "PUBLIC", "Joe portrait", "Joe portrait fallback");
         MediaUsage usage = buildUsage(asset, "ABOUT_MEMBER", "joe", 0, true, true);
 
         when(mediaUsageRepository.findByUsageTypeAndUsageKeyAndIsActiveTrueOrderBySortOrderAscCreatedAtAsc(
@@ -89,9 +99,11 @@ class PublicMediaQueryServiceTest {
         when(mediaVariantRepository.findByMediaAsset_IdIn(List.of(asset.getId())))
                 .thenReturn(List.of(buildVariant(asset, "card", "JPEG", "joe/card.jpg")));
 
-        List<PublicMediaUsageDto> result = service.getUsageMedia("ABOUT_MEMBER", "joe");
+        List<PublicMediaUsageDto> result = service.getUsageMedia("ABOUT_MEMBER", "joe", "fr");
 
         assertEquals(1, result.size());
+        assertEquals("Joe portrait", result.get(0).getTitle());
+        assertEquals("Joe portrait fallback", result.get(0).getAltText());
         assertNull(result.get(0).getThumb().getJpegUrl());
         assertNull(result.get(0).getCard().getAvifUrl());
         assertEquals("https://cdn.example/media/joe/card.jpg", result.get(0).getCard().getJpegUrl());
@@ -138,5 +150,13 @@ class PublicMediaQueryServiceTest {
         variant.setStorageKey(storageKey);
         variant.setCreatedAt(OffsetDateTime.now());
         return variant;
+    }
+
+    private void applyTranslation(MediaUsage usage, String language, String title, String altText) {
+        MediaTextTranslationDto translation = new MediaTextTranslationDto();
+        translation.setTitle(title);
+        translation.setAltText(altText);
+        usage.setTitleForLanguage(language, translation.getTitle());
+        usage.setAltTextForLanguage(language, translation.getAltText());
     }
 }

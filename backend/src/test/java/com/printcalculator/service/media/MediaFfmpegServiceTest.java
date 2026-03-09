@@ -26,6 +26,13 @@ class MediaFfmpegServiceTest {
     }
 
     @Test
+    void resolveExecutable_shouldFallbackToPathWhenAbsoluteLocationIsMissing() {
+        String resolved = MediaFfmpegService.resolveExecutable("/opt/homebrew/bin/ffmpeg");
+
+        assertEquals("ffmpeg", resolved);
+    }
+
+    @Test
     void generateVariant_rejectsSourceNamesStartingWithDash() throws Exception {
         MediaFfmpegService service = new MediaFfmpegService("missing-ffmpeg-binary");
         Path source = tempDir.resolve("-input.png");

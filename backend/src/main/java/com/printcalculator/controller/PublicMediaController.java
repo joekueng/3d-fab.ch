@@ -24,7 +24,8 @@ public class PublicMediaController {
 
     @GetMapping("/usages")
     public ResponseEntity<List<PublicMediaUsageDto>> getUsageMedia(@RequestParam String usageType,
-                                                                   @RequestParam String usageKey) {
-        return ResponseEntity.ok(publicMediaQueryService.getUsageMedia(usageType, usageKey));
+                                                                   @RequestParam String usageKey,
+                                                                   @RequestParam(required = false) String lang) {
+        return ResponseEntity.ok(publicMediaQueryService.getUsageMedia(usageType, usageKey, lang));
     }
 }

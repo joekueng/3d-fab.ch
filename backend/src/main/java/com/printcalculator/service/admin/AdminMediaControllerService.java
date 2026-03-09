@@ -4,6 +4,7 @@ import com.printcalculator.dto.AdminCreateMediaUsageRequest;
 import com.printcalculator.dto.AdminMediaAssetDto;
 import com.printcalculator.dto.AdminMediaUsageDto;
 import com.printcalculator.dto.AdminMediaVariantDto;
+import com.printcalculator.dto.MediaTextTranslationDto;
 import com.printcalculator.dto.AdminUpdateMediaAssetRequest;
 import com.printcalculator.dto.AdminUpdateMediaUsageRequest;
 import com.printcalculator.entity.MediaAsset;
@@ -78,6 +79,7 @@ public class AdminMediaControllerService {
     private static final Set<String> ALLOWED_UPLOAD_MIME_TYPES = Set.of(
             "image/jpeg", "image/png", "image/webp"
     );
+    private static final List<String> SUPPORTED_MEDIA_LANGUAGES = List.of("it", "en", "de", "fr");
     private static final Map<String, String> GENERATED_FORMAT_MIME_TYPES = Map.of(
             FORMAT_JPEG, "image/jpeg",
             FORMAT_WEBP, "image/webp",
@@ -261,6 +263,7 @@ public class AdminMediaControllerService {
         String usageType = requireUsageType(payload.getUsageType());
         String usageKey = requireUsageKey(payload.getUsageKey());
         boolean isPrimary = Boolean.TRUE.equals(payload.getIsPrimary());
+        Map<String, MediaTextTranslationDto> translations = requireTranslations(payload.getTranslations());
 
         if (isPrimary) {
             unsetPrimaryForScope(usageType, usageKey, payload.getOwnerId(), null);
@@ -275,6 +278,7 @@ public class AdminMediaControllerService {
         usage.setIsPrimary(isPrimary);
         usage.setIsActive(payload.getIsActive() == null || payload.getIsActive());
         usage.setCreatedAt(OffsetDateTime.now());
+        applyTranslations(usage, translations);
 
         MediaUsage saved = mediaUsageRepository.save(usage);
         return toUsageDto(saved);
@@ -308,6 +312,9 @@ public class AdminMediaControllerService {
         }
         if (payload.getIsPrimary() != null) {
             usage.setIsPrimary(payload.getIsPrimary());
+        }
+        if (payload.getTranslations() != null) {
+            applyTranslations(usage, requireTranslations(payload.getTranslations()));
         }
 
         if (Boolean.TRUE.equals(usage.getIsPrimary())) {
@@ -525,6 +532,7 @@ public class AdminMediaControllerService {
         dto.setSortOrder(usage.getSortOrder());
         dto.setIsPrimary(usage.getIsPrimary());
         dto.setIsActive(usage.getIsActive());
+        dto.setTranslations(extractTranslations(usage));
         dto.setCreatedAt(usage.getCreatedAt());
         return dto;
     }
@@ -637,6 +645,96 @@ public class AdminMediaControllerService {
             );
         }
         return normalized;
+    }
+
+    private Map<String, MediaTextTranslationDto> requireTranslations(Map<String, MediaTextTranslationDto> translations) {
+        if (translations == null || translations.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "translations are required.");
+        }
+
+        Map<String, MediaTextTranslationDto> normalized = new LinkedHashMap<>();
+        for (Map.Entry<String, MediaTextTranslationDto> entry : translations.entrySet()) {
+            String language = normalizeTranslationLanguage(entry.getKey());
+            if (normalized.containsKey(language)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Duplicate translation language: " + language + ".");
+            }
+            normalized.put(language, entry.getValue());
+        }
+
+        if (!normalized.keySet().equals(new LinkedHashSet<>(SUPPORTED_MEDIA_LANGUAGES))) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "translations must include exactly: " + String.join(", ", SUPPORTED_MEDIA_LANGUAGES) + "."
+            );
+        }
+
+        LinkedHashMap<String, MediaTextTranslationDto> result = new LinkedHashMap<>();
+        for (String language : SUPPORTED_MEDIA_LANGUAGES) {
+            MediaTextTranslationDto translation = normalized.get(language);
+            if (translation == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing translation for language " + language + ".");
+            }
+
+            String title = normalizeRequiredTranslationValue(translation.getTitle(), language, "title");
+            String altText = normalizeRequiredTranslationValue(translation.getAltText(), language, "altText");
+
+            MediaTextTranslationDto dto = new MediaTextTranslationDto();
+            dto.setTitle(title);
+            dto.setAltText(altText);
+            result.put(language, dto);
+        }
+        return result;
+    }
+
+    private String normalizeTranslationLanguage(String language) {
+        if (language == null || language.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Translation language is required.");
+        }
+        String normalized = language.trim().toLowerCase(Locale.ROOT);
+        if (!SUPPORTED_MEDIA_LANGUAGES.contains(normalized)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Unsupported translation language: " + normalized + "."
+            );
+        }
+        return normalized;
+    }
+
+    private String normalizeRequiredTranslationValue(String value, String language, String fieldName) {
+        String normalized = normalizeText(value);
+        if (normalized == null || normalized.isBlank()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Translation " + fieldName + " is required for language " + language + "."
+            );
+        }
+        return normalized;
+    }
+
+    private void applyTranslations(MediaUsage usage, Map<String, MediaTextTranslationDto> translations) {
+        for (String language : SUPPORTED_MEDIA_LANGUAGES) {
+            MediaTextTranslationDto translation = translations.get(language);
+            usage.setTitleForLanguage(language, translation.getTitle());
+            usage.setAltTextForLanguage(language, translation.getAltText());
+        }
+    }
+
+    private Map<String, MediaTextTranslationDto> extractTranslations(MediaUsage usage) {
+        LinkedHashMap<String, MediaTextTranslationDto> translations = new LinkedHashMap<>();
+        String fallbackTitle = usage.getMediaAsset() != null ? usage.getMediaAsset().getTitle() : null;
+        String fallbackAltText = usage.getMediaAsset() != null ? usage.getMediaAsset().getAltText() : null;
+
+        for (String language : SUPPORTED_MEDIA_LANGUAGES) {
+            MediaTextTranslationDto dto = new MediaTextTranslationDto();
+            dto.setTitle(firstNonBlank(usage.getTitleForLanguage(language), fallbackTitle));
+            dto.setAltText(firstNonBlank(usage.getAltTextForLanguage(language), fallbackAltText));
+            translations.put(language, dto);
+        }
+        return translations;
+    }
+
+    private String firstNonBlank(String preferred, String fallback) {
+        return StringUtils.hasText(preferred) ? preferred : normalizeText(fallback);
     }
 
     private String normalizeText(String value) {

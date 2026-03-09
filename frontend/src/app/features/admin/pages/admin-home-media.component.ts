@@ -4,8 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { of, switchMap } from 'rxjs';
 import {
   AdminCreateMediaUsagePayload,
+  AdminMediaLanguage,
   AdminMediaAsset,
   AdminMediaService,
+  AdminMediaTranslation,
   AdminMediaUsage,
 } from '../services/admin-media.service';
 
@@ -28,8 +30,8 @@ interface HomeMediaSectionConfig {
 interface HomeMediaFormState {
   file: File | null;
   previewUrl: string | null;
-  title: string;
-  altText: string;
+  activeLanguage: AdminMediaLanguage;
+  translations: Record<AdminMediaLanguage, AdminMediaTranslation>;
   sortOrder: number;
   isPrimary: boolean;
   replacingUsageId: string | null;
@@ -40,8 +42,7 @@ interface HomeMediaItem {
   usageId: string;
   mediaAssetId: string;
   originalFilename: string;
-  title: string | null;
-  altText: string | null;
+  translations: Record<AdminMediaLanguage, AdminMediaTranslation>;
   sortOrder: number;
   draftSortOrder: number;
   isPrimary: boolean;
@@ -58,6 +59,20 @@ interface HomeMediaSectionGroup {
   title: string;
 }
 
+const SUPPORTED_MEDIA_LANGUAGES: readonly AdminMediaLanguage[] = [
+  'it',
+  'en',
+  'de',
+  'fr',
+];
+
+const MEDIA_LANGUAGE_LABELS: Readonly<Record<AdminMediaLanguage, string>> = {
+  it: 'IT',
+  en: 'EN',
+  de: 'DE',
+  fr: 'FR',
+};
+
 @Component({
   selector: 'app-admin-home-media',
   standalone: true,
@@ -67,6 +82,8 @@ interface HomeMediaSectionGroup {
 })
 export class AdminHomeMediaComponent implements OnInit, OnDestroy {
   private readonly adminMediaService = inject(AdminMediaService);
+  readonly mediaLanguages = SUPPORTED_MEDIA_LANGUAGES;
+  readonly mediaLanguageLabels = MEDIA_LANGUAGE_LABELS;
 
   readonly sectionGroups: readonly HomeMediaSectionGroup[] = [
     {
@@ -204,8 +221,11 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
     formState.file = file;
     formState.previewUrl = file ? URL.createObjectURL(file) : null;
 
-    if (file && !formState.title.trim()) {
-      formState.title = this.deriveDefaultTitle(file.name);
+    if (file && this.areAllTitlesBlank(formState.translations)) {
+      const nextTitle = this.deriveDefaultTitle(file.name);
+      for (const language of this.mediaLanguages) {
+        formState.translations[language].title = nextTitle;
+      }
     }
   }
 
@@ -218,8 +238,7 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
     this.revokePreviewUrl(formState.previewUrl);
     formState.file = null;
     formState.previewUrl = item.previewUrl;
-    formState.title = item.title ?? '';
-    formState.altText = item.altText ?? '';
+    formState.translations = this.cloneTranslations(item.translations);
     formState.sortOrder = item.sortOrder;
     formState.isPrimary = item.isPrimary;
     formState.replacingUsageId = item.usageId;
@@ -237,6 +256,16 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const validationError = this.validateTranslations(formState.translations);
+    if (validationError) {
+      this.errorMessage = validationError;
+      return;
+    }
+
+    const normalizedTranslations = this.normalizeTranslations(
+      formState.translations,
+    );
+
     formState.saving = true;
     this.errorMessage = null;
     this.successMessage = null;
@@ -250,12 +279,13 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
       sortOrder: formState.sortOrder,
       isPrimary: formState.isPrimary,
       isActive: true,
+      translations: normalizedTranslations,
     });
 
     this.adminMediaService
       .uploadAsset(formState.file, {
-        title: formState.title,
-        altText: formState.altText,
+        title: normalizedTranslations.it.title,
+        altText: normalizedTranslations.it.altText,
         visibility: 'PUBLIC',
       })
       .pipe(
@@ -381,6 +411,36 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
     return this.actingUsageIds.has(usageId);
   }
 
+  setActiveLanguage(
+    sectionKey: HomeSectionKey,
+    language: AdminMediaLanguage,
+  ): void {
+    this.getFormState(sectionKey).activeLanguage = language;
+  }
+
+  getActiveTranslation(
+    sectionKey: HomeSectionKey,
+  ): AdminMediaTranslation {
+    const formState = this.getFormState(sectionKey);
+    return formState.translations[formState.activeLanguage];
+  }
+
+  isLanguageComplete(
+    sectionKey: HomeSectionKey,
+    language: AdminMediaLanguage,
+  ): boolean {
+    return this.isTranslationComplete(
+      this.getFormState(sectionKey).translations[language],
+    );
+  }
+
+  getItemTranslation(
+    item: HomeMediaItem,
+    language: AdminMediaLanguage,
+  ): AdminMediaTranslation {
+    return item.translations[language];
+  }
+
   getSectionsForGroup(
     groupId: HomeMediaSectionGroup['id'],
   ): HomeMediaSectionView[] {
@@ -427,8 +487,7 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
       usageId: usage.id,
       mediaAssetId: asset.id,
       originalFilename: asset.originalFilename,
-      title: asset.title,
-      altText: asset.altText,
+      translations: this.normalizeTranslations(usage.translations),
       sortOrder: usage.sortOrder ?? 0,
       draftSortOrder: usage.sortOrder ?? 0,
       isPrimary: usage.isPrimary,
@@ -473,8 +532,8 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
     this.formStateByKey[sectionKey] = {
       file: null,
       previewUrl: null,
-      title: '',
-      altText: '',
+      activeLanguage: 'it',
+      translations: this.createEmptyTranslations(),
       sortOrder: Math.max(0, nextSortOrder),
       isPrimary: (section?.items.length ?? 0) === 0,
       replacingUsageId: null,
@@ -498,13 +557,81 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
     return {
       file: null,
       previewUrl: null,
-      title: '',
-      altText: '',
+      activeLanguage: 'it',
+      translations: this.createEmptyTranslations(),
       sortOrder: 0,
       isPrimary: false,
       replacingUsageId: null,
       saving: false,
     };
+  }
+
+  private createEmptyTranslations(): Record<
+    AdminMediaLanguage,
+    AdminMediaTranslation
+  > {
+    return {
+      it: { title: '', altText: '' },
+      en: { title: '', altText: '' },
+      de: { title: '', altText: '' },
+      fr: { title: '', altText: '' },
+    };
+  }
+
+  private cloneTranslations(
+    translations: Record<AdminMediaLanguage, AdminMediaTranslation>,
+  ): Record<AdminMediaLanguage, AdminMediaTranslation> {
+    return this.normalizeTranslations(translations);
+  }
+
+  private normalizeTranslations(
+    translations: Partial<Record<AdminMediaLanguage, Partial<AdminMediaTranslation>>>,
+  ): Record<AdminMediaLanguage, AdminMediaTranslation> {
+    return {
+      it: {
+        title: translations.it?.title?.trim() ?? '',
+        altText: translations.it?.altText?.trim() ?? '',
+      },
+      en: {
+        title: translations.en?.title?.trim() ?? '',
+        altText: translations.en?.altText?.trim() ?? '',
+      },
+      de: {
+        title: translations.de?.title?.trim() ?? '',
+        altText: translations.de?.altText?.trim() ?? '',
+      },
+      fr: {
+        title: translations.fr?.title?.trim() ?? '',
+        altText: translations.fr?.altText?.trim() ?? '',
+      },
+    };
+  }
+
+  private areAllTitlesBlank(
+    translations: Record<AdminMediaLanguage, AdminMediaTranslation>,
+  ): boolean {
+    return this.mediaLanguages.every(
+      (language) => !translations[language].title.trim(),
+    );
+  }
+
+  private isTranslationComplete(translation: AdminMediaTranslation): boolean {
+    return !!translation.title.trim() && !!translation.altText.trim();
+  }
+
+  private validateTranslations(
+    translations: Record<AdminMediaLanguage, AdminMediaTranslation>,
+  ): string | null {
+    for (const language of this.mediaLanguages) {
+      const translation = translations[language];
+      if (!translation.title.trim()) {
+        return `Compila il titolo per ${this.mediaLanguageLabels[language]}.`;
+      }
+      if (!translation.altText.trim()) {
+        return `Compila l'alt text per ${this.mediaLanguageLabels[language]}.`;
+      }
+    }
+    return null;
   }
 
   private extractErrorMessage(error: unknown, fallback: string): string {

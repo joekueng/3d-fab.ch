@@ -31,6 +31,7 @@ public class PublicMediaQueryService {
     private static final String FORMAT_JPEG = "JPEG";
     private static final String FORMAT_WEBP = "WEBP";
     private static final String FORMAT_AVIF = "AVIF";
+    private static final List<String> SUPPORTED_MEDIA_LANGUAGES = List.of("it", "en", "de", "fr");
 
     private final MediaUsageRepository mediaUsageRepository;
     private final MediaVariantRepository mediaVariantRepository;
@@ -44,9 +45,10 @@ public class PublicMediaQueryService {
         this.mediaStorageService = mediaStorageService;
     }
 
-    public List<PublicMediaUsageDto> getUsageMedia(String usageType, String usageKey) {
+    public List<PublicMediaUsageDto> getUsageMedia(String usageType, String usageKey, String language) {
         String normalizedUsageType = normalizeUsageType(usageType);
         String normalizedUsageKey = normalizeUsageKey(usageKey);
+        String normalizedLanguage = normalizeLanguage(language);
 
         List<MediaUsage> usages = mediaUsageRepository
                 .findByUsageTypeAndUsageKeyAndIsActiveTrueOrderBySortOrderAscCreatedAtAsc(
@@ -80,7 +82,8 @@ public class PublicMediaQueryService {
         return usages.stream()
                 .map(usage -> toDto(
                         usage,
-                        variantsByAssetId.getOrDefault(usage.getMediaAsset().getId(), List.of())
+                        variantsByAssetId.getOrDefault(usage.getMediaAsset().getId(), List.of()),
+                        normalizedLanguage
                 ))
                 .toList();
     }
@@ -92,7 +95,7 @@ public class PublicMediaQueryService {
                 && VISIBILITY_PUBLIC.equals(asset.getVisibility());
     }
 
-    private PublicMediaUsageDto toDto(MediaUsage usage, List<MediaVariant> variants) {
+    private PublicMediaUsageDto toDto(MediaUsage usage, List<MediaVariant> variants, String language) {
         Map<String, Map<String, MediaVariant>> variantsByPresetAndFormat = variants.stream()
                 .collect(Collectors.groupingBy(
                         MediaVariant::getVariantName,
@@ -101,8 +104,8 @@ public class PublicMediaQueryService {
 
         PublicMediaUsageDto dto = new PublicMediaUsageDto();
         dto.setMediaAssetId(usage.getMediaAsset().getId());
-        dto.setTitle(usage.getMediaAsset().getTitle());
-        dto.setAltText(usage.getMediaAsset().getAltText());
+        dto.setTitle(resolveLocalizedValue(usage.getTitleForLanguage(language), usage.getMediaAsset().getTitle()));
+        dto.setAltText(resolveLocalizedValue(usage.getAltTextForLanguage(language), usage.getMediaAsset().getAltText()));
         dto.setUsageType(usage.getUsageType());
         dto.setUsageKey(usage.getUsageKey());
         dto.setSortOrder(usage.getSortOrder());
@@ -144,5 +147,24 @@ public class PublicMediaQueryService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "usageKey is required.");
         }
         return usageKey.trim();
+    }
+
+    private String normalizeLanguage(String language) {
+        if (language == null || language.isBlank()) {
+            return "it";
+        }
+
+        String normalized = language.trim().toLowerCase(Locale.ROOT);
+        return SUPPORTED_MEDIA_LANGUAGES.contains(normalized) ? normalized : "it";
+    }
+
+    private String resolveLocalizedValue(String preferred, String fallback) {
+        if (preferred != null && !preferred.isBlank()) {
+            return preferred;
+        }
+        if (fallback != null && !fallback.isBlank()) {
+            return fallback.trim();
+        }
+        return null;
     }
 }

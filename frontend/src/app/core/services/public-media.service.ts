@@ -1,7 +1,17 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, Injector } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, combineLatest, map, of, catchError } from 'rxjs';
+import {
+  Observable,
+  combineLatest,
+  map,
+  of,
+  catchError,
+  distinctUntilChanged,
+  switchMap,
+} from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { LanguageService } from './language.service';
 
 export type PublicMediaUsageType = string;
 export type PublicMediaPreset = 'thumb' | 'card' | 'hero';
@@ -78,26 +88,36 @@ export function buildPublicMediaUsageScopeKey(
 })
 export class PublicMediaService {
   private readonly http = inject(HttpClient);
+  private readonly injector = inject(Injector);
+  private readonly languageService = inject(LanguageService);
   private readonly baseUrl = `${environment.apiUrl}/api/public/media`;
+  private readonly selectedLang$ = toObservable(this.languageService.currentLang, {
+    injector: this.injector,
+  }).pipe(distinctUntilChanged());
 
   getUsageMedia(
     usageType: PublicMediaUsageType,
     usageKey: string,
   ): Observable<readonly PublicMediaImage[]> {
-    const params = new HttpParams()
-      .set('usageType', usageType)
-      .set('usageKey', usageKey);
+    return this.selectedLang$.pipe(
+      switchMap((lang) => {
+        const params = new HttpParams()
+          .set('usageType', usageType)
+          .set('usageKey', usageKey)
+          .set('lang', lang);
 
-    return this.http
-      .get<PublicMediaUsageDto[]>(`${this.baseUrl}/usages`, { params })
-      .pipe(
-        map((items) =>
-          items
-            .map((item) => this.mapUsageDto(item))
-            .filter((item) => this.hasAnyFallback(item)),
-        ),
-        catchError(() => of([])),
-      );
+        return this.http
+          .get<PublicMediaUsageDto[]>(`${this.baseUrl}/usages`, { params })
+          .pipe(
+            map((items) =>
+              items
+                .map((item) => this.mapUsageDto(item))
+                .filter((item) => this.hasAnyFallback(item)),
+            ),
+            catchError(() => of([])),
+          );
+      }),
+    );
   }
 
   getUsageCollections(

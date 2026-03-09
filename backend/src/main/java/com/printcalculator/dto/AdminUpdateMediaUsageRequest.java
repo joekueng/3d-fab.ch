@@ -1,6 +1,7 @@
 package com.printcalculator.dto;
 
 import java.util.UUID;
+import java.util.Map;
 
 public class AdminUpdateMediaUsageRequest {
     private String usageType;
@@ -10,6 +11,7 @@ public class AdminUpdateMediaUsageRequest {
     private Integer sortOrder;
     private Boolean isPrimary;
     private Boolean isActive;
+    private Map<String, MediaTextTranslationDto> translations;
 
     public String getUsageType() {
         return usageType;
@@ -65,5 +67,13 @@ public class AdminUpdateMediaUsageRequest {
 
     public void setIsActive(Boolean active) {
         isActive = active;
+    }
+
+    public Map<String, MediaTextTranslationDto> getTranslations() {
+        return translations;
+    }
+
+    public void setTranslations(Map<String, MediaTextTranslationDto> translations) {
+        this.translations = translations;
     }
 }

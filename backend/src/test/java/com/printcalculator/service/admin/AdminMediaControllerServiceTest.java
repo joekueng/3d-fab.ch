@@ -4,6 +4,7 @@ import com.printcalculator.dto.AdminCreateMediaUsageRequest;
 import com.printcalculator.dto.AdminMediaAssetDto;
 import com.printcalculator.dto.AdminMediaUsageDto;
 import com.printcalculator.dto.AdminUpdateMediaAssetRequest;
+import com.printcalculator.dto.MediaTextTranslationDto;
 import com.printcalculator.entity.MediaAsset;
 import com.printcalculator.entity.MediaUsage;
 import com.printcalculator.entity.MediaVariant;
@@ -325,6 +326,7 @@ class AdminMediaControllerServiceTest {
         payload.setMediaAssetId(asset.getId());
         payload.setSortOrder(5);
         payload.setIsPrimary(true);
+        payload.setTranslations(buildTranslations("Landing hero", "Hero home alt"));
 
         AdminMediaUsageDto created = service.createUsage(payload);
 
@@ -333,11 +335,35 @@ class AdminMediaControllerServiceTest {
         assertEquals(asset.getId(), created.getMediaAssetId());
         assertEquals(5, created.getSortOrder());
         assertTrue(created.getIsPrimary());
+        assertEquals("Landing hero IT", created.getTranslations().get("it").getTitle());
+        assertEquals("Hero home alt EN", created.getTranslations().get("en").getAltText());
         assertFalse(usages.get(existingPrimary.getId()).getIsPrimary());
 
         AdminMediaAssetDto assetDto = service.getAsset(asset.getId());
         assertEquals(2, assetDto.getUsages().size());
         assertTrue(assetDto.getUsages().stream().anyMatch(usage -> usage.getId().equals(created.getId()) && usage.getIsPrimary()));
+    }
+
+    @Test
+    void createUsage_withoutAllTranslations_shouldFailValidation() {
+        MediaAsset asset = persistAsset(seedAsset("PUBLIC"));
+
+        AdminCreateMediaUsageRequest payload = new AdminCreateMediaUsageRequest();
+        payload.setUsageType("home");
+        payload.setUsageKey("landing");
+        payload.setMediaAssetId(asset.getId());
+        payload.setTranslations(new LinkedHashMap<>(Map.of(
+                "it", translation("Titolo IT", "Alt IT"),
+                "en", translation("Title EN", "Alt EN")
+        )));
+
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> service.createUsage(payload)
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+        assertTrue(ex.getReason().contains("translations must include exactly"));
     }
 
     @Test
@@ -412,6 +438,22 @@ class AdminMediaControllerServiceTest {
         }
         usages.put(usage.getId(), usage);
         return usage;
+    }
+
+    private Map<String, MediaTextTranslationDto> buildTranslations(String titleBase, String altBase) {
+        LinkedHashMap<String, MediaTextTranslationDto> translations = new LinkedHashMap<>();
+        translations.put("it", translation(titleBase + " IT", altBase + " IT"));
+        translations.put("en", translation(titleBase + " EN", altBase + " EN"));
+        translations.put("de", translation(titleBase + " DE", altBase + " DE"));
+        translations.put("fr", translation(titleBase + " FR", altBase + " FR"));
+        return translations;
+    }
+
+    private MediaTextTranslationDto translation(String title, String altText) {
+        MediaTextTranslationDto dto = new MediaTextTranslationDto();
+        dto.setTitle(title);
+        dto.setAltText(altText);
+        return dto;
     }
 
     private List<MediaVariant> variantsForAssets(Collection<UUID> assetIds) {

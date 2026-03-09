@@ -53,6 +53,30 @@ public class MediaUsage {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
 
+    @Column(name = "title_it", length = Integer.MAX_VALUE)
+    private String titleIt;
+
+    @Column(name = "title_en", length = Integer.MAX_VALUE)
+    private String titleEn;
+
+    @Column(name = "title_de", length = Integer.MAX_VALUE)
+    private String titleDe;
+
+    @Column(name = "title_fr", length = Integer.MAX_VALUE)
+    private String titleFr;
+
+    @Column(name = "alt_text_it", length = Integer.MAX_VALUE)
+    private String altTextIt;
+
+    @Column(name = "alt_text_en", length = Integer.MAX_VALUE)
+    private String altTextEn;
+
+    @Column(name = "alt_text_de", length = Integer.MAX_VALUE)
+    private String altTextDe;
+
+    @Column(name = "alt_text_fr", length = Integer.MAX_VALUE)
+    private String altTextFr;
+
     @ColumnDefault("now()")
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
@@ -121,11 +145,129 @@ public class MediaUsage {
         isActive = active;
     }
 
+    public String getTitleIt() {
+        return titleIt;
+    }
+
+    public void setTitleIt(String titleIt) {
+        this.titleIt = titleIt;
+    }
+
+    public String getTitleEn() {
+        return titleEn;
+    }
+
+    public void setTitleEn(String titleEn) {
+        this.titleEn = titleEn;
+    }
+
+    public String getTitleDe() {
+        return titleDe;
+    }
+
+    public void setTitleDe(String titleDe) {
+        this.titleDe = titleDe;
+    }
+
+    public String getTitleFr() {
+        return titleFr;
+    }
+
+    public void setTitleFr(String titleFr) {
+        this.titleFr = titleFr;
+    }
+
+    public String getAltTextIt() {
+        return altTextIt;
+    }
+
+    public void setAltTextIt(String altTextIt) {
+        this.altTextIt = altTextIt;
+    }
+
+    public String getAltTextEn() {
+        return altTextEn;
+    }
+
+    public void setAltTextEn(String altTextEn) {
+        this.altTextEn = altTextEn;
+    }
+
+    public String getAltTextDe() {
+        return altTextDe;
+    }
+
+    public void setAltTextDe(String altTextDe) {
+        this.altTextDe = altTextDe;
+    }
+
+    public String getAltTextFr() {
+        return altTextFr;
+    }
+
+    public void setAltTextFr(String altTextFr) {
+        this.altTextFr = altTextFr;
+    }
+
     public OffsetDateTime getCreatedAt() {
         return createdAt;
     }
 
     public void setCreatedAt(OffsetDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getTitleForLanguage(String language) {
+        if (language == null) {
+            return null;
+        }
+        return switch (language.trim().toLowerCase()) {
+            case "it" -> titleIt;
+            case "en" -> titleEn;
+            case "de" -> titleDe;
+            case "fr" -> titleFr;
+            default -> null;
+        };
+    }
+
+    public void setTitleForLanguage(String language, String value) {
+        if (language == null) {
+            return;
+        }
+        switch (language.trim().toLowerCase()) {
+            case "it" -> titleIt = value;
+            case "en" -> titleEn = value;
+            case "de" -> titleDe = value;
+            case "fr" -> titleFr = value;
+            default -> {
+            }
+        }
+    }
+
+    public String getAltTextForLanguage(String language) {
+        if (language == null) {
+            return null;
+        }
+        return switch (language.trim().toLowerCase()) {
+            case "it" -> altTextIt;
+            case "en" -> altTextEn;
+            case "de" -> altTextDe;
+            case "fr" -> altTextFr;
+            default -> null;
+        };
+    }
+
+    public void setAltTextForLanguage(String language, String value) {
+        if (language == null) {
+            return;
+        }
+        switch (language.trim().toLowerCase()) {
+            case "it" -> altTextIt = value;
+            case "en" -> altTextEn = value;
+            case "de" -> altTextDe = value;
+            case "fr" -> altTextFr = value;
+            default -> {
+            }
+        }
     }
 }

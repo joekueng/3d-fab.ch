@@ -34,7 +34,7 @@ public class MediaFfmpegService {
     private final Set<String> availableEncoders;
 
     public MediaFfmpegService(@Value("${media.ffmpeg.path:ffmpeg}") String ffmpegPath) {
-        this.ffmpegExecutable = sanitizeExecutable(ffmpegPath);
+        this.ffmpegExecutable = resolveExecutable(ffmpegPath);
         this.availableEncoders = Collections.unmodifiableSet(loadAvailableEncoders());
     }
 
@@ -147,7 +147,11 @@ public class MediaFfmpegService {
             }
             return parseAvailableEncoders(output);
         } catch (Exception e) {
-            logger.warn("Unable to inspect FFmpeg encoders. Falling back to empty encoder list.", e);
+            logger.warn(
+                    "Unable to inspect FFmpeg encoders for executable '{}'. Falling back to empty encoder list. {}",
+                    ffmpegExecutable,
+                    e.getMessage()
+            );
             return Set.of();
         }
     }
@@ -181,6 +185,34 @@ public class MediaFfmpegService {
             }
 
             return executablePath.normalize().toString();
+        } catch (InvalidPathException e) {
+            throw new IllegalArgumentException("media.ffmpeg.path is not a valid executable path.", e);
+        }
+    }
+
+    static String resolveExecutable(String configuredExecutable) {
+        String candidate = sanitizeExecutable(configuredExecutable);
+
+        try {
+            Path configuredPath = Path.of(candidate);
+            if (!configuredPath.isAbsolute()) {
+                return candidate;
+            }
+            if (Files.isExecutable(configuredPath)) {
+                return configuredPath.toString();
+            }
+
+            Path filename = configuredPath.getFileName();
+            String fallbackExecutable = filename == null ? null : filename.toString();
+            if (fallbackExecutable != null && !fallbackExecutable.isBlank()) {
+                logger.warn(
+                        "Configured FFmpeg executable '{}' not found or not executable. Falling back to '{}' from PATH.",
+                        configuredPath,
+                        fallbackExecutable
+                );
+                return fallbackExecutable;
+            }
+            return candidate;
         } catch (InvalidPathException e) {
             throw new IllegalArgumentException("media.ffmpeg.path is not a valid executable path.", e);
         }
