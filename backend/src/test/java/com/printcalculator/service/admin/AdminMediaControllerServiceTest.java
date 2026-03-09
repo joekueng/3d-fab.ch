@@ -100,6 +100,7 @@ class AdminMediaControllerServiceTest {
         );
 
         when(clamAVService.scan(any())).thenReturn(true);
+        when(mediaFfmpegService.canEncode(anyString())).thenReturn(true);
 
         when(mediaAssetRepository.save(any(MediaAsset.class))).thenAnswer(invocation -> {
             MediaAsset asset = invocation.getArgument(0);
@@ -244,6 +245,33 @@ class AdminMediaControllerServiceTest {
         assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
         assertTrue(assets.isEmpty());
         assertTrue(variants.isEmpty());
+    }
+
+    @Test
+    void uploadAsset_withLimitedEncoders_shouldKeepAssetReadyAndExposeOnlySupportedVariants() throws Exception {
+        when(mediaImageInspector.inspect(any(Path.class))).thenReturn(
+                new MediaImageInspector.ImageMetadata("image/jpeg", "jpg", 1200, 800)
+        );
+        when(mediaFfmpegService.canEncode("JPEG")).thenReturn(true);
+        when(mediaFfmpegService.canEncode("WEBP")).thenReturn(false);
+        when(mediaFfmpegService.canEncode("AVIF")).thenReturn(false);
+
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "capability.jpg",
+                "image/jpeg",
+                "jpeg-image-content".getBytes(StandardCharsets.UTF_8)
+        );
+
+        AdminMediaAssetDto dto = service.uploadAsset(file, "Capability", null, "PUBLIC");
+
+        assertEquals("READY", dto.getStatus());
+        assertEquals(4, dto.getVariants().size());
+        assertEquals(3, dto.getVariants().stream()
+                .filter(variant -> "JPEG".equals(variant.getFormat()))
+                .count());
+        assertTrue(dto.getVariants().stream()
+                .noneMatch(variant -> "WEBP".equals(variant.getFormat()) || "AVIF".equals(variant.getFormat())));
     }
 
     @Test

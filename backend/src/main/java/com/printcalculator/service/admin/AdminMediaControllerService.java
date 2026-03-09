@@ -328,6 +328,7 @@ public class AdminMediaControllerService {
         String storageFolder = extractStorageFolder(asset.getStorageKey());
 
         List<PendingGeneratedVariant> pendingVariants = new ArrayList<>();
+        Set<String> skippedFormats = new LinkedHashSet<>();
         for (PresetDefinition preset : PRESETS) {
             VariantDimensions dimensions = computeVariantDimensions(
                     asset.getWidthPx(),
@@ -336,6 +337,10 @@ public class AdminMediaControllerService {
             );
 
             for (String format : List.of(FORMAT_JPEG, FORMAT_WEBP, FORMAT_AVIF)) {
+                if (!mediaFfmpegService.canEncode(format)) {
+                    skippedFormats.add(format);
+                    continue;
+                }
                 String extension = GENERATED_FORMAT_EXTENSIONS.get(format);
                 Path outputFile = generatedDirectory.resolve(preset.name() + "." + extension);
                 mediaFfmpegService.generateVariant(sourceFile, outputFile, dimensions.widthPx(), dimensions.heightPx(), format);
@@ -354,6 +359,14 @@ public class AdminMediaControllerService {
 
                 pendingVariants.add(new PendingGeneratedVariant(variant, outputFile));
             }
+        }
+
+        if (!skippedFormats.isEmpty()) {
+            logger.warn(
+                    "Skipping media formats for asset {} because FFmpeg encoders are unavailable: {}",
+                    asset.getId(),
+                    String.join(", ", skippedFormats)
+            );
         }
 
         List<String> storedKeys = new ArrayList<>();

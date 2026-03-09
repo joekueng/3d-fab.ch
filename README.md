@@ -79,6 +79,27 @@ location /media/ {
 }
 ```
 
+Usage key iniziali previste per frontend:
+
+- `HOME_SECTION / shop-gallery`
+- `HOME_SECTION / founders-gallery`
+- `HOME_SECTION / capability-prototyping`
+- `HOME_SECTION / capability-custom-parts`
+- `HOME_SECTION / capability-small-series`
+- `HOME_SECTION / capability-cad`
+- `ABOUT_MEMBER / joe`
+- `ABOUT_MEMBER / matteo`
+- riservati per estensioni future: `SHOP_PRODUCT`, `SHOP_CATEGORY`, `SHOP_GALLERY`
+
+Operativamente:
+
+- carica i file dal media admin endpoint del backend
+- associa ogni asset con `POST /api/admin/media/usages`
+- per `ABOUT_MEMBER` imposta `isPrimary=true` sulla foto principale del membro
+- home e about leggono da `GET /api/public/media/usages?usageType=...&usageKey=...`
+- il frontend usa `<picture>` e preferisce AVIF/WEBP con fallback JPEG, senza usare l'originale
+- nel back-office frontend la gestione operativa della home passa dalla pagina `admin/home-media`
+
 ## Troubleshooting
 
 ### Percorso OrcaSlicer

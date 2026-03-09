@@ -44,8 +44,12 @@ build/
 
 ./storage_orders
 ./storage_quotes
+./storage_requests
+./storage_media
 storage_orders
 storage_quotes
+storage_requests
+storage_media
 
 # Qodana local reports/artifacts
 backend/.qodana/

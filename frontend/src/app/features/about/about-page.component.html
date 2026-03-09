@@ -39,10 +39,20 @@
         (keydown.space)="toggleSelectedMember('joe'); $event.preventDefault()"
       >
         <div class="placeholder-img">
-          <img
-            src="assets/images/joe.jpg"
-            [attr.alt]="'ABOUT.MEMBER_JOE_ALT' | translate"
-          />
+          @if (joeImage(); as image) {
+            <picture>
+              @if (image.source.avifUrl) {
+                <source [srcset]="image.source.avifUrl" type="image/avif" />
+              }
+              @if (image.source.webpUrl) {
+                <source [srcset]="image.source.webpUrl" type="image/webp" />
+              }
+              <img
+                [src]="image.source.fallbackUrl"
+                [attr.alt]="image.altText || ('ABOUT.MEMBER_JOE_ALT' | translate)"
+              />
+            </picture>
+          }
         </div>
         <div class="member-info">
           <span class="member-name">{{
@@ -71,10 +81,22 @@
         "
       >
         <div class="placeholder-img">
-          <img
-            src="assets/images/matteo.jpg"
-            [attr.alt]="'ABOUT.MEMBER_MATTEO_ALT' | translate"
-          />
+          @if (matteoImage(); as image) {
+            <picture>
+              @if (image.source.avifUrl) {
+                <source [srcset]="image.source.avifUrl" type="image/avif" />
+              }
+              @if (image.source.webpUrl) {
+                <source [srcset]="image.source.webpUrl" type="image/webp" />
+              }
+              <img
+                [src]="image.source.fallbackUrl"
+                [attr.alt]="
+                  image.altText || ('ABOUT.MEMBER_MATTEO_ALT' | translate)
+                "
+              />
+            </picture>
+          }
         </div>
         <div class="member-info">
           <span class="member-name">{{

@@ -14,6 +14,9 @@ public interface MediaUsageRepository extends JpaRepository<MediaUsage, UUID> {
 
     List<MediaUsage> findByMediaAsset_IdIn(Collection<UUID> mediaAssetIds);
 
+    List<MediaUsage> findByUsageTypeAndUsageKeyAndIsActiveTrueOrderBySortOrderAscCreatedAtAsc(String usageType,
+                                                                                               String usageKey);
+
     @Query("""
             select usage from MediaUsage usage
             where usage.usageType = :usageType

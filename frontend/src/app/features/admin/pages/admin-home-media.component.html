@@ -1,0 +1,299 @@
+<section class="section-card">
+  <header class="section-header">
+    <div class="header-copy">
+      <p class="eyebrow">Back-office media</p>
+      <h2>Media home</h2>
+      <p>
+        Gestisci gallery, founders e le card "Cosa puoi ottenere" senza
+        toccare codice o asset statici locali.
+      </p>
+    </div>
+    <div class="header-side">
+      <div class="header-stats">
+        <article class="stat-chip">
+          <strong>{{ configuredSectionCount }}</strong>
+          <span>sezioni gestite</span>
+        </article>
+        <article class="stat-chip">
+          <strong>{{ activeImageCount }}</strong>
+          <span>immagini attive</span>
+        </article>
+      </div>
+      <button type="button" (click)="loadHomeMedia()" [disabled]="loading">
+        Aggiorna
+      </button>
+    </div>
+  </header>
+
+  <p class="status-banner status-banner-error" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </p>
+  <p class="status-banner status-banner-success" *ngIf="successMessage">
+    {{ successMessage }}
+  </p>
+
+  <div class="group-stack" *ngIf="!loading; else loadingTpl">
+    <section class="group-card" *ngFor="let group of sectionGroups">
+      <header class="group-header">
+        <div>
+          <h3>{{ group.title }}</h3>
+          <p>{{ group.description }}</p>
+        </div>
+      </header>
+
+      <div class="sections">
+        <section
+          class="media-panel"
+          *ngFor="
+            let section of getSectionsForGroup(group.id);
+            trackBy: trackSection
+          "
+        >
+          <header class="media-panel-header">
+            <div class="media-panel-copy">
+              <div class="title-row">
+                <h4>{{ section.title }}</h4>
+                <span class="count-pill">
+                  {{ section.items.length }}
+                  {{ section.items.length === 1 ? "attiva" : "attive" }}
+                </span>
+              </div>
+              <p>{{ section.description }}</p>
+            </div>
+            <div class="media-panel-meta">
+              <span class="usage-pill"
+                >{{ section.usageType }} / {{ section.usageKey }}</span
+              >
+              <span class="layout-pill">
+                Variante {{ section.preferredVariantName }}
+              </span>
+            </div>
+          </header>
+
+          <div class="workspace">
+            <div class="upload-panel">
+              <div class="panel-heading">
+                <div>
+                  <h5>
+                    {{
+                      getFormState(section.usageKey).replacingUsageId
+                        ? "Sostituisci immagine"
+                        : "Carica immagine"
+                    }}
+                  </h5>
+                  <p>{{ section.collectionHint }}</p>
+                </div>
+              </div>
+
+              <div class="form-grid">
+                <label class="form-field form-field--wide">
+                  <span>File immagine</span>
+                  <input
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.webp"
+                    (change)="onFileSelected(section.usageKey, $event)"
+                  />
+                </label>
+
+                <div
+                  class="preview-card form-field--wide"
+                  *ngIf="
+                    getFormState(section.usageKey).previewUrl as previewUrl
+                  "
+                >
+                  <img [src]="previewUrl" alt="" />
+                </div>
+
+                <label class="form-field">
+                  <span>Titolo</span>
+                  <input
+                    type="text"
+                    [(ngModel)]="getFormState(section.usageKey).title"
+                    placeholder="Titolo immagine"
+                  />
+                </label>
+
+                <label class="form-field">
+                  <span>Alt text</span>
+                  <input
+                    type="text"
+                    [(ngModel)]="getFormState(section.usageKey).altText"
+                    placeholder="Testo alternativo"
+                  />
+                </label>
+
+                <label class="form-field">
+                  <span>Sort order</span>
+                  <input
+                    type="number"
+                    [(ngModel)]="getFormState(section.usageKey).sortOrder"
+                    min="0"
+                  />
+                </label>
+
+                <label class="toggle">
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="getFormState(section.usageKey).isPrimary"
+                  />
+                  <span>Immagine primaria</span>
+                </label>
+              </div>
+
+              <div class="upload-actions">
+                <button
+                  type="button"
+                  (click)="uploadForSection(section.usageKey)"
+                  [disabled]="
+                    getFormState(section.usageKey).saving ||
+                    !getFormState(section.usageKey).file
+                  "
+                >
+                  {{
+                    getFormState(section.usageKey).saving
+                      ? "Salvataggio..."
+                      : getFormState(section.usageKey).replacingUsageId
+                        ? "Sostituisci immagine"
+                        : "Carica in home"
+                  }}
+                </button>
+                <button
+                  type="button"
+                  class="ghost"
+                  (click)="prepareAdd(section.usageKey)"
+                  [disabled]="getFormState(section.usageKey).saving"
+                >
+                  Nuova immagine
+                </button>
+                <button
+                  type="button"
+                  class="ghost"
+                  *ngIf="getFormState(section.usageKey).replacingUsageId"
+                  (click)="cancelReplace(section.usageKey)"
+                  [disabled]="getFormState(section.usageKey).saving"
+                >
+                  Annulla sostituzione
+                </button>
+              </div>
+            </div>
+
+            <div class="list-panel">
+              <div class="panel-heading">
+                <div>
+                  <h5>Immagini attive</h5>
+                  <p>Ordina, sostituisci o rimuovi i media attualmente collegati.</p>
+                </div>
+              </div>
+
+              <div
+                class="media-list"
+                *ngIf="section.items.length; else emptySectionState"
+              >
+                <article
+                  class="media-item"
+                  *ngFor="let item of section.items; trackBy: trackItem"
+                >
+                  <div class="thumb-wrap">
+                    <div class="thumb">
+                      <img
+                        *ngIf="item.previewUrl; else noPreviewTpl"
+                        [src]="item.previewUrl"
+                        alt=""
+                      />
+                    </div>
+                  </div>
+
+                  <div class="media-copy">
+                    <div class="media-copy-top">
+                      <div>
+                        <h6>{{ item.title || item.originalFilename }}</h6>
+                        <p class="meta">
+                          {{ item.originalFilename }} | asset
+                          {{ item.mediaAssetId }}
+                        </p>
+                      </div>
+                      <span class="primary-badge" *ngIf="item.isPrimary"
+                        >Primaria</span
+                      >
+                    </div>
+
+                    <p class="meta">Alt: {{ item.altText || "-" }}</p>
+                    <p class="meta">
+                      Sort order: {{ item.sortOrder }} | Inserita:
+                      {{ item.createdAt | date: "short" }}
+                    </p>
+
+                    <div class="sort-editor">
+                      <label>
+                        <span>Nuovo ordine</span>
+                        <input
+                          type="number"
+                          [(ngModel)]="item.draftSortOrder"
+                          min="0"
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        class="ghost"
+                        (click)="saveSortOrder(item)"
+                        [disabled]="
+                          isUsageBusy(item.usageId) ||
+                          item.draftSortOrder === item.sortOrder
+                        "
+                      >
+                        Salva ordine
+                      </button>
+                    </div>
+
+                    <div class="item-actions">
+                      <button
+                        type="button"
+                        class="ghost"
+                        (click)="prepareReplace(section.usageKey, item)"
+                        [disabled]="isUsageBusy(item.usageId)"
+                      >
+                        Sostituisci
+                      </button>
+                      <button
+                        type="button"
+                        class="ghost"
+                        (click)="setPrimary(item)"
+                        [disabled]="isUsageBusy(item.usageId) || item.isPrimary"
+                      >
+                        Rendi primaria
+                      </button>
+                      <button
+                        type="button"
+                        class="ghost danger"
+                        (click)="removeFromHome(item)"
+                        [disabled]="isUsageBusy(item.usageId)"
+                      >
+                        Rimuovi dalla home
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+  </div>
+
+  <ng-template #emptySectionState>
+    <p class="empty-state">
+      Nessuna immagine attiva collegata a questa sezione home.
+    </p>
+  </ng-template>
+
+  <ng-template #noPreviewTpl>
+    <div class="thumb thumb-empty">
+      <span>Preview non disponibile</span>
+    </div>
+  </ng-template>
+</section>
+
+<ng-template #loadingTpl>
+  <p class="loading-state">Caricamento media home...</p>
+</ng-template>
