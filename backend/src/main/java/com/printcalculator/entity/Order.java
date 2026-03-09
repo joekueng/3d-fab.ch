@@ -20,6 +20,10 @@ public class Order {
     @JoinColumn(name = "source_quote_session_id")
     private QuoteSession sourceQuoteSession;
 
+    @ColumnDefault("'CALCULATOR'")
+    @Column(name = "source_type", nullable = false, length = Integer.MAX_VALUE)
+    private String sourceType;
+
     @Column(name = "status", nullable = false, length = Integer.MAX_VALUE)
     private String status;
 
@@ -151,6 +155,34 @@ public class Order {
     @Column(name = "paid_at")
     private OffsetDateTime paidAt;
 
+    @PrePersist
+    private void onCreate() {
+        OffsetDateTime now = OffsetDateTime.now();
+        if (createdAt == null) {
+            createdAt = now;
+        }
+        if (updatedAt == null) {
+            updatedAt = now;
+        }
+        if (shippingSameAsBilling == null) {
+            shippingSameAsBilling = true;
+        }
+        if (sourceType == null || sourceType.isBlank()) {
+            sourceType = "CALCULATOR";
+        }
+    }
+
+    @PreUpdate
+    private void onUpdate() {
+        updatedAt = OffsetDateTime.now();
+        if (shippingSameAsBilling == null) {
+            shippingSameAsBilling = true;
+        }
+        if (sourceType == null || sourceType.isBlank()) {
+            sourceType = "CALCULATOR";
+        }
+    }
+
     public UUID getId() {
         return id;
     }
@@ -175,6 +207,14 @@ public class Order {
 
     public void setSourceQuoteSession(QuoteSession sourceQuoteSession) {
         this.sourceQuoteSession = sourceQuoteSession;
+    }
+
+    public String getSourceType() {
+        return sourceType;
+    }
+
+    public void setSourceType(String sourceType) {
+        this.sourceType = sourceType;
     }
 
     public String getStatus() {

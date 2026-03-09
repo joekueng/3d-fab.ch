@@ -46,12 +46,26 @@ public class QuoteSessionResponseAssembler {
     private Map<String, Object> toItemDto(QuoteLineItem item, QuoteSessionTotalsService.QuoteSessionTotals totals) {
         Map<String, Object> dto = new HashMap<>();
         dto.put("id", item.getId());
+        dto.put("lineItemType", item.getLineItemType() != null ? item.getLineItemType() : "PRINT_FILE");
         dto.put("originalFilename", item.getOriginalFilename());
+        dto.put(
+                "displayName",
+                item.getDisplayName() != null && !item.getDisplayName().isBlank()
+                        ? item.getDisplayName()
+                        : item.getOriginalFilename()
+        );
         dto.put("quantity", item.getQuantity());
         dto.put("printTimeSeconds", item.getPrintTimeSeconds());
         dto.put("materialGrams", item.getMaterialGrams());
         dto.put("colorCode", item.getColorCode());
         dto.put("filamentVariantId", item.getFilamentVariant() != null ? item.getFilamentVariant().getId() : null);
+        dto.put("shopProductId", item.getShopProduct() != null ? item.getShopProduct().getId() : null);
+        dto.put("shopProductVariantId", item.getShopProductVariant() != null ? item.getShopProductVariant().getId() : null);
+        dto.put("shopProductSlug", item.getShopProductSlug());
+        dto.put("shopProductName", item.getShopProductName());
+        dto.put("shopVariantLabel", item.getShopVariantLabel());
+        dto.put("shopVariantColorName", item.getShopVariantColorName());
+        dto.put("shopVariantColorHex", item.getShopVariantColorHex());
         dto.put("materialCode", item.getMaterialCode());
         dto.put("quality", item.getQuality());
         dto.put("nozzleDiameterMm", item.getNozzleDiameterMm());

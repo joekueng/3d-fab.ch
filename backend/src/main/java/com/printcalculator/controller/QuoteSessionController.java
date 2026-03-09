@@ -62,6 +62,7 @@ public class QuoteSessionController {
     public ResponseEntity<QuoteSession> createSession() {
         QuoteSession session = new QuoteSession();
         session.setStatus("ACTIVE");
+        session.setSessionType("PRINT_QUOTE");
         session.setPricingVersion("v1");
         session.setMaterialCode("PLA");
         session.setSupportsEnabled(false);

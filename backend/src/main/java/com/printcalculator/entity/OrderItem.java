@@ -23,8 +23,15 @@ public class OrderItem {
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
+    @ColumnDefault("'PRINT_FILE'")
+    @Column(name = "item_type", nullable = false, length = Integer.MAX_VALUE)
+    private String itemType;
+
     @Column(name = "original_filename", nullable = false, length = Integer.MAX_VALUE)
     private String originalFilename;
+
+    @Column(name = "display_name", length = Integer.MAX_VALUE)
+    private String displayName;
 
     @Column(name = "stored_relative_path", nullable = false, length = Integer.MAX_VALUE)
     private String storedRelativePath;
@@ -66,6 +73,29 @@ public class OrderItem {
     @JoinColumn(name = "filament_variant_id")
     private FilamentVariant filamentVariant;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_product_id")
+    private ShopProduct shopProduct;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_product_variant_id")
+    private ShopProductVariant shopProductVariant;
+
+    @Column(name = "shop_product_slug", length = Integer.MAX_VALUE)
+    private String shopProductSlug;
+
+    @Column(name = "shop_product_name", length = Integer.MAX_VALUE)
+    private String shopProductName;
+
+    @Column(name = "shop_variant_label", length = Integer.MAX_VALUE)
+    private String shopVariantLabel;
+
+    @Column(name = "shop_variant_color_name", length = Integer.MAX_VALUE)
+    private String shopVariantColorName;
+
+    @Column(name = "shop_variant_color_hex", length = Integer.MAX_VALUE)
+    private String shopVariantColorHex;
+
     @Column(name = "color_code", length = Integer.MAX_VALUE)
     private String colorCode;
 
@@ -106,6 +136,14 @@ public class OrderItem {
         if (quantity == null) {
             quantity = 1;
         }
+        if (itemType == null || itemType.isBlank()) {
+            itemType = "PRINT_FILE";
+        }
+        if ((displayName == null || displayName.isBlank()) && originalFilename != null && !originalFilename.isBlank()) {
+            displayName = originalFilename;
+        } else if ((displayName == null || displayName.isBlank()) && shopProductName != null && !shopProductName.isBlank()) {
+            displayName = shopProductName;
+        }
     }
 
     public UUID getId() {
@@ -124,12 +162,28 @@ public class OrderItem {
         this.order = order;
     }
 
+    public String getItemType() {
+        return itemType;
+    }
+
+    public void setItemType(String itemType) {
+        this.itemType = itemType;
+    }
+
     public String getOriginalFilename() {
         return originalFilename;
     }
 
     public void setOriginalFilename(String originalFilename) {
         this.originalFilename = originalFilename;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
     public String getStoredRelativePath() {
@@ -234,6 +288,62 @@ public class OrderItem {
 
     public void setFilamentVariant(FilamentVariant filamentVariant) {
         this.filamentVariant = filamentVariant;
+    }
+
+    public ShopProduct getShopProduct() {
+        return shopProduct;
+    }
+
+    public void setShopProduct(ShopProduct shopProduct) {
+        this.shopProduct = shopProduct;
+    }
+
+    public ShopProductVariant getShopProductVariant() {
+        return shopProductVariant;
+    }
+
+    public void setShopProductVariant(ShopProductVariant shopProductVariant) {
+        this.shopProductVariant = shopProductVariant;
+    }
+
+    public String getShopProductSlug() {
+        return shopProductSlug;
+    }
+
+    public void setShopProductSlug(String shopProductSlug) {
+        this.shopProductSlug = shopProductSlug;
+    }
+
+    public String getShopProductName() {
+        return shopProductName;
+    }
+
+    public void setShopProductName(String shopProductName) {
+        this.shopProductName = shopProductName;
+    }
+
+    public String getShopVariantLabel() {
+        return shopVariantLabel;
+    }
+
+    public void setShopVariantLabel(String shopVariantLabel) {
+        this.shopVariantLabel = shopVariantLabel;
+    }
+
+    public String getShopVariantColorName() {
+        return shopVariantColorName;
+    }
+
+    public void setShopVariantColorName(String shopVariantColorName) {
+        this.shopVariantColorName = shopVariantColorName;
+    }
+
+    public String getShopVariantColorHex() {
+        return shopVariantColorHex;
+    }
+
+    public void setShopVariantColorHex(String shopVariantColorHex) {
+        this.shopVariantColorHex = shopVariantColorHex;
     }
 
     public String getColorCode() {

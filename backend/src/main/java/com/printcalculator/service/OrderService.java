@@ -104,6 +104,7 @@ public class OrderService {
 
         Order order = new Order();
         order.setSourceQuoteSession(session);
+        order.setSourceType(resolveOrderSourceType(session));
         order.setCustomer(customer);
         order.setCustomerEmail(request.getCustomer().getEmail());
         order.setCustomerPhone(request.getCustomer().getPhone());
@@ -172,11 +173,24 @@ public class OrderService {
         for (QuoteLineItem qItem : quoteItems) {
             OrderItem oItem = new OrderItem();
             oItem.setOrder(order);
+            oItem.setItemType(qItem.getLineItemType() != null ? qItem.getLineItemType() : "PRINT_FILE");
             oItem.setOriginalFilename(qItem.getOriginalFilename());
+            oItem.setDisplayName(
+                    qItem.getDisplayName() != null && !qItem.getDisplayName().isBlank()
+                            ? qItem.getDisplayName()
+                            : qItem.getOriginalFilename()
+            );
             int quantity = qItem.getQuantity() != null && qItem.getQuantity() > 0 ? qItem.getQuantity() : 1;
             oItem.setQuantity(quantity);
             oItem.setColorCode(qItem.getColorCode());
             oItem.setFilamentVariant(qItem.getFilamentVariant());
+            oItem.setShopProduct(qItem.getShopProduct());
+            oItem.setShopProductVariant(qItem.getShopProductVariant());
+            oItem.setShopProductSlug(qItem.getShopProductSlug());
+            oItem.setShopProductName(qItem.getShopProductName());
+            oItem.setShopVariantLabel(qItem.getShopVariantLabel());
+            oItem.setShopVariantColorName(qItem.getShopVariantColorName());
+            oItem.setShopVariantColorHex(qItem.getShopVariantColorHex());
             if (qItem.getFilamentVariant() != null
                     && qItem.getFilamentVariant().getFilamentMaterialType() != null
                     && qItem.getFilamentVariant().getFilamentMaterialType().getMaterialCode() != null) {
@@ -317,6 +331,13 @@ public class OrderService {
         } catch (InvalidPathException e) {
             return null;
         }
+    }
+
+    private String resolveOrderSourceType(QuoteSession session) {
+        if (session != null && "SHOP_CART".equalsIgnoreCase(session.getSessionType())) {
+            return "SHOP";
+        }
+        return "CALCULATOR";
     }
 
     private String getDisplayOrderNumber(Order order) {
