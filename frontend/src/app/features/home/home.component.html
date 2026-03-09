@@ -207,7 +207,9 @@
               <img
                 class="about-feature-photo"
                 [src]="image.source.fallbackUrl"
-                [attr.alt]="image.altText || ('HOME.SEC_ABOUT_TITLE' | translate)"
+                [attr.alt]="
+                  image.altText || ('HOME.SEC_ABOUT_TITLE' | translate)
+                "
                 width="1200"
                 height="900"
               />

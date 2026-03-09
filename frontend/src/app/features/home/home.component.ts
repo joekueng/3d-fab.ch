@@ -117,21 +117,20 @@ export class HomeComponent {
         ),
   );
 
-  readonly founderImages = computed<readonly PublicMediaDisplayImage[]>(
-    () =>
-      (
-        this.mediaByUsage()[
-          buildPublicMediaUsageScopeKey('HOME_SECTION', 'founders-gallery')
-        ] ?? []
+  readonly founderImages = computed<readonly PublicMediaDisplayImage[]>(() =>
+    (
+      this.mediaByUsage()[
+        buildPublicMediaUsageScopeKey('HOME_SECTION', 'founders-gallery')
+      ] ?? []
+    )
+      .map((item: PublicMediaImage) =>
+        this.publicMediaService.toDisplayImage(item, 'hero'),
       )
-        .map((item: PublicMediaImage) =>
-          this.publicMediaService.toDisplayImage(item, 'hero'),
-        )
-        .filter(
-          (
-            item: PublicMediaDisplayImage | null,
-          ): item is PublicMediaDisplayImage => item !== null,
-        ),
+      .filter(
+        (
+          item: PublicMediaDisplayImage | null,
+        ): item is PublicMediaDisplayImage => item !== null,
+      ),
   );
 
   readonly capabilityCards = computed<readonly HomeCapabilityCard[]>(() =>
@@ -139,13 +138,15 @@ export class HomeComponent {
   );
 
   readonly founderImageIndex = signal(0);
-  readonly currentFounderImage = computed<PublicMediaDisplayImage | null>(() => {
-    const images = this.founderImages();
-    if (images.length === 0) {
-      return null;
-    }
-    return images[this.founderImageIndex()] ?? images[0] ?? null;
-  });
+  readonly currentFounderImage = computed<PublicMediaDisplayImage | null>(
+    () => {
+      const images = this.founderImages();
+      if (images.length === 0) {
+        return null;
+      }
+      return images[this.founderImageIndex()] ?? images[0] ?? null;
+    },
+  );
 
   constructor() {
     effect(() => {
