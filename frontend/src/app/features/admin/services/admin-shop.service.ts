@@ -152,7 +152,8 @@ export interface AdminShopProduct {
   updatedAt: string;
 }
 
-export interface AdminShopMediaUsage extends Omit<AdminMediaUsage, 'translations'> {
+export interface AdminShopMediaUsage
+  extends Omit<AdminMediaUsage, 'translations'> {
   translations: Record<AdminMediaLanguage, AdminMediaTranslation>;
 }
 
@@ -214,9 +215,12 @@ export class AdminShopService {
   }
 
   getCategoryTree(): Observable<AdminShopCategory[]> {
-    return this.http.get<AdminShopCategory[]>(`${this.categoriesBaseUrl}/tree`, {
-      withCredentials: true,
-    });
+    return this.http.get<AdminShopCategory[]>(
+      `${this.categoriesBaseUrl}/tree`,
+      {
+        withCredentials: true,
+      },
+    );
   }
 
   getCategory(categoryId: string): Observable<AdminShopCategory> {
@@ -258,9 +262,12 @@ export class AdminShopService {
   }
 
   getProduct(productId: string): Observable<AdminShopProduct> {
-    return this.http.get<AdminShopProduct>(`${this.productsBaseUrl}/${productId}`, {
-      withCredentials: true,
-    });
+    return this.http.get<AdminShopProduct>(
+      `${this.productsBaseUrl}/${productId}`,
+      {
+        withCredentials: true,
+      },
+    );
   }
 
   createProduct(
@@ -288,7 +295,10 @@ export class AdminShopService {
     });
   }
 
-  uploadProductModel(productId: string, file: File): Observable<AdminShopProduct> {
+  uploadProductModel(
+    productId: string,
+    file: File,
+  ): Observable<AdminShopProduct> {
     const formData = new FormData();
     formData.append('file', file);
     return this.http.post<AdminShopProduct>(
@@ -299,9 +309,12 @@ export class AdminShopService {
   }
 
   deleteProductModel(productId: string): Observable<void> {
-    return this.http.delete<void>(`${this.productsBaseUrl}/${productId}/model`, {
-      withCredentials: true,
-    });
+    return this.http.delete<void>(
+      `${this.productsBaseUrl}/${productId}/model`,
+      {
+        withCredentials: true,
+      },
+    );
   }
 
   listMediaAssets(): Observable<AdminMediaAsset[]> {

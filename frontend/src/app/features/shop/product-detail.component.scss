@@ -56,7 +56,11 @@
   align-items: flex-end;
   padding: var(--space-6);
   background:
-    radial-gradient(circle at top right, rgba(250, 207, 10, 0.24), transparent 34%),
+    radial-gradient(
+      circle at top right,
+      rgba(250, 207, 10, 0.24),
+      transparent 34%
+    ),
     linear-gradient(160deg, #f8f4ea 0%, #eee8db 100%);
 }
 
@@ -314,13 +318,12 @@ h1 {
 }
 
 .skeleton-block {
-  background:
-    linear-gradient(
-      110deg,
-      rgba(255, 255, 255, 0.7) 8%,
-      rgba(238, 235, 226, 0.95) 18%,
-      rgba(255, 255, 255, 0.7) 33%
-    );
+  background: linear-gradient(
+    110deg,
+    rgba(255, 255, 255, 0.7) 8%,
+    rgba(238, 235, 226, 0.95) 18%,
+    rgba(255, 255, 255, 0.7) 33%
+  );
   background-size: 220% 100%;
   animation: skeleton 1.35s linear infinite;
 }

@@ -40,7 +40,11 @@
   align-items: flex-end;
   padding: var(--space-5);
   background:
-    radial-gradient(circle at top right, rgba(250, 207, 10, 0.24), transparent 36%),
+    radial-gradient(
+      circle at top right,
+      rgba(250, 207, 10, 0.24),
+      transparent 36%
+    ),
     linear-gradient(160deg, #f7f4ed 0%, #ece7db 100%);
 }
 

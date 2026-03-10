@@ -170,7 +170,8 @@ export class AdminShopComponent implements OnInit, OnDestroy {
 
   readonly categoryForm: CategoryFormState = this.createEmptyCategoryForm();
   readonly productForm: ProductFormState = this.createEmptyProductForm();
-  imageUploadState: ProductImageUploadState = this.createEmptyImageUploadState();
+  imageUploadState: ProductImageUploadState =
+    this.createEmptyImageUploadState();
   modelUploadFile: File | null = null;
 
   ngOnInit(): void {
@@ -220,7 +221,10 @@ export class AdminShopComponent implements OnInit, OnDestroy {
         const targetProductId =
           preferredProductId ??
           (this.productMode === 'edit' ? this.selectedProductId : null);
-        if (targetProductId && products.some((product) => product.id === targetProductId)) {
+        if (
+          targetProductId &&
+          products.some((product) => product.id === targetProductId)
+        ) {
           this.openProduct(targetProductId);
           return;
         }
@@ -524,8 +528,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   }
 
   addVariant(): void {
-    const sortOrder =
-      (this.productForm.variants.at(-1)?.sortOrder ?? -1) + 1;
+    const sortOrder = (this.productForm.variants.at(-1)?.sortOrder ?? -1) + 1;
     const firstVariant = this.productForm.variants.length === 0;
     this.productForm.variants = [
       ...this.productForm.variants,
@@ -621,11 +624,17 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   }
 
   deleteModel(): void {
-    if (!this.selectedProductId || this.deletingModel || !this.selectedProduct?.model3d) {
+    if (
+      !this.selectedProductId ||
+      this.deletingModel ||
+      !this.selectedProduct?.model3d
+    ) {
       return;
     }
 
-    if (!window.confirm('Rimuovere il modello 3D associato a questo prodotto?')) {
+    if (
+      !window.confirm('Rimuovere il modello 3D associato a questo prodotto?')
+    ) {
       return;
     }
 
@@ -709,11 +718,15 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   }
 
   getActiveImageTranslation(): AdminMediaTranslation {
-    return this.imageUploadState.translations[this.imageUploadState.activeLanguage];
+    return this.imageUploadState.translations[
+      this.imageUploadState.activeLanguage
+    ];
   }
 
   isImageLanguageComplete(language: AdminMediaLanguage): boolean {
-    return this.isTranslationComplete(this.imageUploadState.translations[language]);
+    return this.isTranslationComplete(
+      this.imageUploadState.translations[language],
+    );
   }
 
   uploadProductImage(): void {
@@ -930,7 +943,8 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     const searchNeedle = this.productSearchTerm.trim().toLowerCase();
     this.filteredProducts = this.products.filter((product) => {
       const matchesCategory =
-        this.categoryFilter === 'ALL' || product.categoryId === this.categoryFilter;
+        this.categoryFilter === 'ALL' ||
+        product.categoryId === this.categoryFilter;
       const matchesStatus =
         this.productStatusFilter === 'ALL' ||
         (this.productStatusFilter === 'ACTIVE' && product.isActive) ||
@@ -1215,7 +1229,10 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       if (!Number.isFinite(price) || price < 0) {
         return `La variante "${variant.colorName.trim()}" ha un prezzo non valido.`;
       }
-      if (variant.colorHex.trim() && !/^#[0-9A-Fa-f]{6}$/.test(variant.colorHex.trim())) {
+      if (
+        variant.colorHex.trim() &&
+        !/^#[0-9A-Fa-f]{6}$/.test(variant.colorHex.trim())
+      ) {
         return `La variante "${variant.colorName.trim()}" ha un colore HEX non valido.`;
       }
       if (variant.isDefault) {
@@ -1426,7 +1443,10 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   }
 
   private deriveDefaultTitle(filename: string): string {
-    return filename.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').trim();
+    return filename
+      .replace(/\.[^.]+$/, '')
+      .replace(/[-_]+/g, ' ')
+      .trim();
   }
 
   private optionalValue(value: string): string | undefined {
@@ -1445,7 +1465,9 @@ export class AdminShopComponent implements OnInit, OnDestroy {
 
   private resolveFileExtension(filename: string): string {
     const lastDotIndex = filename.lastIndexOf('.');
-    return lastDotIndex >= 0 ? filename.slice(lastDotIndex + 1).toLowerCase() : '';
+    return lastDotIndex >= 0
+      ? filename.slice(lastDotIndex + 1).toLowerCase()
+      : '';
   }
 
   private isAllowedImageType(mimeType: string, filename: string): boolean {
