@@ -402,7 +402,7 @@ public class AdminMediaControllerService {
 
         if (!skippedFormats.isEmpty()) {
             logger.warn(
-                    "Skipping media formats for asset {} because FFmpeg encoders are unavailable: {}",
+                    "Skipping media formats for asset {} because FFmpeg support is unavailable: {}",
                     asset.getId(),
                     String.join(", ", skippedFormats)
             );

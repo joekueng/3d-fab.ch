@@ -10,6 +10,7 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -80,6 +81,12 @@ class MediaFfmpegServiceTest {
                         EOF
                           exit 0
                         fi
+                        if [ "$1" = "-hide_banner" ] && [ "$2" = "-muxers" ]; then
+                          cat <<'EOF'
+                         E avif
+                        EOF
+                          exit 0
+                        fi
 
                         for arg in "$@"; do
                           if [ "$arg" = "-still-picture" ]; then
@@ -116,5 +123,43 @@ class MediaFfmpegServiceTest {
 
         assertTrue(Files.exists(target));
         assertEquals("ok", Files.readString(target));
+    }
+
+    @Test
+    void canEncode_avifShouldRequireMuxerAvailability() throws Exception {
+        Path fakeFfmpeg = tempDir.resolve("fake-ffmpeg-no-avif-muxer.sh");
+        Files.writeString(
+                fakeFfmpeg,
+                """
+                        #!/bin/sh
+                        if [ "$1" = "-hide_banner" ] && [ "$2" = "-encoders" ]; then
+                          cat <<'EOF'
+                         V..... mjpeg
+                         V..... libaom-av1
+                        EOF
+                          exit 0
+                        fi
+                        if [ "$1" = "-hide_banner" ] && [ "$2" = "-muxers" ]; then
+                          cat <<'EOF'
+                         E mp4
+                        EOF
+                          exit 0
+                        fi
+                        exit 0
+                        """
+        );
+        Files.setPosixFilePermissions(
+                fakeFfmpeg,
+                Set.of(
+                        PosixFilePermission.OWNER_READ,
+                        PosixFilePermission.OWNER_WRITE,
+                        PosixFilePermission.OWNER_EXECUTE
+                )
+        );
+
+        MediaFfmpegService service = new MediaFfmpegService(fakeFfmpeg.toString());
+
+        assertTrue(service.canEncode("JPEG"));
+        assertFalse(service.canEncode("AVIF"));
     }
 }

@@ -33,7 +33,7 @@ Configura il percorso di OrcaSlicer in `backend/src/main/resources/application.p
 
 - `MEDIA_STORAGE_ROOT` per la root `storage_media` usata dal backend (`original/`, `public/`, `private/`)
 - `SHOP_STORAGE_ROOT` per la root `storage_shop` usata dal backend per i modelli dei prodotti shop
-- `MEDIA_FFMPEG_PATH` per il binario `ffmpeg`
+- `MEDIA_FFMPEG_PATH` per il binario `ffmpeg` (nel deploy Docker default: `/usr/bin/ffmpeg`)
 - `MEDIA_UPLOAD_MAX_FILE_SIZE_BYTES` per il limite per asset immagine
 
 ```bash
@@ -107,7 +107,7 @@ Operativamente:
 Assicurati che `slicer.path` punti al binario corretto. Su macOS è solitamente `/Applications/OrcaSlicer.app/Contents/MacOS/OrcaSlicer`. Su Linux è il percorso all'AppImage (estratta o meno).
 
 ### FFmpeg e media pubblici
-Verifica che `MEDIA_FFMPEG_PATH` punti a un `ffmpeg` con supporto JPEG, WebP e AVIF. Se gli URL media restituiti dalle API admin non sono raggiungibili, controlla che `APP_FRONTEND_BASE_URL` punti al dominio corretto, che `location /media/` sia esposto da Nginx e che il volume `storage_media` sia montato correttamente.
+Verifica che `MEDIA_FFMPEG_PATH` punti a un `ffmpeg` con supporto JPEG, WebP e AVIF (encoder + muxer AVIF). Nel container backend usa `/usr/bin/ffmpeg` per evitare binari bundled da OrcaSlicer con supporto incompleto. Se gli URL media restituiti dalle API admin non sono raggiungibili, controlla che `APP_FRONTEND_BASE_URL` punti al dominio corretto, che `location /media/` sia esposto da Nginx e che il volume `storage_media` sia montato correttamente.
 
 ### Database connection
 Verifica le credenziali in `application.properties`. Se usi Docker, puoi passare `DB_URL`, `DB_USERNAME` e `DB_PASSWORD` come variabili d'ambiente.

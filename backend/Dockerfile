@@ -14,7 +14,7 @@ ARG ORCA_VERSION=2.3.1
 ARG ORCA_DOWNLOAD_URL
 
 # Install system dependencies for OrcaSlicer and media processing.
-# The build fails fast if the packaged ffmpeg lacks JPEG/WebP/AVIF encoders.
+# The build fails fast if the packaged ffmpeg lacks JPEG/WebP/AVIF support.
 RUN set -eux; \
     apt-get update; \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -30,6 +30,9 @@ RUN set -eux; \
     grep -Eq '[[:space:]]mjpeg[[:space:]]' /tmp/ffmpeg-encoders.txt; \
     grep -Eq '[[:space:]](libwebp|webp)[[:space:]]' /tmp/ffmpeg-encoders.txt; \
     grep -Eq '[[:space:]](libaom-av1|librav1e|libsvtav1)[[:space:]]' /tmp/ffmpeg-encoders.txt; \
+    ffmpeg -hide_banner -muxers > /tmp/ffmpeg-muxers.txt; \
+    grep -Eq '[[:space:]]avif([[:space:]]|,|$)' /tmp/ffmpeg-muxers.txt; \
+    rm -f /tmp/ffmpeg-muxers.txt; \
     rm -f /tmp/ffmpeg-encoders.txt; \
     rm -rf /var/lib/apt/lists/*
 
@@ -71,6 +74,8 @@ ENV PATH="/opt/orcaslicer/usr/bin:${PATH}"
 # Set Slicer Path env variable for Java app
 ENV SLICER_PATH="/opt/orcaslicer/AppRun"
 ENV ASSIMP_PATH="assimp"
+# Keep media generation on the system ffmpeg (Orca bundles can miss AVIF muxer support).
+ENV MEDIA_FFMPEG_PATH="/usr/bin/ffmpeg"
 
 WORKDIR /app
 # Copy JAR from build stage

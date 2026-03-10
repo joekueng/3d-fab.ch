@@ -29,13 +29,18 @@ public class MediaFfmpegService {
             "WEBP", List.of("libwebp", "webp"),
             "AVIF", List.of("libaom-av1", "librav1e", "libsvtav1")
     );
+    private static final Map<String, List<String>> REQUIRED_MUXERS = Map.of(
+            "AVIF", List.of("avif")
+    );
 
     private final String ffmpegExecutable;
     private final Set<String> availableEncoders;
+    private final Set<String> availableMuxers;
 
     public MediaFfmpegService(@Value("${media.ffmpeg.path:ffmpeg}") String ffmpegPath) {
         this.ffmpegExecutable = resolveExecutable(ffmpegPath);
         this.availableEncoders = Collections.unmodifiableSet(loadAvailableEncoders());
+        this.availableMuxers = Collections.unmodifiableSet(loadAvailableMuxers());
     }
 
     public void generateVariant(Path source, Path target, int widthPx, int heightPx, String format) throws IOException {
@@ -47,9 +52,13 @@ public class MediaFfmpegService {
         Path targetPath = sanitizeMediaPath(target, "target", false);
         Files.createDirectories(targetPath.getParent());
 
-        String encoder = resolveEncoder(format);
+        String normalizedFormat = normalizeFormat(format);
+        String encoder = resolveEncoder(normalizedFormat);
         if (encoder == null) {
-            throw new IOException("FFmpeg encoder not available for media format " + format + ".");
+            throw new IOException("FFmpeg encoder not available for media format " + normalizedFormat + ".");
+        }
+        if (!hasRequiredMuxer(normalizedFormat)) {
+            throw new IOException("FFmpeg muxer not available for media format " + normalizedFormat + ".");
         }
 
         List<String> command = new ArrayList<>();
@@ -66,7 +75,7 @@ public class MediaFfmpegService {
         command.add("1");
         command.add("-an");
 
-        switch (format) {
+        switch (normalizedFormat) {
             case "JPEG" -> {
                 command.add("-c:v");
                 command.add(encoder);
@@ -86,8 +95,10 @@ public class MediaFfmpegService {
                 command.add("30");
                 command.add("-b:v");
                 command.add("0");
+                command.add("-f");
+                command.add("avif");
             }
-            default -> throw new IllegalArgumentException("Unsupported media format: " + format);
+            default -> throw new IllegalArgumentException("Unsupported media format: " + normalizedFormat);
         }
 
         command.add(targetPath.toString());
@@ -112,14 +123,16 @@ public class MediaFfmpegService {
     }
 
     public boolean canEncode(String format) {
-        return resolveEncoder(format) != null;
+        String normalizedFormat = normalizeFormat(format);
+        return resolveEncoder(normalizedFormat) != null && hasRequiredMuxer(normalizedFormat);
     }
 
     private String resolveEncoder(String format) {
-        if (format == null) {
+        String normalizedFormat = normalizeFormat(format);
+        if (normalizedFormat == null) {
             return null;
         }
-        List<String> candidates = ENCODER_CANDIDATES.get(format.trim().toUpperCase(Locale.ROOT));
+        List<String> candidates = ENCODER_CANDIDATES.get(normalizedFormat);
         if (candidates == null) {
             return null;
         }
@@ -127,6 +140,21 @@ public class MediaFfmpegService {
                 .filter(availableEncoders::contains)
                 .findFirst()
                 .orElse(null);
+    }
+
+    private boolean hasRequiredMuxer(String format) {
+        List<String> requiredMuxers = REQUIRED_MUXERS.get(format);
+        if (requiredMuxers == null || requiredMuxers.isEmpty()) {
+            return true;
+        }
+        return requiredMuxers.stream().anyMatch(availableMuxers::contains);
+    }
+
+    private String normalizeFormat(String format) {
+        if (format == null) {
+            return null;
+        }
+        return format.trim().toUpperCase(Locale.ROOT);
     }
 
     private Set<String> loadAvailableEncoders() {
@@ -147,6 +175,31 @@ public class MediaFfmpegService {
         } catch (Exception e) {
             logger.warn(
                     "Unable to inspect FFmpeg encoders for executable '{}'. Falling back to empty encoder list. {}",
+                    ffmpegExecutable,
+                    e.getMessage()
+            );
+            return Set.of();
+        }
+    }
+
+    private Set<String> loadAvailableMuxers() {
+        List<String> command = List.of(ffmpegExecutable, "-hide_banner", "-muxers");
+        try {
+            Process process = startValidatedProcess(command);
+            String output;
+            try (InputStream processStream = process.getInputStream()) {
+                output = new String(processStream.readAllBytes(), StandardCharsets.UTF_8);
+            }
+
+            int exitCode = process.waitFor();
+            if (exitCode != 0) {
+                logger.warn("Unable to inspect FFmpeg muxers. Falling back to empty muxer list.");
+                return Set.of();
+            }
+            return parseAvailableMuxers(output);
+        } catch (Exception e) {
+            logger.warn(
+                    "Unable to inspect FFmpeg muxers for executable '{}'. Falling back to empty muxer list. {}",
                     ffmpegExecutable,
                     e.getMessage()
             );
@@ -262,6 +315,26 @@ public class MediaFfmpegService {
             encoders.add(parts[1]);
         }
         return encoders;
+    }
+
+    private Set<String> parseAvailableMuxers(String output) {
+        if (output == null || output.isBlank()) {
+            return Set.of();
+        }
+
+        Set<String> muxers = new LinkedHashSet<>();
+        for (String line : output.split("\\R")) {
+            String trimmed = line.trim();
+            if (trimmed.isBlank() || trimmed.startsWith("--") || trimmed.startsWith("Muxers:")) {
+                continue;
+            }
+            String[] parts = trimmed.split("\\s+", 3);
+            if (parts.length < 2) {
+                continue;
+            }
+            muxers.add(parts[1]);
+        }
+        return muxers;
     }
 
     private String truncate(String output) {
