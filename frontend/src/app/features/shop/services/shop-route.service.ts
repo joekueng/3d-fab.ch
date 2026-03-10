@@ -38,8 +38,12 @@ export class ShopRouteService {
     return idPrefix ? `${idPrefix}-${tail}` : tail;
   }
 
-  resolveProductLookup(productPathSegment: string | null | undefined): ShopProductLookup {
-    const normalized = String(productPathSegment ?? '').trim().toLowerCase();
+  resolveProductLookup(
+    productPathSegment: string | null | undefined,
+  ): ShopProductLookup {
+    const normalized = String(productPathSegment ?? '')
+      .trim()
+      .toLowerCase();
     if (!normalized) {
       return {
         idPrefix: null,
@@ -89,7 +93,9 @@ export class ShopRouteService {
   }
 
   private productIdPrefix(productId: string | null | undefined): string {
-    const normalized = String(productId ?? '').trim().toLowerCase();
+    const normalized = String(productId ?? '')
+      .trim()
+      .toLowerCase();
     const canonicalUuidMatch = normalized.match(/^([0-9a-f]{8})-/);
     if (canonicalUuidMatch) {
       return canonicalUuidMatch[1];

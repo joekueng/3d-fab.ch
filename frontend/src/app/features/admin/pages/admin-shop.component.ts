@@ -605,7 +605,9 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   }
 
   availableMaterialChoices(currentMaterialCode: string): string[] {
-    const normalizedCurrentMaterialCode = currentMaterialCode.trim().toUpperCase();
+    const normalizedCurrentMaterialCode = currentMaterialCode
+      .trim()
+      .toUpperCase();
     const selectedCodes = new Set(
       this.productForm.materials
         .map((material) => material.materialCode.trim().toUpperCase())
@@ -804,10 +806,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
 
   isImageLanguageStarted(language: AdminMediaLanguage): boolean {
     const translation = this.imageUploadState.translations[language];
-    return (
-      !!translation.title.trim() ||
-      !!translation.altText.trim()
-    );
+    return !!translation.title.trim() || !!translation.altText.trim();
   }
 
   isImageLanguageIncomplete(language: AdminMediaLanguage): boolean {
@@ -1291,7 +1290,9 @@ export class AdminShopComponent implements OnInit, OnDestroy {
 
     const groups = new Map<string, AdminShopProductVariant[]>();
     for (const variant of variants) {
-      const materialCode = (variant.internalMaterialCode ?? '').trim().toUpperCase();
+      const materialCode = (variant.internalMaterialCode ?? '')
+        .trim()
+        .toUpperCase();
       if (!materialCode) {
         continue;
       }
@@ -1403,7 +1404,9 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       seoTitleEn: this.optionalValue(this.productForm.seoTitles['en']),
       seoTitleDe: this.optionalValue(this.productForm.seoTitles['de']),
       seoTitleFr: this.optionalValue(this.productForm.seoTitles['fr']),
-      seoDescription: this.optionalValue(this.productForm.seoDescriptions['it']),
+      seoDescription: this.optionalValue(
+        this.productForm.seoDescriptions['it'],
+      ),
       seoDescriptionIt: this.optionalValue(
         this.productForm.seoDescriptions['it'],
       ),
@@ -1461,11 +1464,16 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       let defaultVariantKeyForMaterial: string | null = null;
 
       if (material.isDefault && persistedDefaultKey) {
-        defaultVariantKeyForMaterial = stockVariants
-          .map((variant) =>
-            this.variantKey(materialCode, variant.colorName, variant.colorHex),
-          )
-          .find((variantKey) => variantKey === persistedDefaultKey) ?? null;
+        defaultVariantKeyForMaterial =
+          stockVariants
+            .map((variant) =>
+              this.variantKey(
+                materialCode,
+                variant.colorName,
+                variant.colorHex,
+              ),
+            )
+            .find((variantKey) => variantKey === persistedDefaultKey) ?? null;
       }
 
       stockVariants.forEach((stockVariant, colorIndex) => {
@@ -1487,7 +1495,9 @@ export class AdminShopComponent implements OnInit, OnDestroy {
           sku: this.optionalValue(existingVariant?.sku ?? ''),
           variantLabel: materialCode,
           colorName: stockVariant.colorName.trim(),
-          colorHex: this.optionalValue(stockVariant.colorHex ?? '')?.toUpperCase(),
+          colorHex: this.optionalValue(
+            stockVariant.colorHex ?? '',
+          )?.toUpperCase(),
           internalMaterialCode: materialCode,
           priceChf: Number(material.priceChf),
           isDefault,
@@ -1518,7 +1528,9 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     ).sort((left, right) => left.localeCompare(right));
   }
 
-  private stockVariantsForMaterial(materialCode: string): AdminFilamentVariant[] {
+  private stockVariantsForMaterial(
+    materialCode: string,
+  ): AdminFilamentVariant[] {
     const targetMaterialCode = materialCode.trim().toUpperCase();
     const seenKeys = new Set<string>();
 
@@ -1529,7 +1541,8 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       )
       .sort((left, right) => {
         const leftName = `${left.colorName} ${left.variantDisplayName}`.trim();
-        const rightName = `${right.colorName} ${right.variantDisplayName}`.trim();
+        const rightName =
+          `${right.colorName} ${right.variantDisplayName}`.trim();
         return leftName.localeCompare(rightName);
       })
       .filter((variant) => {
@@ -1554,8 +1567,9 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     );
 
     return (
-      this.stockMaterialCodes().find((materialCode) => !selectedCodes.has(materialCode)) ??
-      null
+      this.stockMaterialCodes().find(
+        (materialCode) => !selectedCodes.has(materialCode),
+      ) ?? null
     );
   }
 
