@@ -93,36 +93,6 @@
   font-weight: 700;
 }
 
-.hero-nav {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 2;
-  width: 2.2rem;
-  height: 2.2rem;
-  border-radius: 999px;
-  border: 1px solid rgba(16, 24, 32, 0.14);
-  background: rgba(255, 255, 255, 0.92);
-  color: var(--color-text);
-  font-size: 1.4rem;
-  line-height: 1;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-}
-
-.hero-nav:hover {
-  border-color: rgba(16, 24, 32, 0.28);
-}
-
-.hero-nav-prev {
-  left: 0.6rem;
-}
-
-.hero-nav-next {
-  right: 0.6rem;
-}
-
 .thumb-grid {
   display: contents;
 }
@@ -208,80 +178,6 @@
   display: flex;
   gap: 0.8rem;
   text-align: left;
-}
-
-.viewer-state {
-  display: grid;
-  place-items: center;
-  min-height: 220px;
-  border-radius: var(--radius-lg);
-  background: rgba(16, 24, 32, 0.04);
-  color: var(--color-text-muted);
-}
-
-.viewer-state-error {
-  color: var(--color-danger-600);
-}
-
-.viewer-loading {
-  gap: 0.6rem;
-}
-
-.spinner {
-  width: 1.5rem;
-  height: 1.5rem;
-  border-radius: 50%;
-  border: 2px solid rgba(16, 24, 32, 0.16);
-  border-top-color: var(--color-secondary-600);
-  animation: spin 0.9s linear infinite;
-}
-
-.model-modal-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 1100;
-  border: 0;
-  background: rgba(16, 24, 32, 0.36);
-}
-
-.model-modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: min(940px, calc(100vw - 2rem));
-  max-height: calc(100vh - 2rem);
-  display: grid;
-  grid-template-rows: auto 1fr;
-  gap: 0.9rem;
-  z-index: 1101;
-  padding: 1rem;
-  border-radius: 1rem;
-  border: 1px solid rgba(16, 24, 32, 0.16);
-  background: #fff;
-  box-shadow: 0 22px 40px rgba(16, 24, 32, 0.3);
-}
-
-.model-modal-head {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--space-3);
-  align-items: start;
-}
-
-.model-close-btn {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 999px;
-  border: 1px solid rgba(16, 24, 32, 0.16);
-  background: #fff;
-  cursor: pointer;
-}
-
-.model-modal-body {
-  min-height: 260px;
-  max-height: calc(100vh - 11rem);
-  overflow: auto;
 }
 
 .title-block {
@@ -436,152 +332,6 @@ h1 {
   border-left: 3px solid rgba(245, 158, 11, 0.7);
 }
 
-.color-selector-block {
-  position: relative;
-  display: grid;
-  gap: 0.4rem;
-  padding: 0;
-  border-radius: 1rem;
-  border: 0;
-  background: transparent;
-}
-
-.selector-head {
-  display: block;
-}
-
-.color-trigger {
-  width: 100%;
-  max-width: 230px;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.35rem 0.55rem;
-  border-radius: 0.72rem;
-  border: 1px solid rgba(16, 24, 32, 0.14);
-  background: #fff;
-  text-align: left;
-  cursor: pointer;
-  transition:
-    border-color 0.16s ease,
-    box-shadow 0.16s ease;
-}
-
-.color-trigger:hover {
-  border-color: rgba(16, 24, 32, 0.28);
-}
-
-.color-trigger.open {
-  border-color: rgba(250, 207, 10, 0.95);
-  box-shadow: 0 0 0 2px rgba(250, 207, 10, 0.28);
-}
-
-.color-trigger__ring {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  border-radius: 50%;
-  border: 2px solid rgba(250, 207, 10, 0.95);
-}
-
-.color-trigger__swatch {
-  width: 1.22rem;
-  height: 1.22rem;
-  border-radius: 50%;
-  border: 1px solid rgba(16, 24, 32, 0.16);
-}
-
-.color-trigger__copy {
-  display: grid;
-  gap: 0.08rem;
-}
-
-.color-trigger__copy strong {
-  font-size: 0.88rem;
-}
-
-.color-trigger__copy small {
-  font-size: 0.76rem;
-  color: var(--color-text-muted);
-}
-
-.color-popup-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 999;
-  border: 0;
-  background: transparent;
-}
-
-.color-popup {
-  position: absolute;
-  top: calc(100% + 0.45rem);
-  left: 0;
-  z-index: 1000;
-  width: min(340px, 100%);
-  padding: 0.9rem;
-  border-radius: 0.85rem;
-  border: 1px solid rgba(16, 24, 32, 0.12);
-  background: #fff;
-  box-shadow: 0 12px 24px rgba(16, 24, 32, 0.14);
-}
-
-.color-popup__category {
-  margin-bottom: 0.75rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--color-text-muted);
-}
-
-.color-popup__grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.75rem 0.55rem;
-}
-
-.color-popup__item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.3rem;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-  text-align: center;
-  color: inherit;
-}
-
-.color-popup__ring {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  transition: border-color 0.15s ease;
-}
-
-.color-popup__ring.active {
-  border-color: rgba(250, 207, 10, 0.95);
-}
-
-.color-popup__swatch {
-  width: 1.5rem;
-  height: 1.5rem;
-  border-radius: 50%;
-  border: 1px solid rgba(16, 24, 32, 0.18);
-}
-
-.color-popup__name {
-  font-size: 0.8rem;
-  line-height: 1.2;
-  color: var(--color-text);
-}
-
 .qty-control {
   display: inline-flex;
   align-items: center;
@@ -674,12 +424,6 @@ h1 {
   }
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 @media (max-width: 960px) {
   .detail-grid,
   .skeleton-grid {
@@ -707,49 +451,12 @@ h1 {
     min-height: 300px;
   }
 
-  .selector-head {
-    display: block;
-  }
-
   .property-grid {
     grid-template-columns: 1fr;
   }
 
   .material-grid {
     grid-template-columns: 1fr;
-  }
-
-  .color-trigger {
-    max-width: 100%;
-  }
-
-  .color-popup {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: min(340px, calc(100vw - 1.5rem));
-    max-height: min(72vh, 440px);
-    overflow-y: auto;
-  }
-
-  .model-launch-row {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .dimensions-inline {
-    flex-wrap: wrap;
-  }
-
-  .model-modal {
-    width: calc(100vw - 1rem);
-    max-height: calc(100vh - 1rem);
-    padding: 0.8rem;
-  }
-
-  .model-modal-body {
-    max-height: calc(100vh - 9.5rem);
   }
 
   :host ::ng-deep app-card.purchase-shell .card-body {

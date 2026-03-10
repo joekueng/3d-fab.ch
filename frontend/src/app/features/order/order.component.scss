@@ -1,3 +1,7 @@
+.order-hero {
+  padding-top: calc(var(--space-12) + var(--space-5));
+}
+
 .subtitle {
   font-size: 1.125rem;
 }
@@ -244,16 +248,17 @@
 .status-timeline {
   display: flex;
   justify-content: space-between;
-  margin-bottom: var(--space-8);
+  margin-top: var(--space-5);
+  margin-bottom: var(--space-10);
+  padding: 0 var(--space-2);
   position: relative;
-  /* padding: var(--space-6); */ /* Removed if it was here to match non-card layout */
 
   &::before {
     content: "";
     position: absolute;
     top: 15px;
-    left: 12.5%;
-    right: 12.5%;
+    left: calc(12.5% + var(--space-2));
+    right: calc(12.5% + var(--space-2));
     height: 2px;
     background: var(--color-border);
     z-index: 1;
@@ -279,13 +284,14 @@
     align-items: center;
     justify-content: center;
     font-weight: 600;
-    margin-bottom: var(--space-2);
+    margin-bottom: var(--space-3);
     color: var(--color-text-muted);
     transition: all 0.3s ease;
   }
 
   .label {
     font-size: 0.85rem;
+    line-height: 1.2;
     color: var(--color-text-muted);
     font-weight: 500;
   }
@@ -315,7 +321,14 @@
 }
 
 @media (max-width: 600px) {
+  .order-hero {
+    padding-top: calc(var(--space-8) + var(--space-4));
+  }
+
   .status-timeline {
+    margin-top: var(--space-4);
+    margin-bottom: var(--space-8);
+    padding: 0;
     flex-direction: column;
     align-items: flex-start;
     gap: var(--space-4);
