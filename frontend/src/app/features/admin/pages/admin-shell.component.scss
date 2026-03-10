@@ -98,7 +98,10 @@
 }
 
 :host ::ng-deep .content .ui-form-control,
-:host ::ng-deep .content input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+:host
+  ::ng-deep
+  .content
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
 :host ::ng-deep .content select,
 :host ::ng-deep .content textarea {
   width: 100%;
@@ -116,7 +119,10 @@
 }
 
 :host ::ng-deep .content .ui-form-control:focus,
-:host ::ng-deep .content input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+:host
+  ::ng-deep
+  .content
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
 :host ::ng-deep .content select:focus,
 :host ::ng-deep .content textarea:focus {
   outline: none;
@@ -125,7 +131,10 @@
 }
 
 :host ::ng-deep .content .ui-form-control:disabled,
-:host ::ng-deep .content input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):disabled,
+:host
+  ::ng-deep
+  .content
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):disabled,
 :host ::ng-deep .content select:disabled,
 :host ::ng-deep .content textarea:disabled {
   background: var(--color-surface-muted);
