@@ -1,9 +1,9 @@
 #!/bin/sh
 set -e
 
-# In container default to system ffmpeg to avoid Orca-bundled binaries with partial codec support.
+# In container default to the ffmpeg selected during image build.
 if [ -z "${MEDIA_FFMPEG_PATH:-}" ]; then
-  MEDIA_FFMPEG_PATH="/usr/bin/ffmpeg"
+  MEDIA_FFMPEG_PATH="/usr/local/bin/ffmpeg-media"
 fi
 export MEDIA_FFMPEG_PATH
 

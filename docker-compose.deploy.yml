@@ -33,7 +33,7 @@ services:
       - PROFILES_DIR=/app/profiles
       - MEDIA_STORAGE_ROOT=${MEDIA_STORAGE_ROOT:-/app/storage_media}
       - SHOP_STORAGE_ROOT=${SHOP_STORAGE_ROOT:-/app/storage_shop}
-      - MEDIA_FFMPEG_PATH=${MEDIA_FFMPEG_PATH:-/usr/bin/ffmpeg}
+      - MEDIA_FFMPEG_PATH=${MEDIA_FFMPEG_PATH:-/usr/local/bin/ffmpeg-media}
       - MEDIA_UPLOAD_MAX_FILE_SIZE_BYTES=${MEDIA_UPLOAD_MAX_FILE_SIZE_BYTES:-26214400}
     restart: always
     logging:
