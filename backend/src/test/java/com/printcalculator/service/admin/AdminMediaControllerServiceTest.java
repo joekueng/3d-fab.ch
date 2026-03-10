@@ -87,7 +87,7 @@ class AdminMediaControllerServiceTest {
         storageRoot = tempDir.resolve("storage_media");
         MediaStorageService mediaStorageService = new MediaStorageService(
                 storageRoot.toString(),
-                "https://cdn.example/media"
+                "https://cdn.example"
         );
 
         service = new AdminMediaControllerService(
