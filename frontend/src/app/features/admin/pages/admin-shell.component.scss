@@ -97,24 +97,127 @@
   min-width: 0;
 }
 
-:host ::ng-deep .content .ui-form-control {
+:host ::ng-deep .content .ui-form-control,
+:host ::ng-deep .content input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+:host ::ng-deep .content select,
+:host ::ng-deep .content textarea {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
   padding: var(--space-2);
+  background: var(--color-bg-card);
+  color: var(--color-text);
+  font: inherit;
   font-size: 1rem;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
 }
 
+:host ::ng-deep .content .ui-form-control:focus,
+:host ::ng-deep .content input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+:host ::ng-deep .content select:focus,
+:host ::ng-deep .content textarea:focus {
+  outline: none;
+  border-color: var(--color-brand);
+  box-shadow: var(--focus-ring);
+}
+
+:host ::ng-deep .content .ui-form-control:disabled,
+:host ::ng-deep .content input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):disabled,
+:host ::ng-deep .content select:disabled,
+:host ::ng-deep .content textarea:disabled {
+  background: var(--color-surface-muted);
+  cursor: not-allowed;
+}
+
+:host ::ng-deep .content select,
 :host ::ng-deep .content select.ui-form-control {
-  background-position: right 0.75rem center;
-  padding-right: 2.35rem;
+  appearance: auto;
+  background-image: none;
+  background-position: initial;
+  background-size: initial;
+  padding-right: var(--space-2);
 }
 
-:host ::ng-deep .content .ui-form-caption {
+:host ::ng-deep .content .ui-form-caption,
+:host ::ng-deep .content .form-field > span,
+:host ::ng-deep .content .toolbar-field > span,
+:host ::ng-deep .content .form-grid label > span,
+:host ::ng-deep .content .status-editor label,
+:host ::ng-deep .content .status-editor-field label {
   font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
 }
 
+:host ::ng-deep .content button,
 :host ::ng-deep .content .ui-button {
+  border: 0;
+  border-radius: var(--radius-md);
   padding: var(--space-2) var(--space-4);
+  background: var(--color-brand);
+  color: var(--color-neutral-900);
+  font: inherit;
   font-size: 1rem;
+  font-weight: 600;
   line-height: 1.2;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+:host ::ng-deep .content button:hover:not(:disabled),
+:host ::ng-deep .content .ui-button:hover:not(:disabled) {
+  background: var(--color-brand-hover);
+}
+
+:host ::ng-deep .content button:disabled,
+:host ::ng-deep .content .ui-button:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+
+:host ::ng-deep .content .ui-button--ghost,
+:host ::ng-deep .content .ghost,
+:host ::ng-deep .content .btn-secondary,
+:host ::ng-deep .content .panel-toggle {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+:host ::ng-deep .content .ui-button--ghost:hover:not(:disabled),
+:host ::ng-deep .content .ghost:hover:not(:disabled),
+:host ::ng-deep .content .btn-secondary:hover:not(:disabled),
+:host ::ng-deep .content .panel-toggle:hover:not(:disabled) {
+  background: var(--color-surface-muted);
+}
+
+:host ::ng-deep .content .ui-button--danger,
+:host ::ng-deep .content .btn-delete {
+  background: var(--color-danger-500);
+  color: #ffffff;
+}
+
+:host ::ng-deep .content .ui-button--danger:hover:not(:disabled),
+:host ::ng-deep .content .btn-delete:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+:host ::ng-deep .content .ui-button--ghost-danger {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+:host ::ng-deep .content .ui-button--ghost-danger:hover:not(:disabled) {
+  background: #fff0f0;
+  border-color: #d9534f;
 }
 
 :host ::ng-deep .content .ui-checkbox {
