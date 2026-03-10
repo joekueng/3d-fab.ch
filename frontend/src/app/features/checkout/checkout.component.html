@@ -254,14 +254,18 @@
           <div class="summary-items" *ngIf="quoteSession() as session">
             <div class="summary-item" *ngFor="let item of session.items">
               <div class="item-details">
-                <span class="item-name">{{ item.originalFilename }}</span>
+                <span class="item-name">{{ itemDisplayName(item) }}</span>
                 <div class="item-specs">
                   <span
                     >{{ "CHECKOUT.QTY" | translate }}: {{ item.quantity }}</span
                   >
-                  <span>
+                  <span *ngIf="showItemMaterial(item)">
                     {{ "CHECKOUT.MATERIAL" | translate }}:
                     {{ itemMaterial(item) }}
+                  </span>
+                  <span *ngIf="itemVariantLabel(item) as variantLabel">
+                    {{ "SHOP.VARIANT" | translate }}:
+                    {{ variantLabel }}
                   </span>
                   <span class="item-color" *ngIf="itemColorLabel(item) !== '-'">
                     <span
@@ -271,14 +275,11 @@
                     <span class="color-name">{{ itemColorLabel(item) }}</span>
                   </span>
                 </div>
-                <div class="item-specs-sub">
+                <div class="item-specs-sub" *ngIf="showItemPrintMetrics(item)">
                   {{ item.printTimeSeconds / 3600 | number: "1.1-1" }}h |
                   {{ item.materialGrams | number: "1.0-0" }}g
                 </div>
-                <div
-                  class="item-preview"
-                  *ngIf="isCadSession() && isStlItem(item)"
-                >
+                <div class="item-preview" *ngIf="isStlItem(item)">
                   <ng-container
                     *ngIf="previewFile(item) as itemPreview; else previewState"
                   >

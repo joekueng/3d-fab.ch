@@ -1,18 +1,299 @@
-<section class="wip-section">
-  <div class="container">
-    <div class="wip-card">
-      <p class="wip-eyebrow">{{ "SHOP.WIP_EYEBROW" | translate }}</p>
-      <h1>{{ "SHOP.WIP_TITLE" | translate }}</h1>
-      <p class="wip-subtitle">{{ "SHOP.WIP_SUBTITLE" | translate }}</p>
+<section class="shop-page">
+  <section class="shop-hero">
+    <div class="container shop-hero-grid">
+      <div class="hero-copy">
+        <p class="ui-eyebrow">{{ "SHOP.HERO_EYEBROW" | translate }}</p>
+        <h1 class="ui-hero-display">
+          {{
+            selectedCategory()?.name || ("SHOP.TITLE" | translate)
+          }}
+        </h1>
+        <p class="ui-copy-lead">
+          {{
+            selectedCategory()?.description ||
+              ("SHOP.SUBTITLE" | translate)
+          }}
+        </p>
+        <p class="ui-copy-subtitle">
+          {{
+            selectedCategory()
+              ? ("SHOP.CATEGORY_META" | translate: { count: selectedCategory()?.productCount || 0 })
+              : ("SHOP.CATALOG_META_DESCRIPTION" | translate)
+          }}
+        </p>
 
-      <div class="wip-actions">
-        <app-button variant="primary" routerLink="/calculator/basic">
-          {{ "SHOP.WIP_CTA_CALC" | translate }}
-        </app-button>
+        <div class="hero-actions ui-inline-actions">
+          @if (cartHasItems()) {
+            <app-button
+              variant="primary"
+              [disabled]="cartMutating()"
+              (click)="goToCheckout()"
+            >
+              {{ "SHOP.GO_TO_CHECKOUT" | translate }}
+            </app-button>
+          } @else {
+            <app-button variant="outline" routerLink="/calculator/basic">
+              {{ "SHOP.WIP_CTA_CALC" | translate }}
+            </app-button>
+          }
+
+          @if (selectedCategory()) {
+            <app-button variant="text" (click)="navigateToCategory()">
+              {{ "SHOP.VIEW_ALL" | translate }}
+            </app-button>
+          }
+        </div>
       </div>
 
-      <p class="wip-return-later">{{ "SHOP.WIP_RETURN_LATER" | translate }}</p>
-      <p class="wip-note">{{ "SHOP.WIP_NOTE" | translate }}</p>
+      <div class="hero-highlights">
+        <div class="highlight-card">
+          <span class="highlight-label">{{
+            "SHOP.HIGHLIGHT_PRODUCTS" | translate
+          }}</span>
+          <strong>{{
+            selectedCategory()?.productCount ?? products().length
+          }}</strong>
+        </div>
+        <div class="highlight-card">
+          <span class="highlight-label">{{
+            "SHOP.HIGHLIGHT_CART" | translate
+          }}</span>
+          <strong>{{ cartItemCount() }}</strong>
+        </div>
+        <div class="highlight-card">
+          <span class="highlight-label">{{
+            "SHOP.HIGHLIGHT_READY" | translate
+          }}</span>
+          <strong>{{ "SHOP.MODEL_3D" | translate }}</strong>
+        </div>
+      </div>
     </div>
+  </section>
+
+  <div class="container shop-layout">
+    <aside class="shop-sidebar">
+      <app-card>
+        <div class="panel-head">
+          <div>
+            <p class="panel-kicker">{{ "SHOP.CATEGORY_PANEL_KICKER" | translate }}</p>
+            <h2 class="panel-title">
+              {{ "SHOP.CATEGORY_PANEL_TITLE" | translate }}
+            </h2>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="category-link"
+          [class.active]="!currentCategorySlug()"
+          (click)="navigateToCategory()"
+        >
+          <span>{{ "SHOP.ALL_CATEGORIES" | translate }}</span>
+        </button>
+
+        <div class="category-list">
+          @for (node of categoryNodes(); track trackByCategory($index, node)) {
+            <button
+              type="button"
+              class="category-link"
+              [class.active]="node.current"
+              [style.--depth]="node.depth"
+              (click)="navigateToCategory(node.slug)"
+            >
+              <span>{{ node.name }}</span>
+              <small>{{ node.productCount }}</small>
+            </button>
+          }
+        </div>
+      </app-card>
+
+      <app-card class="cart-card">
+        <div class="panel-head">
+          <div>
+            <p class="panel-kicker">{{ "SHOP.CART_TITLE" | translate }}</p>
+            <h2 class="panel-title">
+              {{ "SHOP.CART_SUMMARY_TITLE" | translate }}
+            </h2>
+          </div>
+          @if (cartHasItems()) {
+            <button
+              type="button"
+              class="text-action"
+              [disabled]="cartMutating()"
+              (click)="clearCart()"
+            >
+              {{ "SHOP.CLEAR_CART" | translate }}
+            </button>
+          }
+        </div>
+
+        @if (cartLoading() && !cart()) {
+          <p class="panel-empty">{{ "SHOP.CART_LOADING" | translate }}</p>
+        } @else if (!cartHasItems()) {
+          <p class="panel-empty">{{ "SHOP.CART_EMPTY" | translate }}</p>
+        } @else {
+          <div class="cart-lines">
+            @for (item of cartItems(); track trackByCartItem($index, item)) {
+              <article class="cart-line">
+                <div class="cart-line-copy">
+                  <strong>{{ cartItemName(item) }}</strong>
+                  @if (cartItemVariant(item); as variant) {
+                    <span class="cart-line-meta">{{ variant }}</span>
+                  }
+                  @if (cartItemColor(item); as color) {
+                    <span class="cart-line-color">
+                      <span
+                        class="color-dot"
+                        [style.background-color]="cartItemColorHex(item)"
+                      ></span>
+                      <span>{{ color }}</span>
+                    </span>
+                  }
+                </div>
+
+                <div class="cart-line-controls">
+                  <div class="qty-control">
+                    <button
+                      type="button"
+                      [disabled]="cartMutating() && busyLineItemId() === item.id"
+                      (click)="decreaseQuantity(item)"
+                    >
+                      -
+                    </button>
+                    <span>{{ item.quantity }}</span>
+                    <button
+                      type="button"
+                      [disabled]="cartMutating() && busyLineItemId() === item.id"
+                      (click)="increaseQuantity(item)"
+                    >
+                      +
+                    </button>
+                  </div>
+                  <strong class="line-total">{{
+                    item.unitPriceChf * item.quantity | currency: "CHF"
+                  }}</strong>
+                </div>
+
+                <button
+                  type="button"
+                  class="line-remove"
+                  [disabled]="cartMutating() && busyLineItemId() === item.id"
+                  (click)="removeItem(item)"
+                >
+                  {{ "SHOP.REMOVE" | translate }}
+                </button>
+              </article>
+            }
+          </div>
+
+          <div class="cart-totals">
+            <div class="cart-total-row">
+              <span>{{ "SHOP.CART_SUBTOTAL" | translate }}</span>
+              <strong>{{ cart()?.itemsTotalChf || 0 | currency: "CHF" }}</strong>
+            </div>
+            <div class="cart-total-row">
+              <span>{{ "SHOP.CART_SHIPPING" | translate }}</span>
+              <strong>{{
+                cart()?.shippingCostChf || 0 | currency: "CHF"
+              }}</strong>
+            </div>
+            <div class="cart-total-row cart-total-row-final">
+              <span>{{ "SHOP.CART_TOTAL" | translate }}</span>
+              <strong>{{
+                cart()?.grandTotalChf || 0 | currency: "CHF"
+              }}</strong>
+            </div>
+          </div>
+
+          <app-button
+            variant="primary"
+            [fullWidth]="true"
+            [disabled]="cartMutating()"
+            (click)="goToCheckout()"
+          >
+            {{ "SHOP.GO_TO_CHECKOUT" | translate }}
+          </app-button>
+        }
+      </app-card>
+    </aside>
+
+    <section class="catalog-content">
+      @if (error()) {
+        <div class="catalog-state catalog-state-error">
+          {{ error() | translate }}
+        </div>
+      } @else {
+        @if (featuredProducts().length > 0 && !selectedCategory()) {
+          <section class="featured-strip">
+            <div class="section-head">
+              <div>
+                <p class="ui-eyebrow ui-eyebrow--compact">
+                  {{ "SHOP.FEATURED_KICKER" | translate }}
+                </p>
+                <h2 class="section-title">
+                  {{ "SHOP.FEATURED_TITLE" | translate }}
+                </h2>
+              </div>
+            </div>
+
+            <div class="featured-grid">
+              @for (
+                product of featuredProducts();
+                track trackByProduct($index, product)
+              ) {
+                <app-product-card
+                  [product]="product"
+                  [cartQuantity]="productCartQuantity(product.id)"
+                ></app-product-card>
+              }
+            </div>
+          </section>
+        }
+
+        <section class="catalog-panel">
+          <div class="section-head catalog-head">
+            <div>
+              <p class="ui-eyebrow ui-eyebrow--compact">
+                {{
+                  selectedCategory()
+                    ? ("SHOP.SELECTED_CATEGORY" | translate)
+                    : ("SHOP.CATALOG_LABEL" | translate)
+                }}
+              </p>
+              <h2 class="section-title">
+                {{
+                  selectedCategory()?.name || ("SHOP.CATALOG_TITLE" | translate)
+                }}
+              </h2>
+            </div>
+            <span class="catalog-counter">
+              {{ products().length }}
+              {{ "SHOP.ITEMS_FOUND" | translate }}
+            </span>
+          </div>
+
+          @if (loading()) {
+            <div class="product-grid skeleton-grid">
+              @for (ghost of [1, 2, 3, 4]; track ghost) {
+                <div class="skeleton-card"></div>
+              }
+            </div>
+          } @else if (products().length === 0) {
+            <div class="catalog-state">
+              {{ "SHOP.EMPTY_CATEGORY" | translate }}
+            </div>
+          } @else {
+            <div class="product-grid">
+              @for (product of products(); track trackByProduct($index, product)) {
+                <app-product-card
+                  [product]="product"
+                  [cartQuantity]="productCartQuantity(product.id)"
+                ></app-product-card>
+              }
+            </div>
+          }
+        </section>
+      }
+    </section>
   </div>
 </section>

@@ -191,7 +191,9 @@ public class OrderService {
             oItem.setShopVariantLabel(qItem.getShopVariantLabel());
             oItem.setShopVariantColorName(qItem.getShopVariantColorName());
             oItem.setShopVariantColorHex(qItem.getShopVariantColorHex());
-            if (qItem.getFilamentVariant() != null
+            if (qItem.getMaterialCode() != null && !qItem.getMaterialCode().isBlank()) {
+                oItem.setMaterialCode(qItem.getMaterialCode());
+            } else if (qItem.getFilamentVariant() != null
                     && qItem.getFilamentVariant().getFilamentMaterialType() != null
                     && qItem.getFilamentVariant().getFilamentMaterialType().getMaterialCode() != null) {
                 oItem.setMaterialCode(qItem.getFilamentVariant().getFilamentMaterialType().getMaterialCode());

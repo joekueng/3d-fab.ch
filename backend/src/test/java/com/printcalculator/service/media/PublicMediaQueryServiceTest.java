@@ -65,8 +65,8 @@ class PublicMediaQueryServiceTest {
         MediaUsage usageDraft = buildUsage(draftAsset, "HOME_SECTION", "shop-gallery", 0, false, true);
         MediaUsage usagePrivate = buildUsage(privateAsset, "HOME_SECTION", "shop-gallery", 3, false, true);
 
-        when(mediaUsageRepository.findByUsageTypeAndUsageKeyAndIsActiveTrueOrderBySortOrderAscCreatedAtAsc(
-                "HOME_SECTION", "shop-gallery"
+        when(mediaUsageRepository.findActiveByUsageTypeAndUsageKeys(
+                "HOME_SECTION", List.of("shop-gallery")
         )).thenReturn(List.of(usageSecond, usageFirst, usageDraft, usagePrivate));
         when(mediaVariantRepository.findByMediaAsset_IdIn(List.of(readyPublicAsset.getId())))
                 .thenReturn(List.of(
@@ -93,8 +93,8 @@ class PublicMediaQueryServiceTest {
         MediaAsset asset = buildAsset("READY", "PUBLIC", "Joe portrait", "Joe portrait fallback");
         MediaUsage usage = buildUsage(asset, "ABOUT_MEMBER", "joe", 0, true, true);
 
-        when(mediaUsageRepository.findByUsageTypeAndUsageKeyAndIsActiveTrueOrderBySortOrderAscCreatedAtAsc(
-                "ABOUT_MEMBER", "joe"
+        when(mediaUsageRepository.findActiveByUsageTypeAndUsageKeys(
+                "ABOUT_MEMBER", List.of("joe")
         )).thenReturn(List.of(usage));
         when(mediaVariantRepository.findByMediaAsset_IdIn(List.of(asset.getId())))
                 .thenReturn(List.of(buildVariant(asset, "card", "JPEG", "joe/card.jpg")));

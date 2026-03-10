@@ -172,7 +172,7 @@ export class CheckoutComponent implements OnInit {
     this.quoteService.getQuoteSession(this.sessionId).subscribe({
       next: (session) => {
         this.quoteSession.set(session);
-        if (this.isCadSessionData(session)) {
+        if (Array.isArray(session?.items) && session.items.length > 0) {
           this.loadStlPreviews(session);
         } else {
           this.resetPreviewState();
@@ -231,6 +231,39 @@ export class CheckoutComponent implements OnInit {
     );
   }
 
+  isShopItem(item: any): boolean {
+    return String(item?.lineItemType ?? '').toUpperCase() === 'SHOP_PRODUCT';
+  }
+
+  itemDisplayName(item: any): string {
+    const displayName = String(item?.displayName ?? '').trim();
+    if (displayName) {
+      return displayName;
+    }
+    const shopName = String(item?.shopProductName ?? '').trim();
+    if (shopName) {
+      return shopName;
+    }
+    return String(item?.originalFilename ?? '-');
+  }
+
+  itemVariantLabel(item: any): string | null {
+    const variantLabel = String(item?.shopVariantLabel ?? '').trim();
+    if (variantLabel) {
+      return variantLabel;
+    }
+    const colorName = String(item?.shopVariantColorName ?? '').trim();
+    return colorName || null;
+  }
+
+  showItemMaterial(item: any): boolean {
+    return !this.isShopItem(item);
+  }
+
+  showItemPrintMetrics(item: any): boolean {
+    return !this.isShopItem(item);
+  }
+
   isStlItem(item: any): boolean {
     const name = String(item?.originalFilename ?? '').toLowerCase();
     return name.endsWith('.stl');
@@ -249,11 +282,20 @@ export class CheckoutComponent implements OnInit {
   }
 
   itemColorLabel(item: any): string {
+    const shopColor = String(item?.shopVariantColorName ?? '').trim();
+    if (shopColor) {
+      return shopColor;
+    }
     const raw = String(item?.colorCode ?? '').trim();
     return raw || '-';
   }
 
   itemColorSwatch(item: any): string {
+    const shopHex = String(item?.shopVariantColorHex ?? '').trim();
+    if (this.isHexColor(shopHex)) {
+      return shopHex;
+    }
+
     const variantId = Number(item?.filamentVariantId);
     if (Number.isFinite(variantId) && this.variantHexById.has(variantId)) {
       return this.variantHexById.get(variantId)!;
@@ -303,7 +345,7 @@ export class CheckoutComponent implements OnInit {
       return;
     }
     this.selectedPreviewFile.set(file);
-    this.selectedPreviewName.set(String(item?.originalFilename ?? file.name));
+    this.selectedPreviewName.set(this.itemDisplayName(item));
     this.selectedPreviewColor.set(this.previewColor(item));
     this.previewModalOpen.set(true);
   }
@@ -353,7 +395,6 @@ export class CheckoutComponent implements OnInit {
   private loadStlPreviews(session: any): void {
     if (
       !this.sessionId ||
-      !this.isCadSessionData(session) ||
       !Array.isArray(session?.items)
     ) {
       return;

@@ -4,6 +4,14 @@ import { Title, Meta } from '@angular/platform-browser';
 import { ActivatedRouteSnapshot, NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 
+export interface PageSeoOverride {
+  title?: string | null;
+  description?: string | null;
+  robots?: string | null;
+  ogTitle?: string | null;
+  ogDescription?: string | null;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -31,20 +39,43 @@ export class SeoService {
       });
   }
 
+  applyPageSeo(override: PageSeoOverride): void {
+    const title = this.asString(override.title) ?? this.defaultTitle;
+    const description =
+      this.asString(override.description) ?? this.defaultDescription;
+    const robots = this.asString(override.robots) ?? 'index, follow';
+    const ogTitle = this.asString(override.ogTitle) ?? title;
+    const ogDescription = this.asString(override.ogDescription) ?? description;
+
+    this.applySeoValues(title, description, robots, ogTitle, ogDescription);
+  }
+
   private applyRouteSeo(rootSnapshot: ActivatedRouteSnapshot): void {
     const mergedData = this.getMergedRouteData(rootSnapshot);
     const title = this.asString(mergedData['seoTitle']) ?? this.defaultTitle;
     const description =
       this.asString(mergedData['seoDescription']) ?? this.defaultDescription;
     const robots = this.asString(mergedData['seoRobots']) ?? 'index, follow';
+    const ogTitle = this.asString(mergedData['ogTitle']) ?? title;
+    const ogDescription = this.asString(mergedData['ogDescription']) ?? description;
 
+    this.applySeoValues(title, description, robots, ogTitle, ogDescription);
+  }
+
+  private applySeoValues(
+    title: string,
+    description: string,
+    robots: string,
+    ogTitle: string,
+    ogDescription: string,
+  ): void {
     this.titleService.setTitle(title);
     this.metaService.updateTag({ name: 'description', content: description });
     this.metaService.updateTag({ name: 'robots', content: robots });
-    this.metaService.updateTag({ property: 'og:title', content: title });
+    this.metaService.updateTag({ property: 'og:title', content: ogTitle });
     this.metaService.updateTag({
       property: 'og:description',
-      content: description,
+      content: ogDescription,
     });
     this.metaService.updateTag({ property: 'og:type', content: 'website' });
     this.metaService.updateTag({ name: 'twitter:card', content: 'summary' });

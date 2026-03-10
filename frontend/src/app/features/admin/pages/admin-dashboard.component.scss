@@ -21,10 +21,11 @@
 
 .list-toolbar {
   display: grid;
-  grid-template-columns: minmax(230px, 1.6fr) minmax(170px, 1fr) minmax(
-      190px,
-      1fr
-    );
+  grid-template-columns:
+    minmax(230px, 1.6fr)
+    minmax(170px, 1fr)
+    minmax(190px, 1fr)
+    minmax(170px, 1fr);
   gap: var(--space-2);
   margin-bottom: var(--space-3);
 }
@@ -67,6 +68,13 @@ tbody tr.no-results:hover {
 
 .detail-header h2 {
   margin: 0 0 var(--space-2);
+}
+
+.detail-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
 }
 
 .actions-block {
@@ -113,6 +121,15 @@ tbody tr.no-results:hover {
 
 .item-main {
   min-width: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.item-heading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
 }
 
 .file-name {
@@ -124,7 +141,7 @@ tbody tr.no-results:hover {
 }
 
 .item-meta {
-  margin: var(--space-1) 0 0;
+  margin: 0;
   font-size: 0.84rem;
   color: var(--color-text-muted);
   display: flex;
@@ -133,7 +150,33 @@ tbody tr.no-results:hover {
   flex-wrap: wrap;
 }
 
-.item button {
+.item-meta__color {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.item-tech,
+.item-total {
+  margin: 0;
+  font-size: 0.84rem;
+}
+
+.item-tech {
+  color: var(--color-text-muted);
+}
+
+.item-total {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.item-actions {
+  display: flex;
+  align-items: flex-start;
+}
+
+.item-actions button {
   justify-self: start;
 }
 
@@ -148,6 +191,32 @@ tbody tr.no-results:hover {
 .error {
   color: var(--color-danger-500);
   margin: 0;
+}
+
+.order-type-badge,
+.item-kind-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.2rem 0.65rem;
+  background: var(--color-neutral-100);
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.order-type-badge--shop,
+.item-kind-badge--shop {
+  background: color-mix(in srgb, var(--color-brand) 12%, white);
+  color: var(--color-brand);
+}
+
+.order-type-badge--mixed {
+  background: color-mix(in srgb, #f59e0b 16%, white);
+  color: #9a5b00;
 }
 
 .modal-backdrop {
@@ -245,6 +314,10 @@ h4 {
 
   .item {
     align-items: flex-start;
+  }
+
+  .item-actions {
+    width: 100%;
   }
 
   .actions-block {
