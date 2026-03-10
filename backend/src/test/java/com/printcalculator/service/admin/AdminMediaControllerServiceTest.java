@@ -51,6 +51,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -273,6 +274,31 @@ class AdminMediaControllerServiceTest {
                 .count());
         assertTrue(dto.getVariants().stream()
                 .noneMatch(variant -> "WEBP".equals(variant.getFormat()) || "AVIF".equals(variant.getFormat())));
+    }
+
+    @Test
+    void uploadAsset_whenAvifGenerationFails_shouldKeepAssetReadyAndStoreOtherVariants() throws Exception {
+        when(mediaImageInspector.inspect(any(Path.class))).thenReturn(
+                new MediaImageInspector.ImageMetadata("image/png", "png", 1600, 900)
+        );
+        doThrow(new java.io.IOException("FFmpeg failed to generate media variant. Unrecognized option 'still-picture'."))
+                .when(mediaFfmpegService)
+                .generateVariant(any(Path.class), any(Path.class), anyInt(), anyInt(), org.mockito.ArgumentMatchers.eq("AVIF"));
+
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "landing-hero.png",
+                "image/png",
+                "png-image-content".getBytes(StandardCharsets.UTF_8)
+        );
+
+        AdminMediaAssetDto dto = service.uploadAsset(file, " Landing hero ", " Main headline ", null);
+
+        assertEquals("READY", dto.getStatus());
+        assertEquals(7, dto.getVariants().size());
+        assertTrue(dto.getVariants().stream().noneMatch(variant -> "AVIF".equals(variant.getFormat())));
+        assertEquals(3, dto.getVariants().stream().filter(variant -> "JPEG".equals(variant.getFormat())).count());
+        assertEquals(3, dto.getVariants().stream().filter(variant -> "WEBP".equals(variant.getFormat())).count());
     }
 
     @Test
