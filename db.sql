@@ -1007,6 +1007,319 @@ ALTER TABLE media_usage
 ALTER TABLE media_usage
     ADD COLUMN IF NOT EXISTS alt_text_fr text;
 
+CREATE TABLE IF NOT EXISTS shop_category
+(
+    shop_category_id    uuid PRIMARY KEY     DEFAULT gen_random_uuid(),
+    parent_category_id  uuid REFERENCES shop_category (shop_category_id) ON DELETE SET NULL,
+    slug                text        NOT NULL UNIQUE,
+    name                text        NOT NULL,
+    description         text,
+    seo_title           text,
+    seo_description     text,
+    og_title            text,
+    og_description      text,
+    indexable           boolean     NOT NULL DEFAULT true,
+    is_active           boolean     NOT NULL DEFAULT true,
+    sort_order          integer     NOT NULL DEFAULT 0,
+    created_at          timestamptz NOT NULL DEFAULT now(),
+    updated_at          timestamptz NOT NULL DEFAULT now(),
+    CONSTRAINT chk_shop_category_not_self_parent CHECK (
+        parent_category_id IS NULL OR parent_category_id <> shop_category_id
+    )
+);
+
+CREATE INDEX IF NOT EXISTS ix_shop_category_parent_sort
+    ON shop_category (parent_category_id, sort_order, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS ix_shop_category_active_sort
+    ON shop_category (is_active, sort_order, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS shop_product
+(
+    shop_product_id     uuid PRIMARY KEY     DEFAULT gen_random_uuid(),
+    shop_category_id    uuid        NOT NULL REFERENCES shop_category (shop_category_id),
+    slug                text        NOT NULL UNIQUE,
+    name                text        NOT NULL,
+    name_it             text,
+    name_en             text,
+    name_de             text,
+    name_fr             text,
+    excerpt             text,
+    excerpt_it          text,
+    excerpt_en          text,
+    excerpt_de          text,
+    excerpt_fr          text,
+    description         text,
+    description_it      text,
+    description_en      text,
+    description_de      text,
+    description_fr      text,
+    seo_title           text,
+    seo_description     text,
+    og_title            text,
+    og_description      text,
+    indexable           boolean     NOT NULL DEFAULT true,
+    is_featured         boolean     NOT NULL DEFAULT false,
+    is_active           boolean     NOT NULL DEFAULT true,
+    sort_order          integer     NOT NULL DEFAULT 0,
+    created_at          timestamptz NOT NULL DEFAULT now(),
+    updated_at          timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS ix_shop_product_category_active_sort
+    ON shop_product (shop_category_id, is_active, sort_order, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS ix_shop_product_featured_sort
+    ON shop_product (is_featured, is_active, sort_order, created_at DESC);
+
+ALTER TABLE shop_product
+    ADD COLUMN IF NOT EXISTS name_it text;
+
+ALTER TABLE shop_product
+    ADD COLUMN IF NOT EXISTS name_en text;
+
+ALTER TABLE shop_product
+    ADD COLUMN IF NOT EXISTS name_de text;
+
+ALTER TABLE shop_product
+    ADD COLUMN IF NOT EXISTS name_fr text;
+
+ALTER TABLE shop_product
+    ADD COLUMN IF NOT EXISTS excerpt_it text;
+
+ALTER TABLE shop_product
+    ADD COLUMN IF NOT EXISTS excerpt_en text;
+
+ALTER TABLE shop_product
+    ADD COLUMN IF NOT EXISTS excerpt_de text;
+
+ALTER TABLE shop_product
+    ADD COLUMN IF NOT EXISTS excerpt_fr text;
+
+ALTER TABLE shop_product
+    ADD COLUMN IF NOT EXISTS description_it text;
+
+ALTER TABLE shop_product
+    ADD COLUMN IF NOT EXISTS description_en text;
+
+ALTER TABLE shop_product
+    ADD COLUMN IF NOT EXISTS description_de text;
+
+ALTER TABLE shop_product
+    ADD COLUMN IF NOT EXISTS description_fr text;
+
+UPDATE shop_product
+SET
+    name_it = COALESCE(NULLIF(btrim(name_it), ''), name),
+    name_en = COALESCE(NULLIF(btrim(name_en), ''), name),
+    name_de = COALESCE(NULLIF(btrim(name_de), ''), name),
+    name_fr = COALESCE(NULLIF(btrim(name_fr), ''), name),
+    excerpt_it = COALESCE(NULLIF(btrim(excerpt_it), ''), excerpt),
+    excerpt_en = COALESCE(NULLIF(btrim(excerpt_en), ''), excerpt),
+    excerpt_de = COALESCE(NULLIF(btrim(excerpt_de), ''), excerpt),
+    excerpt_fr = COALESCE(NULLIF(btrim(excerpt_fr), ''), excerpt),
+    description_it = COALESCE(NULLIF(btrim(description_it), ''), description),
+    description_en = COALESCE(NULLIF(btrim(description_en), ''), description),
+    description_de = COALESCE(NULLIF(btrim(description_de), ''), description),
+    description_fr = COALESCE(NULLIF(btrim(description_fr), ''), description)
+WHERE
+    NULLIF(btrim(name_it), '') IS NULL
+    OR NULLIF(btrim(name_en), '') IS NULL
+    OR NULLIF(btrim(name_de), '') IS NULL
+    OR NULLIF(btrim(name_fr), '') IS NULL
+    OR (excerpt IS NOT NULL AND (
+        NULLIF(btrim(excerpt_it), '') IS NULL
+        OR NULLIF(btrim(excerpt_en), '') IS NULL
+        OR NULLIF(btrim(excerpt_de), '') IS NULL
+        OR NULLIF(btrim(excerpt_fr), '') IS NULL
+    ))
+    OR (description IS NOT NULL AND (
+        NULLIF(btrim(description_it), '') IS NULL
+        OR NULLIF(btrim(description_en), '') IS NULL
+        OR NULLIF(btrim(description_de), '') IS NULL
+        OR NULLIF(btrim(description_fr), '') IS NULL
+    ));
+
+CREATE TABLE IF NOT EXISTS shop_product_variant
+(
+    shop_product_variant_id uuid PRIMARY KEY     DEFAULT gen_random_uuid(),
+    shop_product_id         uuid        NOT NULL REFERENCES shop_product (shop_product_id) ON DELETE CASCADE,
+    sku                     text UNIQUE,
+    variant_label           text        NOT NULL,
+    color_name              text        NOT NULL,
+    color_hex               text,
+    internal_material_code  text        NOT NULL,
+    price_chf               numeric(12, 2) NOT NULL DEFAULT 0.00 CHECK (price_chf >= 0),
+    is_default              boolean     NOT NULL DEFAULT false,
+    is_active               boolean     NOT NULL DEFAULT true,
+    sort_order              integer     NOT NULL DEFAULT 0,
+    created_at              timestamptz NOT NULL DEFAULT now(),
+    updated_at              timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS ix_shop_product_variant_product_active_sort
+    ON shop_product_variant (shop_product_id, is_active, sort_order, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS ix_shop_product_variant_sku
+    ON shop_product_variant (sku);
+
+CREATE TABLE IF NOT EXISTS shop_product_model_asset
+(
+    shop_product_model_asset_id uuid PRIMARY KEY     DEFAULT gen_random_uuid(),
+    shop_product_id             uuid        NOT NULL UNIQUE REFERENCES shop_product (shop_product_id) ON DELETE CASCADE,
+    original_filename           text        NOT NULL,
+    stored_relative_path        text        NOT NULL,
+    stored_filename             text        NOT NULL,
+    file_size_bytes             bigint CHECK (file_size_bytes >= 0),
+    mime_type                   text,
+    sha256_hex                  text,
+    bounding_box_x_mm           numeric(10, 3),
+    bounding_box_y_mm           numeric(10, 3),
+    bounding_box_z_mm           numeric(10, 3),
+    created_at                  timestamptz NOT NULL DEFAULT now(),
+    updated_at                  timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS ix_shop_product_model_asset_product
+    ON shop_product_model_asset (shop_product_id);
+
+ALTER TABLE quote_sessions
+    ADD COLUMN IF NOT EXISTS session_type text NOT NULL DEFAULT 'PRINT_QUOTE';
+
+CREATE INDEX IF NOT EXISTS ix_quote_sessions_session_type
+    ON quote_sessions (session_type);
+
+ALTER TABLE quote_sessions
+    DROP CONSTRAINT IF EXISTS quote_sessions_session_type_check;
+
+ALTER TABLE quote_sessions
+    ADD CONSTRAINT quote_sessions_session_type_check
+        CHECK (session_type IN ('PRINT_QUOTE', 'SHOP_CART'));
+
+ALTER TABLE quote_line_items
+    ADD COLUMN IF NOT EXISTS line_item_type text NOT NULL DEFAULT 'PRINT_FILE';
+
+ALTER TABLE quote_line_items
+    ADD COLUMN IF NOT EXISTS display_name text;
+
+ALTER TABLE quote_line_items
+    ADD COLUMN IF NOT EXISTS shop_product_id uuid;
+
+ALTER TABLE quote_line_items
+    ADD COLUMN IF NOT EXISTS shop_product_variant_id uuid;
+
+ALTER TABLE quote_line_items
+    ADD COLUMN IF NOT EXISTS shop_product_slug text;
+
+ALTER TABLE quote_line_items
+    ADD COLUMN IF NOT EXISTS shop_product_name text;
+
+ALTER TABLE quote_line_items
+    ADD COLUMN IF NOT EXISTS shop_variant_label text;
+
+ALTER TABLE quote_line_items
+    ADD COLUMN IF NOT EXISTS shop_variant_color_name text;
+
+ALTER TABLE quote_line_items
+    ADD COLUMN IF NOT EXISTS shop_variant_color_hex text;
+
+ALTER TABLE quote_line_items
+    ADD COLUMN IF NOT EXISTS stored_path text;
+
+CREATE INDEX IF NOT EXISTS ix_quote_line_items_shop_product
+    ON quote_line_items (shop_product_id);
+
+CREATE INDEX IF NOT EXISTS ix_quote_line_items_shop_product_variant
+    ON quote_line_items (shop_product_variant_id);
+
+ALTER TABLE quote_line_items
+    DROP CONSTRAINT IF EXISTS quote_line_items_line_item_type_check;
+
+ALTER TABLE quote_line_items
+    ADD CONSTRAINT quote_line_items_line_item_type_check
+        CHECK (line_item_type IN ('PRINT_FILE', 'SHOP_PRODUCT'));
+
+ALTER TABLE quote_line_items
+    DROP CONSTRAINT IF EXISTS fk_quote_line_items_shop_product;
+
+ALTER TABLE quote_line_items
+    ADD CONSTRAINT fk_quote_line_items_shop_product
+        FOREIGN KEY (shop_product_id) REFERENCES shop_product (shop_product_id);
+
+ALTER TABLE quote_line_items
+    DROP CONSTRAINT IF EXISTS fk_quote_line_items_shop_product_variant;
+
+ALTER TABLE quote_line_items
+    ADD CONSTRAINT fk_quote_line_items_shop_product_variant
+        FOREIGN KEY (shop_product_variant_id) REFERENCES shop_product_variant (shop_product_variant_id);
+
+ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS source_type text NOT NULL DEFAULT 'CALCULATOR';
+
+CREATE INDEX IF NOT EXISTS ix_orders_source_type
+    ON orders (source_type);
+
+ALTER TABLE orders
+    DROP CONSTRAINT IF EXISTS orders_source_type_check;
+
+ALTER TABLE orders
+    ADD CONSTRAINT orders_source_type_check
+        CHECK (source_type IN ('CALCULATOR', 'SHOP'));
+
+ALTER TABLE order_items
+    ADD COLUMN IF NOT EXISTS item_type text NOT NULL DEFAULT 'PRINT_FILE';
+
+ALTER TABLE order_items
+    ADD COLUMN IF NOT EXISTS display_name text;
+
+ALTER TABLE order_items
+    ADD COLUMN IF NOT EXISTS shop_product_id uuid;
+
+ALTER TABLE order_items
+    ADD COLUMN IF NOT EXISTS shop_product_variant_id uuid;
+
+ALTER TABLE order_items
+    ADD COLUMN IF NOT EXISTS shop_product_slug text;
+
+ALTER TABLE order_items
+    ADD COLUMN IF NOT EXISTS shop_product_name text;
+
+ALTER TABLE order_items
+    ADD COLUMN IF NOT EXISTS shop_variant_label text;
+
+ALTER TABLE order_items
+    ADD COLUMN IF NOT EXISTS shop_variant_color_name text;
+
+ALTER TABLE order_items
+    ADD COLUMN IF NOT EXISTS shop_variant_color_hex text;
+
+CREATE INDEX IF NOT EXISTS ix_order_items_shop_product
+    ON order_items (shop_product_id);
+
+CREATE INDEX IF NOT EXISTS ix_order_items_shop_product_variant
+    ON order_items (shop_product_variant_id);
+
+ALTER TABLE order_items
+    DROP CONSTRAINT IF EXISTS order_items_item_type_check;
+
+ALTER TABLE order_items
+    ADD CONSTRAINT order_items_item_type_check
+        CHECK (item_type IN ('PRINT_FILE', 'SHOP_PRODUCT'));
+
+ALTER TABLE order_items
+    DROP CONSTRAINT IF EXISTS fk_order_items_shop_product;
+
+ALTER TABLE order_items
+    ADD CONSTRAINT fk_order_items_shop_product
+        FOREIGN KEY (shop_product_id) REFERENCES shop_product (shop_product_id);
+
+ALTER TABLE order_items
+    DROP CONSTRAINT IF EXISTS fk_order_items_shop_product_variant;
+
+ALTER TABLE order_items
+    ADD CONSTRAINT fk_order_items_shop_product_variant
+        FOREIGN KEY (shop_product_variant_id) REFERENCES shop_product_variant (shop_product_variant_id);
+
 ALTER TABLE quote_sessions
     DROP CONSTRAINT IF EXISTS fk_quote_sessions_source_request;
 

@@ -4,6 +4,22 @@
   gap: var(--space-5);
 }
 
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.section-header h2 {
+  margin: 0;
+}
+
+.section-header p {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-muted);
+}
+
 .error {
   color: var(--color-danger-500);
   margin: 0;
@@ -69,6 +85,11 @@
 }
 
 @media (max-width: 900px) {
+  .section-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   .actions {
     flex-wrap: wrap;
   }

@@ -7,6 +7,7 @@ import java.util.UUID;
 public class AdminQuoteSessionDto {
     private UUID id;
     private String status;
+    private String sessionType;
     private String materialCode;
     private OffsetDateTime createdAt;
     private OffsetDateTime expiresAt;
@@ -30,6 +31,14 @@ public class AdminQuoteSessionDto {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getSessionType() {
+        return sessionType;
+    }
+
+    public void setSessionType(String sessionType) {
+        this.sessionType = sessionType;
     }
 
     public String getMaterialCode() {

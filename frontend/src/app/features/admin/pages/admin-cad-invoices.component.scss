@@ -4,6 +4,13 @@
   gap: var(--space-5);
 }
 
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  align-items: flex-start;
+}
+
 .page-header {
   display: flex;
   justify-content: space-between;
@@ -131,6 +138,11 @@ td {
 }
 
 @media (max-width: 880px) {
+  .section-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   .page-header {
     flex-direction: column;
     align-items: stretch;

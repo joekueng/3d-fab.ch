@@ -301,6 +301,7 @@ public class AdminOperationsControllerService {
         } else {
             session = new QuoteSession();
             session.setStatus("CAD_ACTIVE");
+            session.setSessionType("PRINT_QUOTE");
             session.setPricingVersion("v1");
             session.setMaterialCode("PLA");
             session.setNozzleDiameterMm(BigDecimal.valueOf(0.4));
@@ -398,6 +399,7 @@ public class AdminOperationsControllerService {
         AdminQuoteSessionDto dto = new AdminQuoteSessionDto();
         dto.setId(session.getId());
         dto.setStatus(session.getStatus());
+        dto.setSessionType(session.getSessionType() != null ? session.getSessionType() : "PRINT_QUOTE");
         dto.setMaterialCode(session.getMaterialCode());
         dto.setCreatedAt(session.getCreatedAt());
         dto.setExpiresAt(session.getExpiresAt());

@@ -1,6 +1,6 @@
-<div class="container hero">
-  <h1>{{ "CALC.TITLE" | translate }}</h1>
-  <p class="subtitle">{{ "CALC.SUBTITLE" | translate }}</p>
+<div class="container ui-simple-hero">
+  <h1 class="ui-simple-hero__title">{{ "CALC.TITLE" | translate }}</h1>
+  <p class="ui-simple-hero__subtitle">{{ "CALC.SUBTITLE" | translate }}</p>
 
   @if (error()) {
     <app-alert type="error">{{ errorKey() | translate }}</app-alert>
@@ -8,7 +8,7 @@
 </div>
 
 @if (step() === "success") {
-  <div class="container hero">
+  <div class="container ui-simple-hero">
     <app-success-state
       context="calc"
       (action)="onNewQuote()"

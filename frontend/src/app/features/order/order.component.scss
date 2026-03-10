@@ -115,6 +115,107 @@
   top: var(--space-6);
 }
 
+.order-items {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.order-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-card);
+}
+
+.order-item-copy {
+  min-width: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.order-item-name-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.order-item-name {
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.order-item-kind {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.2rem 0.65rem;
+  background: var(--color-neutral-100);
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.order-item-kind-shop {
+  background: color-mix(in srgb, var(--color-brand) 12%, white);
+  color: var(--color-brand);
+}
+
+.order-item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.9rem;
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+}
+
+.item-color-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.color-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  flex: 0 0 auto;
+}
+
+.order-item-tech {
+  font-size: 0.86rem;
+  color: var(--color-text-muted);
+}
+
+.order-item-total {
+  white-space: nowrap;
+  font-size: 1rem;
+}
+
+.order-summary-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.summary-label {
+  display: block;
+  margin-bottom: 0.2rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--color-text-muted);
+}
+
 .fade-in {
   animation: fadeIn 0.4s ease-out;
 }
@@ -235,5 +336,17 @@
         margin-bottom: 0;
       }
     }
+  }
+
+  .order-item {
+    flex-direction: column;
+  }
+
+  .order-item-total {
+    width: 100%;
+  }
+
+  .order-summary-meta {
+    grid-template-columns: 1fr;
   }
 }

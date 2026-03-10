@@ -1,0 +1,1231 @@
+<section class="admin-shop section-card">
+  <header class="shop-header section-header">
+    <div>
+      <p class="ui-eyebrow ui-eyebrow--compact">Back-office shop</p>
+      <h1>Catalogo prodotti</h1>
+      <p>
+        Filtra i prodotti a sinistra e modifica o crea nuove schede a destra.
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <article class="ui-stat-chip">
+        <strong>{{ products.length }}</strong>
+        <span>prodotti</span>
+      </article>
+      <article class="ui-stat-chip">
+        <strong>{{ categories.length }}</strong>
+        <span>categorie</span>
+      </article>
+      <button
+        type="button"
+        class="ui-button ui-button--ghost"
+        (click)="loadWorkspace()"
+      >
+        Aggiorna
+      </button>
+      <button type="button" class="ui-button" (click)="startCreateProduct()">
+        Nuovo prodotto
+      </button>
+    </div>
+  </header>
+
+  <p class="ui-banner ui-banner--error" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </p>
+  <p class="ui-banner ui-banner--success" *ngIf="successMessage">
+    {{ successMessage }}
+  </p>
+
+  <div
+    #workspaceRef
+    class="workspace ui-split-workspace resizable-workspace"
+    [style.--shop-list-panel-width]="listPanelWidthPercent + '%'"
+    *ngIf="!loading; else loadingTpl"
+  >
+    <section class="list-panel ui-subpanel ui-subpanel--soft">
+      <div class="panel-block">
+        <div class="panel-heading">
+          <div>
+            <h2>Lista prodotti</h2>
+            <p>{{ filteredProducts.length }} risultati con i filtri attivi.</p>
+          </div>
+          <button
+            type="button"
+            class="ui-button ui-button--ghost"
+            (click)="toggleCategoryManager()"
+          >
+            {{
+              showCategoryManager ? "Chiudi categorie" : "Gestisci categorie"
+            }}
+          </button>
+        </div>
+
+        <div class="list-toolbar">
+          <label class="ui-form-field">
+            <span class="ui-form-caption">Cerca</span>
+            <input
+              class="ui-form-control"
+              type="search"
+              [ngModel]="productSearchTerm"
+              (ngModelChange)="onProductSearchChange($event)"
+              placeholder="Nome, slug, categoria, colore, materiale"
+            />
+          </label>
+
+          <label class="ui-form-field">
+            <span class="ui-form-caption">Categoria</span>
+            <select
+              class="ui-form-control"
+              [ngModel]="categoryFilter"
+              (ngModelChange)="onCategoryFilterChange($event)"
+            >
+              <option value="ALL">Tutte le categorie</option>
+              <option
+                *ngFor="let category of categories; trackBy: trackCategory"
+                [ngValue]="category.id"
+              >
+                {{ categoryOptionLabel(category) }}
+              </option>
+            </select>
+          </label>
+
+          <label class="ui-form-field">
+            <span class="ui-form-caption">Stato</span>
+            <select
+              class="ui-form-control"
+              [ngModel]="productStatusFilter"
+              (ngModelChange)="onProductStatusFilterChange($event)"
+            >
+              <option
+                *ngFor="let filter of productStatusFilters"
+                [ngValue]="filter"
+              >
+                {{ filter }}
+              </option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <section
+        class="category-manager ui-subpanel ui-subpanel--elevated"
+        *ngIf="showCategoryManager"
+      >
+        <header class="category-manager__header">
+          <div>
+            <h3>Categorie shop</h3>
+            <p>Gestione tassonomia e filtro del catalogo.</p>
+          </div>
+          <button
+            type="button"
+            class="ui-button ui-button--ghost"
+            (click)="prepareCreateCategory()"
+          >
+            Nuova categoria
+          </button>
+        </header>
+
+        <div class="category-manager__body">
+          <div class="category-list">
+            <article
+              class="category-item"
+              *ngFor="let category of categories; trackBy: trackCategory"
+              [class.active]="categoryForm.id === category.id"
+            >
+              <button
+                type="button"
+                class="category-item__main"
+                (click)="editCategory(category.id)"
+              >
+                <strong>{{ categoryOptionLabel(category) }}</strong>
+                <span>{{ category.slug }}</span>
+              </button>
+              <div class="category-item__meta">
+                <span class="ui-pill ui-pill--soft">
+                  {{ category.descendantProductCount }} prodotti
+                </span>
+                <span
+                  class="ui-status-chip"
+                  [class.ui-status-chip--success]="category.isActive"
+                  [class.ui-status-chip--danger]="!category.isActive"
+                >
+                  {{ category.isActive ? "Attiva" : "Inattiva" }}
+                </span>
+              </div>
+            </article>
+          </div>
+
+          <form class="category-editor" (submit)="$event.preventDefault()">
+            <div class="panel-heading">
+              <div>
+                <h4>
+                  {{
+                    categoryForm.id ? "Modifica categoria" : "Nuova categoria"
+                  }}
+                </h4>
+                <p *ngIf="categoryForm.id">
+                  Aggiorna struttura, SEO e visibilità.
+                </p>
+                <p *ngIf="!categoryForm.id">
+                  Crea una nuova categoria del catalogo.
+                </p>
+              </div>
+            </div>
+
+            <div class="ui-form-grid ui-form-grid--two">
+              <label class="ui-form-field">
+                <span class="ui-form-caption">Categoria padre</span>
+                <select
+                  class="ui-form-control"
+                  [(ngModel)]="categoryForm.parentCategoryId"
+                  name="categoryParent"
+                >
+                  <option [ngValue]="null">Root</option>
+                  <option
+                    *ngFor="let category of categories; trackBy: trackCategory"
+                    [ngValue]="category.id"
+                    [disabled]="category.id === categoryForm.id"
+                  >
+                    {{ categoryOptionLabel(category) }}
+                  </option>
+                </select>
+              </label>
+
+              <label class="ui-form-field">
+                <span class="ui-form-caption">Sort order</span>
+                <input
+                  class="ui-form-control"
+                  type="number"
+                  [(ngModel)]="categoryForm.sortOrder"
+                  name="categorySortOrder"
+                />
+              </label>
+
+              <label class="ui-form-field">
+                <span class="ui-form-caption">Nome categoria</span>
+                <input
+                  class="ui-form-control"
+                  type="text"
+                  [(ngModel)]="categoryForm.name"
+                  name="categoryName"
+                  placeholder="Desk accessories"
+                />
+              </label>
+
+              <label class="ui-form-field">
+                <span class="ui-form-caption">Slug</span>
+                <div class="input-with-action">
+                  <input
+                    class="ui-form-control"
+                    type="text"
+                    [(ngModel)]="categoryForm.slug"
+                    name="categorySlug"
+                    placeholder="desk-accessories"
+                  />
+                  <button
+                    type="button"
+                    class="ui-button ui-button--ghost"
+                    (click)="slugifyCategoryFromName()"
+                  >
+                    Genera
+                  </button>
+                </div>
+              </label>
+
+              <label class="ui-form-field form-field--wide">
+                <span class="ui-form-caption">Descrizione</span>
+                <textarea
+                  class="ui-form-control textarea-control"
+                  [(ngModel)]="categoryForm.description"
+                  name="categoryDescription"
+                  rows="3"
+                ></textarea>
+              </label>
+
+              <label class="ui-form-field">
+                <span class="ui-form-caption">SEO title</span>
+                <input
+                  class="ui-form-control"
+                  type="text"
+                  [(ngModel)]="categoryForm.seoTitle"
+                  name="categorySeoTitle"
+                />
+              </label>
+
+              <label class="ui-form-field">
+                <span class="ui-form-caption">SEO description</span>
+                <input
+                  class="ui-form-control"
+                  type="text"
+                  [(ngModel)]="categoryForm.seoDescription"
+                  name="categorySeoDescription"
+                />
+              </label>
+
+              <label class="ui-form-field">
+                <span class="ui-form-caption">OG title</span>
+                <input
+                  class="ui-form-control"
+                  type="text"
+                  [(ngModel)]="categoryForm.ogTitle"
+                  name="categoryOgTitle"
+                />
+              </label>
+
+              <label class="ui-form-field">
+                <span class="ui-form-caption">OG description</span>
+                <input
+                  class="ui-form-control"
+                  type="text"
+                  [(ngModel)]="categoryForm.ogDescription"
+                  name="categoryOgDescription"
+                />
+              </label>
+            </div>
+
+            <div class="toggle-row">
+              <label class="ui-checkbox">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="categoryForm.indexable"
+                  name="categoryIndexable"
+                />
+                <span class="ui-checkbox__mark" aria-hidden="true"></span>
+                <span>Indicizzabile</span>
+              </label>
+
+              <label class="ui-checkbox">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="categoryForm.isActive"
+                  name="categoryActive"
+                />
+                <span class="ui-checkbox__mark" aria-hidden="true"></span>
+                <span>Attiva</span>
+              </label>
+            </div>
+
+            <div class="ui-actions">
+              <button
+                type="button"
+                class="ui-button"
+                (click)="saveCategory()"
+                [disabled]="savingCategory"
+              >
+                {{ savingCategory ? "Salvataggio..." : "Salva categoria" }}
+              </button>
+              <button
+                type="button"
+                class="ui-button ui-button--ghost"
+                (click)="prepareCreateCategory()"
+              >
+                Reset
+              </button>
+              <button
+                *ngIf="categoryForm.id"
+                type="button"
+                class="ui-button ui-button--ghost-danger"
+                (click)="deleteCategory()"
+                [disabled]="deletingCategory"
+              >
+                {{ deletingCategory ? "Eliminazione..." : "Elimina categoria" }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <div class="table-wrap ui-table-wrap">
+        <table class="ui-data-table">
+          <thead>
+            <tr>
+              <th>Prodotto</th>
+              <th>Categoria</th>
+              <th>Varianti</th>
+              <th>Prezzo CHF</th>
+              <th>Stato</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let product of filteredProducts; trackBy: trackProduct"
+              [class.selected]="isSelectedProduct(product.id)"
+              (click)="openProduct(product.id)"
+            >
+              <td>
+                <div class="product-cell">
+                  <strong>{{ product.name }}</strong>
+                  <span>{{ product.slug }}</span>
+                </div>
+              </td>
+              <td>{{ product.categoryName }}</td>
+              <td>
+                {{ product.activeVariantCount }} / {{ product.variantCount }}
+              </td>
+              <td>
+                {{
+                  product.priceFromChf | currency: "CHF" : "symbol" : "1.2-2"
+                }}
+                <span *ngIf="product.priceToChf !== product.priceFromChf">
+                  -
+                  {{
+                    product.priceToChf | currency: "CHF" : "symbol" : "1.2-2"
+                  }}
+                </span>
+              </td>
+              <td>
+                <span
+                  class="ui-status-chip"
+                  [ngClass]="productStatusChipClass(product)"
+                >
+                  {{
+                    product.isActive
+                      ? product.isFeatured
+                        ? "Featured"
+                        : "Attivo"
+                      : "Inattivo"
+                  }}
+                </span>
+              </td>
+            </tr>
+            <tr *ngIf="filteredProducts.length === 0">
+              <td colspan="5">
+                Nessun prodotto trovato con i filtri correnti.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div
+      class="panel-resizer"
+      role="separator"
+      aria-orientation="vertical"
+      aria-label="Ridimensiona pannelli shop"
+      tabindex="0"
+      (pointerdown)="startPanelResize($event)"
+    >
+      <span class="panel-resizer__grip" aria-hidden="true"></span>
+    </div>
+
+    <section class="detail-panel ui-detail-panel">
+      <div class="detail-header">
+        <div>
+          <h2>
+            {{
+              productMode === "create"
+                ? "Nuovo prodotto"
+                : selectedProduct?.name
+            }}
+          </h2>
+          <p *ngIf="productMode === 'create'">
+            Compila i campi e salva per creare un nuovo prodotto shop.
+          </p>
+          <p *ngIf="productMode === 'edit' && selectedProduct">
+            {{ selectedProduct.slug }} · {{ selectedProduct.categoryName }}
+          </p>
+        </div>
+        <span
+          *ngIf="productMode === 'edit' && selectedProduct"
+          class="ui-status-chip"
+          [ngClass]="productStatusChipClass(selectedProduct)"
+        >
+          {{
+            selectedProduct.isActive
+              ? selectedProduct.isFeatured
+                ? "Featured"
+                : "Attivo"
+              : "Inattivo"
+          }}
+        </span>
+      </div>
+
+      <p class="detail-loading" *ngIf="detailLoading">
+        Caricamento dettaglio...
+      </p>
+
+      <div
+        class="ui-meta-grid"
+        *ngIf="productMode === 'edit' && selectedProduct"
+      >
+        <div class="ui-meta-item">
+          <strong>Categoria</strong>
+          <span>{{ selectedProduct.categoryName }}</span>
+        </div>
+        <div class="ui-meta-item">
+          <strong>Creato il</strong>
+          <span>{{
+            selectedProduct.createdAt | date: "dd.MM.yyyy HH:mm"
+          }}</span>
+        </div>
+        <div class="ui-meta-item">
+          <strong>Aggiornato il</strong>
+          <span>{{
+            selectedProduct.updatedAt | date: "dd.MM.yyyy HH:mm"
+          }}</span>
+        </div>
+        <div class="ui-meta-item">
+          <strong>Media</strong>
+          <span>{{ productImages.length }} immagini attive</span>
+        </div>
+      </div>
+
+      <form class="detail-stack" (submit)="$event.preventDefault()">
+        <section class="form-section">
+          <div class="panel-heading">
+            <div>
+              <h3>Dati base</h3>
+              <p>Slug, categoria, ordinamento e visibilità del prodotto.</p>
+            </div>
+          </div>
+
+          <div class="ui-form-grid ui-form-grid--two">
+            <label class="ui-form-field">
+              <span class="ui-form-caption">Categoria</span>
+              <select
+                class="ui-form-control"
+                [(ngModel)]="productForm.categoryId"
+                name="productCategoryId"
+              >
+                <option
+                  *ngFor="let category of categories; trackBy: trackCategory"
+                  [ngValue]="category.id"
+                >
+                  {{ categoryOptionLabel(category) }}
+                </option>
+              </select>
+            </label>
+
+            <label class="ui-form-field">
+              <span class="ui-form-caption">Sort order</span>
+              <input
+                class="ui-form-control"
+                type="number"
+                [(ngModel)]="productForm.sortOrder"
+                name="productSortOrder"
+              />
+            </label>
+
+            <label class="ui-form-field form-field--wide">
+              <span class="ui-form-caption">Slug</span>
+              <div class="input-with-action">
+                <input
+                  class="ui-form-control"
+                  type="text"
+                  [(ngModel)]="productForm.slug"
+                  name="productSlug"
+                  placeholder="desk-cable-clip"
+                  autocomplete="off"
+                  autocapitalize="off"
+                  spellcheck="false"
+                />
+                <button
+                  type="button"
+                  class="ui-button ui-button--ghost"
+                  (click)="slugifyProductFromCurrentLanguage()"
+                >
+                  Genera
+                </button>
+              </div>
+            </label>
+          </div>
+
+          <div class="toggle-row">
+            <label class="ui-checkbox">
+              <input
+                type="checkbox"
+                [(ngModel)]="productForm.indexable"
+                name="productIndexable"
+              />
+              <span class="ui-checkbox__mark" aria-hidden="true"></span>
+              <span>Indicizzabile</span>
+            </label>
+
+            <label class="ui-checkbox">
+              <input
+                type="checkbox"
+                [(ngModel)]="productForm.isFeatured"
+                name="productFeatured"
+              />
+              <span class="ui-checkbox__mark" aria-hidden="true"></span>
+              <span>Featured</span>
+            </label>
+
+            <label class="ui-checkbox">
+              <input
+                type="checkbox"
+                [(ngModel)]="productForm.isActive"
+                name="productActive"
+              />
+              <span class="ui-checkbox__mark" aria-hidden="true"></span>
+              <span>Attivo</span>
+            </label>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <div class="panel-heading">
+            <div>
+              <h3>Contenuti localizzati</h3>
+              <p>
+                Nome obbligatorio in tutte le lingue. Descrizioni opzionali.
+              </p>
+            </div>
+          </div>
+
+          <div class="ui-language-toolbar">
+            <div class="ui-language-toolbar__copy">
+              <span>Lingua editor</span>
+              <p>IT / EN / DE / FR</p>
+            </div>
+            <div class="ui-language-toolbar__toggle">
+              <button
+                *ngFor="let language of shopLanguages"
+                type="button"
+                class="ui-language-toolbar__button"
+                [class.active]="activeContentLanguage === language"
+                [class.complete]="isContentLanguageComplete(language)"
+                [class.incomplete]="!isContentLanguageComplete(language)"
+                (click)="setActiveContentLanguage(language)"
+              >
+                {{ languageLabels[language] }}
+              </button>
+            </div>
+          </div>
+
+          <div class="ui-form-grid ui-form-grid--two">
+            <label class="ui-form-field">
+              <span class="ui-form-caption">
+                Nome {{ languageLabels[activeContentLanguage] }}
+              </span>
+              <input
+                class="ui-form-control"
+                type="text"
+                [(ngModel)]="productForm.names[activeContentLanguage]"
+                [name]="'product-name-' + activeContentLanguage"
+              />
+            </label>
+
+            <label class="ui-form-field">
+              <span class="ui-form-caption">
+                Excerpt {{ languageLabels[activeContentLanguage] }}
+              </span>
+              <input
+                class="ui-form-control"
+                type="text"
+                [(ngModel)]="productForm.excerpts[activeContentLanguage]"
+                [name]="'product-excerpt-' + activeContentLanguage"
+              />
+            </label>
+
+            <label class="ui-form-field form-field--wide">
+              <span class="ui-form-caption">
+                Descrizione {{ languageLabels[activeContentLanguage] }}
+              </span>
+              <textarea
+                class="ui-form-control textarea-control textarea-control--large"
+                [(ngModel)]="productForm.descriptions[activeContentLanguage]"
+                [name]="'product-description-' + activeContentLanguage"
+                rows="6"
+              ></textarea>
+            </label>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <div class="panel-heading">
+            <div>
+              <h3>SEO e social</h3>
+              <p>Metadati globali per risultato organico e preview.</p>
+            </div>
+          </div>
+
+          <div class="ui-form-grid ui-form-grid--two">
+            <label class="ui-form-field">
+              <span class="ui-form-caption">SEO title</span>
+              <input
+                class="ui-form-control"
+                type="text"
+                [(ngModel)]="productForm.seoTitle"
+                name="productSeoTitle"
+              />
+            </label>
+
+            <label class="ui-form-field">
+              <span class="ui-form-caption">SEO description</span>
+              <input
+                class="ui-form-control"
+                type="text"
+                [(ngModel)]="productForm.seoDescription"
+                name="productSeoDescription"
+              />
+            </label>
+
+            <label class="ui-form-field">
+              <span class="ui-form-caption">OG title</span>
+              <input
+                class="ui-form-control"
+                type="text"
+                [(ngModel)]="productForm.ogTitle"
+                name="productOgTitle"
+              />
+            </label>
+
+            <label class="ui-form-field">
+              <span class="ui-form-caption">OG description</span>
+              <input
+                class="ui-form-control"
+                type="text"
+                [(ngModel)]="productForm.ogDescription"
+                name="productOgDescription"
+              />
+            </label>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <div class="panel-heading">
+            <div>
+              <h3>Varianti</h3>
+              <p>Colori, materiale interno, SKU e prezzi.</p>
+            </div>
+            <button
+              type="button"
+              class="ui-button ui-button--ghost"
+              (click)="addVariant()"
+            >
+              Aggiungi variante
+            </button>
+          </div>
+
+          <div class="variant-stack">
+            <article
+              class="variant-card"
+              *ngFor="
+                let variant of productForm.variants;
+                let index = index;
+                trackBy: trackVariant
+              "
+            >
+              <div class="variant-card__header">
+                <div>
+                  <h4>
+                    {{
+                      variant.variantLabel ||
+                        variant.colorName ||
+                        "Nuova variante"
+                    }}
+                  </h4>
+                  <p>Ordine {{ variant.sortOrder }}</p>
+                </div>
+                <div class="variant-card__actions">
+                  <button
+                    type="button"
+                    class="ui-button ui-button--ghost"
+                    (click)="setDefaultVariant(index)"
+                    [disabled]="variant.isDefault"
+                  >
+                    {{ variant.isDefault ? "Default" : "Rendi default" }}
+                  </button>
+                  <button
+                    type="button"
+                    class="ui-button ui-button--ghost-danger"
+                    (click)="removeVariant(index)"
+                    [disabled]="productForm.variants.length <= 1"
+                  >
+                    Rimuovi
+                  </button>
+                </div>
+              </div>
+
+              <div class="ui-form-grid ui-form-grid--two">
+                <label class="ui-form-field">
+                  <span class="ui-form-caption">Nome variante</span>
+                  <input
+                    class="ui-form-control"
+                    type="text"
+                    [(ngModel)]="variant.variantLabel"
+                    [name]="'variant-label-' + index"
+                  />
+                </label>
+
+                <label class="ui-form-field">
+                  <span class="ui-form-caption">SKU</span>
+                  <input
+                    class="ui-form-control"
+                    type="text"
+                    [(ngModel)]="variant.sku"
+                    [name]="'variant-sku-' + index"
+                    autocomplete="off"
+                    autocapitalize="off"
+                    spellcheck="false"
+                  />
+                </label>
+
+                <label class="ui-form-field">
+                  <span class="ui-form-caption">Colore</span>
+                  <input
+                    class="ui-form-control"
+                    type="text"
+                    [(ngModel)]="variant.colorName"
+                    [name]="'variant-color-name-' + index"
+                  />
+                </label>
+
+                <label class="ui-form-field">
+                  <span class="ui-form-caption">HEX colore</span>
+                  <input
+                    class="ui-form-control"
+                    type="text"
+                    [(ngModel)]="variant.colorHex"
+                    [name]="'variant-color-hex-' + index"
+                    placeholder="#1A1A1A"
+                    (blur)="onColorHexBlur(variant)"
+                    autocomplete="off"
+                    autocapitalize="off"
+                    spellcheck="false"
+                  />
+                </label>
+
+                <label class="ui-form-field">
+                  <span class="ui-form-caption">Materiale interno</span>
+                  <input
+                    class="ui-form-control"
+                    type="text"
+                    [(ngModel)]="variant.internalMaterialCode"
+                    [name]="'variant-material-' + index"
+                    placeholder="PLA, PETG, TPU"
+                  />
+                </label>
+
+                <label class="ui-form-field">
+                  <span class="ui-form-caption">Prezzo CHF</span>
+                  <input
+                    class="ui-form-control"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    [(ngModel)]="variant.priceChf"
+                    [name]="'variant-price-' + index"
+                  />
+                </label>
+
+                <label class="ui-form-field">
+                  <span class="ui-form-caption">Sort order</span>
+                  <input
+                    class="ui-form-control"
+                    type="number"
+                    [(ngModel)]="variant.sortOrder"
+                    [name]="'variant-sort-order-' + index"
+                  />
+                </label>
+
+                <div class="toggle-row toggle-row--compact">
+                  <label class="ui-checkbox">
+                    <input
+                      type="checkbox"
+                      [(ngModel)]="variant.isDefault"
+                      [name]="'variant-default-' + index"
+                      (ngModelChange)="setDefaultVariant(index)"
+                    />
+                    <span class="ui-checkbox__mark" aria-hidden="true"></span>
+                    <span>Default</span>
+                  </label>
+
+                  <label class="ui-checkbox">
+                    <input
+                      type="checkbox"
+                      [(ngModel)]="variant.isActive"
+                      [name]="'variant-active-' + index"
+                    />
+                    <span class="ui-checkbox__mark" aria-hidden="true"></span>
+                    <span>Attiva</span>
+                  </label>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <div class="panel-heading">
+            <div>
+              <h3>Immagini e modello 3D</h3>
+              <p>
+                Upload protetto con whitelist tipi file; il modello 3D è
+                disponibile solo dopo il primo salvataggio del prodotto.
+              </p>
+            </div>
+          </div>
+
+          <div class="locked-panel" *ngIf="productMode === 'create'">
+            Salva prima il prodotto per collegare immagini e modello 3D.
+          </div>
+
+          <div
+            class="media-grid"
+            *ngIf="productMode === 'edit' && selectedProduct"
+          >
+            <section class="ui-subpanel ui-subpanel--soft">
+              <div class="panel-heading">
+                <div>
+                  <h4>Nuova immagine prodotto</h4>
+                  <p>
+                    JPG, PNG o WEBP con titolo e alt text in tutte le lingue.
+                  </p>
+                </div>
+              </div>
+
+              <div class="ui-form-grid ui-form-grid--two">
+                <div class="ui-form-field form-field--wide">
+                  <span class="ui-form-caption">File immagine</span>
+                  <input
+                    id="product-image-file"
+                    class="sr-only"
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                    (change)="onImageFileSelected($event)"
+                  />
+                  <label class="ui-file-picker" for="product-image-file">
+                    <span class="ui-file-picker__button">Scegli file</span>
+                    <span class="ui-file-picker__name">
+                      {{
+                        imageUploadState.file?.name || "Nessun file selezionato"
+                      }}
+                    </span>
+                  </label>
+                </div>
+
+                <div
+                  class="preview-card form-field--wide"
+                  *ngIf="imageUploadState.previewUrl"
+                >
+                  <img [src]="imageUploadState.previewUrl" alt="" />
+                </div>
+
+                <div class="ui-language-toolbar form-field--wide">
+                  <div class="ui-language-toolbar__copy">
+                    <span>Testi localizzati immagine</span>
+                    <p>Titolo e alt text obbligatori</p>
+                  </div>
+                  <div class="ui-language-toolbar__toggle">
+                    <button
+                      *ngFor="let language of mediaLanguages"
+                      type="button"
+                      class="ui-language-toolbar__button"
+                      [class.active]="
+                        imageUploadState.activeLanguage === language
+                      "
+                      [class.complete]="isImageLanguageComplete(language)"
+                      [class.incomplete]="!isImageLanguageComplete(language)"
+                      (click)="setActiveImageLanguage(language)"
+                    >
+                      {{ languageLabels[language] }}
+                    </button>
+                  </div>
+                </div>
+
+                <label class="ui-form-field">
+                  <span class="ui-form-caption">
+                    Titolo {{ languageLabels[imageUploadState.activeLanguage] }}
+                  </span>
+                  <input
+                    class="ui-form-control"
+                    type="text"
+                    [(ngModel)]="
+                      imageUploadState.translations[
+                        imageUploadState.activeLanguage
+                      ].title
+                    "
+                    name="productImageTitle"
+                  />
+                </label>
+
+                <label class="ui-form-field">
+                  <span class="ui-form-caption">
+                    Alt text
+                    {{ languageLabels[imageUploadState.activeLanguage] }}
+                  </span>
+                  <input
+                    class="ui-form-control"
+                    type="text"
+                    [(ngModel)]="
+                      imageUploadState.translations[
+                        imageUploadState.activeLanguage
+                      ].altText
+                    "
+                    name="productImageAltText"
+                  />
+                </label>
+
+                <label class="ui-form-field">
+                  <span class="ui-form-caption">Sort order</span>
+                  <input
+                    class="ui-form-control"
+                    type="number"
+                    [(ngModel)]="imageUploadState.sortOrder"
+                    name="productImageSortOrder"
+                  />
+                </label>
+
+                <div class="toggle-row toggle-row--compact">
+                  <label class="ui-checkbox">
+                    <input
+                      type="checkbox"
+                      [(ngModel)]="imageUploadState.isPrimary"
+                      name="productImagePrimary"
+                    />
+                    <span class="ui-checkbox__mark" aria-hidden="true"></span>
+                    <span>Primaria</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="ui-actions">
+                <button
+                  type="button"
+                  class="ui-button"
+                  (click)="uploadProductImage()"
+                  [disabled]="imageUploadState.saving || !imageUploadState.file"
+                >
+                  {{
+                    imageUploadState.saving
+                      ? "Caricamento..."
+                      : "Carica immagine"
+                  }}
+                </button>
+              </div>
+            </section>
+
+            <section class="ui-subpanel ui-subpanel--soft">
+              <div class="panel-heading">
+                <div>
+                  <h4>Immagini attive</h4>
+                  <p>
+                    {{ productImages.length }} immagini collegate al prodotto.
+                  </p>
+                </div>
+              </div>
+
+              <div
+                class="image-stack"
+                *ngIf="productImages.length; else emptyImagesTpl"
+              >
+                <article
+                  class="image-item"
+                  *ngFor="let image of productImages; trackBy: trackImage"
+                >
+                  <div class="image-item__preview">
+                    <img
+                      *ngIf="image.previewUrl; else noImagePreviewTpl"
+                      [src]="image.previewUrl"
+                      alt=""
+                    />
+                  </div>
+
+                  <div class="image-item__content">
+                    <div class="image-item__header">
+                      <strong>
+                        {{
+                          image.translations[imageUploadState.activeLanguage]
+                            .title || "Senza titolo"
+                        }}
+                      </strong>
+                      <span
+                        class="ui-pill ui-pill--soft"
+                        *ngIf="image.isPrimary"
+                      >
+                        Primaria
+                      </span>
+                    </div>
+
+                    <p class="image-meta">
+                      {{
+                        image.translations[imageUploadState.activeLanguage]
+                          .altText || "Alt text mancante"
+                      }}
+                    </p>
+
+                    <div class="image-item__controls">
+                      <label class="ui-form-field">
+                        <span class="ui-form-caption">Ordine</span>
+                        <input
+                          class="ui-form-control"
+                          type="number"
+                          [(ngModel)]="image.draftSortOrder"
+                          [name]="'image-sort-' + image.usageId"
+                        />
+                      </label>
+
+                      <div class="image-actions">
+                        <button
+                          type="button"
+                          class="ui-button ui-button--ghost"
+                          (click)="saveImageSortOrder(image)"
+                          [disabled]="isImageBusy(image.usageId)"
+                        >
+                          Salva ordine
+                        </button>
+                        <button
+                          type="button"
+                          class="ui-button ui-button--ghost"
+                          (click)="setPrimaryImage(image)"
+                          [disabled]="
+                            isImageBusy(image.usageId) || image.isPrimary
+                          "
+                        >
+                          {{ image.isPrimary ? "Primaria" : "Rendi primaria" }}
+                        </button>
+                        <button
+                          type="button"
+                          class="ui-button ui-button--ghost-danger"
+                          (click)="removeImage(image)"
+                          [disabled]="isImageBusy(image.usageId)"
+                        >
+                          Rimuovi
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              </div>
+            </section>
+
+            <section class="ui-subpanel ui-subpanel--soft">
+              <div class="panel-heading">
+                <div>
+                  <h4>Modello 3D</h4>
+                  <p>
+                    Solo STL o 3MF. Limite client {{ maxModelFileSizeMb }} MB,
+                    whitelist server-side e virus scan già attivi.
+                  </p>
+                </div>
+              </div>
+
+              <div
+                class="model-summary"
+                *ngIf="selectedProduct.model3d as model; else noModelTpl"
+              >
+                <div class="ui-meta-grid">
+                  <div class="ui-meta-item">
+                    <strong>File</strong>
+                    <span>{{ model.originalFilename }}</span>
+                  </div>
+                  <div class="ui-meta-item">
+                    <strong>Dimensione</strong>
+                    <span>{{ formatFileSize(model.fileSizeBytes) }}</span>
+                  </div>
+                  <div class="ui-meta-item">
+                    <strong>Bounding box</strong>
+                    <span>
+                      {{ model.boundingBoxXMm || 0 }} ×
+                      {{ model.boundingBoxYMm || 0 }} ×
+                      {{ model.boundingBoxZMm || 0 }} mm
+                    </span>
+                  </div>
+                </div>
+
+                <div class="ui-actions">
+                  <a
+                    *ngIf="getProductModelUrl(model) as modelUrl"
+                    class="ui-button ui-button--ghost link-button"
+                    [href]="modelUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Apri modello
+                  </a>
+                  <button
+                    type="button"
+                    class="ui-button ui-button--ghost-danger"
+                    (click)="deleteModel()"
+                    [disabled]="deletingModel"
+                  >
+                    {{ deletingModel ? "Rimozione..." : "Rimuovi modello" }}
+                  </button>
+                </div>
+              </div>
+
+              <div class="ui-form-field">
+                <span class="ui-form-caption"
+                  >Carica o sostituisci modello</span
+                >
+                <input
+                  id="product-model-file"
+                  class="sr-only"
+                  type="file"
+                  accept=".stl,.3mf,model/stl,application/vnd.ms-package.3dmanufacturing-3dmodel+xml"
+                  (change)="onModelFileSelected($event)"
+                />
+                <label class="ui-file-picker" for="product-model-file">
+                  <span class="ui-file-picker__button">Scegli modello</span>
+                  <span class="ui-file-picker__name">
+                    {{ modelUploadFile?.name || "Nessun file selezionato" }}
+                  </span>
+                </label>
+              </div>
+
+              <div class="ui-actions">
+                <button
+                  type="button"
+                  class="ui-button"
+                  (click)="uploadModel()"
+                  [disabled]="uploadingModel || !modelUploadFile"
+                >
+                  {{ uploadingModel ? "Upload..." : "Salva modello 3D" }}
+                </button>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <div class="ui-actions">
+          <button
+            type="button"
+            class="ui-button"
+            (click)="saveProduct()"
+            [disabled]="savingProduct"
+          >
+            {{ savingProduct ? "Salvataggio..." : "Salva prodotto" }}
+          </button>
+          <button
+            type="button"
+            class="ui-button ui-button--ghost"
+            (click)="startCreateProduct()"
+          >
+            Nuovo prodotto
+          </button>
+          <button
+            *ngIf="productMode === 'edit'"
+            type="button"
+            class="ui-button ui-button--ghost-danger"
+            (click)="deleteSelectedProduct()"
+            [disabled]="deletingProduct"
+          >
+            {{ deletingProduct ? "Eliminazione..." : "Elimina prodotto" }}
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+</section>
+
+<ng-template #loadingTpl>
+  <div class="loading-state">Caricamento catalogo shop...</div>
+</ng-template>
+
+<ng-template #emptyImagesTpl>
+  <div class="locked-panel">Nessuna immagine collegata a questo prodotto.</div>
+</ng-template>
+
+<ng-template #noImagePreviewTpl>
+  <div class="image-fallback">Nessuna preview</div>
+</ng-template>
+
+<ng-template #noModelTpl>
+  <div class="locked-panel">
+    Nessun modello 3D caricato per questo prodotto.
+  </div>
+</ng-template>

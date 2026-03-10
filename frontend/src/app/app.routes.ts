@@ -31,7 +31,6 @@ const appChildRoutes: Routes = [
       seoTitle: 'Shop 3D fab',
       seoDescription:
         'Catalogo prodotti stampati in 3D e soluzioni tecniche pronte all uso.',
-      seoRobots: 'noindex, nofollow',
     },
   },
   {

@@ -330,6 +330,18 @@ public class AdminMediaControllerService {
         mediaUsageRepository.delete(getUsageOrThrow(mediaUsageId));
     }
 
+    public List<AdminMediaUsageDto> getUsages(String usageType, String usageKey, UUID ownerId) {
+        String normalizedUsageType = requireUsageType(usageType);
+        String normalizedUsageKey = requireUsageKey(usageKey);
+        return mediaUsageRepository.findByUsageScope(normalizedUsageType, normalizedUsageKey, ownerId)
+                .stream()
+                .sorted(Comparator
+                        .comparing(MediaUsage::getSortOrder, Comparator.nullsLast(Integer::compareTo))
+                        .thenComparing(MediaUsage::getCreatedAt, Comparator.nullsLast(OffsetDateTime::compareTo)))
+                .map(this::toUsageDto)
+                .toList();
+    }
+
     private List<MediaVariant> generateDerivedVariants(MediaAsset asset, Path sourceFile, Path tempDirectory) throws IOException {
         Path generatedDirectory = Files.createDirectories(tempDirectory.resolve("generated"));
         String storageFolder = extractStorageFolder(asset.getStorageKey());

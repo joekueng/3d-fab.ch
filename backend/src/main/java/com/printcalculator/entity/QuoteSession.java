@@ -22,6 +22,10 @@ public class QuoteSession {
     @Column(name = "status", nullable = false, length = Integer.MAX_VALUE)
     private String status;
 
+    @ColumnDefault("'PRINT_QUOTE'")
+    @Column(name = "session_type", nullable = false, length = Integer.MAX_VALUE)
+    private String sessionType;
+
     @Column(name = "pricing_version", nullable = false, length = Integer.MAX_VALUE)
     private String pricingVersion;
 
@@ -70,6 +74,19 @@ public class QuoteSession {
     @Column(name = "cad_hourly_rate_chf", precision = 10, scale = 2)
     private BigDecimal cadHourlyRateChf;
 
+    @PrePersist
+    private void onCreate() {
+        if (sessionType == null || sessionType.isBlank()) {
+            sessionType = "PRINT_QUOTE";
+        }
+        if (supportsEnabled == null) {
+            supportsEnabled = false;
+        }
+        if (createdAt == null) {
+            createdAt = OffsetDateTime.now();
+        }
+    }
+
     public UUID getId() {
         return id;
     }
@@ -84,6 +101,14 @@ public class QuoteSession {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getSessionType() {
+        return sessionType;
+    }
+
+    public void setSessionType(String sessionType) {
+        this.sessionType = sessionType;
     }
 
     public String getPricingVersion() {

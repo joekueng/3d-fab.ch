@@ -5,10 +5,19 @@ import { environment } from '../../../../environments/environment';
 
 export interface AdminOrderItem {
   id: string;
+  itemType: string;
   originalFilename: string;
+  displayName?: string;
   materialCode: string;
   colorCode: string;
   filamentVariantId?: number;
+  shopProductId?: string;
+  shopProductVariantId?: string;
+  shopProductSlug?: string;
+  shopProductName?: string;
+  shopVariantLabel?: string;
+  shopVariantColorName?: string;
+  shopVariantColorHex?: string;
   filamentVariantDisplayName?: string;
   filamentColorName?: string;
   filamentColorHex?: string;

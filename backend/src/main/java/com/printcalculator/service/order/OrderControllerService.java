@@ -255,6 +255,7 @@ public class OrderControllerService {
         OrderDto dto = new OrderDto();
         dto.setId(order.getId());
         dto.setOrderNumber(getDisplayOrderNumber(order));
+        dto.setSourceType(order.getSourceType() != null ? order.getSourceType() : "CALCULATOR");
         dto.setStatus(order.getStatus());
 
         paymentRepo.findByOrder_Id(order.getId()).ifPresent(payment -> {
@@ -314,9 +315,26 @@ public class OrderControllerService {
         List<OrderItemDto> itemDtos = items.stream().map(item -> {
             OrderItemDto itemDto = new OrderItemDto();
             itemDto.setId(item.getId());
+            itemDto.setItemType(item.getItemType() != null ? item.getItemType() : "PRINT_FILE");
             itemDto.setOriginalFilename(item.getOriginalFilename());
+            itemDto.setDisplayName(
+                    item.getDisplayName() != null && !item.getDisplayName().isBlank()
+                            ? item.getDisplayName()
+                            : item.getOriginalFilename()
+            );
             itemDto.setMaterialCode(item.getMaterialCode());
             itemDto.setColorCode(item.getColorCode());
+            if (item.getShopProduct() != null) {
+                itemDto.setShopProductId(item.getShopProduct().getId());
+            }
+            if (item.getShopProductVariant() != null) {
+                itemDto.setShopProductVariantId(item.getShopProductVariant().getId());
+            }
+            itemDto.setShopProductSlug(item.getShopProductSlug());
+            itemDto.setShopProductName(item.getShopProductName());
+            itemDto.setShopVariantLabel(item.getShopVariantLabel());
+            itemDto.setShopVariantColorName(item.getShopVariantColorName());
+            itemDto.setShopVariantColorHex(item.getShopVariantColorHex());
             if (item.getFilamentVariant() != null) {
                 itemDto.setFilamentVariantId(item.getFilamentVariant().getId());
                 itemDto.setFilamentVariantDisplayName(item.getFilamentVariant().getVariantDisplayName());

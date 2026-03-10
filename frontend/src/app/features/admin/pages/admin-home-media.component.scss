@@ -1,3 +1,32 @@
+.section-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.section-header h2 {
+  margin: 0;
+}
+.media-panel-header {
+  margin-bottom: var(--space-3);
+}
+
+.group-header {
+  margin-bottom: var(--space-3);
+}
+
+.header-copy {
+  display: grid;
+  gap: var(--space-1);
+}
+
 .form-field--wide {
   grid-column: 1 / -1;
 }
@@ -100,6 +129,11 @@
 }
 
 @media (max-width: 720px) {
+  .section-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   .media-panel-meta {
     justify-content: flex-start;
   }

@@ -1,17 +1,53 @@
-<div class="product-card">
-  <div class="image-placeholder"></div>
+<article class="product-card">
+  <a class="media" [routerLink]="productLink()">
+    @if (imageUrl(); as imageUrl) {
+      <img
+        [src]="imageUrl"
+        [alt]="product().primaryImage?.altText || product().name"
+        loading="lazy"
+      />
+    } @else {
+      <div class="image-fallback">
+        <span>{{ product().category.name }}</span>
+      </div>
+    }
+
+    <div class="card-badges">
+      @if (cartQuantity() > 0) {
+        <span class="badge badge-cart">
+          {{ "SHOP.IN_CART_SHORT" | translate: { count: cartQuantity() } }}
+        </span>
+      }
+    </div>
+  </a>
+
   <div class="content">
-    <span class="category">{{ product().category | translate }}</span>
+    <div class="meta">
+      <span class="category">{{ product().category.name }}</span>
+      @if (product().model3d) {
+        <span class="model-pill">{{ "SHOP.MODEL_3D" | translate }}</span>
+      }
+    </div>
+
     <h3 class="name">
-      <a [routerLink]="['/shop', product().id]">{{
-        product().name | translate
-      }}</a>
+      <a [routerLink]="productLink()">{{ product().name }}</a>
     </h3>
+
+    <p class="excerpt">
+      {{ product().excerpt || ("SHOP.EXCERPT_FALLBACK" | translate) }}
+    </p>
+
     <div class="footer">
-      <span class="price">{{ product().price | currency: "EUR" }}</span>
-      <a [routerLink]="['/shop', product().id]" class="view-btn">{{
+      <div class="pricing">
+        <span class="price">{{ priceLabel() | currency: "CHF" }}</span>
+        @if (hasPriceRange()) {
+          <small class="price-note">{{ "SHOP.PRICE_FROM" | translate }}</small>
+        }
+      </div>
+
+      <a [routerLink]="productLink()" class="view-btn">{{
         "SHOP.DETAILS" | translate
       }}</a>
     </div>
   </div>
-</div>
+</article>

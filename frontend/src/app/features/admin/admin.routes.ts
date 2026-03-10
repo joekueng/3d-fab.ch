@@ -64,6 +64,13 @@ export const ADMIN_ROUTES: Routes = [
             (m) => m.AdminHomeMediaComponent,
           ),
       },
+      {
+        path: 'shop',
+        loadComponent: () =>
+          import('./pages/admin-shop.component').then(
+            (m) => m.AdminShopComponent,
+          ),
+      },
     ],
   },
 ];
