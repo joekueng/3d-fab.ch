@@ -57,7 +57,8 @@ export class SeoService {
       this.asString(mergedData['seoDescription']) ?? this.defaultDescription;
     const robots = this.asString(mergedData['seoRobots']) ?? 'index, follow';
     const ogTitle = this.asString(mergedData['ogTitle']) ?? title;
-    const ogDescription = this.asString(mergedData['ogDescription']) ?? description;
+    const ogDescription =
+      this.asString(mergedData['ogDescription']) ?? description;
 
     this.applySeoValues(title, description, robots, ogTitle, ogDescription);
   }

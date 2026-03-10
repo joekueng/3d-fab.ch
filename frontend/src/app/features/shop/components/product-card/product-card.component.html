@@ -41,9 +41,7 @@
       <div class="pricing">
         <span class="price">{{ priceLabel() | currency: "CHF" }}</span>
         @if (hasPriceRange()) {
-          <small class="price-note">{{
-            "SHOP.PRICE_FROM" | translate
-          }}</small>
+          <small class="price-note">{{ "SHOP.PRICE_FROM" | translate }}</small>
         }
       </div>
 

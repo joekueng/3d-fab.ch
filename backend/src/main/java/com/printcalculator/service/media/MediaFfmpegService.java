@@ -82,8 +82,6 @@ public class MediaFfmpegService {
             case "AVIF" -> {
                 command.add("-c:v");
                 command.add(encoder);
-                command.add("-still-picture");
-                command.add("1");
                 command.add("-crf");
                 command.add("30");
                 command.add("-b:v");

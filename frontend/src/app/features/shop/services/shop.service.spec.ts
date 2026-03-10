@@ -129,7 +129,9 @@ describe('ShopService', () => {
   it('posts add-to-cart with credentials and replaces local cart state', () => {
     service.addToCart('variant-red', 2).subscribe();
 
-    const request = httpMock.expectOne('http://localhost:8000/api/shop/cart/items');
+    const request = httpMock.expectOne(
+      'http://localhost:8000/api/shop/cart/items',
+    );
     expect(request.request.method).toBe('POST');
     expect(request.request.withCredentials).toBeTrue();
     expect(request.request.body).toEqual({

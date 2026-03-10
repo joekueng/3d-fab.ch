@@ -263,7 +263,9 @@ export class OrderComponent implements OnInit {
       return shopName;
     }
 
-    return String(item?.originalFilename ?? this.translate.instant('ORDER.NOT_AVAILABLE'));
+    return String(
+      item?.originalFilename ?? this.translate.instant('ORDER.NOT_AVAILABLE'),
+    );
   }
 
   itemVariantLabel(item: PublicOrderItem): string | null {
