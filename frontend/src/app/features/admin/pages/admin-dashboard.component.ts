@@ -131,7 +131,8 @@ export class AdminDashboardComponent implements OnInit {
         this.selectedOrder = order;
         this.selectedStatus = order.status;
         this.selectedPaymentMethod = order.paymentMethod || 'OTHER';
-        this.showPrintDetails = this.showPrintDetails && this.hasPrintItems(order);
+        this.showPrintDetails =
+          this.showPrintDetails && this.hasPrintItems(order);
         this.detailLoading = false;
       },
       error: () => {
@@ -446,7 +447,8 @@ export class AdminDashboardComponent implements OnInit {
     this.selectedStatus = updatedOrder.status;
     this.selectedPaymentMethod =
       updatedOrder.paymentMethod || this.selectedPaymentMethod;
-    this.showPrintDetails = this.showPrintDetails && this.hasPrintItems(updatedOrder);
+    this.showPrintDetails =
+      this.showPrintDetails && this.hasPrintItems(updatedOrder);
   }
 
   private applyListFiltersAndSelection(): void {

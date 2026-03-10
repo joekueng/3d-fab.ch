@@ -4,20 +4,16 @@
       <div class="hero-copy">
         <p class="ui-eyebrow">{{ "SHOP.HERO_EYEBROW" | translate }}</p>
         <h1 class="ui-hero-display">
-          {{
-            selectedCategory()?.name || ("SHOP.TITLE" | translate)
-          }}
+          {{ selectedCategory()?.name || ("SHOP.TITLE" | translate) }}
         </h1>
         <p class="ui-copy-lead">
-          {{
-            selectedCategory()?.description ||
-              ("SHOP.SUBTITLE" | translate)
-          }}
+          {{ selectedCategory()?.description || ("SHOP.SUBTITLE" | translate) }}
         </p>
         <p class="ui-copy-subtitle">
           {{
             selectedCategory()
-              ? ("SHOP.CATEGORY_META" | translate: { count: selectedCategory()?.productCount || 0 })
+              ? ("SHOP.CATEGORY_META"
+                | translate: { count: selectedCategory()?.productCount || 0 })
               : ("SHOP.CATALOG_META_DESCRIPTION" | translate)
           }}
         </p>
@@ -75,7 +71,9 @@
       <app-card>
         <div class="panel-head">
           <div>
-            <p class="panel-kicker">{{ "SHOP.CATEGORY_PANEL_KICKER" | translate }}</p>
+            <p class="panel-kicker">
+              {{ "SHOP.CATEGORY_PANEL_KICKER" | translate }}
+            </p>
             <h2 class="panel-title">
               {{ "SHOP.CATEGORY_PANEL_TITLE" | translate }}
             </h2>
@@ -155,7 +153,9 @@
                   <div class="qty-control">
                     <button
                       type="button"
-                      [disabled]="cartMutating() && busyLineItemId() === item.id"
+                      [disabled]="
+                        cartMutating() && busyLineItemId() === item.id
+                      "
                       (click)="decreaseQuantity(item)"
                     >
                       -
@@ -163,7 +163,9 @@
                     <span>{{ item.quantity }}</span>
                     <button
                       type="button"
-                      [disabled]="cartMutating() && busyLineItemId() === item.id"
+                      [disabled]="
+                        cartMutating() && busyLineItemId() === item.id
+                      "
                       (click)="increaseQuantity(item)"
                     >
                       +
@@ -189,7 +191,9 @@
           <div class="cart-totals">
             <div class="cart-total-row">
               <span>{{ "SHOP.CART_SUBTOTAL" | translate }}</span>
-              <strong>{{ cart()?.itemsTotalChf || 0 | currency: "CHF" }}</strong>
+              <strong>{{
+                cart()?.itemsTotalChf || 0 | currency: "CHF"
+              }}</strong>
             </div>
             <div class="cart-total-row">
               <span>{{ "SHOP.CART_SHIPPING" | translate }}</span>
@@ -284,7 +288,10 @@
             </div>
           } @else {
             <div class="product-grid">
-              @for (product of products(); track trackByProduct($index, product)) {
+              @for (
+                product of products();
+                track trackByProduct($index, product)
+              ) {
                 <app-product-card
                   [product]="product"
                   [cartQuantity]="productCartQuantity(product.id)"

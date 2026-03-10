@@ -121,7 +121,9 @@ export class ProductDetailComponent {
 
     combineLatest([
       toObservable(this.productSlug, { injector: this.injector }),
-      toObservable(this.languageService.currentLang, { injector: this.injector }),
+      toObservable(this.languageService.currentLang, {
+        injector: this.injector,
+      }),
     ])
       .pipe(
         tap(() => {
@@ -160,13 +162,22 @@ export class ProductDetailComponent {
         }
 
         this.product.set(product);
-        this.selectedVariantId.set(product.defaultVariant?.id ?? product.variants[0]?.id ?? null);
-        this.selectedImageAssetId.set(product.primaryImage?.mediaAssetId ?? product.images[0]?.mediaAssetId ?? null);
+        this.selectedVariantId.set(
+          product.defaultVariant?.id ?? product.variants[0]?.id ?? null,
+        );
+        this.selectedImageAssetId.set(
+          product.primaryImage?.mediaAssetId ??
+            product.images[0]?.mediaAssetId ??
+            null,
+        );
         this.quantity.set(1);
         this.applySeo(product);
 
         if (product.model3d?.url && product.model3d.originalFilename) {
-          this.loadModelPreview(product.model3d.url, product.model3d.originalFilename);
+          this.loadModelPreview(
+            product.model3d.url,
+            product.model3d.originalFilename,
+          );
         } else {
           this.modelFile.set(null);
           this.modelLoading.set(false);
@@ -239,7 +250,9 @@ export class ProductDetailComponent {
   }
 
   priceLabel(): number {
-    return this.selectedVariant()?.priceChf ?? this.product()?.priceFromChf ?? 0;
+    return (
+      this.selectedVariant()?.priceChf ?? this.product()?.priceFromChf ?? 0
+    );
   }
 
   colorLabel(variant: ShopProductVariantOption): string {
@@ -282,7 +295,8 @@ export class ProductDetailComponent {
       product.seoDescription ||
       product.excerpt ||
       this.translate.instant('SHOP.CATALOG_META_DESCRIPTION');
-    const robots = product.indexable === false ? 'noindex, nofollow' : 'index, follow';
+    const robots =
+      product.indexable === false ? 'noindex, nofollow' : 'index, follow';
 
     this.seoService.applyPageSeo({
       title,

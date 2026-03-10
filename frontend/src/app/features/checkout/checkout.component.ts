@@ -393,10 +393,7 @@ export class CheckoutComponent implements OnInit {
   }
 
   private loadStlPreviews(session: any): void {
-    if (
-      !this.sessionId ||
-      !Array.isArray(session?.items)
-    ) {
+    if (!this.sessionId || !Array.isArray(session?.items)) {
       return;
     }
 

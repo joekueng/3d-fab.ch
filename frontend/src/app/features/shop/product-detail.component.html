@@ -44,7 +44,9 @@
                     <button
                       type="button"
                       class="thumb"
-                      [class.active]="selectedImage().mediaAssetId === image.mediaAssetId"
+                      [class.active]="
+                        selectedImage().mediaAssetId === image.mediaAssetId
+                      "
                       (click)="selectImage(image.mediaAssetId)"
                     >
                       @if (imageUrl(image); as imageUrl) {
@@ -68,13 +70,16 @@
                     </div>
                     <div class="dimensions">
                       <span>
-                        X {{ p.model3d.boundingBoxXMm || 0 | number: "1.0-1" }} mm
+                        X
+                        {{ p.model3d.boundingBoxXMm || 0 | number: "1.0-1" }} mm
                       </span>
                       <span>
-                        Y {{ p.model3d.boundingBoxYMm || 0 | number: "1.0-1" }} mm
+                        Y
+                        {{ p.model3d.boundingBoxYMm || 0 | number: "1.0-1" }} mm
                       </span>
                       <span>
-                        Z {{ p.model3d.boundingBoxZMm || 0 | number: "1.0-1" }} mm
+                        Z
+                        {{ p.model3d.boundingBoxZMm || 0 | number: "1.0-1" }} mm
                       </span>
                     </div>
                   </div>
@@ -133,7 +138,8 @@
                       <span class="cart-pill">
                         {{
                           "SHOP.IN_CART_LONG"
-                            | translate: { count: selectedVariantCartQuantity() }
+                            | translate
+                              : { count: selectedVariantCartQuantity() }
                         }}
                       </span>
                     }
@@ -157,7 +163,9 @@
                             <small>{{ variant.variantLabel }}</small>
                           }
                         </span>
-                        <strong>{{ variant.priceChf | currency: "CHF" }}</strong>
+                        <strong>{{
+                          variant.priceChf | currency: "CHF"
+                        }}</strong>
                       </button>
                     }
                   </div>
@@ -165,9 +173,13 @@
                   <div class="quantity-row">
                     <span>{{ "SHOP.QUANTITY" | translate }}</span>
                     <div class="qty-control">
-                      <button type="button" (click)="decreaseQuantity()">-</button>
+                      <button type="button" (click)="decreaseQuantity()">
+                        -
+                      </button>
                       <span>{{ quantity() }}</span>
-                      <button type="button" (click)="increaseQuantity()">+</button>
+                      <button type="button" (click)="increaseQuantity()">
+                        +
+                      </button>
                     </div>
                   </div>
 
@@ -178,9 +190,8 @@
                       (click)="addToCart()"
                     >
                       {{
-                        (isAddingToCart()
-                          ? "SHOP.ADDING"
-                          : "SHOP.ADD_CART") | translate
+                        (isAddingToCart() ? "SHOP.ADDING" : "SHOP.ADD_CART")
+                          | translate
                       }}
                     </app-button>
 

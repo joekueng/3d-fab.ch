@@ -251,9 +251,12 @@ export class ShopService {
       params = params.set('featured', String(featured));
     }
 
-    return this.http.get<ShopProductCatalogResponse>(`${this.apiUrl}/products`, {
-      params,
-    });
+    return this.http.get<ShopProductCatalogResponse>(
+      `${this.apiUrl}/products`,
+      {
+        params,
+      },
+    );
   }
 
   getProduct(slug: string): Observable<ShopProductDetail> {
@@ -337,10 +340,7 @@ export class ShopService {
       .pipe(tap((cart) => this.setCart(cart)));
   }
 
-  getProductModelFile(
-    urlOrPath: string,
-    filename: string,
-  ): Observable<File> {
+  getProductModelFile(urlOrPath: string, filename: string): Observable<File> {
     return this.http
       .get(this.resolveApiUrl(urlOrPath), {
         responseType: 'blob',

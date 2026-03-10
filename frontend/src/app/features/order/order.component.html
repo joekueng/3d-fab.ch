@@ -161,7 +161,9 @@
             <app-button
               variant="outline"
               (click)="completeOrder()"
-              [disabled]="!selectedPaymentMethod || o.paymentStatus === 'REPORTED'"
+              [disabled]="
+                !selectedPaymentMethod || o.paymentStatus === 'REPORTED'
+              "
               [fullWidth]="true"
             >
               {{
@@ -201,10 +203,14 @@
                 </div>
 
                 <div class="order-item-meta">
-                  <span>{{ "CHECKOUT.QTY" | translate }}: {{ item.quantity }}</span>
+                  <span
+                    >{{ "CHECKOUT.QTY" | translate }}: {{ item.quantity }}</span
+                  >
                   <span *ngIf="showItemMaterial(item)">
                     {{ "CHECKOUT.MATERIAL" | translate }}:
-                    {{ item.materialCode || ("ORDER.NOT_AVAILABLE" | translate) }}
+                    {{
+                      item.materialCode || ("ORDER.NOT_AVAILABLE" | translate)
+                    }}
                   </span>
                   <span *ngIf="itemVariantLabel(item) as variantLabel">
                     {{ "SHOP.VARIANT" | translate }}: {{ variantLabel }}
@@ -252,7 +258,9 @@
               <strong>{{ orderKindLabel(o) }}</strong>
             </div>
             <div>
-              <span class="summary-label">{{ "ORDER.ITEM_COUNT" | translate }}</span>
+              <span class="summary-label">{{
+                "ORDER.ITEM_COUNT" | translate
+              }}</span>
               <strong>{{ (o.items || []).length }}</strong>
             </div>
           </div>

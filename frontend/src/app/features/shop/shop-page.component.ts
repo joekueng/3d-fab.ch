@@ -11,7 +11,16 @@ import {
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { catchError, combineLatest, finalize, forkJoin, map, of, switchMap, tap } from 'rxjs';
+import {
+  catchError,
+  combineLatest,
+  finalize,
+  forkJoin,
+  map,
+  of,
+  switchMap,
+  tap,
+} from 'rxjs';
 import { SeoService } from '../../core/services/seo.service';
 import { LanguageService } from '../../core/services/language.service';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
@@ -69,7 +78,9 @@ export class ShopPageComponent {
     () => this.selectedCategory()?.slug ?? this.categorySlug() ?? null,
   );
   readonly cartItems = computed(() =>
-    (this.cart()?.items ?? []).filter((item) => item.lineItemType === 'SHOP_PRODUCT'),
+    (this.cart()?.items ?? []).filter(
+      (item) => item.lineItemType === 'SHOP_PRODUCT',
+    ),
   );
   readonly cartHasItems = computed(() => this.cartItems().length > 0);
 
@@ -87,7 +98,9 @@ export class ShopPageComponent {
 
     combineLatest([
       toObservable(this.categorySlug, { injector: this.injector }),
-      toObservable(this.languageService.currentLang, { injector: this.injector }),
+      toObservable(this.languageService.currentLang, {
+        injector: this.injector,
+      }),
     ])
       .pipe(
         tap(() => {
@@ -145,7 +158,9 @@ export class ShopPageComponent {
   }
 
   cartItemName(item: ShopCartItem): string {
-    return item.displayName || item.shopProductName || item.originalFilename || '-';
+    return (
+      item.displayName || item.shopProductName || item.originalFilename || '-'
+    );
   }
 
   cartItemVariant(item: ShopCartItem): string | null {
@@ -261,12 +276,14 @@ export class ShopPageComponent {
     }
 
     const title =
-      category.seoTitle || `${category.name} | ${this.translate.instant('SHOP.TITLE')} | 3D fab`;
+      category.seoTitle ||
+      `${category.name} | ${this.translate.instant('SHOP.TITLE')} | 3D fab`;
     const description =
       category.seoDescription ||
       category.description ||
       this.translate.instant('SHOP.CATALOG_META_DESCRIPTION');
-    const robots = category.indexable === false ? 'noindex, nofollow' : 'index, follow';
+    const robots =
+      category.indexable === false ? 'noindex, nofollow' : 'index, follow';
 
     this.seoService.applyPageSeo({
       title,

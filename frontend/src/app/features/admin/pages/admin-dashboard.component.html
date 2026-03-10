@@ -75,7 +75,10 @@
             [ngModel]="orderTypeFilter"
             (ngModelChange)="onOrderTypeFilterChange($event)"
           >
-            <option *ngFor="let option of orderTypeFilterOptions" [ngValue]="option">
+            <option
+              *ngFor="let option of orderTypeFilterOptions"
+              [ngValue]="option"
+            >
               {{ option }}
             </option>
           </select>
@@ -133,7 +136,9 @@
           <span
             class="order-type-badge"
             [class.order-type-badge--shop]="orderKind(selectedOrder) === 'SHOP'"
-            [class.order-type-badge--mixed]="orderKind(selectedOrder) === 'MIXED'"
+            [class.order-type-badge--mixed]="
+              orderKind(selectedOrder) === 'MIXED'
+            "
           >
             {{ orderKindLabel(selectedOrder) }}
           </span>
@@ -162,7 +167,8 @@
           <strong>Stato ordine</strong><span>{{ selectedOrder.status }}</span>
         </div>
         <div class="ui-meta-item">
-          <strong>Tipo ordine</strong><span>{{ orderKindLabel(selectedOrder) }}</span>
+          <strong>Tipo ordine</strong
+          ><span>{{ orderKindLabel(selectedOrder) }}</span>
         </div>
         <div class="ui-meta-item">
           <strong>Totale</strong
@@ -279,7 +285,9 @@
                 ></span>
                 <span>
                   {{ getItemColorLabel(item) }}
-                  <ng-container *ngIf="getItemColorCodeSuffix(item) as colorCode">
+                  <ng-container
+                    *ngIf="getItemColorCodeSuffix(item) as colorCode"
+                  >
                     ({{ colorCode }})
                   </ng-container>
                 </span>
@@ -300,7 +308,12 @@
             <button
               type="button"
               class="ui-button ui-button--ghost"
-              (click)="downloadItemFile(item.id, item.originalFilename || itemDisplayName(item))"
+              (click)="
+                downloadItemFile(
+                  item.id,
+                  item.originalFilename || itemDisplayName(item)
+                )
+              "
             >
               {{ downloadItemLabel(item) }}
             </button>
@@ -373,7 +386,10 @@
 
     <h4>Parametri per file</h4>
     <div class="file-color-list">
-      <div class="file-color-row" *ngFor="let item of printItems(selectedOrder)">
+      <div
+        class="file-color-row"
+        *ngFor="let item of printItems(selectedOrder)"
+      >
         <span class="filename">{{ item.originalFilename }}</span>
         <span class="file-color">
           {{ getItemMaterialLabel(item) }} | Colore:

@@ -1,7 +1,11 @@
 .product-page {
   padding: var(--space-8) 0 var(--space-12);
   background:
-    radial-gradient(circle at top left, rgba(250, 207, 10, 0.18), transparent 20%),
+    radial-gradient(
+      circle at top left,
+      rgba(250, 207, 10, 0.18),
+      transparent 20%
+    ),
     linear-gradient(180deg, #faf7ee 0%, var(--color-bg) 25%);
 }
 
@@ -40,7 +44,11 @@
   border-radius: 1.25rem;
   border: 1px solid rgba(16, 24, 32, 0.08);
   background:
-    radial-gradient(circle at top right, rgba(250, 207, 10, 0.3), transparent 30%),
+    radial-gradient(
+      circle at top right,
+      rgba(250, 207, 10, 0.3),
+      transparent 30%
+    ),
     linear-gradient(160deg, #f8f4ea 0%, #eee8db 100%);
   box-shadow: 0 18px 42px rgba(16, 24, 32, 0.08);
 }
@@ -325,13 +333,12 @@ h1 {
 }
 
 .skeleton-block {
-  background:
-    linear-gradient(
-      110deg,
-      rgba(255, 255, 255, 0.7) 8%,
-      rgba(238, 235, 226, 0.95) 18%,
-      rgba(255, 255, 255, 0.7) 33%
-    );
+  background: linear-gradient(
+    110deg,
+    rgba(255, 255, 255, 0.7) 8%,
+    rgba(238, 235, 226, 0.95) 18%,
+    rgba(255, 255, 255, 0.7) 33%
+  );
   background-size: 220% 100%;
   animation: skeleton 1.35s linear infinite;
 }
