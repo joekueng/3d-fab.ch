@@ -1,12 +1,13 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { map, Observable, tap } from 'rxjs';
+import { map, Observable, switchMap, tap, throwError } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import {
   PublicMediaUsageDto,
   PublicMediaVariantDto,
 } from '../../../core/services/public-media.service';
 import { LanguageService } from '../../../core/services/language.service';
+import { ShopRouteService } from './shop-route.service';
 
 export interface ShopCategoryRef {
   id: string;
@@ -179,6 +180,7 @@ export interface ShopCategoryNavNode {
 export class ShopService {
   private readonly http = inject(HttpClient);
   private readonly languageService = inject(LanguageService);
+  private readonly shopRouteService = inject(ShopRouteService);
   private readonly apiUrl = `${environment.apiUrl}/api/shop`;
 
   readonly cart = signal<ShopCartResponse | null>(null);
@@ -265,6 +267,31 @@ export class ShopService {
       {
         params: this.buildLangParams(),
       },
+    );
+  }
+
+  getProductByPublicPath(
+    productPathSegment: string,
+  ): Observable<ShopProductDetail> {
+    const lookup = this.shopRouteService.resolveProductLookup(productPathSegment);
+    if (!lookup.idPrefix && lookup.slugHint) {
+      return this.getProduct(lookup.slugHint);
+    }
+
+    return this.getProductCatalog().pipe(
+      map((catalog) =>
+        catalog.products.find(
+          (product) => product.id.toLowerCase().startsWith(lookup.idPrefix ?? ''),
+        ),
+      ),
+      switchMap((product) => {
+        if (!product) {
+          return throwError(() => ({
+            status: 404,
+          }));
+        }
+        return this.getProduct(product.slug);
+      }),
     );
   }
 

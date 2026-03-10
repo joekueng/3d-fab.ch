@@ -3,7 +3,12 @@ import {
   HttpClientTestingModule,
   HttpTestingController,
 } from '@angular/common/http/testing';
-import { ShopCartResponse, ShopService } from './shop.service';
+import {
+  ShopCartResponse,
+  ShopProductCatalogResponse,
+  ShopProductDetail,
+  ShopService,
+} from './shop.service';
 import { LanguageService } from '../../../core/services/language.service';
 
 describe('ShopService', () => {
@@ -85,6 +90,60 @@ describe('ShopService', () => {
     grandTotalChf: 36.8,
   });
 
+  const buildCatalog = (): ShopProductCatalogResponse => ({
+    categorySlug: null,
+    featuredOnly: false,
+    category: null,
+    products: [
+      {
+        id: '12345678-abcd-4abc-9abc-1234567890ab',
+        slug: 'desk-cable-clip',
+        name: 'Supporto cavo scrivania',
+        excerpt: 'Accessorio tecnico',
+        isFeatured: true,
+        sortOrder: 0,
+        category: {
+          id: 'category-1',
+          slug: 'accessori',
+          name: 'Accessori',
+        },
+        priceFromChf: 9.9,
+        priceToChf: 12.5,
+        defaultVariant: null,
+        primaryImage: null,
+        model3d: null,
+      },
+    ],
+  });
+
+  const buildProduct = (): ShopProductDetail => ({
+    id: '12345678-abcd-4abc-9abc-1234567890ab',
+    slug: 'desk-cable-clip',
+    name: 'Supporto cavo scrivania',
+    excerpt: 'Accessorio tecnico',
+    description: 'Descrizione prodotto',
+    seoTitle: null,
+    seoDescription: null,
+    ogTitle: null,
+    ogDescription: null,
+    indexable: true,
+    isFeatured: true,
+    sortOrder: 0,
+    category: {
+      id: 'category-1',
+      slug: 'accessori',
+      name: 'Accessori',
+    },
+    breadcrumbs: [],
+    priceFromChf: 9.9,
+    priceToChf: 12.5,
+    defaultVariant: null,
+    variants: [],
+    primaryImage: null,
+    images: [],
+    model3d: null,
+  });
+
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -142,5 +201,97 @@ describe('ShopService', () => {
 
     expect(service.cart()?.session?.id).toBe('session-1');
     expect(service.cartItemCount()).toBe(3);
+  });
+
+  it('resolves product detail from the public product slug', () => {
+    let response: ShopProductDetail | undefined;
+
+    service
+      .getProductByPublicPath('12345678-supporto-cavo-scrivania')
+      .subscribe((product) => {
+        response = product;
+      });
+
+    const catalogRequest = httpMock.expectOne((request) => {
+      return (
+        request.method === 'GET' &&
+        request.url === 'http://localhost:8000/api/shop/products' &&
+        request.params.get('lang') === 'it'
+      );
+    });
+    catalogRequest.flush(buildCatalog());
+
+    const detailRequest = httpMock.expectOne((request) => {
+      return (
+        request.method === 'GET' &&
+        request.url ===
+          'http://localhost:8000/api/shop/products/desk-cable-clip' &&
+        request.params.get('lang') === 'it'
+      );
+    });
+    detailRequest.flush(buildProduct());
+
+    expect(response?.id).toBe('12345678-abcd-4abc-9abc-1234567890ab');
+    expect(response?.name).toBe('Supporto cavo scrivania');
+  });
+
+  it('resolves product detail from uuid prefix even when slug tail does not match', () => {
+    let response: ShopProductDetail | undefined;
+
+    service
+      .getProductByPublicPath('12345678-qualunque-nome')
+      .subscribe((product) => {
+        response = product;
+      });
+
+    const catalogRequest = httpMock.expectOne((request) => {
+      return (
+        request.method === 'GET' &&
+        request.url === 'http://localhost:8000/api/shop/products' &&
+        request.params.get('lang') === 'it'
+      );
+    });
+    catalogRequest.flush(buildCatalog());
+
+    const detailRequest = httpMock.expectOne((request) => {
+      return (
+        request.method === 'GET' &&
+        request.url ===
+          'http://localhost:8000/api/shop/products/desk-cable-clip' &&
+        request.params.get('lang') === 'it'
+      );
+    });
+    detailRequest.flush(buildProduct());
+
+    expect(response?.id).toBe('12345678-abcd-4abc-9abc-1234567890ab');
+  });
+
+  it('resolves product detail from bare uuid prefix without slug tail', () => {
+    let response: ShopProductDetail | undefined;
+
+    service.getProductByPublicPath('12345678').subscribe((product) => {
+      response = product;
+    });
+
+    const catalogRequest = httpMock.expectOne((request) => {
+      return (
+        request.method === 'GET' &&
+        request.url === 'http://localhost:8000/api/shop/products' &&
+        request.params.get('lang') === 'it'
+      );
+    });
+    catalogRequest.flush(buildCatalog());
+
+    const detailRequest = httpMock.expectOne((request) => {
+      return (
+        request.method === 'GET' &&
+        request.url ===
+          'http://localhost:8000/api/shop/products/desk-cable-clip' &&
+        request.params.get('lang') === 'it'
+      );
+    });
+    detailRequest.flush(buildProduct());
+
+    expect(response?.id).toBe('12345678-abcd-4abc-9abc-1234567890ab');
   });
 });

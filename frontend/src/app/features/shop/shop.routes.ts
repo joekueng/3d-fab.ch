@@ -13,6 +13,13 @@ export const SHOP_ROUTES: Routes = [
     },
   },
   {
+    path: 'p/:productSlug',
+    component: ProductDetailComponent,
+    data: {
+      seoTitle: 'Prodotto | 3D fab',
+    },
+  },
+  {
     path: ':categorySlug/:productSlug',
     component: ProductDetailComponent,
     data: {

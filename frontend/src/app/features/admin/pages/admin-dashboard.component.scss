@@ -224,12 +224,6 @@ tbody tr.no-results:hover {
   white-space: nowrap;
 }
 
-.order-type-badge--shop,
-.item-kind-badge--shop {
-  background: color-mix(in srgb, var(--color-brand) 12%, white);
-  color: var(--color-brand);
-}
-
 .order-type-badge--mixed {
   background: color-mix(in srgb, #f59e0b 16%, white);
   color: #9a5b00;

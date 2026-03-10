@@ -21,7 +21,7 @@ public class MediaStorageService {
     private final String frontendBaseUrl;
 
     public MediaStorageService(@Value("${media.storage.root:storage_media}") String storageRoot,
-                               @Value("${app.frontend.base-url:${APP_FRONTEND_BASE_URL:http://localhost:8080}}") String frontendBaseUrl) {
+                               @Value("${app.frontend.base-url:${APP_FRONTEND_BASE_URL:http://localhost:8081}}") String frontendBaseUrl) {
         this.normalizedRootLocation = Paths.get(storageRoot).toAbsolutePath().normalize();
         this.originalRootLocation = normalizedRootLocation.resolve("original").normalize();
         this.publicRootLocation = normalizedRootLocation.resolve("public").normalize();
@@ -131,8 +131,11 @@ public class MediaStorageService {
 
     private String buildMediaBaseUrl() {
         String normalized = frontendBaseUrl != null ? frontendBaseUrl.trim() : "";
+        if (normalized.contains("localhost")){
+            return "http://localhost:8081";
+        }
         if (normalized.isBlank()) {
-            normalized = "http://localhost:4200";
+            normalized = "http://localhost:8081";
         }
         if (normalized.endsWith("/")) {
             normalized = normalized.substring(0, normalized.length() - 1);

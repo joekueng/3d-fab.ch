@@ -4,6 +4,62 @@
   gap: var(--space-5);
 }
 
+.admin-shop .image-language-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 3.15rem;
+  background: #ffffff;
+  color: var(--color-text-muted);
+}
+
+.admin-shop .image-language-button.empty {
+  opacity: 0.76;
+}
+
+.admin-shop .image-language-button.complete {
+  border-color: #b8ddc2;
+}
+
+.admin-shop .image-language-button.incomplete {
+  border-color: #e8c8c2;
+}
+
+.admin-shop .image-language-button.active {
+  background: #fff5b8;
+  border-color: var(--color-brand);
+  color: var(--color-text);
+  opacity: 1;
+}
+
+.image-language-button__label {
+  line-height: 1;
+}
+
+.image-language-button__state {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1rem;
+  height: 1rem;
+  padding: 0 0.2rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.08);
+  font-size: 0.62rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.admin-shop .image-language-button.complete .image-language-button__state {
+  background: #dcefdc;
+  color: #25603b;
+}
+
+.admin-shop .image-language-button.incomplete .image-language-button__state {
+  background: #f7ddd7;
+  color: #944329;
+}
+
 .section-header {
   display: flex;
   justify-content: space-between;
@@ -61,7 +117,6 @@
 .category-manager,
 .category-editor,
 .detail-stack,
-.form-section,
 .variant-stack,
 .image-stack,
 .media-grid,
@@ -69,6 +124,12 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
 .panel-heading {
@@ -211,6 +272,17 @@
   gap: var(--space-2);
 }
 
+.seo-counter {
+  justify-self: end;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.seo-counter--danger {
+  color: var(--color-danger-500);
+}
+
 .product-cell {
   display: grid;
   gap: 4px;
@@ -222,10 +294,6 @@ tbody tr {
 
 tbody tr.selected {
   background: #fff4c0;
-}
-
-.detail-panel {
-  gap: var(--space-4);
 }
 
 .detail-panel .ui-meta-item {
@@ -277,15 +345,16 @@ tbody tr.selected {
 }
 
 .detail-stack {
-  gap: var(--space-4);
+  gap: var(--space-3);
 }
 
 .variant-card,
 .image-item {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: linear-gradient(180deg, #fcfcfb 0%, #ffffff 100%);
+  background: var(--color-bg-card);
   padding: var(--space-3);
+  box-shadow: var(--shadow-sm);
 }
 
 .variant-card {
@@ -314,6 +383,19 @@ tbody tr.selected {
   flex-wrap: wrap;
   gap: var(--space-2);
   justify-content: flex-end;
+}
+
+.material-stock-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: baseline;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+
+.material-stock-summary strong {
+  color: var(--color-text);
 }
 
 .locked-panel,

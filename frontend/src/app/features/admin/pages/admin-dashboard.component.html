@@ -104,7 +104,6 @@
               <td>
                 <span
                   class="order-type-badge"
-                  [class.order-type-badge--shop]="orderKind(order) === 'SHOP'"
                   [class.order-type-badge--mixed]="orderKind(order) === 'MIXED'"
                 >
                   {{ orderKindLabel(order) }}
@@ -133,7 +132,6 @@
           <h2>Dettaglio ordine {{ selectedOrder.orderNumber }}</h2>
           <span
             class="order-type-badge"
-            [class.order-type-badge--shop]="orderKind(selectedOrder) === 'SHOP'"
             [class.order-type-badge--mixed]="
               orderKind(selectedOrder) === 'MIXED'
             "
@@ -261,7 +259,6 @@
               </p>
               <span
                 class="item-kind-badge"
-                [class.item-kind-badge--shop]="isShopItem(item)"
               >
                 {{ isShopItem(item) ? "Shop" : "Calcolatore" }}
               </span>

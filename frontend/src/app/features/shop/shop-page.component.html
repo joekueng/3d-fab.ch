@@ -7,14 +7,9 @@
           ? selectedCategory()?.description ||
             ("SHOP.CATEGORY_META"
               | translate: { count: selectedCategory()?.productCount || 0 })
-          : ("SHOP.CUSTOM_PART_CTA" | translate)
+          : ("SHOP.SUBTITLE" | translate)
       }}
     </p>
-    <div class="ui-simple-hero__actions hero-actions ui-inline-actions">
-      <app-button variant="outline" routerLink="/contact">
-        {{ "NAV.CONTACT" | translate }}
-      </app-button>
-    </div>
   </div>
 
   <div class="container shop-layout">
@@ -227,4 +222,21 @@
       }
     </section>
   </div>
+
+  <section class="container shop-custom-cta">
+    <app-card class="shop-custom-cta-card">
+      <div class="shop-custom-cta-inner">
+        <div class="shop-custom-cta-copy">
+          <p class="panel-kicker">{{ "SHOP.CUSTOM_PART_FOOTER_TITLE" | translate }}</p>
+          <h2 class="shop-custom-cta-title">
+            {{ "SHOP.CUSTOM_PART_FOOTER_TEXT" | translate }}
+          </h2>
+        </div>
+
+        <app-button variant="primary" routerLink="/contact">
+          {{ "NAV.CONTACT" | translate }}
+        </app-button>
+      </div>
+    </app-card>
+  </section>
 </section>

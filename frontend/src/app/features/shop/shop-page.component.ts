@@ -33,6 +33,7 @@ import {
   ShopProductSummary,
   ShopService,
 } from './services/shop.service';
+import { ShopRouteService } from './services/shop-route.service';
 
 @Component({
   selector: 'app-shop-page',
@@ -55,6 +56,7 @@ export class ShopPageComponent {
   private readonly translate = inject(TranslateService);
   private readonly seoService = inject(SeoService);
   private readonly languageService = inject(LanguageService);
+  private readonly shopRouteService = inject(ShopRouteService);
   readonly shopService = inject(ShopService);
 
   readonly categorySlug = input<string | undefined>();
@@ -167,8 +169,7 @@ export class ShopPageComponent {
   }
 
   navigateToCategory(slug?: string | null): void {
-    const commands = slug ? ['/shop', slug] : ['/shop'];
-    this.router.navigate(commands);
+    this.router.navigate(this.shopRouteService.shopRootCommands(slug));
   }
 
   increaseQuantity(item: ShopCartItem): void {

@@ -375,16 +375,18 @@ public class PublicShopCatalogService {
                                                     Map<String, List<PublicMediaUsageDto>> productMediaBySlug,
                                                     String language) {
         List<PublicMediaUsageDto> images = productMediaBySlug.getOrDefault(productMediaUsageKey(entry.product()), List.of());
+        String localizedSeoTitle = entry.product().getSeoTitleForLanguage(language);
+        String localizedSeoDescription = entry.product().getSeoDescriptionForLanguage(language);
         return new ShopProductDetailDto(
                 entry.product().getId(),
                 entry.product().getSlug(),
                 entry.product().getNameForLanguage(language),
                 entry.product().getExcerptForLanguage(language),
                 entry.product().getDescriptionForLanguage(language),
-                entry.product().getSeoTitle(),
-                entry.product().getSeoDescription(),
-                entry.product().getOgTitle(),
-                entry.product().getOgDescription(),
+                localizedSeoTitle,
+                localizedSeoDescription,
+                localizedSeoTitle,
+                localizedSeoDescription,
                 entry.product().getIndexable(),
                 entry.product().getIsFeatured(),
                 entry.product().getSortOrder(),

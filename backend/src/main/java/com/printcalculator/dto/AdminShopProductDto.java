@@ -27,7 +27,15 @@ public class AdminShopProductDto {
     private String descriptionDe;
     private String descriptionFr;
     private String seoTitle;
+    private String seoTitleIt;
+    private String seoTitleEn;
+    private String seoTitleDe;
+    private String seoTitleFr;
     private String seoDescription;
+    private String seoDescriptionIt;
+    private String seoDescriptionEn;
+    private String seoDescriptionDe;
+    private String seoDescriptionFr;
     private String ogTitle;
     private String ogDescription;
     private Boolean indexable;
@@ -215,12 +223,76 @@ public class AdminShopProductDto {
         this.seoTitle = seoTitle;
     }
 
+    public String getSeoTitleIt() {
+        return seoTitleIt;
+    }
+
+    public void setSeoTitleIt(String seoTitleIt) {
+        this.seoTitleIt = seoTitleIt;
+    }
+
+    public String getSeoTitleEn() {
+        return seoTitleEn;
+    }
+
+    public void setSeoTitleEn(String seoTitleEn) {
+        this.seoTitleEn = seoTitleEn;
+    }
+
+    public String getSeoTitleDe() {
+        return seoTitleDe;
+    }
+
+    public void setSeoTitleDe(String seoTitleDe) {
+        this.seoTitleDe = seoTitleDe;
+    }
+
+    public String getSeoTitleFr() {
+        return seoTitleFr;
+    }
+
+    public void setSeoTitleFr(String seoTitleFr) {
+        this.seoTitleFr = seoTitleFr;
+    }
+
     public String getSeoDescription() {
         return seoDescription;
     }
 
     public void setSeoDescription(String seoDescription) {
         this.seoDescription = seoDescription;
+    }
+
+    public String getSeoDescriptionIt() {
+        return seoDescriptionIt;
+    }
+
+    public void setSeoDescriptionIt(String seoDescriptionIt) {
+        this.seoDescriptionIt = seoDescriptionIt;
+    }
+
+    public String getSeoDescriptionEn() {
+        return seoDescriptionEn;
+    }
+
+    public void setSeoDescriptionEn(String seoDescriptionEn) {
+        this.seoDescriptionEn = seoDescriptionEn;
+    }
+
+    public String getSeoDescriptionDe() {
+        return seoDescriptionDe;
+    }
+
+    public void setSeoDescriptionDe(String seoDescriptionDe) {
+        this.seoDescriptionDe = seoDescriptionDe;
+    }
+
+    public String getSeoDescriptionFr() {
+        return seoDescriptionFr;
+    }
+
+    public void setSeoDescriptionFr(String seoDescriptionFr) {
+        this.seoDescriptionFr = seoDescriptionFr;
     }
 
     public String getOgTitle() {

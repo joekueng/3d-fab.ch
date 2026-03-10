@@ -1055,7 +1055,15 @@ CREATE TABLE IF NOT EXISTS shop_product
     description_de      text,
     description_fr      text,
     seo_title           text,
+    seo_title_it        text,
+    seo_title_en        text,
+    seo_title_de        text,
+    seo_title_fr        text,
     seo_description     text,
+    seo_description_it  text,
+    seo_description_en  text,
+    seo_description_de  text,
+    seo_description_fr  text,
     og_title            text,
     og_description      text,
     indexable           boolean     NOT NULL DEFAULT true,
@@ -1065,6 +1073,16 @@ CREATE TABLE IF NOT EXISTS shop_product
     created_at          timestamptz NOT NULL DEFAULT now(),
     updated_at          timestamptz NOT NULL DEFAULT now()
 );
+
+ALTER TABLE shop_product
+    ADD COLUMN IF NOT EXISTS seo_title_it text,
+    ADD COLUMN IF NOT EXISTS seo_title_en text,
+    ADD COLUMN IF NOT EXISTS seo_title_de text,
+    ADD COLUMN IF NOT EXISTS seo_title_fr text,
+    ADD COLUMN IF NOT EXISTS seo_description_it text,
+    ADD COLUMN IF NOT EXISTS seo_description_en text,
+    ADD COLUMN IF NOT EXISTS seo_description_de text,
+    ADD COLUMN IF NOT EXISTS seo_description_fr text;
 
 CREATE INDEX IF NOT EXISTS ix_shop_product_category_active_sort
     ON shop_product (shop_category_id, is_active, sort_order, created_at DESC);

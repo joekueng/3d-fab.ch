@@ -86,8 +86,32 @@ public class ShopProduct {
     @Column(name = "seo_title", length = Integer.MAX_VALUE)
     private String seoTitle;
 
+    @Column(name = "seo_title_it", length = Integer.MAX_VALUE)
+    private String seoTitleIt;
+
+    @Column(name = "seo_title_en", length = Integer.MAX_VALUE)
+    private String seoTitleEn;
+
+    @Column(name = "seo_title_de", length = Integer.MAX_VALUE)
+    private String seoTitleDe;
+
+    @Column(name = "seo_title_fr", length = Integer.MAX_VALUE)
+    private String seoTitleFr;
+
     @Column(name = "seo_description", length = Integer.MAX_VALUE)
     private String seoDescription;
+
+    @Column(name = "seo_description_it", length = Integer.MAX_VALUE)
+    private String seoDescriptionIt;
+
+    @Column(name = "seo_description_en", length = Integer.MAX_VALUE)
+    private String seoDescriptionEn;
+
+    @Column(name = "seo_description_de", length = Integer.MAX_VALUE)
+    private String seoDescriptionDe;
+
+    @Column(name = "seo_description_fr", length = Integer.MAX_VALUE)
+    private String seoDescriptionFr;
 
     @Column(name = "og_title", length = Integer.MAX_VALUE)
     private String ogTitle;
@@ -319,6 +343,70 @@ public class ShopProduct {
         this.seoDescription = seoDescription;
     }
 
+    public String getSeoTitleIt() {
+        return seoTitleIt;
+    }
+
+    public void setSeoTitleIt(String seoTitleIt) {
+        this.seoTitleIt = seoTitleIt;
+    }
+
+    public String getSeoTitleEn() {
+        return seoTitleEn;
+    }
+
+    public void setSeoTitleEn(String seoTitleEn) {
+        this.seoTitleEn = seoTitleEn;
+    }
+
+    public String getSeoTitleDe() {
+        return seoTitleDe;
+    }
+
+    public void setSeoTitleDe(String seoTitleDe) {
+        this.seoTitleDe = seoTitleDe;
+    }
+
+    public String getSeoTitleFr() {
+        return seoTitleFr;
+    }
+
+    public void setSeoTitleFr(String seoTitleFr) {
+        this.seoTitleFr = seoTitleFr;
+    }
+
+    public String getSeoDescriptionIt() {
+        return seoDescriptionIt;
+    }
+
+    public void setSeoDescriptionIt(String seoDescriptionIt) {
+        this.seoDescriptionIt = seoDescriptionIt;
+    }
+
+    public String getSeoDescriptionEn() {
+        return seoDescriptionEn;
+    }
+
+    public void setSeoDescriptionEn(String seoDescriptionEn) {
+        this.seoDescriptionEn = seoDescriptionEn;
+    }
+
+    public String getSeoDescriptionDe() {
+        return seoDescriptionDe;
+    }
+
+    public void setSeoDescriptionDe(String seoDescriptionDe) {
+        this.seoDescriptionDe = seoDescriptionDe;
+    }
+
+    public String getSeoDescriptionFr() {
+        return seoDescriptionFr;
+    }
+
+    public void setSeoDescriptionFr(String seoDescriptionFr) {
+        this.seoDescriptionFr = seoDescriptionFr;
+    }
+
     public String getOgTitle() {
         return ogTitle;
     }
@@ -423,6 +511,36 @@ public class ShopProduct {
             case "en" -> descriptionEn = value;
             case "de" -> descriptionDe = value;
             case "fr" -> descriptionFr = value;
+            default -> {
+            }
+        }
+    }
+
+    public String getSeoTitleForLanguage(String language) {
+        return resolveLocalizedValue(language, seoTitle, seoTitleIt, seoTitleEn, seoTitleDe, seoTitleFr);
+    }
+
+    public void setSeoTitleForLanguage(String language, String value) {
+        switch (normalizeLanguage(language)) {
+            case "it" -> seoTitleIt = value;
+            case "en" -> seoTitleEn = value;
+            case "de" -> seoTitleDe = value;
+            case "fr" -> seoTitleFr = value;
+            default -> {
+            }
+        }
+    }
+
+    public String getSeoDescriptionForLanguage(String language) {
+        return resolveLocalizedValue(language, seoDescription, seoDescriptionIt, seoDescriptionEn, seoDescriptionDe, seoDescriptionFr);
+    }
+
+    public void setSeoDescriptionForLanguage(String language, String value) {
+        switch (normalizeLanguage(language)) {
+            case "it" -> seoDescriptionIt = value;
+            case "en" -> seoDescriptionEn = value;
+            case "de" -> seoDescriptionDe = value;
+            case "fr" -> seoDescriptionFr = value;
             default -> {
             }
         }

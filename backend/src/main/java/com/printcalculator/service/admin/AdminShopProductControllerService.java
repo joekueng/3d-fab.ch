@@ -163,7 +163,13 @@ public class AdminShopProductControllerService {
             }
         }
 
-        shopProductModelAssetRepository.findByProduct_Id(productId).ifPresent(asset -> deleteExistingModelFile(asset, productId));
+        shopProductModelAssetRepository.findByProduct_Id(productId).ifPresent(asset -> {
+            deleteExistingModelFile(asset, productId);
+            shopProductModelAssetRepository.delete(asset);
+        });
+        if (!variants.isEmpty()) {
+            shopProductVariantRepository.deleteAll(variants);
+        }
         shopProductRepository.delete(product);
     }
 
@@ -315,10 +321,18 @@ public class AdminShopProductControllerService {
         product.setDescriptionEn(localizedContent.descriptions().get("en"));
         product.setDescriptionDe(localizedContent.descriptions().get("de"));
         product.setDescriptionFr(localizedContent.descriptions().get("fr"));
-        product.setSeoTitle(normalizeOptional(payload.getSeoTitle()));
-        product.setSeoDescription(normalizeOptional(payload.getSeoDescription()));
-        product.setOgTitle(normalizeOptional(payload.getOgTitle()));
-        product.setOgDescription(normalizeOptional(payload.getOgDescription()));
+        product.setSeoTitle(localizedContent.defaultSeoTitle());
+        product.setSeoTitleIt(localizedContent.seoTitles().get("it"));
+        product.setSeoTitleEn(localizedContent.seoTitles().get("en"));
+        product.setSeoTitleDe(localizedContent.seoTitles().get("de"));
+        product.setSeoTitleFr(localizedContent.seoTitles().get("fr"));
+        product.setSeoDescription(localizedContent.defaultSeoDescription());
+        product.setSeoDescriptionIt(localizedContent.seoDescriptions().get("it"));
+        product.setSeoDescriptionEn(localizedContent.seoDescriptions().get("en"));
+        product.setSeoDescriptionDe(localizedContent.seoDescriptions().get("de"));
+        product.setSeoDescriptionFr(localizedContent.seoDescriptions().get("fr"));
+        product.setOgTitle(localizedContent.defaultSeoTitle());
+        product.setOgDescription(localizedContent.defaultSeoDescription());
         product.setIndexable(payload.getIndexable() == null || payload.getIndexable());
         product.setIsFeatured(Boolean.TRUE.equals(payload.getIsFeatured()));
         product.setIsActive(payload.getIsActive() == null || payload.getIsActive());
@@ -374,16 +388,23 @@ public class AdminShopProductControllerService {
         }
 
         List<AdminUpsertShopProductVariantRequest> normalized = new ArrayList<>(payloads);
-        Set<String> colorKeys = new LinkedHashSet<>();
+        Set<String> variantKeys = new LinkedHashSet<>();
         int defaultCount = 0;
         for (AdminUpsertShopProductVariantRequest payload : normalized) {
             if (payload == null) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Variant payload is required");
             }
             String colorName = normalizeRequired(payload.getColorName(), "Variant colorName is required");
-            String colorKey = colorName.toLowerCase(Locale.ROOT);
-            if (!colorKeys.add(colorKey)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Duplicate variant colorName: " + colorName);
+            String materialCode = normalizeRequired(
+                    payload.getInternalMaterialCode(),
+                    "Variant internalMaterialCode is required"
+            ).toUpperCase(Locale.ROOT);
+            String variantKey = materialCode + "|" + colorName.toLowerCase(Locale.ROOT);
+            if (!variantKeys.add(variantKey)) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Duplicate variant combination: " + materialCode + " / " + colorName
+                );
             }
             if (Boolean.TRUE.equals(payload.getIsDefault())) {
                 defaultCount++;
@@ -467,7 +488,15 @@ public class AdminShopProductControllerService {
         dto.setDescriptionDe(product.getDescriptionDe());
         dto.setDescriptionFr(product.getDescriptionFr());
         dto.setSeoTitle(product.getSeoTitle());
+        dto.setSeoTitleIt(product.getSeoTitleIt());
+        dto.setSeoTitleEn(product.getSeoTitleEn());
+        dto.setSeoTitleDe(product.getSeoTitleDe());
+        dto.setSeoTitleFr(product.getSeoTitleFr());
         dto.setSeoDescription(product.getSeoDescription());
+        dto.setSeoDescriptionIt(product.getSeoDescriptionIt());
+        dto.setSeoDescriptionEn(product.getSeoDescriptionEn());
+        dto.setSeoDescriptionDe(product.getSeoDescriptionDe());
+        dto.setSeoDescriptionFr(product.getSeoDescriptionFr());
         dto.setOgTitle(product.getOgTitle());
         dto.setOgDescription(product.getOgDescription());
         dto.setIndexable(product.getIndexable());
@@ -596,13 +625,43 @@ public class AdminShopProductControllerService {
         descriptions.put("de", firstNonBlank(normalizeOptional(payload.getDescriptionDe()), fallbackDescription));
         descriptions.put("fr", firstNonBlank(normalizeOptional(payload.getDescriptionFr()), fallbackDescription));
 
+        String fallbackSeoTitle = firstNonBlank(
+                normalizeOptional(payload.getSeoTitle()),
+                normalizeOptional(payload.getSeoTitleIt()),
+                normalizeOptional(payload.getSeoTitleEn()),
+                normalizeOptional(payload.getSeoTitleDe()),
+                normalizeOptional(payload.getSeoTitleFr())
+        );
+        Map<String, String> seoTitles = new LinkedHashMap<>();
+        seoTitles.put("it", firstNonBlank(normalizeOptional(payload.getSeoTitleIt()), fallbackSeoTitle));
+        seoTitles.put("en", firstNonBlank(normalizeOptional(payload.getSeoTitleEn()), fallbackSeoTitle));
+        seoTitles.put("de", firstNonBlank(normalizeOptional(payload.getSeoTitleDe()), fallbackSeoTitle));
+        seoTitles.put("fr", firstNonBlank(normalizeOptional(payload.getSeoTitleFr()), fallbackSeoTitle));
+
+        String fallbackSeoDescription = firstNonBlank(
+                normalizeOptional(payload.getSeoDescription()),
+                normalizeOptional(payload.getSeoDescriptionIt()),
+                normalizeOptional(payload.getSeoDescriptionEn()),
+                normalizeOptional(payload.getSeoDescriptionDe()),
+                normalizeOptional(payload.getSeoDescriptionFr())
+        );
+        Map<String, String> seoDescriptions = new LinkedHashMap<>();
+        seoDescriptions.put("it", validateSeoDescriptionLength(firstNonBlank(normalizeOptional(payload.getSeoDescriptionIt()), fallbackSeoDescription), "Italian"));
+        seoDescriptions.put("en", validateSeoDescriptionLength(firstNonBlank(normalizeOptional(payload.getSeoDescriptionEn()), fallbackSeoDescription), "English"));
+        seoDescriptions.put("de", validateSeoDescriptionLength(firstNonBlank(normalizeOptional(payload.getSeoDescriptionDe()), fallbackSeoDescription), "German"));
+        seoDescriptions.put("fr", validateSeoDescriptionLength(firstNonBlank(normalizeOptional(payload.getSeoDescriptionFr()), fallbackSeoDescription), "French"));
+
         return new LocalizedProductContent(
                 names.get("it"),
                 firstNonBlank(excerpts.get("it"), fallbackExcerpt),
                 firstNonBlank(descriptions.get("it"), fallbackDescription),
+                firstNonBlank(seoTitles.get("it"), fallbackSeoTitle),
+                firstNonBlank(seoDescriptions.get("it"), fallbackSeoDescription),
                 names,
                 excerpts,
-                descriptions
+                descriptions,
+                seoTitles,
+                seoDescriptions
         );
     }
 
@@ -668,6 +727,13 @@ public class AdminShopProductControllerService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Variant colorHex must be in format #RRGGBB");
         }
         return normalized.toUpperCase(Locale.ROOT);
+    }
+
+    private String validateSeoDescriptionLength(String value, String languageLabel) {
+        if (value != null && value.length() > 160) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, languageLabel + " SEO description must be at most 160 characters");
+        }
+        return value;
     }
 
     private void validateModelUpload(MultipartFile file) {
@@ -786,9 +852,13 @@ public class AdminShopProductControllerService {
             String defaultName,
             String defaultExcerpt,
             String defaultDescription,
+            String defaultSeoTitle,
+            String defaultSeoDescription,
             Map<String, String> names,
             Map<String, String> excerpts,
-            Map<String, String> descriptions
+            Map<String, String> descriptions,
+            Map<String, String> seoTitles,
+            Map<String, String> seoDescriptions
     ) {
     }
 }

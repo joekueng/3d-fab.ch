@@ -22,6 +22,20 @@ import {
   ShopProductVariantOption,
   ShopService,
 } from './services/shop.service';
+import { ShopRouteService } from './services/shop-route.service';
+
+interface ShopMaterialOption {
+  key: string;
+  label: string;
+  variants: ShopProductVariantOption[];
+  priceFromChf: number;
+}
+
+interface ShopMaterialProperty {
+  labelKey: string;
+  valueKey: string;
+  tone: 'neutral' | 'strong' | 'soft';
+}
 
 @Component({
   selector: 'app-product-detail',
@@ -44,6 +58,7 @@ export class ProductDetailComponent {
   private readonly translate = inject(TranslateService);
   private readonly seoService = inject(SeoService);
   private readonly languageService = inject(LanguageService);
+  private readonly shopRouteService = inject(ShopRouteService);
   readonly shopService = inject(ShopService);
 
   readonly categorySlug = input<string | undefined>();
@@ -57,6 +72,9 @@ export class ProductDetailComponent {
   readonly quantity = signal(1);
   readonly isAddingToCart = signal(false);
   readonly addSuccess = signal(false);
+  readonly selectedMaterialKey = signal<string | null>(null);
+  readonly colorPopupOpen = signal(false);
+  readonly modelModalOpen = signal(false);
 
   readonly modelLoading = signal(false);
   readonly modelError = signal(false);
@@ -75,6 +93,59 @@ export class ProductDetailComponent {
       null
     );
   });
+
+  readonly materialOptions = computed<ShopMaterialOption[]>(() => {
+    const product = this.product();
+    if (!product) {
+      return [];
+    }
+
+    const groups = new Map<string, ShopMaterialOption>();
+    for (const variant of product.variants) {
+      const label = this.materialLabelForVariant(variant);
+      const key = label.toLowerCase();
+      const group = groups.get(key);
+      if (group) {
+        group.variants.push(variant);
+        group.priceFromChf = Math.min(group.priceFromChf, variant.priceChf);
+        continue;
+      }
+
+      groups.set(key, {
+        key,
+        label,
+        variants: [variant],
+        priceFromChf: variant.priceChf,
+      });
+    }
+
+    return Array.from(groups.values());
+  });
+
+  readonly selectedMaterial = computed<ShopMaterialOption | null>(() => {
+    const selectedKey = this.selectedMaterialKey();
+    const materials = this.materialOptions();
+    if (!materials.length) {
+      return null;
+    }
+    return (
+      materials.find((material) => material.key === selectedKey) ??
+      materials.find((material) =>
+        material.variants.some(
+          (variant) => variant.id === this.selectedVariant()?.id,
+        ),
+      ) ??
+      materials[0]
+    );
+  });
+
+  readonly colorOptions = computed<ShopProductVariantOption[]>(() =>
+    this.selectedMaterial()?.variants ?? [],
+  );
+
+  readonly selectedMaterialProperties = computed<ShopMaterialProperty[]>(() =>
+    this.materialPropertiesFor(this.selectedMaterial()?.label),
+  );
 
   readonly galleryImages = computed(() => {
     const product = this.product();
@@ -101,6 +172,15 @@ export class ProductDetailComponent {
       images[0] ??
       null
     );
+  });
+
+  readonly selectedImageIndex = computed(() => {
+    const images = this.galleryImages();
+    const selectedAssetId = this.selectedImageAssetId();
+    const index = images.findIndex(
+      (image) => image.mediaAssetId === selectedAssetId,
+    );
+    return index >= 0 ? index : 0;
   });
 
   readonly selectedVariantCartQuantity = computed(() =>
@@ -131,6 +211,8 @@ export class ProductDetailComponent {
           this.error.set(null);
           this.addSuccess.set(false);
           this.modelError.set(false);
+          this.colorPopupOpen.set(false);
+          this.modelModalOpen.set(false);
         }),
         switchMap(([productSlug]) => {
           if (!productSlug) {
@@ -139,7 +221,7 @@ export class ProductDetailComponent {
             return of(null);
           }
 
-          return this.shopService.getProduct(productSlug).pipe(
+          return this.shopService.getProductByPublicPath(productSlug).pipe(
             catchError((error) => {
               this.product.set(null);
               this.selectedVariantId.set(null);
@@ -165,24 +247,22 @@ export class ProductDetailComponent {
         this.selectedVariantId.set(
           product.defaultVariant?.id ?? product.variants[0]?.id ?? null,
         );
+        this.selectedMaterialKey.set(
+          this.materialKeyForVariant(
+            product.defaultVariant ?? product.variants[0] ?? null,
+          ),
+        );
         this.selectedImageAssetId.set(
           product.primaryImage?.mediaAssetId ??
             product.images[0]?.mediaAssetId ??
             null,
         );
         this.quantity.set(1);
+        this.syncPublicUrl(product);
         this.applySeo(product);
-
-        if (product.model3d?.url && product.model3d.originalFilename) {
-          this.loadModelPreview(
-            product.model3d.url,
-            product.model3d.originalFilename,
-          );
-        } else {
-          this.modelFile.set(null);
-          this.modelLoading.set(false);
-          this.modelError.set(false);
-        }
+        this.modelFile.set(null);
+        this.modelLoading.set(false);
+        this.modelError.set(false);
       });
   }
 
@@ -201,8 +281,45 @@ export class ProductDetailComponent {
     this.selectedImageAssetId.set(mediaAssetId);
   }
 
+  showPreviousImage(): void {
+    const images = this.galleryImages();
+    if (images.length < 2) {
+      return;
+    }
+    const nextIndex =
+      (this.selectedImageIndex() - 1 + images.length) % images.length;
+    this.selectedImageAssetId.set(images[nextIndex].mediaAssetId);
+  }
+
+  showNextImage(): void {
+    const images = this.galleryImages();
+    if (images.length < 2) {
+      return;
+    }
+    const nextIndex = (this.selectedImageIndex() + 1) % images.length;
+    this.selectedImageAssetId.set(images[nextIndex].mediaAssetId);
+  }
+
   selectVariant(variant: ShopProductVariantOption): void {
     this.selectedVariantId.set(variant.id);
+    this.selectedMaterialKey.set(this.materialKeyForVariant(variant));
+    this.colorPopupOpen.set(false);
+    this.addSuccess.set(false);
+  }
+
+  selectMaterial(materialKey: string): void {
+    this.selectedMaterialKey.set(materialKey);
+    this.colorPopupOpen.set(false);
+    const material = this.materialOptions().find(
+      (item) => item.key === materialKey,
+    );
+    const nextVariant =
+      material?.variants.find((variant) => variant.isDefault) ??
+      material?.variants[0] ??
+      null;
+    if (nextVariant) {
+      this.selectedVariantId.set(nextVariant.id);
+    }
     this.addSuccess.set(false);
   }
 
@@ -263,9 +380,67 @@ export class ProductDetailComponent {
     return variant.colorHex || '#d5d8de';
   }
 
+  materialPriceLabel(material: ShopMaterialOption): number {
+    return material.priceFromChf;
+  }
+
+  materialColorCount(material: ShopMaterialOption): number {
+    return material.variants.length;
+  }
+
+  toggleColorPopup(): void {
+    this.colorPopupOpen.update((open) => !open);
+  }
+
+  closeColorPopup(): void {
+    this.colorPopupOpen.set(false);
+  }
+
+  openModelModal(): void {
+    const model = this.product()?.model3d;
+    if (!model) {
+      return;
+    }
+
+    this.colorPopupOpen.set(false);
+    this.modelModalOpen.set(true);
+
+    if (this.modelFile() || this.modelLoading()) {
+      return;
+    }
+
+    this.loadModelPreview(model.url, model.originalFilename);
+  }
+
+  closeModelModal(): void {
+    this.modelModalOpen.set(false);
+  }
+
+  shopRootLink(): string[] {
+    return this.shopRouteService.shopRootCommands();
+  }
+
+  categoryLink(slug: string | null | undefined): string[] {
+    return this.shopRouteService.shopRootCommands(slug);
+  }
+
   productLinkRoot(): string[] {
     const categorySlug = this.product()?.category.slug || this.categorySlug();
-    return categorySlug ? ['/shop', categorySlug] : ['/shop'];
+    return this.shopRouteService.shopRootCommands(categorySlug);
+  }
+
+  goBackToShop(): void {
+    const returnUrl =
+      typeof history.state?.shopReturnUrl === 'string'
+        ? history.state.shopReturnUrl
+        : null;
+
+    if (returnUrl && this.shopRouteService.isCatalogUrl(returnUrl)) {
+      void this.router.navigateByUrl(returnUrl);
+      return;
+    }
+
+    void this.router.navigate(this.productLinkRoot());
   }
 
   private loadModelPreview(urlOrPath: string, filename: string): void {
@@ -316,6 +491,132 @@ export class ProductDetailComponent {
       robots: 'index, follow',
       ogTitle: title,
       ogDescription: description,
+    });
+  }
+
+  private materialLabelForVariant(variant: ShopProductVariantOption | null): string {
+    return String(variant?.variantLabel || '').trim() || 'Standard';
+  }
+
+  private materialKeyForVariant(variant: ShopProductVariantOption | null): string | null {
+    if (!variant) {
+      return null;
+    }
+    return this.materialLabelForVariant(variant).toLowerCase();
+  }
+
+  private materialPropertiesFor(
+    materialLabel: string | null | undefined,
+  ): ShopMaterialProperty[] {
+    const normalized = String(materialLabel ?? '').trim().toUpperCase();
+
+    if (normalized.includes('ASA')) {
+      return [
+        {
+          labelKey: 'SHOP.PROPERTY_UV',
+          valueKey: 'SHOP.PROPERTY_HIGH',
+          tone: 'strong',
+        },
+        {
+          labelKey: 'SHOP.PROPERTY_WEATHER',
+          valueKey: 'SHOP.PROPERTY_HIGH',
+          tone: 'strong',
+        },
+        {
+          labelKey: 'SHOP.PROPERTY_RIGIDITY',
+          valueKey: 'SHOP.PROPERTY_RIGID',
+          tone: 'neutral',
+        },
+      ];
+    }
+
+    if (normalized.includes('PETG') || normalized.includes('PC')) {
+      return [
+        {
+          labelKey: 'SHOP.PROPERTY_UV',
+          valueKey: 'SHOP.PROPERTY_MEDIUM',
+          tone: 'neutral',
+        },
+        {
+          labelKey: 'SHOP.PROPERTY_WEATHER',
+          valueKey: 'SHOP.PROPERTY_HIGH',
+          tone: 'strong',
+        },
+        {
+          labelKey: 'SHOP.PROPERTY_RIGIDITY',
+          valueKey: normalized.includes('PC')
+            ? 'SHOP.PROPERTY_HIGH'
+            : 'SHOP.PROPERTY_RIGID',
+          tone: 'neutral',
+        },
+      ];
+    }
+
+    if (normalized.includes('TPU')) {
+      return [
+        {
+          labelKey: 'SHOP.PROPERTY_UV',
+          valueKey: 'SHOP.PROPERTY_MEDIUM',
+          tone: 'neutral',
+        },
+        {
+          labelKey: 'SHOP.PROPERTY_WEATHER',
+          valueKey: 'SHOP.PROPERTY_MEDIUM',
+          tone: 'soft',
+        },
+        {
+          labelKey: 'SHOP.PROPERTY_RIGIDITY',
+          valueKey: 'SHOP.PROPERTY_FLEXIBLE',
+          tone: 'soft',
+        },
+      ];
+    }
+
+    return [
+      {
+        labelKey: 'SHOP.PROPERTY_UV',
+        valueKey: 'SHOP.PROPERTY_LOW',
+        tone: 'soft',
+      },
+      {
+        labelKey: 'SHOP.PROPERTY_WEATHER',
+        valueKey: 'SHOP.PROPERTY_LOW',
+        tone: 'soft',
+      },
+      {
+        labelKey: 'SHOP.PROPERTY_RIGIDITY',
+        valueKey: 'SHOP.PROPERTY_RIGID',
+        tone: 'neutral',
+      },
+    ];
+  }
+
+  private syncPublicUrl(product: ShopProductDetail): void {
+    const currentProductSlug = this.productSlug()?.trim().toLowerCase() ?? '';
+    const targetProductSlug = this.shopRouteService.productPathSegment(product);
+    if (currentProductSlug === targetProductSlug) {
+      return;
+    }
+
+    const currentTree = this.router.parseUrl(this.router.url);
+    const targetTree = this.router.createUrlTree(
+      ['/', this.languageService.selectedLang(), 'shop', 'p', targetProductSlug],
+      {
+        queryParams: currentTree.queryParams,
+        fragment: currentTree.fragment ?? undefined,
+      },
+    );
+
+    if (
+      this.router.serializeUrl(targetTree) ===
+      this.router.serializeUrl(currentTree)
+    ) {
+      return;
+    }
+
+    void this.router.navigateByUrl(targetTree, {
+      replaceUrl: true,
+      state: history.state,
     });
   }
 }

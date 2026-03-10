@@ -1,5 +1,5 @@
 <article class="product-card">
-  <a class="media" [routerLink]="productLink()">
+  <a class="media" [routerLink]="productLink()" [state]="navigationState()">
     @if (imageUrl(); as imageUrl) {
       <img
         [src]="imageUrl"
@@ -13,6 +13,11 @@
     }
 
     <div class="card-badges">
+      @if (hasModelPreview()) {
+        <span class="badge badge-model">
+          {{ "SHOP.MODEL_3D" | translate }}
+        </span>
+      }
       @if (cartQuantity() > 0) {
         <span class="badge badge-cart">
           {{ "SHOP.IN_CART_SHORT" | translate: { count: cartQuantity() } }}
@@ -24,13 +29,12 @@
   <div class="content">
     <div class="meta">
       <span class="category">{{ product().category.name }}</span>
-      @if (product().model3d) {
-        <span class="model-pill">{{ "SHOP.MODEL_3D" | translate }}</span>
-      }
     </div>
 
     <h3 class="name">
-      <a [routerLink]="productLink()">{{ product().name }}</a>
+      <a [routerLink]="productLink()" [state]="navigationState()">{{
+        product().name
+      }}</a>
     </h3>
 
     <p class="excerpt">
@@ -45,9 +49,26 @@
         }
       </div>
 
-      <a [routerLink]="productLink()" class="view-btn">{{
-        "SHOP.DETAILS" | translate
-      }}</a>
+      <div class="footer-actions">
+        <button
+          type="button"
+          class="cart-btn"
+          (click)="addToCart()"
+          [disabled]="!defaultVariantId() || addingToCart()"
+        >
+          {{
+            (addingToCart() ? "SHOP.ADDING" : "SHOP.ADD_CART") | translate
+          }}
+        </button>
+
+        <a
+          [routerLink]="productLink()"
+          [state]="navigationState()"
+          class="view-btn"
+          >{{
+          "SHOP.DETAILS" | translate
+        }}</a>
+      </div>
     </div>
   </div>
 </article>

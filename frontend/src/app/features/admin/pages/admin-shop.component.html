@@ -473,7 +473,7 @@
       </div>
 
       <form class="detail-stack" (submit)="$event.preventDefault()">
-        <section class="form-section">
+        <section class="form-section ui-subpanel">
           <div class="panel-heading">
             <div>
               <h3>Dati base</h3>
@@ -565,7 +565,7 @@
           </div>
         </section>
 
-        <section class="form-section">
+        <section class="form-section ui-subpanel">
           <div class="panel-heading">
             <div>
               <h3>Contenuti localizzati</h3>
@@ -584,13 +584,28 @@
               <button
                 *ngFor="let language of shopLanguages"
                 type="button"
-                class="ui-language-toolbar__button"
+                class="ui-language-toolbar__button image-language-button"
                 [class.active]="activeContentLanguage === language"
                 [class.complete]="isContentLanguageComplete(language)"
-                [class.incomplete]="!isContentLanguageComplete(language)"
+                [class.incomplete]="isContentLanguageIncomplete(language)"
+                [class.empty]="!isContentLanguageStarted(language)"
                 (click)="setActiveContentLanguage(language)"
               >
-                {{ languageLabels[language] }}
+                <span class="image-language-button__label">
+                  {{ languageLabels[language] }}
+                </span>
+                <span
+                  class="image-language-button__state"
+                  *ngIf="isContentLanguageComplete(language)"
+                >
+                  OK
+                </span>
+                <span
+                  class="image-language-button__state"
+                  *ngIf="isContentLanguageIncomplete(language)"
+                >
+                  ...
+                </span>
               </button>
             </div>
           </div>
@@ -634,106 +649,147 @@
           </div>
         </section>
 
-        <section class="form-section">
+        <section class="form-section ui-subpanel">
           <div class="panel-heading">
             <div>
-              <h3>SEO e social</h3>
-              <p>Metadati globali per risultato organico e preview.</p>
+              <h3>SEO localizzata</h3>
+              <p>
+                I campi seguono la lingua attiva. Open Graph usa gli stessi
+                valori della SEO.
+              </p>
+            </div>
+          </div>
+
+          <div class="ui-language-toolbar">
+            <div class="ui-language-toolbar__copy">
+              <span>Lingua SEO</span>
+              <p>Stessa lingua attiva dell'editor contenuti</p>
+            </div>
+            <div class="ui-language-toolbar__toggle">
+              <button
+                *ngFor="let language of shopLanguages"
+                type="button"
+                class="ui-language-toolbar__button image-language-button"
+                [class.active]="activeContentLanguage === language"
+                [class.complete]="isSeoLanguageComplete(language)"
+                [class.incomplete]="isSeoLanguageIncomplete(language)"
+                [class.empty]="!isSeoLanguageStarted(language)"
+                (click)="setActiveContentLanguage(language)"
+              >
+                <span class="image-language-button__label">
+                  {{ languageLabels[language] }}
+                </span>
+                <span
+                  class="image-language-button__state"
+                  *ngIf="isSeoLanguageComplete(language)"
+                >
+                  OK
+                </span>
+                <span
+                  class="image-language-button__state"
+                  *ngIf="isSeoLanguageIncomplete(language)"
+                >
+                  ...
+                </span>
+              </button>
             </div>
           </div>
 
           <div class="ui-form-grid ui-form-grid--two">
             <label class="ui-form-field">
-              <span class="ui-form-caption">SEO title</span>
+              <span class="ui-form-caption">
+                SEO title {{ languageLabels[activeContentLanguage] }}
+              </span>
               <input
                 class="ui-form-control"
                 type="text"
-                [(ngModel)]="productForm.seoTitle"
-                name="productSeoTitle"
+                [(ngModel)]="productForm.seoTitles[activeContentLanguage]"
+                [name]="'product-seo-title-' + activeContentLanguage"
               />
             </label>
 
-            <label class="ui-form-field">
-              <span class="ui-form-caption">SEO description</span>
-              <input
+            <label class="ui-form-field form-field--wide">
+              <span class="ui-form-caption">
+                SEO description {{ languageLabels[activeContentLanguage] }}
+              </span>
+              <textarea
                 class="ui-form-control"
-                type="text"
-                [(ngModel)]="productForm.seoDescription"
-                name="productSeoDescription"
-              />
-            </label>
-
-            <label class="ui-form-field">
-              <span class="ui-form-caption">OG title</span>
-              <input
-                class="ui-form-control"
-                type="text"
-                [(ngModel)]="productForm.ogTitle"
-                name="productOgTitle"
-              />
-            </label>
-
-            <label class="ui-form-field">
-              <span class="ui-form-caption">OG description</span>
-              <input
-                class="ui-form-control"
-                type="text"
-                [(ngModel)]="productForm.ogDescription"
-                name="productOgDescription"
-              />
+                [(ngModel)]="
+                  productForm.seoDescriptions[activeContentLanguage]
+                "
+                [name]="'product-seo-description-' + activeContentLanguage"
+                rows="3"
+              ></textarea>
+              <span
+                class="seo-counter"
+                [class.seo-counter--danger]="
+                  seoDescriptionLength(activeContentLanguage) > 160
+                "
+              >
+                {{ seoDescriptionLength(activeContentLanguage) }}/160
+              </span>
             </label>
           </div>
         </section>
 
-        <section class="form-section">
+        <section class="form-section ui-subpanel">
           <div class="panel-heading">
             <div>
-              <h3>Varianti</h3>
-              <p>Colori, materiale interno, SKU e prezzi.</p>
+              <h3>Materiali e prezzi</h3>
+              <p>
+                Scegli i materiali disponibili a stock. I colori vengono presi
+                automaticamente dai filamenti attivi a magazzino.
+              </p>
             </div>
             <button
               type="button"
               class="ui-button ui-button--ghost"
-              (click)="addVariant()"
+              (click)="addMaterial()"
+              [disabled]="
+                productForm.materials.length >= stockMaterialCodes().length
+              "
             >
-              Aggiungi variante
+              Aggiungi materiale
             </button>
+          </div>
+
+          <div class="locked-panel" *ngIf="stockMaterialCodes().length === 0">
+            Nessun materiale attivo con stock disponibile.
           </div>
 
           <div class="variant-stack">
             <article
               class="variant-card"
               *ngFor="
-                let variant of productForm.variants;
+                let material of productForm.materials;
                 let index = index;
-                trackBy: trackVariant
+                trackBy: trackMaterial
               "
             >
               <div class="variant-card__header">
                 <div>
                   <h4>
-                    {{
-                      variant.variantLabel ||
-                        variant.colorName ||
-                        "Nuova variante"
-                    }}
+                    {{ material.materialCode || "Nuovo materiale" }}
                   </h4>
-                  <p>Ordine {{ variant.sortOrder }}</p>
+                  <p>
+                    {{ materialColorCount(material.materialCode) }} colori da
+                    stock · ordine {{ material.sortOrder }}
+                  </p>
                 </div>
                 <div class="variant-card__actions">
                   <button
                     type="button"
                     class="ui-button ui-button--ghost"
-                    (click)="setDefaultVariant(index)"
-                    [disabled]="variant.isDefault"
+                    (click)="setDefaultMaterial(index)"
+                    [disabled]="material.isDefault"
                   >
-                    {{ variant.isDefault ? "Default" : "Rendi default" }}
+                    {{ material.isDefault ? "Default" : "Rendi default" }}
                   </button>
                   <button
                     type="button"
                     class="ui-button ui-button--ghost-danger"
-                    (click)="removeVariant(index)"
-                    [disabled]="productForm.variants.length <= 1"
+                    (click)="removeMaterial(index)"
+                    [disabled]="productForm.materials.length <= 1"
                   >
                     Rimuovi
                   </button>
@@ -742,62 +798,24 @@
 
               <div class="ui-form-grid ui-form-grid--two">
                 <label class="ui-form-field">
-                  <span class="ui-form-caption">Nome variante</span>
-                  <input
+                  <span class="ui-form-caption">Materiale</span>
+                  <select
                     class="ui-form-control"
-                    type="text"
-                    [(ngModel)]="variant.variantLabel"
-                    [name]="'variant-label-' + index"
-                  />
-                </label>
-
-                <label class="ui-form-field">
-                  <span class="ui-form-caption">SKU</span>
-                  <input
-                    class="ui-form-control"
-                    type="text"
-                    [(ngModel)]="variant.sku"
-                    [name]="'variant-sku-' + index"
-                    autocomplete="off"
-                    autocapitalize="off"
-                    spellcheck="false"
-                  />
-                </label>
-
-                <label class="ui-form-field">
-                  <span class="ui-form-caption">Colore</span>
-                  <input
-                    class="ui-form-control"
-                    type="text"
-                    [(ngModel)]="variant.colorName"
-                    [name]="'variant-color-name-' + index"
-                  />
-                </label>
-
-                <label class="ui-form-field">
-                  <span class="ui-form-caption">HEX colore</span>
-                  <input
-                    class="ui-form-control"
-                    type="text"
-                    [(ngModel)]="variant.colorHex"
-                    [name]="'variant-color-hex-' + index"
-                    placeholder="#1A1A1A"
-                    (blur)="onColorHexBlur(variant)"
-                    autocomplete="off"
-                    autocapitalize="off"
-                    spellcheck="false"
-                  />
-                </label>
-
-                <label class="ui-form-field">
-                  <span class="ui-form-caption">Materiale interno</span>
-                  <input
-                    class="ui-form-control"
-                    type="text"
-                    [(ngModel)]="variant.internalMaterialCode"
-                    [name]="'variant-material-' + index"
-                    placeholder="PLA, PETG, TPU"
-                  />
+                    [(ngModel)]="material.materialCode"
+                    [name]="'material-code-' + index"
+                  >
+                    <option [ngValue]="''" disabled>Seleziona materiale</option>
+                    <option
+                      *ngFor="
+                        let materialCode of availableMaterialChoices(
+                          material.materialCode
+                        )
+                      "
+                      [ngValue]="materialCode"
+                    >
+                      {{ materialCode }}
+                    </option>
+                  </select>
                 </label>
 
                 <label class="ui-form-field">
@@ -807,8 +825,8 @@
                     type="number"
                     min="0"
                     step="0.01"
-                    [(ngModel)]="variant.priceChf"
-                    [name]="'variant-price-' + index"
+                    [(ngModel)]="material.priceChf"
+                    [name]="'material-price-' + index"
                   />
                 </label>
 
@@ -817,8 +835,8 @@
                   <input
                     class="ui-form-control"
                     type="number"
-                    [(ngModel)]="variant.sortOrder"
-                    [name]="'variant-sort-order-' + index"
+                    [(ngModel)]="material.sortOrder"
+                    [name]="'material-sort-order-' + index"
                   />
                 </label>
 
@@ -826,9 +844,9 @@
                   <label class="ui-checkbox">
                     <input
                       type="checkbox"
-                      [(ngModel)]="variant.isDefault"
-                      [name]="'variant-default-' + index"
-                      (ngModelChange)="setDefaultVariant(index)"
+                      [(ngModel)]="material.isDefault"
+                      [name]="'material-default-' + index"
+                      (ngModelChange)="setDefaultMaterial(index)"
                     />
                     <span class="ui-checkbox__mark" aria-hidden="true"></span>
                     <span>Default</span>
@@ -837,19 +855,34 @@
                   <label class="ui-checkbox">
                     <input
                       type="checkbox"
-                      [(ngModel)]="variant.isActive"
-                      [name]="'variant-active-' + index"
+                      [(ngModel)]="material.isActive"
+                      [name]="'material-active-' + index"
                     />
                     <span class="ui-checkbox__mark" aria-hidden="true"></span>
                     <span>Attiva</span>
                   </label>
                 </div>
               </div>
+
+              <div class="material-stock-summary" *ngIf="material.materialCode">
+                <strong>Colori disponibili:</strong>
+                <span *ngIf="materialColorCount(material.materialCode) > 0">
+                  {{ materialColorPreview(material.materialCode).join(", ") }}
+                  <ng-container
+                    *ngIf="materialColorCount(material.materialCode) > 6"
+                  >
+                    +{{ materialColorCount(material.materialCode) - 6 }} altri
+                  </ng-container>
+                </span>
+                <span *ngIf="materialColorCount(material.materialCode) === 0">
+                  Nessun colore disponibile attualmente a stock.
+                </span>
+              </div>
             </article>
           </div>
         </section>
 
-        <section class="form-section">
+        <section class="form-section ui-subpanel">
           <div class="panel-heading">
             <div>
               <h3>Immagini e modello 3D</h3>
@@ -914,15 +947,30 @@
                     <button
                       *ngFor="let language of mediaLanguages"
                       type="button"
-                      class="ui-language-toolbar__button"
+                      class="ui-language-toolbar__button image-language-button"
                       [class.active]="
                         imageUploadState.activeLanguage === language
                       "
                       [class.complete]="isImageLanguageComplete(language)"
-                      [class.incomplete]="!isImageLanguageComplete(language)"
+                      [class.incomplete]="isImageLanguageIncomplete(language)"
+                      [class.empty]="!isImageLanguageStarted(language)"
                       (click)="setActiveImageLanguage(language)"
                     >
-                      {{ languageLabels[language] }}
+                      <span class="image-language-button__label">
+                        {{ languageLabels[language] }}
+                      </span>
+                      <span
+                        class="image-language-button__state"
+                        *ngIf="isImageLanguageComplete(language)"
+                      >
+                        OK
+                      </span>
+                      <span
+                        class="image-language-button__state"
+                        *ngIf="isImageLanguageIncomplete(language)"
+                      >
+                        ...
+                      </span>
                     </button>
                   </div>
                 </div>

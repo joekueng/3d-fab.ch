@@ -23,6 +23,10 @@ import {
   AdminPublicMediaUsage,
 } from '../services/admin-shop.service';
 import {
+  AdminFilamentVariant,
+  AdminOperationsService,
+} from '../services/admin-operations.service';
+import {
   AdminMediaLanguage,
   AdminMediaTranslation,
 } from '../services/admin-media.service';
@@ -47,13 +51,8 @@ interface CategoryFormState {
   sortOrder: number;
 }
 
-interface ProductVariantFormState {
-  id: string | null;
-  sku: string;
-  variantLabel: string;
-  colorName: string;
-  colorHex: string;
-  internalMaterialCode: string;
+interface ProductMaterialFormState {
+  materialCode: string;
   priceChf: string;
   isDefault: boolean;
   isActive: boolean;
@@ -66,15 +65,13 @@ interface ProductFormState {
   names: Record<ShopLanguage, string>;
   excerpts: Record<ShopLanguage, string>;
   descriptions: Record<ShopLanguage, string>;
-  seoTitle: string;
-  seoDescription: string;
-  ogTitle: string;
-  ogDescription: string;
+  seoTitles: Record<ShopLanguage, string>;
+  seoDescriptions: Record<ShopLanguage, string>;
   indexable: boolean;
   isFeatured: boolean;
   isActive: boolean;
   sortOrder: number;
-  variants: ProductVariantFormState[];
+  materials: ProductMaterialFormState[];
 }
 
 interface ProductImageItem {
@@ -128,6 +125,7 @@ const MAX_LIST_PANEL_WIDTH_PERCENT = 68;
 })
 export class AdminShopComponent implements OnInit, OnDestroy {
   private readonly adminShopService = inject(AdminShopService);
+  private readonly adminOperationsService = inject(AdminOperationsService);
   @ViewChild('workspaceRef')
   private readonly workspaceRef?: ElementRef<HTMLDivElement>;
 
@@ -142,6 +140,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   listPanelWidthPercent = 53;
   categories: AdminShopCategory[] = [];
   products: AdminShopProduct[] = [];
+  stockFilamentVariants: AdminFilamentVariant[] = [];
   filteredProducts: AdminShopProduct[] = [];
   selectedProduct: AdminShopProduct | null = null;
   selectedProductId: string | null = null;
@@ -210,10 +209,13 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     forkJoin({
       categories: this.adminShopService.getCategories(),
       products: this.adminShopService.getProducts(),
+      filamentVariants: this.adminOperationsService.getFilamentVariants(),
     }).subscribe({
-      next: ({ categories, products }) => {
+      next: ({ categories, products, filamentVariants }) => {
         this.categories = categories;
         this.products = products;
+        this.stockFilamentVariants =
+          this.filterStockedFilamentVariants(filamentVariants);
         this.applyProductFilters();
         this.ensureCategoryFilterStillValid();
         this.loading = false;
@@ -233,6 +235,9 @@ export class AdminShopComponent implements OnInit, OnDestroy {
           this.selectedProduct = null;
           this.selectedProductId = null;
           this.productImages = [];
+          if (this.productForm.materials.length === 0) {
+            this.resetProductForm();
+          }
           return;
         }
 
@@ -527,43 +532,111 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     return !!this.productForm.names[language].trim();
   }
 
-  addVariant(): void {
-    const sortOrder = (this.productForm.variants.at(-1)?.sortOrder ?? -1) + 1;
-    const firstVariant = this.productForm.variants.length === 0;
-    this.productForm.variants = [
-      ...this.productForm.variants,
-      this.createEmptyVariantForm(sortOrder, firstVariant),
+  isContentLanguageStarted(language: ShopLanguage): boolean {
+    return (
+      !!this.productForm.names[language].trim() ||
+      !!this.productForm.excerpts[language].trim() ||
+      !!this.productForm.descriptions[language].trim()
+    );
+  }
+
+  isContentLanguageIncomplete(language: ShopLanguage): boolean {
+    return (
+      this.isContentLanguageStarted(language) &&
+      !this.isContentLanguageComplete(language)
+    );
+  }
+
+  isSeoLanguageComplete(language: ShopLanguage): boolean {
+    return (
+      !!this.productForm.seoTitles[language].trim() &&
+      !!this.productForm.seoDescriptions[language].trim()
+    );
+  }
+
+  isSeoLanguageStarted(language: ShopLanguage): boolean {
+    return (
+      !!this.productForm.seoTitles[language].trim() ||
+      !!this.productForm.seoDescriptions[language].trim()
+    );
+  }
+
+  isSeoLanguageIncomplete(language: ShopLanguage): boolean {
+    return (
+      this.isSeoLanguageStarted(language) &&
+      !this.isSeoLanguageComplete(language)
+    );
+  }
+
+  addMaterial(): void {
+    const nextMaterialCode = this.nextAvailableMaterialCode();
+    if (!nextMaterialCode) {
+      return;
+    }
+    const sortOrder = (this.productForm.materials.at(-1)?.sortOrder ?? -1) + 1;
+    const firstMaterial = this.productForm.materials.length === 0;
+    this.productForm.materials = [
+      ...this.productForm.materials,
+      this.createEmptyMaterialForm(sortOrder, firstMaterial, nextMaterialCode),
     ];
   }
 
-  removeVariant(index: number): void {
-    if (this.productForm.variants.length <= 1) {
+  removeMaterial(index: number): void {
+    if (this.productForm.materials.length <= 1) {
       return;
     }
 
-    const nextVariants = this.productForm.variants.filter(
+    const nextMaterials = this.productForm.materials.filter(
       (_, currentIndex) => currentIndex !== index,
     );
-    if (!nextVariants.some((variant) => variant.isDefault)) {
-      nextVariants[0].isDefault = true;
+    if (!nextMaterials.some((material) => material.isDefault)) {
+      nextMaterials[0].isDefault = true;
     }
-    this.productForm.variants = nextVariants;
+    this.productForm.materials = nextMaterials;
   }
 
-  setDefaultVariant(index: number): void {
-    this.productForm.variants = this.productForm.variants.map(
-      (variant, currentIndex) => ({
-        ...variant,
+  setDefaultMaterial(index: number): void {
+    this.productForm.materials = this.productForm.materials.map(
+      (material, currentIndex) => ({
+        ...material,
         isDefault: currentIndex === index,
       }),
     );
   }
 
-  onColorHexBlur(variant: ProductVariantFormState): void {
-    if (!variant.colorHex.trim()) {
-      return;
+  availableMaterialChoices(currentMaterialCode: string): string[] {
+    const normalizedCurrentMaterialCode = currentMaterialCode.trim().toUpperCase();
+    const selectedCodes = new Set(
+      this.productForm.materials
+        .map((material) => material.materialCode.trim().toUpperCase())
+        .filter(Boolean),
+    );
+
+    const availableCodes = this.stockMaterialCodes().filter(
+      (materialCode) =>
+        materialCode === normalizedCurrentMaterialCode ||
+        !selectedCodes.has(materialCode),
+    );
+
+    if (
+      normalizedCurrentMaterialCode &&
+      !availableCodes.includes(normalizedCurrentMaterialCode)
+    ) {
+      return [normalizedCurrentMaterialCode, ...availableCodes];
     }
-    variant.colorHex = variant.colorHex.trim().toUpperCase();
+
+    return availableCodes;
+  }
+
+  materialColorCount(materialCode: string): number {
+    return this.stockVariantsForMaterial(materialCode).length;
+  }
+
+  materialColorPreview(materialCode: string): string[] {
+    return this.stockVariantsForMaterial(materialCode)
+      .map((variant) => variant.colorName.trim())
+      .filter(Boolean)
+      .slice(0, 6);
   }
 
   onModelFileSelected(event: Event): void {
@@ -726,6 +799,21 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   isImageLanguageComplete(language: AdminMediaLanguage): boolean {
     return this.isTranslationComplete(
       this.imageUploadState.translations[language],
+    );
+  }
+
+  isImageLanguageStarted(language: AdminMediaLanguage): boolean {
+    const translation = this.imageUploadState.translations[language];
+    return (
+      !!translation.title.trim() ||
+      !!translation.altText.trim()
+    );
+  }
+
+  isImageLanguageIncomplete(language: AdminMediaLanguage): boolean {
+    return (
+      this.isImageLanguageStarted(language) &&
+      !this.isImageLanguageComplete(language)
     );
   }
 
@@ -907,8 +995,8 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     return product.id;
   }
 
-  trackVariant(_: number, variant: ProductVariantFormState): string {
-    return variant.id ?? `${variant.colorName}-${variant.sortOrder}`;
+  trackMaterial(_: number, material: ProductMaterialFormState): string {
+    return `${material.materialCode || 'material'}-${material.sortOrder}`;
   }
 
   trackImage(_: number, image: ProductImageItem): string {
@@ -1087,6 +1175,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       this.categoryFilter !== 'ALL'
         ? this.categoryFilter
         : (this.categories[0]?.id ?? '');
+    const defaultMaterialCode = this.stockMaterialCodes()[0] ?? '';
     return {
       categoryId: defaultCategoryId,
       slug: '',
@@ -1108,15 +1197,25 @@ export class AdminShopComponent implements OnInit, OnDestroy {
         de: '',
         fr: '',
       },
-      seoTitle: '',
-      seoDescription: '',
-      ogTitle: '',
-      ogDescription: '',
+      seoTitles: {
+        it: '',
+        en: '',
+        de: '',
+        fr: '',
+      },
+      seoDescriptions: {
+        it: '',
+        en: '',
+        de: '',
+        fr: '',
+      },
       indexable: true,
       isFeatured: false,
       isActive: true,
       sortOrder: 0,
-      variants: [this.createEmptyVariantForm(0, true)],
+      materials: defaultMaterialCode
+        ? [this.createEmptyMaterialForm(0, true, defaultMaterialCode)]
+        : [],
     };
   }
 
@@ -1124,17 +1223,13 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     Object.assign(this.productForm, this.createEmptyProductForm());
   }
 
-  private createEmptyVariantForm(
+  private createEmptyMaterialForm(
     sortOrder: number,
     isDefault: boolean,
-  ): ProductVariantFormState {
+    materialCode = '',
+  ): ProductMaterialFormState {
     return {
-      id: null,
-      sku: '',
-      variantLabel: '',
-      colorName: '',
-      colorHex: '',
-      internalMaterialCode: '',
+      materialCode,
       priceChf: '0.00',
       isDefault,
       isActive: true,
@@ -1164,35 +1259,70 @@ export class AdminShopComponent implements OnInit, OnDestroy {
         de: product.descriptionDe ?? '',
         fr: product.descriptionFr ?? '',
       },
-      seoTitle: product.seoTitle ?? '',
-      seoDescription: product.seoDescription ?? '',
-      ogTitle: product.ogTitle ?? '',
-      ogDescription: product.ogDescription ?? '',
+      seoTitles: {
+        it: product.seoTitleIt ?? '',
+        en: product.seoTitleEn ?? '',
+        de: product.seoTitleDe ?? '',
+        fr: product.seoTitleFr ?? '',
+      },
+      seoDescriptions: {
+        it: product.seoDescriptionIt ?? '',
+        en: product.seoDescriptionEn ?? '',
+        de: product.seoDescriptionDe ?? '',
+        fr: product.seoDescriptionFr ?? '',
+      },
       indexable: product.indexable,
       isFeatured: product.isFeatured,
       isActive: product.isActive,
       sortOrder: product.sortOrder ?? 0,
-      variants: product.variants.length
-        ? product.variants.map((variant) => this.toVariantForm(variant))
-        : [this.createEmptyVariantForm(0, true)],
+      materials: this.toMaterialForms(product.variants),
     });
   }
 
-  private toVariantForm(
-    variant: AdminShopProductVariant,
-  ): ProductVariantFormState {
-    return {
-      id: variant.id,
-      sku: variant.sku ?? '',
-      variantLabel: variant.variantLabel ?? '',
-      colorName: variant.colorName ?? '',
-      colorHex: variant.colorHex ?? '',
-      internalMaterialCode: variant.internalMaterialCode ?? '',
-      priceChf: Number(variant.priceChf ?? 0).toFixed(2),
-      isDefault: variant.isDefault,
-      isActive: variant.isActive,
-      sortOrder: variant.sortOrder ?? 0,
-    };
+  private toMaterialForms(
+    variants: AdminShopProductVariant[],
+  ): ProductMaterialFormState[] {
+    if (!variants.length) {
+      const defaultMaterialCode = this.stockMaterialCodes()[0] ?? '';
+      return defaultMaterialCode
+        ? [this.createEmptyMaterialForm(0, true, defaultMaterialCode)]
+        : [];
+    }
+
+    const groups = new Map<string, AdminShopProductVariant[]>();
+    for (const variant of variants) {
+      const materialCode = (variant.internalMaterialCode ?? '').trim().toUpperCase();
+      if (!materialCode) {
+        continue;
+      }
+      const group = groups.get(materialCode) ?? [];
+      group.push(variant);
+      groups.set(materialCode, group);
+    }
+
+    const materials = Array.from(groups.entries())
+      .map(([materialCode, materialVariants]) => {
+        const sortedVariants = [...materialVariants].sort(
+          (left, right) => (left.sortOrder ?? 0) - (right.sortOrder ?? 0),
+        );
+        const firstVariant = sortedVariants[0];
+        return {
+          materialCode,
+          priceChf: Number(firstVariant?.priceChf ?? 0).toFixed(2),
+          isDefault: materialVariants.some((variant) => variant.isDefault),
+          isActive: materialVariants.some((variant) => variant.isActive),
+          sortOrder: Math.min(
+            ...materialVariants.map((variant) => variant.sortOrder ?? 0),
+          ),
+        };
+      })
+      .sort((left, right) => left.sortOrder - right.sortOrder);
+
+    if (!materials.some((material) => material.isDefault) && materials[0]) {
+      materials[0].isDefault = true;
+    }
+
+    return materials;
   }
 
   private validateProductForm(): string | null {
@@ -1206,60 +1336,49 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       if (!this.productForm.names[language].trim()) {
         return `Il nome prodotto ${this.languageLabels[language]} è obbligatorio.`;
       }
+      if (this.productForm.seoDescriptions[language].trim().length > 160) {
+        return `La SEO description ${this.languageLabels[language]} deve stare sotto i 160 caratteri.`;
+      }
     }
-    if (this.productForm.variants.length === 0) {
-      return 'È richiesta almeno una variante.';
+    if (this.productForm.materials.length === 0) {
+      return 'Seleziona almeno un materiale disponibile a stock.';
     }
 
-    const colorNames = new Set<string>();
     let defaultCount = 0;
-    for (const variant of this.productForm.variants) {
-      if (!variant.colorName.trim()) {
-        return 'Ogni variante richiede un nome colore.';
+    const materialCodes = new Set<string>();
+    for (const material of this.productForm.materials) {
+      const materialCode = material.materialCode.trim().toUpperCase();
+      if (!materialCode) {
+        return 'Ogni riga materiale richiede un materiale selezionato.';
       }
-      const colorKey = variant.colorName.trim().toLowerCase();
-      if (colorNames.has(colorKey)) {
-        return `Il colore "${variant.colorName.trim()}" è duplicato.`;
+      if (materialCodes.has(materialCode)) {
+        return `Il materiale "${materialCode}" è duplicato.`;
       }
-      colorNames.add(colorKey);
-      if (!variant.internalMaterialCode.trim()) {
-        return `La variante "${variant.colorName.trim()}" richiede un codice materiale interno.`;
+      materialCodes.add(materialCode);
+      if (!this.stockMaterialCodes().includes(materialCode)) {
+        return `Il materiale "${materialCode}" non è disponibile nello stock attivo.`;
       }
-      const price = Number(variant.priceChf);
+      if (this.stockVariantsForMaterial(materialCode).length === 0) {
+        return `Il materiale "${materialCode}" non ha colori disponibili a stock.`;
+      }
+
+      const price = Number(material.priceChf);
       if (!Number.isFinite(price) || price < 0) {
-        return `La variante "${variant.colorName.trim()}" ha un prezzo non valido.`;
+        return `Il materiale "${materialCode}" ha un prezzo non valido.`;
       }
-      if (
-        variant.colorHex.trim() &&
-        !/^#[0-9A-Fa-f]{6}$/.test(variant.colorHex.trim())
-      ) {
-        return `La variante "${variant.colorName.trim()}" ha un colore HEX non valido.`;
-      }
-      if (variant.isDefault) {
+      if (material.isDefault) {
         defaultCount += 1;
       }
     }
     if (defaultCount !== 1) {
-      return 'Devi impostare una sola variante predefinita.';
+      return 'Devi impostare un solo materiale predefinito.';
     }
 
     return null;
   }
 
   private buildProductPayload(): AdminUpsertShopProductPayload {
-    const variants: AdminUpsertShopProductVariantPayload[] =
-      this.productForm.variants.map((variant) => ({
-        id: variant.id ?? undefined,
-        sku: this.optionalValue(variant.sku),
-        variantLabel: this.optionalValue(variant.variantLabel),
-        colorName: variant.colorName.trim(),
-        colorHex: this.optionalValue(variant.colorHex)?.toUpperCase(),
-        internalMaterialCode: variant.internalMaterialCode.trim().toUpperCase(),
-        priceChf: Number(variant.priceChf),
-        isDefault: variant.isDefault,
-        isActive: variant.isActive,
-        sortOrder: Number(variant.sortOrder) || 0,
-      }));
+    const variants = this.buildVariantsFromMaterials();
 
     return {
       categoryId: this.productForm.categoryId,
@@ -1279,16 +1398,189 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       descriptionEn: this.optionalValue(this.productForm.descriptions['en']),
       descriptionDe: this.optionalValue(this.productForm.descriptions['de']),
       descriptionFr: this.optionalValue(this.productForm.descriptions['fr']),
-      seoTitle: this.optionalValue(this.productForm.seoTitle),
-      seoDescription: this.optionalValue(this.productForm.seoDescription),
-      ogTitle: this.optionalValue(this.productForm.ogTitle),
-      ogDescription: this.optionalValue(this.productForm.ogDescription),
+      seoTitle: this.optionalValue(this.productForm.seoTitles['it']),
+      seoTitleIt: this.optionalValue(this.productForm.seoTitles['it']),
+      seoTitleEn: this.optionalValue(this.productForm.seoTitles['en']),
+      seoTitleDe: this.optionalValue(this.productForm.seoTitles['de']),
+      seoTitleFr: this.optionalValue(this.productForm.seoTitles['fr']),
+      seoDescription: this.optionalValue(this.productForm.seoDescriptions['it']),
+      seoDescriptionIt: this.optionalValue(
+        this.productForm.seoDescriptions['it'],
+      ),
+      seoDescriptionEn: this.optionalValue(
+        this.productForm.seoDescriptions['en'],
+      ),
+      seoDescriptionDe: this.optionalValue(
+        this.productForm.seoDescriptions['de'],
+      ),
+      seoDescriptionFr: this.optionalValue(
+        this.productForm.seoDescriptions['fr'],
+      ),
+      ogTitle: this.optionalValue(this.productForm.seoTitles['it']),
+      ogDescription: this.optionalValue(this.productForm.seoDescriptions['it']),
       indexable: this.productForm.indexable,
       isFeatured: this.productForm.isFeatured,
       isActive: this.productForm.isActive,
       sortOrder: Number(this.productForm.sortOrder) || 0,
       variants,
     };
+  }
+
+  private buildVariantsFromMaterials(): AdminUpsertShopProductVariantPayload[] {
+    const persistedDefaultVariant = this.selectedProduct?.variants.find(
+      (variant) => variant.isDefault,
+    );
+    const existingVariantsByKey = new Map(
+      (this.selectedProduct?.variants ?? []).map((variant) => [
+        this.variantKey(
+          variant.internalMaterialCode,
+          variant.colorName,
+          variant.colorHex,
+        ),
+        variant,
+      ]),
+    );
+    const persistedDefaultKey = persistedDefaultVariant
+      ? this.variantKey(
+          persistedDefaultVariant.internalMaterialCode,
+          persistedDefaultVariant.colorName,
+          persistedDefaultVariant.colorHex,
+        )
+      : null;
+
+    const variants: AdminUpsertShopProductVariantPayload[] = [];
+    let defaultAssigned = false;
+
+    const sortedMaterials = [...this.productForm.materials].sort(
+      (left, right) => left.sortOrder - right.sortOrder,
+    );
+
+    for (const material of sortedMaterials) {
+      const materialCode = material.materialCode.trim().toUpperCase();
+      const stockVariants = this.stockVariantsForMaterial(materialCode);
+      let defaultVariantKeyForMaterial: string | null = null;
+
+      if (material.isDefault && persistedDefaultKey) {
+        defaultVariantKeyForMaterial = stockVariants
+          .map((variant) =>
+            this.variantKey(materialCode, variant.colorName, variant.colorHex),
+          )
+          .find((variantKey) => variantKey === persistedDefaultKey) ?? null;
+      }
+
+      stockVariants.forEach((stockVariant, colorIndex) => {
+        const variantKey = this.variantKey(
+          materialCode,
+          stockVariant.colorName,
+          stockVariant.colorHex,
+        );
+        const existingVariant = existingVariantsByKey.get(variantKey);
+        const isDefault =
+          material.isDefault &&
+          !defaultAssigned &&
+          (defaultVariantKeyForMaterial
+            ? variantKey === defaultVariantKeyForMaterial
+            : colorIndex === 0);
+
+        variants.push({
+          id: existingVariant?.id,
+          sku: this.optionalValue(existingVariant?.sku ?? ''),
+          variantLabel: materialCode,
+          colorName: stockVariant.colorName.trim(),
+          colorHex: this.optionalValue(stockVariant.colorHex ?? '')?.toUpperCase(),
+          internalMaterialCode: materialCode,
+          priceChf: Number(material.priceChf),
+          isDefault,
+          isActive: material.isActive,
+          sortOrder: material.sortOrder * 100 + colorIndex,
+        });
+
+        if (isDefault) {
+          defaultAssigned = true;
+        }
+      });
+    }
+
+    if (!defaultAssigned && variants[0]) {
+      variants[0].isDefault = true;
+    }
+
+    return variants;
+  }
+
+  stockMaterialCodes(): string[] {
+    return Array.from(
+      new Set(
+        this.stockFilamentVariants.map((variant) =>
+          variant.materialCode.trim().toUpperCase(),
+        ),
+      ),
+    ).sort((left, right) => left.localeCompare(right));
+  }
+
+  private stockVariantsForMaterial(materialCode: string): AdminFilamentVariant[] {
+    const targetMaterialCode = materialCode.trim().toUpperCase();
+    const seenKeys = new Set<string>();
+
+    return this.stockFilamentVariants
+      .filter(
+        (variant) =>
+          variant.materialCode.trim().toUpperCase() === targetMaterialCode,
+      )
+      .sort((left, right) => {
+        const leftName = `${left.colorName} ${left.variantDisplayName}`.trim();
+        const rightName = `${right.colorName} ${right.variantDisplayName}`.trim();
+        return leftName.localeCompare(rightName);
+      })
+      .filter((variant) => {
+        const key = this.variantKey(
+          targetMaterialCode,
+          variant.colorName,
+          variant.colorHex,
+        );
+        if (seenKeys.has(key)) {
+          return false;
+        }
+        seenKeys.add(key);
+        return true;
+      });
+  }
+
+  private nextAvailableMaterialCode(): string | null {
+    const selectedCodes = new Set(
+      this.productForm.materials
+        .map((material) => material.materialCode.trim().toUpperCase())
+        .filter(Boolean),
+    );
+
+    return (
+      this.stockMaterialCodes().find((materialCode) => !selectedCodes.has(materialCode)) ??
+      null
+    );
+  }
+
+  private filterStockedFilamentVariants(
+    filamentVariants: AdminFilamentVariant[],
+  ): AdminFilamentVariant[] {
+    return filamentVariants.filter(
+      (variant) =>
+        variant.isActive &&
+        Number(variant.stockFilamentGrams ?? 0) > 0 &&
+        !!variant.materialCode?.trim() &&
+        !!variant.colorName?.trim(),
+    );
+  }
+
+  private variantKey(
+    materialCode: string | null | undefined,
+    colorName: string | null | undefined,
+    colorHex: string | null | undefined,
+  ): string {
+    return [
+      (materialCode ?? '').trim().toUpperCase(),
+      (colorName ?? '').trim().toLowerCase(),
+      (colorHex ?? '').trim().toUpperCase(),
+    ].join('|');
   }
 
   private updateSelectedProduct(product: AdminShopProduct): void {
@@ -1452,6 +1744,10 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   private optionalValue(value: string): string | undefined {
     const normalized = value.trim();
     return normalized ? normalized : undefined;
+  }
+
+  seoDescriptionLength(language: ShopLanguage): number {
+    return this.productForm.seoDescriptions[language].trim().length;
   }
 
   private slugify(source: string): string {
