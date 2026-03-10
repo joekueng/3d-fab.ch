@@ -14,7 +14,7 @@
 
   <div class="container shop-layout">
     <aside class="shop-sidebar">
-      <app-card>
+      <app-card class="category-card">
         <div class="panel-head">
           <div>
             <p class="panel-kicker">
@@ -32,7 +32,7 @@
           [class.active]="!currentCategorySlug()"
           (click)="navigateToCategory()"
         >
-          <span>{{ "SHOP.ALL_CATEGORIES" | translate }}</span>
+          <span class="category-name">{{ "SHOP.ALL_CATEGORIES" | translate }}</span>
         </button>
 
         <div class="category-list">
@@ -44,8 +44,8 @@
               [style.--depth]="node.depth"
               (click)="navigateToCategory(node.slug)"
             >
-              <span>{{ node.name }}</span>
-              <small>{{ node.productCount }}</small>
+              <span class="category-name">{{ node.name }}</span>
+              <small class="category-count">{{ node.productCount }}</small>
             </button>
           }
         </div>
