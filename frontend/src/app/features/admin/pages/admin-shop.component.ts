@@ -140,10 +140,14 @@ const RICH_TEXT_ALLOWED_TAGS = new Set([
 export class AdminShopComponent implements OnInit, OnDestroy {
   private readonly adminShopService = inject(AdminShopService);
   private readonly adminOperationsService = inject(AdminOperationsService);
+  private descriptionEditorElement: HTMLDivElement | null = null;
   @ViewChild('workspaceRef')
   private readonly workspaceRef?: ElementRef<HTMLDivElement>;
   @ViewChild('descriptionEditorRef')
-  private readonly descriptionEditorRef?: ElementRef<HTMLDivElement>;
+  set descriptionEditorRef(value: ElementRef<HTMLDivElement> | undefined) {
+    this.descriptionEditorElement = value?.nativeElement ?? null;
+    this.renderActiveDescriptionInEditor();
+  }
 
   readonly shopLanguages = SHOP_LANGUAGES;
   readonly mediaLanguages = MEDIA_LANGUAGES;
@@ -317,6 +321,8 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     if (this.savingProduct) {
       return;
     }
+
+    this.syncDescriptionFromEditor(this.descriptionEditorElement, true);
 
     const validationError = this.validateProductForm();
     if (validationError) {
@@ -541,11 +547,9 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   }
 
   setActiveContentLanguage(language: ShopLanguage): void {
-    this.syncDescriptionFromEditor(
-      this.descriptionEditorRef?.nativeElement ?? null,
-      true,
-    );
+    this.syncDescriptionFromEditor(this.descriptionEditorElement, true);
     this.activeContentLanguage = language;
+    this.renderActiveDescriptionInEditor();
   }
 
   isContentLanguageComplete(language: ShopLanguage): boolean {
@@ -1268,6 +1272,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
 
   private resetProductForm(): void {
     Object.assign(this.productForm, this.createEmptyProductForm());
+    this.renderActiveDescriptionInEditor();
   }
 
   private createEmptyMaterialForm(
@@ -1324,6 +1329,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       sortOrder: product.sortOrder ?? 0,
       materials: this.toMaterialForms(product.variants),
     });
+    this.renderActiveDescriptionInEditor();
   }
 
   private toMaterialForms(
@@ -1841,8 +1847,19 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     this.productForm.descriptions[currentLanguage] = editor.innerHTML;
   }
 
+  private renderActiveDescriptionInEditor(): void {
+    const editor = this.descriptionEditorElement;
+    if (!editor) {
+      return;
+    }
+    const html = this.productForm.descriptions[this.activeContentLanguage] ?? '';
+    if (editor.innerHTML !== html) {
+      editor.innerHTML = html;
+    }
+  }
+
   private applyDescriptionExecCommand(command: string): void {
-    const editor = this.descriptionEditorRef?.nativeElement ?? null;
+    const editor = this.descriptionEditorElement;
     if (!editor) {
       return;
     }

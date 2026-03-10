@@ -353,7 +353,7 @@
                     <app-stl-viewer
                       [file]="modelPreviewFile"
                       [height]="420"
-                      [color]="selectedVariant()?.colorHex || '#facf0a'"
+                      [color]="colorHex(selectedVariant())"
                     ></app-stl-viewer>
                   }
                 }

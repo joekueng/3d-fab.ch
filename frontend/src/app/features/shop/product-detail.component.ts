@@ -14,6 +14,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { catchError, combineLatest, finalize, of, switchMap, tap } from 'rxjs';
 import { SeoService } from '../../core/services/seo.service';
 import { LanguageService } from '../../core/services/language.service';
+import { getColorHex } from '../../core/constants/colors.const';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
 import { StlViewerComponent } from '../../shared/components/stl-viewer/stl-viewer.component';
@@ -52,6 +53,7 @@ interface ShopMaterialProperty {
   styleUrl: './product-detail.component.scss',
 })
 export class ProductDetailComponent {
+  private static readonly HEX_COLOR_PATTERN = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
   private readonly router = inject(Router);
@@ -376,8 +378,18 @@ export class ProductDetailComponent {
     return variant.colorName || variant.variantLabel || '-';
   }
 
-  colorHex(variant: ShopProductVariantOption): string {
-    return variant.colorHex || '#d5d8de';
+  colorHex(variant: ShopProductVariantOption | null | undefined): string {
+    const normalizedHex = this.normalizeHexColor(variant?.colorHex);
+    if (normalizedHex) {
+      return normalizedHex;
+    }
+
+    const fallbackByName = this.colorHexFromName(variant?.colorName);
+    if (fallbackByName) {
+      return fallbackByName;
+    }
+
+    return '#d5d8de';
   }
 
   materialPriceLabel(material: ShopMaterialOption): number {
@@ -462,6 +474,34 @@ export class ProductDetailComponent {
           this.modelError.set(true);
         },
       });
+  }
+
+  private normalizeHexColor(value: string | null | undefined): string | null {
+    const raw = String(value ?? '').trim();
+    if (!raw) {
+      return null;
+    }
+
+    const withHash = raw.startsWith('#') ? raw : `#${raw}`;
+    if (!ProductDetailComponent.HEX_COLOR_PATTERN.test(withHash)) {
+      return null;
+    }
+
+    return withHash.toUpperCase();
+  }
+
+  private colorHexFromName(value: string | null | undefined): string | null {
+    const colorName = String(value ?? '').trim();
+    if (!colorName) {
+      return null;
+    }
+
+    const fallback = getColorHex(colorName);
+    if (!fallback || fallback === '#facf0a') {
+      return null;
+    }
+
+    return fallback;
   }
 
   private applySeo(product: ShopProductDetail): void {

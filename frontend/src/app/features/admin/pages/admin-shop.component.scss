@@ -263,20 +263,19 @@
   gap: 0.4rem;
 }
 
-.rich-text-toolbar__button {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: #fff;
-  color: var(--color-text);
+.admin-shop .rich-text-toolbar__button {
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-sm) !important;
+  background: #fff !important;
+  color: var(--color-text) !important;
   min-height: 2rem;
-  padding: 0.28rem 0.56rem;
+  padding: 0.28rem 0.56rem !important;
   font-size: 0.82rem;
-  cursor: pointer;
 }
 
-.rich-text-toolbar__button:hover {
-  border-color: #cbb88a;
-  background: #fffdf4;
+.admin-shop .rich-text-toolbar__button:hover:not(:disabled) {
+  border-color: #cbb88a !important;
+  background: #fffdf4 !important;
 }
 
 .rich-text-editor {
