@@ -17,7 +17,11 @@
         <strong>{{ categories.length }}</strong>
         <span>categorie</span>
       </article>
-      <button type="button" class="ui-button ui-button--ghost" (click)="loadWorkspace()">
+      <button
+        type="button"
+        class="ui-button ui-button--ghost"
+        (click)="loadWorkspace()"
+      >
         Aggiorna
       </button>
       <button type="button" class="ui-button" (click)="startCreateProduct()">
@@ -26,7 +30,9 @@
     </div>
   </header>
 
-  <p class="ui-banner ui-banner--error" *ngIf="errorMessage">{{ errorMessage }}</p>
+  <p class="ui-banner ui-banner--error" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </p>
   <p class="ui-banner ui-banner--success" *ngIf="successMessage">
     {{ successMessage }}
   </p>
@@ -49,7 +55,9 @@
             class="ui-button ui-button--ghost"
             (click)="toggleCategoryManager()"
           >
-            {{ showCategoryManager ? "Chiudi categorie" : "Gestisci categorie" }}
+            {{
+              showCategoryManager ? "Chiudi categorie" : "Gestisci categorie"
+            }}
           </button>
         </div>
 
@@ -89,7 +97,10 @@
               [ngModel]="productStatusFilter"
               (ngModelChange)="onProductStatusFilterChange($event)"
             >
-              <option *ngFor="let filter of productStatusFilters" [ngValue]="filter">
+              <option
+                *ngFor="let filter of productStatusFilters"
+                [ngValue]="filter"
+              >
                 {{ filter }}
               </option>
             </select>
@@ -97,7 +108,10 @@
         </div>
       </div>
 
-      <section class="category-manager ui-subpanel ui-subpanel--elevated" *ngIf="showCategoryManager">
+      <section
+        class="category-manager ui-subpanel ui-subpanel--elevated"
+        *ngIf="showCategoryManager"
+      >
         <header class="category-manager__header">
           <div>
             <h3>Categorie shop</h3>
@@ -146,10 +160,16 @@
             <div class="panel-heading">
               <div>
                 <h4>
-                  {{ categoryForm.id ? "Modifica categoria" : "Nuova categoria" }}
+                  {{
+                    categoryForm.id ? "Modifica categoria" : "Nuova categoria"
+                  }}
                 </h4>
-                <p *ngIf="categoryForm.id">Aggiorna struttura, SEO e visibilità.</p>
-                <p *ngIf="!categoryForm.id">Crea una nuova categoria del catalogo.</p>
+                <p *ngIf="categoryForm.id">
+                  Aggiorna struttura, SEO e visibilità.
+                </p>
+                <p *ngIf="!categoryForm.id">
+                  Crea una nuova categoria del catalogo.
+                </p>
               </div>
             </div>
 
@@ -340,9 +360,13 @@
                 </div>
               </td>
               <td>{{ product.categoryName }}</td>
-              <td>{{ product.activeVariantCount }} / {{ product.variantCount }}</td>
               <td>
-                {{ product.priceFromChf | currency: "CHF" : "symbol" : "1.2-2" }}
+                {{ product.activeVariantCount }} / {{ product.variantCount }}
+              </td>
+              <td>
+                {{
+                  product.priceFromChf | currency: "CHF" : "symbol" : "1.2-2"
+                }}
                 <span *ngIf="product.priceToChf !== product.priceFromChf">
                   -
                   {{
@@ -366,7 +390,9 @@
               </td>
             </tr>
             <tr *ngIf="filteredProducts.length === 0">
-              <td colspan="5">Nessun prodotto trovato con i filtri correnti.</td>
+              <td colspan="5">
+                Nessun prodotto trovato con i filtri correnti.
+              </td>
             </tr>
           </tbody>
         </table>
@@ -388,7 +414,11 @@
       <div class="detail-header">
         <div>
           <h2>
-            {{ productMode === "create" ? "Nuovo prodotto" : selectedProduct?.name }}
+            {{
+              productMode === "create"
+                ? "Nuovo prodotto"
+                : selectedProduct?.name
+            }}
           </h2>
           <p *ngIf="productMode === 'create'">
             Compila i campi e salva per creare un nuovo prodotto shop.
@@ -412,20 +442,29 @@
         </span>
       </div>
 
-      <p class="detail-loading" *ngIf="detailLoading">Caricamento dettaglio...</p>
+      <p class="detail-loading" *ngIf="detailLoading">
+        Caricamento dettaglio...
+      </p>
 
-      <div class="ui-meta-grid" *ngIf="productMode === 'edit' && selectedProduct">
+      <div
+        class="ui-meta-grid"
+        *ngIf="productMode === 'edit' && selectedProduct"
+      >
         <div class="ui-meta-item">
           <strong>Categoria</strong>
           <span>{{ selectedProduct.categoryName }}</span>
         </div>
         <div class="ui-meta-item">
           <strong>Creato il</strong>
-          <span>{{ selectedProduct.createdAt | date: "dd.MM.yyyy HH:mm" }}</span>
+          <span>{{
+            selectedProduct.createdAt | date: "dd.MM.yyyy HH:mm"
+          }}</span>
         </div>
         <div class="ui-meta-item">
           <strong>Aggiornato il</strong>
-          <span>{{ selectedProduct.updatedAt | date: "dd.MM.yyyy HH:mm" }}</span>
+          <span>{{
+            selectedProduct.updatedAt | date: "dd.MM.yyyy HH:mm"
+          }}</span>
         </div>
         <div class="ui-meta-item">
           <strong>Media</strong>
@@ -530,7 +569,9 @@
           <div class="panel-heading">
             <div>
               <h3>Contenuti localizzati</h3>
-              <p>Nome obbligatorio in tutte le lingue. Descrizioni opzionali.</p>
+              <p>
+                Nome obbligatorio in tutte le lingue. Descrizioni opzionali.
+              </p>
             </div>
           </div>
 
@@ -650,7 +691,11 @@
               <h3>Varianti</h3>
               <p>Colori, materiale interno, SKU e prezzi.</p>
             </div>
-            <button type="button" class="ui-button ui-button--ghost" (click)="addVariant()">
+            <button
+              type="button"
+              class="ui-button ui-button--ghost"
+              (click)="addVariant()"
+            >
               Aggiungi variante
             </button>
           </div>
@@ -658,12 +703,20 @@
           <div class="variant-stack">
             <article
               class="variant-card"
-              *ngFor="let variant of productForm.variants; let index = index; trackBy: trackVariant"
+              *ngFor="
+                let variant of productForm.variants;
+                let index = index;
+                trackBy: trackVariant
+              "
             >
               <div class="variant-card__header">
                 <div>
                   <h4>
-                    {{ variant.variantLabel || variant.colorName || "Nuova variante" }}
+                    {{
+                      variant.variantLabel ||
+                        variant.colorName ||
+                        "Nuova variante"
+                    }}
                   </h4>
                   <p>Ordine {{ variant.sortOrder }}</p>
                 </div>
@@ -801,8 +854,8 @@
             <div>
               <h3>Immagini e modello 3D</h3>
               <p>
-                Upload protetto con whitelist tipi file; il modello 3D è disponibile
-                solo dopo il primo salvataggio del prodotto.
+                Upload protetto con whitelist tipi file; il modello 3D è
+                disponibile solo dopo il primo salvataggio del prodotto.
               </p>
             </div>
           </div>
@@ -811,12 +864,17 @@
             Salva prima il prodotto per collegare immagini e modello 3D.
           </div>
 
-          <div class="media-grid" *ngIf="productMode === 'edit' && selectedProduct">
+          <div
+            class="media-grid"
+            *ngIf="productMode === 'edit' && selectedProduct"
+          >
             <section class="ui-subpanel ui-subpanel--soft">
               <div class="panel-heading">
                 <div>
                   <h4>Nuova immagine prodotto</h4>
-                  <p>JPG, PNG o WEBP con titolo e alt text in tutte le lingue.</p>
+                  <p>
+                    JPG, PNG o WEBP con titolo e alt text in tutte le lingue.
+                  </p>
                 </div>
               </div>
 
@@ -840,7 +898,10 @@
                   </label>
                 </div>
 
-                <div class="preview-card form-field--wide" *ngIf="imageUploadState.previewUrl">
+                <div
+                  class="preview-card form-field--wide"
+                  *ngIf="imageUploadState.previewUrl"
+                >
                   <img [src]="imageUploadState.previewUrl" alt="" />
                 </div>
 
@@ -854,7 +915,9 @@
                       *ngFor="let language of mediaLanguages"
                       type="button"
                       class="ui-language-toolbar__button"
-                      [class.active]="imageUploadState.activeLanguage === language"
+                      [class.active]="
+                        imageUploadState.activeLanguage === language
+                      "
                       [class.complete]="isImageLanguageComplete(language)"
                       [class.incomplete]="!isImageLanguageComplete(language)"
                       (click)="setActiveImageLanguage(language)"
@@ -872,7 +935,9 @@
                     class="ui-form-control"
                     type="text"
                     [(ngModel)]="
-                      imageUploadState.translations[imageUploadState.activeLanguage].title
+                      imageUploadState.translations[
+                        imageUploadState.activeLanguage
+                      ].title
                     "
                     name="productImageTitle"
                   />
@@ -880,13 +945,16 @@
 
                 <label class="ui-form-field">
                   <span class="ui-form-caption">
-                    Alt text {{ languageLabels[imageUploadState.activeLanguage] }}
+                    Alt text
+                    {{ languageLabels[imageUploadState.activeLanguage] }}
                   </span>
                   <input
                     class="ui-form-control"
                     type="text"
                     [(ngModel)]="
-                      imageUploadState.translations[imageUploadState.activeLanguage].altText
+                      imageUploadState.translations[
+                        imageUploadState.activeLanguage
+                      ].altText
                     "
                     name="productImageAltText"
                   />
@@ -922,7 +990,11 @@
                   (click)="uploadProductImage()"
                   [disabled]="imageUploadState.saving || !imageUploadState.file"
                 >
-                  {{ imageUploadState.saving ? "Caricamento..." : "Carica immagine" }}
+                  {{
+                    imageUploadState.saving
+                      ? "Caricamento..."
+                      : "Carica immagine"
+                  }}
                 </button>
               </div>
             </section>
@@ -931,31 +1003,49 @@
               <div class="panel-heading">
                 <div>
                   <h4>Immagini attive</h4>
-                  <p>{{ productImages.length }} immagini collegate al prodotto.</p>
+                  <p>
+                    {{ productImages.length }} immagini collegate al prodotto.
+                  </p>
                 </div>
               </div>
 
-              <div class="image-stack" *ngIf="productImages.length; else emptyImagesTpl">
+              <div
+                class="image-stack"
+                *ngIf="productImages.length; else emptyImagesTpl"
+              >
                 <article
                   class="image-item"
                   *ngFor="let image of productImages; trackBy: trackImage"
                 >
                   <div class="image-item__preview">
-                    <img *ngIf="image.previewUrl; else noImagePreviewTpl" [src]="image.previewUrl" alt="" />
+                    <img
+                      *ngIf="image.previewUrl; else noImagePreviewTpl"
+                      [src]="image.previewUrl"
+                      alt=""
+                    />
                   </div>
 
                   <div class="image-item__content">
                     <div class="image-item__header">
                       <strong>
-                        {{ image.translations[imageUploadState.activeLanguage].title || "Senza titolo" }}
+                        {{
+                          image.translations[imageUploadState.activeLanguage]
+                            .title || "Senza titolo"
+                        }}
                       </strong>
-                      <span class="ui-pill ui-pill--soft" *ngIf="image.isPrimary">
+                      <span
+                        class="ui-pill ui-pill--soft"
+                        *ngIf="image.isPrimary"
+                      >
                         Primaria
                       </span>
                     </div>
 
                     <p class="image-meta">
-                      {{ image.translations[imageUploadState.activeLanguage].altText || "Alt text mancante" }}
+                      {{
+                        image.translations[imageUploadState.activeLanguage]
+                          .altText || "Alt text mancante"
+                      }}
                     </p>
 
                     <div class="image-item__controls">
@@ -982,7 +1072,9 @@
                           type="button"
                           class="ui-button ui-button--ghost"
                           (click)="setPrimaryImage(image)"
-                          [disabled]="isImageBusy(image.usageId) || image.isPrimary"
+                          [disabled]="
+                            isImageBusy(image.usageId) || image.isPrimary
+                          "
                         >
                           {{ image.isPrimary ? "Primaria" : "Rendi primaria" }}
                         </button>
@@ -1012,7 +1104,10 @@
                 </div>
               </div>
 
-              <div class="model-summary" *ngIf="selectedProduct.model3d as model; else noModelTpl">
+              <div
+                class="model-summary"
+                *ngIf="selectedProduct.model3d as model; else noModelTpl"
+              >
                 <div class="ui-meta-grid">
                   <div class="ui-meta-item">
                     <strong>File</strong>
@@ -1025,7 +1120,8 @@
                   <div class="ui-meta-item">
                     <strong>Bounding box</strong>
                     <span>
-                      {{ model.boundingBoxXMm || 0 }} × {{ model.boundingBoxYMm || 0 }} ×
+                      {{ model.boundingBoxXMm || 0 }} ×
+                      {{ model.boundingBoxYMm || 0 }} ×
                       {{ model.boundingBoxZMm || 0 }} mm
                     </span>
                   </div>
@@ -1053,7 +1149,9 @@
               </div>
 
               <div class="ui-form-field">
-                <span class="ui-form-caption">Carica o sostituisci modello</span>
+                <span class="ui-form-caption"
+                  >Carica o sostituisci modello</span
+                >
                 <input
                   id="product-model-file"
                   class="sr-only"
@@ -1127,5 +1225,7 @@
 </ng-template>
 
 <ng-template #noModelTpl>
-  <div class="locked-panel">Nessun modello 3D caricato per questo prodotto.</div>
+  <div class="locked-panel">
+    Nessun modello 3D caricato per questo prodotto.
+  </div>
 </ng-template>

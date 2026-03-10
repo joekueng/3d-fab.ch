@@ -62,7 +62,9 @@
         >
           <circle cx="8" cy="21" r="1"></circle>
           <circle cx="19" cy="21" r="1"></circle>
-          <path d="M2.05 2h2l2.4 12.45a2 2 0 0 0 2 1.55h9.7a2 2 0 0 0 1.95-1.57L22 7H6"></path>
+          <path
+            d="M2.05 2h2l2.4 12.45a2 2 0 0 0 2 1.55h9.7a2 2 0 0 0 1.95-1.57L22 7H6"
+          ></path>
         </svg>
         @if (cartItemCount() > 0) {
           <span class="cart-badge">{{ cartItemCount() }}</span>
@@ -145,7 +147,9 @@
                   <div class="qty-control">
                     <button
                       type="button"
-                      [disabled]="cartMutating() && busyLineItemId() === item.id"
+                      [disabled]="
+                        cartMutating() && busyLineItemId() === item.id
+                      "
                       (click)="decreaseQuantity(item)"
                     >
                       -
@@ -153,7 +157,9 @@
                     <span>{{ item.quantity }}</span>
                     <button
                       type="button"
-                      [disabled]="cartMutating() && busyLineItemId() === item.id"
+                      [disabled]="
+                        cartMutating() && busyLineItemId() === item.id
+                      "
                       (click)="increaseQuantity(item)"
                     >
                       +
@@ -180,7 +186,9 @@
           <div class="cart-totals">
             <div class="cart-total-row">
               <span>{{ "SHOP.CART_SUBTOTAL" | translate }}</span>
-              <strong>{{ cart()?.itemsTotalChf || 0 | currency: "CHF" }}</strong>
+              <strong>{{
+                cart()?.itemsTotalChf || 0 | currency: "CHF"
+              }}</strong>
             </div>
             <div class="cart-total-row">
               <span>{{ "SHOP.CART_SHIPPING" | translate }}</span>

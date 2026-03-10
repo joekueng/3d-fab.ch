@@ -1,11 +1,19 @@
 import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { NavigationStart, Router, RouterLink, RouterLinkActive } from '@angular/router';
+import {
+  NavigationStart,
+  Router,
+  RouterLink,
+  RouterLinkActive,
+} from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LanguageService } from '../services/language.service';
 import { routes } from '../../app.routes';
-import { ShopCartItem, ShopService } from '../../features/shop/services/shop.service';
+import {
+  ShopCartItem,
+  ShopService,
+} from '../../features/shop/services/shop.service';
 import { finalize } from 'rxjs';
 
 @Component({
@@ -28,7 +36,9 @@ export class NavbarComponent {
   readonly cart = this.shopService.cart;
   readonly cartLoading = this.shopService.cartLoading;
   readonly cartItems = computed(() =>
-    (this.cart()?.items ?? []).filter((item) => item.lineItemType === 'SHOP_PRODUCT'),
+    (this.cart()?.items ?? []).filter(
+      (item) => item.lineItemType === 'SHOP_PRODUCT',
+    ),
   );
   readonly cartHasItems = computed(() => this.cartItems().length > 0);
   readonly cartItemCount = this.shopService.cartItemCount;
@@ -127,7 +137,9 @@ export class NavbarComponent {
   }
 
   cartItemName(item: ShopCartItem): string {
-    return item.displayName || item.shopProductName || item.originalFilename || '-';
+    return (
+      item.displayName || item.shopProductName || item.originalFilename || '-'
+    );
   }
 
   cartItemVariant(item: ShopCartItem): string | null {
