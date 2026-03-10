@@ -88,14 +88,9 @@ public class InvoicePdfRenderingService {
             vars.put("shippingAddressLine2", order.getShippingZip() + " " + order.getShippingCity() + ", " + order.getShippingCountryCode());
         }
 
-        List<Map<String, Object>> invoiceLineItems = items.stream().map(i -> {
-            Map<String, Object> line = new HashMap<>();
-            line.put("description", "Stampa 3D: " + i.getOriginalFilename());
-            line.put("quantity", i.getQuantity());
-            line.put("unitPriceFormatted", String.format("CHF %.2f", i.getUnitPriceChf()));
-            line.put("lineTotalFormatted", String.format("CHF %.2f", i.getLineTotalChf()));
-            return line;
-        }).collect(Collectors.toList());
+        List<Map<String, Object>> invoiceLineItems = items.stream()
+                .map(this::toInvoiceLineItem)
+                .collect(Collectors.toList());
 
         if (order.getCadTotalChf() != null && order.getCadTotalChf().compareTo(BigDecimal.ZERO) > 0) {
             BigDecimal cadHours = order.getCadHours() != null ? order.getCadHours() : BigDecimal.ZERO;
@@ -156,5 +151,46 @@ public class InvoicePdfRenderingService {
 
     private String formatCadHours(BigDecimal hours) {
         return hours.setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
+    }
+
+    private Map<String, Object> toInvoiceLineItem(OrderItem item) {
+        Map<String, Object> line = new HashMap<>();
+        line.put("description", buildLineDescription(item));
+        line.put("quantity", item.getQuantity());
+        line.put("unitPriceFormatted", String.format("CHF %.2f", item.getUnitPriceChf()));
+        line.put("lineTotalFormatted", String.format("CHF %.2f", item.getLineTotalChf()));
+        return line;
+    }
+
+    private String buildLineDescription(OrderItem item) {
+        if (item == null) {
+            return "Articolo";
+        }
+
+        if ("SHOP_PRODUCT".equalsIgnoreCase(item.getItemType())) {
+            String productName = firstNonBlank(
+                    item.getDisplayName(),
+                    item.getShopProductName(),
+                    item.getOriginalFilename(),
+                    "Prodotto shop"
+            );
+            String variantLabel = firstNonBlank(item.getShopVariantLabel(), item.getShopVariantColorName(), null);
+            return variantLabel != null ? productName + " - " + variantLabel : productName;
+        }
+
+        String fileName = firstNonBlank(item.getDisplayName(), item.getOriginalFilename(), "File 3D");
+        return "Stampa 3D: " + fileName;
+    }
+
+    private String firstNonBlank(String... values) {
+        if (values == null || values.length == 0) {
+            return null;
+        }
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value;
+            }
+        }
+        return null;
     }
 }

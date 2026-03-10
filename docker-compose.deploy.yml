@@ -1,6 +1,8 @@
 services:
   backend:
     # L'immagine usa il tag specificato nel file .env o passato da riga di comando
+    # Nginx esterno deve servire /media/ con un alias verso
+    # /mnt/cache/appdata/print-calculator/${ENV}/storage_media/public/
     image: ${REGISTRY_URL}/${REPO_OWNER}/print-calculator-backend:${TAG}
     container_name: print-calculator-backend-${ENV}
     ports:
@@ -29,6 +31,10 @@ services:
       - ADMIN_SESSION_TTL_MINUTES=${ADMIN_SESSION_TTL_MINUTES:-480}
       - TEMP_DIR=/app/temp
       - PROFILES_DIR=/app/profiles
+      - MEDIA_STORAGE_ROOT=${MEDIA_STORAGE_ROOT:-/app/storage_media}
+      - SHOP_STORAGE_ROOT=${SHOP_STORAGE_ROOT:-/app/storage_shop}
+      - MEDIA_FFMPEG_PATH=${MEDIA_FFMPEG_PATH:-/usr/local/bin/ffmpeg-media}
+      - MEDIA_UPLOAD_MAX_FILE_SIZE_BYTES=${MEDIA_UPLOAD_MAX_FILE_SIZE_BYTES:-26214400}
     restart: always
     logging:
       driver: "json-file"
@@ -40,6 +46,8 @@ services:
       - /mnt/cache/appdata/print-calculator/${ENV}/storage_quotes:/app/storage_quotes
       - /mnt/cache/appdata/print-calculator/${ENV}/storage_orders:/app/storage_orders
       - /mnt/cache/appdata/print-calculator/${ENV}/storage_requests:/app/storage_requests
+      - /mnt/cache/appdata/print-calculator/${ENV}/storage_media:/app/storage_media
+      - /mnt/cache/appdata/print-calculator/${ENV}/storage_shop:/app/storage_shop
     extra_hosts:
       - "host.docker.internal:host-gateway"
 

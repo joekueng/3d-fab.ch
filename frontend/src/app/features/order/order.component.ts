@@ -11,6 +11,52 @@ import {
   PriceBreakdownRow,
 } from '../../shared/components/price-breakdown/price-breakdown.component';
 
+interface PublicOrderItem {
+  id: string;
+  itemType?: string;
+  originalFilename?: string;
+  displayName?: string;
+  materialCode?: string;
+  colorCode?: string;
+  filamentVariantId?: number;
+  shopProductId?: string;
+  shopProductVariantId?: string;
+  shopProductSlug?: string;
+  shopProductName?: string;
+  shopVariantLabel?: string;
+  shopVariantColorName?: string;
+  shopVariantColorHex?: string;
+  filamentVariantDisplayName?: string;
+  filamentColorName?: string;
+  filamentColorHex?: string;
+  quality?: string;
+  nozzleDiameterMm?: number;
+  layerHeightMm?: number;
+  infillPercent?: number;
+  infillPattern?: string;
+  supportsEnabled?: boolean;
+  quantity: number;
+  printTimeSeconds?: number;
+  materialGrams?: number;
+  unitPriceChf?: number;
+  lineTotalChf?: number;
+}
+
+interface PublicOrder {
+  id: string;
+  orderNumber?: string;
+  status?: string;
+  paymentStatus?: string;
+  paymentMethod?: string;
+  subtotalChf?: number;
+  shippingCostChf?: number;
+  setupCostChf?: number;
+  totalChf?: number;
+  cadHours?: number;
+  cadTotalChf?: number;
+  items?: PublicOrderItem[];
+}
+
 @Component({
   selector: 'app-order',
   standalone: true,
@@ -32,7 +78,7 @@ export class OrderComponent implements OnInit {
 
   orderId: string | null = null;
   selectedPaymentMethod: 'twint' | 'bill' | null = 'twint';
-  order = signal<any>(null);
+  order = signal<PublicOrder | null>(null);
   loading = signal(true);
   error = signal<string | null>(null);
   twintOpenUrl = signal<string | null>(null);
@@ -200,5 +246,109 @@ export class OrderComponent implements OnInit {
 
   private extractOrderNumber(orderId: string): string {
     return orderId.split('-')[0];
+  }
+
+  isShopItem(item: PublicOrderItem): boolean {
+    return String(item?.itemType ?? '').toUpperCase() === 'SHOP_PRODUCT';
+  }
+
+  itemDisplayName(item: PublicOrderItem): string {
+    const displayName = String(item?.displayName ?? '').trim();
+    if (displayName) {
+      return displayName;
+    }
+
+    const shopName = String(item?.shopProductName ?? '').trim();
+    if (shopName) {
+      return shopName;
+    }
+
+    return String(
+      item?.originalFilename ?? this.translate.instant('ORDER.NOT_AVAILABLE'),
+    );
+  }
+
+  itemVariantLabel(item: PublicOrderItem): string | null {
+    const variantLabel = String(item?.shopVariantLabel ?? '').trim();
+    if (variantLabel) {
+      return variantLabel;
+    }
+
+    const colorName = String(item?.shopVariantColorName ?? '').trim();
+    return colorName || null;
+  }
+
+  itemColorLabel(item: PublicOrderItem): string {
+    const shopColor = String(item?.shopVariantColorName ?? '').trim();
+    if (shopColor) {
+      return shopColor;
+    }
+
+    const filamentColor = String(item?.filamentColorName ?? '').trim();
+    if (filamentColor) {
+      return filamentColor;
+    }
+
+    const rawColor = String(item?.colorCode ?? '').trim();
+    return rawColor || this.translate.instant('ORDER.NOT_AVAILABLE');
+  }
+
+  itemColorHex(item: PublicOrderItem): string | null {
+    const shopHex = String(item?.shopVariantColorHex ?? '').trim();
+    if (this.isHexColor(shopHex)) {
+      return shopHex;
+    }
+
+    const filamentHex = String(item?.filamentColorHex ?? '').trim();
+    if (this.isHexColor(filamentHex)) {
+      return filamentHex;
+    }
+
+    const rawColor = String(item?.colorCode ?? '').trim();
+    if (this.isHexColor(rawColor)) {
+      return rawColor;
+    }
+
+    return null;
+  }
+
+  showItemMaterial(item: PublicOrderItem): boolean {
+    return !this.isShopItem(item);
+  }
+
+  showItemPrintMetrics(item: PublicOrderItem): boolean {
+    return !this.isShopItem(item);
+  }
+
+  orderKind(order: PublicOrder | null): 'SHOP' | 'CALCULATOR' | 'MIXED' {
+    const items = order?.items ?? [];
+    const hasShop = items.some((item) => this.isShopItem(item));
+    const hasPrint = items.some((item) => !this.isShopItem(item));
+
+    if (hasShop && hasPrint) {
+      return 'MIXED';
+    }
+    if (hasShop) {
+      return 'SHOP';
+    }
+    return 'CALCULATOR';
+  }
+
+  orderKindLabel(order: PublicOrder | null): string {
+    switch (this.orderKind(order)) {
+      case 'SHOP':
+        return this.translate.instant('ORDER.TYPE_SHOP');
+      case 'MIXED':
+        return this.translate.instant('ORDER.TYPE_MIXED');
+      default:
+        return this.translate.instant('ORDER.TYPE_CALCULATOR');
+    }
+  }
+
+  private isHexColor(value?: string): boolean {
+    return (
+      typeof value === 'string' &&
+      /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value)
+    );
   }
 }

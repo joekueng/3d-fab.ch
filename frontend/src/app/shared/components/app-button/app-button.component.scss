@@ -60,3 +60,20 @@
     color: var(--color-text);
   }
 }
+
+.btn-ghost {
+  background-color: var(--color-bg-card);
+  border-color: var(--color-border);
+  color: var(--color-text);
+  &:hover:not(:disabled) {
+    background-color: var(--color-surface-muted);
+  }
+}
+
+.btn-danger {
+  background-color: var(--color-danger-500);
+  color: #fff;
+  &:hover:not(:disabled) {
+    background-color: #dc2626;
+  }
+}

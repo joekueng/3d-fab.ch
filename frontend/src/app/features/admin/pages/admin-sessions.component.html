@@ -6,7 +6,7 @@
     </div>
     <button
       type="button"
-      class="btn-primary"
+      class="ui-button"
       (click)="loadSessions()"
       [disabled]="loading"
     >
@@ -17,8 +17,8 @@
   <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
   <p class="success" *ngIf="successMessage">{{ successMessage }}</p>
 
-  <div class="table-wrap" *ngIf="!loading; else loadingTpl">
-    <table>
+  <div class="table-wrap ui-table-wrap" *ngIf="!loading; else loadingTpl">
+    <table class="ui-data-table">
       <thead>
         <tr>
           <th>Sessione</th>
@@ -53,14 +53,14 @@
             <td class="actions">
               <button
                 type="button"
-                class="btn-secondary"
+                class="ui-button ui-button--ghost"
                 (click)="toggleSessionDetail(session)"
               >
                 {{ isDetailOpen(session.id) ? "Nascondi" : "Vedi" }}
               </button>
               <button
                 type="button"
-                class="btn-danger"
+                class="ui-button ui-button--danger"
                 (click)="deleteSession(session)"
                 [disabled]="
                   isDeletingSession(session.id) || !!session.convertedOrderId
@@ -92,6 +92,7 @@
                 <div class="detail-session-id">
                   <strong>UUID sessione:</strong>
                   <code
+                    class="ui-code-pill"
                     [title]="detail.session.id"
                     [appCopyOnClick]="detail.session.id"
                     >{{ detail.session.id }}</code

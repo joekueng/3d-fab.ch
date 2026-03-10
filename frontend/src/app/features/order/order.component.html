@@ -1,5 +1,5 @@
-<div class="container hero">
-  <h1>
+<div class="container ui-page-hero ui-page-hero--spacious order-hero">
+  <h1 class="ui-page-title">
     {{ "TRACKING.TITLE" | translate }}
     <ng-container *ngIf="order()">
       <br /><span class="order-id-title"
@@ -7,7 +7,7 @@
       >
     </ng-container>
   </h1>
-  <p class="subtitle">{{ "TRACKING.SUBTITLE" | translate }}</p>
+  <p class="ui-page-subtitle subtitle">{{ "TRACKING.SUBTITLE" | translate }}</p>
 </div>
 
 <div class="container">
@@ -58,151 +58,222 @@
       </div>
     </div>
 
-    <ng-container *ngIf="o.status === 'PENDING_PAYMENT'">
-      <app-card
-        class="mb-6 status-reported-card"
-        *ngIf="o.paymentStatus === 'REPORTED'"
-      >
-        <div class="status-content text-center">
-          <h3>{{ "PAYMENT.STATUS_REPORTED_TITLE" | translate }}</h3>
-          <p>{{ "PAYMENT.STATUS_REPORTED_DESC" | translate }}</p>
-        </div>
-      </app-card>
-
-      <div class="payment-layout">
-        <div class="payment-main">
-          <app-card class="mb-6">
-            <div class="card-header-simple">
-              <h3>{{ "PAYMENT.METHOD" | translate }}</h3>
-            </div>
-
-            <div class="payment-selection">
-              <div class="methods-grid">
-                <div
-                  class="type-option"
-                  [class.selected]="selectedPaymentMethod === 'twint'"
-                  (click)="selectPayment('twint')"
-                >
-                  <span class="method-name">{{
-                    "PAYMENT.METHOD_TWINT" | translate
-                  }}</span>
-                </div>
-                <div
-                  class="type-option"
-                  [class.selected]="selectedPaymentMethod === 'bill'"
-                  (click)="selectPayment('bill')"
-                >
-                  <span class="method-name">{{
-                    "PAYMENT.METHOD_BANK" | translate
-                  }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div
-              class="payment-details fade-in text-center"
-              *ngIf="selectedPaymentMethod === 'twint'"
-            >
-              <div class="details-header">
-                <h4>{{ "PAYMENT.TWINT_TITLE" | translate }}</h4>
-              </div>
-              <div class="qr-placeholder">
-                <img
-                  *ngIf="twintQrUrl()"
-                  class="twint-qr"
-                  [src]="getTwintQrUrl()"
-                  (error)="onTwintQrError()"
-                  [attr.alt]="'PAYMENT.TWINT_QR_ALT' | translate"
-                />
-                <p>{{ "PAYMENT.TWINT_DESC" | translate }}</p>
-                <p class="billing-hint">
-                  {{ "PAYMENT.BILLING_INFO_HINT" | translate }}
-                </p>
-                <div class="twint-mobile-action twint-button-container">
-                  <button
-                    style="
-                      width: auto;
-                      height: 58px;
-                      border-radius: 6px;
-                      display: flex;
-                      justify-content: center;
-                      cursor: pointer;
-                      background-color: transparent;
-                      border: none;
-                      align-items: center;
-                    "
-                    (click)="openTwintPayment()"
-                  >
-                    <img
-                      style="width: auto; height: 58px"
-                      [attr.alt]="'PAYMENT.TWINT_BUTTON_ALT' | translate"
-                      [src]="getTwintButtonImageUrl()"
-                    />
-                  </button>
-                </div>
-                <p class="amount">
-                  {{ "PAYMENT.TOTAL" | translate }}:
-                  {{ o.totalChf | currency: "CHF" }}
-                </p>
-              </div>
-            </div>
-
-            <div
-              class="payment-details fade-in text-center"
-              *ngIf="selectedPaymentMethod === 'bill'"
-            >
-              <div class="details-header">
-                <h4>{{ "PAYMENT.BANK_TITLE" | translate }}</h4>
-              </div>
-              <div class="bank-details">
-                <p class="billing-hint">
-                  {{ "PAYMENT.BILLING_INFO_HINT" | translate }}
-                </p>
-                <br />
-                <div class="qr-bill-actions">
-                  <app-button (click)="downloadQrInvoice()">
-                    {{ "PAYMENT.DOWNLOAD_QR" | translate }}
-                  </app-button>
-                </div>
-              </div>
-            </div>
-
-            <div class="actions">
-              <app-button
-                variant="outline"
-                (click)="completeOrder()"
-                [disabled]="
-                  !selectedPaymentMethod || o.paymentStatus === 'REPORTED'
-                "
-                [fullWidth]="true"
-              >
-                {{
-                  o.paymentStatus === "REPORTED"
-                    ? ("PAYMENT.IN_VERIFICATION" | translate)
-                    : ("PAYMENT.CONFIRM" | translate)
-                }}
-              </app-button>
-            </div>
-          </app-card>
-        </div>
-
-        <div class="payment-summary">
-          <app-card class="sticky-card">
-            <div class="card-header-simple">
-              <h3>{{ "PAYMENT.SUMMARY_TITLE" | translate }}</h3>
-              <p class="order-id">#{{ getDisplayOrderNumber(o) }}</p>
-            </div>
-
-            <app-price-breakdown
-              [rows]="orderPriceBreakdownRows(o)"
-              [total]="o.totalChf || 0"
-              [currency]="'CHF'"
-              [totalLabelKey]="'PAYMENT.TOTAL'"
-            ></app-price-breakdown>
-          </app-card>
-        </div>
+    <app-card
+      class="mb-6 status-reported-card"
+      *ngIf="o.status === 'PENDING_PAYMENT' && o.paymentStatus === 'REPORTED'"
+    >
+      <div class="status-content text-center">
+        <h3>{{ "PAYMENT.STATUS_REPORTED_TITLE" | translate }}</h3>
+        <p>{{ "PAYMENT.STATUS_REPORTED_DESC" | translate }}</p>
       </div>
-    </ng-container>
+    </app-card>
+
+    <div class="payment-layout ui-two-column-layout">
+      <div class="payment-main">
+        <app-card class="mb-6" *ngIf="o.status === 'PENDING_PAYMENT'">
+          <div class="ui-card-header">
+            <h3 class="ui-card-title">{{ "PAYMENT.METHOD" | translate }}</h3>
+          </div>
+
+          <div class="payment-selection">
+            <div class="ui-choice-grid">
+              <div
+                class="ui-choice-card"
+                [class.is-selected]="selectedPaymentMethod === 'twint'"
+                (click)="selectPayment('twint')"
+              >
+                <span class="method-name">{{
+                  "PAYMENT.METHOD_TWINT" | translate
+                }}</span>
+              </div>
+              <div
+                class="ui-choice-card"
+                [class.is-selected]="selectedPaymentMethod === 'bill'"
+                (click)="selectPayment('bill')"
+              >
+                <span class="method-name">{{
+                  "PAYMENT.METHOD_BANK" | translate
+                }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="payment-details ui-soft-panel fade-in text-center"
+            *ngIf="selectedPaymentMethod === 'twint'"
+          >
+            <div class="details-header">
+              <h4>{{ "PAYMENT.TWINT_TITLE" | translate }}</h4>
+            </div>
+            <div class="qr-placeholder">
+              <img
+                *ngIf="twintQrUrl()"
+                class="twint-qr"
+                [src]="getTwintQrUrl()"
+                (error)="onTwintQrError()"
+                [attr.alt]="'PAYMENT.TWINT_QR_ALT' | translate"
+              />
+              <p>{{ "PAYMENT.TWINT_DESC" | translate }}</p>
+              <p class="billing-hint">
+                {{ "PAYMENT.BILLING_INFO_HINT" | translate }}
+              </p>
+              <div class="twint-mobile-action twint-button-container">
+                <button
+                  type="button"
+                  class="twint-launch-button"
+                  (click)="openTwintPayment()"
+                >
+                  <img
+                    class="twint-launch-button__image"
+                    [attr.alt]="'PAYMENT.TWINT_BUTTON_ALT' | translate"
+                    [src]="getTwintButtonImageUrl()"
+                  />
+                </button>
+              </div>
+              <p class="amount">
+                {{ "PAYMENT.TOTAL" | translate }}:
+                {{ o.totalChf | currency: "CHF" }}
+              </p>
+            </div>
+          </div>
+
+          <div
+            class="payment-details ui-soft-panel fade-in text-center"
+            *ngIf="selectedPaymentMethod === 'bill'"
+          >
+            <div class="details-header">
+              <h4>{{ "PAYMENT.BANK_TITLE" | translate }}</h4>
+            </div>
+            <div class="bank-details">
+              <p class="billing-hint">
+                {{ "PAYMENT.BILLING_INFO_HINT" | translate }}
+              </p>
+              <br />
+              <div class="qr-bill-actions">
+                <app-button (click)="downloadQrInvoice()">
+                  {{ "PAYMENT.DOWNLOAD_QR" | translate }}
+                </app-button>
+              </div>
+            </div>
+          </div>
+
+          <div class="ui-actions">
+            <app-button
+              variant="outline"
+              (click)="completeOrder()"
+              [disabled]="
+                !selectedPaymentMethod || o.paymentStatus === 'REPORTED'
+              "
+              [fullWidth]="true"
+            >
+              {{
+                o.paymentStatus === "REPORTED"
+                  ? ("PAYMENT.IN_VERIFICATION" | translate)
+                  : ("PAYMENT.CONFIRM" | translate)
+              }}
+            </app-button>
+          </div>
+        </app-card>
+
+        <app-card class="mb-6">
+          <div class="ui-card-header">
+            <h3 class="ui-card-title">{{ "ORDER.ITEMS_TITLE" | translate }}</h3>
+            <p class="ui-card-subtitle">
+              {{ orderKindLabel(o) }}
+            </p>
+          </div>
+
+          <div class="order-items">
+            <div class="order-item" *ngFor="let item of o.items || []">
+              <div class="order-item-copy">
+                <div class="order-item-name-row">
+                  <strong class="order-item-name">{{
+                    itemDisplayName(item)
+                  }}</strong>
+                  <span
+                    class="order-item-kind"
+                    [class.order-item-kind-shop]="isShopItem(item)"
+                  >
+                    {{
+                      isShopItem(item)
+                        ? ("ORDER.TYPE_SHOP" | translate)
+                        : ("ORDER.TYPE_CALCULATOR" | translate)
+                    }}
+                  </span>
+                </div>
+
+                <div class="order-item-meta">
+                  <span
+                    >{{ "CHECKOUT.QTY" | translate }}: {{ item.quantity }}</span
+                  >
+                  <span *ngIf="showItemMaterial(item)">
+                    {{ "CHECKOUT.MATERIAL" | translate }}:
+                    {{
+                      item.materialCode || ("ORDER.NOT_AVAILABLE" | translate)
+                    }}
+                  </span>
+                  <span *ngIf="itemVariantLabel(item) as variantLabel">
+                    {{ "SHOP.VARIANT" | translate }}: {{ variantLabel }}
+                  </span>
+                  <span class="item-color-chip">
+                    <span
+                      class="color-swatch"
+                      *ngIf="itemColorHex(item) as colorHex"
+                      [style.background-color]="colorHex"
+                    ></span>
+                    <span>{{ itemColorLabel(item) }}</span>
+                  </span>
+                </div>
+
+                <div class="order-item-tech" *ngIf="showItemPrintMetrics(item)">
+                  {{ item.printTimeSeconds || 0 | number: "1.0-0" }}s |
+                  {{ item.materialGrams || 0 | number: "1.0-0" }}g
+                </div>
+              </div>
+
+              <strong class="order-item-total">
+                {{ item.lineTotalChf || 0 | currency: "CHF" }}
+              </strong>
+            </div>
+          </div>
+        </app-card>
+      </div>
+
+      <div class="payment-summary">
+        <app-card class="sticky-card">
+          <div class="ui-card-header">
+            <h3 class="ui-card-title">
+              {{ "PAYMENT.SUMMARY_TITLE" | translate }}
+            </h3>
+            <p class="ui-card-subtitle order-id">
+              #{{ getDisplayOrderNumber(o) }}
+            </p>
+          </div>
+
+          <div class="order-summary-meta">
+            <div>
+              <span class="summary-label">{{
+                "ORDER.ORDER_TYPE_LABEL" | translate
+              }}</span>
+              <strong>{{ orderKindLabel(o) }}</strong>
+            </div>
+            <div>
+              <span class="summary-label">{{
+                "ORDER.ITEM_COUNT" | translate
+              }}</span>
+              <strong>{{ (o.items || []).length }}</strong>
+            </div>
+          </div>
+
+          <app-price-breakdown
+            [rows]="orderPriceBreakdownRows(o)"
+            [total]="o.totalChf || 0"
+            [currency]="'CHF'"
+            [totalLabelKey]="'PAYMENT.TOTAL'"
+          ></app-price-breakdown>
+        </app-card>
+      </div>
+    </div>
   </ng-container>
 
   <div *ngIf="loading()" class="loading-state">

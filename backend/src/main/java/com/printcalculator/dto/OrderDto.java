@@ -8,6 +8,7 @@ import java.util.UUID;
 public class OrderDto {
     private UUID id;
     private String orderNumber;
+    private String sourceType;
     private String status;
     private String paymentStatus;
     private String paymentMethod;
@@ -44,6 +45,9 @@ public class OrderDto {
 
     public String getOrderNumber() { return orderNumber; }
     public void setOrderNumber(String orderNumber) { this.orderNumber = orderNumber; }
+
+    public String getSourceType() { return sourceType; }
+    public void setSourceType(String sourceType) { this.sourceType = sourceType; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }

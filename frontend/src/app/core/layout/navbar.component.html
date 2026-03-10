@@ -42,6 +42,35 @@
     </nav>
 
     <div class="actions">
+      <button
+        type="button"
+        class="cart-trigger"
+        [class.has-items]="cartItemCount() > 0"
+        [attr.aria-label]="'SHOP.CART_TITLE' | translate"
+        (click)="toggleCart()"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="8" cy="21" r="1"></circle>
+          <circle cx="19" cy="21" r="1"></circle>
+          <path
+            d="M2.05 2h2l2.4 12.45a2 2 0 0 0 2 1.55h9.7a2 2 0 0 0 1.95-1.57L22 7H6"
+          ></path>
+        </svg>
+        @if (cartItemCount() > 0) {
+          <span class="cart-badge">{{ cartItemCount() }}</span>
+        }
+      </button>
+
       <select
         class="lang-switch"
         [value]="langService.selectedLang()"
@@ -71,4 +100,120 @@
       </div>
     </div>
   </div>
+
+  @if (isCartOpen()) {
+    <div class="cart-overlay" (click)="closeCart()">
+      <aside class="cart-panel" (click)="$event.stopPropagation()">
+        <div class="cart-panel-head">
+          <div>
+            <p class="cart-panel-kicker">{{ "SHOP.CART_TITLE" | translate }}</p>
+            <h2>{{ "SHOP.CART_SUMMARY_TITLE" | translate }}</h2>
+          </div>
+          <button
+            type="button"
+            class="cart-close"
+            [attr.aria-label]="'COMMON.BACK' | translate"
+            (click)="closeCart()"
+          >
+            ×
+          </button>
+        </div>
+
+        @if (cartLoading() && !cart()) {
+          <p class="cart-state">{{ "SHOP.CART_LOADING" | translate }}</p>
+        } @else if (!cartHasItems()) {
+          <p class="cart-state">{{ "SHOP.CART_EMPTY" | translate }}</p>
+        } @else {
+          <div class="cart-lines">
+            @for (item of cartItems(); track trackByCartItem($index, item)) {
+              <article class="cart-line">
+                <div class="cart-line-copy">
+                  <strong>{{ cartItemName(item) }}</strong>
+                  @if (cartItemVariant(item); as variant) {
+                    <span class="cart-line-meta">{{ variant }}</span>
+                  }
+                  @if (cartItemColor(item); as color) {
+                    <span class="cart-line-color">
+                      <span
+                        class="color-dot"
+                        [style.background-color]="cartItemColorHex(item)"
+                      ></span>
+                      <span>{{ color }}</span>
+                    </span>
+                  }
+                </div>
+
+                <div class="cart-line-actions">
+                  <div class="qty-control">
+                    <button
+                      type="button"
+                      [disabled]="
+                        cartMutating() && busyLineItemId() === item.id
+                      "
+                      (click)="decreaseQuantity(item)"
+                    >
+                      -
+                    </button>
+                    <span>{{ item.quantity }}</span>
+                    <button
+                      type="button"
+                      [disabled]="
+                        cartMutating() && busyLineItemId() === item.id
+                      "
+                      (click)="increaseQuantity(item)"
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <strong class="line-total">{{
+                    item.unitPriceChf * item.quantity | currency: "CHF"
+                  }}</strong>
+                </div>
+
+                <button
+                  type="button"
+                  class="line-remove"
+                  [disabled]="cartMutating() && busyLineItemId() === item.id"
+                  (click)="removeItem(item)"
+                >
+                  {{ "SHOP.REMOVE" | translate }}
+                </button>
+              </article>
+            }
+          </div>
+
+          <div class="cart-totals">
+            <div class="cart-total-row">
+              <span>{{ "SHOP.CART_SUBTOTAL" | translate }}</span>
+              <strong>{{
+                cart()?.itemsTotalChf || 0 | currency: "CHF"
+              }}</strong>
+            </div>
+            <div class="cart-total-row">
+              <span>{{ "SHOP.CART_SHIPPING" | translate }}</span>
+              <strong>{{
+                cart()?.shippingCostChf || 0 | currency: "CHF"
+              }}</strong>
+            </div>
+            <div class="cart-total-row cart-total-row-final">
+              <span>{{ "SHOP.CART_TOTAL" | translate }}</span>
+              <strong>{{
+                cart()?.grandTotalChf || 0 | currency: "CHF"
+              }}</strong>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="checkout-link"
+            [disabled]="cartMutating()"
+            (click)="goToCheckout()"
+          >
+            {{ "SHOP.GO_TO_CHECKOUT" | translate }}
+          </button>
+        }
+      </aside>
+    </div>
+  }
 </header>

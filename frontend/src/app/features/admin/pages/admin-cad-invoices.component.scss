@@ -4,6 +4,13 @@
   gap: var(--space-5);
 }
 
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  align-items: flex-start;
+}
+
 .page-header {
   display: flex;
   justify-content: space-between;
@@ -13,6 +20,7 @@
 
 .page-header h1 {
   margin: 0;
+  font-size: 1.45rem;
 }
 
 .page-header p {
@@ -43,7 +51,8 @@ button:disabled {
 }
 
 .create-box h2 {
-  margin-top: 0;
+  margin: 0 0 var(--space-3);
+  font-size: 1.05rem;
 }
 
 .form-grid {
@@ -129,6 +138,11 @@ td {
 }
 
 @media (max-width: 880px) {
+  .section-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   .page-header {
     flex-direction: column;
     align-items: stretch;

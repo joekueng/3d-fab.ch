@@ -1,11 +1,16 @@
-<section class="admin-dashboard">
-  <header class="dashboard-header">
+<section class="admin-dashboard section-card">
+  <header class="dashboard-header section-header">
     <div>
       <h1>Ordini</h1>
       <p>Seleziona un ordine a sinistra e gestiscilo nel dettaglio a destra.</p>
     </div>
     <div class="header-actions">
-      <button type="button" (click)="loadOrders()" [disabled]="loading">
+      <button
+        type="button"
+        class="ui-button"
+        (click)="loadOrders()"
+        [disabled]="loading"
+      >
         Aggiorna
       </button>
     </div>
@@ -13,13 +18,14 @@
 
   <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
 
-  <div class="workspace" *ngIf="!loading; else loadingTpl">
+  <div class="workspace ui-split-workspace" *ngIf="!loading; else loadingTpl">
     <section class="list-panel">
       <h2>Lista ordini</h2>
       <div class="list-toolbar">
         <label class="toolbar-field" for="order-search">
           <span>Cerca UUID</span>
           <input
+            class="ui-form-control"
             id="order-search"
             type="search"
             [ngModel]="orderSearchTerm"
@@ -30,6 +36,7 @@
         <label class="toolbar-field" for="payment-status-filter">
           <span>Stato pagamento</span>
           <select
+            class="ui-form-control"
             id="payment-status-filter"
             [ngModel]="paymentStatusFilter"
             (ngModelChange)="onPaymentStatusFilterChange($event)"
@@ -45,6 +52,7 @@
         <label class="toolbar-field" for="order-status-filter">
           <span>Stato ordine</span>
           <select
+            class="ui-form-control"
             id="order-status-filter"
             [ngModel]="orderStatusFilter"
             (ngModelChange)="onOrderStatusFilterChange($event)"
@@ -57,12 +65,29 @@
             </option>
           </select>
         </label>
+        <label class="toolbar-field" for="order-type-filter">
+          <span>Tipo ordine</span>
+          <select
+            class="ui-form-control"
+            id="order-type-filter"
+            [ngModel]="orderTypeFilter"
+            (ngModelChange)="onOrderTypeFilterChange($event)"
+          >
+            <option
+              *ngFor="let option of orderTypeFilterOptions"
+              [ngValue]="option"
+            >
+              {{ option }}
+            </option>
+          </select>
+        </label>
       </div>
-      <div class="table-wrap">
-        <table>
+      <div class="table-wrap ui-table-wrap">
+        <table class="ui-data-table">
           <thead>
             <tr>
               <th>Ordine</th>
+              <th>Tipo</th>
               <th>Email</th>
               <th>Pagamento</th>
               <th>Stato ordine</th>
@@ -76,6 +101,14 @@
               (click)="openDetails(order.id)"
             >
               <td>{{ order.orderNumber }}</td>
+              <td>
+                <span
+                  class="order-type-badge"
+                  [class.order-type-badge--mixed]="orderKind(order) === 'MIXED'"
+                >
+                  {{ orderKindLabel(order) }}
+                </span>
+              </td>
               <td>{{ order.customerEmail }}</td>
               <td>{{ order.paymentStatus || "PENDING" }}</td>
               <td>{{ order.status }}</td>
@@ -84,7 +117,7 @@
               </td>
             </tr>
             <tr class="no-results" *ngIf="filteredOrders.length === 0">
-              <td colspan="5">
+              <td colspan="6">
                 Nessun ordine trovato per i filtri selezionati.
               </td>
             </tr>
@@ -93,12 +126,23 @@
       </div>
     </section>
 
-    <section class="detail-panel" *ngIf="selectedOrder">
+    <section class="detail-panel ui-detail-panel" *ngIf="selectedOrder">
       <div class="detail-header">
-        <h2>Dettaglio ordine {{ selectedOrder.orderNumber }}</h2>
+        <div class="detail-title-row">
+          <h2>Dettaglio ordine {{ selectedOrder.orderNumber }}</h2>
+          <span
+            class="order-type-badge"
+            [class.order-type-badge--mixed]="
+              orderKind(selectedOrder) === 'MIXED'
+            "
+          >
+            {{ orderKindLabel(selectedOrder) }}
+          </span>
+        </div>
         <p class="order-uuid">
           UUID:
           <code
+            class="ui-code-pill"
             [title]="selectedOrder.id"
             [appCopyOnClick]="selectedOrder.id"
             >{{ selectedOrder.id }}</code
@@ -107,18 +151,22 @@
         <p *ngIf="detailLoading">Caricamento dettaglio...</p>
       </div>
 
-      <div class="meta-grid">
-        <div>
+      <div class="meta-grid ui-meta-grid">
+        <div class="ui-meta-item">
           <strong>Cliente</strong><span>{{ selectedOrder.customerEmail }}</span>
         </div>
-        <div>
+        <div class="ui-meta-item">
           <strong>Stato pagamento</strong
           ><span>{{ selectedOrder.paymentStatus || "PENDING" }}</span>
         </div>
-        <div>
+        <div class="ui-meta-item">
           <strong>Stato ordine</strong><span>{{ selectedOrder.status }}</span>
         </div>
-        <div>
+        <div class="ui-meta-item">
+          <strong>Tipo ordine</strong
+          ><span>{{ orderKindLabel(selectedOrder) }}</span>
+        </div>
+        <div class="ui-meta-item">
           <strong>Totale</strong
           ><span>{{
             selectedOrder.totalChf | currency: "CHF" : "symbol" : "1.2-2"
@@ -130,6 +178,7 @@
         <div class="status-editor">
           <label for="order-status">Stato ordine</label>
           <select
+            class="ui-form-control"
             id="order-status"
             [value]="selectedStatus"
             (change)="onStatusChange($event)"
@@ -139,6 +188,7 @@
             </option>
           </select>
           <button
+            class="ui-button"
             type="button"
             (click)="updateStatus()"
             [disabled]="updatingStatus"
@@ -150,6 +200,7 @@
         <div class="status-editor">
           <label for="payment-method">Metodo pagamento</label>
           <select
+            class="ui-form-control"
             id="payment-method"
             [value]="selectedPaymentMethod"
             (change)="onPaymentMethodChange($event)"
@@ -162,6 +213,7 @@
             </option>
           </select>
           <button
+            class="ui-button"
             type="button"
             (click)="updatePaymentMethod()"
             [disabled]="confirmingPayment"
@@ -174,13 +226,26 @@
       </div>
 
       <div class="doc-actions">
-        <button type="button" class="ghost" (click)="downloadConfirmation()">
+        <button
+          type="button"
+          class="ui-button ui-button--ghost"
+          (click)="downloadConfirmation()"
+        >
           Scarica conferma + QR bill
         </button>
-        <button type="button" class="ghost" (click)="downloadInvoice()">
+        <button
+          type="button"
+          class="ui-button ui-button--ghost"
+          (click)="downloadInvoice()"
+        >
           Scarica fattura
         </button>
-        <button type="button" class="ghost" (click)="openPrintDetails()">
+        <button
+          type="button"
+          class="ui-button ui-button--ghost"
+          (click)="openPrintDetails()"
+          [disabled]="!hasPrintItems(selectedOrder)"
+        >
           Dettagli stampa
         </button>
       </div>
@@ -188,43 +253,72 @@
       <div class="items">
         <div class="item" *ngFor="let item of selectedOrder.items">
           <div class="item-main">
-            <p class="file-name">
-              <strong>{{ item.originalFilename }}</strong>
-            </p>
-            <p class="item-meta">
-              Qta: {{ item.quantity }} | Materiale:
-              {{ getItemMaterialLabel(item) }} | Colore:
-              <span
-                class="color-swatch"
-                *ngIf="getItemColorHex(item) as colorHex"
-                [style.background-color]="colorHex"
-              ></span>
-              <span>
-                {{ getItemColorLabel(item) }}
-                <ng-container *ngIf="getItemColorCodeSuffix(item) as colorCode">
-                  ({{ colorCode }})
-                </ng-container>
+            <div class="item-heading">
+              <p class="file-name">
+                <strong>{{ itemDisplayName(item) }}</strong>
+              </p>
+              <span class="item-kind-badge">
+                {{ isShopItem(item) ? "Shop" : "Calcolatore" }}
               </span>
-              | Nozzle: {{ item.nozzleDiameterMm ?? "-" }} mm | Layer:
+            </div>
+            <p class="item-meta">
+              <span>Qta: {{ item.quantity }}</span>
+              <span *ngIf="showItemMaterial(item)">
+                Materiale: {{ getItemMaterialLabel(item) }}
+              </span>
+              <span *ngIf="itemVariantLabel(item) as variantLabel">
+                Variante: {{ variantLabel }}
+              </span>
+              <span class="item-meta__color">
+                Colore:
+                <span
+                  class="color-swatch"
+                  *ngIf="getItemColorHex(item) as colorHex"
+                  [style.background-color]="colorHex"
+                ></span>
+                <span>
+                  {{ getItemColorLabel(item) }}
+                  <ng-container
+                    *ngIf="getItemColorCodeSuffix(item) as colorCode"
+                  >
+                    ({{ colorCode }})
+                  </ng-container>
+                </span>
+              </span>
+            </p>
+            <p class="item-tech" *ngIf="showItemPrintDetails(item)">
+              Nozzle: {{ item.nozzleDiameterMm ?? "-" }} mm | Layer:
               {{ item.layerHeightMm ?? "-" }} mm | Infill:
               {{ item.infillPercent ?? "-" }}% | Supporti:
               {{ formatSupports(item.supportsEnabled) }}
-              | Riga:
+            </p>
+            <p class="item-total">
+              Riga:
               {{ item.lineTotalChf | currency: "CHF" : "symbol" : "1.2-2" }}
             </p>
           </div>
-          <button
-            type="button"
-            class="ghost"
-            (click)="downloadItemFile(item.id, item.originalFilename)"
-          >
-            Scarica file
-          </button>
+          <div class="item-actions">
+            <button
+              type="button"
+              class="ui-button ui-button--ghost"
+              (click)="
+                downloadItemFile(
+                  item.id,
+                  item.originalFilename || itemDisplayName(item)
+                )
+              "
+            >
+              {{ downloadItemLabel(item) }}
+            </button>
+          </div>
         </div>
       </div>
     </section>
 
-    <section class="detail-panel empty" *ngIf="!selectedOrder">
+    <section
+      class="detail-panel ui-detail-panel ui-detail-panel--empty"
+      *ngIf="!selectedOrder"
+    >
       <h2>Nessun ordine selezionato</h2>
       <p>Seleziona un ordine dalla lista per vedere i dettagli.</p>
     </section>
@@ -245,39 +339,39 @@
       <h3>Dettagli stampa ordine {{ selectedOrder.orderNumber }}</h3>
       <button
         type="button"
-        class="ghost close-btn"
+        class="ui-button ui-button--ghost close-btn"
         (click)="closePrintDetails()"
       >
         Chiudi
       </button>
     </header>
 
-    <div class="modal-grid">
-      <div>
+    <div class="modal-grid ui-meta-grid">
+      <div class="ui-meta-item">
         <strong>Qualità</strong
         ><span>{{ getQualityLabel(selectedOrder.printLayerHeightMm) }}</span>
       </div>
-      <div>
+      <div class="ui-meta-item">
         <strong>Materiale</strong
         ><span>{{ selectedOrder.printMaterialCode || "-" }}</span>
       </div>
-      <div>
+      <div class="ui-meta-item">
         <strong>Layer height</strong
         ><span>{{ selectedOrder.printLayerHeightMm || "-" }} mm</span>
       </div>
-      <div>
+      <div class="ui-meta-item">
         <strong>Nozzle</strong
         ><span>{{ selectedOrder.printNozzleDiameterMm || "-" }} mm</span>
       </div>
-      <div>
+      <div class="ui-meta-item">
         <strong>Infill pattern</strong
         ><span>{{ selectedOrder.printInfillPattern || "-" }}</span>
       </div>
-      <div>
+      <div class="ui-meta-item">
         <strong>Infill %</strong
         ><span>{{ selectedOrder.printInfillPercent ?? "-" }}</span>
       </div>
-      <div>
+      <div class="ui-meta-item">
         <strong>Supporti</strong
         ><span>{{ selectedOrder.printSupportsEnabled ? "Sì" : "No" }}</span>
       </div>
@@ -285,7 +379,10 @@
 
     <h4>Parametri per file</h4>
     <div class="file-color-list">
-      <div class="file-color-row" *ngFor="let item of selectedOrder.items">
+      <div
+        class="file-color-row"
+        *ngFor="let item of printItems(selectedOrder)"
+      >
         <span class="filename">{{ item.originalFilename }}</span>
         <span class="file-color">
           {{ getItemMaterialLabel(item) }} | Colore:

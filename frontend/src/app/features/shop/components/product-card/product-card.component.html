@@ -1,17 +1,71 @@
-<div class="product-card">
-  <div class="image-placeholder"></div>
+<article class="product-card">
+  <a class="media" [routerLink]="productLink()" [state]="navigationState()">
+    @if (imageUrl(); as imageUrl) {
+      <img
+        [src]="imageUrl"
+        [alt]="product().primaryImage?.altText || product().name"
+        loading="lazy"
+      />
+    } @else {
+      <div class="image-fallback">
+        <span>{{ product().category.name }}</span>
+      </div>
+    }
+
+    <div class="card-badges">
+      @if (hasModelPreview()) {
+        <span class="badge badge-model">
+          {{ "SHOP.MODEL_3D" | translate }}
+        </span>
+      }
+      @if (cartQuantity() > 0) {
+        <span class="badge badge-cart">
+          {{ "SHOP.IN_CART_SHORT" | translate: { count: cartQuantity() } }}
+        </span>
+      }
+    </div>
+  </a>
+
   <div class="content">
-    <span class="category">{{ product().category | translate }}</span>
+    <div class="meta">
+      <span class="category">{{ product().category.name }}</span>
+    </div>
+
     <h3 class="name">
-      <a [routerLink]="['/shop', product().id]">{{
-        product().name | translate
+      <a [routerLink]="productLink()" [state]="navigationState()">{{
+        product().name
       }}</a>
     </h3>
+
+    <p class="excerpt">
+      {{ product().excerpt || ("SHOP.EXCERPT_FALLBACK" | translate) }}
+    </p>
+
     <div class="footer">
-      <span class="price">{{ product().price | currency: "EUR" }}</span>
-      <a [routerLink]="['/shop', product().id]" class="view-btn">{{
-        "SHOP.DETAILS" | translate
-      }}</a>
+      <div class="pricing">
+        <span class="price">{{ priceLabel() | currency: "CHF" }}</span>
+        @if (hasPriceRange()) {
+          <small class="price-note">{{ "SHOP.PRICE_FROM" | translate }}</small>
+        }
+      </div>
+
+      <div class="footer-actions">
+        <button
+          type="button"
+          class="cart-btn"
+          (click)="addToCart()"
+          [disabled]="!defaultVariantId() || addingToCart()"
+        >
+          {{ (addingToCart() ? "SHOP.ADDING" : "SHOP.ADD_CART") | translate }}
+        </button>
+
+        <a
+          [routerLink]="productLink()"
+          [state]="navigationState()"
+          class="view-btn"
+          >{{ "SHOP.DETAILS" | translate }}</a
+        >
+      </div>
     </div>
   </div>
-</div>
+</article>

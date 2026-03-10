@@ -26,6 +26,7 @@ export class AdminDashboardComponent implements OnInit {
   orderSearchTerm = '';
   paymentStatusFilter = 'ALL';
   orderStatusFilter = 'ALL';
+  orderTypeFilter = 'ALL';
   showPrintDetails = false;
   loading = false;
   detailLoading = false;
@@ -62,6 +63,7 @@ export class AdminDashboardComponent implements OnInit {
     'COMPLETED',
     'CANCELLED',
   ];
+  readonly orderTypeFilterOptions = ['ALL', 'SHOP', 'CALCULATOR', 'MIXED'];
 
   ngOnInit(): void {
     this.loadOrders();
@@ -117,6 +119,11 @@ export class AdminDashboardComponent implements OnInit {
     this.applyListFiltersAndSelection();
   }
 
+  onOrderTypeFilterChange(value: string): void {
+    this.orderTypeFilter = value || 'ALL';
+    this.applyListFiltersAndSelection();
+  }
+
   openDetails(orderId: string): void {
     this.detailLoading = true;
     this.adminOrdersService.getOrder(orderId).subscribe({
@@ -124,6 +131,8 @@ export class AdminDashboardComponent implements OnInit {
         this.selectedOrder = order;
         this.selectedStatus = order.status;
         this.selectedPaymentMethod = order.paymentMethod || 'OTHER';
+        this.showPrintDetails =
+          this.showPrintDetails && this.hasPrintItems(order);
         this.detailLoading = false;
       },
       error: () => {
@@ -247,6 +256,9 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   openPrintDetails(): void {
+    if (!this.selectedOrder || !this.hasPrintItems(this.selectedOrder)) {
+      return;
+    }
     this.showPrintDetails = true;
   }
 
@@ -265,6 +277,34 @@ export class AdminDashboardComponent implements OnInit {
       return 'Standard';
     }
     return 'Bozza';
+  }
+
+  isShopItem(item: AdminOrderItem): boolean {
+    return String(item?.itemType ?? '').toUpperCase() === 'SHOP_PRODUCT';
+  }
+
+  itemDisplayName(item: AdminOrderItem): string {
+    const displayName = (item.displayName || '').trim();
+    if (displayName) {
+      return displayName;
+    }
+
+    const shopName = (item.shopProductName || '').trim();
+    if (shopName) {
+      return shopName;
+    }
+
+    return (item.originalFilename || '').trim() || '-';
+  }
+
+  itemVariantLabel(item: AdminOrderItem): string | null {
+    const variantLabel = (item.shopVariantLabel || '').trim();
+    if (variantLabel) {
+      return variantLabel;
+    }
+
+    const colorName = (item.shopVariantColorName || '').trim();
+    return colorName || null;
   }
 
   isHexColor(value?: string): boolean {
@@ -291,12 +331,22 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   getItemColorLabel(item: AdminOrderItem): string {
+    const shopColorName = (item.shopVariantColorName || '').trim();
+    if (shopColorName) {
+      return shopColorName;
+    }
+
     const colorName = (item.filamentColorName || '').trim();
     const colorCode = (item.colorCode || '').trim();
     return colorName || colorCode || '-';
   }
 
   getItemColorHex(item: AdminOrderItem): string | null {
+    const shopColorHex = (item.shopVariantColorHex || '').trim();
+    if (this.isHexColor(shopColorHex)) {
+      return shopColorHex;
+    }
+
     const variantHex = (item.filamentColorHex || '').trim();
     if (this.isHexColor(variantHex)) {
       return variantHex;
@@ -336,6 +386,54 @@ export class AdminDashboardComponent implements OnInit {
     return 'Supporti -';
   }
 
+  showItemMaterial(item: AdminOrderItem): boolean {
+    return !this.isShopItem(item);
+  }
+
+  showItemPrintDetails(item: AdminOrderItem): boolean {
+    return !this.isShopItem(item);
+  }
+
+  hasShopItems(order: AdminOrder | null): boolean {
+    return (order?.items || []).some((item) => this.isShopItem(item));
+  }
+
+  hasPrintItems(order: AdminOrder | null): boolean {
+    return (order?.items || []).some((item) => !this.isShopItem(item));
+  }
+
+  printItems(order: AdminOrder | null): AdminOrderItem[] {
+    return (order?.items || []).filter((item) => !this.isShopItem(item));
+  }
+
+  orderKind(order: AdminOrder | null): 'SHOP' | 'CALCULATOR' | 'MIXED' {
+    const hasShop = this.hasShopItems(order);
+    const hasPrint = this.hasPrintItems(order);
+
+    if (hasShop && hasPrint) {
+      return 'MIXED';
+    }
+    if (hasShop) {
+      return 'SHOP';
+    }
+    return 'CALCULATOR';
+  }
+
+  orderKindLabel(order: AdminOrder | null): string {
+    switch (this.orderKind(order)) {
+      case 'SHOP':
+        return 'Shop';
+      case 'MIXED':
+        return 'Misto';
+      default:
+        return 'Calcolatore';
+    }
+  }
+
+  downloadItemLabel(item: AdminOrderItem): string {
+    return this.isShopItem(item) ? 'Scarica modello' : 'Scarica file';
+  }
+
   isSelected(orderId: string): boolean {
     return this.selectedOrder?.id === orderId;
   }
@@ -349,6 +447,8 @@ export class AdminDashboardComponent implements OnInit {
     this.selectedStatus = updatedOrder.status;
     this.selectedPaymentMethod =
       updatedOrder.paymentMethod || this.selectedPaymentMethod;
+    this.showPrintDetails =
+      this.showPrintDetails && this.hasPrintItems(updatedOrder);
   }
 
   private applyListFiltersAndSelection(): void {
@@ -384,8 +484,16 @@ export class AdminDashboardComponent implements OnInit {
       const matchesOrderStatus =
         this.orderStatusFilter === 'ALL' ||
         orderStatus === this.orderStatusFilter;
+      const matchesOrderType =
+        this.orderTypeFilter === 'ALL' ||
+        this.orderKind(order) === this.orderTypeFilter;
 
-      return matchesSearch && matchesPayment && matchesOrderStatus;
+      return (
+        matchesSearch &&
+        matchesPayment &&
+        matchesOrderStatus &&
+        matchesOrderType
+      );
     });
   }
 

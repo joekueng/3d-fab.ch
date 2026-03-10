@@ -1,7 +1,7 @@
 <div class="checkout-page">
-  <div class="container hero">
-    <h1 class="section-title">{{ "CHECKOUT.TITLE" | translate }}</h1>
-    <p class="cad-subtitle" *ngIf="isCadSession()">
+  <div class="container ui-page-hero">
+    <h1 class="ui-page-title">{{ "CHECKOUT.TITLE" | translate }}</h1>
+    <p class="ui-page-subtitle cad-subtitle" *ngIf="isCadSession()">
       Servizio CAD
       <ng-container *ngIf="cadRequestId()">
         riferito alla richiesta contatto #{{ cadRequestId() }}
@@ -10,7 +10,7 @@
   </div>
 
   <div class="container">
-    <div class="checkout-layout">
+    <div class="checkout-layout ui-two-column-layout">
       <!-- LEFT COLUMN: Form -->
       <div class="checkout-form-section">
         <!-- Error Message -->
@@ -21,10 +21,12 @@
         <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()" *ngIf="!error">
           <!-- Contact Info Card -->
           <app-card class="mb-6">
-            <div class="card-header-simple">
-              <h3>{{ "CHECKOUT.CONTACT_INFO" | translate }}</h3>
+            <div class="ui-card-header">
+              <h3 class="ui-card-title">
+                {{ "CHECKOUT.CONTACT_INFO" | translate }}
+              </h3>
             </div>
-            <div class="form-row">
+            <div class="ui-form-row">
               <app-input
                 formControlName="email"
                 type="email"
@@ -47,8 +49,10 @@
 
           <!-- Billing Address Card -->
           <app-card class="mb-6">
-            <div class="card-header-simple">
-              <h3>{{ "CHECKOUT.BILLING_ADDR" | translate }}</h3>
+            <div class="ui-card-header">
+              <h3 class="ui-card-title">
+                {{ "CHECKOUT.BILLING_ADDR" | translate }}
+              </h3>
             </div>
             <div formGroupName="billingAddress">
               <!-- User Type Selector -->
@@ -61,7 +65,7 @@
               </app-toggle-selector>
 
               <!-- Private Person Fields -->
-              <div *ngIf="!isCompany" class="form-row">
+              <div *ngIf="!isCompany" class="ui-form-row">
                 <app-input
                   formControlName="firstName"
                   [label]="'CHECKOUT.FIRST_NAME' | translate"
@@ -75,7 +79,10 @@
               </div>
 
               <!-- Company Fields -->
-              <div *ngIf="isCompany" class="company-fields mb-4">
+              <div
+                *ngIf="isCompany"
+                class="ui-field-stack ui-field-stack--indented mb-4"
+              >
                 <app-input
                   formControlName="companyName"
                   [label]="'CHECKOUT.COMPANY_NAME' | translate"
@@ -100,7 +107,7 @@
                 [label]="'CHECKOUT.ADDRESS_2' | translate"
               ></app-input>
 
-              <div class="form-row three-cols">
+              <div class="ui-form-row ui-form-row--three">
                 <app-input
                   formControlName="zip"
                   [label]="'CHECKOUT.ZIP' | translate"
@@ -123,10 +130,10 @@
           </app-card>
 
           <!-- Shipping Option -->
-          <div class="shipping-option">
-            <label class="checkbox-container">
+          <div class="shipping-option ui-soft-panel">
+            <label class="ui-checkbox">
               <input type="checkbox" formControlName="shippingSameAsBilling" />
-              <span class="checkmark"></span>
+              <span class="ui-checkbox__mark"></span>
               {{ "CHECKOUT.SHIPPING_SAME" | translate }}
             </label>
           </div>
@@ -136,11 +143,13 @@
             *ngIf="!checkoutForm.get('shippingSameAsBilling')?.value"
             class="mb-6"
           >
-            <div class="card-header-simple">
-              <h3>{{ "CHECKOUT.SHIPPING_ADDR" | translate }}</h3>
+            <div class="ui-card-header">
+              <h3 class="ui-card-title">
+                {{ "CHECKOUT.SHIPPING_ADDR" | translate }}
+              </h3>
             </div>
             <div formGroupName="shippingAddress">
-              <div class="form-row">
+              <div class="ui-form-row">
                 <app-input
                   formControlName="firstName"
                   [label]="'CHECKOUT.FIRST_NAME' | translate"
@@ -151,7 +160,10 @@
                 ></app-input>
               </div>
 
-              <div *ngIf="isCompany" class="company-fields">
+              <div
+                *ngIf="isCompany"
+                class="ui-field-stack ui-field-stack--indented"
+              >
                 <app-input
                   formControlName="companyName"
                   [label]="'CHECKOUT.COMPANY_OPTIONAL' | translate"
@@ -167,7 +179,7 @@
                 [label]="'CHECKOUT.ADDRESS_1' | translate"
               ></app-input>
 
-              <div class="form-row three-cols">
+              <div class="ui-form-row ui-form-row--three">
                 <app-input
                   formControlName="zip"
                   [label]="'CHECKOUT.ZIP' | translate"
@@ -187,9 +199,9 @@
           </app-card>
 
           <div class="legal-consent">
-            <label class="checkbox-container">
+            <label class="ui-checkbox">
               <input type="checkbox" formControlName="acceptLegal" />
-              <span class="checkmark"></span>
+              <span class="ui-checkbox__mark"></span>
               <span>
                 {{ "LEGAL.CONSENT.LABEL_PREFIX" | translate }}
                 <a href="/terms" target="_blank" rel="noopener">{{
@@ -213,7 +225,7 @@
             </div>
           </div>
 
-          <div class="actions">
+          <div class="ui-actions">
             <app-button
               type="submit"
               [disabled]="checkoutForm.invalid || isSubmitting()"
@@ -233,21 +245,27 @@
       <!-- RIGHT COLUMN: Order Summary -->
       <div class="checkout-summary-section">
         <app-card class="sticky-card">
-          <div class="card-header-simple">
-            <h3>{{ "CHECKOUT.SUMMARY_TITLE" | translate }}</h3>
+          <div class="ui-card-header">
+            <h3 class="ui-card-title">
+              {{ "CHECKOUT.SUMMARY_TITLE" | translate }}
+            </h3>
           </div>
 
           <div class="summary-items" *ngIf="quoteSession() as session">
             <div class="summary-item" *ngFor="let item of session.items">
               <div class="item-details">
-                <span class="item-name">{{ item.originalFilename }}</span>
+                <span class="item-name">{{ itemDisplayName(item) }}</span>
                 <div class="item-specs">
                   <span
                     >{{ "CHECKOUT.QTY" | translate }}: {{ item.quantity }}</span
                   >
-                  <span>
+                  <span *ngIf="showItemMaterial(item)">
                     {{ "CHECKOUT.MATERIAL" | translate }}:
                     {{ itemMaterial(item) }}
+                  </span>
+                  <span *ngIf="itemVariantLabel(item) as variantLabel">
+                    {{ "SHOP.VARIANT" | translate }}:
+                    {{ variantLabel }}
                   </span>
                   <span class="item-color" *ngIf="itemColorLabel(item) !== '-'">
                     <span
@@ -257,14 +275,11 @@
                     <span class="color-name">{{ itemColorLabel(item) }}</span>
                   </span>
                 </div>
-                <div class="item-specs-sub">
+                <div class="item-specs-sub" *ngIf="showItemPrintMetrics(item)">
                   {{ item.printTimeSeconds / 3600 | number: "1.1-1" }}h |
                   {{ item.materialGrams | number: "1.0-0" }}g
                 </div>
-                <div
-                  class="item-preview"
-                  *ngIf="isCadSession() && isStlItem(item)"
-                >
+                <div class="item-preview" *ngIf="isStlItem(item)">
                   <ng-container
                     *ngIf="previewFile(item) as itemPreview; else previewState"
                   >

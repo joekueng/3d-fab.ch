@@ -30,8 +30,15 @@ public class QuoteLineItem {
     @Column(name = "status", nullable = false, length = Integer.MAX_VALUE)
     private String status;
 
+    @ColumnDefault("'PRINT_FILE'")
+    @Column(name = "line_item_type", nullable = false, length = Integer.MAX_VALUE)
+    private String lineItemType;
+
     @Column(name = "original_filename", nullable = false, length = Integer.MAX_VALUE)
     private String originalFilename;
+
+    @Column(name = "display_name", length = Integer.MAX_VALUE)
+    private String displayName;
 
     @ColumnDefault("1")
     @Column(name = "quantity", nullable = false)
@@ -44,6 +51,31 @@ public class QuoteLineItem {
     @JoinColumn(name = "filament_variant_id")
     @com.fasterxml.jackson.annotation.JsonIgnore
     private FilamentVariant filamentVariant;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_product_id")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private ShopProduct shopProduct;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_product_variant_id")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private ShopProductVariant shopProductVariant;
+
+    @Column(name = "shop_product_slug", length = Integer.MAX_VALUE)
+    private String shopProductSlug;
+
+    @Column(name = "shop_product_name", length = Integer.MAX_VALUE)
+    private String shopProductName;
+
+    @Column(name = "shop_variant_label", length = Integer.MAX_VALUE)
+    private String shopVariantLabel;
+
+    @Column(name = "shop_variant_color_name", length = Integer.MAX_VALUE)
+    private String shopVariantColorName;
+
+    @Column(name = "shop_variant_color_hex", length = Integer.MAX_VALUE)
+    private String shopVariantColorHex;
 
     @Column(name = "material_code", length = Integer.MAX_VALUE)
     private String materialCode;
@@ -102,6 +134,41 @@ public class QuoteLineItem {
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
+    @PrePersist
+    private void onCreate() {
+        OffsetDateTime now = OffsetDateTime.now();
+        if (createdAt == null) {
+            createdAt = now;
+        }
+        if (updatedAt == null) {
+            updatedAt = now;
+        }
+        if (quantity == null) {
+            quantity = 1;
+        }
+        if (lineItemType == null || lineItemType.isBlank()) {
+            lineItemType = "PRINT_FILE";
+        }
+        if ((displayName == null || displayName.isBlank()) && originalFilename != null && !originalFilename.isBlank()) {
+            displayName = originalFilename;
+        } else if ((displayName == null || displayName.isBlank()) && shopProductName != null && !shopProductName.isBlank()) {
+            displayName = shopProductName;
+        }
+    }
+
+    @PreUpdate
+    private void onUpdate() {
+        updatedAt = OffsetDateTime.now();
+        if (lineItemType == null || lineItemType.isBlank()) {
+            lineItemType = "PRINT_FILE";
+        }
+        if ((displayName == null || displayName.isBlank()) && originalFilename != null && !originalFilename.isBlank()) {
+            displayName = originalFilename;
+        } else if ((displayName == null || displayName.isBlank()) && shopProductName != null && !shopProductName.isBlank()) {
+            displayName = shopProductName;
+        }
+    }
+
     public UUID getId() {
         return id;
     }
@@ -126,12 +193,28 @@ public class QuoteLineItem {
         this.status = status;
     }
 
+    public String getLineItemType() {
+        return lineItemType;
+    }
+
+    public void setLineItemType(String lineItemType) {
+        this.lineItemType = lineItemType;
+    }
+
     public String getOriginalFilename() {
         return originalFilename;
     }
 
     public void setOriginalFilename(String originalFilename) {
         this.originalFilename = originalFilename;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
     public Integer getQuantity() {
@@ -156,6 +239,62 @@ public class QuoteLineItem {
 
     public void setFilamentVariant(FilamentVariant filamentVariant) {
         this.filamentVariant = filamentVariant;
+    }
+
+    public ShopProduct getShopProduct() {
+        return shopProduct;
+    }
+
+    public void setShopProduct(ShopProduct shopProduct) {
+        this.shopProduct = shopProduct;
+    }
+
+    public ShopProductVariant getShopProductVariant() {
+        return shopProductVariant;
+    }
+
+    public void setShopProductVariant(ShopProductVariant shopProductVariant) {
+        this.shopProductVariant = shopProductVariant;
+    }
+
+    public String getShopProductSlug() {
+        return shopProductSlug;
+    }
+
+    public void setShopProductSlug(String shopProductSlug) {
+        this.shopProductSlug = shopProductSlug;
+    }
+
+    public String getShopProductName() {
+        return shopProductName;
+    }
+
+    public void setShopProductName(String shopProductName) {
+        this.shopProductName = shopProductName;
+    }
+
+    public String getShopVariantLabel() {
+        return shopVariantLabel;
+    }
+
+    public void setShopVariantLabel(String shopVariantLabel) {
+        this.shopVariantLabel = shopVariantLabel;
+    }
+
+    public String getShopVariantColorName() {
+        return shopVariantColorName;
+    }
+
+    public void setShopVariantColorName(String shopVariantColorName) {
+        this.shopVariantColorName = shopVariantColorName;
+    }
+
+    public String getShopVariantColorHex() {
+        return shopVariantColorHex;
+    }
+
+    public void setShopVariantColorHex(String shopVariantColorHex) {
+        this.shopVariantColorHex = shopVariantColorHex;
     }
 
     public String getMaterialCode() {

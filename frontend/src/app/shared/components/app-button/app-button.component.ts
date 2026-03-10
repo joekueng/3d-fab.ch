@@ -9,7 +9,9 @@ import { CommonModule } from '@angular/common';
   styleUrl: './app-button.component.scss',
 })
 export class AppButtonComponent {
-  variant = input<'primary' | 'secondary' | 'outline' | 'text'>('primary');
+  variant = input<
+    'primary' | 'secondary' | 'outline' | 'text' | 'ghost' | 'danger'
+  >('primary');
   type = input<'button' | 'submit' | 'reset'>('button');
   disabled = input<boolean>(false);
   fullWidth = input<boolean>(false);

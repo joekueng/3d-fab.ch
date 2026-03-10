@@ -237,7 +237,9 @@ public class QuoteSessionItemService {
                                         Path convertedPersistentPath) {
         QuoteLineItem item = new QuoteLineItem();
         item.setQuoteSession(session);
+        item.setLineItemType("PRINT_FILE");
         item.setOriginalFilename(originalFilename);
+        item.setDisplayName(originalFilename);
         item.setStoredPath(quoteStorageService.toStoredPath(persistentPath));
         item.setQuantity(normalizeQuantity(settings.getQuantity()));
         item.setColorCode(selectedVariant.getColorName());

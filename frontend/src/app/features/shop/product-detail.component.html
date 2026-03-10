@@ -1,25 +1,364 @@
-<div class="container wrapper">
-  <a routerLink="/shop" class="back-link">← {{ "SHOP.BACK" | translate }}</a>
+<section class="product-page">
+  <div class="container wrapper">
+    <button type="button" class="back-link" (click)="goBackToShop()">
+      ← {{ "SHOP.BACK" | translate }}
+    </button>
 
-  @if (product(); as p) {
-    <div class="detail-grid">
-      <div class="image-box"></div>
-
-      <div class="info">
-        <span class="category">{{ p.category | translate }}</span>
-        <h1>{{ p.name | translate }}</h1>
-        <p class="price">{{ p.price | currency: "EUR" }}</p>
-
-        <p class="desc">{{ p.description | translate }}</p>
-
-        <div class="actions">
-          <app-button variant="primary" (click)="addToCart()">
-            {{ "SHOP.ADD_CART" | translate }}
-          </app-button>
-        </div>
+    @if (loading()) {
+      <div class="detail-grid skeleton-grid">
+        <div class="skeleton-block"></div>
+        <div class="skeleton-block"></div>
       </div>
-    </div>
-  } @else {
-    <p>{{ "SHOP.NOT_FOUND" | translate }}</p>
-  }
-</div>
+    } @else {
+      @if (error()) {
+        <div class="state-card">{{ error() | translate }}</div>
+      } @else {
+        @if (product(); as p) {
+          <nav class="breadcrumbs">
+            <a [routerLink]="shopRootLink()">{{
+              "SHOP.BREADCRUMB_ROOT" | translate
+            }}</a>
+            @for (crumb of p.breadcrumbs; track crumb.id) {
+              <span>/</span>
+              <a [routerLink]="categoryLink(crumb.slug)">{{ crumb.name }}</a>
+            }
+          </nav>
+
+          <div class="detail-grid">
+            <section class="visual-column">
+              <div class="hero-media">
+                @if (galleryImages().length > 1) {
+                  <button
+                    type="button"
+                    class="hero-nav hero-nav-prev"
+                    (click)="showPreviousImage()"
+                    [attr.aria-label]="'SHOP.PREVIOUS_IMAGE' | translate"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    type="button"
+                    class="hero-nav hero-nav-next"
+                    (click)="showNextImage()"
+                    [attr.aria-label]="'SHOP.NEXT_IMAGE' | translate"
+                  >
+                    ›
+                  </button>
+                }
+
+                @if (imageUrl(selectedImage()); as imageUrl) {
+                  <img
+                    [src]="imageUrl"
+                    [alt]="selectedImage().altText || p.name"
+                    class="hero-image"
+                  />
+                } @else {
+                  <div class="image-fallback">
+                    <span>{{ p.category.name }}</span>
+                  </div>
+                }
+              </div>
+
+              @if (galleryImages().length > 1) {
+                <div class="thumb-strip">
+                  @for (image of galleryImages(); track image.mediaAssetId) {
+                    <button
+                      type="button"
+                      class="thumb"
+                      [class.active]="
+                        selectedImage().mediaAssetId === image.mediaAssetId
+                      "
+                      (click)="selectImage(image.mediaAssetId)"
+                    >
+                      @if (imageUrl(image); as imageUrl) {
+                        <img [src]="imageUrl" [alt]="image.altText || p.name" />
+                      } @else {
+                        <span>{{ p.name }}</span>
+                      }
+                    </button>
+                  }
+                </div>
+              }
+
+              @if (p.model3d) {
+                <div class="model-launch-row">
+                  <div>
+                    <p class="viewer-kicker">
+                      {{ "SHOP.MODEL_3D" | translate }}
+                    </p>
+                    <div class="dimensions dimensions-inline">
+                      <span>
+                        X
+                        {{ p.model3d.boundingBoxXMm || 0 | number: "1.0-1" }} mm
+                      </span>
+                      <span>
+                        Y
+                        {{ p.model3d.boundingBoxYMm || 0 | number: "1.0-1" }} mm
+                      </span>
+                      <span>
+                        Z
+                        {{ p.model3d.boundingBoxZMm || 0 | number: "1.0-1" }} mm
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    class="model-open-btn"
+                    (click)="openModelModal()"
+                  >
+                    {{ "SHOP.MODEL_OPEN" | translate }}
+                  </button>
+                </div>
+              }
+            </section>
+
+            <section class="info-column">
+              <div class="title-block">
+                <div class="title-meta">
+                  <span class="category">{{ p.category.name }}</span>
+                </div>
+                <h1>{{ p.name }}</h1>
+                <p class="excerpt">
+                  {{
+                    p.excerpt ||
+                      p.description ||
+                      ("SHOP.EXCERPT_FALLBACK" | translate)
+                  }}
+                </p>
+              </div>
+
+              <app-card class="purchase-shell">
+                <div class="purchase-card">
+                  <div class="price-row">
+                    <div>
+                      <p class="panel-kicker">
+                        {{ "SHOP.SELECT_MATERIAL" | translate }}
+                      </p>
+                      <h3>{{ priceLabel() | currency: "CHF" }}</h3>
+                    </div>
+                    @if (selectedVariantCartQuantity() > 0) {
+                      <span class="cart-pill">
+                        {{
+                          "SHOP.IN_CART_LONG"
+                            | translate
+                              : { count: selectedVariantCartQuantity() }
+                        }}
+                      </span>
+                    }
+                  </div>
+
+                  @if (materialOptions().length > 1) {
+                    <div class="material-grid">
+                      @for (material of materialOptions(); track material.key) {
+                        <button
+                          type="button"
+                          class="material-option"
+                          [class.active]="
+                            selectedMaterial()?.key === material.key
+                          "
+                          (click)="selectMaterial(material.key)"
+                        >
+                          <span class="material-copy">
+                            <strong>{{ material.label }}</strong>
+                            <small>
+                              {{
+                                "SHOP.MATERIAL_COLOR_COUNT"
+                                  | translate
+                                    : { count: materialColorCount(material) }
+                              }}
+                            </small>
+                          </span>
+                          <strong>{{
+                            materialPriceLabel(material) | currency: "CHF"
+                          }}</strong>
+                        </button>
+                      }
+                    </div>
+                  }
+
+                  @if (
+                    materialOptions().length > 1 &&
+                    selectedMaterialProperties().length > 0
+                  ) {
+                    <div class="property-grid">
+                      @for (
+                        property of selectedMaterialProperties();
+                        track property.labelKey
+                      ) {
+                        <div
+                          class="property-pill"
+                          [ngClass]="'tone-' + property.tone"
+                        >
+                          <span>{{ property.labelKey | translate }}</span>
+                          <strong>{{ property.valueKey | translate }}</strong>
+                        </div>
+                      }
+                    </div>
+                  }
+
+                  <div class="color-selector-block">
+                    <div class="selector-head">
+                      <p class="panel-kicker">
+                        {{ "SHOP.SELECT_COLOR" | translate }}
+                      </p>
+                    </div>
+
+                    @if (selectedVariant(); as activeVariant) {
+                      <button
+                        type="button"
+                        class="color-trigger"
+                        [class.open]="colorPopupOpen()"
+                        (click)="toggleColorPopup()"
+                      >
+                        <span class="color-trigger__ring">
+                          <span
+                            class="color-trigger__swatch"
+                            [style.background-color]="colorHex(activeVariant)"
+                          ></span>
+                        </span>
+
+                        <span class="color-trigger__copy">
+                          <strong>{{ colorLabel(activeVariant) }}</strong>
+                          <small>{{ selectedMaterial()?.label }}</small>
+                        </span>
+                      </button>
+                    }
+
+                    @if (colorPopupOpen()) {
+                      <button
+                        type="button"
+                        class="color-popup-backdrop"
+                        (click)="closeColorPopup()"
+                      ></button>
+                      <div class="color-popup">
+                        <div class="color-popup__category">
+                          {{ selectedMaterial()?.label || "" | uppercase }}
+                        </div>
+
+                        <div class="color-popup__grid">
+                          @for (variant of colorOptions(); track variant.id) {
+                            <button
+                              type="button"
+                              class="color-popup__item"
+                              (click)="selectVariant(variant)"
+                            >
+                              <span
+                                class="color-popup__ring"
+                                [class.active]="
+                                  selectedVariant()?.id === variant.id
+                                "
+                              >
+                                <span
+                                  class="color-popup__swatch"
+                                  [style.background-color]="colorHex(variant)"
+                                ></span>
+                              </span>
+
+                              <span class="color-popup__name">{{
+                                colorLabel(variant)
+                              }}</span>
+                            </button>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+
+                  <div class="quantity-row">
+                    <span>{{ "SHOP.QUANTITY" | translate }}</span>
+                    <div class="qty-control">
+                      <button type="button" (click)="decreaseQuantity()">
+                        -
+                      </button>
+                      <span>{{ quantity() }}</span>
+                      <button type="button" (click)="increaseQuantity()">
+                        +
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="actions">
+                    <app-button
+                      variant="primary"
+                      [disabled]="isAddingToCart()"
+                      (click)="addToCart()"
+                    >
+                      {{
+                        (isAddingToCart() ? "SHOP.ADDING" : "SHOP.ADD_CART")
+                          | translate
+                      }}
+                    </app-button>
+
+                    @if (shopService.cartItemCount() > 0) {
+                      <app-button variant="outline" (click)="goToCheckout()">
+                        {{ "SHOP.GO_TO_CHECKOUT" | translate }}
+                      </app-button>
+                    }
+                  </div>
+
+                  @if (addSuccess()) {
+                    <p class="success-note">
+                      {{ "SHOP.ADD_SUCCESS" | translate }}
+                    </p>
+                  }
+                </div>
+              </app-card>
+
+              @if (p.description) {
+                <div class="description-block">
+                  <h2>{{ "SHOP.DESCRIPTION_TITLE" | translate }}</h2>
+                  <p>{{ p.description }}</p>
+                </div>
+              }
+            </section>
+          </div>
+
+          @if (modelModalOpen()) {
+            <button
+              type="button"
+              class="model-modal-backdrop"
+              (click)="closeModelModal()"
+            ></button>
+            <div class="model-modal" role="dialog" aria-modal="true">
+              <div class="model-modal-head">
+                <div>
+                  <p class="viewer-kicker">{{ "SHOP.MODEL_3D" | translate }}</p>
+                  <h3>{{ "SHOP.MODEL_TITLE" | translate }}</h3>
+                </div>
+                <button
+                  type="button"
+                  class="model-close-btn"
+                  (click)="closeModelModal()"
+                  [attr.aria-label]="'SHOP.MODEL_CLOSE' | translate"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div class="model-modal-body">
+                @if (modelLoading()) {
+                  <div class="viewer-state viewer-loading">
+                    <span class="spinner"></span>
+                    <span>{{ "SHOP.MODEL_LOADING" | translate }}</span>
+                  </div>
+                } @else if (modelError()) {
+                  <div class="viewer-state viewer-state-error">
+                    {{ "SHOP.MODEL_UNAVAILABLE" | translate }}
+                  </div>
+                } @else {
+                  @if (modelFile(); as modelPreviewFile) {
+                    <app-stl-viewer
+                      [file]="modelPreviewFile"
+                      [height]="420"
+                      [color]="selectedVariant()?.colorHex || '#facf0a'"
+                    ></app-stl-viewer>
+                  }
+                }
+              </div>
+            </div>
+          }
+        }
+      }
+    }
+  </div>
+</section>

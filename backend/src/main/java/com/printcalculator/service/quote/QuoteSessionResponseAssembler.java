@@ -43,15 +43,45 @@ public class QuoteSessionResponseAssembler {
         return response;
     }
 
+    public Map<String, Object> emptyCart() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("session", null);
+        response.put("items", List.of());
+        response.put("printItemsTotalChf", BigDecimal.ZERO);
+        response.put("cadTotalChf", BigDecimal.ZERO);
+        response.put("itemsTotalChf", BigDecimal.ZERO);
+        response.put("baseSetupCostChf", BigDecimal.ZERO);
+        response.put("nozzleChangeCostChf", BigDecimal.ZERO);
+        response.put("setupCostChf", BigDecimal.ZERO);
+        response.put("shippingCostChf", BigDecimal.ZERO);
+        response.put("globalMachineCostChf", BigDecimal.ZERO);
+        response.put("grandTotalChf", BigDecimal.ZERO);
+        return response;
+    }
+
     private Map<String, Object> toItemDto(QuoteLineItem item, QuoteSessionTotalsService.QuoteSessionTotals totals) {
         Map<String, Object> dto = new HashMap<>();
         dto.put("id", item.getId());
+        dto.put("lineItemType", item.getLineItemType() != null ? item.getLineItemType() : "PRINT_FILE");
         dto.put("originalFilename", item.getOriginalFilename());
+        dto.put(
+                "displayName",
+                item.getDisplayName() != null && !item.getDisplayName().isBlank()
+                        ? item.getDisplayName()
+                        : item.getOriginalFilename()
+        );
         dto.put("quantity", item.getQuantity());
         dto.put("printTimeSeconds", item.getPrintTimeSeconds());
         dto.put("materialGrams", item.getMaterialGrams());
         dto.put("colorCode", item.getColorCode());
         dto.put("filamentVariantId", item.getFilamentVariant() != null ? item.getFilamentVariant().getId() : null);
+        dto.put("shopProductId", item.getShopProduct() != null ? item.getShopProduct().getId() : null);
+        dto.put("shopProductVariantId", item.getShopProductVariant() != null ? item.getShopProductVariant().getId() : null);
+        dto.put("shopProductSlug", item.getShopProductSlug());
+        dto.put("shopProductName", item.getShopProductName());
+        dto.put("shopVariantLabel", item.getShopVariantLabel());
+        dto.put("shopVariantColorName", item.getShopVariantColorName());
+        dto.put("shopVariantColorHex", item.getShopVariantColorHex());
         dto.put("materialCode", item.getMaterialCode());
         dto.put("quality", item.getQuality());
         dto.put("nozzleDiameterMm", item.getNozzleDiameterMm());

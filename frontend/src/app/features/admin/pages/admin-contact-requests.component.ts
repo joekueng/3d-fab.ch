@@ -118,15 +118,15 @@ export class AdminContactRequestsComponent implements OnInit {
   getStatusChipClass(status?: string): string {
     const normalized = (status || '').trim().toUpperCase();
     if (['PENDING', 'NEW', 'OPEN', 'IN_PROGRESS'].includes(normalized)) {
-      return 'chip-warning';
+      return 'ui-status-chip--warning';
     }
     if (['DONE', 'COMPLETED', 'RESOLVED', 'CLOSED'].includes(normalized)) {
-      return 'chip-success';
+      return 'ui-status-chip--success';
     }
     if (['REJECTED', 'FAILED', 'ERROR', 'SPAM'].includes(normalized)) {
-      return 'chip-danger';
+      return 'ui-status-chip--danger';
     }
-    return 'chip-light';
+    return 'ui-status-chip--neutral';
   }
 
   updateRequestStatus(): void {
