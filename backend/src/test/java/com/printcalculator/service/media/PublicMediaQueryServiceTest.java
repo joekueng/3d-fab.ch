@@ -41,7 +41,7 @@ class PublicMediaQueryServiceTest {
     void setUp() {
         MediaStorageService mediaStorageService = new MediaStorageService(
                 tempDir.resolve("storage_media").toString(),
-                "https://cdn.example/media"
+                "https://cdn.example"
         );
         service = new PublicMediaQueryService(mediaUsageRepository, mediaVariantRepository, mediaStorageService);
     }

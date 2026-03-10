@@ -32,7 +32,7 @@ Crea un database PostgreSQL chiamato `printcalc`. Lo schema viene gestito dal pr
 Configura il percorso di OrcaSlicer in `backend/src/main/resources/application.properties` o tramite la variabile d'ambiente `SLICER_PATH`. Per il media service pubblico puoi configurare anche:
 
 - `MEDIA_STORAGE_ROOT` per la root `storage_media` usata dal backend (`original/`, `public/`, `private/`)
-- `MEDIA_PUBLIC_BASE_URL` per gli URL assoluti restituiti dalle API admin, ad esempio `https://example.com/media`
+- `SHOP_STORAGE_ROOT` per la root `storage_shop` usata dal backend per i modelli dei prodotti shop
 - `MEDIA_FFMPEG_PATH` per il binario `ffmpeg`
 - `MEDIA_UPLOAD_MAX_FILE_SIZE_BYTES` per il limite per asset immagine
 
@@ -64,12 +64,13 @@ I prezzi non sono più gestiti tramite variabili d'ambiente fisse ma tramite tab
 *   `/frontend`: Applicazione Angular.
 *   `/backend/profiles`: Contiene i file di configurazione per OrcaSlicer.
 *   `/storage_media`: Originali e varianti media pubbliche/private su filesystem.
+*   `/storage_shop`: Modelli e file prodotti dello shop.
 
 ## Media pubblici
 
 Il backend salva sempre l'originale in `storage_media/original/` e precomputa le varianti pubbliche in `storage_media/public/`. La cartella `storage_media/private/` è predisposta per asset non pubblici.
 
-Nel deploy Docker il volume media atteso è `/mnt/cache/appdata/print-calculator/${ENV}/storage_media:/app/storage_media`.
+Nel deploy Docker i volumi attesi sono `/mnt/cache/appdata/print-calculator/${ENV}/storage_media:/app/storage_media` e `/mnt/cache/appdata/print-calculator/${ENV}/storage_shop:/app/storage_shop`.
 
 Nginx non deve passare dal backend per i file pubblici. Configurazione attesa:
 
@@ -106,7 +107,7 @@ Operativamente:
 Assicurati che `slicer.path` punti al binario corretto. Su macOS è solitamente `/Applications/OrcaSlicer.app/Contents/MacOS/OrcaSlicer`. Su Linux è il percorso all'AppImage (estratta o meno).
 
 ### FFmpeg e media pubblici
-Verifica che `MEDIA_FFMPEG_PATH` punti a un `ffmpeg` con supporto JPEG, WebP e AVIF. Se gli URL media restituiti dalle API admin non sono raggiungibili, controlla che `MEDIA_PUBLIC_BASE_URL` corrisponda al `location /media/` esposto da Nginx e che il volume `storage_media` sia montato correttamente.
+Verifica che `MEDIA_FFMPEG_PATH` punti a un `ffmpeg` con supporto JPEG, WebP e AVIF. Se gli URL media restituiti dalle API admin non sono raggiungibili, controlla che `APP_FRONTEND_BASE_URL` punti al dominio corretto, che `location /media/` sia esposto da Nginx e che il volume `storage_media` sia montato correttamente.
 
 ### Database connection
 Verifica le credenziali in `application.properties`. Se usi Docker, puoi passare `DB_URL`, `DB_USERNAME` e `DB_PASSWORD` come variabili d'ambiente.

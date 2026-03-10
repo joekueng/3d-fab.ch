@@ -32,7 +32,7 @@ services:
       - TEMP_DIR=/app/temp
       - PROFILES_DIR=/app/profiles
       - MEDIA_STORAGE_ROOT=${MEDIA_STORAGE_ROOT:-/app/storage_media}
-      - MEDIA_PUBLIC_BASE_URL=${MEDIA_PUBLIC_BASE_URL:-http://localhost:8080/media}
+      - SHOP_STORAGE_ROOT=${SHOP_STORAGE_ROOT:-/app/storage_shop}
       - MEDIA_FFMPEG_PATH=${MEDIA_FFMPEG_PATH:-ffmpeg}
       - MEDIA_UPLOAD_MAX_FILE_SIZE_BYTES=${MEDIA_UPLOAD_MAX_FILE_SIZE_BYTES:-26214400}
     restart: always
@@ -47,6 +47,7 @@ services:
       - /mnt/cache/appdata/print-calculator/${ENV}/storage_orders:/app/storage_orders
       - /mnt/cache/appdata/print-calculator/${ENV}/storage_requests:/app/storage_requests
       - /mnt/cache/appdata/print-calculator/${ENV}/storage_media:/app/storage_media
+      - /mnt/cache/appdata/print-calculator/${ENV}/storage_shop:/app/storage_shop
     extra_hosts:
       - "host.docker.internal:host-gateway"
 

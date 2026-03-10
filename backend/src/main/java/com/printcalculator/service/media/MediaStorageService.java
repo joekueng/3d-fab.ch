@@ -18,15 +18,15 @@ public class MediaStorageService {
     private final Path originalRootLocation;
     private final Path publicRootLocation;
     private final Path privateRootLocation;
-    private final String publicBaseUrl;
+    private final String frontendBaseUrl;
 
     public MediaStorageService(@Value("${media.storage.root:storage_media}") String storageRoot,
-                               @Value("${media.public.base-url:http://localhost:8080/media}") String publicBaseUrl) {
+                               @Value("${app.frontend.base-url:${APP_FRONTEND_BASE_URL:http://localhost:8080}}") String frontendBaseUrl) {
         this.normalizedRootLocation = Paths.get(storageRoot).toAbsolutePath().normalize();
         this.originalRootLocation = normalizedRootLocation.resolve("original").normalize();
         this.publicRootLocation = normalizedRootLocation.resolve("public").normalize();
         this.privateRootLocation = normalizedRootLocation.resolve("private").normalize();
-        this.publicBaseUrl = publicBaseUrl;
+        this.frontendBaseUrl = frontendBaseUrl;
         init();
     }
 
@@ -73,11 +73,12 @@ public class MediaStorageService {
         if (storageKey == null || storageKey.isBlank()) {
             return null;
         }
+        String mediaBaseUrl = buildMediaBaseUrl();
         String normalizedKey = storageKey.startsWith("/") ? storageKey.substring(1) : storageKey;
-        if (publicBaseUrl.endsWith("/")) {
-            return publicBaseUrl + normalizedKey;
+        if (mediaBaseUrl.endsWith("/")) {
+            return mediaBaseUrl + normalizedKey;
         }
-        return publicBaseUrl + "/" + normalizedKey;
+        return mediaBaseUrl + "/" + normalizedKey;
     }
 
     private void copy(Path source, Path destination) throws IOException {
@@ -126,5 +127,16 @@ public class MediaStorageService {
             throw new StorageException("Visibility is required.");
         }
         return visibility.trim().toUpperCase(Locale.ROOT);
+    }
+
+    private String buildMediaBaseUrl() {
+        String normalized = frontendBaseUrl != null ? frontendBaseUrl.trim() : "";
+        if (normalized.isBlank()) {
+            normalized = "http://localhost:4200";
+        }
+        if (normalized.endsWith("/")) {
+            normalized = normalized.substring(0, normalized.length() - 1);
+        }
+        return normalized + "/media";
     }
 }
