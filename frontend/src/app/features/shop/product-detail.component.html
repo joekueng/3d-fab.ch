@@ -121,7 +121,7 @@
                 <p class="excerpt">
                   {{
                     p.excerpt ||
-                      p.description ||
+                      descriptionPlainText(p.description) ||
                       ("SHOP.EXCERPT_FALLBACK" | translate)
                   }}
                 </p>
@@ -304,10 +304,13 @@
                 </div>
               </app-card>
 
-              @if (p.description) {
+              @if (descriptionPlainText(p.description)) {
                 <div class="description-block">
                   <h2>{{ "SHOP.DESCRIPTION_TITLE" | translate }}</h2>
-                  <p>{{ p.description }}</p>
+                  <div
+                    class="description-block__content"
+                    [innerHTML]="descriptionRichHtml(p.description)"
+                  ></div>
                 </div>
               }
             </section>

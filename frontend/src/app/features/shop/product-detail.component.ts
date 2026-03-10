@@ -469,6 +469,7 @@ export class ProductDetailComponent {
     const description =
       product.seoDescription ||
       product.excerpt ||
+      this.extractTextFromRichContent(product.description) ||
       this.translate.instant('SHOP.CATALOG_META_DESCRIPTION');
     const robots =
       product.indexable === false ? 'noindex, nofollow' : 'index, follow';
@@ -498,6 +499,28 @@ export class ProductDetailComponent {
     variant: ShopProductVariantOption | null,
   ): string {
     return String(variant?.variantLabel || '').trim() || 'Standard';
+  }
+
+  descriptionPlainText(description: string | null | undefined): string {
+    return this.extractTextFromRichContent(description) ?? '';
+  }
+
+  descriptionRichHtml(description: string | null | undefined): string {
+    const normalized = String(description ?? '').trim();
+    if (!normalized) {
+      return '';
+    }
+    if (this.containsHtmlMarkup(normalized)) {
+      return normalized;
+    }
+    return normalized
+      .replace(/\r\n?/g, '\n')
+      .split(/\n{2,}/)
+      .map(
+        (paragraph) =>
+          `<p>${this.escapeHtml(paragraph).replace(/\n/g, '<br>')}</p>`,
+      )
+      .join('');
   }
 
   private materialKeyForVariant(
@@ -595,6 +618,35 @@ export class ProductDetailComponent {
         tone: 'neutral',
       },
     ];
+  }
+
+  private extractTextFromRichContent(
+    value: string | null | undefined,
+  ): string | null {
+    const normalized = String(value ?? '').trim();
+    if (!normalized) {
+      return null;
+    }
+    if (!this.containsHtmlMarkup(normalized)) {
+      return normalized;
+    }
+    const container = document.createElement('div');
+    container.innerHTML = normalized;
+    const text = (container.textContent ?? '').replace(/\u00a0/g, ' ').trim();
+    return text || null;
+  }
+
+  private containsHtmlMarkup(value: string): boolean {
+    return /<\/?[a-z][\s\S]*>/i.test(value);
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   private syncPublicUrl(product: ShopProductDetail): void {

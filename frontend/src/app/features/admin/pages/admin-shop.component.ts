@@ -115,6 +115,20 @@ const MAX_MODEL_FILE_SIZE_BYTES = 100 * 1024 * 1024;
 const SHOP_LIST_PANEL_WIDTH_STORAGE_KEY = 'admin-shop-list-panel-width';
 const MIN_LIST_PANEL_WIDTH_PERCENT = 32;
 const MAX_LIST_PANEL_WIDTH_PERCENT = 68;
+const RICH_TEXT_ALLOWED_TAGS = new Set([
+  'P',
+  'DIV',
+  'BR',
+  'STRONG',
+  'B',
+  'EM',
+  'I',
+  'U',
+  'UL',
+  'OL',
+  'LI',
+  'A',
+]);
 
 @Component({
   selector: 'app-admin-shop',
@@ -128,6 +142,8 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   private readonly adminOperationsService = inject(AdminOperationsService);
   @ViewChild('workspaceRef')
   private readonly workspaceRef?: ElementRef<HTMLDivElement>;
+  @ViewChild('descriptionEditorRef')
+  private readonly descriptionEditorRef?: ElementRef<HTMLDivElement>;
 
   readonly shopLanguages = SHOP_LANGUAGES;
   readonly mediaLanguages = MEDIA_LANGUAGES;
@@ -525,6 +541,10 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   }
 
   setActiveContentLanguage(language: ShopLanguage): void {
+    this.syncDescriptionFromEditor(
+      this.descriptionEditorRef?.nativeElement ?? null,
+      true,
+    );
     this.activeContentLanguage = language;
   }
 
@@ -536,7 +556,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     return (
       !!this.productForm.names[language].trim() ||
       !!this.productForm.excerpts[language].trim() ||
-      !!this.productForm.descriptions[language].trim()
+      this.hasMeaningfulRichText(this.productForm.descriptions[language])
     );
   }
 
@@ -566,6 +586,34 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       this.isSeoLanguageStarted(language) &&
       !this.isSeoLanguageComplete(language)
     );
+  }
+
+  preventRichTextToolbarMouseDown(event: MouseEvent): void {
+    event.preventDefault();
+  }
+
+  onDescriptionEditorInput(event: Event): void {
+    const editor = event.target as HTMLDivElement | null;
+    this.syncDescriptionFromEditor(editor, false);
+  }
+
+  onDescriptionEditorBlur(event: Event): void {
+    const editor = event.target as HTMLDivElement | null;
+    this.syncDescriptionFromEditor(editor, true);
+  }
+
+  formatDescription(command: 'bold' | 'italic' | 'underline'): void {
+    this.applyDescriptionExecCommand(command);
+  }
+
+  formatDescriptionList(type: 'unordered' | 'ordered'): void {
+    this.applyDescriptionExecCommand(
+      type === 'unordered' ? 'insertUnorderedList' : 'insertOrderedList',
+    );
+  }
+
+  clearDescriptionFormatting(): void {
+    this.applyDescriptionExecCommand('removeFormat');
   }
 
   addMaterial(): void {
@@ -1253,10 +1301,10 @@ export class AdminShopComponent implements OnInit, OnDestroy {
         fr: product.excerptFr ?? '',
       },
       descriptions: {
-        it: product.descriptionIt ?? '',
-        en: product.descriptionEn ?? '',
-        de: product.descriptionDe ?? '',
-        fr: product.descriptionFr ?? '',
+        it: this.normalizeDescriptionForEditor(product.descriptionIt),
+        en: this.normalizeDescriptionForEditor(product.descriptionEn),
+        de: this.normalizeDescriptionForEditor(product.descriptionDe),
+        fr: this.normalizeDescriptionForEditor(product.descriptionFr),
       },
       seoTitles: {
         it: product.seoTitleIt ?? '',
@@ -1394,11 +1442,19 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       excerptEn: this.optionalValue(this.productForm.excerpts['en']),
       excerptDe: this.optionalValue(this.productForm.excerpts['de']),
       excerptFr: this.optionalValue(this.productForm.excerpts['fr']),
-      description: this.optionalValue(this.productForm.descriptions['it']),
-      descriptionIt: this.optionalValue(this.productForm.descriptions['it']),
-      descriptionEn: this.optionalValue(this.productForm.descriptions['en']),
-      descriptionDe: this.optionalValue(this.productForm.descriptions['de']),
-      descriptionFr: this.optionalValue(this.productForm.descriptions['fr']),
+      description: this.optionalRichTextValue(this.productForm.descriptions['it']),
+      descriptionIt: this.optionalRichTextValue(
+        this.productForm.descriptions['it'],
+      ),
+      descriptionEn: this.optionalRichTextValue(
+        this.productForm.descriptions['en'],
+      ),
+      descriptionDe: this.optionalRichTextValue(
+        this.productForm.descriptions['de'],
+      ),
+      descriptionFr: this.optionalRichTextValue(
+        this.productForm.descriptions['fr'],
+      ),
       seoTitle: this.optionalValue(this.productForm.seoTitles['it']),
       seoTitleIt: this.optionalValue(this.productForm.seoTitles['it']),
       seoTitleEn: this.optionalValue(this.productForm.seoTitles['en']),
@@ -1758,6 +1814,189 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   private optionalValue(value: string): string | undefined {
     const normalized = value.trim();
     return normalized ? normalized : undefined;
+  }
+
+  private optionalRichTextValue(value: string): string | undefined {
+    const normalized = this.normalizeRichTextStorageValue(value);
+    return normalized ? normalized : undefined;
+  }
+
+  private syncDescriptionFromEditor(
+    editor: HTMLDivElement | null,
+    sanitize: boolean,
+  ): void {
+    if (!editor) {
+      return;
+    }
+    const currentLanguage = this.activeContentLanguage;
+    if (sanitize) {
+      const normalized = this.normalizeRichTextStorageValue(editor.innerHTML);
+      const safeHtml = normalized ?? '';
+      this.productForm.descriptions[currentLanguage] = safeHtml;
+      if (editor.innerHTML !== safeHtml) {
+        editor.innerHTML = safeHtml;
+      }
+      return;
+    }
+    this.productForm.descriptions[currentLanguage] = editor.innerHTML;
+  }
+
+  private applyDescriptionExecCommand(command: string): void {
+    const editor = this.descriptionEditorRef?.nativeElement ?? null;
+    if (!editor) {
+      return;
+    }
+    editor.focus();
+    document.execCommand(command, false);
+    this.syncDescriptionFromEditor(editor, false);
+  }
+
+  private normalizeDescriptionForEditor(value: string | null | undefined): string {
+    return this.normalizeRichTextStorageValue(value ?? '') ?? '';
+  }
+
+  private normalizeRichTextStorageValue(value: string): string | null {
+    const normalized = value.trim();
+    if (!normalized) {
+      return null;
+    }
+    const sanitized = this.containsHtmlMarkup(normalized)
+      ? this.sanitizeRichTextHtml(normalized)
+      : this.plainTextToRichTextHtml(normalized);
+    const compact = sanitized.trim();
+    if (!compact || !this.hasMeaningfulRichText(compact)) {
+      return null;
+    }
+    return compact;
+  }
+
+  private containsHtmlMarkup(value: string): boolean {
+    return /<\/?[a-z][\s\S]*>/i.test(value);
+  }
+
+  private plainTextToRichTextHtml(value: string): string {
+    const normalized = value.replace(/\r\n?/g, '\n').trim();
+    if (!normalized) {
+      return '';
+    }
+    return normalized
+      .split(/\n{2,}/)
+      .map(
+        (paragraph) =>
+          `<p>${this.escapeHtml(paragraph).replace(/\n/g, '<br>')}</p>`,
+      )
+      .join('');
+  }
+
+  private sanitizeRichTextHtml(value: string): string {
+    const parser = new DOMParser();
+    const sourceDocument = parser.parseFromString(
+      `<body>${value}</body>`,
+      'text/html',
+    );
+    const outputDocument = parser.parseFromString('<body></body>', 'text/html');
+    const outputBody = outputDocument.body;
+
+    for (const child of Array.from(sourceDocument.body.childNodes)) {
+      const sanitizedNode = this.sanitizeRichTextNode(child, outputDocument);
+      if (sanitizedNode) {
+        outputBody.appendChild(sanitizedNode);
+      }
+    }
+
+    return outputBody.innerHTML;
+  }
+
+  private sanitizeRichTextNode(
+    node: Node,
+    outputDocument: Document,
+  ): Node | DocumentFragment | null {
+    if (node.nodeType === Node.TEXT_NODE) {
+      return outputDocument.createTextNode(node.textContent ?? '');
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) {
+      return null;
+    }
+
+    const sourceElement = node as HTMLElement;
+    const tagName = sourceElement.tagName.toUpperCase();
+    const childNodes = Array.from(sourceElement.childNodes)
+      .map((child) => this.sanitizeRichTextNode(child, outputDocument))
+      .filter((child): child is Node | DocumentFragment => child !== null);
+
+    if (!RICH_TEXT_ALLOWED_TAGS.has(tagName)) {
+      const fragment = outputDocument.createDocumentFragment();
+      for (const child of childNodes) {
+        fragment.appendChild(child);
+      }
+      return fragment;
+    }
+
+    const element = outputDocument.createElement(tagName.toLowerCase());
+    if (tagName === 'A') {
+      const href = this.sanitizeRichTextHref(sourceElement.getAttribute('href'));
+      if (href) {
+        element.setAttribute('href', href);
+        if (href.startsWith('http://') || href.startsWith('https://')) {
+          element.setAttribute('target', '_blank');
+          element.setAttribute('rel', 'noopener noreferrer');
+        }
+      }
+    }
+    for (const child of childNodes) {
+      element.appendChild(child);
+    }
+
+    if (tagName === 'A' && !element.textContent?.trim()) {
+      return null;
+    }
+    if ((tagName === 'UL' || tagName === 'OL') && !element.querySelector('li')) {
+      return null;
+    }
+    if (tagName === 'LI' && !element.textContent?.trim()) {
+      return null;
+    }
+
+    return element;
+  }
+
+  private sanitizeRichTextHref(rawHref: string | null): string | null {
+    const href = rawHref?.trim();
+    if (!href) {
+      return null;
+    }
+    const lowerHref = href.toLowerCase();
+    if (lowerHref.startsWith('/') || lowerHref.startsWith('#')) {
+      return href;
+    }
+    if (
+      lowerHref.startsWith('http://') ||
+      lowerHref.startsWith('https://') ||
+      lowerHref.startsWith('mailto:') ||
+      lowerHref.startsWith('tel:')
+    ) {
+      return href;
+    }
+    return null;
+  }
+
+  private hasMeaningfulRichText(value: string): boolean {
+    return this.extractTextFromHtml(value).replace(/\u00a0/g, ' ').trim().length > 0;
+  }
+
+  private extractTextFromHtml(value: string): string {
+    const container = document.createElement('div');
+    container.innerHTML = value;
+    return container.textContent ?? '';
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   seoDescriptionLength(language: ShopLanguage): number {

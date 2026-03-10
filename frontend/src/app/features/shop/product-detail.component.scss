@@ -209,8 +209,7 @@ h1 {
   line-height: 1.06;
 }
 
-.excerpt,
-.description-block p {
+.excerpt {
   margin: 0;
   color: var(--color-text-muted);
   line-height: 1.6;
@@ -380,9 +379,30 @@ h1 {
   font-size: 1.45rem;
 }
 
-.description-block p {
+.description-block__content {
+  color: var(--color-text-muted);
   font-size: 1.06rem;
   line-height: 1.75;
+}
+
+.description-block__content p,
+.description-block__content div {
+  margin: 0 0 0.7rem;
+}
+
+.description-block__content p:last-child,
+.description-block__content div:last-child {
+  margin-bottom: 0;
+}
+
+.description-block__content ul,
+.description-block__content ol {
+  margin: 0 0 0.7rem 1.3rem;
+  padding: 0;
+}
+
+.description-block__content li + li {
+  margin-top: 0.22rem;
 }
 
 :host ::ng-deep app-card.purchase-shell .card-body {

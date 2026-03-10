@@ -252,6 +252,63 @@
   min-height: 136px;
 }
 
+.rich-text-field {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.rich-text-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.rich-text-toolbar__button {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  color: var(--color-text);
+  min-height: 2rem;
+  padding: 0.28rem 0.56rem;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.rich-text-toolbar__button:hover {
+  border-color: #cbb88a;
+  background: #fffdf4;
+}
+
+.rich-text-editor {
+  overflow-y: auto;
+  padding: 0.62rem 0.72rem;
+  line-height: 1.62;
+}
+
+.rich-text-editor:focus-visible {
+  outline: none;
+}
+
+.rich-text-editor:empty::before {
+  content: "Scrivi la descrizione del prodotto...";
+  color: var(--color-text-muted);
+}
+
+.rich-text-editor p,
+.rich-text-editor div {
+  margin: 0 0 0.62rem;
+}
+
+.rich-text-editor ul,
+.rich-text-editor ol {
+  margin: 0 0 0.62rem 1.25rem;
+  padding: 0;
+}
+
+.rich-text-editor li + li {
+  margin-top: 0.22rem;
+}
+
 .toggle-row {
   display: flex;
   flex-wrap: wrap;
