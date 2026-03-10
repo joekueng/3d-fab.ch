@@ -273,15 +273,16 @@ export class ShopService {
   getProductByPublicPath(
     productPathSegment: string,
   ): Observable<ShopProductDetail> {
-    const lookup = this.shopRouteService.resolveProductLookup(productPathSegment);
+    const lookup =
+      this.shopRouteService.resolveProductLookup(productPathSegment);
     if (!lookup.idPrefix && lookup.slugHint) {
       return this.getProduct(lookup.slugHint);
     }
 
     return this.getProductCatalog().pipe(
       map((catalog) =>
-        catalog.products.find(
-          (product) => product.id.toLowerCase().startsWith(lookup.idPrefix ?? ''),
+        catalog.products.find((product) =>
+          product.id.toLowerCase().startsWith(lookup.idPrefix ?? ''),
         ),
       ),
       switchMap((product) => {

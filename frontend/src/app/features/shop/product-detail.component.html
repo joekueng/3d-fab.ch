@@ -13,7 +13,7 @@
       @if (error()) {
         <div class="state-card">{{ error() | translate }}</div>
       } @else {
-          @if (product(); as p) {
+        @if (product(); as p) {
           <nav class="breadcrumbs">
             <a [routerLink]="shopRootLink()">{{
               "SHOP.BREADCRUMB_ROOT" | translate
@@ -83,7 +83,9 @@
               @if (p.model3d) {
                 <div class="model-launch-row">
                   <div>
-                    <p class="viewer-kicker">{{ "SHOP.MODEL_3D" | translate }}</p>
+                    <p class="viewer-kicker">
+                      {{ "SHOP.MODEL_3D" | translate }}
+                    </p>
                     <div class="dimensions dimensions-inline">
                       <span>
                         X
@@ -151,7 +153,9 @@
                         <button
                           type="button"
                           class="material-option"
-                          [class.active]="selectedMaterial()?.key === material.key"
+                          [class.active]="
+                            selectedMaterial()?.key === material.key
+                          "
                           (click)="selectMaterial(material.key)"
                         >
                           <span class="material-copy">
@@ -228,7 +232,7 @@
                       ></button>
                       <div class="color-popup">
                         <div class="color-popup__category">
-                          {{ (selectedMaterial()?.label || "") | uppercase }}
+                          {{ selectedMaterial()?.label || "" | uppercase }}
                         </div>
 
                         <div class="color-popup__grid">

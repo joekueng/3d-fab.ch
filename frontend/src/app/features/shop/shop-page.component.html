@@ -32,7 +32,9 @@
           [class.active]="!currentCategorySlug()"
           (click)="navigateToCategory()"
         >
-          <span class="category-name">{{ "SHOP.ALL_CATEGORIES" | translate }}</span>
+          <span class="category-name">{{
+            "SHOP.ALL_CATEGORIES" | translate
+          }}</span>
         </button>
 
         <div class="category-list">
@@ -227,7 +229,9 @@
     <app-card class="shop-custom-cta-card">
       <div class="shop-custom-cta-inner">
         <div class="shop-custom-cta-copy">
-          <p class="panel-kicker">{{ "SHOP.CUSTOM_PART_FOOTER_TITLE" | translate }}</p>
+          <p class="panel-kicker">
+            {{ "SHOP.CUSTOM_PART_FOOTER_TITLE" | translate }}
+          </p>
           <h2 class="shop-custom-cta-title">
             {{ "SHOP.CUSTOM_PART_FOOTER_TEXT" | translate }}
           </h2>

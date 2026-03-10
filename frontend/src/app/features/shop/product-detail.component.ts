@@ -139,8 +139,8 @@ export class ProductDetailComponent {
     );
   });
 
-  readonly colorOptions = computed<ShopProductVariantOption[]>(() =>
-    this.selectedMaterial()?.variants ?? [],
+  readonly colorOptions = computed<ShopProductVariantOption[]>(
+    () => this.selectedMaterial()?.variants ?? [],
   );
 
   readonly selectedMaterialProperties = computed<ShopMaterialProperty[]>(() =>
@@ -494,11 +494,15 @@ export class ProductDetailComponent {
     });
   }
 
-  private materialLabelForVariant(variant: ShopProductVariantOption | null): string {
+  private materialLabelForVariant(
+    variant: ShopProductVariantOption | null,
+  ): string {
     return String(variant?.variantLabel || '').trim() || 'Standard';
   }
 
-  private materialKeyForVariant(variant: ShopProductVariantOption | null): string | null {
+  private materialKeyForVariant(
+    variant: ShopProductVariantOption | null,
+  ): string | null {
     if (!variant) {
       return null;
     }
@@ -508,7 +512,9 @@ export class ProductDetailComponent {
   private materialPropertiesFor(
     materialLabel: string | null | undefined,
   ): ShopMaterialProperty[] {
-    const normalized = String(materialLabel ?? '').trim().toUpperCase();
+    const normalized = String(materialLabel ?? '')
+      .trim()
+      .toUpperCase();
 
     if (normalized.includes('ASA')) {
       return [
@@ -600,7 +606,13 @@ export class ProductDetailComponent {
 
     const currentTree = this.router.parseUrl(this.router.url);
     const targetTree = this.router.createUrlTree(
-      ['/', this.languageService.selectedLang(), 'shop', 'p', targetProductSlug],
+      [
+        '/',
+        this.languageService.selectedLang(),
+        'shop',
+        'p',
+        targetProductSlug,
+      ],
       {
         queryParams: currentTree.queryParams,
         fragment: currentTree.fragment ?? undefined,

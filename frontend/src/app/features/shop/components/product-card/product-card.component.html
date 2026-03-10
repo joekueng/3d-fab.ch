@@ -56,18 +56,15 @@
           (click)="addToCart()"
           [disabled]="!defaultVariantId() || addingToCart()"
         >
-          {{
-            (addingToCart() ? "SHOP.ADDING" : "SHOP.ADD_CART") | translate
-          }}
+          {{ (addingToCart() ? "SHOP.ADDING" : "SHOP.ADD_CART") | translate }}
         </button>
 
         <a
           [routerLink]="productLink()"
           [state]="navigationState()"
           class="view-btn"
-          >{{
-          "SHOP.DETAILS" | translate
-        }}</a>
+          >{{ "SHOP.DETAILS" | translate }}</a
+        >
       </div>
     </div>
   </div>
