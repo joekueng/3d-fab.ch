@@ -114,15 +114,15 @@ class OrderServiceTest {
 
         Path sourceDir = Path.of("storage_quotes").toAbsolutePath().normalize().resolve(sessionId.toString());
         Files.createDirectories(sourceDir);
-        Path sourceFile = sourceDir.resolve("shop-demo.stl");
-        Files.writeString(sourceFile, "solid demo\nendsolid demo\n", StandardCharsets.UTF_8);
+        Path sourceFile = sourceDir.resolve("shop-product.stl");
+        Files.writeString(sourceFile, "solid product\nendsolid product\n", StandardCharsets.UTF_8);
 
         QuoteLineItem qItem = new QuoteLineItem();
         qItem.setId(UUID.randomUUID());
         qItem.setQuoteSession(session);
         qItem.setStatus("READY");
         qItem.setLineItemType("SHOP_PRODUCT");
-        qItem.setOriginalFilename("shop-demo.stl");
+        qItem.setOriginalFilename("shop-product.stl");
         qItem.setDisplayName("Desk Cable Clip");
         qItem.setQuantity(2);
         qItem.setColorCode("Coral Red");

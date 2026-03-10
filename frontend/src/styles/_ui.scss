@@ -19,6 +19,31 @@
   font-size: 1.05rem;
 }
 
+.ui-simple-hero {
+  padding: var(--space-12) 0;
+  text-align: center;
+}
+
+.ui-simple-hero__title {
+  margin: 0 0 var(--space-2);
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  margin-top: var(--space-6);
+}
+
+.ui-simple-hero__subtitle {
+  max-width: 600px;
+  margin: var(--space-6) auto;
+  color: var(--color-text-muted);
+  font-size: 1.25rem;
+
+}
+
+.ui-simple-hero__actions {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-6);
+}
+
 .ui-stack {
   display: grid;
   gap: var(--space-4);
@@ -153,6 +178,7 @@
   font-size: 1.1rem;
   line-height: 1.6;
   color: var(--color-text-muted);
+  margin-bottom: var(--space-4);
 }
 
 .ui-inline-actions {

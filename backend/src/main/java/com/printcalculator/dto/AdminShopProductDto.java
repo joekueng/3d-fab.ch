@@ -12,8 +12,20 @@ public class AdminShopProductDto {
     private String categorySlug;
     private String slug;
     private String name;
+    private String nameIt;
+    private String nameEn;
+    private String nameDe;
+    private String nameFr;
     private String excerpt;
+    private String excerptIt;
+    private String excerptEn;
+    private String excerptDe;
+    private String excerptFr;
     private String description;
+    private String descriptionIt;
+    private String descriptionEn;
+    private String descriptionDe;
+    private String descriptionFr;
     private String seoTitle;
     private String seoDescription;
     private String ogTitle;
@@ -83,6 +95,38 @@ public class AdminShopProductDto {
         this.name = name;
     }
 
+    public String getNameIt() {
+        return nameIt;
+    }
+
+    public void setNameIt(String nameIt) {
+        this.nameIt = nameIt;
+    }
+
+    public String getNameEn() {
+        return nameEn;
+    }
+
+    public void setNameEn(String nameEn) {
+        this.nameEn = nameEn;
+    }
+
+    public String getNameDe() {
+        return nameDe;
+    }
+
+    public void setNameDe(String nameDe) {
+        this.nameDe = nameDe;
+    }
+
+    public String getNameFr() {
+        return nameFr;
+    }
+
+    public void setNameFr(String nameFr) {
+        this.nameFr = nameFr;
+    }
+
     public String getExcerpt() {
         return excerpt;
     }
@@ -91,12 +135,76 @@ public class AdminShopProductDto {
         this.excerpt = excerpt;
     }
 
+    public String getExcerptIt() {
+        return excerptIt;
+    }
+
+    public void setExcerptIt(String excerptIt) {
+        this.excerptIt = excerptIt;
+    }
+
+    public String getExcerptEn() {
+        return excerptEn;
+    }
+
+    public void setExcerptEn(String excerptEn) {
+        this.excerptEn = excerptEn;
+    }
+
+    public String getExcerptDe() {
+        return excerptDe;
+    }
+
+    public void setExcerptDe(String excerptDe) {
+        this.excerptDe = excerptDe;
+    }
+
+    public String getExcerptFr() {
+        return excerptFr;
+    }
+
+    public void setExcerptFr(String excerptFr) {
+        this.excerptFr = excerptFr;
+    }
+
     public String getDescription() {
         return description;
     }
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getDescriptionIt() {
+        return descriptionIt;
+    }
+
+    public void setDescriptionIt(String descriptionIt) {
+        this.descriptionIt = descriptionIt;
+    }
+
+    public String getDescriptionEn() {
+        return descriptionEn;
+    }
+
+    public void setDescriptionEn(String descriptionEn) {
+        this.descriptionEn = descriptionEn;
+    }
+
+    public String getDescriptionDe() {
+        return descriptionDe;
+    }
+
+    public void setDescriptionDe(String descriptionDe) {
+        this.descriptionDe = descriptionDe;
+    }
+
+    public String getDescriptionFr() {
+        return descriptionFr;
+    }
+
+    public void setDescriptionFr(String descriptionFr) {
+        this.descriptionFr = descriptionFr;
     }
 
     public String getSeoTitle() {

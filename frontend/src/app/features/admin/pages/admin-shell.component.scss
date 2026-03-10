@@ -97,6 +97,56 @@
   min-width: 0;
 }
 
+:host ::ng-deep .content .ui-form-control {
+  padding: var(--space-2);
+  font-size: 1rem;
+}
+
+:host ::ng-deep .content select.ui-form-control {
+  background-position: right 0.75rem center;
+  padding-right: 2.35rem;
+}
+
+:host ::ng-deep .content .ui-form-caption {
+  font-size: 0.9rem;
+}
+
+:host ::ng-deep .content .ui-button {
+  padding: var(--space-2) var(--space-4);
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+:host ::ng-deep .content .ui-checkbox {
+  gap: 0.85rem;
+  font-size: 1rem;
+}
+
+:host ::ng-deep .content .ui-checkbox__mark {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+:host ::ng-deep .content .ui-file-picker__button,
+:host ::ng-deep .content .ui-file-picker__name {
+  font-size: 1rem;
+}
+
+:host ::ng-deep .content .ui-language-toolbar {
+  padding: var(--space-2);
+}
+
+:host ::ng-deep .content .ui-language-toolbar__copy span,
+:host ::ng-deep .content .ui-language-toolbar__copy p,
+:host ::ng-deep .content .ui-language-toolbar__button {
+  font-size: 0.9rem;
+}
+
+:host ::ng-deep .content .ui-language-toolbar__button {
+  min-width: 2.8rem;
+  padding: 0.4rem 0.6rem;
+}
+
 @media (max-width: 1240px) {
   .admin-shell {
     grid-template-columns: 220px minmax(0, 1fr);

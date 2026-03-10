@@ -1,8 +1,6 @@
 .product-page {
   padding: var(--space-8) 0 var(--space-12);
-  background:
-    radial-gradient(circle at top left, rgba(250, 207, 10, 0.18), transparent 20%),
-    linear-gradient(180deg, #faf7ee 0%, var(--color-bg) 25%);
+  background: linear-gradient(180deg, #faf7ef 0%, var(--color-bg) 15rem);
 }
 
 .wrapper {
@@ -39,10 +37,8 @@
   overflow: hidden;
   border-radius: 1.25rem;
   border: 1px solid rgba(16, 24, 32, 0.08);
-  background:
-    radial-gradient(circle at top right, rgba(250, 207, 10, 0.3), transparent 30%),
-    linear-gradient(160deg, #f8f4ea 0%, #eee8db 100%);
-  box-shadow: 0 18px 42px rgba(16, 24, 32, 0.08);
+  background: #f2eee5;
+  box-shadow: 0 12px 28px rgba(16, 24, 32, 0.05);
 }
 
 .hero-image {
@@ -59,6 +55,9 @@
   display: flex;
   align-items: flex-end;
   padding: var(--space-6);
+  background:
+    radial-gradient(circle at top right, rgba(250, 207, 10, 0.24), transparent 34%),
+    linear-gradient(160deg, #f8f4ea 0%, #eee8db 100%);
 }
 
 .image-fallback span {
@@ -156,8 +155,7 @@
   gap: 0.7rem;
 }
 
-.category,
-.featured-pill {
+.category {
   text-transform: uppercase;
   font-size: 0.76rem;
   letter-spacing: 0.08em;
@@ -165,15 +163,6 @@
 
 .category {
   color: var(--color-secondary-600);
-  font-weight: 700;
-}
-
-.featured-pill {
-  display: inline-flex;
-  padding: 0.25rem 0.65rem;
-  border-radius: 999px;
-  background: rgba(250, 207, 10, 0.92);
-  color: var(--color-neutral-900);
   font-weight: 700;
 }
 

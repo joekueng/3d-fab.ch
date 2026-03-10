@@ -45,7 +45,7 @@ class InvoicePdfRenderingServiceTest {
         OrderItem shopItem = new OrderItem();
         shopItem.setItemType("SHOP_PRODUCT");
         shopItem.setDisplayName("Desk Cable Clip");
-        shopItem.setOriginalFilename("desk-cable-clip-demo.stl");
+        shopItem.setOriginalFilename("desk-cable-clip.stl");
         shopItem.setShopProductName("Desk Cable Clip");
         shopItem.setShopVariantLabel("Coral Red");
         shopItem.setQuantity(2);

@@ -22,6 +22,7 @@ import com.printcalculator.service.SlicerService;
 import com.printcalculator.service.media.PublicMediaQueryService;
 import com.printcalculator.service.shop.ShopStorageService;
 import com.printcalculator.service.storage.ClamAVService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -75,6 +76,7 @@ public class AdminShopProductControllerService {
     private final ShopStorageService shopStorageService;
     private final SlicerService slicerService;
     private final ClamAVService clamAVService;
+    private final long maxModelFileSizeBytes;
 
     public AdminShopProductControllerService(ShopProductRepository shopProductRepository,
                                              ShopCategoryRepository shopCategoryRepository,
@@ -86,7 +88,8 @@ public class AdminShopProductControllerService {
                                              AdminMediaControllerService adminMediaControllerService,
                                              ShopStorageService shopStorageService,
                                              SlicerService slicerService,
-                                             ClamAVService clamAVService) {
+                                             ClamAVService clamAVService,
+                                             @Value("${shop.model.max-file-size-bytes:104857600}") long maxModelFileSizeBytes) {
         this.shopProductRepository = shopProductRepository;
         this.shopCategoryRepository = shopCategoryRepository;
         this.shopProductVariantRepository = shopProductVariantRepository;
@@ -98,6 +101,7 @@ public class AdminShopProductControllerService {
         this.shopStorageService = shopStorageService;
         this.slicerService = slicerService;
         this.clamAVService = clamAVService;
+        this.maxModelFileSizeBytes = maxModelFileSizeBytes;
     }
 
     public List<AdminShopProductDto> getProducts() {
@@ -113,13 +117,13 @@ public class AdminShopProductControllerService {
     @Transactional
     public AdminShopProductDto createProduct(AdminUpsertShopProductRequest payload) {
         ensurePayload(payload);
-        String normalizedName = normalizeRequired(payload.getName(), "Product name is required");
-        String normalizedSlug = normalizeAndValidateSlug(payload.getSlug(), normalizedName);
+        LocalizedProductContent localizedContent = normalizeLocalizedProductContent(payload);
+        String normalizedSlug = normalizeAndValidateSlug(payload.getSlug(), localizedContent.defaultName());
         ensureSlugAvailable(normalizedSlug, null);
 
         ShopProduct product = new ShopProduct();
         product.setCreatedAt(OffsetDateTime.now());
-        applyProductPayload(product, payload, normalizedName, normalizedSlug, resolveCategory(payload.getCategoryId()));
+        applyProductPayload(product, payload, localizedContent, normalizedSlug, resolveCategory(payload.getCategoryId()));
         ShopProduct saved = shopProductRepository.save(product);
         syncVariants(saved, payload.getVariants());
         return getProduct(saved.getId());
@@ -131,11 +135,11 @@ public class AdminShopProductControllerService {
         ShopProduct product = shopProductRepository.findById(productId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Shop product not found"));
 
-        String normalizedName = normalizeRequired(payload.getName(), "Product name is required");
-        String normalizedSlug = normalizeAndValidateSlug(payload.getSlug(), normalizedName);
+        LocalizedProductContent localizedContent = normalizeLocalizedProductContent(payload);
+        String normalizedSlug = normalizeAndValidateSlug(payload.getSlug(), localizedContent.defaultName());
         ensureSlugAvailable(normalizedSlug, productId);
 
-        applyProductPayload(product, payload, normalizedName, normalizedSlug, resolveCategory(payload.getCategoryId()));
+        applyProductPayload(product, payload, localizedContent, normalizedSlug, resolveCategory(payload.getCategoryId()));
         ShopProduct saved = shopProductRepository.save(product);
         syncVariants(saved, payload.getVariants());
         return getProduct(saved.getId());
@@ -291,14 +295,26 @@ public class AdminShopProductControllerService {
 
     private void applyProductPayload(ShopProduct product,
                                      AdminUpsertShopProductRequest payload,
-                                     String normalizedName,
+                                     LocalizedProductContent localizedContent,
                                      String normalizedSlug,
                                      ShopCategory category) {
         product.setCategory(category);
         product.setSlug(normalizedSlug);
-        product.setName(normalizedName);
-        product.setExcerpt(normalizeOptional(payload.getExcerpt()));
-        product.setDescription(normalizeOptional(payload.getDescription()));
+        product.setName(localizedContent.defaultName());
+        product.setNameIt(localizedContent.names().get("it"));
+        product.setNameEn(localizedContent.names().get("en"));
+        product.setNameDe(localizedContent.names().get("de"));
+        product.setNameFr(localizedContent.names().get("fr"));
+        product.setExcerpt(localizedContent.defaultExcerpt());
+        product.setExcerptIt(localizedContent.excerpts().get("it"));
+        product.setExcerptEn(localizedContent.excerpts().get("en"));
+        product.setExcerptDe(localizedContent.excerpts().get("de"));
+        product.setExcerptFr(localizedContent.excerpts().get("fr"));
+        product.setDescription(localizedContent.defaultDescription());
+        product.setDescriptionIt(localizedContent.descriptions().get("it"));
+        product.setDescriptionEn(localizedContent.descriptions().get("en"));
+        product.setDescriptionDe(localizedContent.descriptions().get("de"));
+        product.setDescriptionFr(localizedContent.descriptions().get("fr"));
         product.setSeoTitle(normalizeOptional(payload.getSeoTitle()));
         product.setSeoDescription(normalizeOptional(payload.getSeoDescription()));
         product.setOgTitle(normalizeOptional(payload.getOgTitle()));
@@ -436,8 +452,20 @@ public class AdminShopProductControllerService {
         dto.setCategorySlug(product.getCategory() != null ? product.getCategory().getSlug() : null);
         dto.setSlug(product.getSlug());
         dto.setName(product.getName());
+        dto.setNameIt(product.getNameIt());
+        dto.setNameEn(product.getNameEn());
+        dto.setNameDe(product.getNameDe());
+        dto.setNameFr(product.getNameFr());
         dto.setExcerpt(product.getExcerpt());
+        dto.setExcerptIt(product.getExcerptIt());
+        dto.setExcerptEn(product.getExcerptEn());
+        dto.setExcerptDe(product.getExcerptDe());
+        dto.setExcerptFr(product.getExcerptFr());
         dto.setDescription(product.getDescription());
+        dto.setDescriptionIt(product.getDescriptionIt());
+        dto.setDescriptionEn(product.getDescriptionEn());
+        dto.setDescriptionDe(product.getDescriptionDe());
+        dto.setDescriptionFr(product.getDescriptionFr());
         dto.setSeoTitle(product.getSeoTitle());
         dto.setSeoDescription(product.getSeoDescription());
         dto.setOgTitle(product.getOgTitle());
@@ -523,6 +551,61 @@ public class AdminShopProductControllerService {
         }
     }
 
+    private LocalizedProductContent normalizeLocalizedProductContent(AdminUpsertShopProductRequest payload) {
+        String legacyName = normalizeOptional(payload.getName());
+        String fallbackName = firstNonBlank(
+                legacyName,
+                normalizeOptional(payload.getNameIt()),
+                normalizeOptional(payload.getNameEn()),
+                normalizeOptional(payload.getNameDe()),
+                normalizeOptional(payload.getNameFr())
+        );
+        if (fallbackName == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product name is required");
+        }
+
+        Map<String, String> names = new LinkedHashMap<>();
+        names.put("it", normalizeRequired(firstNonBlank(normalizeOptional(payload.getNameIt()), fallbackName), "Italian product name is required"));
+        names.put("en", normalizeRequired(firstNonBlank(normalizeOptional(payload.getNameEn()), fallbackName), "English product name is required"));
+        names.put("de", normalizeRequired(firstNonBlank(normalizeOptional(payload.getNameDe()), fallbackName), "German product name is required"));
+        names.put("fr", normalizeRequired(firstNonBlank(normalizeOptional(payload.getNameFr()), fallbackName), "French product name is required"));
+
+        String fallbackExcerpt = firstNonBlank(
+                normalizeOptional(payload.getExcerpt()),
+                normalizeOptional(payload.getExcerptIt()),
+                normalizeOptional(payload.getExcerptEn()),
+                normalizeOptional(payload.getExcerptDe()),
+                normalizeOptional(payload.getExcerptFr())
+        );
+        Map<String, String> excerpts = new LinkedHashMap<>();
+        excerpts.put("it", firstNonBlank(normalizeOptional(payload.getExcerptIt()), fallbackExcerpt));
+        excerpts.put("en", firstNonBlank(normalizeOptional(payload.getExcerptEn()), fallbackExcerpt));
+        excerpts.put("de", firstNonBlank(normalizeOptional(payload.getExcerptDe()), fallbackExcerpt));
+        excerpts.put("fr", firstNonBlank(normalizeOptional(payload.getExcerptFr()), fallbackExcerpt));
+
+        String fallbackDescription = firstNonBlank(
+                normalizeOptional(payload.getDescription()),
+                normalizeOptional(payload.getDescriptionIt()),
+                normalizeOptional(payload.getDescriptionEn()),
+                normalizeOptional(payload.getDescriptionDe()),
+                normalizeOptional(payload.getDescriptionFr())
+        );
+        Map<String, String> descriptions = new LinkedHashMap<>();
+        descriptions.put("it", firstNonBlank(normalizeOptional(payload.getDescriptionIt()), fallbackDescription));
+        descriptions.put("en", firstNonBlank(normalizeOptional(payload.getDescriptionEn()), fallbackDescription));
+        descriptions.put("de", firstNonBlank(normalizeOptional(payload.getDescriptionDe()), fallbackDescription));
+        descriptions.put("fr", firstNonBlank(normalizeOptional(payload.getDescriptionFr()), fallbackDescription));
+
+        return new LocalizedProductContent(
+                names.get("it"),
+                firstNonBlank(excerpts.get("it"), fallbackExcerpt),
+                firstNonBlank(descriptions.get("it"), fallbackDescription),
+                names,
+                excerpts,
+                descriptions
+        );
+    }
+
     private void ensureSlugAvailable(String slug, UUID currentProductId) {
         shopProductRepository.findBySlugIgnoreCase(slug).ifPresent(existing -> {
             if (currentProductId == null || !existing.getId().equals(currentProductId)) {
@@ -545,6 +628,18 @@ public class AdminShopProductControllerService {
         }
         String normalized = value.trim();
         return normalized.isBlank() ? null : normalized;
+    }
+
+    private String firstNonBlank(String... values) {
+        if (values == null) {
+            return null;
+        }
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value;
+            }
+        }
+        return null;
     }
 
     private String normalizeAndValidateSlug(String slug, String fallbackName) {
@@ -578,6 +673,9 @@ public class AdminShopProductControllerService {
     private void validateModelUpload(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "3D model file is required");
+        }
+        if (maxModelFileSizeBytes > 0 && file.getSize() > maxModelFileSizeBytes) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "3D model file exceeds size limit");
         }
         String extension = resolveExtension(sanitizeOriginalFilename(file.getOriginalFilename()));
         if (!SUPPORTED_MODEL_EXTENSIONS.contains(extension)) {
@@ -682,5 +780,15 @@ public class AdminShopProductControllerService {
     }
 
     public record ProductModelDownload(Path path, String filename, String mimeType) {
+    }
+
+    private record LocalizedProductContent(
+            String defaultName,
+            String defaultExcerpt,
+            String defaultDescription,
+            Map<String, String> names,
+            Map<String, String> excerpts,
+            Map<String, String> descriptions
+    ) {
     }
 }

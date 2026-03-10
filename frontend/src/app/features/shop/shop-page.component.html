@@ -1,74 +1,19 @@
 <section class="shop-page">
-  <section class="shop-hero">
-    <div class="container shop-hero-grid">
-      <div class="hero-copy">
-        <p class="ui-eyebrow">{{ "SHOP.HERO_EYEBROW" | translate }}</p>
-        <h1 class="ui-hero-display">
-          {{
-            selectedCategory()?.name || ("SHOP.TITLE" | translate)
-          }}
-        </h1>
-        <p class="ui-copy-lead">
-          {{
-            selectedCategory()?.description ||
-              ("SHOP.SUBTITLE" | translate)
-          }}
-        </p>
-        <p class="ui-copy-subtitle">
-          {{
-            selectedCategory()
-              ? ("SHOP.CATEGORY_META" | translate: { count: selectedCategory()?.productCount || 0 })
-              : ("SHOP.CATALOG_META_DESCRIPTION" | translate)
-          }}
-        </p>
-
-        <div class="hero-actions ui-inline-actions">
-          @if (cartHasItems()) {
-            <app-button
-              variant="primary"
-              [disabled]="cartMutating()"
-              (click)="goToCheckout()"
-            >
-              {{ "SHOP.GO_TO_CHECKOUT" | translate }}
-            </app-button>
-          } @else {
-            <app-button variant="outline" routerLink="/calculator/basic">
-              {{ "SHOP.WIP_CTA_CALC" | translate }}
-            </app-button>
-          }
-
-          @if (selectedCategory()) {
-            <app-button variant="text" (click)="navigateToCategory()">
-              {{ "SHOP.VIEW_ALL" | translate }}
-            </app-button>
-          }
-        </div>
-      </div>
-
-      <div class="hero-highlights">
-        <div class="highlight-card">
-          <span class="highlight-label">{{
-            "SHOP.HIGHLIGHT_PRODUCTS" | translate
-          }}</span>
-          <strong>{{
-            selectedCategory()?.productCount ?? products().length
-          }}</strong>
-        </div>
-        <div class="highlight-card">
-          <span class="highlight-label">{{
-            "SHOP.HIGHLIGHT_CART" | translate
-          }}</span>
-          <strong>{{ cartItemCount() }}</strong>
-        </div>
-        <div class="highlight-card">
-          <span class="highlight-label">{{
-            "SHOP.HIGHLIGHT_READY" | translate
-          }}</span>
-          <strong>{{ "SHOP.MODEL_3D" | translate }}</strong>
-        </div>
-      </div>
+  <div class="container ui-simple-hero shop-hero">
+    <h1 class="ui-simple-hero__title">{{ "NAV.SHOP" | translate }}</h1>
+    <p class="ui-simple-hero__subtitle">
+      {{
+        selectedCategory()
+          ? (selectedCategory()?.description || ("SHOP.CATEGORY_META" | translate: { count: selectedCategory()?.productCount || 0 }))
+          : ("SHOP.CUSTOM_PART_CTA" | translate)
+      }}
+    </p>
+    <div class="ui-simple-hero__actions hero-actions ui-inline-actions">
+      <app-button variant="outline" routerLink="/contact">
+        {{ "NAV.CONTACT" | translate }}
+      </app-button>
     </div>
-  </section>
+  </div>
 
   <div class="container shop-layout">
     <aside class="shop-sidebar">
@@ -223,33 +168,6 @@
           {{ error() | translate }}
         </div>
       } @else {
-        @if (featuredProducts().length > 0 && !selectedCategory()) {
-          <section class="featured-strip">
-            <div class="section-head">
-              <div>
-                <p class="ui-eyebrow ui-eyebrow--compact">
-                  {{ "SHOP.FEATURED_KICKER" | translate }}
-                </p>
-                <h2 class="section-title">
-                  {{ "SHOP.FEATURED_TITLE" | translate }}
-                </h2>
-              </div>
-            </div>
-
-            <div class="featured-grid">
-              @for (
-                product of featuredProducts();
-                track trackByProduct($index, product)
-              ) {
-                <app-product-card
-                  [product]="product"
-                  [cartQuantity]="productCartQuantity(product.id)"
-                ></app-product-card>
-              }
-            </div>
-          </section>
-        }
-
         <section class="catalog-panel">
           <div class="section-head catalog-head">
             <div>

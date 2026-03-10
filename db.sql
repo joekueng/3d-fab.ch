@@ -1040,8 +1040,20 @@ CREATE TABLE IF NOT EXISTS shop_product
     shop_category_id    uuid        NOT NULL REFERENCES shop_category (shop_category_id),
     slug                text        NOT NULL UNIQUE,
     name                text        NOT NULL,
+    name_it             text,
+    name_en             text,
+    name_de             text,
+    name_fr             text,
     excerpt             text,
+    excerpt_it          text,
+    excerpt_en          text,
+    excerpt_de          text,
+    excerpt_fr          text,
     description         text,
+    description_it      text,
+    description_en      text,
+    description_de      text,
+    description_fr      text,
     seo_title           text,
     seo_description     text,
     og_title            text,
@@ -1059,6 +1071,74 @@ CREATE INDEX IF NOT EXISTS ix_shop_product_category_active_sort
 
 CREATE INDEX IF NOT EXISTS ix_shop_product_featured_sort
     ON shop_product (is_featured, is_active, sort_order, created_at DESC);
+
+ALTER TABLE shop_product
+    ADD COLUMN IF NOT EXISTS name_it text;
+
+ALTER TABLE shop_product
+    ADD COLUMN IF NOT EXISTS name_en text;
+
+ALTER TABLE shop_product
+    ADD COLUMN IF NOT EXISTS name_de text;
+
+ALTER TABLE shop_product
+    ADD COLUMN IF NOT EXISTS name_fr text;
+
+ALTER TABLE shop_product
+    ADD COLUMN IF NOT EXISTS excerpt_it text;
+
+ALTER TABLE shop_product
+    ADD COLUMN IF NOT EXISTS excerpt_en text;
+
+ALTER TABLE shop_product
+    ADD COLUMN IF NOT EXISTS excerpt_de text;
+
+ALTER TABLE shop_product
+    ADD COLUMN IF NOT EXISTS excerpt_fr text;
+
+ALTER TABLE shop_product
+    ADD COLUMN IF NOT EXISTS description_it text;
+
+ALTER TABLE shop_product
+    ADD COLUMN IF NOT EXISTS description_en text;
+
+ALTER TABLE shop_product
+    ADD COLUMN IF NOT EXISTS description_de text;
+
+ALTER TABLE shop_product
+    ADD COLUMN IF NOT EXISTS description_fr text;
+
+UPDATE shop_product
+SET
+    name_it = COALESCE(NULLIF(btrim(name_it), ''), name),
+    name_en = COALESCE(NULLIF(btrim(name_en), ''), name),
+    name_de = COALESCE(NULLIF(btrim(name_de), ''), name),
+    name_fr = COALESCE(NULLIF(btrim(name_fr), ''), name),
+    excerpt_it = COALESCE(NULLIF(btrim(excerpt_it), ''), excerpt),
+    excerpt_en = COALESCE(NULLIF(btrim(excerpt_en), ''), excerpt),
+    excerpt_de = COALESCE(NULLIF(btrim(excerpt_de), ''), excerpt),
+    excerpt_fr = COALESCE(NULLIF(btrim(excerpt_fr), ''), excerpt),
+    description_it = COALESCE(NULLIF(btrim(description_it), ''), description),
+    description_en = COALESCE(NULLIF(btrim(description_en), ''), description),
+    description_de = COALESCE(NULLIF(btrim(description_de), ''), description),
+    description_fr = COALESCE(NULLIF(btrim(description_fr), ''), description)
+WHERE
+    NULLIF(btrim(name_it), '') IS NULL
+    OR NULLIF(btrim(name_en), '') IS NULL
+    OR NULLIF(btrim(name_de), '') IS NULL
+    OR NULLIF(btrim(name_fr), '') IS NULL
+    OR (excerpt IS NOT NULL AND (
+        NULLIF(btrim(excerpt_it), '') IS NULL
+        OR NULLIF(btrim(excerpt_en), '') IS NULL
+        OR NULLIF(btrim(excerpt_de), '') IS NULL
+        OR NULLIF(btrim(excerpt_fr), '') IS NULL
+    ))
+    OR (description IS NOT NULL AND (
+        NULLIF(btrim(description_it), '') IS NULL
+        OR NULLIF(btrim(description_en), '') IS NULL
+        OR NULLIF(btrim(description_de), '') IS NULL
+        OR NULLIF(btrim(description_fr), '') IS NULL
+    ));
 
 CREATE TABLE IF NOT EXISTS shop_product_variant
 (

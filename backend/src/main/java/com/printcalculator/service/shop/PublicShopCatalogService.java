@@ -99,7 +99,7 @@ public class PublicShopCatalogService {
         List<ShopProductSummaryDto> products = productContext.entries().stream()
                 .filter(entry -> allowedCategoryIds.contains(entry.product().getCategory().getId()))
                 .filter(entry -> !Boolean.TRUE.equals(featuredOnly) || Boolean.TRUE.equals(entry.product().getIsFeatured()))
-                .map(entry -> toProductSummaryDto(entry, productContext.productMediaBySlug()))
+                .map(entry -> toProductSummaryDto(entry, productContext.productMediaBySlug(), language))
                 .toList();
 
         ShopCategoryDetailDto selectedCategoryDetail = selectedCategory != null
@@ -128,7 +128,7 @@ public class PublicShopCatalogService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found");
         }
 
-        return toProductDetailDto(entry, productContext.productMediaBySlug());
+        return toProductDetailDto(entry, productContext.productMediaBySlug(), language);
     }
 
     public ProductModelDownload getProductModelDownload(String slug) {
@@ -348,13 +348,14 @@ public class PublicShopCatalogService {
     }
 
     private ShopProductSummaryDto toProductSummaryDto(ProductEntry entry,
-                                                      Map<String, List<PublicMediaUsageDto>> productMediaBySlug) {
+                                                      Map<String, List<PublicMediaUsageDto>> productMediaBySlug,
+                                                      String language) {
         List<PublicMediaUsageDto> images = productMediaBySlug.getOrDefault(productMediaUsageKey(entry.product()), List.of());
         return new ShopProductSummaryDto(
                 entry.product().getId(),
                 entry.product().getSlug(),
-                entry.product().getName(),
-                entry.product().getExcerpt(),
+                entry.product().getNameForLanguage(language),
+                entry.product().getExcerptForLanguage(language),
                 entry.product().getIsFeatured(),
                 entry.product().getSortOrder(),
                 new ShopCategoryRefDto(
@@ -371,14 +372,15 @@ public class PublicShopCatalogService {
     }
 
     private ShopProductDetailDto toProductDetailDto(ProductEntry entry,
-                                                    Map<String, List<PublicMediaUsageDto>> productMediaBySlug) {
+                                                    Map<String, List<PublicMediaUsageDto>> productMediaBySlug,
+                                                    String language) {
         List<PublicMediaUsageDto> images = productMediaBySlug.getOrDefault(productMediaUsageKey(entry.product()), List.of());
         return new ShopProductDetailDto(
                 entry.product().getId(),
                 entry.product().getSlug(),
-                entry.product().getName(),
-                entry.product().getExcerpt(),
-                entry.product().getDescription(),
+                entry.product().getNameForLanguage(language),
+                entry.product().getExcerptForLanguage(language),
+                entry.product().getDescriptionForLanguage(language),
                 entry.product().getSeoTitle(),
                 entry.product().getSeoDescription(),
                 entry.product().getOgTitle(),

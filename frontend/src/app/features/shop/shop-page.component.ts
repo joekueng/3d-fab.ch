@@ -11,7 +11,7 @@ import {
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { catchError, combineLatest, finalize, forkJoin, map, of, switchMap, tap } from 'rxjs';
+import { catchError, combineLatest, finalize, forkJoin, of, switchMap, tap } from 'rxjs';
 import { SeoService } from '../../core/services/seo.service';
 import { LanguageService } from '../../core/services/language.service';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
@@ -57,7 +57,6 @@ export class ShopPageComponent {
   readonly categoryNodes = signal<ShopCategoryNavNode[]>([]);
   readonly selectedCategory = signal<ShopCategoryDetail | null>(null);
   readonly products = signal<ShopProductSummary[]>([]);
-  readonly featuredProducts = signal<ShopProductSummary[]>([]);
 
   readonly cartMutating = signal(false);
   readonly busyLineItemId = signal<string | null>(null);
@@ -98,18 +97,12 @@ export class ShopPageComponent {
           forkJoin({
             categories: this.shopService.getCategories(),
             catalog: this.shopService.getProductCatalog(categorySlug ?? null),
-            featuredProducts: categorySlug
-              ? of<ShopProductSummary[]>([])
-              : this.shopService
-                  .getProductCatalog(null, true)
-                  .pipe(map((response) => response.products)),
           }).pipe(
             catchError((error) => {
               this.categories.set([]);
               this.categoryNodes.set([]);
               this.selectedCategory.set(null);
               this.products.set([]);
-              this.featuredProducts.set([]);
               this.error.set(
                 error?.status === 404 ? 'SHOP.NOT_FOUND' : 'SHOP.LOAD_ERROR',
               );
@@ -135,7 +128,6 @@ export class ShopPageComponent {
         );
         this.selectedCategory.set(result.catalog.category ?? null);
         this.products.set(result.catalog.products);
-        this.featuredProducts.set(result.featuredProducts);
         this.applySeo(result.catalog.category ?? null);
       });
   }

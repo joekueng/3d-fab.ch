@@ -15,6 +15,7 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -23,6 +24,8 @@ import java.util.UUID;
         @Index(name = "ix_shop_product_featured_sort", columnList = "is_featured, is_active, sort_order")
 })
 public class ShopProduct {
+    public static final List<String> SUPPORTED_LANGUAGES = List.of("it", "en", "de", "fr");
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "shop_product_id", nullable = false)
@@ -38,11 +41,47 @@ public class ShopProduct {
     @Column(name = "name", nullable = false, length = Integer.MAX_VALUE)
     private String name;
 
+    @Column(name = "name_it", length = Integer.MAX_VALUE)
+    private String nameIt;
+
+    @Column(name = "name_en", length = Integer.MAX_VALUE)
+    private String nameEn;
+
+    @Column(name = "name_de", length = Integer.MAX_VALUE)
+    private String nameDe;
+
+    @Column(name = "name_fr", length = Integer.MAX_VALUE)
+    private String nameFr;
+
     @Column(name = "excerpt", length = Integer.MAX_VALUE)
     private String excerpt;
 
+    @Column(name = "excerpt_it", length = Integer.MAX_VALUE)
+    private String excerptIt;
+
+    @Column(name = "excerpt_en", length = Integer.MAX_VALUE)
+    private String excerptEn;
+
+    @Column(name = "excerpt_de", length = Integer.MAX_VALUE)
+    private String excerptDe;
+
+    @Column(name = "excerpt_fr", length = Integer.MAX_VALUE)
+    private String excerptFr;
+
     @Column(name = "description", length = Integer.MAX_VALUE)
     private String description;
+
+    @Column(name = "description_it", length = Integer.MAX_VALUE)
+    private String descriptionIt;
+
+    @Column(name = "description_en", length = Integer.MAX_VALUE)
+    private String descriptionEn;
+
+    @Column(name = "description_de", length = Integer.MAX_VALUE)
+    private String descriptionDe;
+
+    @Column(name = "description_fr", length = Integer.MAX_VALUE)
+    private String descriptionFr;
 
     @Column(name = "seo_title", length = Integer.MAX_VALUE)
     private String seoTitle;
@@ -152,6 +191,38 @@ public class ShopProduct {
         this.name = name;
     }
 
+    public String getNameIt() {
+        return nameIt;
+    }
+
+    public void setNameIt(String nameIt) {
+        this.nameIt = nameIt;
+    }
+
+    public String getNameEn() {
+        return nameEn;
+    }
+
+    public void setNameEn(String nameEn) {
+        this.nameEn = nameEn;
+    }
+
+    public String getNameDe() {
+        return nameDe;
+    }
+
+    public void setNameDe(String nameDe) {
+        this.nameDe = nameDe;
+    }
+
+    public String getNameFr() {
+        return nameFr;
+    }
+
+    public void setNameFr(String nameFr) {
+        this.nameFr = nameFr;
+    }
+
     public String getExcerpt() {
         return excerpt;
     }
@@ -160,12 +231,76 @@ public class ShopProduct {
         this.excerpt = excerpt;
     }
 
+    public String getExcerptIt() {
+        return excerptIt;
+    }
+
+    public void setExcerptIt(String excerptIt) {
+        this.excerptIt = excerptIt;
+    }
+
+    public String getExcerptEn() {
+        return excerptEn;
+    }
+
+    public void setExcerptEn(String excerptEn) {
+        this.excerptEn = excerptEn;
+    }
+
+    public String getExcerptDe() {
+        return excerptDe;
+    }
+
+    public void setExcerptDe(String excerptDe) {
+        this.excerptDe = excerptDe;
+    }
+
+    public String getExcerptFr() {
+        return excerptFr;
+    }
+
+    public void setExcerptFr(String excerptFr) {
+        this.excerptFr = excerptFr;
+    }
+
     public String getDescription() {
         return description;
     }
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getDescriptionIt() {
+        return descriptionIt;
+    }
+
+    public void setDescriptionIt(String descriptionIt) {
+        this.descriptionIt = descriptionIt;
+    }
+
+    public String getDescriptionEn() {
+        return descriptionEn;
+    }
+
+    public void setDescriptionEn(String descriptionEn) {
+        this.descriptionEn = descriptionEn;
+    }
+
+    public String getDescriptionDe() {
+        return descriptionDe;
+    }
+
+    public void setDescriptionDe(String descriptionDe) {
+        this.descriptionDe = descriptionDe;
+    }
+
+    public String getDescriptionFr() {
+        return descriptionFr;
+    }
+
+    public void setDescriptionFr(String descriptionFr) {
+        this.descriptionFr = descriptionFr;
     }
 
     public String getSeoTitle() {
@@ -246,5 +381,95 @@ public class ShopProduct {
 
     public void setUpdatedAt(OffsetDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getNameForLanguage(String language) {
+        return resolveLocalizedValue(language, name, nameIt, nameEn, nameDe, nameFr);
+    }
+
+    public void setNameForLanguage(String language, String value) {
+        switch (normalizeLanguage(language)) {
+            case "it" -> nameIt = value;
+            case "en" -> nameEn = value;
+            case "de" -> nameDe = value;
+            case "fr" -> nameFr = value;
+            default -> {
+            }
+        }
+    }
+
+    public String getExcerptForLanguage(String language) {
+        return resolveLocalizedValue(language, excerpt, excerptIt, excerptEn, excerptDe, excerptFr);
+    }
+
+    public void setExcerptForLanguage(String language, String value) {
+        switch (normalizeLanguage(language)) {
+            case "it" -> excerptIt = value;
+            case "en" -> excerptEn = value;
+            case "de" -> excerptDe = value;
+            case "fr" -> excerptFr = value;
+            default -> {
+            }
+        }
+    }
+
+    public String getDescriptionForLanguage(String language) {
+        return resolveLocalizedValue(language, description, descriptionIt, descriptionEn, descriptionDe, descriptionFr);
+    }
+
+    public void setDescriptionForLanguage(String language, String value) {
+        switch (normalizeLanguage(language)) {
+            case "it" -> descriptionIt = value;
+            case "en" -> descriptionEn = value;
+            case "de" -> descriptionDe = value;
+            case "fr" -> descriptionFr = value;
+            default -> {
+            }
+        }
+    }
+
+    private String resolveLocalizedValue(String language,
+                                         String fallback,
+                                         String valueIt,
+                                         String valueEn,
+                                         String valueDe,
+                                         String valueFr) {
+        String normalizedLanguage = normalizeLanguage(language);
+        String preferred = switch (normalizedLanguage) {
+            case "it" -> valueIt;
+            case "en" -> valueEn;
+            case "de" -> valueDe;
+            case "fr" -> valueFr;
+            default -> null;
+        };
+        String resolved = firstNonBlank(preferred, fallback);
+        if (resolved != null) {
+            return resolved;
+        }
+        return firstNonBlank(valueIt, valueEn, valueDe, valueFr);
+    }
+
+    private String normalizeLanguage(String language) {
+        if (language == null) {
+            return "";
+        }
+        String normalized = language.trim().toLowerCase();
+        int separatorIndex = normalized.indexOf('-');
+        if (separatorIndex > 0) {
+            normalized = normalized.substring(0, separatorIndex);
+        }
+        return normalized;
+    }
+
+    private String firstNonBlank(String... values) {
+        if (values == null) {
+            return null;
+        }
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value;
+            }
+        }
+        return null;
     }
 }

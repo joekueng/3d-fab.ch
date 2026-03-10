@@ -1,56 +1,14 @@
 .shop-page {
-  --shop-hero-bg: #f8f3e5;
-  background:
-    radial-gradient(circle at top right, rgba(250, 207, 10, 0.24), transparent 22%),
-    linear-gradient(180deg, #faf7ef 0%, #f6f2e8 24%, var(--color-bg) 24%);
+  background: linear-gradient(180deg, #faf7ef 0%, var(--color-bg) 13rem);
 }
 
-.shop-hero {
-  position: relative;
-  overflow: hidden;
-  padding: 4.75rem 0 3.5rem;
-  background: transparent;
+.shop-hero .ui-simple-hero__subtitle {
+  max-width: 52rem;
+  line-height: 1.5;
 }
 
-.shop-hero-grid {
-  display: grid;
-  gap: var(--space-8);
-  align-items: end;
-  grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
-}
-
-.hero-copy {
-  display: grid;
-  gap: var(--space-4);
-}
-
-.hero-highlights {
-  display: grid;
-  gap: var(--space-4);
-}
-
-.highlight-card {
-  display: grid;
-  gap: 0.2rem;
-  padding: 1.15rem 1.2rem;
-  border-radius: 1rem;
-  border: 1px solid rgba(16, 24, 32, 0.08);
-  background: rgba(255, 255, 255, 0.78);
-  box-shadow: 0 12px 28px rgba(16, 24, 32, 0.08);
-  backdrop-filter: blur(8px);
-}
-
-.highlight-card strong {
-  font-size: 1.35rem;
-  line-height: 1.1;
-}
-
-.highlight-label {
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 0.72rem;
-  font-weight: 700;
+.hero-actions {
+  gap: var(--space-3);
 }
 
 .shop-layout {
@@ -59,6 +17,7 @@
   align-items: start;
   grid-template-columns: minmax(270px, 320px) minmax(0, 1fr);
   padding-bottom: var(--space-12);
+  padding-top: var(--space-6);
 }
 
 .shop-sidebar {
@@ -116,8 +75,8 @@
 
 .category-link:hover,
 .category-link.active {
-  background: rgba(250, 207, 10, 0.14);
-  border-color: rgba(250, 207, 10, 0.34);
+  background: rgba(250, 207, 10, 0.12);
+  border-color: rgba(16, 24, 32, 0.12);
   transform: translateX(1px);
 }
 
@@ -213,7 +172,7 @@
   padding: 0.2rem;
   border-radius: 999px;
   border: 1px solid var(--color-border);
-  background: rgba(255, 255, 255, 0.68);
+  background: #fff;
 }
 
 .qty-control button {
@@ -262,7 +221,6 @@
   gap: var(--space-6);
 }
 
-.featured-strip,
 .catalog-panel {
   display: grid;
   gap: var(--space-5);
@@ -286,7 +244,6 @@
   white-space: nowrap;
 }
 
-.featured-grid,
 .product-grid {
   display: grid;
   gap: var(--space-5);
@@ -314,7 +271,6 @@
 }
 
 @media (max-width: 1080px) {
-  .shop-hero-grid,
   .shop-layout {
     grid-template-columns: 1fr;
   }
@@ -325,7 +281,6 @@
 }
 
 @media (max-width: 760px) {
-  .featured-grid,
   .product-grid {
     grid-template-columns: 1fr;
   }

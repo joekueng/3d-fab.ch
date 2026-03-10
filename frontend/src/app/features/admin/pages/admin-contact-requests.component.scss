@@ -4,6 +4,22 @@
   gap: var(--space-5);
 }
 
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.section-header h2 {
+  margin: 0;
+}
+
+.section-header p {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-muted);
+}
+
 .header-copy {
   display: grid;
   gap: var(--space-1);
@@ -204,6 +220,11 @@ tbody tr.selected {
 }
 
 @media (max-width: 760px) {
+  .section-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   .detail-header {
     flex-direction: column;
   }
