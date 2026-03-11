@@ -635,17 +635,90 @@
               />
             </label>
 
-            <label class="ui-form-field form-field--wide">
+            <div class="ui-form-field form-field--wide">
               <span class="ui-form-caption">
                 Descrizione {{ languageLabels[activeContentLanguage] }}
               </span>
-              <textarea
-                class="ui-form-control textarea-control textarea-control--large"
-                [(ngModel)]="productForm.descriptions[activeContentLanguage]"
-                [name]="'product-description-' + activeContentLanguage"
-                rows="6"
-              ></textarea>
-            </label>
+              <div class="rich-text-field">
+                <div class="rich-text-toolbar" role="toolbar">
+                  <button
+                    type="button"
+                    class="rich-text-toolbar__button"
+                    (mousedown)="preventRichTextToolbarMouseDown($event)"
+                    (click)="formatDescription('bold')"
+                    title="Grassetto"
+                    aria-label="Grassetto"
+                  >
+                    <strong>B</strong>
+                  </button>
+                  <button
+                    type="button"
+                    class="rich-text-toolbar__button"
+                    (mousedown)="preventRichTextToolbarMouseDown($event)"
+                    (click)="formatDescription('italic')"
+                    title="Corsivo"
+                    aria-label="Corsivo"
+                  >
+                    <em>I</em>
+                  </button>
+                  <button
+                    type="button"
+                    class="rich-text-toolbar__button"
+                    (mousedown)="preventRichTextToolbarMouseDown($event)"
+                    (click)="formatDescription('underline')"
+                    title="Sottolineato"
+                    aria-label="Sottolineato"
+                  >
+                    <u>U</u>
+                  </button>
+                  <button
+                    type="button"
+                    class="rich-text-toolbar__button"
+                    (mousedown)="preventRichTextToolbarMouseDown($event)"
+                    (click)="formatDescriptionList('unordered')"
+                    title="Lista puntata"
+                    aria-label="Lista puntata"
+                  >
+                    • Lista
+                  </button>
+                  <button
+                    type="button"
+                    class="rich-text-toolbar__button"
+                    (mousedown)="preventRichTextToolbarMouseDown($event)"
+                    (click)="formatDescriptionList('ordered')"
+                    title="Lista numerata"
+                    aria-label="Lista numerata"
+                  >
+                    1. Lista
+                  </button>
+                  <button
+                    type="button"
+                    class="rich-text-toolbar__button"
+                    (mousedown)="preventRichTextToolbarMouseDown($event)"
+                    (click)="clearDescriptionFormatting()"
+                    title="Rimuovi formattazione"
+                    aria-label="Rimuovi formattazione"
+                  >
+                    Tx
+                  </button>
+                </div>
+                <div
+                  #descriptionEditorRef
+                  class="ui-form-control textarea-control textarea-control--large rich-text-editor"
+                  contenteditable="true"
+                  role="textbox"
+                  aria-multiline="true"
+                  [attr.aria-label]="
+                    'Descrizione ' + languageLabels[activeContentLanguage]
+                  "
+                  (input)="onDescriptionEditorInput($event)"
+                  (blur)="onDescriptionEditorBlur($event)"
+                ></div>
+              </div>
+              <span class="ui-form-caption">
+                Supporta grassetto, corsivo, liste puntate e numerate.
+              </span>
+            </div>
           </div>
         </section>
 

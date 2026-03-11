@@ -14,6 +14,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { catchError, combineLatest, finalize, of, switchMap, tap } from 'rxjs';
 import { SeoService } from '../../core/services/seo.service';
 import { LanguageService } from '../../core/services/language.service';
+import { getColorHex } from '../../core/constants/colors.const';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
 import { StlViewerComponent } from '../../shared/components/stl-viewer/stl-viewer.component';
@@ -52,6 +53,8 @@ interface ShopMaterialProperty {
   styleUrl: './product-detail.component.scss',
 })
 export class ProductDetailComponent {
+  private static readonly HEX_COLOR_PATTERN =
+    /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
   private readonly router = inject(Router);
@@ -376,8 +379,18 @@ export class ProductDetailComponent {
     return variant.colorName || variant.variantLabel || '-';
   }
 
-  colorHex(variant: ShopProductVariantOption): string {
-    return variant.colorHex || '#d5d8de';
+  colorHex(variant: ShopProductVariantOption | null | undefined): string {
+    const normalizedHex = this.normalizeHexColor(variant?.colorHex);
+    if (normalizedHex) {
+      return normalizedHex;
+    }
+
+    const fallbackByName = this.colorHexFromName(variant?.colorName);
+    if (fallbackByName) {
+      return fallbackByName;
+    }
+
+    return '#d5d8de';
   }
 
   materialPriceLabel(material: ShopMaterialOption): number {
@@ -464,11 +477,40 @@ export class ProductDetailComponent {
       });
   }
 
+  private normalizeHexColor(value: string | null | undefined): string | null {
+    const raw = String(value ?? '').trim();
+    if (!raw) {
+      return null;
+    }
+
+    const withHash = raw.startsWith('#') ? raw : `#${raw}`;
+    if (!ProductDetailComponent.HEX_COLOR_PATTERN.test(withHash)) {
+      return null;
+    }
+
+    return withHash.toUpperCase();
+  }
+
+  private colorHexFromName(value: string | null | undefined): string | null {
+    const colorName = String(value ?? '').trim();
+    if (!colorName) {
+      return null;
+    }
+
+    const fallback = getColorHex(colorName);
+    if (!fallback || fallback === '#facf0a') {
+      return null;
+    }
+
+    return fallback;
+  }
+
   private applySeo(product: ShopProductDetail): void {
     const title = product.seoTitle || `${product.name} | 3D fab`;
     const description =
       product.seoDescription ||
       product.excerpt ||
+      this.extractTextFromRichContent(product.description) ||
       this.translate.instant('SHOP.CATALOG_META_DESCRIPTION');
     const robots =
       product.indexable === false ? 'noindex, nofollow' : 'index, follow';
@@ -498,6 +540,28 @@ export class ProductDetailComponent {
     variant: ShopProductVariantOption | null,
   ): string {
     return String(variant?.variantLabel || '').trim() || 'Standard';
+  }
+
+  descriptionPlainText(description: string | null | undefined): string {
+    return this.extractTextFromRichContent(description) ?? '';
+  }
+
+  descriptionRichHtml(description: string | null | undefined): string {
+    const normalized = String(description ?? '').trim();
+    if (!normalized) {
+      return '';
+    }
+    if (this.containsHtmlMarkup(normalized)) {
+      return normalized;
+    }
+    return normalized
+      .replace(/\r\n?/g, '\n')
+      .split(/\n{2,}/)
+      .map(
+        (paragraph) =>
+          `<p>${this.escapeHtml(paragraph).replace(/\n/g, '<br>')}</p>`,
+      )
+      .join('');
   }
 
   private materialKeyForVariant(
@@ -595,6 +659,38 @@ export class ProductDetailComponent {
         tone: 'neutral',
       },
     ];
+  }
+
+  private extractTextFromRichContent(
+    value: string | null | undefined,
+  ): string | null {
+    const normalized = String(value ?? '').trim();
+    if (!normalized) {
+      return null;
+    }
+    if (!this.containsHtmlMarkup(normalized)) {
+      return normalized;
+    }
+    const parser = new DOMParser();
+    const parsed = parser.parseFromString(
+      `<body>${normalized}</body>`,
+      'text/html',
+    );
+    const text = (parsed.body.textContent ?? '').replace(/\u00a0/g, ' ').trim();
+    return text || null;
+  }
+
+  private containsHtmlMarkup(value: string): boolean {
+    return /<\/?[a-z][\s\S]*>/i.test(value);
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   private syncPublicUrl(product: ShopProductDetail): void {

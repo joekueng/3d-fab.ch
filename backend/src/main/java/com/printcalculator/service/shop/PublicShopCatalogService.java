@@ -9,10 +9,12 @@ import com.printcalculator.dto.ShopProductDetailDto;
 import com.printcalculator.dto.ShopProductModelDto;
 import com.printcalculator.dto.ShopProductSummaryDto;
 import com.printcalculator.dto.ShopProductVariantOptionDto;
+import com.printcalculator.entity.FilamentVariant;
 import com.printcalculator.entity.ShopCategory;
 import com.printcalculator.entity.ShopProduct;
 import com.printcalculator.entity.ShopProductModelAsset;
 import com.printcalculator.entity.ShopProductVariant;
+import com.printcalculator.repository.FilamentVariantRepository;
 import com.printcalculator.repository.ShopCategoryRepository;
 import com.printcalculator.repository.ShopProductModelAssetRepository;
 import com.printcalculator.repository.ShopProductRepository;
@@ -31,6 +33,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -46,6 +49,7 @@ public class PublicShopCatalogService {
     private final ShopProductRepository shopProductRepository;
     private final ShopProductVariantRepository shopProductVariantRepository;
     private final ShopProductModelAssetRepository shopProductModelAssetRepository;
+    private final FilamentVariantRepository filamentVariantRepository;
     private final PublicMediaQueryService publicMediaQueryService;
     private final ShopStorageService shopStorageService;
 
@@ -53,12 +57,14 @@ public class PublicShopCatalogService {
                                     ShopProductRepository shopProductRepository,
                                     ShopProductVariantRepository shopProductVariantRepository,
                                     ShopProductModelAssetRepository shopProductModelAssetRepository,
+                                    FilamentVariantRepository filamentVariantRepository,
                                     PublicMediaQueryService publicMediaQueryService,
                                     ShopStorageService shopStorageService) {
         this.shopCategoryRepository = shopCategoryRepository;
         this.shopProductRepository = shopProductRepository;
         this.shopProductVariantRepository = shopProductVariantRepository;
         this.shopProductModelAssetRepository = shopProductModelAssetRepository;
+        this.filamentVariantRepository = filamentVariantRepository;
         this.publicMediaQueryService = publicMediaQueryService;
         this.shopStorageService = shopStorageService;
     }
@@ -99,7 +105,12 @@ public class PublicShopCatalogService {
         List<ShopProductSummaryDto> products = productContext.entries().stream()
                 .filter(entry -> allowedCategoryIds.contains(entry.product().getCategory().getId()))
                 .filter(entry -> !Boolean.TRUE.equals(featuredOnly) || Boolean.TRUE.equals(entry.product().getIsFeatured()))
-                .map(entry -> toProductSummaryDto(entry, productContext.productMediaBySlug(), language))
+                .map(entry -> toProductSummaryDto(
+                        entry,
+                        productContext.productMediaBySlug(),
+                        productContext.variantColorHexByMaterialAndColor(),
+                        language
+                ))
                 .toList();
 
         ShopCategoryDetailDto selectedCategoryDetail = selectedCategory != null
@@ -128,7 +139,12 @@ public class PublicShopCatalogService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found");
         }
 
-        return toProductDetailDto(entry, productContext.productMediaBySlug(), language);
+        return toProductDetailDto(
+                entry,
+                productContext.productMediaBySlug(),
+                productContext.variantColorHexByMaterialAndColor(),
+                language
+        );
     }
 
     public ProductModelDownload getProductModelDownload(String slug) {
@@ -187,11 +203,32 @@ public class PublicShopCatalogService {
                 entries.stream().map(entry -> productMediaUsageKey(entry.product())).toList(),
                 language
         );
+        Map<String, String> variantColorHexByMaterialAndColor = buildFilamentVariantColorHexMap();
 
         Map<String, ProductEntry> entriesBySlug = entries.stream()
                 .collect(Collectors.toMap(entry -> entry.product().getSlug(), entry -> entry, (left, right) -> left, LinkedHashMap::new));
 
-        return new PublicProductContext(entries, entriesBySlug, productMediaBySlug);
+        return new PublicProductContext(entries, entriesBySlug, productMediaBySlug, variantColorHexByMaterialAndColor);
+    }
+
+    private Map<String, String> buildFilamentVariantColorHexMap() {
+        Map<String, String> colorsByMaterialAndColor = new LinkedHashMap<>();
+        for (FilamentVariant variant : filamentVariantRepository.findByIsActiveTrue()) {
+            String materialCode = variant.getFilamentMaterialType() != null
+                    ? variant.getFilamentMaterialType().getMaterialCode()
+                    : null;
+            String key = toMaterialAndColorKey(materialCode, variant.getColorName());
+            if (key == null) {
+                continue;
+            }
+
+            String colorHex = trimToNull(variant.getColorHex());
+            if (colorHex == null) {
+                continue;
+            }
+            colorsByMaterialAndColor.putIfAbsent(key, colorHex);
+        }
+        return colorsByMaterialAndColor;
     }
 
     private List<ProductEntry> loadPublicProducts(Collection<UUID> activeCategoryIds) {
@@ -349,6 +386,7 @@ public class PublicShopCatalogService {
 
     private ShopProductSummaryDto toProductSummaryDto(ProductEntry entry,
                                                       Map<String, List<PublicMediaUsageDto>> productMediaBySlug,
+                                                      Map<String, String> variantColorHexByMaterialAndColor,
                                                       String language) {
         List<PublicMediaUsageDto> images = productMediaBySlug.getOrDefault(productMediaUsageKey(entry.product()), List.of());
         return new ShopProductSummaryDto(
@@ -365,7 +403,7 @@ public class PublicShopCatalogService {
                 ),
                 resolvePriceFrom(entry.variants()),
                 resolvePriceTo(entry.variants()),
-                toVariantDto(entry.defaultVariant(), entry.defaultVariant()),
+                toVariantDto(entry.defaultVariant(), entry.defaultVariant(), variantColorHexByMaterialAndColor),
                 selectPrimaryMedia(images),
                 toProductModelDto(entry)
         );
@@ -373,6 +411,7 @@ public class PublicShopCatalogService {
 
     private ShopProductDetailDto toProductDetailDto(ProductEntry entry,
                                                     Map<String, List<PublicMediaUsageDto>> productMediaBySlug,
+                                                    Map<String, String> variantColorHexByMaterialAndColor,
                                                     String language) {
         List<PublicMediaUsageDto> images = productMediaBySlug.getOrDefault(productMediaUsageKey(entry.product()), List.of());
         String localizedSeoTitle = entry.product().getSeoTitleForLanguage(language);
@@ -398,9 +437,9 @@ public class PublicShopCatalogService {
                 buildCategoryBreadcrumbs(entry.product().getCategory()),
                 resolvePriceFrom(entry.variants()),
                 resolvePriceTo(entry.variants()),
-                toVariantDto(entry.defaultVariant(), entry.defaultVariant()),
+                toVariantDto(entry.defaultVariant(), entry.defaultVariant(), variantColorHexByMaterialAndColor),
                 entry.variants().stream()
-                        .map(variant -> toVariantDto(variant, entry.defaultVariant()))
+                        .map(variant -> toVariantDto(variant, entry.defaultVariant(), variantColorHexByMaterialAndColor))
                         .toList(),
                 selectPrimaryMedia(images),
                 images,
@@ -408,19 +447,59 @@ public class PublicShopCatalogService {
         );
     }
 
-    private ShopProductVariantOptionDto toVariantDto(ShopProductVariant variant, ShopProductVariant defaultVariant) {
+    private ShopProductVariantOptionDto toVariantDto(ShopProductVariant variant,
+                                                     ShopProductVariant defaultVariant,
+                                                     Map<String, String> variantColorHexByMaterialAndColor) {
         if (variant == null) {
             return null;
+        }
+        String colorHex = trimToNull(variant.getColorHex());
+        if (colorHex == null) {
+            String key = toMaterialAndColorKey(variant.getInternalMaterialCode(), variant.getColorName());
+            colorHex = key != null ? variantColorHexByMaterialAndColor.get(key) : null;
         }
         return new ShopProductVariantOptionDto(
                 variant.getId(),
                 variant.getSku(),
                 variant.getVariantLabel(),
                 variant.getColorName(),
-                variant.getColorHex(),
+                colorHex,
                 variant.getPriceChf(),
                 defaultVariant != null && Objects.equals(defaultVariant.getId(), variant.getId())
         );
+    }
+
+    private String toMaterialAndColorKey(String materialCode, String colorName) {
+        String normalizedMaterialCode = normalizeMaterialCode(materialCode);
+        String normalizedColorName = normalizeColorName(colorName);
+        if (normalizedMaterialCode == null || normalizedColorName == null) {
+            return null;
+        }
+        return normalizedMaterialCode + "|" + normalizedColorName;
+    }
+
+    private String normalizeMaterialCode(String materialCode) {
+        String raw = trimToNull(materialCode);
+        if (raw == null) {
+            return null;
+        }
+        return raw.toUpperCase(Locale.ROOT);
+    }
+
+    private String normalizeColorName(String colorName) {
+        String raw = trimToNull(colorName);
+        if (raw == null) {
+            return null;
+        }
+        return raw.toLowerCase(Locale.ROOT);
+    }
+
+    private String trimToNull(String value) {
+        String raw = String.valueOf(value == null ? "" : value).trim();
+        if (raw.isEmpty()) {
+            return null;
+        }
+        return raw;
     }
 
     private ShopProductModelDto toProductModelDto(ProductEntry entry) {
@@ -494,7 +573,8 @@ public class PublicShopCatalogService {
     private record PublicProductContext(
             List<ProductEntry> entries,
             Map<String, ProductEntry> entriesBySlug,
-            Map<String, List<PublicMediaUsageDto>> productMediaBySlug
+            Map<String, List<PublicMediaUsageDto>> productMediaBySlug,
+            Map<String, String> variantColorHexByMaterialAndColor
     ) {
     }
 

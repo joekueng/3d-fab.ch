@@ -125,6 +125,18 @@ jobs:
           docker build -t "$FRONTEND_IMAGE" ./frontend
           docker push "$FRONTEND_IMAGE"
 
+      - name: Cleanup Docker on runner (prevent vdisk growth)
+        if: always()
+        shell: bash
+        run: |
+          set +e
+
+          # Keep recent artifacts, drop old local residue from CI builds.
+          docker container prune -f --filter "until=168h" || true
+          docker image prune -a -f --filter "until=168h" || true
+          docker builder prune -a -f --filter "until=168h" || true
+          docker network prune -f --filter "until=168h" || true
+
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
