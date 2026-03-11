@@ -1,10 +1,11 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common';
 import {
   Component,
   ElementRef,
   HostListener,
   OnDestroy,
   OnInit,
+  PLATFORM_ID,
   ViewChild,
   inject,
 } from '@angular/core';
@@ -53,6 +54,7 @@ interface CategoryFormState {
 
 interface ProductMaterialFormState {
   materialCode: string;
+  defaultColorKey: string;
   priceChf: string;
   isDefault: boolean;
   isActive: boolean;
@@ -138,6 +140,9 @@ const RICH_TEXT_ALLOWED_TAGS = new Set([
   styleUrl: './admin-shop.component.scss',
 })
 export class AdminShopComponent implements OnInit, OnDestroy {
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
+  private readonly documentRef = inject(DOCUMENT);
   private readonly adminShopService = inject(AdminShopService);
   private readonly adminOperationsService = inject(AdminOperationsService);
   private descriptionEditorElement: HTMLDivElement | null = null;
@@ -200,12 +205,14 @@ export class AdminShopComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.revokeImagePreviewUrl(this.imageUploadState.previewUrl);
-    document.body.style.removeProperty('cursor');
+    if (this.isBrowser) {
+      this.documentRef.body?.style.removeProperty('cursor');
+    }
   }
 
   @HostListener('window:pointermove', ['$event'])
   onWindowPointerMove(event: PointerEvent): void {
-    if (!this.isResizingPanels) {
+    if (!this.isBrowser || !this.isResizingPanels) {
       return;
     }
     this.updateListPanelWidthFromPointer(event.clientX);
@@ -214,11 +221,13 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   @HostListener('window:pointerup')
   @HostListener('window:pointercancel')
   onWindowPointerUp(): void {
-    if (!this.isResizingPanels) {
+    if (!this.isBrowser || !this.isResizingPanels) {
       return;
     }
     this.isResizingPanels = false;
-    document.body.style.cursor = '';
+    if (this.documentRef.body) {
+      this.documentRef.body.style.cursor = '';
+    }
     this.persistListPanelWidth();
   }
 
@@ -368,7 +377,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     }
 
     if (
-      !window.confirm(
+      !this.confirmBrowser(
         "Eliminare questo prodotto? L'azione non puo essere annullata.",
       )
     ) {
@@ -412,12 +421,14 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   }
 
   startPanelResize(event: PointerEvent): void {
-    if (window.innerWidth <= 1060) {
+    if (!this.isBrowser || window.innerWidth <= 1060) {
       return;
     }
     event.preventDefault();
     this.isResizingPanels = true;
-    document.body.style.cursor = 'col-resize';
+    if (this.documentRef.body) {
+      this.documentRef.body.style.cursor = 'col-resize';
+    }
     this.updateListPanelWidthFromPointer(event.clientX);
   }
 
@@ -507,7 +518,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     }
 
     if (
-      !window.confirm(
+      !this.confirmBrowser(
         'Eliminare questa categoria? Fallira se contiene sottocategorie o prodotti.',
       )
     ) {
@@ -642,7 +653,14 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       (_, currentIndex) => currentIndex !== index,
     );
     if (!nextMaterials.some((material) => material.isDefault)) {
-      nextMaterials[0].isDefault = true;
+      nextMaterials[0] = {
+        ...nextMaterials[0],
+        isDefault: true,
+        defaultColorKey: this.resolveMaterialDefaultColorKey(
+          nextMaterials[0].materialCode,
+          nextMaterials[0].defaultColorKey,
+        ),
+      };
     }
     this.productForm.materials = nextMaterials;
   }
@@ -652,7 +670,31 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       (material, currentIndex) => ({
         ...material,
         isDefault: currentIndex === index,
+        defaultColorKey: this.resolveMaterialDefaultColorKey(
+          material.materialCode,
+          material.defaultColorKey,
+        ),
       }),
+    );
+  }
+
+  onMaterialCodeChange(index: number, nextMaterialCode: string): void {
+    const normalizedMaterialCode = nextMaterialCode.trim().toUpperCase();
+    this.productForm.materials = this.productForm.materials.map(
+      (material, currentIndex) => {
+        if (currentIndex !== index) {
+          return material;
+        }
+
+        return {
+          ...material,
+          materialCode: normalizedMaterialCode,
+          defaultColorKey: this.resolveMaterialDefaultColorKey(
+            normalizedMaterialCode,
+            material.defaultColorKey,
+          ),
+        };
+      },
     );
   }
 
@@ -691,6 +733,22 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       .map((variant) => variant.colorName.trim())
       .filter(Boolean)
       .slice(0, 6);
+  }
+
+  materialColorOptions(
+    materialCode: string,
+  ): Array<{ key: string; label: string }> {
+    const normalizedMaterialCode = materialCode.trim().toUpperCase();
+    return this.stockVariantsForMaterial(normalizedMaterialCode).map(
+      (variant) => ({
+        key: this.variantKey(
+          normalizedMaterialCode,
+          variant.colorName,
+          variant.colorHex,
+        ),
+        label: this.stockVariantLabel(variant),
+      }),
+    );
   }
 
   onModelFileSelected(event: Event): void {
@@ -759,9 +817,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (
-      !window.confirm('Rimuovere il modello 3D associato a questo prodotto?')
-    ) {
+    if (!this.confirmBrowser('Rimuovere il modello 3D associato a questo prodotto?')) {
       return;
     }
 
@@ -832,7 +888,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     this.imageUploadState = {
       ...this.imageUploadState,
       file,
-      previewUrl: URL.createObjectURL(file),
+      previewUrl: this.isBrowser ? URL.createObjectURL(file) : null,
       translations: nextTranslations,
     };
   }
@@ -1008,7 +1064,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!window.confirm('Rimuovere questa immagine dal prodotto?')) {
+    if (!this.confirmBrowser('Rimuovere questa immagine dal prodotto?')) {
       return;
     }
 
@@ -1120,6 +1176,9 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   }
 
   private restoreListPanelWidth(): void {
+    if (!this.isBrowser) {
+      return;
+    }
     const storedValue = window.localStorage.getItem(
       SHOP_LIST_PANEL_WIDTH_STORAGE_KEY,
     );
@@ -1134,6 +1193,9 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   }
 
   private persistListPanelWidth(): void {
+    if (!this.isBrowser) {
+      return;
+    }
     window.localStorage.setItem(
       SHOP_LIST_PANEL_WIDTH_STORAGE_KEY,
       String(this.listPanelWidthPercent),
@@ -1282,6 +1344,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   ): ProductMaterialFormState {
     return {
       materialCode,
+      defaultColorKey: this.resolveMaterialDefaultColorKey(materialCode),
       priceChf: '0.00',
       isDefault,
       isActive: true,
@@ -1361,8 +1424,21 @@ export class AdminShopComponent implements OnInit, OnDestroy {
           (left, right) => (left.sortOrder ?? 0) - (right.sortOrder ?? 0),
         );
         const firstVariant = sortedVariants[0];
+        const defaultVariantForMaterial =
+          materialVariants.find((variant) => variant.isDefault) ?? null;
+        const persistedDefaultColorKey = defaultVariantForMaterial
+          ? this.variantKey(
+              materialCode,
+              defaultVariantForMaterial.colorName,
+              defaultVariantForMaterial.colorHex,
+            )
+          : null;
         return {
           materialCode,
+          defaultColorKey: this.resolveMaterialDefaultColorKey(
+            materialCode,
+            persistedDefaultColorKey,
+          ),
           priceChf: Number(firstVariant?.priceChf ?? 0).toFixed(2),
           isDefault: materialVariants.some((variant) => variant.isDefault),
           isActive: materialVariants.some((variant) => variant.isActive),
@@ -1494,9 +1570,6 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   }
 
   private buildVariantsFromMaterials(): AdminUpsertShopProductVariantPayload[] {
-    const persistedDefaultVariant = this.selectedProduct?.variants.find(
-      (variant) => variant.isDefault,
-    );
     const existingVariantsByKey = new Map(
       (this.selectedProduct?.variants ?? []).map((variant) => [
         this.variantKey(
@@ -1507,14 +1580,6 @@ export class AdminShopComponent implements OnInit, OnDestroy {
         variant,
       ]),
     );
-    const persistedDefaultKey = persistedDefaultVariant
-      ? this.variantKey(
-          persistedDefaultVariant.internalMaterialCode,
-          persistedDefaultVariant.colorName,
-          persistedDefaultVariant.colorHex,
-        )
-      : null;
-
     const variants: AdminUpsertShopProductVariantPayload[] = [];
     let defaultAssigned = false;
 
@@ -1525,20 +1590,10 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     for (const material of sortedMaterials) {
       const materialCode = material.materialCode.trim().toUpperCase();
       const stockVariants = this.stockVariantsForMaterial(materialCode);
-      let defaultVariantKeyForMaterial: string | null = null;
-
-      if (material.isDefault && persistedDefaultKey) {
-        defaultVariantKeyForMaterial =
-          stockVariants
-            .map((variant) =>
-              this.variantKey(
-                materialCode,
-                variant.colorName,
-                variant.colorHex,
-              ),
-            )
-            .find((variantKey) => variantKey === persistedDefaultKey) ?? null;
-      }
+      const selectedDefaultColorKey = this.resolveMaterialDefaultColorKey(
+        materialCode,
+        material.defaultColorKey,
+      );
 
       stockVariants.forEach((stockVariant, colorIndex) => {
         const variantKey = this.variantKey(
@@ -1550,9 +1605,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
         const isDefault =
           material.isDefault &&
           !defaultAssigned &&
-          (defaultVariantKeyForMaterial
-            ? variantKey === defaultVariantKeyForMaterial
-            : colorIndex === 0);
+          variantKey === selectedDefaultColorKey;
 
         variants.push({
           id: existingVariant?.id,
@@ -1621,6 +1674,51 @@ export class AdminShopComponent implements OnInit, OnDestroy {
         seenKeys.add(key);
         return true;
       });
+  }
+
+  private resolveMaterialDefaultColorKey(
+    materialCode: string,
+    preferredKey?: string | null,
+  ): string {
+    const normalizedMaterialCode = materialCode.trim().toUpperCase();
+    const stockVariants = this.stockVariantsForMaterial(normalizedMaterialCode);
+    if (stockVariants.length === 0) {
+      return '';
+    }
+
+    const normalizedPreferredKey = (preferredKey ?? '').trim();
+    if (
+      normalizedPreferredKey &&
+      stockVariants.some(
+        (variant) =>
+          this.variantKey(
+            normalizedMaterialCode,
+            variant.colorName,
+            variant.colorHex,
+          ) === normalizedPreferredKey,
+      )
+    ) {
+      return normalizedPreferredKey;
+    }
+
+    const firstVariant = stockVariants[0];
+    return this.variantKey(
+      normalizedMaterialCode,
+      firstVariant.colorName,
+      firstVariant.colorHex,
+    );
+  }
+
+  private stockVariantLabel(variant: AdminFilamentVariant): string {
+    const colorName = variant.colorName.trim();
+    const variantDisplayName = variant.variantDisplayName.trim();
+    if (
+      variantDisplayName &&
+      variantDisplayName.toLowerCase() !== colorName.toLowerCase()
+    ) {
+      return `${colorName} (${variantDisplayName})`;
+    }
+    return colorName;
   }
 
   private nextAvailableMaterialCode(): string | null {
@@ -1741,6 +1839,9 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   }
 
   private revokeImagePreviewUrl(previewUrl: string | null): void {
+    if (!this.isBrowser) {
+      return;
+    }
     if (previewUrl?.startsWith('blob:')) {
       URL.revokeObjectURL(previewUrl);
     }
@@ -1863,12 +1964,15 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   }
 
   private applyDescriptionExecCommand(command: string): void {
+    if (!this.isBrowser) {
+      return;
+    }
     const editor = this.descriptionEditorElement;
     if (!editor) {
       return;
     }
     editor.focus();
-    document.execCommand(command, false);
+    this.documentRef.execCommand(command, false);
     this.syncDescriptionFromEditor(editor, false);
   }
 
@@ -1912,6 +2016,10 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   }
 
   private sanitizeRichTextHtml(value: string): string {
+    if (!this.isBrowser) {
+      return this.stripPotentiallyUnsafeHtml(value);
+    }
+
     const parser = new DOMParser();
     const sourceDocument = parser.parseFromString(
       `<body>${value}</body>`,
@@ -2017,12 +2125,18 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   }
 
   private extractTextFromHtml(value: string): string {
+    if (!this.isBrowser) {
+      return value.replace(/<[^>]+>/g, ' ');
+    }
     const parser = new DOMParser();
     const parsed = parser.parseFromString(`<body>${value}</body>`, 'text/html');
     return parsed.body.textContent ?? '';
   }
 
   private serializeNodeChildren(node: Node): string {
+    if (!this.isBrowser) {
+      return node.textContent ?? '';
+    }
     const serializer = new XMLSerializer();
     let html = '';
     for (const child of Array.from(node.childNodes)) {
@@ -2035,6 +2149,10 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     element: HTMLElement,
     html: string,
   ): void {
+    if (!this.isBrowser) {
+      return;
+    }
+
     if (!html) {
       element.replaceChildren();
       return;
@@ -2043,9 +2161,19 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     const parser = new DOMParser();
     const parsed = parser.parseFromString(`<body>${html}</body>`, 'text/html');
     const nodes = Array.from(parsed.body.childNodes).map((child) =>
-      document.importNode(child, true),
+      this.documentRef.importNode(child, true),
     );
     element.replaceChildren(...nodes);
+  }
+
+  private confirmBrowser(message: string): boolean {
+    return this.isBrowser ? window.confirm(message) : false;
+  }
+
+  private stripPotentiallyUnsafeHtml(value: string): string {
+    return value
+      .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, '');
   }
 
   private escapeHtml(value: string): string {

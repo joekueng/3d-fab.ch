@@ -1,5 +1,11 @@
-import { CommonModule } from '@angular/common';
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import {
+  Component,
+  PLATFORM_ID,
+  inject,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { of, switchMap } from 'rxjs';
 import {
@@ -85,6 +91,7 @@ const MEDIA_LANGUAGE_LABELS: Readonly<Record<AdminMediaLanguage, string>> = {
   styleUrl: './admin-home-media.component.scss',
 })
 export class AdminHomeMediaComponent implements OnInit, OnDestroy {
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly adminMediaService = inject(AdminMediaService);
   readonly mediaLanguages = SUPPORTED_MEDIA_LANGUAGES;
   readonly mediaLanguageLabels = MEDIA_LANGUAGE_LABELS;
@@ -243,7 +250,8 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
 
     this.revokePreviewUrl(formState.previewUrl);
     formState.file = file;
-    formState.previewUrl = file ? URL.createObjectURL(file) : null;
+    formState.previewUrl =
+      file && this.isBrowser ? URL.createObjectURL(file) : null;
 
     if (file && this.areAllTitlesBlank(formState.translations)) {
       const nextTitle = this.deriveDefaultTitle(file.name);
@@ -583,6 +591,9 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
   }
 
   private revokePreviewUrl(previewUrl: string | null): void {
+    if (!this.isBrowser) {
+      return;
+    }
     if (!previewUrl?.startsWith('blob:')) {
       return;
     }

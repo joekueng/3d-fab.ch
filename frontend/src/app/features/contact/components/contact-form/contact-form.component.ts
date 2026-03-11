@@ -1,5 +1,12 @@
-import { Component, signal, effect, inject, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {
+  Component,
+  signal,
+  effect,
+  inject,
+  OnDestroy,
+  PLATFORM_ID,
+} from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   ReactiveFormsModule,
   FormBuilder,
@@ -16,14 +23,13 @@ import {
 import { QuoteEstimatorService } from '../../../calculator/services/quote-estimator.service';
 import { QuoteRequestService } from '../../../../core/services/quote-request.service';
 import { LanguageService } from '../../../../core/services/language.service';
+import { SuccessStateComponent } from '../../../../shared/components/success-state/success-state.component';
 
 interface FilePreview {
   file: File;
   url?: string;
   type: 'image' | 'video' | 'pdf' | '3d' | 'document' | 'other';
 }
-
-import { SuccessStateComponent } from '../../../../shared/components/success-state/success-state.component';
 
 @Component({
   selector: 'app-contact-form',
@@ -41,6 +47,7 @@ import { SuccessStateComponent } from '../../../../shared/components/success-sta
   styleUrl: './contact-form.component.scss',
 })
 export class ContactFormComponent implements OnDestroy {
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   form: FormGroup;
   sent = signal(false);
   files = signal<FilePreview[]>([]);
@@ -127,7 +134,7 @@ export class ContactFormComponent implements OnDestroy {
         return {
           file: f,
           type,
-          url: this.shouldCreatePreview(type)
+          url: this.isBrowser && this.shouldCreatePreview(type)
             ? URL.createObjectURL(f)
             : undefined,
         };
@@ -185,7 +192,7 @@ export class ContactFormComponent implements OnDestroy {
       const preview: FilePreview = {
         file,
         type,
-        url: this.shouldCreatePreview(type)
+        url: this.isBrowser && this.shouldCreatePreview(type)
           ? URL.createObjectURL(file)
           : undefined,
       };
@@ -354,6 +361,9 @@ export class ContactFormComponent implements OnDestroy {
   }
 
   private revokePreviewUrl(file: FilePreview): void {
+    if (!this.isBrowser) {
+      return;
+    }
     if (file.url?.startsWith('blob:')) {
       URL.revokeObjectURL(file.url);
     }
