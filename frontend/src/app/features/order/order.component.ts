@@ -1,5 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, PLATFORM_ID, inject, signal } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
@@ -75,6 +75,7 @@ export class OrderComponent implements OnInit {
   private router = inject(Router);
   private quoteService = inject(QuoteEstimatorService);
   private translate = inject(TranslateService);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   orderId: string | null = null;
   selectedPaymentMethod: 'twint' | 'bill' | null = 'twint';
@@ -115,6 +116,9 @@ export class OrderComponent implements OnInit {
   }
 
   downloadQrInvoice() {
+    if (!this.isBrowser) {
+      return;
+    }
     const orderId = this.orderId;
     if (!orderId) return;
     this.quoteService.getOrderConfirmation(orderId).subscribe({
@@ -153,7 +157,7 @@ export class OrderComponent implements OnInit {
 
   openTwintPayment(): void {
     const openUrl = this.twintOpenUrl();
-    if (typeof window !== 'undefined' && openUrl) {
+    if (this.isBrowser && openUrl) {
       window.open(openUrl, '_blank');
     }
   }

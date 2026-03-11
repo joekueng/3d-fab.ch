@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   AdminCadInvoice,
@@ -16,6 +16,7 @@ import { CopyOnClickDirective } from '../../../shared/directives/copy-on-click.d
   styleUrl: './admin-cad-invoices.component.scss',
 })
 export class AdminCadInvoicesComponent implements OnInit {
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly adminOperationsService = inject(AdminOperationsService);
   private readonly adminOrdersService = inject(AdminOrdersService);
 
@@ -112,11 +113,17 @@ export class AdminCadInvoicesComponent implements OnInit {
   }
 
   openCheckout(path: string): void {
+    if (!this.isBrowser) {
+      return;
+    }
     const url = this.toCheckoutUrl(path);
     window.open(url, '_blank');
   }
 
   copyCheckout(path: string): void {
+    if (!this.isBrowser) {
+      return;
+    }
     const url = this.toCheckoutUrl(path);
     navigator.clipboard?.writeText(url);
     this.successMessage = 'Link checkout CAD copiato negli appunti.';
@@ -126,6 +133,9 @@ export class AdminCadInvoicesComponent implements OnInit {
     if (!orderId) return;
     this.adminOrdersService.downloadOrderInvoice(orderId).subscribe({
       next: (blob) => {
+        if (!this.isBrowser) {
+          return;
+        }
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -142,10 +152,16 @@ export class AdminCadInvoicesComponent implements OnInit {
   private toCheckoutUrl(path: string): string {
     const safePath = path.startsWith('/') ? path : `/${path}`;
     const lang = this.resolveLang();
+    if (!this.isBrowser) {
+      return `/${lang}${safePath}`;
+    }
     return `${window.location.origin}/${lang}${safePath}`;
   }
 
   private resolveLang(): string {
+    if (!this.isBrowser) {
+      return 'it';
+    }
     const firstSegment = window.location.pathname
       .split('/')
       .filter(Boolean)

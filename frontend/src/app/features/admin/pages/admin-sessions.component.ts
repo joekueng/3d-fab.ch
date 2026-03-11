@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, PLATFORM_ID, inject, OnInit } from '@angular/core';
 import {
   AdminOperationsService,
   AdminQuoteSession,
@@ -15,6 +15,7 @@ import { CopyOnClickDirective } from '../../../shared/directives/copy-on-click.d
   styleUrl: './admin-sessions.component.scss',
 })
 export class AdminSessionsComponent implements OnInit {
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly adminOperationsService = inject(AdminOperationsService);
 
   sessions: AdminQuoteSession[] = [];
@@ -51,9 +52,11 @@ export class AdminSessionsComponent implements OnInit {
       return;
     }
 
-    const confirmed = window.confirm(
-      `Vuoi eliminare la sessione ${session.id}? Questa azione non si puo annullare.`,
-    );
+    const confirmed =
+      this.isBrowser &&
+      window.confirm(
+        `Vuoi eliminare la sessione ${session.id}? Questa azione non si puo annullare.`,
+      );
     if (!confirmed) {
       return;
     }
