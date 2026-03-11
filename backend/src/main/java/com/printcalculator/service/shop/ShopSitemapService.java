@@ -5,6 +5,7 @@ import com.printcalculator.entity.ShopProduct;
 import com.printcalculator.repository.ShopCategoryRepository;
 import com.printcalculator.repository.ShopProductRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,10 +40,11 @@ public class ShopSitemapService {
 
     private volatile CachedSitemap cachedSitemap;
 
+    @Autowired
     public ShopSitemapService(ShopCategoryRepository shopCategoryRepository,
                               ShopProductRepository shopProductRepository,
                               @Value("${app.frontend.base-url:http://localhost:4200}") String frontendBaseUrl,
-                              @Value("${app.sitemap.shop.cache-seconds:900}") long cacheSeconds) {
+                              @Value("${app.sitemap.shop.cache-seconds:3600}") long cacheSeconds) {
         this(shopCategoryRepository, shopProductRepository, frontendBaseUrl, cacheSeconds, Clock.systemUTC());
     }
 
