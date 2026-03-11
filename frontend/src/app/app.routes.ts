@@ -1,4 +1,13 @@
-import { Routes } from '@angular/router';
+import { CanMatchFn, Routes } from '@angular/router';
+
+const SUPPORTED_LANGS = new Set(['it', 'en', 'de', 'fr']);
+
+const langPrefixCanMatch: CanMatchFn = (_route, segments) => {
+  if (segments.length === 0) {
+    return false;
+  }
+  return SUPPORTED_LANGS.has(segments[0].path.toLowerCase());
+};
 
 const appChildRoutes: Routes = [
   {
@@ -116,6 +125,7 @@ const appChildRoutes: Routes = [
 export const routes: Routes = [
   {
     path: ':lang',
+    canMatch: [langPrefixCanMatch],
     loadComponent: () =>
       import('./core/layout/layout.component').then((m) => m.LayoutComponent),
     children: appChildRoutes,
