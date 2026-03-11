@@ -8,25 +8,29 @@
       </p>
     </div>
 
-    <div class="header-actions">
-      <article class="ui-stat-chip">
-        <strong>{{ products.length }}</strong>
-        <span>prodotti</span>
-      </article>
-      <article class="ui-stat-chip">
-        <strong>{{ categories.length }}</strong>
-        <span>categorie</span>
-      </article>
-      <button
-        type="button"
-        class="ui-button ui-button--ghost"
-        (click)="loadWorkspace()"
-      >
-        Aggiorna
-      </button>
-      <button type="button" class="ui-button" (click)="startCreateProduct()">
-        Nuovo prodotto
-      </button>
+    <div class="header-side ui-stack ui-stack--dense">
+      <div class="header-stats ui-row ui-row--wrap ui-row--end">
+        <article class="ui-stat-chip">
+          <strong>{{ products.length }}</strong>
+          <span>prodotti</span>
+        </article>
+        <article class="ui-stat-chip">
+          <strong>{{ categories.length }}</strong>
+          <span>categorie</span>
+        </article>
+      </div>
+      <div class="header-actions ui-row ui-row--wrap ui-row--end">
+        <button
+          type="button"
+          class="ui-button ui-button--ghost"
+          (click)="loadWorkspace()"
+        >
+          Aggiorna
+        </button>
+        <button type="button" class="ui-button" (click)="startCreateProduct()">
+          Nuovo prodotto
+        </button>
+      </div>
     </div>
   </header>
 

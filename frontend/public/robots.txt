@@ -5,17 +5,19 @@ Disallow: /admin
 Disallow: /admin/
 Disallow: /*/admin
 Disallow: /*/admin/
+Disallow: /order
 Disallow: /order/
+Disallow: /*/order
 Disallow: /*/order/
+Disallow: /co
 Disallow: /co/
+Disallow: /*/co
 Disallow: /*/co/
 Disallow: /checkout
 Disallow: /checkout/
+Disallow: /checkout/cad
 Disallow: /*/checkout
 Disallow: /*/checkout/
-Disallow: /shop
-Disallow: /shop/
-Disallow: /*/shop
-Disallow: /*/shop/
+Disallow: /*/checkout/cad
 
 Sitemap: https://3d-fab.ch/sitemap.xml

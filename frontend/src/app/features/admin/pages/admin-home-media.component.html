@@ -130,7 +130,7 @@
                     <button
                       *ngFor="let language of mediaLanguages"
                       type="button"
-                      class="language-toggle-btn ui-language-toolbar__button"
+                      class="ui-language-toolbar__button image-language-button"
                       [class.active]="
                         getFormState(section.usageKey).activeLanguage ===
                         language
@@ -139,11 +139,28 @@
                         isLanguageComplete(section.usageKey, language)
                       "
                       [class.incomplete]="
-                        !isLanguageComplete(section.usageKey, language)
+                        isLanguageIncomplete(section.usageKey, language)
+                      "
+                      [class.empty]="
+                        !isLanguageStarted(section.usageKey, language)
                       "
                       (click)="setActiveLanguage(section.usageKey, language)"
                     >
-                      {{ mediaLanguageLabels[language] }}
+                      <span class="image-language-button__label">
+                        {{ mediaLanguageLabels[language] }}
+                      </span>
+                      <span
+                        class="image-language-button__state"
+                        *ngIf="isLanguageComplete(section.usageKey, language)"
+                      >
+                        OK
+                      </span>
+                      <span
+                        class="image-language-button__state"
+                        *ngIf="isLanguageIncomplete(section.usageKey, language)"
+                      >
+                        ...
+                      </span>
                     </button>
                   </div>
                 </div>
