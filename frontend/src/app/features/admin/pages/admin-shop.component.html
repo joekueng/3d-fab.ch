@@ -929,7 +929,9 @@
                     </option>
                     <option
                       *ngFor="
-                        let option of materialColorOptions(material.materialCode)
+                        let option of materialColorOptions(
+                          material.materialCode
+                        )
                       "
                       [ngValue]="option.key"
                     >

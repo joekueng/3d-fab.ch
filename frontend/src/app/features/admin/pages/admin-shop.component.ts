@@ -817,7 +817,11 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!this.confirmBrowser('Rimuovere il modello 3D associato a questo prodotto?')) {
+    if (
+      !this.confirmBrowser(
+        'Rimuovere il modello 3D associato a questo prodotto?',
+      )
+    ) {
       return;
     }
 
