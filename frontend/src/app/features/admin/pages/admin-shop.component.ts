@@ -1448,7 +1448,9 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       excerptEn: this.optionalValue(this.productForm.excerpts['en']),
       excerptDe: this.optionalValue(this.productForm.excerpts['de']),
       excerptFr: this.optionalValue(this.productForm.excerpts['fr']),
-      description: this.optionalRichTextValue(this.productForm.descriptions['it']),
+      description: this.optionalRichTextValue(
+        this.productForm.descriptions['it'],
+      ),
       descriptionIt: this.optionalRichTextValue(
         this.productForm.descriptions['it'],
       ),
@@ -1852,7 +1854,8 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     if (!editor) {
       return;
     }
-    const html = this.productForm.descriptions[this.activeContentLanguage] ?? '';
+    const html =
+      this.productForm.descriptions[this.activeContentLanguage] ?? '';
     if (editor.innerHTML !== html) {
       editor.innerHTML = html;
     }
@@ -1868,7 +1871,9 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     this.syncDescriptionFromEditor(editor, false);
   }
 
-  private normalizeDescriptionForEditor(value: string | null | undefined): string {
+  private normalizeDescriptionForEditor(
+    value: string | null | undefined,
+  ): string {
     return this.normalizeRichTextStorageValue(value ?? '') ?? '';
   }
 
@@ -1951,7 +1956,9 @@ export class AdminShopComponent implements OnInit, OnDestroy {
 
     const element = outputDocument.createElement(tagName.toLowerCase());
     if (tagName === 'A') {
-      const href = this.sanitizeRichTextHref(sourceElement.getAttribute('href'));
+      const href = this.sanitizeRichTextHref(
+        sourceElement.getAttribute('href'),
+      );
       if (href) {
         element.setAttribute('href', href);
         if (href.startsWith('http://') || href.startsWith('https://')) {
@@ -1967,7 +1974,10 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     if (tagName === 'A' && !element.textContent?.trim()) {
       return null;
     }
-    if ((tagName === 'UL' || tagName === 'OL') && !element.querySelector('li')) {
+    if (
+      (tagName === 'UL' || tagName === 'OL') &&
+      !element.querySelector('li')
+    ) {
       return null;
     }
     if (tagName === 'LI' && !element.textContent?.trim()) {
@@ -1998,7 +2008,11 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   }
 
   private hasMeaningfulRichText(value: string): boolean {
-    return this.extractTextFromHtml(value).replace(/\u00a0/g, ' ').trim().length > 0;
+    return (
+      this.extractTextFromHtml(value)
+        .replace(/\u00a0/g, ' ')
+        .trim().length > 0
+    );
   }
 
   private extractTextFromHtml(value: string): string {

@@ -53,7 +53,8 @@ interface ShopMaterialProperty {
   styleUrl: './product-detail.component.scss',
 })
 export class ProductDetailComponent {
-  private static readonly HEX_COLOR_PATTERN = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+  private static readonly HEX_COLOR_PATTERN =
+    /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
   private readonly router = inject(Router);
