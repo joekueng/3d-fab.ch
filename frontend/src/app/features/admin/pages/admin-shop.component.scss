@@ -80,27 +80,6 @@
   color: var(--color-text-muted);
 }
 
-.header-side {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  align-items: flex-end;
-}
-
-.header-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  justify-content: flex-end;
-}
-
-.header-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: var(--space-2);
-}
-
 .workspace {
   align-items: start;
 }
@@ -549,15 +528,6 @@ tbody tr.selected {
   .section-header {
     flex-direction: column;
     align-items: stretch;
-  }
-
-  .header-side {
-    align-items: stretch;
-  }
-
-  .header-stats,
-  .header-actions {
-    justify-content: flex-start;
   }
 
   .list-toolbar,
