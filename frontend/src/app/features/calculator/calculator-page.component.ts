@@ -4,9 +4,10 @@ import {
   signal,
   ViewChild,
   ElementRef,
+  Inject,
   OnInit,
+  Optional,
   PLATFORM_ID,
-  inject,
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
@@ -55,7 +56,7 @@ type TrackedPrintSettings = {
   styleUrl: './calculator-page.component.scss',
 })
 export class CalculatorPageComponent implements OnInit {
-  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly isBrowser: boolean;
   mode = signal<'easy' | 'advanced'>('easy');
   step = signal<'upload' | 'quote' | 'details' | 'success'>('upload');
 
@@ -88,7 +89,10 @@ export class CalculatorPageComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private languageService: LanguageService,
-  ) {}
+    @Optional() @Inject(PLATFORM_ID) platformId?: Object,
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId ?? 'browser');
+  }
 
   ngOnInit() {
     this.route.data.subscribe((data) => {
