@@ -20,10 +20,6 @@ import {
   TranslateModule,
   TranslateService,
 } from '@ngx-translate/core';
-import {
-  provideTranslateHttpLoader,
-  TranslateHttpLoader,
-} from '@ngx-translate/http-loader';
 import { adminAuthInterceptor } from './core/interceptors/admin-auth.interceptor';
 import {
   provideClientHydration,
@@ -31,6 +27,7 @@ import {
 } from '@angular/platform-browser';
 import { serverOriginInterceptor } from './core/interceptors/server-origin.interceptor';
 import { catchError, firstValueFrom, of } from 'rxjs';
+import { StaticTranslateLoader } from './core/i18n/static-translate.loader';
 
 type SupportedLang = 'it' | 'en' | 'de' | 'fr';
 const SUPPORTED_LANGS: readonly SupportedLang[] = ['it', 'en', 'de', 'fr'];
@@ -61,16 +58,12 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(
       withInterceptors([serverOriginInterceptor, adminAuthInterceptor]),
     ),
-    provideTranslateHttpLoader({
-      prefix: './assets/i18n/',
-      suffix: '.json',
-    }),
     importProvidersFrom(
       TranslateModule.forRoot({
         defaultLanguage: 'it',
         loader: {
           provide: TranslateLoader,
-          useClass: TranslateHttpLoader,
+          useClass: StaticTranslateLoader,
         },
       }),
     ),
