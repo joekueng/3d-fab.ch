@@ -33,12 +33,17 @@
   display: grid;
   gap: var(--space-8);
   grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+  align-items: start;
 }
 
 .visual-column,
 .info-column {
   display: grid;
   gap: var(--space-5);
+}
+
+.visual-column {
+  align-content: start;
 }
 
 .info-column {
@@ -133,21 +138,24 @@
 .model-launch-row {
   display: flex;
   justify-content: space-between;
-  gap: var(--space-4);
+  gap: 0.8rem;
   align-items: center;
-  padding: 0.9rem 1rem;
+  width: min(100%, 440px);
+  justify-self: start;
+  padding: 0.72rem 0.82rem;
   border: 1px solid rgba(16, 24, 32, 0.12);
   border-radius: 1rem;
   background: #fff;
 }
 
 .model-open-btn {
-  height: 2.35rem;
-  padding: 0 0.95rem;
+  height: 2.1rem;
+  padding: 0 0.82rem;
   border-radius: 0.65rem;
   border: 1px solid rgba(16, 24, 32, 0.18);
   background: #fff;
   color: var(--color-text);
+  font-size: 0.86rem;
   font-weight: 600;
   cursor: pointer;
 }
@@ -176,8 +184,9 @@
 
 .dimensions-inline {
   display: flex;
-  gap: 0.8rem;
+  gap: 0.58rem;
   text-align: left;
+  font-size: 0.78rem;
 }
 
 .title-block {
@@ -469,6 +478,32 @@ h1 {
   .hero-media,
   .image-fallback {
     min-height: 300px;
+  }
+
+  .thumb-strip {
+    gap: 0.5rem;
+  }
+
+  .thumb {
+    flex-basis: 78px;
+    height: 78px;
+  }
+
+  .model-launch-row {
+    width: min(100%, 350px);
+    gap: 0.6rem;
+    padding: 0.58rem 0.65rem;
+  }
+
+  .model-open-btn {
+    height: 1.95rem;
+    padding: 0 0.7rem;
+    font-size: 0.8rem;
+  }
+
+  .dimensions-inline {
+    gap: 0.42rem;
+    font-size: 0.74rem;
   }
 
   .property-grid {
