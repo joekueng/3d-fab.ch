@@ -1,10 +1,20 @@
-import { Directive, HostBinding, HostListener, Input } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import {
+  Directive,
+  HostBinding,
+  HostListener,
+  Input,
+  PLATFORM_ID,
+  inject,
+} from '@angular/core';
 
 @Directive({
   selector: '[appCopyOnClick]',
   standalone: true,
 })
 export class CopyOnClickDirective {
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
   @Input('appCopyOnClick') value: string | null | undefined;
 
   @HostBinding('style.cursor') readonly cursor = 'pointer';
@@ -21,6 +31,10 @@ export class CopyOnClickDirective {
   }
 
   private async copy(text: string): Promise<void> {
+    if (!this.isBrowser) {
+      return;
+    }
+
     if (navigator.clipboard?.writeText) {
       try {
         await navigator.clipboard.writeText(text);

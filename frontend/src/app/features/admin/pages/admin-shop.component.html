@@ -878,6 +878,7 @@
                     class="ui-form-control"
                     [(ngModel)]="material.materialCode"
                     [name]="'material-code-' + index"
+                    (ngModelChange)="onMaterialCodeChange(index, $event)"
                   >
                     <option [ngValue]="''" disabled>Seleziona materiale</option>
                     <option
@@ -913,6 +914,30 @@
                     [(ngModel)]="material.sortOrder"
                     [name]="'material-sort-order-' + index"
                   />
+                </label>
+
+                <label class="ui-form-field" *ngIf="material.isDefault">
+                  <span class="ui-form-caption">Colore default</span>
+                  <select
+                    class="ui-form-control"
+                    [(ngModel)]="material.defaultColorKey"
+                    [name]="'material-default-color-' + index"
+                    [disabled]="materialColorCount(material.materialCode) === 0"
+                  >
+                    <option [ngValue]="''" disabled>
+                      Seleziona colore default
+                    </option>
+                    <option
+                      *ngFor="
+                        let option of materialColorOptions(
+                          material.materialCode
+                        )
+                      "
+                      [ngValue]="option.key"
+                    >
+                      {{ option.label }}
+                    </option>
+                  </select>
                 </label>
 
                 <div class="toggle-row toggle-row--compact">
