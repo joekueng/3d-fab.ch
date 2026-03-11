@@ -17,6 +17,11 @@ import {
   TranslateHttpLoader,
 } from '@ngx-translate/http-loader';
 import { adminAuthInterceptor } from './core/interceptors/admin-auth.interceptor';
+import {
+  provideClientHydration,
+  withEventReplay,
+} from '@angular/platform-browser';
+import { serverOriginInterceptor } from './core/interceptors/server-origin.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -29,7 +34,9 @@ export const appConfig: ApplicationConfig = {
         scrollPositionRestoration: 'top',
       }),
     ),
-    provideHttpClient(withInterceptors([adminAuthInterceptor])),
+    provideHttpClient(
+      withInterceptors([serverOriginInterceptor, adminAuthInterceptor]),
+    ),
     provideTranslateHttpLoader({
       prefix: './assets/i18n/',
       suffix: '.json',
@@ -43,5 +50,6 @@ export const appConfig: ApplicationConfig = {
         },
       }),
     ),
+    provideClientHydration(withEventReplay()),
   ],
 };
