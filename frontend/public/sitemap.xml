@@ -74,6 +74,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://3d-fab.ch/it/shop</loc>
+    <xhtml:link rel="alternate" hreflang="it" href="https://3d-fab.ch/it/shop" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://3d-fab.ch/en/shop" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://3d-fab.ch/de/shop" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://3d-fab.ch/fr/shop" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://3d-fab.ch/it/shop" />
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://3d-fab.ch/it/about</loc>
     <xhtml:link rel="alternate" hreflang="it" href="https://3d-fab.ch/it/about" />
     <xhtml:link rel="alternate" hreflang="en" href="https://3d-fab.ch/en/about" />

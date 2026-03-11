@@ -17,12 +17,16 @@ type HomeSectionKey =
   | 'capability-prototyping'
   | 'capability-custom-parts'
   | 'capability-small-series'
-  | 'capability-cad';
+  | 'capability-cad'
+  | 'joe'
+  | 'matteo';
+
+type HomeMediaUsageType = 'HOME_SECTION' | 'ABOUT_MEMBER';
 
 interface HomeMediaSectionConfig {
-  usageType: 'HOME_SECTION';
+  usageType: HomeMediaUsageType;
   usageKey: HomeSectionKey;
-  groupId: 'galleries' | 'capabilities';
+  groupId: 'galleries' | 'capabilities' | 'about-members';
   title: string;
   preferredVariantName: 'card' | 'hero';
 }
@@ -94,6 +98,10 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
       id: 'capabilities',
       title: 'Cosa puoi ottenere',
     },
+    {
+      id: 'about-members',
+      title: 'Chi siamo',
+    },
   ];
 
   readonly sectionConfigs: readonly HomeMediaSectionConfig[] = [
@@ -139,6 +147,20 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
       title: 'Home: consulenza e CAD',
       preferredVariantName: 'card',
     },
+    {
+      usageType: 'ABOUT_MEMBER',
+      usageKey: 'joe',
+      groupId: 'about-members',
+      title: 'Chi siamo: Joe',
+      preferredVariantName: 'card',
+    },
+    {
+      usageType: 'ABOUT_MEMBER',
+      usageKey: 'matteo',
+      groupId: 'about-members',
+      title: 'Chi siamo: Matteo',
+      preferredVariantName: 'card',
+    },
   ];
 
   sections: HomeMediaSectionView[] = [];
@@ -155,6 +177,8 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
       'capability-custom-parts': this.createEmptyFormState(),
       'capability-small-series': this.createEmptyFormState(),
       'capability-cad': this.createEmptyFormState(),
+      joe: this.createEmptyFormState(),
+      matteo: this.createEmptyFormState(),
     };
 
   get configuredSectionCount(): number {
@@ -432,6 +456,25 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
     );
   }
 
+  isLanguageStarted(
+    sectionKey: HomeSectionKey,
+    language: AdminMediaLanguage,
+  ): boolean {
+    return this.isTranslationStarted(
+      this.getFormState(sectionKey).translations[language],
+    );
+  }
+
+  isLanguageIncomplete(
+    sectionKey: HomeSectionKey,
+    language: AdminMediaLanguage,
+  ): boolean {
+    return (
+      this.isLanguageStarted(sectionKey, language) &&
+      !this.isLanguageComplete(sectionKey, language)
+    );
+  }
+
   getItemTranslation(
     item: HomeMediaItem,
     language: AdminMediaLanguage,
@@ -617,6 +660,10 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
 
   private isTranslationComplete(translation: AdminMediaTranslation): boolean {
     return !!translation.title.trim() && !!translation.altText.trim();
+  }
+
+  private isTranslationStarted(translation: AdminMediaTranslation): boolean {
+    return !!translation.title.trim() || !!translation.altText.trim();
   }
 
   private validateTranslations(
