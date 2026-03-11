@@ -671,9 +671,12 @@ export class ProductDetailComponent {
     if (!this.containsHtmlMarkup(normalized)) {
       return normalized;
     }
-    const container = document.createElement('div');
-    container.innerHTML = normalized;
-    const text = (container.textContent ?? '').replace(/\u00a0/g, ' ').trim();
+    const parser = new DOMParser();
+    const parsed = parser.parseFromString(
+      `<body>${normalized}</body>`,
+      'text/html',
+    );
+    const text = (parsed.body.textContent ?? '').replace(/\u00a0/g, ' ').trim();
     return text || null;
   }
 

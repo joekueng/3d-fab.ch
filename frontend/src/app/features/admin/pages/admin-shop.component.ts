@@ -1836,17 +1836,18 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     if (!editor) {
       return;
     }
+    const currentHtml = this.serializeNodeChildren(editor);
     const currentLanguage = this.activeContentLanguage;
     if (sanitize) {
-      const normalized = this.normalizeRichTextStorageValue(editor.innerHTML);
+      const normalized = this.normalizeRichTextStorageValue(currentHtml);
       const safeHtml = normalized ?? '';
       this.productForm.descriptions[currentLanguage] = safeHtml;
-      if (editor.innerHTML !== safeHtml) {
-        editor.innerHTML = safeHtml;
+      if (currentHtml !== safeHtml) {
+        this.replaceElementContentFromHtml(editor, safeHtml);
       }
       return;
     }
-    this.productForm.descriptions[currentLanguage] = editor.innerHTML;
+    this.productForm.descriptions[currentLanguage] = currentHtml;
   }
 
   private renderActiveDescriptionInEditor(): void {
@@ -1856,8 +1857,8 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     }
     const html =
       this.productForm.descriptions[this.activeContentLanguage] ?? '';
-    if (editor.innerHTML !== html) {
-      editor.innerHTML = html;
+    if (this.serializeNodeChildren(editor) !== html) {
+      this.replaceElementContentFromHtml(editor, html);
     }
   }
 
@@ -1926,7 +1927,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       }
     }
 
-    return outputBody.innerHTML;
+    return this.serializeNodeChildren(outputBody);
   }
 
   private sanitizeRichTextNode(
@@ -2016,9 +2017,35 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   }
 
   private extractTextFromHtml(value: string): string {
-    const container = document.createElement('div');
-    container.innerHTML = value;
-    return container.textContent ?? '';
+    const parser = new DOMParser();
+    const parsed = parser.parseFromString(`<body>${value}</body>`, 'text/html');
+    return parsed.body.textContent ?? '';
+  }
+
+  private serializeNodeChildren(node: Node): string {
+    const serializer = new XMLSerializer();
+    let html = '';
+    for (const child of Array.from(node.childNodes)) {
+      html += serializer.serializeToString(child);
+    }
+    return html;
+  }
+
+  private replaceElementContentFromHtml(
+    element: HTMLElement,
+    html: string,
+  ): void {
+    if (!html) {
+      element.replaceChildren();
+      return;
+    }
+
+    const parser = new DOMParser();
+    const parsed = parser.parseFromString(`<body>${html}</body>`, 'text/html');
+    const nodes = Array.from(parsed.body.childNodes).map((child) =>
+      document.importNode(child, true),
+    );
+    element.replaceChildren(...nodes);
   }
 
   private escapeHtml(value: string): string {
