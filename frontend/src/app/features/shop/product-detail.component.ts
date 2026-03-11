@@ -1,8 +1,9 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   Component,
   DestroyRef,
   Injector,
+  PLATFORM_ID,
   computed,
   inject,
   input,
@@ -62,6 +63,7 @@ export class ProductDetailComponent {
   private readonly seoService = inject(SeoService);
   private readonly languageService = inject(LanguageService);
   private readonly shopRouteService = inject(ShopRouteService);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   readonly shopService = inject(ShopService);
 
   readonly categorySlug = input<string | undefined>();
@@ -444,7 +446,7 @@ export class ProductDetailComponent {
 
   goBackToShop(): void {
     const returnUrl =
-      typeof history.state?.shopReturnUrl === 'string'
+      this.isBrowser && typeof history.state?.shopReturnUrl === 'string'
         ? history.state.shopReturnUrl
         : null;
 
@@ -671,6 +673,15 @@ export class ProductDetailComponent {
     if (!this.containsHtmlMarkup(normalized)) {
       return normalized;
     }
+
+    if (!this.isBrowser) {
+      const text = normalized
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      return text || null;
+    }
+
     const parser = new DOMParser();
     const parsed = parser.parseFromString(
       `<body>${normalized}</body>`,
@@ -694,6 +705,10 @@ export class ProductDetailComponent {
   }
 
   private syncPublicUrl(product: ShopProductDetail): void {
+    if (!this.isBrowser) {
+      return;
+    }
+
     const currentProductSlug = this.productSlug()?.trim().toLowerCase() ?? '';
     const targetProductSlug = this.shopRouteService.productPathSegment(product);
     if (currentProductSlug === targetProductSlug) {

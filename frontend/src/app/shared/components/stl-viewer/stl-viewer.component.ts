@@ -5,10 +5,12 @@ import {
   OnChanges,
   OnDestroy,
   OnInit,
+  PLATFORM_ID,
   ViewChild,
   SimpleChanges,
+  inject,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import * as THREE from 'three';
 // @ts-ignore
@@ -24,6 +26,9 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
   styleUrl: './stl-viewer.component.scss',
 })
 export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
+
   @Input() file: File | null = null;
   @Input() color: string = '#facf0a'; // Default Brand Color
   @Input() height = 300;
@@ -39,14 +44,22 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
   private animationId: number | null = null;
   private currentMesh: THREE.Mesh | null = null;
   private autoRotate = true;
+  private resizeObserver: ResizeObserver | null = null;
 
   loading = false;
 
   ngOnInit() {
+    if (!this.isBrowser) {
+      return;
+    }
     this.initThree();
   }
 
   ngOnChanges(changes: SimpleChanges) {
+    if (!this.isBrowser) {
+      return;
+    }
+
     if (changes['file'] && this.file) {
       this.loadFile(this.file);
     }
@@ -57,6 +70,9 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnDestroy() {
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = null;
+
     if (this.animationId) cancelAnimationFrame(this.animationId);
     this.clearCurrentMesh();
     if (this.controls) this.controls.dispose();
@@ -121,7 +137,7 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
     this.animate();
 
     // Handle resize
-    const resizeObserver = new ResizeObserver(() => {
+    this.resizeObserver = new ResizeObserver(() => {
       if (!this.rendererContainer) return;
       const w = this.rendererContainer.nativeElement.clientWidth;
       const h = this.rendererContainer.nativeElement.clientHeight;
@@ -129,7 +145,7 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(w, h);
     });
-    resizeObserver.observe(this.rendererContainer.nativeElement);
+    this.resizeObserver.observe(this.rendererContainer.nativeElement);
   }
 
   dimensions = { x: 0, y: 0, z: 0 };

@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, PLATFORM_ID, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   AdminContactRequest,
@@ -17,6 +17,7 @@ import { CopyOnClickDirective } from '../../../shared/directives/copy-on-click.d
   styleUrl: './admin-contact-requests.component.scss',
 })
 export class AdminContactRequestsComponent implements OnInit {
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly adminOperationsService = inject(AdminOperationsService);
 
   readonly statusOptions = ['NEW', 'PENDING', 'IN_PROGRESS', 'DONE', 'CLOSED'];
@@ -171,6 +172,9 @@ export class AdminContactRequestsComponent implements OnInit {
   }
 
   private downloadBlob(blob: Blob, filename: string): void {
+    if (!this.isBrowser) {
+      return;
+    }
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;

@@ -4,9 +4,12 @@ import {
   signal,
   ViewChild,
   ElementRef,
+  Inject,
   OnInit,
+  Optional,
+  PLATFORM_ID,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
@@ -53,6 +56,7 @@ type TrackedPrintSettings = {
   styleUrl: './calculator-page.component.scss',
 })
 export class CalculatorPageComponent implements OnInit {
+  private readonly isBrowser: boolean;
   mode = signal<'easy' | 'advanced'>('easy');
   step = signal<'upload' | 'quote' | 'details' | 'success'>('upload');
 
@@ -85,7 +89,10 @@ export class CalculatorPageComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private languageService: LanguageService,
-  ) {}
+    @Optional() @Inject(PLATFORM_ID) platformId?: Object,
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId ?? 'browser');
+  }
 
   ngOnInit() {
     this.route.data.subscribe((data) => {
@@ -260,7 +267,7 @@ export class CalculatorPageComponent implements OnInit {
 
     // Auto-scroll on mobile to make analysis visible
     setTimeout(() => {
-      if (this.resultCol && window.innerWidth < 768) {
+      if (this.isBrowser && this.resultCol && window.innerWidth < 768) {
         this.resultCol.nativeElement.scrollIntoView({
           behavior: 'smooth',
           block: 'start',
