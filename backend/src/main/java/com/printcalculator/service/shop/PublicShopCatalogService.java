@@ -37,7 +37,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,7 +44,6 @@ import java.util.stream.Collectors;
 public class PublicShopCatalogService {
     private static final String SHOP_CATEGORY_MEDIA_USAGE_TYPE = "SHOP_CATEGORY";
     private static final String SHOP_PRODUCT_MEDIA_USAGE_TYPE = "SHOP_PRODUCT";
-    private static final Pattern HEX_COLOR_PATTERN = Pattern.compile("^#?[A-Fa-f0-9]{6}$");
 
     private final ShopCategoryRepository shopCategoryRepository;
     private final ShopProductRepository shopProductRepository;
@@ -224,11 +222,11 @@ public class PublicShopCatalogService {
                 continue;
             }
 
-            String normalizedHex = normalizeHexColor(variant.getColorHex());
-            if (normalizedHex == null) {
+            String colorHex = trimToNull(variant.getColorHex());
+            if (colorHex == null) {
                 continue;
             }
-            colorsByMaterialAndColor.putIfAbsent(key, normalizedHex);
+            colorsByMaterialAndColor.putIfAbsent(key, colorHex);
         }
         return colorsByMaterialAndColor;
     }
@@ -455,7 +453,7 @@ public class PublicShopCatalogService {
         if (variant == null) {
             return null;
         }
-        String colorHex = normalizeHexColor(variant.getColorHex());
+        String colorHex = trimToNull(variant.getColorHex());
         if (colorHex == null) {
             String key = toMaterialAndColorKey(variant.getInternalMaterialCode(), variant.getColorName());
             colorHex = key != null ? variantColorHexByMaterialAndColor.get(key) : null;
@@ -481,31 +479,27 @@ public class PublicShopCatalogService {
     }
 
     private String normalizeMaterialCode(String materialCode) {
-        String raw = String.valueOf(materialCode == null ? "" : materialCode).trim();
-        if (raw.isEmpty()) {
+        String raw = trimToNull(materialCode);
+        if (raw == null) {
             return null;
         }
         return raw.toUpperCase(Locale.ROOT);
     }
 
     private String normalizeColorName(String colorName) {
-        String raw = String.valueOf(colorName == null ? "" : colorName).trim();
-        if (raw.isEmpty()) {
+        String raw = trimToNull(colorName);
+        if (raw == null) {
             return null;
         }
         return raw.toLowerCase(Locale.ROOT);
     }
 
-    private String normalizeHexColor(String value) {
+    private String trimToNull(String value) {
         String raw = String.valueOf(value == null ? "" : value).trim();
         if (raw.isEmpty()) {
             return null;
         }
-        if (!HEX_COLOR_PATTERN.matcher(raw).matches()) {
-            return null;
-        }
-        String withHash = raw.startsWith("#") ? raw : "#" + raw;
-        return withHash.toUpperCase(Locale.ROOT);
+        return raw;
     }
 
     private ShopProductModelDto toProductModelDto(ProductEntry entry) {
