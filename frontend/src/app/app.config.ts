@@ -70,9 +70,9 @@ export const appConfig: ApplicationConfig = {
     provideAppInitializer(() => {
       const translate = inject(TranslateService);
       const router = inject(Router);
-      const request = inject(REQUEST, { optional: true }) as
-        | { url?: string }
-        | null;
+      const request = inject(REQUEST, { optional: true }) as {
+        url?: string;
+      } | null;
 
       translate.addLangs([...SUPPORTED_LANGS]);
       translate.setDefaultLang('it');

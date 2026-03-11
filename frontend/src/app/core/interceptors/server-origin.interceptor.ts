@@ -11,9 +11,7 @@ function isAbsoluteUrl(url: string): boolean {
   return /^[a-z][a-z\d+\-.]*:/i.test(url) || url.startsWith('//');
 }
 
-function firstHeaderValue(
-  value: string | string[] | undefined,
-): string | null {
+function firstHeaderValue(value: string | string[] | undefined): string | null {
   if (Array.isArray(value)) {
     return value[0] ?? null;
   }

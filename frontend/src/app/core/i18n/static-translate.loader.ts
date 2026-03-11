@@ -1,8 +1,5 @@
 import { Injectable } from '@angular/core';
-import {
-  TranslateLoader,
-  TranslationObject,
-} from '@ngx-translate/core';
+import { TranslateLoader, TranslationObject } from '@ngx-translate/core';
 import { Observable, of } from 'rxjs';
 import de from '../../../assets/i18n/de.json';
 import en from '../../../assets/i18n/en.json';
