@@ -134,9 +134,10 @@ export class ContactFormComponent implements OnDestroy {
         return {
           file: f,
           type,
-          url: this.isBrowser && this.shouldCreatePreview(type)
-            ? URL.createObjectURL(f)
-            : undefined,
+          url:
+            this.isBrowser && this.shouldCreatePreview(type)
+              ? URL.createObjectURL(f)
+              : undefined,
         };
       });
       this.files.set(filePreviews);
@@ -192,9 +193,10 @@ export class ContactFormComponent implements OnDestroy {
       const preview: FilePreview = {
         file,
         type,
-        url: this.isBrowser && this.shouldCreatePreview(type)
-          ? URL.createObjectURL(file)
-          : undefined,
+        url:
+          this.isBrowser && this.shouldCreatePreview(type)
+            ? URL.createObjectURL(file)
+            : undefined,
       };
       this.files.update((files) => [...files, preview]);
     });

@@ -17,7 +17,10 @@ import {
   TranslateHttpLoader,
 } from '@ngx-translate/http-loader';
 import { adminAuthInterceptor } from './core/interceptors/admin-auth.interceptor';
-import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
+import {
+  provideClientHydration,
+  withEventReplay,
+} from '@angular/platform-browser';
 
 export const appConfig: ApplicationConfig = {
   providers: [
