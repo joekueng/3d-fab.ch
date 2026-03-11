@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml"
+>
+  <url>
+    <loc>https://3d-fab.ch/it</loc>
+    <xhtml:link rel="alternate" hreflang="it" href="https://3d-fab.ch/it" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://3d-fab.ch/en" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://3d-fab.ch/de" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://3d-fab.ch/fr" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://3d-fab.ch/it" />
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://3d-fab.ch/it/calculator/basic</loc>
+    <xhtml:link
+      rel="alternate"
+      hreflang="it"
+      href="https://3d-fab.ch/it/calculator/basic"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="en"
+      href="https://3d-fab.ch/en/calculator/basic"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="de"
+      href="https://3d-fab.ch/de/calculator/basic"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="fr"
+      href="https://3d-fab.ch/fr/calculator/basic"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://3d-fab.ch/it/calculator/basic"
+    />
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://3d-fab.ch/it/calculator/advanced</loc>
+    <xhtml:link
+      rel="alternate"
+      hreflang="it"
+      href="https://3d-fab.ch/it/calculator/advanced"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="en"
+      href="https://3d-fab.ch/en/calculator/advanced"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="de"
+      href="https://3d-fab.ch/de/calculator/advanced"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="fr"
+      href="https://3d-fab.ch/fr/calculator/advanced"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://3d-fab.ch/it/calculator/advanced"
+    />
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://3d-fab.ch/it/shop</loc>
+    <xhtml:link rel="alternate" hreflang="it" href="https://3d-fab.ch/it/shop" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://3d-fab.ch/en/shop" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://3d-fab.ch/de/shop" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://3d-fab.ch/fr/shop" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://3d-fab.ch/it/shop" />
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://3d-fab.ch/it/about</loc>
+    <xhtml:link rel="alternate" hreflang="it" href="https://3d-fab.ch/it/about" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://3d-fab.ch/en/about" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://3d-fab.ch/de/about" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://3d-fab.ch/fr/about" />
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://3d-fab.ch/it/about"
+    />
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://3d-fab.ch/it/contact</loc>
+    <xhtml:link
+      rel="alternate"
+      hreflang="it"
+      href="https://3d-fab.ch/it/contact"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="en"
+      href="https://3d-fab.ch/en/contact"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="de"
+      href="https://3d-fab.ch/de/contact"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="fr"
+      href="https://3d-fab.ch/fr/contact"
+    />
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://3d-fab.ch/it/contact"
+    />
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://3d-fab.ch/it/privacy</loc>
+    <xhtml:link rel="alternate" hreflang="it" href="https://3d-fab.ch/it/privacy" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://3d-fab.ch/en/privacy" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://3d-fab.ch/de/privacy" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://3d-fab.ch/fr/privacy" />
+    <xhtml:link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://3d-fab.ch/it/privacy"
+    />
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>https://3d-fab.ch/it/terms</loc>
+    <xhtml:link rel="alternate" hreflang="it" href="https://3d-fab.ch/it/terms" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://3d-fab.ch/en/terms" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://3d-fab.ch/de/terms" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://3d-fab.ch/fr/terms" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://3d-fab.ch/it/terms" />
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+</urlset>
