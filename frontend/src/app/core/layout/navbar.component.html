@@ -34,6 +34,12 @@
         "NAV.ABOUT" | translate
       }}</a>
       <a
+        routerLink="/materials"
+        routerLinkActive="active"
+        (click)="closeMenu()"
+        >{{ "NAV.MATERIALS" | translate }}</a
+      >
+      <a
         routerLink="/contact"
         routerLinkActive="active"
         (click)="closeMenu()"
