@@ -12,14 +12,31 @@ export interface PageSeoOverride {
   ogDescription?: string | null;
 }
 
+type SupportedLang = 'it' | 'en' | 'de' | 'fr';
+type SeoMap = Partial<Record<SupportedLang, string>>;
+
 @Injectable({
   providedIn: 'root',
 })
 export class SeoService {
-  private readonly defaultTitle = '3D fab | Stampa 3D su misura';
-  private readonly defaultDescription =
-    'Stampa 3D su misura con preventivo online immediato. Carica il file, scegli materiale e qualità, ricevi prezzo e tempi in pochi secondi.';
-  private readonly supportedLangs = new Set(['it', 'en', 'de', 'fr']);
+  private readonly defaultTitleByLang: Record<SupportedLang, string> = {
+    it: '3D fab | Stampa 3D su misura',
+    en: '3D fab | Custom 3D Printing',
+    de: '3D fab | 3D-Druck nach Maß',
+    fr: '3D fab | Impression 3D sur mesure',
+  };
+  private readonly defaultDescriptionByLang: Record<SupportedLang, string> = {
+    it: 'Servizio di stampa 3D su misura, shop tecnico e supporto CAD per prototipi, ricambi e piccole serie.',
+    en: 'Custom 3D printing service, technical shop and CAD support for prototypes, spare parts and short runs.',
+    de: '3D-Druckservice nach Maß, technischer Shop und CAD-Support für Prototypen, Ersatzteile und Kleinserien.',
+    fr: "Service d'impression 3D sur mesure, boutique technique et support CAD pour prototypes, pièces et petites séries.",
+  };
+  private readonly supportedLangs = new Set<SupportedLang>([
+    'it',
+    'en',
+    'de',
+    'fr',
+  ]);
 
   constructor(
     private router: Router,
@@ -40,9 +57,11 @@ export class SeoService {
   }
 
   applyPageSeo(override: PageSeoOverride): void {
-    const title = this.asString(override.title) ?? this.defaultTitle;
+    const cleanPath = this.getCleanPath(this.router.url);
+    const lang = this.resolveLangFromPath(cleanPath);
+    const title = this.asString(override.title) ?? this.defaultTitleByLang[lang];
     const description =
-      this.asString(override.description) ?? this.defaultDescription;
+      this.asString(override.description) ?? this.defaultDescriptionByLang[lang];
     const robots = this.asString(override.robots) ?? 'index, follow';
     const ogTitle = this.asString(override.ogTitle) ?? title;
     const ogDescription = this.asString(override.ogDescription) ?? description;
@@ -52,13 +71,18 @@ export class SeoService {
 
   private applyRouteSeo(rootSnapshot: ActivatedRouteSnapshot): void {
     const mergedData = this.getMergedRouteData(rootSnapshot);
-    const title = this.asString(mergedData['seoTitle']) ?? this.defaultTitle;
+    const cleanPath = this.getCleanPath(this.router.url);
+    const lang = this.resolveLangFromPath(cleanPath);
+    const title =
+      this.resolveSeoText(mergedData, 'seoTitle', lang) ??
+      this.defaultTitleByLang[lang];
     const description =
-      this.asString(mergedData['seoDescription']) ?? this.defaultDescription;
+      this.resolveSeoText(mergedData, 'seoDescription', lang) ??
+      this.defaultDescriptionByLang[lang];
     const robots = this.asString(mergedData['seoRobots']) ?? 'index, follow';
-    const ogTitle = this.asString(mergedData['ogTitle']) ?? title;
+    const ogTitle = this.resolveSeoText(mergedData, 'ogTitle', lang) ?? title;
     const ogDescription =
-      this.asString(mergedData['ogDescription']) ?? description;
+      this.resolveSeoText(mergedData, 'ogDescription', lang) ?? description;
 
     this.applySeoValues(title, description, robots, ogTitle, ogDescription);
   }
@@ -104,9 +128,34 @@ export class SeoService {
     return typeof value === 'string' ? value : undefined;
   }
 
+  private resolveSeoText(
+    routeData: Record<string, unknown>,
+    key: 'seoTitle' | 'seoDescription' | 'ogTitle' | 'ogDescription',
+    lang: SupportedLang,
+  ): string | undefined {
+    const mapKey = `${key}ByLang`;
+    const localized = routeData[mapKey];
+    if (localized && typeof localized === 'object' && !Array.isArray(localized)) {
+      const mapped = localized as SeoMap;
+      const byLang = this.asString(mapped[lang]);
+      if (byLang) {
+        return byLang;
+      }
+    }
+    return this.asString(routeData[key]);
+  }
+
   private getCleanPath(url: string): string {
     const path = (url || '/').split('?')[0].split('#')[0];
     return path || '/';
+  }
+
+  private resolveLangFromPath(path: string): SupportedLang {
+    const firstSegment = path.split('/').filter(Boolean)[0]?.toLowerCase();
+    if (firstSegment && this.supportedLangs.has(firstSegment as SupportedLang)) {
+      return firstSegment as SupportedLang;
+    }
+    return 'it';
   }
 
   private updateCanonicalTag(url: string): void {
@@ -124,10 +173,9 @@ export class SeoService {
   private updateLangAndAlternates(path: string): void {
     const segments = path.split('/').filter(Boolean);
     const firstSegment = segments[0]?.toLowerCase();
-    const hasLang = Boolean(
-      firstSegment && this.supportedLangs.has(firstSegment),
-    );
-    const lang = hasLang ? firstSegment : 'it';
+    const maybeLang = firstSegment as SupportedLang | undefined;
+    const hasLang = Boolean(maybeLang && this.supportedLangs.has(maybeLang));
+    const lang: SupportedLang = hasLang && maybeLang ? maybeLang : 'it';
     const suffixSegments = hasLang ? segments.slice(1) : segments;
     const suffix =
       suffixSegments.length > 0 ? `/${suffixSegments.join('/')}` : '';

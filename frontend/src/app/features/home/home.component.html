@@ -1,6 +1,8 @@
 <main class="home-page">
   <section class="hero">
-    <div class="container hero-grid ui-content-grid ui-content-grid--spacious">
+    <div
+      class="container hero-grid ui-content-grid ui-content-grid--spacious ui-content-grid--split"
+    >
       <div class="hero-copy">
         <p class="eyebrow ui-eyebrow">{{ "HOME.HERO_EYEBROW" | translate }}</p>
         <h1
@@ -25,6 +27,30 @@
           }}</app-button>
         </div>
       </div>
+      <aside class="hero-swiss-card">
+        <div class="hero-swiss-head">
+          <span class="hero-swiss-emblem" aria-hidden="true">
+            <span class="hero-swiss-cross"></span>
+          </span>
+          <p class="hero-swiss-kicker ui-eyebrow ui-eyebrow--compact">
+            {{ "HOME.HERO_SWISS_TITLE" | translate }}
+          </p>
+        </div>
+        <p class="hero-swiss-copy">
+          {{ "HOME.HERO_SWISS_COPY" | translate }}
+        </p>
+        <div class="hero-swiss-locations">
+          <span class="hero-swiss-chip">{{
+            "HOME.HERO_SWISS_LOCATION_1" | translate
+          }}</span>
+          <span class="hero-swiss-chip">{{
+            "HOME.HERO_SWISS_LOCATION_2" | translate
+          }}</span>
+          <span class="hero-swiss-chip">{{
+            "HOME.HERO_SWISS_LOCATION_3" | translate
+          }}</span>
+        </div>
+      </aside>
     </div>
   </section>
 

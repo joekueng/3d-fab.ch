@@ -74,6 +74,9 @@ export class ProductDetailComponent {
   readonly product = signal<ShopProductDetail | null>(null);
   readonly selectedVariantId = signal<string | null>(null);
   readonly selectedImageAssetId = signal<string | null>(null);
+  readonly selectedImageOrientation = signal<
+    'portrait' | 'landscape' | 'square' | null
+  >(null);
   readonly quantity = signal(1);
   readonly isAddingToCart = signal(false);
   readonly addSuccess = signal(false);
@@ -191,6 +194,9 @@ export class ProductDetailComponent {
   readonly selectedVariantCartQuantity = computed(() =>
     this.shopService.quantityForVariant(this.selectedVariant()?.id),
   );
+  readonly selectedImageIsPortrait = computed(
+    () => this.selectedImageOrientation() === 'portrait',
+  );
 
   constructor() {
     if (!this.shopService.cartLoaded()) {
@@ -230,7 +236,7 @@ export class ProductDetailComponent {
             catchError((error) => {
               this.product.set(null);
               this.selectedVariantId.set(null);
-              this.selectedImageAssetId.set(null);
+              this.setSelectedImageAssetId(null);
               this.modelFile.set(null);
               this.error.set(
                 error?.status === 404 ? 'SHOP.NOT_FOUND' : 'SHOP.LOAD_ERROR',
@@ -257,7 +263,7 @@ export class ProductDetailComponent {
             product.defaultVariant ?? product.variants[0] ?? null,
           ),
         );
-        this.selectedImageAssetId.set(
+        this.setSelectedImageAssetId(
           product.primaryImage?.mediaAssetId ??
             product.images[0]?.mediaAssetId ??
             null,
@@ -283,7 +289,7 @@ export class ProductDetailComponent {
   }
 
   selectImage(mediaAssetId: string): void {
-    this.selectedImageAssetId.set(mediaAssetId);
+    this.setSelectedImageAssetId(mediaAssetId);
   }
 
   showPreviousImage(): void {
@@ -293,7 +299,7 @@ export class ProductDetailComponent {
     }
     const nextIndex =
       (this.selectedImageIndex() - 1 + images.length) % images.length;
-    this.selectedImageAssetId.set(images[nextIndex].mediaAssetId);
+    this.setSelectedImageAssetId(images[nextIndex].mediaAssetId);
   }
 
   showNextImage(): void {
@@ -302,7 +308,26 @@ export class ProductDetailComponent {
       return;
     }
     const nextIndex = (this.selectedImageIndex() + 1) % images.length;
-    this.selectedImageAssetId.set(images[nextIndex].mediaAssetId);
+    this.setSelectedImageAssetId(images[nextIndex].mediaAssetId);
+  }
+
+  onHeroImageLoad(event: Event): void {
+    const target = event.target;
+    if (!(target instanceof HTMLImageElement)) {
+      return;
+    }
+
+    if (target.naturalHeight > target.naturalWidth) {
+      this.selectedImageOrientation.set('portrait');
+      return;
+    }
+
+    if (target.naturalWidth > target.naturalHeight) {
+      this.selectedImageOrientation.set('landscape');
+      return;
+    }
+
+    this.selectedImageOrientation.set('square');
   }
 
   selectVariant(variant: ShopProductVariantOption): void {
@@ -477,6 +502,11 @@ export class ProductDetailComponent {
           this.modelError.set(true);
         },
       });
+  }
+
+  private setSelectedImageAssetId(mediaAssetId: string | null): void {
+    this.selectedImageAssetId.set(mediaAssetId);
+    this.selectedImageOrientation.set(null);
   }
 
   private normalizeHexColor(value: string | null | undefined): string | null {
