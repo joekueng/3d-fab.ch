@@ -248,7 +248,8 @@
                       }}
                     </span>
                     <span *ngIf="itemVariantLabel(item) as variantLabel">
-                      {{ "SHOP.VARIANT" | translate }}: {{ variantLabel }}
+                      {{ "SHOP.VARIANT" | translate }}:
+                      {{ variantLabel | translate }}
                     </span>
                     <span class="item-color-chip">
                       <span
@@ -256,7 +257,7 @@
                         *ngIf="itemColorHex(item) as colorHex"
                         [style.background-color]="colorHex"
                       ></span>
-                      <span>{{ itemColorLabel(item) }}</span>
+                      <span>{{ itemColorLabel(item) | translate }}</span>
                     </span>
                   </div>
 

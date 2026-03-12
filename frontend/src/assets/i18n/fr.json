@@ -575,6 +575,13 @@
       "BLUE": "Bleu",
       "GREEN": "Vert",
       "YELLOW": "Jaune",
+      "ORANGE": "Orange",
+      "GRAY": "Gris",
+      "LIGHT_GRAY": "Gris clair",
+      "DARK_GRAY": "Gris foncé",
+      "PURPLE": "Violet",
+      "BEIGE": "Beige",
+      "SAND_BEIGE": "Beige sable",
       "MATTE_BLACK": "Noir mat",
       "MATTE_WHITE": "Blanc mat",
       "MATTE_GRAY": "Gris mat"

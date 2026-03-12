@@ -624,6 +624,13 @@
       "BLUE": "Blu",
       "GREEN": "Verde",
       "YELLOW": "Giallo",
+      "ORANGE": "Arancione",
+      "GRAY": "Grigio",
+      "LIGHT_GRAY": "Grigio chiaro",
+      "DARK_GRAY": "Grigio scuro",
+      "PURPLE": "Viola",
+      "BEIGE": "Beige",
+      "SAND_BEIGE": "Beige sabbia",
       "MATTE_BLACK": "Nero opaco",
       "MATTE_WHITE": "Bianco opaco",
       "MATTE_GRAY": "Grigio opaco"

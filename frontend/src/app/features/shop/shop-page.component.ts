@@ -22,6 +22,10 @@ import {
 } from 'rxjs';
 import { SeoService } from '../../core/services/seo.service';
 import { LanguageService } from '../../core/services/language.service';
+import {
+  findColorHex,
+  getColorLabelToken,
+} from '../../core/constants/colors.const';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
 import { ProductCardComponent } from './components/product-card/product-card.component';
@@ -157,15 +161,25 @@ export class ShopPageComponent {
   }
 
   cartItemVariant(item: ShopCartItem): string | null {
-    return item.shopVariantLabel || item.shopVariantColorName || null;
+    return (
+      item.shopVariantLabel || getColorLabelToken(item.shopVariantColorName)
+    );
   }
 
   cartItemColor(item: ShopCartItem): string | null {
-    return item.shopVariantColorName || item.colorCode || null;
+    return (
+      getColorLabelToken(item.shopVariantColorName) ??
+      getColorLabelToken(item.colorCode)
+    );
   }
 
   cartItemColorHex(item: ShopCartItem): string {
-    return item.shopVariantColorHex || '#c9ced6';
+    return (
+      item.shopVariantColorHex ||
+      findColorHex(item.shopVariantColorName) ||
+      findColorHex(item.colorCode) ||
+      '#c9ced6'
+    );
   }
 
   navigateToCategory(slug?: string | null): void {

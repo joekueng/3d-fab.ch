@@ -7,6 +7,10 @@ import { QuoteEstimatorService } from '../calculator/services/quote-estimator.se
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
 import {
+  findColorHex,
+  getColorLabelToken,
+} from '../../core/constants/colors.const';
+import {
   PriceBreakdownComponent,
   PriceBreakdownRow,
 } from '../../shared/components/price-breakdown/price-breakdown.component';
@@ -278,23 +282,28 @@ export class OrderComponent implements OnInit {
       return variantLabel;
     }
 
-    const colorName = String(item?.shopVariantColorName ?? '').trim();
-    return colorName || null;
+    return getColorLabelToken(item?.shopVariantColorName);
   }
 
   itemColorLabel(item: PublicOrderItem): string {
     const shopColor = String(item?.shopVariantColorName ?? '').trim();
     if (shopColor) {
-      return shopColor;
+      return getColorLabelToken(shopColor) ?? this.translate.instant('ORDER.NOT_AVAILABLE');
     }
 
     const filamentColor = String(item?.filamentColorName ?? '').trim();
     if (filamentColor) {
-      return filamentColor;
+      return (
+        getColorLabelToken(filamentColor) ??
+        this.translate.instant('ORDER.NOT_AVAILABLE')
+      );
     }
 
     const rawColor = String(item?.colorCode ?? '').trim();
-    return rawColor || this.translate.instant('ORDER.NOT_AVAILABLE');
+    return (
+      getColorLabelToken(rawColor) ??
+      this.translate.instant('ORDER.NOT_AVAILABLE')
+    );
   }
 
   itemColorHex(item: PublicOrderItem): string | null {
@@ -313,7 +322,7 @@ export class OrderComponent implements OnInit {
       return rawColor;
     }
 
-    return null;
+    return findColorHex(rawColor);
   }
 
   showItemMaterial(item: PublicOrderItem): boolean {

@@ -4,6 +4,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import {
   PRODUCT_COLORS,
   getColorHex,
+  getColorLabelToken,
   ColorCategory,
   ColorOption,
 } from '../../../core/constants/colors.const';
@@ -32,7 +33,7 @@ export class ColorSelectorComponent {
         const finish = v.finishType || 'AVAILABLE_COLORS';
         const bucket = byFinish.get(finish) || [];
         bucket.push({
-          label: v.colorName,
+          label: getColorLabelToken(v.colorName) ?? v.colorName,
           value: v.colorName,
           hex: v.hexColor,
           variantId: v.id,

@@ -265,14 +265,16 @@
                   </span>
                   <span *ngIf="itemVariantLabel(item) as variantLabel">
                     {{ "SHOP.VARIANT" | translate }}:
-                    {{ variantLabel }}
+                    {{ variantLabel | translate }}
                   </span>
                   <span class="item-color" *ngIf="itemColorLabel(item) !== '-'">
                     <span
                       class="color-dot"
                       [style.background-color]="itemColorSwatch(item)"
                     ></span>
-                    <span class="color-name">{{ itemColorLabel(item) }}</span>
+                    <span class="color-name">{{
+                      itemColorLabel(item) | translate
+                    }}</span>
                   </span>
                 </div>
                 <div class="item-specs-sub" *ngIf="showItemPrintMetrics(item)">

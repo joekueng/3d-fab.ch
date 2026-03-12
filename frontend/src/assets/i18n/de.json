@@ -569,6 +569,13 @@
       "BLUE": "Blau",
       "GREEN": "Grün",
       "YELLOW": "Gelb",
+      "ORANGE": "Orange",
+      "GRAY": "Grau",
+      "LIGHT_GRAY": "Hellgrau",
+      "DARK_GRAY": "Dunkelgrau",
+      "PURPLE": "Lila",
+      "BEIGE": "Beige",
+      "SAND_BEIGE": "Sandbeige",
       "MATTE_BLACK": "Matt Schwarz",
       "MATTE_WHITE": "Matt Weiß",
       "MATTE_GRAY": "Matt Grau"

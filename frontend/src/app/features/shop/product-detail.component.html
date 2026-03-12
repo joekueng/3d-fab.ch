@@ -152,7 +152,7 @@
                             @if (selectedMaterial()?.label) {
                               <span aria-hidden="true">·</span>
                             }
-                            <span>{{ colorLabel(activeVariant) }}</span>
+                            <span>{{ colorLabel(activeVariant) | translate }}</span>
                           }
                         </p>
                       }
@@ -267,7 +267,9 @@
                           </span>
 
                           <span class="color-trigger__copy">
-                            <strong>{{ colorLabel(activeVariant) }}</strong>
+                            <strong>{{
+                              colorLabel(activeVariant) | translate
+                            }}</strong>
                             <small>{{ selectedMaterial()?.label }}</small>
                           </span>
                         </button>
@@ -304,7 +306,7 @@
                                 </span>
 
                                 <span class="color-popup__name">{{
-                                  colorLabel(variant)
+                                  colorLabel(variant) | translate
                                 }}</span>
                               </button>
                             }

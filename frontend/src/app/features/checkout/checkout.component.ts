@@ -22,7 +22,12 @@ import {
 } from '../../shared/components/price-breakdown/price-breakdown.component';
 import { LanguageService } from '../../core/services/language.service';
 import { StlViewerComponent } from '../../shared/components/stl-viewer/stl-viewer.component';
-import { getColorHex } from '../../core/constants/colors.const';
+import {
+  findColorHex,
+  getColorHex,
+  getColorLabelToken,
+  normalizeColorValue,
+} from '../../core/constants/colors.const';
 
 @Component({
   selector: 'app-checkout',
@@ -252,8 +257,7 @@ export class CheckoutComponent implements OnInit {
     if (variantLabel) {
       return variantLabel;
     }
-    const colorName = String(item?.shopVariantColorName ?? '').trim();
-    return colorName || null;
+    return getColorLabelToken(item?.shopVariantColorName);
   }
 
   showItemMaterial(item: any): boolean {
@@ -284,10 +288,10 @@ export class CheckoutComponent implements OnInit {
   itemColorLabel(item: any): string {
     const shopColor = String(item?.shopVariantColorName ?? '').trim();
     if (shopColor) {
-      return shopColor;
+      return getColorLabelToken(shopColor) ?? '-';
     }
     const raw = String(item?.colorCode ?? '').trim();
-    return raw || '-';
+    return getColorLabelToken(raw) ?? '-';
   }
 
   itemColorSwatch(item: any): string {
@@ -310,12 +314,12 @@ export class CheckoutComponent implements OnInit {
       return raw;
     }
 
-    const byName = this.variantHexByColorName.get(raw.toLowerCase());
+    const byName = this.variantHexByColorName.get(normalizeColorValue(raw));
     if (byName) {
       return byName;
     }
 
-    const fallback = getColorHex(raw);
+    const fallback = findColorHex(raw) ?? getColorHex(raw);
     if (fallback && fallback !== '#facf0a') {
       return fallback;
     }
@@ -373,7 +377,10 @@ export class CheckoutComponent implements OnInit {
               this.variantHexById.set(variantId, colorHex);
             }
             if (colorName && colorHex) {
-              this.variantHexByColorName.set(colorName.toLowerCase(), colorHex);
+              this.variantHexByColorName.set(
+                normalizeColorValue(colorName),
+                colorHex,
+              );
             }
           }
         }
