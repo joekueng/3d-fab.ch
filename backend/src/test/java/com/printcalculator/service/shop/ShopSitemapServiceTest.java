@@ -89,10 +89,16 @@ class ShopSitemapServiceTest {
         String xml = service.getShopSitemapXml();
 
         assertTrue(xml.contains("<loc>https://3d-fab.ch/it/shop/accessori</loc>"));
+        assertTrue(xml.contains("<loc>https://3d-fab.ch/en/shop/accessori</loc>"));
+        assertTrue(xml.contains("<loc>https://3d-fab.ch/de/shop/accessori</loc>"));
+        assertTrue(xml.contains("<loc>https://3d-fab.ch/fr/shop/accessori</loc>"));
         assertTrue(xml.contains("hreflang=\"en\" href=\"https://3d-fab.ch/en/shop/accessori\""));
         assertFalse(xml.contains("https://3d-fab.ch/it/shop/bozza"));
 
         assertTrue(xml.contains("<loc>https://3d-fab.ch/it/shop/p/123e4567-supporto-bici</loc>"));
+        assertTrue(xml.contains("<loc>https://3d-fab.ch/en/shop/p/123e4567-bike-holder</loc>"));
+        assertTrue(xml.contains("<loc>https://3d-fab.ch/de/shop/p/123e4567-fahrrad-halter</loc>"));
+        assertTrue(xml.contains("<loc>https://3d-fab.ch/fr/shop/p/123e4567-support-velo</loc>"));
         assertTrue(xml.contains("hreflang=\"en\" href=\"https://3d-fab.ch/en/shop/p/123e4567-bike-holder\""));
         assertTrue(xml.contains("hreflang=\"de\" href=\"https://3d-fab.ch/de/shop/p/123e4567-fahrrad-halter\""));
         assertTrue(xml.contains("hreflang=\"x-default\" href=\"https://3d-fab.ch/it/shop/p/123e4567-supporto-bici\""));

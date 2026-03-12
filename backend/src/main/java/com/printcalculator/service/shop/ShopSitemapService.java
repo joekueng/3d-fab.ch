@@ -146,8 +146,22 @@ public class ShopSitemapService {
             return;
         }
 
+        for (String locLanguage : SUPPORTED_LANGUAGES) {
+            String locHref = hrefByLanguage.get(locLanguage);
+            if (locHref == null || locHref.isBlank()) {
+                continue;
+            }
+            appendLocalizedUrlEntry(xml, locHref, hrefByLanguage, defaultHref, lastmod);
+        }
+    }
+
+    private void appendLocalizedUrlEntry(StringBuilder xml,
+                                         String locHref,
+                                         Map<String, String> hrefByLanguage,
+                                         String defaultHref,
+                                         OffsetDateTime lastmod) {
         xml.append("  <url>\n");
-        xml.append("    <loc>").append(xmlEscape(defaultHref)).append("</loc>\n");
+        xml.append("    <loc>").append(xmlEscape(locHref)).append("</loc>\n");
 
         for (String language : SUPPORTED_LANGUAGES) {
             String href = hrefByLanguage.get(language);
