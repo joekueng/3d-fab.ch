@@ -9,9 +9,9 @@ Disallow: /order
 Disallow: /order/
 Disallow: /*/order
 Disallow: /*/order/
-Disallow: /co
+Disallow: /co$
 Disallow: /co/
-Disallow: /*/co
+Disallow: /*/co$
 Disallow: /*/co/
 Disallow: /checkout
 Disallow: /checkout/
