@@ -75,6 +75,10 @@ export interface VariantOption {
   id: number;
   name: string;
   colorName: string;
+  colorLabelIt?: string;
+  colorLabelEn?: string;
+  colorLabelDe?: string;
+  colorLabelFr?: string;
   hexColor: string;
   finishType: string;
   stockSpools: number;

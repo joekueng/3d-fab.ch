@@ -40,10 +40,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -215,6 +218,210 @@ class OrderServiceTest {
         )));
         verify(paymentService).getOrCreatePaymentForOrder(order, "OTHER");
         verify(eventPublisher).publishEvent(any(OrderCreatedEvent.class));
+    }
+
+    @Test
+    void createOrderFromQuote_withShopProductMissingSourceFile_shouldNotFail() throws Exception {
+        UUID sessionId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+        UUID orderItemId = UUID.randomUUID();
+
+        QuoteSession session = new QuoteSession();
+        session.setId(sessionId);
+        session.setStatus("ACTIVE");
+        session.setSessionType("SHOP_CART");
+        session.setMaterialCode("SHOP");
+        session.setPricingVersion("v1");
+        session.setSetupCostChf(BigDecimal.ZERO);
+        session.setExpiresAt(OffsetDateTime.now().plusDays(30));
+
+        ShopCategory category = new ShopCategory();
+        category.setId(UUID.randomUUID());
+        category.setSlug("desk");
+        category.setName("Desk");
+
+        ShopProduct product = new ShopProduct();
+        product.setId(UUID.randomUUID());
+        product.setCategory(category);
+        product.setSlug("organizer");
+        product.setName("Organizer");
+
+        ShopProductVariant variant = new ShopProductVariant();
+        variant.setId(UUID.randomUUID());
+        variant.setProduct(product);
+        variant.setVariantLabel("PLA");
+        variant.setColorName("Orange");
+        variant.setColorHex("#ff8a00");
+        variant.setInternalMaterialCode("PLA");
+        variant.setPriceChf(new BigDecimal("18.00"));
+
+        Path missingSource = Path.of("storage_quotes")
+                .toAbsolutePath()
+                .normalize()
+                .resolve(sessionId.toString())
+                .resolve("missing-shop-item.stl");
+
+        QuoteLineItem qItem = new QuoteLineItem();
+        qItem.setId(UUID.randomUUID());
+        qItem.setQuoteSession(session);
+        qItem.setStatus("READY");
+        qItem.setLineItemType("SHOP_PRODUCT");
+        qItem.setOriginalFilename("organizer.stl");
+        qItem.setDisplayName("Organizer");
+        qItem.setQuantity(1);
+        qItem.setColorCode("Orange");
+        qItem.setMaterialCode("PLA");
+        qItem.setShopProduct(product);
+        qItem.setShopProductVariant(variant);
+        qItem.setShopProductSlug(product.getSlug());
+        qItem.setShopProductName(product.getName());
+        qItem.setShopVariantLabel("PLA");
+        qItem.setShopVariantColorName("Orange");
+        qItem.setShopVariantColorHex("#ff8a00");
+        qItem.setUnitPriceChf(new BigDecimal("18.00"));
+        qItem.setStoredPath(missingSource.toString());
+
+        when(quoteSessionRepo.findById(sessionId)).thenReturn(Optional.of(session));
+        when(customerRepo.findByEmail("buyer@example.com")).thenReturn(Optional.empty());
+        when(customerRepo.save(any(Customer.class))).thenAnswer(invocation -> {
+            Customer saved = invocation.getArgument(0);
+            if (saved.getId() == null) {
+                saved.setId(UUID.randomUUID());
+            }
+            return saved;
+        });
+        when(quoteLineItemRepo.findByQuoteSessionId(sessionId)).thenReturn(List.of(qItem));
+        when(quoteSessionTotalsService.compute(eq(session), eq(List.of(qItem)))).thenReturn(
+                new QuoteSessionTotalsService.QuoteSessionTotals(
+                        new BigDecimal("18.00"),
+                        BigDecimal.ZERO,
+                        BigDecimal.ZERO,
+                        new BigDecimal("18.00"),
+                        BigDecimal.ZERO,
+                        BigDecimal.ZERO,
+                        BigDecimal.ZERO,
+                        BigDecimal.ZERO,
+                        new BigDecimal("18.00"),
+                        BigDecimal.ZERO
+                )
+        );
+        when(orderRepo.save(any(Order.class))).thenAnswer(invocation -> {
+            Order saved = invocation.getArgument(0);
+            if (saved.getId() == null) {
+                saved.setId(orderId);
+            }
+            return saved;
+        });
+        when(orderItemRepo.save(any(OrderItem.class))).thenAnswer(invocation -> {
+            OrderItem saved = invocation.getArgument(0);
+            if (saved.getId() == null) {
+                saved.setId(orderItemId);
+            }
+            return saved;
+        });
+        when(qrBillService.generateQrBillSvg(any(Order.class))).thenReturn("<svg/>".getBytes(StandardCharsets.UTF_8));
+        when(invoiceService.generateDocumentPdf(any(Order.class), any(List.class), eq(true), eq(qrBillService), isNull()))
+                .thenReturn("pdf".getBytes(StandardCharsets.UTF_8));
+        when(paymentService.getOrCreatePaymentForOrder(any(Order.class), eq("OTHER"))).thenReturn(new Payment());
+
+        Order order = service.createOrderFromQuote(sessionId, buildRequest());
+
+        assertEquals(orderId, order.getId());
+        assertEquals("CONVERTED", session.getStatus());
+
+        ArgumentCaptor<OrderItem> itemCaptor = ArgumentCaptor.forClass(OrderItem.class);
+        verify(orderItemRepo, times(2)).save(itemCaptor.capture());
+        OrderItem savedItem = itemCaptor.getAllValues().getLast();
+        assertEquals("PENDING", savedItem.getStoredRelativePath());
+        assertNull(savedItem.getFileSizeBytes());
+
+        verify(storageService, never()).store(eq(missingSource), any(Path.class));
+        verify(paymentService).getOrCreatePaymentForOrder(order, "OTHER");
+    }
+
+    @Test
+    void createOrderFromQuote_withCalculatorItemMissingSourceFile_shouldFail() {
+        UUID sessionId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+        UUID orderItemId = UUID.randomUUID();
+
+        QuoteSession session = new QuoteSession();
+        session.setId(sessionId);
+        session.setStatus("ACTIVE");
+        session.setSessionType("QUOTE");
+        session.setMaterialCode("PLA");
+        session.setPricingVersion("v1");
+        session.setSetupCostChf(BigDecimal.ZERO);
+        session.setExpiresAt(OffsetDateTime.now().plusDays(30));
+
+        Path missingSource = Path.of("storage_quotes")
+                .toAbsolutePath()
+                .normalize()
+                .resolve(sessionId.toString())
+                .resolve("missing-calculator-item.stl");
+
+        QuoteLineItem qItem = new QuoteLineItem();
+        qItem.setId(UUID.randomUUID());
+        qItem.setQuoteSession(session);
+        qItem.setStatus("READY");
+        qItem.setLineItemType("PRINT_FILE");
+        qItem.setOriginalFilename("part.stl");
+        qItem.setDisplayName("part.stl");
+        qItem.setQuantity(1);
+        qItem.setMaterialCode("PLA");
+        qItem.setUnitPriceChf(new BigDecimal("9.50"));
+        qItem.setStoredPath(missingSource.toString());
+
+        when(quoteSessionRepo.findById(sessionId)).thenReturn(Optional.of(session));
+        when(customerRepo.findByEmail("buyer@example.com")).thenReturn(Optional.empty());
+        when(customerRepo.save(any(Customer.class))).thenAnswer(invocation -> {
+            Customer saved = invocation.getArgument(0);
+            if (saved.getId() == null) {
+                saved.setId(UUID.randomUUID());
+            }
+            return saved;
+        });
+        when(quoteLineItemRepo.findByQuoteSessionId(sessionId)).thenReturn(List.of(qItem));
+        when(quoteSessionTotalsService.compute(eq(session), eq(List.of(qItem)))).thenReturn(
+                new QuoteSessionTotalsService.QuoteSessionTotals(
+                        new BigDecimal("9.50"),
+                        BigDecimal.ZERO,
+                        BigDecimal.ZERO,
+                        new BigDecimal("9.50"),
+                        BigDecimal.ZERO,
+                        BigDecimal.ZERO,
+                        BigDecimal.ZERO,
+                        BigDecimal.ZERO,
+                        new BigDecimal("9.50"),
+                        BigDecimal.ZERO
+                )
+        );
+        when(orderRepo.save(any(Order.class))).thenAnswer(invocation -> {
+            Order saved = invocation.getArgument(0);
+            if (saved.getId() == null) {
+                saved.setId(orderId);
+            }
+            return saved;
+        });
+        when(orderItemRepo.save(any(OrderItem.class))).thenAnswer(invocation -> {
+            OrderItem saved = invocation.getArgument(0);
+            if (saved.getId() == null) {
+                saved.setId(orderItemId);
+            }
+            return saved;
+        });
+
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> service.createOrderFromQuote(sessionId, buildRequest())
+        );
+
+        assertEquals(
+                "Source file not available for quote line item " + qItem.getId(),
+                exception.getMessage()
+        );
+        verify(paymentService, never()).getOrCreatePaymentForOrder(any(Order.class), eq("OTHER"));
+        verify(eventPublisher, never()).publishEvent(any(OrderCreatedEvent.class));
     }
 
     private CreateOrderRequest buildRequest() {

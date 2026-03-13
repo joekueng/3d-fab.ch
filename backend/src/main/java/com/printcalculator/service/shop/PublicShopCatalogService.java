@@ -71,7 +71,7 @@ public class PublicShopCatalogService {
 
     public List<ShopCategoryTreeDto> getCategories(String language) {
         CategoryContext categoryContext = loadCategoryContext(language);
-        return buildCategoryTree(null, categoryContext);
+        return buildCategoryTree(null, categoryContext, language);
     }
 
     public ShopCategoryDetailDto getCategory(String slug, String language) {
@@ -83,7 +83,7 @@ public class PublicShopCatalogService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found");
         }
 
-        return buildCategoryDetail(category, categoryContext);
+        return buildCategoryDetail(category, categoryContext, language);
     }
 
     public ShopProductCatalogResponseDto getProductCatalog(String categorySlug, Boolean featuredOnly, String language) {
@@ -114,7 +114,7 @@ public class PublicShopCatalogService {
                 .toList();
 
         ShopCategoryDetailDto selectedCategoryDetail = selectedCategory != null
-                ? buildCategoryDetail(selectedCategory, categoryContext)
+                ? buildCategoryDetail(selectedCategory, categoryContext, language)
                 : null;
 
         return new ShopProductCatalogResponseDto(
@@ -316,53 +316,63 @@ public class PublicShopCatalogService {
         return total;
     }
 
-    private List<ShopCategoryTreeDto> buildCategoryTree(UUID parentId, CategoryContext categoryContext) {
+    private List<ShopCategoryTreeDto> buildCategoryTree(UUID parentId,
+                                                        CategoryContext categoryContext,
+                                                        String language) {
         return categoryContext.childrenByParentId().getOrDefault(parentId, List.of()).stream()
                 .map(category -> new ShopCategoryTreeDto(
                         category.getId(),
                         category.getParentCategory() != null ? category.getParentCategory().getId() : null,
                         category.getSlug(),
-                        category.getName(),
-                        category.getDescription(),
-                        category.getSeoTitle(),
-                        category.getSeoDescription(),
+                        category.getNameForLanguage(language),
+                        category.getDescriptionForLanguage(language),
+                        category.getSeoTitleForLanguage(language),
+                        category.getSeoDescriptionForLanguage(language),
                         category.getOgTitle(),
                         category.getOgDescription(),
                         category.getIndexable(),
                         category.getSortOrder(),
                         categoryContext.descendantProductCounts().getOrDefault(category.getId(), 0),
                         selectPrimaryMedia(categoryContext.categoryMediaBySlug().get(categoryMediaUsageKey(category))),
-                        buildCategoryTree(category.getId(), categoryContext)
+                        buildCategoryTree(category.getId(), categoryContext, language)
                 ))
                 .toList();
     }
 
-    private ShopCategoryDetailDto buildCategoryDetail(ShopCategory category, CategoryContext categoryContext) {
+    private ShopCategoryDetailDto buildCategoryDetail(ShopCategory category,
+                                                      CategoryContext categoryContext,
+                                                      String language) {
         List<PublicMediaUsageDto> images = categoryContext.categoryMediaBySlug().getOrDefault(categoryMediaUsageKey(category), List.of());
+        String localizedSeoTitle = category.getSeoTitleForLanguage(language);
+        String localizedSeoDescription = category.getSeoDescriptionForLanguage(language);
         return new ShopCategoryDetailDto(
                 category.getId(),
                 category.getSlug(),
-                category.getName(),
-                category.getDescription(),
-                category.getSeoTitle(),
-                category.getSeoDescription(),
+                category.getNameForLanguage(language),
+                category.getDescriptionForLanguage(language),
+                localizedSeoTitle,
+                localizedSeoDescription,
                 category.getOgTitle(),
                 category.getOgDescription(),
                 category.getIndexable(),
                 category.getSortOrder(),
                 categoryContext.descendantProductCounts().getOrDefault(category.getId(), 0),
-                buildCategoryBreadcrumbs(category),
+                buildCategoryBreadcrumbs(category, language),
                 selectPrimaryMedia(images),
                 images,
-                buildCategoryTree(category.getId(), categoryContext)
+                buildCategoryTree(category.getId(), categoryContext, language)
         );
     }
 
-    private List<ShopCategoryRefDto> buildCategoryBreadcrumbs(ShopCategory category) {
+    private List<ShopCategoryRefDto> buildCategoryBreadcrumbs(ShopCategory category, String language) {
         List<ShopCategoryRefDto> breadcrumbs = new ArrayList<>();
         ShopCategory current = category;
         while (current != null) {
-            breadcrumbs.add(new ShopCategoryRefDto(current.getId(), current.getSlug(), current.getName()));
+            breadcrumbs.add(new ShopCategoryRefDto(
+                    current.getId(),
+                    current.getSlug(),
+                    current.getNameForLanguage(language)
+            ));
             current = current.getParentCategory();
         }
         java.util.Collections.reverse(breadcrumbs);
@@ -399,11 +409,11 @@ public class PublicShopCatalogService {
                 new ShopCategoryRefDto(
                         entry.product().getCategory().getId(),
                         entry.product().getCategory().getSlug(),
-                        entry.product().getCategory().getName()
+                        entry.product().getCategory().getNameForLanguage(language)
                 ),
                 resolvePriceFrom(entry.variants()),
                 resolvePriceTo(entry.variants()),
-                toVariantDto(entry.defaultVariant(), entry.defaultVariant(), variantColorHexByMaterialAndColor),
+                toVariantDto(entry.defaultVariant(), entry.defaultVariant(), variantColorHexByMaterialAndColor, language),
                 selectPrimaryMedia(images),
                 toProductModelDto(entry)
         );
@@ -432,14 +442,14 @@ public class PublicShopCatalogService {
                 new ShopCategoryRefDto(
                         entry.product().getCategory().getId(),
                         entry.product().getCategory().getSlug(),
-                        entry.product().getCategory().getName()
+                        entry.product().getCategory().getNameForLanguage(language)
                 ),
-                buildCategoryBreadcrumbs(entry.product().getCategory()),
+                buildCategoryBreadcrumbs(entry.product().getCategory(), language),
                 resolvePriceFrom(entry.variants()),
                 resolvePriceTo(entry.variants()),
-                toVariantDto(entry.defaultVariant(), entry.defaultVariant(), variantColorHexByMaterialAndColor),
+                toVariantDto(entry.defaultVariant(), entry.defaultVariant(), variantColorHexByMaterialAndColor, language),
                 entry.variants().stream()
-                        .map(variant -> toVariantDto(variant, entry.defaultVariant(), variantColorHexByMaterialAndColor))
+                        .map(variant -> toVariantDto(variant, entry.defaultVariant(), variantColorHexByMaterialAndColor, language))
                         .toList(),
                 selectPrimaryMedia(images),
                 images,
@@ -449,7 +459,8 @@ public class PublicShopCatalogService {
 
     private ShopProductVariantOptionDto toVariantDto(ShopProductVariant variant,
                                                      ShopProductVariant defaultVariant,
-                                                     Map<String, String> variantColorHexByMaterialAndColor) {
+                                                     Map<String, String> variantColorHexByMaterialAndColor,
+                                                     String language) {
         if (variant == null) {
             return null;
         }
@@ -463,6 +474,7 @@ public class PublicShopCatalogService {
                 variant.getSku(),
                 variant.getVariantLabel(),
                 variant.getColorName(),
+                variant.getColorLabelForLanguage(language),
                 colorHex,
                 variant.getPriceChf(),
                 defaultVariant != null && Objects.equals(defaultVariant.getId(), variant.getId())

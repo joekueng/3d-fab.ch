@@ -207,17 +207,6 @@
               </label>
 
               <label class="ui-form-field">
-                <span class="ui-form-caption">Nome categoria</span>
-                <input
-                  class="ui-form-control"
-                  type="text"
-                  [(ngModel)]="categoryForm.name"
-                  name="categoryName"
-                  placeholder="Desk accessories"
-                />
-              </label>
-
-              <label class="ui-form-field">
                 <span class="ui-form-caption">Slug</span>
                 <div class="input-with-action">
                   <input
@@ -235,36 +224,6 @@
                     Genera
                   </button>
                 </div>
-              </label>
-
-              <label class="ui-form-field form-field--wide">
-                <span class="ui-form-caption">Descrizione</span>
-                <textarea
-                  class="ui-form-control textarea-control"
-                  [(ngModel)]="categoryForm.description"
-                  name="categoryDescription"
-                  rows="3"
-                ></textarea>
-              </label>
-
-              <label class="ui-form-field">
-                <span class="ui-form-caption">SEO title</span>
-                <input
-                  class="ui-form-control"
-                  type="text"
-                  [(ngModel)]="categoryForm.seoTitle"
-                  name="categorySeoTitle"
-                />
-              </label>
-
-              <label class="ui-form-field">
-                <span class="ui-form-caption">SEO description</span>
-                <input
-                  class="ui-form-control"
-                  type="text"
-                  [(ngModel)]="categoryForm.seoDescription"
-                  name="categorySeoDescription"
-                />
               </label>
 
               <label class="ui-form-field">
@@ -285,6 +244,141 @@
                   [(ngModel)]="categoryForm.ogDescription"
                   name="categoryOgDescription"
                 />
+              </label>
+            </div>
+
+            <div class="ui-language-toolbar">
+              <div class="ui-language-toolbar__copy">
+                <span>Lingua contenuti categoria</span>
+                <p>IT / EN / DE / FR</p>
+              </div>
+              <div class="ui-language-toolbar__toggle">
+                <button
+                  *ngFor="let language of shopLanguages"
+                  type="button"
+                  class="ui-language-toolbar__button image-language-button"
+                  [class.active]="activeContentLanguage === language"
+                  [class.complete]="isCategoryContentLanguageComplete(language)"
+                  [class.incomplete]="
+                    isCategoryContentLanguageIncomplete(language)
+                  "
+                  [class.empty]="!isCategoryContentLanguageStarted(language)"
+                  (click)="setActiveContentLanguage(language)"
+                >
+                  <span class="image-language-button__label">
+                    {{ languageLabels[language] }}
+                  </span>
+                  <span
+                    class="image-language-button__state"
+                    *ngIf="isCategoryContentLanguageComplete(language)"
+                  >
+                    OK
+                  </span>
+                  <span
+                    class="image-language-button__state"
+                    *ngIf="isCategoryContentLanguageIncomplete(language)"
+                  >
+                    ...
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <div class="ui-form-grid ui-form-grid--two">
+              <label class="ui-form-field">
+                <span class="ui-form-caption">
+                  Nome categoria {{ languageLabels[activeContentLanguage] }}
+                </span>
+                <input
+                  class="ui-form-control"
+                  type="text"
+                  [(ngModel)]="categoryForm.names[activeContentLanguage]"
+                  [name]="'category-name-' + activeContentLanguage"
+                  placeholder="Desk accessories"
+                />
+              </label>
+
+              <label class="ui-form-field form-field--wide">
+                <span class="ui-form-caption">
+                  Descrizione {{ languageLabels[activeContentLanguage] }}
+                </span>
+                <textarea
+                  class="ui-form-control textarea-control"
+                  [(ngModel)]="categoryForm.descriptions[activeContentLanguage]"
+                  [name]="'category-description-' + activeContentLanguage"
+                  rows="3"
+                ></textarea>
+              </label>
+            </div>
+
+            <div class="ui-language-toolbar">
+              <div class="ui-language-toolbar__copy">
+                <span>Lingua SEO categoria</span>
+                <p>Stessa lingua attiva dell'editor</p>
+              </div>
+              <div class="ui-language-toolbar__toggle">
+                <button
+                  *ngFor="let language of shopLanguages"
+                  type="button"
+                  class="ui-language-toolbar__button image-language-button"
+                  [class.active]="activeContentLanguage === language"
+                  [class.complete]="isCategorySeoLanguageComplete(language)"
+                  [class.incomplete]="isCategorySeoLanguageIncomplete(language)"
+                  [class.empty]="!isCategorySeoLanguageStarted(language)"
+                  (click)="setActiveContentLanguage(language)"
+                >
+                  <span class="image-language-button__label">
+                    {{ languageLabels[language] }}
+                  </span>
+                  <span
+                    class="image-language-button__state"
+                    *ngIf="isCategorySeoLanguageComplete(language)"
+                  >
+                    OK
+                  </span>
+                  <span
+                    class="image-language-button__state"
+                    *ngIf="isCategorySeoLanguageIncomplete(language)"
+                  >
+                    ...
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <div class="ui-form-grid ui-form-grid--two">
+              <label class="ui-form-field">
+                <span class="ui-form-caption">
+                  SEO title {{ languageLabels[activeContentLanguage] }}
+                </span>
+                <input
+                  class="ui-form-control"
+                  type="text"
+                  [(ngModel)]="categoryForm.seoTitles[activeContentLanguage]"
+                  [name]="'category-seo-title-' + activeContentLanguage"
+                />
+              </label>
+
+              <label class="ui-form-field form-field--wide">
+                <span class="ui-form-caption">
+                  SEO description {{ languageLabels[activeContentLanguage] }}
+                </span>
+                <textarea
+                  class="ui-form-control"
+                  [(ngModel)]="
+                    categoryForm.seoDescriptions[activeContentLanguage]
+                  "
+                  [name]="'category-seo-description-' + activeContentLanguage"
+                  rows="3"
+                ></textarea>
+                <span
+                  class="seo-counter"
+                  [class.seo-counter--danger]="
+                    categorySeoDescriptionLength(activeContentLanguage) > 160
+                  "
+                >
+                  {{ categorySeoDescriptionLength(activeContentLanguage) }}/160
+                </span>
               </label>
             </div>
 

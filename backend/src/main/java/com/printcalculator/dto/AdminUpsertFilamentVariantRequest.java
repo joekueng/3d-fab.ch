@@ -6,6 +6,10 @@ public class AdminUpsertFilamentVariantRequest {
     private Long materialTypeId;
     private String variantDisplayName;
     private String colorName;
+    private String colorLabelIt;
+    private String colorLabelEn;
+    private String colorLabelDe;
+    private String colorLabelFr;
     private String colorHex;
     private String finishType;
     private String brand;
@@ -38,6 +42,38 @@ public class AdminUpsertFilamentVariantRequest {
 
     public void setColorName(String colorName) {
         this.colorName = colorName;
+    }
+
+    public String getColorLabelIt() {
+        return colorLabelIt;
+    }
+
+    public void setColorLabelIt(String colorLabelIt) {
+        this.colorLabelIt = colorLabelIt;
+    }
+
+    public String getColorLabelEn() {
+        return colorLabelEn;
+    }
+
+    public void setColorLabelEn(String colorLabelEn) {
+        this.colorLabelEn = colorLabelEn;
+    }
+
+    public String getColorLabelDe() {
+        return colorLabelDe;
+    }
+
+    public void setColorLabelDe(String colorLabelDe) {
+        this.colorLabelDe = colorLabelDe;
+    }
+
+    public String getColorLabelFr() {
+        return colorLabelFr;
+    }
+
+    public void setColorLabelFr(String colorLabelFr) {
+        this.colorLabelFr = colorLabelFr;
     }
 
     public String getColorHex() {

@@ -67,13 +67,13 @@ public class AdminShopCategoryControllerService {
     @Transactional
     public AdminShopCategoryDto createCategory(AdminUpsertShopCategoryRequest payload) {
         ensurePayload(payload);
-        String normalizedName = normalizeRequiredName(payload.getName());
-        String normalizedSlug = normalizeAndValidateSlug(payload.getSlug(), normalizedName);
+        LocalizedCategoryContent localizedContent = normalizeLocalizedCategoryContent(payload);
+        String normalizedSlug = normalizeAndValidateSlug(payload.getSlug(), localizedContent.defaultName());
         ensureSlugAvailable(normalizedSlug, null);
 
         ShopCategory category = new ShopCategory();
         category.setCreatedAt(OffsetDateTime.now());
-        applyPayload(category, payload, normalizedName, normalizedSlug, null);
+        applyPayload(category, payload, localizedContent, normalizedSlug, null);
 
         ShopCategory saved = shopCategoryRepository.save(category);
         return getCategory(saved.getId());
@@ -86,11 +86,11 @@ public class AdminShopCategoryControllerService {
         ShopCategory category = shopCategoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Shop category not found"));
 
-        String normalizedName = normalizeRequiredName(payload.getName());
-        String normalizedSlug = normalizeAndValidateSlug(payload.getSlug(), normalizedName);
+        LocalizedCategoryContent localizedContent = normalizeLocalizedCategoryContent(payload);
+        String normalizedSlug = normalizeAndValidateSlug(payload.getSlug(), localizedContent.defaultName());
         ensureSlugAvailable(normalizedSlug, category.getId());
 
-        applyPayload(category, payload, normalizedName, normalizedSlug, category.getId());
+        applyPayload(category, payload, localizedContent, normalizedSlug, category.getId());
         ShopCategory saved = shopCategoryRepository.save(category);
         return getCategory(saved.getId());
     }
@@ -112,17 +112,33 @@ public class AdminShopCategoryControllerService {
 
     private void applyPayload(ShopCategory category,
                               AdminUpsertShopCategoryRequest payload,
-                              String normalizedName,
+                              LocalizedCategoryContent localizedContent,
                               String normalizedSlug,
                               UUID currentCategoryId) {
         ShopCategory parentCategory = resolveParentCategory(payload.getParentCategoryId(), currentCategoryId);
 
         category.setParentCategory(parentCategory);
         category.setSlug(normalizedSlug);
-        category.setName(normalizedName);
-        category.setDescription(normalizeOptional(payload.getDescription()));
-        category.setSeoTitle(normalizeOptional(payload.getSeoTitle()));
-        category.setSeoDescription(normalizeOptional(payload.getSeoDescription()));
+        category.setName(localizedContent.defaultName());
+        category.setNameIt(localizedContent.names().get("it"));
+        category.setNameEn(localizedContent.names().get("en"));
+        category.setNameDe(localizedContent.names().get("de"));
+        category.setNameFr(localizedContent.names().get("fr"));
+        category.setDescription(localizedContent.defaultDescription());
+        category.setDescriptionIt(localizedContent.descriptions().get("it"));
+        category.setDescriptionEn(localizedContent.descriptions().get("en"));
+        category.setDescriptionDe(localizedContent.descriptions().get("de"));
+        category.setDescriptionFr(localizedContent.descriptions().get("fr"));
+        category.setSeoTitle(localizedContent.defaultSeoTitle());
+        category.setSeoTitleIt(localizedContent.seoTitles().get("it"));
+        category.setSeoTitleEn(localizedContent.seoTitles().get("en"));
+        category.setSeoTitleDe(localizedContent.seoTitles().get("de"));
+        category.setSeoTitleFr(localizedContent.seoTitles().get("fr"));
+        category.setSeoDescription(localizedContent.defaultSeoDescription());
+        category.setSeoDescriptionIt(localizedContent.seoDescriptions().get("it"));
+        category.setSeoDescriptionEn(localizedContent.seoDescriptions().get("en"));
+        category.setSeoDescriptionDe(localizedContent.seoDescriptions().get("de"));
+        category.setSeoDescriptionFr(localizedContent.seoDescriptions().get("fr"));
         category.setOgTitle(normalizeOptional(payload.getOgTitle()));
         category.setOgDescription(normalizeOptional(payload.getOgDescription()));
         category.setIndexable(payload.getIndexable() == null || payload.getIndexable());
@@ -161,14 +177,6 @@ public class AdminShopCategoryControllerService {
         }
     }
 
-    private String normalizeRequiredName(String name) {
-        String normalized = normalizeOptional(name);
-        if (normalized == null) {
-            throw new ResponseStatusException(BAD_REQUEST, "Category name is required");
-        }
-        return normalized;
-    }
-
     private String normalizeAndValidateSlug(String slug, String fallbackName) {
         String source = normalizeOptional(slug);
         if (source == null) {
@@ -201,6 +209,103 @@ public class AdminShopCategoryControllerService {
         }
         String normalized = value.trim();
         return normalized.isBlank() ? null : normalized;
+    }
+
+    private String normalizeRequired(String value, String message) {
+        String normalized = normalizeOptional(value);
+        if (normalized == null) {
+            throw new ResponseStatusException(BAD_REQUEST, message);
+        }
+        return normalized;
+    }
+
+    private LocalizedCategoryContent normalizeLocalizedCategoryContent(AdminUpsertShopCategoryRequest payload) {
+        String legacyName = normalizeOptional(payload.getName());
+        String fallbackName = firstNonBlank(
+                legacyName,
+                normalizeOptional(payload.getNameIt()),
+                normalizeOptional(payload.getNameEn()),
+                normalizeOptional(payload.getNameDe()),
+                normalizeOptional(payload.getNameFr())
+        );
+        if (fallbackName == null) {
+            throw new ResponseStatusException(BAD_REQUEST, "Category name is required");
+        }
+
+        Map<String, String> names = new LinkedHashMap<>();
+        names.put("it", normalizeRequired(firstNonBlank(normalizeOptional(payload.getNameIt()), fallbackName), "Italian category name is required"));
+        names.put("en", normalizeRequired(firstNonBlank(normalizeOptional(payload.getNameEn()), fallbackName), "English category name is required"));
+        names.put("de", normalizeRequired(firstNonBlank(normalizeOptional(payload.getNameDe()), fallbackName), "German category name is required"));
+        names.put("fr", normalizeRequired(firstNonBlank(normalizeOptional(payload.getNameFr()), fallbackName), "French category name is required"));
+
+        String fallbackDescription = firstNonBlank(
+                normalizeOptional(payload.getDescription()),
+                normalizeOptional(payload.getDescriptionIt()),
+                normalizeOptional(payload.getDescriptionEn()),
+                normalizeOptional(payload.getDescriptionDe()),
+                normalizeOptional(payload.getDescriptionFr())
+        );
+        Map<String, String> descriptions = new LinkedHashMap<>();
+        descriptions.put("it", firstNonBlank(normalizeOptional(payload.getDescriptionIt()), fallbackDescription));
+        descriptions.put("en", firstNonBlank(normalizeOptional(payload.getDescriptionEn()), fallbackDescription));
+        descriptions.put("de", firstNonBlank(normalizeOptional(payload.getDescriptionDe()), fallbackDescription));
+        descriptions.put("fr", firstNonBlank(normalizeOptional(payload.getDescriptionFr()), fallbackDescription));
+
+        String fallbackSeoTitle = firstNonBlank(
+                normalizeOptional(payload.getSeoTitle()),
+                normalizeOptional(payload.getSeoTitleIt()),
+                normalizeOptional(payload.getSeoTitleEn()),
+                normalizeOptional(payload.getSeoTitleDe()),
+                normalizeOptional(payload.getSeoTitleFr())
+        );
+        Map<String, String> seoTitles = new LinkedHashMap<>();
+        seoTitles.put("it", firstNonBlank(normalizeOptional(payload.getSeoTitleIt()), fallbackSeoTitle));
+        seoTitles.put("en", firstNonBlank(normalizeOptional(payload.getSeoTitleEn()), fallbackSeoTitle));
+        seoTitles.put("de", firstNonBlank(normalizeOptional(payload.getSeoTitleDe()), fallbackSeoTitle));
+        seoTitles.put("fr", firstNonBlank(normalizeOptional(payload.getSeoTitleFr()), fallbackSeoTitle));
+
+        String fallbackSeoDescription = firstNonBlank(
+                normalizeOptional(payload.getSeoDescription()),
+                normalizeOptional(payload.getSeoDescriptionIt()),
+                normalizeOptional(payload.getSeoDescriptionEn()),
+                normalizeOptional(payload.getSeoDescriptionDe()),
+                normalizeOptional(payload.getSeoDescriptionFr())
+        );
+        Map<String, String> seoDescriptions = new LinkedHashMap<>();
+        seoDescriptions.put("it", validateSeoDescriptionLength(firstNonBlank(normalizeOptional(payload.getSeoDescriptionIt()), fallbackSeoDescription), "Italian"));
+        seoDescriptions.put("en", validateSeoDescriptionLength(firstNonBlank(normalizeOptional(payload.getSeoDescriptionEn()), fallbackSeoDescription), "English"));
+        seoDescriptions.put("de", validateSeoDescriptionLength(firstNonBlank(normalizeOptional(payload.getSeoDescriptionDe()), fallbackSeoDescription), "German"));
+        seoDescriptions.put("fr", validateSeoDescriptionLength(firstNonBlank(normalizeOptional(payload.getSeoDescriptionFr()), fallbackSeoDescription), "French"));
+
+        return new LocalizedCategoryContent(
+                names.get("it"),
+                firstNonBlank(descriptions.get("it"), fallbackDescription),
+                firstNonBlank(seoTitles.get("it"), fallbackSeoTitle),
+                firstNonBlank(seoDescriptions.get("it"), fallbackSeoDescription),
+                names,
+                descriptions,
+                seoTitles,
+                seoDescriptions
+        );
+    }
+
+    private String validateSeoDescriptionLength(String value, String languageLabel) {
+        if (value != null && value.length() > 160) {
+            throw new ResponseStatusException(BAD_REQUEST, languageLabel + " SEO description must be at most 160 characters");
+        }
+        return value;
+    }
+
+    private String firstNonBlank(String... values) {
+        if (values == null) {
+            return null;
+        }
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value;
+            }
+        }
+        return null;
     }
 
     private CategoryContext buildContext() {
@@ -278,9 +383,25 @@ public class AdminShopCategoryControllerService {
         dto.setParentCategoryName(category.getParentCategory() != null ? category.getParentCategory().getName() : null);
         dto.setSlug(category.getSlug());
         dto.setName(category.getName());
+        dto.setNameIt(category.getNameIt());
+        dto.setNameEn(category.getNameEn());
+        dto.setNameDe(category.getNameDe());
+        dto.setNameFr(category.getNameFr());
         dto.setDescription(category.getDescription());
+        dto.setDescriptionIt(category.getDescriptionIt());
+        dto.setDescriptionEn(category.getDescriptionEn());
+        dto.setDescriptionDe(category.getDescriptionDe());
+        dto.setDescriptionFr(category.getDescriptionFr());
         dto.setSeoTitle(category.getSeoTitle());
+        dto.setSeoTitleIt(category.getSeoTitleIt());
+        dto.setSeoTitleEn(category.getSeoTitleEn());
+        dto.setSeoTitleDe(category.getSeoTitleDe());
+        dto.setSeoTitleFr(category.getSeoTitleFr());
         dto.setSeoDescription(category.getSeoDescription());
+        dto.setSeoDescriptionIt(category.getSeoDescriptionIt());
+        dto.setSeoDescriptionEn(category.getSeoDescriptionEn());
+        dto.setSeoDescriptionDe(category.getSeoDescriptionDe());
+        dto.setSeoDescriptionFr(category.getSeoDescriptionFr());
         dto.setOgTitle(category.getOgTitle());
         dto.setOgDescription(category.getOgDescription());
         dto.setIndexable(category.getIndexable());
@@ -329,6 +450,18 @@ public class AdminShopCategoryControllerService {
             Map<UUID, List<ShopCategory>> childrenByParentId,
             Map<UUID, Integer> directProductCounts,
             Map<UUID, Integer> descendantProductCounts
+    ) {
+    }
+
+    private record LocalizedCategoryContent(
+            String defaultName,
+            String defaultDescription,
+            String defaultSeoTitle,
+            String defaultSeoDescription,
+            Map<String, String> names,
+            Map<String, String> descriptions,
+            Map<String, String> seoTitles,
+            Map<String, String> seoDescriptions
     ) {
     }
 }

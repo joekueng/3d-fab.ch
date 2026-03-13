@@ -68,9 +68,12 @@
       </div>
     </app-card>
 
-    <div class="payment-layout ui-two-column-layout">
-      <div class="payment-main">
-        <app-card class="mb-6" *ngIf="o.status === 'PENDING_PAYMENT'">
+    <div
+      class="payment-layout ui-two-column-layout"
+      [class.payment-layout--summary-only]="o.status !== 'PENDING_PAYMENT'"
+    >
+      <div class="payment-main" *ngIf="o.status === 'PENDING_PAYMENT'">
+        <app-card class="mb-6">
           <div class="ui-card-header">
             <h3 class="ui-card-title">{{ "PAYMENT.METHOD" | translate }}</h3>
           </div>
@@ -174,69 +177,6 @@
             </app-button>
           </div>
         </app-card>
-
-        <app-card class="mb-6">
-          <div class="ui-card-header">
-            <h3 class="ui-card-title">{{ "ORDER.ITEMS_TITLE" | translate }}</h3>
-            <p class="ui-card-subtitle">
-              {{ orderKindLabel(o) }}
-            </p>
-          </div>
-
-          <div class="order-items">
-            <div class="order-item" *ngFor="let item of o.items || []">
-              <div class="order-item-copy">
-                <div class="order-item-name-row">
-                  <strong class="order-item-name">{{
-                    itemDisplayName(item)
-                  }}</strong>
-                  <span
-                    class="order-item-kind"
-                    [class.order-item-kind-shop]="isShopItem(item)"
-                  >
-                    {{
-                      isShopItem(item)
-                        ? ("ORDER.TYPE_SHOP" | translate)
-                        : ("ORDER.TYPE_CALCULATOR" | translate)
-                    }}
-                  </span>
-                </div>
-
-                <div class="order-item-meta">
-                  <span
-                    >{{ "CHECKOUT.QTY" | translate }}: {{ item.quantity }}</span
-                  >
-                  <span *ngIf="showItemMaterial(item)">
-                    {{ "CHECKOUT.MATERIAL" | translate }}:
-                    {{
-                      item.materialCode || ("ORDER.NOT_AVAILABLE" | translate)
-                    }}
-                  </span>
-                  <span *ngIf="itemVariantLabel(item) as variantLabel">
-                    {{ "SHOP.VARIANT" | translate }}: {{ variantLabel }}
-                  </span>
-                  <span class="item-color-chip">
-                    <span
-                      class="color-swatch"
-                      *ngIf="itemColorHex(item) as colorHex"
-                      [style.background-color]="colorHex"
-                    ></span>
-                    <span>{{ itemColorLabel(item) }}</span>
-                  </span>
-                </div>
-
-                <div class="order-item-tech" *ngIf="showItemPrintMetrics(item)">
-                  {{ item.printTimeSeconds || 0 | number: "1.0-0" }}s |
-                  {{ item.materialGrams || 0 | number: "1.0-0" }}g
-                </div>
-              </div>
-
-              <strong class="order-item-total">
-                {{ item.lineTotalChf || 0 | currency: "CHF" }}
-              </strong>
-            </div>
-          </div>
-        </app-card>
       </div>
 
       <div class="payment-summary">
@@ -271,6 +211,72 @@
             [currency]="'CHF'"
             [totalLabelKey]="'PAYMENT.TOTAL'"
           ></app-price-breakdown>
+
+          <div class="summary-items-section" *ngIf="(o.items || []).length > 0">
+            <div class="summary-items-head">
+              <h4>{{ "ORDER.ITEMS_TITLE" | translate }}</h4>
+              <span>{{ (o.items || []).length }}</span>
+            </div>
+
+            <div class="order-items">
+              <div class="order-item" *ngFor="let item of o.items || []">
+                <div class="order-item-copy">
+                  <div class="order-item-name-row">
+                    <strong class="order-item-name">{{
+                      itemDisplayName(item)
+                    }}</strong>
+                    <span
+                      class="order-item-kind"
+                      [class.order-item-kind-shop]="isShopItem(item)"
+                    >
+                      {{
+                        isShopItem(item)
+                          ? ("ORDER.TYPE_SHOP" | translate)
+                          : ("ORDER.TYPE_CALCULATOR" | translate)
+                      }}
+                    </span>
+                  </div>
+
+                  <div class="order-item-meta">
+                    <span
+                      >{{ "CHECKOUT.QTY" | translate }}:
+                      {{ item.quantity }}</span
+                    >
+                    <span *ngIf="showItemMaterial(item)">
+                      {{ "CHECKOUT.MATERIAL" | translate }}:
+                      {{
+                        item.materialCode || ("ORDER.NOT_AVAILABLE" | translate)
+                      }}
+                    </span>
+                    <span *ngIf="itemVariantLabel(item) as variantLabel">
+                      {{ "SHOP.VARIANT" | translate }}:
+                      {{ variantLabel | translate }}
+                    </span>
+                    <span class="item-color-chip">
+                      <span
+                        class="color-swatch"
+                        *ngIf="itemColorHex(item) as colorHex"
+                        [style.background-color]="colorHex"
+                      ></span>
+                      <span>{{ itemColorLabel(item) | translate }}</span>
+                    </span>
+                  </div>
+
+                  <div
+                    class="order-item-tech"
+                    *ngIf="showItemPrintMetrics(item)"
+                  >
+                    {{ item.printTimeSeconds || 0 | number: "1.0-0" }}s |
+                    {{ item.materialGrams || 0 | number: "1.0-0" }}g
+                  </div>
+                </div>
+
+                <strong class="order-item-total">
+                  {{ item.lineTotalChf || 0 | currency: "CHF" }}
+                </strong>
+              </div>
+            </div>
+          </div>
         </app-card>
       </div>
     </div>

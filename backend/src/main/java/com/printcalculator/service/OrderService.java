@@ -29,6 +29,7 @@ import java.util.*;
 @Service
 public class OrderService {
     private static final Path QUOTE_STORAGE_ROOT = Paths.get("storage_quotes").toAbsolutePath().normalize();
+    private static final String SHOP_LINE_ITEM_TYPE = "SHOP_PRODUCT";
 
     private final OrderRepository orderRepo;
     private final OrderItemRepository orderItemRepo;
@@ -235,18 +236,20 @@ public class OrderService {
 
             oItem = orderItemRepo.save(oItem);
 
-            String relativePath = "orders/" + order.getId() + "/3d-files/" + oItem.getId() + "/" + storedFilename;
-            oItem.setStoredRelativePath(relativePath);
-
             Path sourcePath = resolveStoredQuotePath(qItem.getStoredPath(), session.getId());
             if (sourcePath == null || !Files.exists(sourcePath)) {
-                throw new IllegalStateException("Source file not available for quote line item " + qItem.getId());
-            }
-            try {
-                storageService.store(sourcePath, Paths.get(relativePath));
-                oItem.setFileSizeBytes(Files.size(sourcePath));
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to copy quote file for line item " + qItem.getId(), e);
+                if (requiresStoredSourceFile(qItem)) {
+                    throw new IllegalStateException("Source file not available for quote line item " + qItem.getId());
+                }
+            } else {
+                String relativePath = "orders/" + order.getId() + "/3d-files/" + oItem.getId() + "/" + storedFilename;
+                oItem.setStoredRelativePath(relativePath);
+                try {
+                    storageService.store(sourcePath, Paths.get(relativePath));
+                    oItem.setFileSizeBytes(Files.size(sourcePath));
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to copy quote file for line item " + qItem.getId(), e);
+                }
             }
 
             oItem = orderItemRepo.save(oItem);
@@ -316,6 +319,12 @@ public class OrderService {
             return filename.substring(i + 1);
         }
         return "stl";
+    }
+
+    private boolean requiresStoredSourceFile(QuoteLineItem qItem) {
+        return !SHOP_LINE_ITEM_TYPE.equalsIgnoreCase(
+                qItem.getLineItemType() != null ? qItem.getLineItemType() : ""
+        );
     }
 
     private Path resolveStoredQuotePath(String storedPath, UUID expectedSessionId) {

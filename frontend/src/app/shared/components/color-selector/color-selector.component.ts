@@ -1,4 +1,11 @@
-import { Component, input, output, signal, computed } from '@angular/core';
+import {
+  Component,
+  input,
+  output,
+  signal,
+  computed,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import {
@@ -6,8 +13,10 @@ import {
   getColorHex,
   ColorCategory,
   ColorOption,
+  resolveLocalizedColorLabel,
 } from '../../../core/constants/colors.const';
 import { VariantOption } from '../../../features/calculator/services/quote-estimator.service';
+import { LanguageService } from '../../../core/services/language.service';
 
 @Component({
   selector: 'app-color-selector',
@@ -17,6 +26,7 @@ import { VariantOption } from '../../../features/calculator/services/quote-estim
   styleUrl: './color-selector.component.scss',
 })
 export class ColorSelectorComponent {
+  private readonly languageService = inject(LanguageService);
   selectedColor = input<string>('Black');
   selectedVariantId = input<number | null>(null);
   variants = input<VariantOption[]>([]);
@@ -32,7 +42,14 @@ export class ColorSelectorComponent {
         const finish = v.finishType || 'AVAILABLE_COLORS';
         const bucket = byFinish.get(finish) || [];
         bucket.push({
-          label: v.colorName,
+          label:
+            resolveLocalizedColorLabel(this.languageService.selectedLang(), {
+              fallback: v.colorName,
+              it: v.colorLabelIt,
+              en: v.colorLabelEn,
+              de: v.colorLabelDe,
+              fr: v.colorLabelFr,
+            }) ?? v.colorName,
           value: v.colorName,
           hex: v.hexColor,
           variantId: v.id,

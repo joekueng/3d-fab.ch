@@ -15,9 +15,18 @@ const appChildRoutes: Routes = [
     loadComponent: () =>
       import('./features/home/home.component').then((m) => m.HomeComponent),
     data: {
-      seoTitle: '3D fab | Stampa 3D su misura',
-      seoDescription:
-        'Servizio di stampa 3D con preventivo online immediato per prototipi, piccole serie e pezzi personalizzati.',
+      seoTitleByLang: {
+        it: 'Stampa 3D su misura in Ticino | Prototipi, ricambi e piccole serie - 3D Fab',
+        en: 'Custom 3D Printing in Switzerland | Prototypes, Spare Parts & Short Runs - 3D Fab',
+        de: '3D-Druck in Zürich | Prototypen, Ersatzteile und Kleinserien - 3D Fab',
+        fr: 'Impression 3D à Bienne | Prototypes, pièces et petites séries - 3D Fab',
+      },
+      seoDescriptionByLang: {
+        it: 'Servizio di stampa 3D in Ticino per prototipi, pezzi di ricambio e piccole serie. Shop tecnico e supporto CAD, con preventivo rapido da file STL.',
+        en: 'Swiss-based 3D printing service for prototypes, spare parts and short production runs. Technical shop and CAD support, with fast quotes from STL files.',
+        de: '3D-Druckservice in Zürich für Prototypen, Ersatzteile und Kleinserien. Technischer Shop und CAD-Service, mit schneller Angebotsanfrage aus STL-Dateien.',
+        fr: "Service d'impression 3D à Bienne pour prototypes, pièces de rechange et petites séries. Boutique technique et support CAD, avec devis rapide depuis un fichier STL.",
+      },
     },
   },
   {
@@ -52,6 +61,18 @@ const appChildRoutes: Routes = [
         'Scopri il team 3D fab e il laboratorio di stampa 3D con sedi in Ticino e Bienne.',
     },
   },
+  /* {
+    path: 'materials',
+    loadComponent: () =>
+      import('./features/materials/materials-page.component').then(
+        (m) => m.MaterialsPageComponent,
+      ),
+    data: {
+      seoTitle: 'Qualita e Materiali | 3D fab',
+      seoDescription:
+        'Confronta materiali di stampa 3D con radar chart interattivo, proprieta tecniche e fonti citate.',
+    },
+  },*/
   {
     path: 'contact',
     loadChildren: () =>

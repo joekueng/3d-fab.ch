@@ -15,6 +15,10 @@ import {
   ShopService,
 } from '../../features/shop/services/shop.service';
 import { finalize } from 'rxjs';
+import {
+  findColorHex,
+  resolveLocalizedColorLabel,
+} from '../constants/colors.const';
 
 @Component({
   selector: 'app-navbar',
@@ -143,15 +147,30 @@ export class NavbarComponent {
   }
 
   cartItemVariant(item: ShopCartItem): string | null {
-    return item.shopVariantLabel || item.shopVariantColorName || null;
+    return item.shopVariantLabel || this.cartItemColor(item);
   }
 
   cartItemColor(item: ShopCartItem): string | null {
-    return item.shopVariantColorName || item.colorCode || null;
+    return (
+      resolveLocalizedColorLabel(this.langService.selectedLang(), {
+        fallback: item.shopVariantColorName ?? item.colorCode,
+        it: item.shopVariantColorLabelIt,
+        en: item.shopVariantColorLabelEn,
+        de: item.shopVariantColorLabelDe,
+        fr: item.shopVariantColorLabelFr,
+      }) ??
+      item.shopVariantColorName ??
+      item.colorCode
+    );
   }
 
   cartItemColorHex(item: ShopCartItem): string {
-    return item.shopVariantColorHex || '#c9ced6';
+    return (
+      item.shopVariantColorHex ||
+      findColorHex(item.shopVariantColorName) ||
+      findColorHex(item.colorCode) ||
+      '#c9ced6'
+    );
   }
 
   trackByCartItem(_index: number, item: ShopCartItem): string {

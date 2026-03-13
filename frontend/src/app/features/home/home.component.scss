@@ -45,6 +45,99 @@
   animation: fadeUp 0.8s ease both;
 }
 
+.hero-grid {
+  align-items: start;
+}
+
+.hero-swiss-card {
+  --swiss-red: #d52b1e;
+  align-self: center;
+  justify-self: center;
+  width: min(100%, 340px);
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--swiss-red);
+  border-radius: 12px;
+  background: #fff;
+  animation: fadeUp 0.85s ease both;
+}
+
+.hero-swiss-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.hero-swiss-emblem {
+  width: 1.3rem;
+  height: 1.3rem;
+  border-radius: 4px;
+  background: var(--swiss-red);
+  display: inline-grid;
+  place-items: center;
+}
+
+.hero-swiss-cross {
+  position: relative;
+  width: 0.86rem;
+  height: 0.86rem;
+  display: block;
+}
+
+.hero-swiss-cross::before,
+.hero-swiss-cross::after {
+  content: "";
+  position: absolute;
+  background: #fff;
+  border-radius: 1px;
+}
+
+.hero-swiss-cross::before {
+  width: 0.28rem;
+  height: 100%;
+  left: calc(50% - 0.14rem);
+  top: 0;
+}
+
+.hero-swiss-cross::after {
+  width: 100%;
+  height: 0.28rem;
+  left: 0;
+  top: calc(50% - 0.14rem);
+}
+
+.hero-swiss-kicker {
+  margin: 0;
+  color: var(--color-text);
+}
+
+.hero-swiss-copy {
+  margin: 0 0 0.7rem;
+  color: var(--color-text);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.hero-swiss-locations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.hero-swiss-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.75rem;
+  padding: 0.2rem 0.58rem;
+  border-radius: 999px;
+  border: 1px solid rgba(14, 24, 38, 0.14);
+  background: #fff;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #2a2f36;
+}
+
 .capabilities {
   position: relative;
   border-bottom: 1px solid var(--color-border);
@@ -165,6 +258,13 @@
 }
 
 @media (max-width: 640px) {
+  .hero-swiss-card {
+    align-self: start;
+    justify-self: center;
+    width: min(100%, 340px);
+    margin-top: 1rem;
+  }
+
   .shop-gallery {
     width: 100%;
     max-width: none;

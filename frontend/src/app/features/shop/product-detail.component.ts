@@ -15,7 +15,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { catchError, combineLatest, finalize, of, switchMap, tap } from 'rxjs';
 import { SeoService } from '../../core/services/seo.service';
 import { LanguageService } from '../../core/services/language.service';
-import { getColorHex } from '../../core/constants/colors.const';
+import { findColorHex, getColorHex } from '../../core/constants/colors.const';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
 import { StlViewerComponent } from '../../shared/components/stl-viewer/stl-viewer.component';
@@ -230,7 +230,7 @@ export class ProductDetailComponent {
             catchError((error) => {
               this.product.set(null);
               this.selectedVariantId.set(null);
-              this.selectedImageAssetId.set(null);
+              this.setSelectedImageAssetId(null);
               this.modelFile.set(null);
               this.error.set(
                 error?.status === 404 ? 'SHOP.NOT_FOUND' : 'SHOP.LOAD_ERROR',
@@ -257,7 +257,7 @@ export class ProductDetailComponent {
             product.defaultVariant ?? product.variants[0] ?? null,
           ),
         );
-        this.selectedImageAssetId.set(
+        this.setSelectedImageAssetId(
           product.primaryImage?.mediaAssetId ??
             product.images[0]?.mediaAssetId ??
             null,
@@ -283,7 +283,7 @@ export class ProductDetailComponent {
   }
 
   selectImage(mediaAssetId: string): void {
-    this.selectedImageAssetId.set(mediaAssetId);
+    this.setSelectedImageAssetId(mediaAssetId);
   }
 
   showPreviousImage(): void {
@@ -293,7 +293,7 @@ export class ProductDetailComponent {
     }
     const nextIndex =
       (this.selectedImageIndex() - 1 + images.length) % images.length;
-    this.selectedImageAssetId.set(images[nextIndex].mediaAssetId);
+    this.setSelectedImageAssetId(images[nextIndex].mediaAssetId);
   }
 
   showNextImage(): void {
@@ -302,7 +302,7 @@ export class ProductDetailComponent {
       return;
     }
     const nextIndex = (this.selectedImageIndex() + 1) % images.length;
-    this.selectedImageAssetId.set(images[nextIndex].mediaAssetId);
+    this.setSelectedImageAssetId(images[nextIndex].mediaAssetId);
   }
 
   selectVariant(variant: ShopProductVariantOption): void {
@@ -378,7 +378,9 @@ export class ProductDetailComponent {
   }
 
   colorLabel(variant: ShopProductVariantOption): string {
-    return variant.colorName || variant.variantLabel || '-';
+    return (
+      variant.colorLabel || variant.colorName || variant.variantLabel || '-'
+    );
   }
 
   colorHex(variant: ShopProductVariantOption | null | undefined): string {
@@ -479,6 +481,10 @@ export class ProductDetailComponent {
       });
   }
 
+  private setSelectedImageAssetId(mediaAssetId: string | null): void {
+    this.selectedImageAssetId.set(mediaAssetId);
+  }
+
   private normalizeHexColor(value: string | null | undefined): string | null {
     const raw = String(value ?? '').trim();
     if (!raw) {
@@ -494,17 +500,7 @@ export class ProductDetailComponent {
   }
 
   private colorHexFromName(value: string | null | undefined): string | null {
-    const colorName = String(value ?? '').trim();
-    if (!colorName) {
-      return null;
-    }
-
-    const fallback = getColorHex(colorName);
-    if (!fallback || fallback === '#facf0a') {
-      return null;
-    }
-
-    return fallback;
+    return findColorHex(value);
   }
 
   private applySeo(product: ShopProductDetail): void {

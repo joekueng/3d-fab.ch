@@ -32,6 +32,10 @@ export interface AdminFilamentVariant {
   materialTechnicalTypeLabel?: string;
   variantDisplayName: string;
   colorName: string;
+  colorLabelIt: string;
+  colorLabelEn: string;
+  colorLabelDe: string;
+  colorLabelFr: string;
   colorHex?: string;
   finishType?: string;
   brand?: string;
@@ -57,6 +61,10 @@ export interface AdminUpsertFilamentVariantPayload {
   materialTypeId: number;
   variantDisplayName: string;
   colorName: string;
+  colorLabelIt?: string;
+  colorLabelEn?: string;
+  colorLabelDe?: string;
+  colorLabelFr?: string;
   colorHex?: string;
   finishType?: string;
   brand?: string;

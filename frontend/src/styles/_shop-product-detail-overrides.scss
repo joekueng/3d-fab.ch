@@ -107,10 +107,6 @@ app-product-detail {
     position: relative;
     display: grid;
     gap: 0.4rem;
-    padding: 0;
-    border-radius: 1rem;
-    border: 0;
-    background: transparent;
   }
 
   .selector-head {
@@ -119,7 +115,8 @@ app-product-detail {
 
   .color-trigger {
     width: 100%;
-    max-width: 230px;
+    max-width: none;
+    min-height: 3.2rem;
     display: flex;
     align-items: center;
     gap: 0.75rem;
