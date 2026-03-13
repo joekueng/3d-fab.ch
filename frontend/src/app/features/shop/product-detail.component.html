@@ -20,7 +20,9 @@
             }}</a>
             @for (crumb of p.breadcrumbs; track crumb.id) {
               <span class="breadcrumbs__separator">/</span>
-              <a class="breadcrumbs__item" [routerLink]="categoryLink(crumb.slug)"
+              <a
+                class="breadcrumbs__item"
+                [routerLink]="categoryLink(crumb.slug)"
                 >{{ crumb.name }}</a
               >
             }
@@ -143,12 +145,15 @@
                             <span>{{ selectedMaterial()?.label }}</span>
                           }
                           @if (
-                            colorLabel(activeVariant) !== selectedMaterial()?.label
+                            colorLabel(activeVariant) !==
+                            selectedMaterial()?.label
                           ) {
                             @if (selectedMaterial()?.label) {
                               <span aria-hidden="true">·</span>
                             }
-                            <span>{{ colorLabel(activeVariant) | translate }}</span>
+                            <span>{{
+                              colorLabel(activeVariant) | translate
+                            }}</span>
                           }
                         </p>
                       }
@@ -174,7 +179,10 @@
                       </div>
 
                       <div class="material-grid">
-                        @for (material of materialOptions(); track material.key) {
+                        @for (
+                          material of materialOptions();
+                          track material.key
+                        ) {
                           <button
                             type="button"
                             class="material-option"

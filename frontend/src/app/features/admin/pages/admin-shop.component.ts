@@ -1343,7 +1343,9 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       seoTitleEn: this.optionalValue(this.categoryForm.seoTitles['en']),
       seoTitleDe: this.optionalValue(this.categoryForm.seoTitles['de']),
       seoTitleFr: this.optionalValue(this.categoryForm.seoTitles['fr']),
-      seoDescription: this.optionalValue(this.categoryForm.seoDescriptions['it']),
+      seoDescription: this.optionalValue(
+        this.categoryForm.seoDescriptions['it'],
+      ),
       seoDescriptionIt: this.optionalValue(
         this.categoryForm.seoDescriptions['it'],
       ),

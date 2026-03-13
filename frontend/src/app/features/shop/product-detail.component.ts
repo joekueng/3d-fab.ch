@@ -15,10 +15,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { catchError, combineLatest, finalize, of, switchMap, tap } from 'rxjs';
 import { SeoService } from '../../core/services/seo.service';
 import { LanguageService } from '../../core/services/language.service';
-import {
-  findColorHex,
-  getColorHex,
-} from '../../core/constants/colors.const';
+import { findColorHex, getColorHex } from '../../core/constants/colors.const';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
 import { StlViewerComponent } from '../../shared/components/stl-viewer/stl-viewer.component';
@@ -381,7 +378,9 @@ export class ProductDetailComponent {
   }
 
   colorLabel(variant: ShopProductVariantOption): string {
-    return variant.colorLabel || variant.colorName || variant.variantLabel || '-';
+    return (
+      variant.colorLabel || variant.colorName || variant.variantLabel || '-'
+    );
   }
 
   colorHex(variant: ShopProductVariantOption | null | undefined): string {
