@@ -132,6 +132,7 @@
     "PROPERTY_LOW": "Niedrig",
     "PROPERTY_RIGID": "Steif",
     "PROPERTY_FLEXIBLE": "Flexibel",
+    "ALL_CATEGORIES": "Alle Kategorien",
     "CATEGORIES": {
       "FILAMENTS": "Filamente",
       "ACCESSORIES": "Zubehör"
