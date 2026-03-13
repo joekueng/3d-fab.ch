@@ -353,6 +353,13 @@ public class AdminShopProductControllerService {
         String normalizedColorName = normalizeRequired(payload.getColorName(), "Variant colorName is required");
         String normalizedVariantLabel = normalizeOptional(payload.getVariantLabel());
         String normalizedSku = normalizeOptional(payload.getSku());
+        String fallbackColorLabel = firstNonBlank(
+                normalizeOptional(payload.getColorLabelIt()),
+                normalizeOptional(payload.getColorLabelEn()),
+                normalizeOptional(payload.getColorLabelDe()),
+                normalizeOptional(payload.getColorLabelFr()),
+                normalizedColorName
+        );
         String normalizedMaterialCode = normalizeRequired(
                 payload.getInternalMaterialCode(),
                 "Variant internalMaterialCode is required"
@@ -380,6 +387,10 @@ public class AdminShopProductControllerService {
         variant.setSku(normalizedSku);
         variant.setVariantLabel(normalizedVariantLabel != null ? normalizedVariantLabel : normalizedColorName);
         variant.setColorName(normalizedColorName);
+        variant.setColorLabelIt(firstNonBlank(normalizeOptional(payload.getColorLabelIt()), fallbackColorLabel));
+        variant.setColorLabelEn(firstNonBlank(normalizeOptional(payload.getColorLabelEn()), fallbackColorLabel));
+        variant.setColorLabelDe(firstNonBlank(normalizeOptional(payload.getColorLabelDe()), fallbackColorLabel));
+        variant.setColorLabelFr(firstNonBlank(normalizeOptional(payload.getColorLabelFr()), fallbackColorLabel));
         variant.setColorHex(normalizeColorHex(payload.getColorHex()));
         variant.setInternalMaterialCode(normalizedMaterialCode);
         variant.setPriceChf(price);
@@ -531,6 +542,10 @@ public class AdminShopProductControllerService {
         dto.setSku(variant.getSku());
         dto.setVariantLabel(variant.getVariantLabel());
         dto.setColorName(variant.getColorName());
+        dto.setColorLabelIt(variant.getColorLabelIt());
+        dto.setColorLabelEn(variant.getColorLabelEn());
+        dto.setColorLabelDe(variant.getColorLabelDe());
+        dto.setColorLabelFr(variant.getColorLabelFr());
         dto.setColorHex(variant.getColorHex());
         dto.setInternalMaterialCode(variant.getInternalMaterialCode());
         dto.setPriceChf(variant.getPriceChf());

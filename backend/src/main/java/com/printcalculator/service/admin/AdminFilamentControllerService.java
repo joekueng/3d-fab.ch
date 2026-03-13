@@ -161,10 +161,21 @@ public class AdminFilamentControllerService {
         String normalizedColorHex = normalizeAndValidateColorHex(payload.getColorHex());
         String normalizedFinishType = normalizeAndValidateFinishType(payload.getFinishType(), payload.getIsMatte());
         String normalizedBrand = normalizeOptional(payload.getBrand());
+        String fallbackColorLabel = firstNonBlank(
+                normalizeOptional(payload.getColorLabelIt()),
+                normalizeOptional(payload.getColorLabelEn()),
+                normalizeOptional(payload.getColorLabelDe()),
+                normalizeOptional(payload.getColorLabelFr()),
+                normalizedColorName
+        );
 
         variant.setFilamentMaterialType(material);
         variant.setVariantDisplayName(normalizedDisplayName);
         variant.setColorName(normalizedColorName);
+        variant.setColorLabelIt(firstNonBlank(normalizeOptional(payload.getColorLabelIt()), fallbackColorLabel));
+        variant.setColorLabelEn(firstNonBlank(normalizeOptional(payload.getColorLabelEn()), fallbackColorLabel));
+        variant.setColorLabelDe(firstNonBlank(normalizeOptional(payload.getColorLabelDe()), fallbackColorLabel));
+        variant.setColorLabelFr(firstNonBlank(normalizeOptional(payload.getColorLabelFr()), fallbackColorLabel));
         variant.setColorHex(normalizedColorHex);
         variant.setFinishType(normalizedFinishType);
         variant.setBrand(normalizedBrand);
@@ -224,6 +235,18 @@ public class AdminFilamentControllerService {
         }
         String normalized = value.trim();
         return normalized.isBlank() ? null : normalized;
+    }
+
+    private String firstNonBlank(String... values) {
+        if (values == null) {
+            return null;
+        }
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value;
+            }
+        }
+        return null;
     }
 
     private FilamentMaterialType validateAndResolveMaterial(AdminUpsertFilamentVariantRequest payload) {
@@ -306,6 +329,10 @@ public class AdminFilamentControllerService {
 
         dto.setVariantDisplayName(variant.getVariantDisplayName());
         dto.setColorName(variant.getColorName());
+        dto.setColorLabelIt(variant.getColorLabelIt());
+        dto.setColorLabelEn(variant.getColorLabelEn());
+        dto.setColorLabelDe(variant.getColorLabelDe());
+        dto.setColorLabelFr(variant.getColorLabelFr());
         dto.setColorHex(variant.getColorHex());
         dto.setFinishType(variant.getFinishType());
         dto.setBrand(variant.getBrand());

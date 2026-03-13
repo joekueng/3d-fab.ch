@@ -55,6 +55,7 @@ export interface ShopProductVariantOption {
   sku: string | null;
   variantLabel: string | null;
   colorName: string | null;
+  colorLabel: string | null;
   colorHex: string | null;
   priceChf: number;
   isDefault: boolean;
@@ -138,6 +139,10 @@ export interface ShopCartItem {
   shopProductName: string | null;
   shopVariantLabel: string | null;
   shopVariantColorName: string | null;
+  shopVariantColorLabelIt?: string | null;
+  shopVariantColorLabelEn?: string | null;
+  shopVariantColorLabelDe?: string | null;
+  shopVariantColorLabelFr?: string | null;
   shopVariantColorHex: string | null;
   materialCode: string | null;
   quality: string | null;

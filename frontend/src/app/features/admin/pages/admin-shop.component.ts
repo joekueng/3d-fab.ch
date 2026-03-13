@@ -41,10 +41,10 @@ interface CategoryFormState {
   id: string | null;
   parentCategoryId: string | null;
   slug: string;
-  name: string;
-  description: string;
-  seoTitle: string;
-  seoDescription: string;
+  names: Record<ShopLanguage, string>;
+  descriptions: Record<ShopLanguage, string>;
+  seoTitles: Record<ShopLanguage, string>;
+  seoDescriptions: Record<ShopLanguage, string>;
   ogTitle: string;
   ogDescription: string;
   indexable: boolean;
@@ -554,7 +554,10 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   }
 
   slugifyCategoryFromName(): void {
-    this.categoryForm.slug = this.slugify(this.categoryForm.name);
+    const source =
+      this.categoryForm.names[this.activeContentLanguage] ||
+      this.categoryForm.names['it'];
+    this.categoryForm.slug = this.slugify(source);
   }
 
   setActiveContentLanguage(language: ShopLanguage): void {
@@ -600,6 +603,45 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     return (
       this.isSeoLanguageStarted(language) &&
       !this.isSeoLanguageComplete(language)
+    );
+  }
+
+  isCategoryContentLanguageComplete(language: ShopLanguage): boolean {
+    return !!this.categoryForm.names[language].trim();
+  }
+
+  isCategoryContentLanguageStarted(language: ShopLanguage): boolean {
+    return (
+      !!this.categoryForm.names[language].trim() ||
+      !!this.categoryForm.descriptions[language].trim()
+    );
+  }
+
+  isCategoryContentLanguageIncomplete(language: ShopLanguage): boolean {
+    return (
+      this.isCategoryContentLanguageStarted(language) &&
+      !this.isCategoryContentLanguageComplete(language)
+    );
+  }
+
+  isCategorySeoLanguageComplete(language: ShopLanguage): boolean {
+    return (
+      !!this.categoryForm.seoTitles[language].trim() &&
+      !!this.categoryForm.seoDescriptions[language].trim()
+    );
+  }
+
+  isCategorySeoLanguageStarted(language: ShopLanguage): boolean {
+    return (
+      !!this.categoryForm.seoTitles[language].trim() ||
+      !!this.categoryForm.seoDescriptions[language].trim()
+    );
+  }
+
+  isCategorySeoLanguageIncomplete(language: ShopLanguage): boolean {
+    return (
+      this.isCategorySeoLanguageStarted(language) &&
+      !this.isCategorySeoLanguageComplete(language)
     );
   }
 
@@ -1228,10 +1270,10 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       id: null,
       parentCategoryId: null,
       slug: '',
-      name: '',
-      description: '',
-      seoTitle: '',
-      seoDescription: '',
+      names: this.createEmptyLocalizedTextRecord(),
+      descriptions: this.createEmptyLocalizedTextRecord(),
+      seoTitles: this.createEmptyLocalizedTextRecord(),
+      seoDescriptions: this.createEmptyLocalizedTextRecord(),
       ogTitle: '',
       ogDescription: '',
       indexable: true,
@@ -1241,6 +1283,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   }
 
   private resetCategoryForm(): void {
+    this.activeContentLanguage = 'it';
     Object.assign(this.categoryForm, this.createEmptyCategoryForm());
   }
 
@@ -1249,10 +1292,30 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       id: category.id,
       parentCategoryId: category.parentCategoryId,
       slug: category.slug ?? '',
-      name: category.name ?? '',
-      description: category.description ?? '',
-      seoTitle: category.seoTitle ?? '',
-      seoDescription: category.seoDescription ?? '',
+      names: {
+        it: category.nameIt ?? category.name ?? '',
+        en: category.nameEn ?? category.name ?? '',
+        de: category.nameDe ?? category.name ?? '',
+        fr: category.nameFr ?? category.name ?? '',
+      },
+      descriptions: {
+        it: category.descriptionIt ?? category.description ?? '',
+        en: category.descriptionEn ?? category.description ?? '',
+        de: category.descriptionDe ?? category.description ?? '',
+        fr: category.descriptionFr ?? category.description ?? '',
+      },
+      seoTitles: {
+        it: category.seoTitleIt ?? category.seoTitle ?? '',
+        en: category.seoTitleEn ?? category.seoTitle ?? '',
+        de: category.seoTitleDe ?? category.seoTitle ?? '',
+        fr: category.seoTitleFr ?? category.seoTitle ?? '',
+      },
+      seoDescriptions: {
+        it: category.seoDescriptionIt ?? category.seoDescription ?? '',
+        en: category.seoDescriptionEn ?? category.seoDescription ?? '',
+        de: category.seoDescriptionDe ?? category.seoDescription ?? '',
+        fr: category.seoDescriptionFr ?? category.seoDescription ?? '',
+      },
       ogTitle: category.ogTitle ?? '',
       ogDescription: category.ogDescription ?? '',
       indexable: category.indexable,
@@ -1265,10 +1328,34 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     return {
       parentCategoryId: this.categoryForm.parentCategoryId || null,
       slug: this.categoryForm.slug.trim(),
-      name: this.categoryForm.name.trim(),
-      description: this.categoryForm.description.trim(),
-      seoTitle: this.categoryForm.seoTitle.trim(),
-      seoDescription: this.categoryForm.seoDescription.trim(),
+      name: this.categoryForm.names['it'].trim(),
+      nameIt: this.categoryForm.names['it'].trim(),
+      nameEn: this.categoryForm.names['en'].trim(),
+      nameDe: this.categoryForm.names['de'].trim(),
+      nameFr: this.categoryForm.names['fr'].trim(),
+      description: this.optionalValue(this.categoryForm.descriptions['it']),
+      descriptionIt: this.optionalValue(this.categoryForm.descriptions['it']),
+      descriptionEn: this.optionalValue(this.categoryForm.descriptions['en']),
+      descriptionDe: this.optionalValue(this.categoryForm.descriptions['de']),
+      descriptionFr: this.optionalValue(this.categoryForm.descriptions['fr']),
+      seoTitle: this.optionalValue(this.categoryForm.seoTitles['it']),
+      seoTitleIt: this.optionalValue(this.categoryForm.seoTitles['it']),
+      seoTitleEn: this.optionalValue(this.categoryForm.seoTitles['en']),
+      seoTitleDe: this.optionalValue(this.categoryForm.seoTitles['de']),
+      seoTitleFr: this.optionalValue(this.categoryForm.seoTitles['fr']),
+      seoDescription: this.optionalValue(this.categoryForm.seoDescriptions['it']),
+      seoDescriptionIt: this.optionalValue(
+        this.categoryForm.seoDescriptions['it'],
+      ),
+      seoDescriptionEn: this.optionalValue(
+        this.categoryForm.seoDescriptions['en'],
+      ),
+      seoDescriptionDe: this.optionalValue(
+        this.categoryForm.seoDescriptions['de'],
+      ),
+      seoDescriptionFr: this.optionalValue(
+        this.categoryForm.seoDescriptions['fr'],
+      ),
       ogTitle: this.categoryForm.ogTitle.trim(),
       ogDescription: this.categoryForm.ogDescription.trim(),
       indexable: this.categoryForm.indexable,
@@ -1278,11 +1365,18 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   }
 
   private validateCategoryForm(): string | null {
-    if (!this.categoryForm.name.trim()) {
-      return 'Il nome categoria è obbligatorio.';
+    for (const language of this.shopLanguages) {
+      if (!this.categoryForm.names[language].trim()) {
+        return `Il nome categoria ${this.languageLabels[language]} è obbligatorio.`;
+      }
     }
     if (!this.categoryForm.slug.trim()) {
       return 'Lo slug categoria è obbligatorio.';
+    }
+    for (const language of this.shopLanguages) {
+      if (this.categoryForm.seoDescriptions[language].trim().length > 160) {
+        return `La SEO description categoria ${this.languageLabels[language]} deve avere massimo 160 caratteri.`;
+      }
     }
     return null;
   }
@@ -1616,6 +1710,10 @@ export class AdminShopComponent implements OnInit, OnDestroy {
           sku: this.optionalValue(existingVariant?.sku ?? ''),
           variantLabel: materialCode,
           colorName: stockVariant.colorName.trim(),
+          colorLabelIt: this.optionalValue(stockVariant.colorLabelIt ?? ''),
+          colorLabelEn: this.optionalValue(stockVariant.colorLabelEn ?? ''),
+          colorLabelDe: this.optionalValue(stockVariant.colorLabelDe ?? ''),
+          colorLabelFr: this.optionalValue(stockVariant.colorLabelFr ?? ''),
           colorHex: this.optionalValue(
             stockVariant.colorHex ?? '',
           )?.toUpperCase(),
@@ -1714,7 +1812,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   }
 
   private stockVariantLabel(variant: AdminFilamentVariant): string {
-    const colorName = variant.colorName.trim();
+    const colorName = (variant.colorLabelIt || variant.colorName).trim();
     const variantDisplayName = variant.variantDisplayName.trim();
     if (
       variantDisplayName &&
@@ -2191,6 +2289,19 @@ export class AdminShopComponent implements OnInit, OnDestroy {
 
   seoDescriptionLength(language: ShopLanguage): number {
     return this.productForm.seoDescriptions[language].trim().length;
+  }
+
+  categorySeoDescriptionLength(language: ShopLanguage): number {
+    return this.categoryForm.seoDescriptions[language].trim().length;
+  }
+
+  private createEmptyLocalizedTextRecord(): Record<ShopLanguage, string> {
+    return {
+      it: '',
+      en: '',
+      de: '',
+      fr: '',
+    };
   }
 
   private slugify(source: string): string {

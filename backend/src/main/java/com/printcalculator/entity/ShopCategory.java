@@ -15,6 +15,7 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -23,6 +24,8 @@ import java.util.UUID;
         @Index(name = "ix_shop_category_active_sort", columnList = "is_active, sort_order")
 })
 public class ShopCategory {
+    public static final List<String> SUPPORTED_LANGUAGES = List.of("it", "en", "de", "fr");
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "shop_category_id", nullable = false)
@@ -38,14 +41,62 @@ public class ShopCategory {
     @Column(name = "name", nullable = false, length = Integer.MAX_VALUE)
     private String name;
 
+    @Column(name = "name_it", length = Integer.MAX_VALUE)
+    private String nameIt;
+
+    @Column(name = "name_en", length = Integer.MAX_VALUE)
+    private String nameEn;
+
+    @Column(name = "name_de", length = Integer.MAX_VALUE)
+    private String nameDe;
+
+    @Column(name = "name_fr", length = Integer.MAX_VALUE)
+    private String nameFr;
+
     @Column(name = "description", length = Integer.MAX_VALUE)
     private String description;
+
+    @Column(name = "description_it", length = Integer.MAX_VALUE)
+    private String descriptionIt;
+
+    @Column(name = "description_en", length = Integer.MAX_VALUE)
+    private String descriptionEn;
+
+    @Column(name = "description_de", length = Integer.MAX_VALUE)
+    private String descriptionDe;
+
+    @Column(name = "description_fr", length = Integer.MAX_VALUE)
+    private String descriptionFr;
 
     @Column(name = "seo_title", length = Integer.MAX_VALUE)
     private String seoTitle;
 
+    @Column(name = "seo_title_it", length = Integer.MAX_VALUE)
+    private String seoTitleIt;
+
+    @Column(name = "seo_title_en", length = Integer.MAX_VALUE)
+    private String seoTitleEn;
+
+    @Column(name = "seo_title_de", length = Integer.MAX_VALUE)
+    private String seoTitleDe;
+
+    @Column(name = "seo_title_fr", length = Integer.MAX_VALUE)
+    private String seoTitleFr;
+
     @Column(name = "seo_description", length = Integer.MAX_VALUE)
     private String seoDescription;
+
+    @Column(name = "seo_description_it", length = Integer.MAX_VALUE)
+    private String seoDescriptionIt;
+
+    @Column(name = "seo_description_en", length = Integer.MAX_VALUE)
+    private String seoDescriptionEn;
+
+    @Column(name = "seo_description_de", length = Integer.MAX_VALUE)
+    private String seoDescriptionDe;
+
+    @Column(name = "seo_description_fr", length = Integer.MAX_VALUE)
+    private String seoDescriptionFr;
 
     @Column(name = "og_title", length = Integer.MAX_VALUE)
     private String ogTitle;
@@ -139,12 +190,76 @@ public class ShopCategory {
         this.name = name;
     }
 
+    public String getNameIt() {
+        return nameIt;
+    }
+
+    public void setNameIt(String nameIt) {
+        this.nameIt = nameIt;
+    }
+
+    public String getNameEn() {
+        return nameEn;
+    }
+
+    public void setNameEn(String nameEn) {
+        this.nameEn = nameEn;
+    }
+
+    public String getNameDe() {
+        return nameDe;
+    }
+
+    public void setNameDe(String nameDe) {
+        this.nameDe = nameDe;
+    }
+
+    public String getNameFr() {
+        return nameFr;
+    }
+
+    public void setNameFr(String nameFr) {
+        this.nameFr = nameFr;
+    }
+
     public String getDescription() {
         return description;
     }
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getDescriptionIt() {
+        return descriptionIt;
+    }
+
+    public void setDescriptionIt(String descriptionIt) {
+        this.descriptionIt = descriptionIt;
+    }
+
+    public String getDescriptionEn() {
+        return descriptionEn;
+    }
+
+    public void setDescriptionEn(String descriptionEn) {
+        this.descriptionEn = descriptionEn;
+    }
+
+    public String getDescriptionDe() {
+        return descriptionDe;
+    }
+
+    public void setDescriptionDe(String descriptionDe) {
+        this.descriptionDe = descriptionDe;
+    }
+
+    public String getDescriptionFr() {
+        return descriptionFr;
+    }
+
+    public void setDescriptionFr(String descriptionFr) {
+        this.descriptionFr = descriptionFr;
     }
 
     public String getSeoTitle() {
@@ -155,12 +270,76 @@ public class ShopCategory {
         this.seoTitle = seoTitle;
     }
 
+    public String getSeoTitleIt() {
+        return seoTitleIt;
+    }
+
+    public void setSeoTitleIt(String seoTitleIt) {
+        this.seoTitleIt = seoTitleIt;
+    }
+
+    public String getSeoTitleEn() {
+        return seoTitleEn;
+    }
+
+    public void setSeoTitleEn(String seoTitleEn) {
+        this.seoTitleEn = seoTitleEn;
+    }
+
+    public String getSeoTitleDe() {
+        return seoTitleDe;
+    }
+
+    public void setSeoTitleDe(String seoTitleDe) {
+        this.seoTitleDe = seoTitleDe;
+    }
+
+    public String getSeoTitleFr() {
+        return seoTitleFr;
+    }
+
+    public void setSeoTitleFr(String seoTitleFr) {
+        this.seoTitleFr = seoTitleFr;
+    }
+
     public String getSeoDescription() {
         return seoDescription;
     }
 
     public void setSeoDescription(String seoDescription) {
         this.seoDescription = seoDescription;
+    }
+
+    public String getSeoDescriptionIt() {
+        return seoDescriptionIt;
+    }
+
+    public void setSeoDescriptionIt(String seoDescriptionIt) {
+        this.seoDescriptionIt = seoDescriptionIt;
+    }
+
+    public String getSeoDescriptionEn() {
+        return seoDescriptionEn;
+    }
+
+    public void setSeoDescriptionEn(String seoDescriptionEn) {
+        this.seoDescriptionEn = seoDescriptionEn;
+    }
+
+    public String getSeoDescriptionDe() {
+        return seoDescriptionDe;
+    }
+
+    public void setSeoDescriptionDe(String seoDescriptionDe) {
+        this.seoDescriptionDe = seoDescriptionDe;
+    }
+
+    public String getSeoDescriptionFr() {
+        return seoDescriptionFr;
+    }
+
+    public void setSeoDescriptionFr(String seoDescriptionFr) {
+        this.seoDescriptionFr = seoDescriptionFr;
     }
 
     public String getOgTitle() {
@@ -217,5 +396,110 @@ public class ShopCategory {
 
     public void setUpdatedAt(OffsetDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getNameForLanguage(String language) {
+        return resolveLocalizedValue(language, name, nameIt, nameEn, nameDe, nameFr);
+    }
+
+    public void setNameForLanguage(String language, String value) {
+        switch (normalizeLanguage(language)) {
+            case "it" -> nameIt = value;
+            case "en" -> nameEn = value;
+            case "de" -> nameDe = value;
+            case "fr" -> nameFr = value;
+            default -> {
+            }
+        }
+    }
+
+    public String getDescriptionForLanguage(String language) {
+        return resolveLocalizedValue(language, description, descriptionIt, descriptionEn, descriptionDe, descriptionFr);
+    }
+
+    public void setDescriptionForLanguage(String language, String value) {
+        switch (normalizeLanguage(language)) {
+            case "it" -> descriptionIt = value;
+            case "en" -> descriptionEn = value;
+            case "de" -> descriptionDe = value;
+            case "fr" -> descriptionFr = value;
+            default -> {
+            }
+        }
+    }
+
+    public String getSeoTitleForLanguage(String language) {
+        return resolveLocalizedValue(language, seoTitle, seoTitleIt, seoTitleEn, seoTitleDe, seoTitleFr);
+    }
+
+    public void setSeoTitleForLanguage(String language, String value) {
+        switch (normalizeLanguage(language)) {
+            case "it" -> seoTitleIt = value;
+            case "en" -> seoTitleEn = value;
+            case "de" -> seoTitleDe = value;
+            case "fr" -> seoTitleFr = value;
+            default -> {
+            }
+        }
+    }
+
+    public String getSeoDescriptionForLanguage(String language) {
+        return resolveLocalizedValue(language, seoDescription, seoDescriptionIt, seoDescriptionEn, seoDescriptionDe, seoDescriptionFr);
+    }
+
+    public void setSeoDescriptionForLanguage(String language, String value) {
+        switch (normalizeLanguage(language)) {
+            case "it" -> seoDescriptionIt = value;
+            case "en" -> seoDescriptionEn = value;
+            case "de" -> seoDescriptionDe = value;
+            case "fr" -> seoDescriptionFr = value;
+            default -> {
+            }
+        }
+    }
+
+    private String resolveLocalizedValue(String language,
+                                         String fallback,
+                                         String valueIt,
+                                         String valueEn,
+                                         String valueDe,
+                                         String valueFr) {
+        String normalizedLanguage = normalizeLanguage(language);
+        String preferred = switch (normalizedLanguage) {
+            case "it" -> valueIt;
+            case "en" -> valueEn;
+            case "de" -> valueDe;
+            case "fr" -> valueFr;
+            default -> null;
+        };
+        String resolved = firstNonBlank(preferred, fallback);
+        if (resolved != null) {
+            return resolved;
+        }
+        return firstNonBlank(valueIt, valueEn, valueDe, valueFr);
+    }
+
+    private String normalizeLanguage(String language) {
+        if (language == null) {
+            return "";
+        }
+        String normalized = language.trim().toLowerCase();
+        int separatorIndex = normalized.indexOf('-');
+        if (separatorIndex > 0) {
+            normalized = normalized.substring(0, separatorIndex);
+        }
+        return normalized;
+    }
+
+    private String firstNonBlank(String... values) {
+        if (values == null) {
+            return null;
+        }
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value;
+            }
+        }
+        return null;
     }
 }

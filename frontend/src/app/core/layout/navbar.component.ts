@@ -17,7 +17,7 @@ import {
 import { finalize } from 'rxjs';
 import {
   findColorHex,
-  getColorLabelToken,
+  resolveLocalizedColorLabel,
 } from '../constants/colors.const';
 
 @Component({
@@ -147,15 +147,20 @@ export class NavbarComponent {
   }
 
   cartItemVariant(item: ShopCartItem): string | null {
-    return (
-      item.shopVariantLabel || getColorLabelToken(item.shopVariantColorName)
-    );
+    return item.shopVariantLabel || this.cartItemColor(item);
   }
 
   cartItemColor(item: ShopCartItem): string | null {
     return (
-      getColorLabelToken(item.shopVariantColorName) ??
-      getColorLabelToken(item.colorCode)
+      resolveLocalizedColorLabel(this.langService.selectedLang(), {
+        fallback: item.shopVariantColorName ?? item.colorCode,
+        it: item.shopVariantColorLabelIt,
+        en: item.shopVariantColorLabelEn,
+        de: item.shopVariantColorLabelDe,
+        fr: item.shopVariantColorLabelFr,
+      }) ??
+      item.shopVariantColorName ??
+      item.colorCode
     );
   }
 

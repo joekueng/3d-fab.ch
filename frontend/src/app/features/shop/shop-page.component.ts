@@ -24,7 +24,7 @@ import { SeoService } from '../../core/services/seo.service';
 import { LanguageService } from '../../core/services/language.service';
 import {
   findColorHex,
-  getColorLabelToken,
+  resolveLocalizedColorLabel,
 } from '../../core/constants/colors.const';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
@@ -161,15 +161,20 @@ export class ShopPageComponent {
   }
 
   cartItemVariant(item: ShopCartItem): string | null {
-    return (
-      item.shopVariantLabel || getColorLabelToken(item.shopVariantColorName)
-    );
+    return item.shopVariantLabel || this.cartItemColor(item);
   }
 
   cartItemColor(item: ShopCartItem): string | null {
     return (
-      getColorLabelToken(item.shopVariantColorName) ??
-      getColorLabelToken(item.colorCode)
+      resolveLocalizedColorLabel(this.languageService.selectedLang(), {
+        fallback: item.shopVariantColorName ?? item.colorCode,
+        it: item.shopVariantColorLabelIt,
+        en: item.shopVariantColorLabelEn,
+        de: item.shopVariantColorLabelDe,
+        fr: item.shopVariantColorLabelFr,
+      }) ??
+      item.shopVariantColorName ??
+      item.colorCode
     );
   }
 

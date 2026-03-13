@@ -18,7 +18,6 @@ import { LanguageService } from '../../core/services/language.service';
 import {
   findColorHex,
   getColorHex,
-  getColorLabelToken,
 } from '../../core/constants/colors.const';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
@@ -78,9 +77,6 @@ export class ProductDetailComponent {
   readonly product = signal<ShopProductDetail | null>(null);
   readonly selectedVariantId = signal<string | null>(null);
   readonly selectedImageAssetId = signal<string | null>(null);
-  readonly selectedImageOrientation = signal<
-    'portrait' | 'landscape' | 'square' | null
-  >(null);
   readonly quantity = signal(1);
   readonly isAddingToCart = signal(false);
   readonly addSuccess = signal(false);
@@ -198,9 +194,6 @@ export class ProductDetailComponent {
   readonly selectedVariantCartQuantity = computed(() =>
     this.shopService.quantityForVariant(this.selectedVariant()?.id),
   );
-  readonly selectedImageIsPortrait = computed(
-    () => this.selectedImageOrientation() === 'portrait',
-  );
 
   constructor() {
     if (!this.shopService.cartLoaded()) {
@@ -315,25 +308,6 @@ export class ProductDetailComponent {
     this.setSelectedImageAssetId(images[nextIndex].mediaAssetId);
   }
 
-  onHeroImageLoad(event: Event): void {
-    const target = event.target;
-    if (!(target instanceof HTMLImageElement)) {
-      return;
-    }
-
-    if (target.naturalHeight > target.naturalWidth) {
-      this.selectedImageOrientation.set('portrait');
-      return;
-    }
-
-    if (target.naturalWidth > target.naturalHeight) {
-      this.selectedImageOrientation.set('landscape');
-      return;
-    }
-
-    this.selectedImageOrientation.set('square');
-  }
-
   selectVariant(variant: ShopProductVariantOption): void {
     this.selectedVariantId.set(variant.id);
     this.selectedMaterialKey.set(this.materialKeyForVariant(variant));
@@ -407,9 +381,7 @@ export class ProductDetailComponent {
   }
 
   colorLabel(variant: ShopProductVariantOption): string {
-    return (
-      getColorLabelToken(variant.colorName || variant.variantLabel) ?? '-'
-    );
+    return variant.colorLabel || variant.colorName || variant.variantLabel || '-';
   }
 
   colorHex(variant: ShopProductVariantOption | null | undefined): string {
@@ -512,7 +484,6 @@ export class ProductDetailComponent {
 
   private setSelectedImageAssetId(mediaAssetId: string | null): void {
     this.selectedImageAssetId.set(mediaAssetId);
-    this.selectedImageOrientation.set(null);
   }
 
   private normalizeHexColor(value: string | null | undefined): string | null {

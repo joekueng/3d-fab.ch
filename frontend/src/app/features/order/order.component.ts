@@ -8,7 +8,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
 import {
   findColorHex,
-  getColorLabelToken,
+  resolveLocalizedColorLabel,
 } from '../../core/constants/colors.const';
 import {
   PriceBreakdownComponent,
@@ -29,9 +29,17 @@ interface PublicOrderItem {
   shopProductName?: string;
   shopVariantLabel?: string;
   shopVariantColorName?: string;
+  shopVariantColorLabelIt?: string;
+  shopVariantColorLabelEn?: string;
+  shopVariantColorLabelDe?: string;
+  shopVariantColorLabelFr?: string;
   shopVariantColorHex?: string;
   filamentVariantDisplayName?: string;
   filamentColorName?: string;
+  filamentColorLabelIt?: string;
+  filamentColorLabelEn?: string;
+  filamentColorLabelDe?: string;
+  filamentColorLabelFr?: string;
   filamentColorHex?: string;
   quality?: string;
   nozzleDiameterMm?: number;
@@ -282,26 +290,14 @@ export class OrderComponent implements OnInit {
       return variantLabel;
     }
 
-    return getColorLabelToken(item?.shopVariantColorName);
+    return this.localizedColorLabel(item, 'shop');
   }
 
   itemColorLabel(item: PublicOrderItem): string {
-    const shopColor = String(item?.shopVariantColorName ?? '').trim();
-    if (shopColor) {
-      return getColorLabelToken(shopColor) ?? this.translate.instant('ORDER.NOT_AVAILABLE');
-    }
-
-    const filamentColor = String(item?.filamentColorName ?? '').trim();
-    if (filamentColor) {
-      return (
-        getColorLabelToken(filamentColor) ??
-        this.translate.instant('ORDER.NOT_AVAILABLE')
-      );
-    }
-
-    const rawColor = String(item?.colorCode ?? '').trim();
     return (
-      getColorLabelToken(rawColor) ??
+      this.localizedColorLabel(item, 'shop') ||
+      this.localizedColorLabel(item, 'filament') ||
+      String(item?.colorCode ?? '').trim() ||
       this.translate.instant('ORDER.NOT_AVAILABLE')
     );
   }
@@ -331,6 +327,29 @@ export class OrderComponent implements OnInit {
 
   showItemPrintMetrics(item: PublicOrderItem): boolean {
     return !this.isShopItem(item);
+  }
+
+  private localizedColorLabel(
+    item: PublicOrderItem,
+    source: 'shop' | 'filament',
+  ): string | null {
+    if (source === 'shop') {
+      return resolveLocalizedColorLabel(this.translate.currentLang, {
+        fallback: item.shopVariantColorName,
+        it: item.shopVariantColorLabelIt,
+        en: item.shopVariantColorLabelEn,
+        de: item.shopVariantColorLabelDe,
+        fr: item.shopVariantColorLabelFr,
+      });
+    }
+
+    return resolveLocalizedColorLabel(this.translate.currentLang, {
+      fallback: item.filamentColorName ?? item.colorCode,
+      it: item.filamentColorLabelIt,
+      en: item.filamentColorLabelEn,
+      de: item.filamentColorLabelDe,
+      fr: item.filamentColorLabelFr,
+    });
   }
 
   orderKind(order: PublicOrder | null): 'SHOP' | 'CALCULATOR' | 'MIXED' {

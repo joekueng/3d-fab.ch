@@ -25,8 +25,8 @@ import { StlViewerComponent } from '../../shared/components/stl-viewer/stl-viewe
 import {
   findColorHex,
   getColorHex,
-  getColorLabelToken,
   normalizeColorValue,
+  resolveLocalizedColorLabel,
 } from '../../core/constants/colors.const';
 
 @Component({
@@ -257,7 +257,7 @@ export class CheckoutComponent implements OnInit {
     if (variantLabel) {
       return variantLabel;
     }
-    return getColorLabelToken(item?.shopVariantColorName);
+    return this.localizedShopColorLabel(item);
   }
 
   showItemMaterial(item: any): boolean {
@@ -286,12 +286,7 @@ export class CheckoutComponent implements OnInit {
   }
 
   itemColorLabel(item: any): string {
-    const shopColor = String(item?.shopVariantColorName ?? '').trim();
-    if (shopColor) {
-      return getColorLabelToken(shopColor) ?? '-';
-    }
-    const raw = String(item?.colorCode ?? '').trim();
-    return getColorLabelToken(raw) ?? '-';
+    return this.localizedShopColorLabel(item) || String(item?.colorCode ?? '-');
   }
 
   itemColorSwatch(item: any): string {
@@ -333,6 +328,16 @@ export class CheckoutComponent implements OnInit {
       return false;
     }
     return !!this.previewLoading()[id];
+  }
+
+  private localizedShopColorLabel(item: any): string | null {
+    return resolveLocalizedColorLabel(this.languageService.selectedLang(), {
+      fallback: item?.shopVariantColorName ?? item?.colorCode,
+      it: item?.shopVariantColorLabelIt,
+      en: item?.shopVariantColorLabelEn,
+      de: item?.shopVariantColorLabelDe,
+      fr: item?.shopVariantColorLabelFr,
+    });
   }
 
   hasPreviewError(item: any): boolean {
