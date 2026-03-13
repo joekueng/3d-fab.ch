@@ -84,7 +84,9 @@
                 <div class="cart-line-copy">
                   <strong>{{ cartItemName(item) }}</strong>
                   @if (cartItemVariant(item); as variant) {
-                    <span class="cart-line-meta">{{ variant | translate }}</span>
+                    <span class="cart-line-meta">{{
+                      variant | translate
+                    }}</span>
                   }
                   @if (cartItemColor(item); as color) {
                     <span class="cart-line-color">

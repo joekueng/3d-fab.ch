@@ -59,9 +59,11 @@ export class SeoService {
   applyPageSeo(override: PageSeoOverride): void {
     const cleanPath = this.getCleanPath(this.router.url);
     const lang = this.resolveLangFromPath(cleanPath);
-    const title = this.asString(override.title) ?? this.defaultTitleByLang[lang];
+    const title =
+      this.asString(override.title) ?? this.defaultTitleByLang[lang];
     const description =
-      this.asString(override.description) ?? this.defaultDescriptionByLang[lang];
+      this.asString(override.description) ??
+      this.defaultDescriptionByLang[lang];
     const robots = this.asString(override.robots) ?? 'index, follow';
     const ogTitle = this.asString(override.ogTitle) ?? title;
     const ogDescription = this.asString(override.ogDescription) ?? description;
@@ -135,7 +137,11 @@ export class SeoService {
   ): string | undefined {
     const mapKey = `${key}ByLang`;
     const localized = routeData[mapKey];
-    if (localized && typeof localized === 'object' && !Array.isArray(localized)) {
+    if (
+      localized &&
+      typeof localized === 'object' &&
+      !Array.isArray(localized)
+    ) {
       const mapped = localized as SeoMap;
       const byLang = this.asString(mapped[lang]);
       if (byLang) {
@@ -152,7 +158,10 @@ export class SeoService {
 
   private resolveLangFromPath(path: string): SupportedLang {
     const firstSegment = path.split('/').filter(Boolean)[0]?.toLowerCase();
-    if (firstSegment && this.supportedLangs.has(firstSegment as SupportedLang)) {
+    if (
+      firstSegment &&
+      this.supportedLangs.has(firstSegment as SupportedLang)
+    ) {
       return firstSegment as SupportedLang;
     }
     return 'it';

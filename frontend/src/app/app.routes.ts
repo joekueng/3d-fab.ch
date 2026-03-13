@@ -61,7 +61,7 @@ const appChildRoutes: Routes = [
         'Scopri il team 3D fab e il laboratorio di stampa 3D con sedi in Ticino e Bienne.',
     },
   },
- /* {
+  /* {
     path: 'materials',
     loadComponent: () =>
       import('./features/materials/materials-page.component').then(
