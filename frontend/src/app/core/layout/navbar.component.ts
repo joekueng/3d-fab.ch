@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import {
+  afterNextRender,
+  Component,
+  DestroyRef,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   NavigationStart,
@@ -58,16 +65,9 @@ export class NavbarComponent {
   ];
 
   constructor(public langService: LanguageService) {
-    if (!this.shopService.cartLoaded()) {
-      this.shopService
-        .loadCart()
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          error: () => {
-            this.shopService.cart.set(null);
-          },
-        });
-    }
+    afterNextRender(() => {
+      this.scheduleCartWarmup();
+    });
 
     this.router.events
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -96,6 +96,9 @@ export class NavbarComponent {
   toggleCart(): void {
     this.closeMenu();
     this.isCartOpen.update((open) => !open);
+    if (this.isCartOpen()) {
+      this.loadCartIfNeeded();
+    }
   }
 
   closeCart(): void {
@@ -190,6 +193,45 @@ export class NavbarComponent {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe();
+  }
+
+  private scheduleCartWarmup(): void {
+    if (typeof window === 'undefined') {
+      this.loadCartIfNeeded();
+      return;
+    }
+
+    const warmup = () => this.loadCartIfNeeded();
+    const idleCallback = (
+      window as Window & {
+        requestIdleCallback?: (
+          callback: IdleRequestCallback,
+          options?: IdleRequestOptions,
+        ) => number;
+      }
+    ).requestIdleCallback;
+
+    if (typeof idleCallback === 'function') {
+      idleCallback(() => warmup(), { timeout: 1500 });
+      return;
+    }
+
+    window.setTimeout(warmup, 300);
+  }
+
+  private loadCartIfNeeded(): void {
+    if (this.shopService.cartLoaded() || this.shopService.cartLoading()) {
+      return;
+    }
+
+    this.shopService
+      .loadCart()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        error: () => {
+          this.shopService.cart.set(null);
+        },
+      });
   }
 
   protected readonly routes = routes;

@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import {
+  afterNextRender,
   Component,
   DestroyRef,
   Injector,
@@ -89,16 +90,9 @@ export class ShopPageComponent {
   readonly cartHasItems = computed(() => this.cartItems().length > 0);
 
   constructor() {
-    if (!this.shopService.cartLoaded()) {
-      this.shopService
-        .loadCart()
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          error: () => {
-            this.shopService.cart.set(null);
-          },
-        });
-    }
+    afterNextRender(() => {
+      this.scheduleCartWarmup();
+    });
 
     combineLatest([
       toObservable(this.categorySlug, { injector: this.injector }),
@@ -147,6 +141,45 @@ export class ShopPageComponent {
         this.selectedCategory.set(result.catalog.category ?? null);
         this.products.set(result.catalog.products);
         this.applySeo(result.catalog.category ?? null);
+      });
+  }
+
+  private scheduleCartWarmup(): void {
+    if (typeof window === 'undefined') {
+      this.loadCartIfNeeded();
+      return;
+    }
+
+    const warmup = () => this.loadCartIfNeeded();
+    const idleCallback = (
+      window as Window & {
+        requestIdleCallback?: (
+          callback: IdleRequestCallback,
+          options?: IdleRequestOptions,
+        ) => number;
+      }
+    ).requestIdleCallback;
+
+    if (typeof idleCallback === 'function') {
+      idleCallback(() => warmup(), { timeout: 1500 });
+      return;
+    }
+
+    window.setTimeout(warmup, 300);
+  }
+
+  private loadCartIfNeeded(): void {
+    if (this.shopService.cartLoaded() || this.shopService.cartLoading()) {
+      return;
+    }
+
+    this.shopService
+      .loadCart()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        error: () => {
+          this.shopService.cart.set(null);
+        },
       });
   }
 

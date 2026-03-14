@@ -1,5 +1,6 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
+  afterNextRender,
   Component,
   DestroyRef,
   Injector,
@@ -193,16 +194,9 @@ export class ProductDetailComponent {
   );
 
   constructor() {
-    if (!this.shopService.cartLoaded()) {
-      this.shopService
-        .loadCart()
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          error: () => {
-            this.shopService.cart.set(null);
-          },
-        });
-    }
+    afterNextRender(() => {
+      this.scheduleCartWarmup();
+    });
 
     combineLatest([
       toObservable(this.productSlug, { injector: this.injector }),
@@ -279,7 +273,46 @@ export class ProductDetailComponent {
       this.shopService.resolveMediaUrl(image.hero) ??
       this.shopService.resolveMediaUrl(image.card) ??
       this.shopService.resolveMediaUrl(image.thumb)
-    );
+      );
+  }
+
+  private scheduleCartWarmup(): void {
+    if (typeof window === 'undefined') {
+      this.loadCartIfNeeded();
+      return;
+    }
+
+    const warmup = () => this.loadCartIfNeeded();
+    const idleCallback = (
+      window as Window & {
+        requestIdleCallback?: (
+          callback: IdleRequestCallback,
+          options?: IdleRequestOptions,
+        ) => number;
+      }
+    ).requestIdleCallback;
+
+    if (typeof idleCallback === 'function') {
+      idleCallback(() => warmup(), { timeout: 1500 });
+      return;
+    }
+
+    window.setTimeout(warmup, 300);
+  }
+
+  private loadCartIfNeeded(): void {
+    if (this.shopService.cartLoaded() || this.shopService.cartLoading()) {
+      return;
+    }
+
+    this.shopService
+      .loadCart()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        error: () => {
+          this.shopService.cart.set(null);
+        },
+      });
   }
 
   selectImage(mediaAssetId: string): void {
