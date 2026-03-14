@@ -18,6 +18,8 @@ export interface AdminMediaTextTranslation {
   altText: string;
 }
 
+export type AdminShopLanguage = 'it' | 'en' | 'de' | 'fr';
+
 export interface AdminShopCategoryRef {
   id: string;
   slug: string;
@@ -255,6 +257,28 @@ export interface AdminUpsertShopProductPayload {
   variants: AdminUpsertShopProductVariantPayload[];
 }
 
+export interface AdminTranslateShopProductPayload {
+  categoryId?: string;
+  sourceLanguage: AdminShopLanguage;
+  overwriteExisting: boolean;
+  materialCodes: string[];
+  names: Record<AdminShopLanguage, string>;
+  excerpts: Record<AdminShopLanguage, string>;
+  descriptions: Record<AdminShopLanguage, string>;
+  seoTitles: Record<AdminShopLanguage, string>;
+  seoDescriptions: Record<AdminShopLanguage, string>;
+}
+
+export interface AdminTranslateShopProductResponse {
+  sourceLanguage: AdminShopLanguage;
+  targetLanguages: AdminShopLanguage[];
+  names: Partial<Record<AdminShopLanguage, string>>;
+  excerpts: Partial<Record<AdminShopLanguage, string>>;
+  descriptions: Partial<Record<AdminShopLanguage, string>>;
+  seoTitles: Partial<Record<AdminShopLanguage, string>>;
+  seoDescriptions: Partial<Record<AdminShopLanguage, string>>;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -349,6 +373,18 @@ export class AdminShopService {
     return this.http.delete<void>(`${this.productsBaseUrl}/${productId}`, {
       withCredentials: true,
     });
+  }
+
+  translateProduct(
+    payload: AdminTranslateShopProductPayload,
+  ): Observable<AdminTranslateShopProductResponse> {
+    return this.http.post<AdminTranslateShopProductResponse>(
+      `${this.productsBaseUrl}/translate`,
+      payload,
+      {
+        withCredentials: true,
+      },
+    );
   }
 
   uploadProductModel(
