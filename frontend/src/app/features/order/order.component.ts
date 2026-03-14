@@ -245,7 +245,9 @@ export class OrderComponent implements OnInit {
         amount: order?.subtotalChf ?? 0,
       },
       {
-        label: `Servizio CAD (${order?.cadHours || 0}h)`,
+        label: this.translate.instant('ORDER.CAD_SERVICE', {
+          hours: order?.cadHours || 0,
+        }),
         amount: order?.cadTotalChf ?? 0,
         visible: (order?.cadTotalChf ?? 0) > 0,
       },

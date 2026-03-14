@@ -120,11 +120,19 @@
               <input type="checkbox" formControlName="acceptLegal" />
               <span>
                 {{ "LEGAL.CONSENT.LABEL_PREFIX" | translate }}
-                <a href="/terms" target="_blank" rel="noopener">{{
+                <a
+                  [href]="languageService.localizedPath('/terms')"
+                  target="_blank"
+                  rel="noopener"
+                  >{{
                   "LEGAL.CONSENT.TERMS_LINK" | translate
                 }}</a>
                 {{ "LEGAL.CONSENT.AND" | translate }}
-                <a href="/privacy" target="_blank" rel="noopener">{{
+                <a
+                  [href]="languageService.localizedPath('/privacy')"
+                  target="_blank"
+                  rel="noopener"
+                  >{{
                   "LEGAL.CONSENT.PRIVACY_LINK" | translate
                 }}</a
                 >.

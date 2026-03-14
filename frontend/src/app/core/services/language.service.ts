@@ -85,6 +85,31 @@ export class LanguageService {
     return this.isSupportedLang(activeLang) ? activeLang : this.currentLang();
   }
 
+  localizedPath(path: string): string {
+    const lang = this.selectedLang();
+    const rawValue = String(path ?? '').trim();
+    const normalized = rawValue || '/';
+    const match = normalized.match(/^([^?#]*)([?#].*)?$/);
+    const rawPath = match?.[1] || '/';
+    const suffix = match?.[2] || '';
+    const segments = rawPath.split('/').filter(Boolean);
+
+    if (segments.length === 0) {
+      return `/${lang}${suffix}`;
+    }
+
+    if (this.isSupportedLang(segments[0])) {
+      segments[0] = lang;
+      return `/${segments.join('/')}${suffix}`;
+    }
+
+    if (this.looksLikeLangToken(segments[0])) {
+      return `/${[lang, ...segments.slice(1)].join('/')}${suffix}`;
+    }
+
+    return `/${[lang, ...segments].join('/')}${suffix}`;
+  }
+
   private ensureLanguageInPath(urlTree: UrlTree): void {
     const segments = this.getPrimarySegments(urlTree);
 

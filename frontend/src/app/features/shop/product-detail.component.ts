@@ -366,7 +366,7 @@ export class ProductDetailComponent {
     if (!sessionId) {
       return;
     }
-    this.router.navigate(['/checkout'], {
+    this.router.navigate(['/', this.languageService.selectedLang(), 'checkout'], {
       queryParams: { session: sessionId },
     });
   }

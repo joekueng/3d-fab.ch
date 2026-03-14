@@ -101,7 +101,11 @@
 
       <p class="upload-privacy-note">
         {{ "LEGAL.CONSENT.UPLOAD_NOTICE_PREFIX" | translate }}
-        <a href="/privacy" target="_blank" rel="noopener">{{
+        <a
+          [href]="languageService.localizedPath('/privacy')"
+          target="_blank"
+          rel="noopener"
+          >{{
           "LEGAL.CONSENT.UPLOAD_NOTICE_LINK" | translate
         }}</a
         >.

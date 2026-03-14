@@ -30,6 +30,7 @@ import {
   VariantOption,
 } from '../../services/quote-estimator.service';
 import { getColorHex } from '../../../../core/constants/colors.const';
+import { LanguageService } from '../../../../core/services/language.service';
 
 interface FormItem {
   file: File;
@@ -106,6 +107,7 @@ export class UploadFormComponent implements OnInit {
   private estimator = inject(QuoteEstimatorService);
   private fb = inject(FormBuilder);
   private translate = inject(TranslateService);
+  readonly languageService = inject(LanguageService);
 
   form: FormGroup;
 

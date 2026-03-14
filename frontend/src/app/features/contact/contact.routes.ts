@@ -6,9 +6,8 @@ export const CONTACT_ROUTES: Routes = [
     loadComponent: () =>
       import('./contact-page.component').then((m) => m.ContactPageComponent),
     data: {
-      seoTitle: 'Contatti | 3D fab',
-      seoDescription:
-        'Richiedi informazioni, preventivi personalizzati o supporto per progetti di stampa 3D.',
+      seoTitleKey: 'SEO.ROUTES.CONTACT.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.CONTACT.DESCRIPTION',
     },
   },
 ];

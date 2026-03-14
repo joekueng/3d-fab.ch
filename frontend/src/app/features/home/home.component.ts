@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
+import { LanguageService } from '../../core/services/language.service';
 import {
   buildPublicMediaUsageScopeKey,
   PublicMediaDisplayImage,
@@ -69,6 +70,7 @@ const HOME_CAPABILITY_CONFIGS: readonly HomeCapabilityConfig[] = [
 })
 export class HomeComponent {
   private readonly publicMediaService = inject(PublicMediaService);
+  readonly languageService = inject(LanguageService);
 
   private readonly mediaByUsage = toSignal(
     this.publicMediaService.getUsageCollections([

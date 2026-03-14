@@ -13,6 +13,72 @@
     "TERMS": "Conditions générales",
     "CONTACT": "Contactez-nous"
   },
+  "SEO": {
+    "DEFAULT": {
+      "TITLE": "3D fab | Impression 3D sur mesure",
+      "DESCRIPTION": "Service d'impression 3D sur mesure, boutique technique et support CAD pour prototypes, pièces et petites séries."
+    },
+    "ROUTES": {
+      "HOME": {
+        "TITLE": "Impression 3D à Bienne | Prototypes, pièces et petites séries - 3D fab",
+        "DESCRIPTION": "Service d'impression 3D à Bienne pour prototypes, pièces de rechange et petites séries. Boutique technique et support CAD, avec devis rapide depuis un fichier STL."
+      },
+      "CALCULATOR": {
+        "TITLE": "Calculateur de devis impression 3D | 3D fab",
+        "DESCRIPTION": "Chargez votre fichier 3D et obtenez prix et délais en quelques secondes avec un vrai slicing.",
+        "BASIC": {
+          "TITLE": "Calculateur impression 3D de base | 3D fab",
+          "DESCRIPTION": "Calculez rapidement le prix de votre impression 3D avec le parcours de base."
+        },
+        "ADVANCED": {
+          "TITLE": "Calculateur impression 3D avancé | 3D fab",
+          "DESCRIPTION": "Configurez des paramètres avancés et obtenez un devis précis basé sur un vrai slicing."
+        }
+      },
+      "SHOP": {
+        "TITLE": "Boutique 3D fab",
+        "DESCRIPTION": "Catalogue de produits imprimés en 3D, accessoires techniques et solutions pratiques prêtes à l'emploi.",
+        "CATEGORY_TITLE": "Catégorie boutique | 3D fab",
+        "CATEGORY_DESCRIPTION": "Parcourez les produits de cette catégorie, les variantes disponibles et les solutions techniques imprimées en 3D.",
+        "PRODUCT_TITLE": "Produit | 3D fab",
+        "PRODUCT_DESCRIPTION": "Découvrez les détails, matériaux, variantes et disponibilités du produit sélectionné dans la boutique 3D fab."
+      },
+      "MATERIALS": {
+        "TITLE": "Qualité et matériaux | 3D fab",
+        "DESCRIPTION": "Comparez les matériaux d'impression 3D avec des radar charts interactifs, des propriétés techniques et des sources citées."
+      },
+      "ABOUT": {
+        "TITLE": "Qui sommes-nous | 3D fab",
+        "DESCRIPTION": "Découvrez l'équipe de 3D fab et notre atelier d'impression 3D pour prototypes, pièces et productions sur mesure."
+      },
+      "CONTACT": {
+        "TITLE": "Contact | 3D fab",
+        "DESCRIPTION": "Demandez des informations, des devis personnalisés ou un support technique pour votre projet d'impression 3D."
+      },
+      "LEGAL": {
+        "PRIVACY": {
+          "TITLE": "Politique de confidentialité | 3D fab",
+          "DESCRIPTION": "Politique de confidentialité de 3D fab : traitement des données, finalités et contacts."
+        },
+        "TERMS": {
+          "TITLE": "Conditions générales | 3D fab",
+          "DESCRIPTION": "Conditions générales du service d'impression 3D et du calculateur de devis."
+        }
+      },
+      "CHECKOUT": {
+        "TITLE": "Checkout | 3D fab",
+        "DESCRIPTION": "Finalisez votre demande et confirmez les détails de votre commande d'impression 3D."
+      },
+      "ORDER": {
+        "TITLE": "Commande | 3D fab",
+        "DESCRIPTION": "Consultez le récapitulatif de votre commande et l'état de votre demande d'impression 3D."
+      },
+      "ADMIN": {
+        "TITLE": "Admin | 3D fab",
+        "DESCRIPTION": "Espace d'administration restreint de 3D fab."
+      }
+    }
+  },
   "HOME": {
     "HERO_EYEBROW": "Impression 3D technique pour entreprises, freelances et makers",
     "HERO_TITLE": "Service d'impression 3D.<br>Du fichier à la pièce finie.",
@@ -163,6 +229,7 @@
   "SHOP": {
     "TITLE": "Solutions techniques",
     "SUBTITLE": "Produits prêts à l'emploi qui résolvent des problèmes pratiques",
+    "HERO_EYEBROW": "Boutique technique",
     "WIP_EYEBROW": "Work in progress",
     "WIP_TITLE": "Boutique en préparation",
     "WIP_SUBTITLE": "Nous préparons une boutique avec des produits sélectionnés et des fonctionnalités de création automatique !",
@@ -173,6 +240,7 @@
     "CUSTOM_PART_FOOTER_TEXT": "Contactez-nous pour des pièces personnalisées.",
     "ADD_CART": "Ajouter au panier",
     "ADDING": "Ajout en cours",
+    "ADD_SUCCESS": "Produit ajouté au panier.",
     "BACK": "Retour à la boutique",
     "NOT_FOUND": "Produit introuvable.",
     "DETAILS": "Détails",
@@ -180,14 +248,39 @@
     "SUCCESS_TITLE": "Ajouté au panier",
     "SUCCESS_DESC": "Le produit a été ajouté au panier avec succès.",
     "CONTINUE": "Continuer",
+    "VIEW_ALL": "Voir toute la boutique",
+    "CATALOG_LABEL": "Catalogue",
+    "CATALOG_TITLE": "Tous les produits",
+    "CATALOG_META_DESCRIPTION": "Découvrez des produits imprimés en 3D, des accessoires techniques et des solutions prêtes à l'emploi avec le même checkout que le calculateur.",
+    "CUSTOM_PART_CTA": "Vous ne trouvez pas ce que vous cherchez ? Demandez une pièce personnalisée.",
+    "CATEGORY_META": "{{count}} produits disponibles dans cette catégorie",
+    "CATEGORY_PANEL_KICKER": "Navigation",
+    "CATEGORY_PANEL_TITLE": "Catégories",
+    "SELECTED_CATEGORY": "Catégorie sélectionnée",
+    "ITEMS_FOUND": "produits",
+    "EMPTY_CATEGORY": "Aucun produit n'est disponible dans cette catégorie pour le moment.",
+    "FEATURED_KICKER": "À la une",
+    "FEATURED_TITLE": "Produits à surveiller",
+    "FEATURED_BADGE": "À la une",
+    "HIGHLIGHT_PRODUCTS": "Produits",
+    "HIGHLIGHT_CART": "Dans le panier",
+    "HIGHLIGHT_READY": "Aperçu",
+    "PRICE_FROM": "Prix à partir de",
     "MODEL_OPEN": "Ouvrir la vue 3D",
     "MODEL_CLOSE": "Fermer la vue 3D",
+    "MODEL_3D": "Aperçu 3D",
+    "MODEL_TITLE": "Aperçu du modèle",
+    "MODEL_LOADING": "Chargement du modèle 3D.",
+    "MODEL_UNAVAILABLE": "Aperçu 3D indisponible.",
     "PREVIOUS_IMAGE": "Image précédente",
     "NEXT_IMAGE": "Image suivante",
+    "BREADCRUMB_ROOT": "Boutique",
     "PRICE_LABEL": "Prix",
+    "EXCERPT_FALLBACK": "Fiche produit en préparation.",
     "SELECT_MATERIAL": "Matériau",
     "SELECT_COLOR": "Couleur",
     "MATERIAL_COLOR_COUNT": "{{count}} couleurs disponibles",
+    "VARIANT": "Variante",
     "PROPERTY_UV": "Résistance UV",
     "PROPERTY_WEATHER": "Usage extérieur",
     "PROPERTY_RIGIDITY": "Rigidité",
@@ -196,6 +289,21 @@
     "PROPERTY_LOW": "Faible",
     "PROPERTY_RIGID": "Rigide",
     "PROPERTY_FLEXIBLE": "Flexible",
+    "QUANTITY": "Quantité",
+    "GO_TO_CHECKOUT": "Aller au checkout",
+    "IN_CART_SHORT": "Dans le panier x{{count}}",
+    "IN_CART_LONG": "Déjà dans le panier x{{count}}",
+    "DESCRIPTION_TITLE": "Description",
+    "CART_TITLE": "Panier",
+    "CART_SUMMARY_TITLE": "Récapitulatif actuel",
+    "CART_LOADING": "Chargement du panier.",
+    "CART_EMPTY": "Le panier est vide. Ajoutez un produit.",
+    "CART_SUBTOTAL": "Sous-total produits",
+    "CART_SHIPPING": "Expédition",
+    "CART_TOTAL": "Total estimé",
+    "CLEAR_CART": "Vider",
+    "REMOVE": "Supprimer",
+    "CART_UPDATE_ERROR": "Nous n'avons pas réussi à mettre à jour le panier. Réessayez.",
     "ALL_CATEGORIES": "Toutes les catégories",
     "CATEGORIES": {
       "FILAMENTS": "Filaments",
@@ -464,6 +572,8 @@
   "CHECKOUT": {
     "TITLE": "Checkout",
     "SUBTITLE": "Complétez votre commande en saisissant les détails de livraison et de paiement.",
+    "CAD_SERVICE": "Service CAD",
+    "CAD_REQUEST_REF": "lié à la demande de contact #{{id}}",
     "CONTACT_INFO": "Informations de contact",
     "BILLING_ADDR": "Adresse de facturation",
     "SHIPPING_ADDR": "Adresse de livraison",
@@ -559,6 +669,13 @@
     "ERR_ID_NOT_FOUND": "ID de commande introuvable.",
     "ERR_LOAD_ORDER": "Impossible de charger les détails de la commande.",
     "ERR_REPORT_PAYMENT": "Impossible de signaler le paiement. Réessayez.",
+    "CAD_SERVICE": "Service CAD ({{hours}}h)",
+    "ITEMS_TITLE": "Articles de la commande",
+    "ORDER_TYPE_LABEL": "Type de commande",
+    "ITEM_COUNT": "Lignes",
+    "TYPE_SHOP": "Boutique",
+    "TYPE_CALCULATOR": "Calculateur",
+    "TYPE_MIXED": "Mixte",
     "NOT_AVAILABLE": "N/D"
   },
   "DROPZONE": {

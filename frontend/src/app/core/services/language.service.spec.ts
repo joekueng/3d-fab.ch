@@ -103,4 +103,15 @@ describe('LanguageService', () => {
       '/de/calculator?session=abc&mode=advanced',
     );
   });
+
+  it('builds localized paths for internal links while preserving query and hash', () => {
+    const translate = createTranslateMock();
+    const router = createRouterMock('/de/shop');
+    const service = new LanguageService(translate, router);
+
+    expect(service.localizedPath('/privacy')).toBe('/de/privacy');
+    expect(service.localizedPath('/it/contact?topic=seo#form')).toBe(
+      '/de/contact?topic=seo#form',
+    );
+  });
 });
