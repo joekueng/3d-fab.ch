@@ -1,6 +1,9 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject, REQUEST } from '@angular/core';
-import { RequestLike, resolveRequestOrigin } from '../../../core/request-origin';
+import {
+  RequestLike,
+  resolveRequestOrigin,
+} from '../../../core/request-origin';
 
 function isAbsoluteUrl(url: string): boolean {
   return /^[a-z][a-z\d+\-.]*:/i.test(url) || url.startsWith('//');

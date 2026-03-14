@@ -4,9 +4,7 @@ export type RequestLike = {
   headers?: Record<string, string | string[] | undefined>;
 };
 
-function firstHeaderValue(
-  value: string | string[] | undefined,
-): string | null {
+function firstHeaderValue(value: string | string[] | undefined): string | null {
   if (Array.isArray(value)) {
     return value[0] ?? null;
   }
@@ -29,7 +27,9 @@ function firstForwardedValue(
   );
 }
 
-export function resolveRequestOrigin(request: RequestLike | null): string | null {
+export function resolveRequestOrigin(
+  request: RequestLike | null,
+): string | null {
   if (!request) {
     return null;
   }

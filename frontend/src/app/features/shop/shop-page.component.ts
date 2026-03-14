@@ -242,11 +242,14 @@ export class ShopPageComponent {
     if (!sessionId) {
       return;
     }
-    this.router.navigate(['/', this.languageService.selectedLang(), 'checkout'], {
-      queryParams: {
-        session: sessionId,
+    this.router.navigate(
+      ['/', this.languageService.selectedLang(), 'checkout'],
+      {
+        queryParams: {
+          session: sessionId,
+        },
       },
-    });
+    );
   }
 
   trackByCategory(_index: number, item: ShopCategoryNavNode): string {
