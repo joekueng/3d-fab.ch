@@ -60,7 +60,7 @@ export const appConfig: ApplicationConfig = {
     ),
     importProvidersFrom(
       TranslateModule.forRoot({
-        defaultLanguage: 'it',
+        fallbackLang: 'it',
         loader: {
           provide: TranslateLoader,
           useClass: StaticTranslateLoader,
@@ -75,7 +75,7 @@ export const appConfig: ApplicationConfig = {
       } | null;
 
       translate.addLangs([...SUPPORTED_LANGS]);
-      translate.setDefaultLang('it');
+      translate.setFallbackLang('it');
       const requestedUrl =
         (typeof request?.url === 'string' && request.url) || router.url || '/';
       const lang = resolveLangFromUrl(requestedUrl);

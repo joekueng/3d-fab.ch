@@ -24,7 +24,7 @@ export class LanguageService {
     private router: Router,
   ) {
     this.translate.addLangs(this.supportedLangs);
-    this.translate.setDefaultLang('it');
+    this.translate.setFallbackLang('it');
     this.translate.onLangChange.subscribe((event) => {
       const lang =
         typeof event.lang === 'string' ? event.lang.toLowerCase() : null;

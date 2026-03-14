@@ -9,7 +9,7 @@ describe('LanguageService', () => {
     const translate = {
       currentLang: '',
       addLangs: jasmine.createSpy('addLangs'),
-      setDefaultLang: jasmine.createSpy('setDefaultLang'),
+      setFallbackLang: jasmine.createSpy('setFallbackLang'),
       use: jasmine.createSpy('use').and.callFake((lang: string) => {
         translate.currentLang = lang;
         onLangChange.next({ lang });
@@ -75,6 +75,7 @@ describe('LanguageService', () => {
     const service = new LanguageService(translate, router);
 
     expect(translate.use).toHaveBeenCalledWith('it');
+    expect((translate as any).setFallbackLang).toHaveBeenCalledWith('it');
     expect(navigateSpy).toHaveBeenCalledTimes(1);
 
     const firstCall = navigateSpy.calls.mostRecent();
