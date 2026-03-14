@@ -113,4 +113,4 @@ Verifica che `MEDIA_FFMPEG_PATH` punti a un `ffmpeg` con supporto JPEG, WebP e A
 Verifica le credenziali in `application.properties`. Se usi Docker, puoi passare `DB_URL`, `DB_USERNAME` e `DB_PASSWORD` come variabili d'ambiente.
 
 ### Deploy e traduzioni OpenAI
-Nel deploy Gitea la chiave OpenAI deve stare nel secret `OPENAI_API_KEY`. La pipeline genera il blocco `common.env` remoto durante il deploy e il container backend la riceve come variabile runtime. I file `deploy/envs/*.env` restano per i valori specifici di `dev/int/prod`.
+Nel deploy Gitea la chiave OpenAI deve stare nel secret `OPENAI_API_KEY`. La pipeline la aggiunge al file `.env` dell'ambiente durante il deploy e il container backend la riceve come variabile runtime. I file `deploy/envs/*.env` restano per i valori specifici di `dev/int/prod`.
