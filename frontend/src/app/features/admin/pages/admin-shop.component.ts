@@ -18,6 +18,8 @@ import {
   AdminShopProductModel,
   AdminShopProductVariant,
   AdminShopService,
+  AdminTranslateShopProductPayload,
+  AdminTranslateShopProductResponse,
   AdminUpsertShopCategoryPayload,
   AdminUpsertShopProductPayload,
   AdminUpsertShopProductVariantPayload,
@@ -174,6 +176,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   loading = false;
   detailLoading = false;
   savingProduct = false;
+  translatingProduct = false;
   deletingProduct = false;
   savingCategory = false;
   deletingCategory = false;
@@ -188,6 +191,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   productStatusFilter: ProductStatusFilter = 'ALL';
   showCategoryManager = false;
   activeContentLanguage: ShopLanguage = 'it';
+  overwriteExistingTranslations = false;
 
   errorMessage: string | null = null;
   successMessage: string | null = null;
@@ -558,6 +562,52 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       this.categoryForm.names[this.activeContentLanguage] ||
       this.categoryForm.names['it'];
     this.categoryForm.slug = this.slugify(source);
+  }
+
+  translateProductFromCurrentLanguage(): void {
+    if (this.translatingProduct) {
+      return;
+    }
+
+    this.syncDescriptionFromEditor(this.descriptionEditorElement, true);
+
+    const sourceLanguage = this.activeContentLanguage;
+    if (!this.productForm.names[sourceLanguage].trim()) {
+      this.errorMessage = `Il nome prodotto ${this.languageLabels[sourceLanguage]} e obbligatorio per avviare la traduzione.`;
+      this.successMessage = null;
+      return;
+    }
+
+    const payload = this.buildProductTranslationPayload(sourceLanguage);
+    this.translatingProduct = true;
+    this.errorMessage = null;
+    this.successMessage = null;
+
+    this.adminShopService.translateProduct(payload).subscribe({
+      next: (response) => {
+        this.translatingProduct = false;
+        this.applyProductTranslation(response, payload.overwriteExisting);
+        this.successMessage = response.targetLanguages.length
+          ? `Traduzioni ${response.targetLanguages
+              .map((language) => this.languageLabels[language])
+              .join(' / ')} aggiornate nel form.`
+          : 'Nessun campo da tradurre.';
+      },
+      error: (error) => {
+        this.translatingProduct = false;
+        this.errorMessage = this.extractErrorMessage(
+          error,
+          'Traduzione prodotto non riuscita.',
+        );
+      },
+    });
+  }
+
+  canTranslateProductFromCurrentLanguage(): boolean {
+    return (
+      !this.translatingProduct &&
+      !!this.productForm.names[this.activeContentLanguage].trim()
+    );
   }
 
   setActiveContentLanguage(language: ShopLanguage): void {
@@ -1667,6 +1717,98 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       sortOrder: Number(this.productForm.sortOrder) || 0,
       variants,
     };
+  }
+
+  private buildProductTranslationPayload(
+    sourceLanguage: ShopLanguage,
+  ): AdminTranslateShopProductPayload {
+    const materialCodes = Array.from(
+      new Set(
+        this.productForm.materials
+          .map((material) => material.materialCode.trim().toUpperCase())
+          .filter((materialCode) => !!materialCode),
+      ),
+    );
+
+    return {
+      categoryId: this.productForm.categoryId || undefined,
+      sourceLanguage,
+      overwriteExisting: this.overwriteExistingTranslations,
+      materialCodes,
+      names: { ...this.productForm.names },
+      excerpts: { ...this.productForm.excerpts },
+      descriptions: { ...this.productForm.descriptions },
+      seoTitles: { ...this.productForm.seoTitles },
+      seoDescriptions: { ...this.productForm.seoDescriptions },
+    };
+  }
+
+  private applyProductTranslation(
+    response: AdminTranslateShopProductResponse,
+    overwriteExisting: boolean,
+  ): void {
+    for (const language of response.targetLanguages) {
+      this.mergeLocalizedText(
+        this.productForm.names,
+        response.names,
+        language,
+        overwriteExisting,
+      );
+      this.mergeLocalizedText(
+        this.productForm.excerpts,
+        response.excerpts,
+        language,
+        overwriteExisting,
+      );
+      this.mergeLocalizedText(
+        this.productForm.descriptions,
+        response.descriptions,
+        language,
+        overwriteExisting,
+        true,
+      );
+      this.mergeLocalizedText(
+        this.productForm.seoTitles,
+        response.seoTitles,
+        language,
+        overwriteExisting,
+      );
+      this.mergeLocalizedText(
+        this.productForm.seoDescriptions,
+        response.seoDescriptions,
+        language,
+        overwriteExisting,
+      );
+    }
+
+    this.renderActiveDescriptionInEditor();
+  }
+
+  private mergeLocalizedText(
+    target: Record<ShopLanguage, string>,
+    translated:
+      | Partial<Record<ShopLanguage, string>>
+      | Record<ShopLanguage, string>
+      | undefined,
+    language: ShopLanguage,
+    overwriteExisting: boolean,
+    richText = false,
+  ): void {
+    const incoming = translated?.[language];
+    if (incoming === undefined) {
+      return;
+    }
+
+    const hasCurrentValue = richText
+      ? this.hasMeaningfulRichText(target[language] ?? '')
+      : !!target[language]?.trim();
+    if (hasCurrentValue && !overwriteExisting) {
+      return;
+    }
+
+    target[language] = richText
+      ? this.normalizeDescriptionForEditor(incoming)
+      : incoming.trim();
   }
 
   private buildVariantsFromMaterials(): AdminUpsertShopProductVariantPayload[] {

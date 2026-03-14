@@ -191,6 +191,7 @@ jobs:
           fi
           DEPLOY_OWNER=$(echo '${{ gitea.repository_owner }}' | tr '[:upper:]' '[:lower:]')
 
+          cat "deploy/envs/common.env" > /tmp/common_env.env
           cat "deploy/envs/${{ env.ENV }}.env" > /tmp/full_env.env
 
           if [[ "${{ env.ENV }}" == "prod" ]]; then
@@ -217,9 +218,15 @@ jobs:
           ADMIN_TTL="${ADMIN_TTL:-480}"
           printf 'ADMIN_PASSWORD="%s"\nADMIN_SESSION_SECRET="%s"\nADMIN_SESSION_TTL_MINUTES="%s"\n' \
             "${{ secrets.ADMIN_PASSWORD }}" "${{ secrets.ADMIN_SESSION_SECRET }}" "$ADMIN_TTL" >> /tmp/full_env.env
+          printf 'OPENAI_API_KEY="%s"\n' "${{ secrets.OPENAI_API_KEY }}" >> /tmp/common_env.env
 
+          echo "Preparing to send common env file with variables:"
+          grep -Ev "PASSWORD|SECRET|KEY|TOKEN" /tmp/common_env.env || true
           echo "Preparing to send env file with variables:"
-          grep -Ev "PASSWORD|SECRET" /tmp/full_env.env || true
+          grep -Ev "PASSWORD|SECRET|KEY|TOKEN" /tmp/full_env.env || true
+
+          ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" \
+            "setcommon" < /tmp/common_env.env
 
           ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" \
             "setenv ${{ env.ENV }}" < /tmp/full_env.env

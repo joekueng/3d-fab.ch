@@ -1,8 +1,11 @@
 package com.printcalculator.controller.admin;
 
 import com.printcalculator.dto.AdminShopProductDto;
+import com.printcalculator.dto.AdminTranslateShopProductRequest;
+import com.printcalculator.dto.AdminTranslateShopProductResponse;
 import com.printcalculator.dto.AdminUpsertShopProductRequest;
 import com.printcalculator.service.admin.AdminShopProductControllerService;
+import com.printcalculator.service.admin.AdminShopProductTranslationService;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -29,9 +32,12 @@ import java.util.UUID;
 @Transactional(readOnly = true)
 public class AdminShopProductController {
     private final AdminShopProductControllerService adminShopProductControllerService;
+    private final AdminShopProductTranslationService adminShopProductTranslationService;
 
-    public AdminShopProductController(AdminShopProductControllerService adminShopProductControllerService) {
+    public AdminShopProductController(AdminShopProductControllerService adminShopProductControllerService,
+                                      AdminShopProductTranslationService adminShopProductTranslationService) {
         this.adminShopProductControllerService = adminShopProductControllerService;
+        this.adminShopProductTranslationService = adminShopProductTranslationService;
     }
 
     @GetMapping
@@ -48,6 +54,11 @@ public class AdminShopProductController {
     @Transactional
     public ResponseEntity<AdminShopProductDto> createProduct(@RequestBody AdminUpsertShopProductRequest payload) {
         return ResponseEntity.ok(adminShopProductControllerService.createProduct(payload));
+    }
+
+    @PostMapping("/translate")
+    public ResponseEntity<AdminTranslateShopProductResponse> translateProduct(@RequestBody AdminTranslateShopProductRequest payload) {
+        return ResponseEntity.ok(adminShopProductTranslationService.translateProduct(payload));
     }
 
     @PutMapping("/{productId}")
