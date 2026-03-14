@@ -366,9 +366,12 @@ export class ProductDetailComponent {
     if (!sessionId) {
       return;
     }
-    this.router.navigate(['/checkout'], {
-      queryParams: { session: sessionId },
-    });
+    this.router.navigate(
+      ['/', this.languageService.selectedLang(), 'checkout'],
+      {
+        queryParams: { session: sessionId },
+      },
+    );
   }
 
   priceLabel(): number {

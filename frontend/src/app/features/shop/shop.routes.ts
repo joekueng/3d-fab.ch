@@ -7,30 +7,32 @@ export const SHOP_ROUTES: Routes = [
     path: '',
     component: ShopPageComponent,
     data: {
-      seoTitle: 'Shop 3D fab',
-      seoDescription:
-        'Catalogo prodotti stampati in 3D, accessori tecnici e soluzioni pratiche pronte all uso.',
+      seoTitleKey: 'SEO.ROUTES.SHOP.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.SHOP.DESCRIPTION',
     },
   },
   {
     path: 'p/:productSlug',
     component: ProductDetailComponent,
     data: {
-      seoTitle: 'Prodotto | 3D fab',
+      seoTitleKey: 'SEO.ROUTES.SHOP.PRODUCT_TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.SHOP.PRODUCT_DESCRIPTION',
     },
   },
   {
     path: ':categorySlug/:productSlug',
     component: ProductDetailComponent,
     data: {
-      seoTitle: 'Prodotto | 3D fab',
+      seoTitleKey: 'SEO.ROUTES.SHOP.PRODUCT_TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.SHOP.PRODUCT_DESCRIPTION',
     },
   },
   {
     path: ':categorySlug',
     component: ShopPageComponent,
     data: {
-      seoTitle: 'Categoria Shop | 3D fab',
+      seoTitleKey: 'SEO.ROUTES.SHOP.CATEGORY_TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.SHOP.CATEGORY_DESCRIPTION',
     },
   },
 ];

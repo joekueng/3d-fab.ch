@@ -39,6 +39,72 @@
     "TERMS": "Terms & Conditions",
     "CONTACT": "Contact Us"
   },
+  "SEO": {
+    "DEFAULT": {
+      "TITLE": "3D fab | Custom 3D Printing",
+      "DESCRIPTION": "Custom 3D printing service, technical shop and CAD support for prototypes, spare parts and short runs."
+    },
+    "ROUTES": {
+      "HOME": {
+        "TITLE": "Custom 3D Printing in Switzerland | Prototypes, Spare Parts & Short Runs - 3D fab",
+        "DESCRIPTION": "Swiss-based 3D printing service for prototypes, spare parts and short production runs. Technical shop and CAD support, with fast quotes from STL files."
+      },
+      "CALCULATOR": {
+        "TITLE": "3D Printing Quote Calculator | 3D fab",
+        "DESCRIPTION": "Upload your 3D file and get price and lead time in seconds with real slicing.",
+        "BASIC": {
+          "TITLE": "Basic 3D Printing Calculator | 3D fab",
+          "DESCRIPTION": "Quickly estimate the price of your 3D print with the basic workflow."
+        },
+        "ADVANCED": {
+          "TITLE": "Advanced 3D Printing Calculator | 3D fab",
+          "DESCRIPTION": "Configure advanced print settings and get a precise quote based on real slicing."
+        }
+      },
+      "SHOP": {
+        "TITLE": "3D fab Shop",
+        "DESCRIPTION": "Catalog of 3D printed products, technical accessories and practical ready-to-use solutions.",
+        "CATEGORY_TITLE": "Shop Category | 3D fab",
+        "CATEGORY_DESCRIPTION": "Browse products in this category, available variants and technical 3D printed solutions.",
+        "PRODUCT_TITLE": "Product | 3D fab",
+        "PRODUCT_DESCRIPTION": "Discover details, materials, variants and availability for the selected product in the 3D fab shop."
+      },
+      "MATERIALS": {
+        "TITLE": "Quality and Materials | 3D fab",
+        "DESCRIPTION": "Compare 3D printing materials with interactive radar charts, technical properties and cited sources."
+      },
+      "ABOUT": {
+        "TITLE": "About Us | 3D fab",
+        "DESCRIPTION": "Learn more about the 3D fab team and our 3D printing lab for prototypes, spare parts and custom production."
+      },
+      "CONTACT": {
+        "TITLE": "Contact | 3D fab",
+        "DESCRIPTION": "Request information, custom quotes or technical support for your 3D printing project."
+      },
+      "LEGAL": {
+        "PRIVACY": {
+          "TITLE": "Privacy Policy | 3D fab",
+          "DESCRIPTION": "3D fab privacy policy: data processing, purposes and contact details."
+        },
+        "TERMS": {
+          "TITLE": "Terms and Conditions | 3D fab",
+          "DESCRIPTION": "Terms and conditions for the 3D printing service and instant quote calculator."
+        }
+      },
+      "CHECKOUT": {
+        "TITLE": "Checkout | 3D fab",
+        "DESCRIPTION": "Complete your request and confirm the details for your 3D printing order."
+      },
+      "ORDER": {
+        "TITLE": "Order | 3D fab",
+        "DESCRIPTION": "Review your order summary and the status of your 3D printing request."
+      },
+      "ADMIN": {
+        "TITLE": "Admin | 3D fab",
+        "DESCRIPTION": "Restricted 3D fab administration area."
+      }
+    }
+  },
   "CALC": {
     "TITLE": "3D Print Calculator",
     "SUBTITLE": "Upload your 3D file (STL, 3MF, STEP...) and get an instant estimate of costs and print time.",
@@ -99,6 +165,7 @@
   "SHOP": {
     "TITLE": "Technical solutions",
     "SUBTITLE": "Ready-made products solving practical problems",
+    "HERO_EYEBROW": "Technical shop",
     "WIP_EYEBROW": "Work in progress",
     "WIP_TITLE": "Shop under construction",
     "WIP_SUBTITLE": "We are building a curated technical shop with products that are genuinely useful and field-tested.",
@@ -109,6 +176,7 @@
     "CUSTOM_PART_FOOTER_TEXT": "Contact us for custom parts.",
     "ADD_CART": "Add to Cart",
     "ADDING": "Adding to cart",
+    "ADD_SUCCESS": "Product added to cart.",
     "BACK": "Back to Shop",
     "NOT_FOUND": "Product not found.",
     "DETAILS": "Details",
@@ -116,14 +184,39 @@
     "SUCCESS_TITLE": "Added to cart",
     "SUCCESS_DESC": "The product has been added to the cart.",
     "CONTINUE": "Continue",
+    "VIEW_ALL": "View the full shop",
+    "CATALOG_LABEL": "Catalog",
+    "CATALOG_TITLE": "All products",
+    "CATALOG_META_DESCRIPTION": "Discover 3D printed products, technical accessories, and ready-to-use solutions with the same checkout as the calculator.",
+    "CUSTOM_PART_CTA": "Can't find what you're looking for? Request a custom part.",
+    "CATEGORY_META": "{{count}} products available in this category",
+    "CATEGORY_PANEL_KICKER": "Navigation",
+    "CATEGORY_PANEL_TITLE": "Categories",
+    "SELECTED_CATEGORY": "Selected category",
+    "ITEMS_FOUND": "products",
+    "EMPTY_CATEGORY": "No products are currently available in this category.",
+    "FEATURED_KICKER": "Featured",
+    "FEATURED_TITLE": "Products worth watching",
+    "FEATURED_BADGE": "Featured",
+    "HIGHLIGHT_PRODUCTS": "Products",
+    "HIGHLIGHT_CART": "In cart",
+    "HIGHLIGHT_READY": "Preview",
+    "PRICE_FROM": "Price from",
     "MODEL_OPEN": "Open 3D view",
     "MODEL_CLOSE": "Close 3D view",
+    "MODEL_3D": "3D preview",
+    "MODEL_TITLE": "Model preview",
+    "MODEL_LOADING": "Loading the 3D model.",
+    "MODEL_UNAVAILABLE": "3D preview unavailable.",
     "PREVIOUS_IMAGE": "Previous image",
     "NEXT_IMAGE": "Next image",
+    "BREADCRUMB_ROOT": "Shop",
     "PRICE_LABEL": "Price",
+    "EXCERPT_FALLBACK": "Product page coming soon.",
     "SELECT_MATERIAL": "Material",
     "SELECT_COLOR": "Color",
     "MATERIAL_COLOR_COUNT": "{{count}} colors available",
+    "VARIANT": "Variant",
     "PROPERTY_UV": "UV resistance",
     "PROPERTY_WEATHER": "Outdoor use",
     "PROPERTY_RIGIDITY": "Rigidity",
@@ -132,6 +225,21 @@
     "PROPERTY_LOW": "Low",
     "PROPERTY_RIGID": "Rigid",
     "PROPERTY_FLEXIBLE": "Flexible",
+    "QUANTITY": "Quantity",
+    "GO_TO_CHECKOUT": "Go to checkout",
+    "IN_CART_SHORT": "In cart x{{count}}",
+    "IN_CART_LONG": "Already in cart x{{count}}",
+    "DESCRIPTION_TITLE": "Description",
+    "CART_TITLE": "Cart",
+    "CART_SUMMARY_TITLE": "Current summary",
+    "CART_LOADING": "Loading cart.",
+    "CART_EMPTY": "Your cart is empty. Add a product.",
+    "CART_SUBTOTAL": "Products subtotal",
+    "CART_SHIPPING": "Shipping",
+    "CART_TOTAL": "Estimated total",
+    "CLEAR_CART": "Clear",
+    "REMOVE": "Remove",
+    "CART_UPDATE_ERROR": "We couldn't update the cart. Please try again.",
     "ALL_CATEGORIES": "All categories",
     "CATEGORIES": {
       "FILAMENTS": "Filaments",
@@ -400,6 +508,8 @@
   "CHECKOUT": {
     "TITLE": "Checkout",
     "SUBTITLE": "Complete your order by entering the shipping and payment details.",
+    "CAD_SERVICE": "CAD service",
+    "CAD_REQUEST_REF": "related to contact request #{{id}}",
     "CONTACT_INFO": "Contact Information",
     "BILLING_ADDR": "Billing Address",
     "SHIPPING_ADDR": "Shipping Address",
@@ -553,6 +663,13 @@
     "ERR_ID_NOT_FOUND": "Order ID not found.",
     "ERR_LOAD_ORDER": "Failed to load order details.",
     "ERR_REPORT_PAYMENT": "Failed to report payment. Please try again.",
+    "CAD_SERVICE": "CAD service ({{hours}}h)",
+    "ITEMS_TITLE": "Order items",
+    "ORDER_TYPE_LABEL": "Order type",
+    "ITEM_COUNT": "Lines",
+    "TYPE_SHOP": "Shop",
+    "TYPE_CALCULATOR": "Calculator",
+    "TYPE_MIXED": "Mixed",
     "NOT_AVAILABLE": "N/A"
   },
   "DROPZONE": {

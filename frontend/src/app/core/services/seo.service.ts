@@ -2,18 +2,28 @@ import { DOCUMENT } from '@angular/common';
 import { Inject, Injectable } from '@angular/core';
 import { Title, Meta } from '@angular/platform-browser';
 import { ActivatedRouteSnapshot, NavigationEnd, Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 import { filter } from 'rxjs/operators';
 
 export interface PageSeoOverride {
   title?: string | null;
+  titleKey?: string | null;
   description?: string | null;
+  descriptionKey?: string | null;
   robots?: string | null;
   ogTitle?: string | null;
+  ogTitleKey?: string | null;
   ogDescription?: string | null;
+  ogDescriptionKey?: string | null;
 }
 
 type SupportedLang = 'it' | 'en' | 'de' | 'fr';
 type SeoMap = Partial<Record<SupportedLang, string>>;
+type SeoTextDataKey =
+  | 'seoTitle'
+  | 'seoDescription'
+  | 'ogTitle'
+  | 'ogDescription';
 
 @Injectable({
   providedIn: 'root',
@@ -31,17 +41,27 @@ export class SeoService {
     de: '3D-Druckservice nach Maß, technischer Shop und CAD-Support für Prototypen, Ersatzteile und Kleinserien.',
     fr: "Service d'impression 3D sur mesure, boutique technique et support CAD pour prototypes, pièces et petites séries.",
   };
-  private readonly supportedLangs = new Set<SupportedLang>([
+  private readonly supportedLangs: readonly SupportedLang[] = [
     'it',
     'en',
     'de',
     'fr',
-  ]);
+  ];
+  private readonly supportedLangSet = new Set<SupportedLang>(
+    this.supportedLangs,
+  );
+  private readonly ogLocaleByLang: Record<SupportedLang, string> = {
+    it: 'it_IT',
+    en: 'en_US',
+    de: 'de_DE',
+    fr: 'fr_FR',
+  };
 
   constructor(
     private router: Router,
     private titleService: Title,
     private metaService: Meta,
+    private translate: TranslateService,
     @Inject(DOCUMENT) private document: Document,
   ) {
     this.applyRouteSeo(this.router.routerState.snapshot.root);
@@ -60,15 +80,32 @@ export class SeoService {
     const cleanPath = this.getCleanPath(this.router.url);
     const lang = this.resolveLangFromPath(cleanPath);
     const title =
-      this.asString(override.title) ?? this.defaultTitleByLang[lang];
+      this.resolveOverrideSeoText(override.title, override.titleKey) ??
+      this.defaultTitle(lang);
     const description =
-      this.asString(override.description) ??
-      this.defaultDescriptionByLang[lang];
+      this.resolveOverrideSeoText(
+        override.description,
+        override.descriptionKey,
+      ) ?? this.defaultDescription(lang);
     const robots = this.asString(override.robots) ?? 'index, follow';
-    const ogTitle = this.asString(override.ogTitle) ?? title;
-    const ogDescription = this.asString(override.ogDescription) ?? description;
+    const ogTitle =
+      this.resolveOverrideSeoText(override.ogTitle, override.ogTitleKey) ??
+      title;
+    const ogDescription =
+      this.resolveOverrideSeoText(
+        override.ogDescription,
+        override.ogDescriptionKey,
+      ) ?? description;
 
-    this.applySeoValues(title, description, robots, ogTitle, ogDescription);
+    this.applySeoValues(
+      title,
+      description,
+      robots,
+      ogTitle,
+      ogDescription,
+      cleanPath,
+      lang,
+    );
   }
 
   private applyRouteSeo(rootSnapshot: ActivatedRouteSnapshot): void {
@@ -77,16 +114,24 @@ export class SeoService {
     const lang = this.resolveLangFromPath(cleanPath);
     const title =
       this.resolveSeoText(mergedData, 'seoTitle', lang) ??
-      this.defaultTitleByLang[lang];
+      this.defaultTitle(lang);
     const description =
       this.resolveSeoText(mergedData, 'seoDescription', lang) ??
-      this.defaultDescriptionByLang[lang];
+      this.defaultDescription(lang);
     const robots = this.asString(mergedData['seoRobots']) ?? 'index, follow';
     const ogTitle = this.resolveSeoText(mergedData, 'ogTitle', lang) ?? title;
     const ogDescription =
       this.resolveSeoText(mergedData, 'ogDescription', lang) ?? description;
 
-    this.applySeoValues(title, description, robots, ogTitle, ogDescription);
+    this.applySeoValues(
+      title,
+      description,
+      robots,
+      ogTitle,
+      ogDescription,
+      cleanPath,
+      lang,
+    );
   }
 
   private applySeoValues(
@@ -95,6 +140,8 @@ export class SeoService {
     robots: string,
     ogTitle: string,
     ogDescription: string,
+    cleanPath: string,
+    lang: SupportedLang,
   ): void {
     this.titleService.setTitle(title);
     this.metaService.updateTag({ name: 'description', content: description });
@@ -105,13 +152,20 @@ export class SeoService {
       content: ogDescription,
     });
     this.metaService.updateTag({ property: 'og:type', content: 'website' });
+    this.metaService.updateTag({ property: 'og:site_name', content: '3D fab' });
     this.metaService.updateTag({ name: 'twitter:card', content: 'summary' });
+    this.metaService.updateTag({ name: 'twitter:title', content: ogTitle });
+    this.metaService.updateTag({
+      name: 'twitter:description',
+      content: ogDescription,
+    });
 
-    const cleanPath = this.getCleanPath(this.router.url);
-    const canonical = `${this.document.location.origin}${cleanPath}`;
+    const canonicalPath = this.buildLocalizedPath(cleanPath, lang);
+    const canonical = `${this.document.location.origin}${canonicalPath}`;
     this.metaService.updateTag({ property: 'og:url', content: canonical });
     this.updateCanonicalTag(canonical);
-    this.updateLangAndAlternates(cleanPath);
+    this.updateOpenGraphLocales(lang);
+    this.updateLangAndAlternates(canonicalPath, lang);
   }
 
   private getMergedRouteData(
@@ -130,9 +184,16 @@ export class SeoService {
     return typeof value === 'string' ? value : undefined;
   }
 
+  private resolveOverrideSeoText(
+    value: string | null | undefined,
+    key: string | null | undefined,
+  ): string | undefined {
+    return this.asString(value) ?? this.resolveTranslation(key);
+  }
+
   private resolveSeoText(
     routeData: Record<string, unknown>,
-    key: 'seoTitle' | 'seoDescription' | 'ogTitle' | 'ogDescription',
+    key: SeoTextDataKey,
     lang: SupportedLang,
   ): string | undefined {
     const mapKey = `${key}ByLang`;
@@ -148,7 +209,36 @@ export class SeoService {
         return byLang;
       }
     }
+    const translated = this.resolveTranslation(routeData[`${key}Key`]);
+    if (translated) {
+      return translated;
+    }
     return this.asString(routeData[key]);
+  }
+
+  private resolveTranslation(value: unknown): string | undefined {
+    const key = this.asString(value)?.trim();
+    if (!key) {
+      return undefined;
+    }
+    const translated = this.translate.instant(key);
+    return typeof translated === 'string' && translated !== key
+      ? translated
+      : undefined;
+  }
+
+  private defaultTitle(lang: SupportedLang): string {
+    return (
+      this.resolveTranslation('SEO.DEFAULT.TITLE') ??
+      this.defaultTitleByLang[lang]
+    );
+  }
+
+  private defaultDescription(lang: SupportedLang): string {
+    return (
+      this.resolveTranslation('SEO.DEFAULT.DESCRIPTION') ??
+      this.defaultDescriptionByLang[lang]
+    );
   }
 
   private getCleanPath(url: string): string {
@@ -160,11 +250,29 @@ export class SeoService {
     const firstSegment = path.split('/').filter(Boolean)[0]?.toLowerCase();
     if (
       firstSegment &&
-      this.supportedLangs.has(firstSegment as SupportedLang)
+      this.supportedLangSet.has(firstSegment as SupportedLang)
     ) {
       return firstSegment as SupportedLang;
     }
     return 'it';
+  }
+
+  private buildLocalizedPath(path: string, lang: SupportedLang): string {
+    const segments = path.split('/').filter(Boolean);
+    if (segments.length === 0) {
+      return `/${lang}`;
+    }
+
+    const firstSegment = segments[0]?.toLowerCase();
+    if (
+      firstSegment &&
+      this.supportedLangSet.has(firstSegment as SupportedLang)
+    ) {
+      segments[0] = lang;
+      return `/${segments.join('/')}`;
+    }
+
+    return `/${[lang, ...segments].join('/')}`;
   }
 
   private updateCanonicalTag(url: string): void {
@@ -179,13 +287,31 @@ export class SeoService {
     link.setAttribute('href', url);
   }
 
-  private updateLangAndAlternates(path: string): void {
-    const segments = path.split('/').filter(Boolean);
-    const firstSegment = segments[0]?.toLowerCase();
-    const maybeLang = firstSegment as SupportedLang | undefined;
-    const hasLang = Boolean(maybeLang && this.supportedLangs.has(maybeLang));
-    const lang: SupportedLang = hasLang && maybeLang ? maybeLang : 'it';
-    const suffixSegments = hasLang ? segments.slice(1) : segments;
+  private updateOpenGraphLocales(lang: SupportedLang): void {
+    this.metaService.updateTag({
+      property: 'og:locale',
+      content: this.ogLocaleByLang[lang],
+    });
+
+    this.document.head
+      .querySelectorAll(
+        'meta[property="og:locale:alternate"][data-seo-managed="true"]',
+      )
+      .forEach((node) => node.remove());
+
+    for (const alternateLang of this.supportedLangs) {
+      if (alternateLang === lang) {
+        continue;
+      }
+      this.appendOgLocaleAlternate(this.ogLocaleByLang[alternateLang]);
+    }
+  }
+
+  private updateLangAndAlternates(
+    localizedPath: string,
+    lang: SupportedLang,
+  ): void {
+    const suffixSegments = localizedPath.split('/').filter(Boolean).slice(1);
     const suffix =
       suffixSegments.length > 0 ? `/${suffixSegments.join('/')}` : '';
 
@@ -195,7 +321,7 @@ export class SeoService {
       .querySelectorAll('link[rel="alternate"][data-seo-managed="true"]')
       .forEach((node) => node.remove());
 
-    for (const alt of ['it', 'en', 'de', 'fr']) {
+    for (const alt of this.supportedLangs) {
       this.appendAlternateLink(
         alt,
         `${this.document.location.origin}/${alt}${suffix}`,
@@ -214,5 +340,13 @@ export class SeoService {
     link.setAttribute('href', href);
     link.setAttribute('data-seo-managed', 'true');
     this.document.head.appendChild(link);
+  }
+
+  private appendOgLocaleAlternate(locale: string): void {
+    const meta = this.document.createElement('meta');
+    meta.setAttribute('property', 'og:locale:alternate');
+    meta.setAttribute('content', locale);
+    meta.setAttribute('data-seo-managed', 'true');
+    this.document.head.appendChild(meta);
   }
 }

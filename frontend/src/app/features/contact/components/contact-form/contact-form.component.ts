@@ -70,7 +70,7 @@ export class ContactFormComponent implements OnDestroy {
   ];
 
   private quoteRequestService = inject(QuoteRequestService);
-  private languageService = inject(LanguageService);
+  readonly languageService = inject(LanguageService);
 
   constructor(
     private fb: FormBuilder,

@@ -13,6 +13,72 @@
     "TERMS": "Termini & Condizioni",
     "CONTACT": "Contattaci"
   },
+  "SEO": {
+    "DEFAULT": {
+      "TITLE": "3D fab | Stampa 3D su misura",
+      "DESCRIPTION": "Servizio di stampa 3D su misura, shop tecnico e supporto CAD per prototipi, ricambi e piccole serie."
+    },
+    "ROUTES": {
+      "HOME": {
+        "TITLE": "Stampa 3D su misura in Ticino | Prototipi, ricambi e piccole serie - 3D fab",
+        "DESCRIPTION": "Servizio di stampa 3D in Ticino per prototipi, pezzi di ricambio e piccole serie. Shop tecnico e supporto CAD, con preventivo rapido da file STL."
+      },
+      "CALCULATOR": {
+        "TITLE": "Calcolatore preventivo stampa 3D | 3D fab",
+        "DESCRIPTION": "Carica il file 3D e ottieni prezzo e tempi in pochi secondi con slicing reale.",
+        "BASIC": {
+          "TITLE": "Calcolatore stampa 3D base | 3D fab",
+          "DESCRIPTION": "Calcola rapidamente il prezzo della tua stampa 3D in modalita base."
+        },
+        "ADVANCED": {
+          "TITLE": "Calcolatore stampa 3D avanzato | 3D fab",
+          "DESCRIPTION": "Configura parametri avanzati e ottieni un preventivo preciso con slicing reale."
+        }
+      },
+      "SHOP": {
+        "TITLE": "Shop 3D fab",
+        "DESCRIPTION": "Catalogo prodotti stampati in 3D e soluzioni tecniche pronte all uso.",
+        "CATEGORY_TITLE": "Categoria Shop | 3D fab",
+        "CATEGORY_DESCRIPTION": "Esplora i prodotti di questa categoria, le varianti disponibili e le soluzioni tecniche stampate in 3D.",
+        "PRODUCT_TITLE": "Prodotto | 3D fab",
+        "PRODUCT_DESCRIPTION": "Scopri dettagli, materiali, varianti e disponibilita del prodotto selezionato nello shop 3D fab."
+      },
+      "MATERIALS": {
+        "TITLE": "Qualita e Materiali | 3D fab",
+        "DESCRIPTION": "Confronta materiali di stampa 3D con radar chart interattivo, proprieta tecniche e fonti citate."
+      },
+      "ABOUT": {
+        "TITLE": "Chi siamo | 3D fab",
+        "DESCRIPTION": "Scopri il team 3D fab e il laboratorio di stampa 3D per prototipi, ricambi e produzioni su misura."
+      },
+      "CONTACT": {
+        "TITLE": "Contatti | 3D fab",
+        "DESCRIPTION": "Richiedi informazioni, preventivi personalizzati o supporto tecnico per il tuo progetto di stampa 3D."
+      },
+      "LEGAL": {
+        "PRIVACY": {
+          "TITLE": "Privacy Policy | 3D fab",
+          "DESCRIPTION": "Informativa privacy di 3D fab: trattamento dati, finalita e contatti."
+        },
+        "TERMS": {
+          "TITLE": "Termini e condizioni | 3D fab",
+          "DESCRIPTION": "Termini e condizioni del servizio di stampa 3D e del calcolatore preventivi."
+        }
+      },
+      "CHECKOUT": {
+        "TITLE": "Checkout | 3D fab",
+        "DESCRIPTION": "Completa la richiesta e conferma i dati del tuo ordine di stampa 3D."
+      },
+      "ORDER": {
+        "TITLE": "Ordine | 3D fab",
+        "DESCRIPTION": "Consulta il riepilogo del tuo ordine e lo stato della richiesta di stampa 3D."
+      },
+      "ADMIN": {
+        "TITLE": "Admin | 3D fab",
+        "DESCRIPTION": "Area amministrativa riservata di 3D fab."
+      }
+    }
+  },
   "HOME": {
     "HERO_EYEBROW": "Stampa 3D tecnica per aziende, freelance e maker",
     "HERO_TITLE": "Servizio di stampa 3D.<br>Dal file al pezzo finito.",
@@ -506,6 +572,8 @@
   "CHECKOUT": {
     "TITLE": "Checkout",
     "SUBTITLE": "Completa il tuo ordine inserendo i dettagli per la spedizione e il pagamento.",
+    "CAD_SERVICE": "Servizio CAD",
+    "CAD_REQUEST_REF": "riferito alla richiesta contatto #{{id}}",
     "CONTACT_INFO": "Informazioni di Contatto",
     "BILLING_ADDR": "Indirizzo di Fatturazione",
     "SHIPPING_ADDR": "Indirizzo di Spedizione",
@@ -601,6 +669,7 @@
     "ERR_ID_NOT_FOUND": "ID ordine non trovato.",
     "ERR_LOAD_ORDER": "Impossibile caricare i dettagli dell'ordine.",
     "ERR_REPORT_PAYMENT": "Impossibile segnalare il pagamento. Riprova.",
+    "CAD_SERVICE": "Servizio CAD ({{hours}}h)",
     "ITEMS_TITLE": "Articoli dell'ordine",
     "ORDER_TYPE_LABEL": "Tipo ordine",
     "ITEM_COUNT": "Righe",

@@ -51,7 +51,7 @@ export class CheckoutComponent implements OnInit {
   private quoteService = inject(QuoteEstimatorService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
-  private languageService = inject(LanguageService);
+  readonly languageService = inject(LanguageService);
 
   checkoutForm: FormGroup;
   sessionId: string | null = null;
@@ -147,7 +147,7 @@ export class CheckoutComponent implements OnInit {
       this.sessionId = params['session'];
       if (!this.sessionId) {
         this.error = 'CHECKOUT.ERR_NO_SESSION_START';
-        this.router.navigate(['/']); // Redirect if no session
+        this.router.navigate(['/', this.languageService.selectedLang()]);
         return;
       }
 

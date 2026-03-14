@@ -1,4 +1,4 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -11,6 +11,7 @@ import { AppCardComponent } from '../../../../shared/components/app-card/app-car
 import { AppInputComponent } from '../../../../shared/components/app-input/app-input.component';
 import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
 import { QuoteResult } from '../../services/quote-estimator.service';
+import { LanguageService } from '../../../../core/services/language.service';
 
 @Component({
   selector: 'app-user-details',
@@ -30,6 +31,7 @@ export class UserDetailsComponent {
   quote = input<QuoteResult>();
   submitOrder = output<any>();
   cancel = output<void>();
+  readonly languageService = inject(LanguageService);
 
   form: FormGroup;
   submitting = signal(false);

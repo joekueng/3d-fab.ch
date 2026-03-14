@@ -6,9 +6,8 @@ export const ABOUT_ROUTES: Routes = [
     path: '',
     component: AboutPageComponent,
     data: {
-      seoTitle: 'Chi siamo | 3D fab',
-      seoDescription:
-        'Siamo un laboratorio di stampa 3D orientato a prototipi, ricambi e produzioni su misura.',
+      seoTitleKey: 'SEO.ROUTES.ABOUT.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.ABOUT.DESCRIPTION',
     },
   },
 ];

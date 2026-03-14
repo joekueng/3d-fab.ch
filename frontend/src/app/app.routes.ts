@@ -15,18 +15,8 @@ const appChildRoutes: Routes = [
     loadComponent: () =>
       import('./features/home/home.component').then((m) => m.HomeComponent),
     data: {
-      seoTitleByLang: {
-        it: 'Stampa 3D su misura in Ticino | Prototipi, ricambi e piccole serie - 3D Fab',
-        en: 'Custom 3D Printing in Switzerland | Prototypes, Spare Parts & Short Runs - 3D Fab',
-        de: '3D-Druck in Zürich | Prototypen, Ersatzteile und Kleinserien - 3D Fab',
-        fr: 'Impression 3D à Bienne | Prototypes, pièces et petites séries - 3D Fab',
-      },
-      seoDescriptionByLang: {
-        it: 'Servizio di stampa 3D in Ticino per prototipi, pezzi di ricambio e piccole serie. Shop tecnico e supporto CAD, con preventivo rapido da file STL.',
-        en: 'Swiss-based 3D printing service for prototypes, spare parts and short production runs. Technical shop and CAD support, with fast quotes from STL files.',
-        de: '3D-Druckservice in Zürich für Prototypen, Ersatzteile und Kleinserien. Technischer Shop und CAD-Service, mit schneller Angebotsanfrage aus STL-Dateien.',
-        fr: "Service d'impression 3D à Bienne pour prototypes, pièces de rechange et petites séries. Boutique technique et support CAD, avec devis rapide depuis un fichier STL.",
-      },
+      seoTitleKey: 'SEO.ROUTES.HOME.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.HOME.DESCRIPTION',
     },
   },
   {
@@ -36,9 +26,8 @@ const appChildRoutes: Routes = [
         (m) => m.CALCULATOR_ROUTES,
       ),
     data: {
-      seoTitle: 'Calcolatore preventivo stampa 3D | 3D fab',
-      seoDescription:
-        'Carica il file 3D e ottieni prezzo e tempi in pochi secondi con slicing reale.',
+      seoTitleKey: 'SEO.ROUTES.CALCULATOR.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.CALCULATOR.DESCRIPTION',
     },
   },
   {
@@ -46,9 +35,8 @@ const appChildRoutes: Routes = [
     loadChildren: () =>
       import('./features/shop/shop.routes').then((m) => m.SHOP_ROUTES),
     data: {
-      seoTitle: 'Shop 3D fab',
-      seoDescription:
-        'Catalogo prodotti stampati in 3D e soluzioni tecniche pronte all uso.',
+      seoTitleKey: 'SEO.ROUTES.SHOP.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.SHOP.DESCRIPTION',
     },
   },
   {
@@ -56,9 +44,8 @@ const appChildRoutes: Routes = [
     loadChildren: () =>
       import('./features/about/about.routes').then((m) => m.ABOUT_ROUTES),
     data: {
-      seoTitle: 'Chi siamo | 3D fab',
-      seoDescription:
-        'Scopri il team 3D fab e il laboratorio di stampa 3D con sedi in Ticino e Bienne.',
+      seoTitleKey: 'SEO.ROUTES.ABOUT.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.ABOUT.DESCRIPTION',
     },
   },
   /* {
@@ -68,9 +55,8 @@ const appChildRoutes: Routes = [
         (m) => m.MaterialsPageComponent,
       ),
     data: {
-      seoTitle: 'Qualita e Materiali | 3D fab',
-      seoDescription:
-        'Confronta materiali di stampa 3D con radar chart interattivo, proprieta tecniche e fonti citate.',
+      seoTitleKey: 'SEO.ROUTES.MATERIALS.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.MATERIALS.DESCRIPTION',
     },
   },*/
   {
@@ -78,9 +64,8 @@ const appChildRoutes: Routes = [
     loadChildren: () =>
       import('./features/contact/contact.routes').then((m) => m.CONTACT_ROUTES),
     data: {
-      seoTitle: 'Contatti | 3D fab',
-      seoDescription:
-        'Contatta 3D fab per preventivi, supporto tecnico e richieste personalizzate di stampa 3D.',
+      seoTitleKey: 'SEO.ROUTES.CONTACT.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.CONTACT.DESCRIPTION',
     },
   },
   {
@@ -90,7 +75,8 @@ const appChildRoutes: Routes = [
         (m) => m.CheckoutComponent,
       ),
     data: {
-      seoTitle: 'Checkout | 3D fab',
+      seoTitleKey: 'SEO.ROUTES.CHECKOUT.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.CHECKOUT.DESCRIPTION',
       seoRobots: 'noindex, nofollow',
     },
   },
@@ -101,7 +87,8 @@ const appChildRoutes: Routes = [
         (m) => m.CheckoutComponent,
       ),
     data: {
-      seoTitle: 'Checkout | 3D fab',
+      seoTitleKey: 'SEO.ROUTES.CHECKOUT.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.CHECKOUT.DESCRIPTION',
       seoRobots: 'noindex, nofollow',
     },
   },
@@ -110,7 +97,8 @@ const appChildRoutes: Routes = [
     loadComponent: () =>
       import('./features/order/order.component').then((m) => m.OrderComponent),
     data: {
-      seoTitle: 'Ordine | 3D fab',
+      seoTitleKey: 'SEO.ROUTES.ORDER.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.ORDER.DESCRIPTION',
       seoRobots: 'noindex, nofollow',
     },
   },
@@ -119,7 +107,8 @@ const appChildRoutes: Routes = [
     loadComponent: () =>
       import('./features/order/order.component').then((m) => m.OrderComponent),
     data: {
-      seoTitle: 'Ordine | 3D fab',
+      seoTitleKey: 'SEO.ROUTES.ORDER.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.ORDER.DESCRIPTION',
       seoRobots: 'noindex, nofollow',
     },
   },
@@ -133,7 +122,8 @@ const appChildRoutes: Routes = [
     loadChildren: () =>
       import('./features/admin/admin.routes').then((m) => m.ADMIN_ROUTES),
     data: {
-      seoTitle: 'Admin | 3D fab',
+      seoTitleKey: 'SEO.ROUTES.ADMIN.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.ADMIN.DESCRIPTION',
       seoRobots: 'noindex, nofollow',
     },
   },

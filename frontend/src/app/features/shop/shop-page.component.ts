@@ -59,7 +59,7 @@ export class ShopPageComponent {
   private readonly router = inject(Router);
   private readonly translate = inject(TranslateService);
   private readonly seoService = inject(SeoService);
-  private readonly languageService = inject(LanguageService);
+  readonly languageService = inject(LanguageService);
   private readonly shopRouteService = inject(ShopRouteService);
   readonly shopService = inject(ShopService);
 
@@ -242,11 +242,14 @@ export class ShopPageComponent {
     if (!sessionId) {
       return;
     }
-    this.router.navigate(['/checkout'], {
-      queryParams: {
-        session: sessionId,
+    this.router.navigate(
+      ['/', this.languageService.selectedLang(), 'checkout'],
+      {
+        queryParams: {
+          session: sessionId,
+        },
       },
-    });
+    );
   }
 
   trackByCategory(_index: number, item: ShopCategoryNavNode): string {

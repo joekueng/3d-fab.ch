@@ -133,7 +133,7 @@ export class NavbarComponent {
     }
 
     this.closeCart();
-    this.router.navigate(['/checkout'], {
+    this.router.navigate(['/', this.langService.selectedLang(), 'checkout'], {
       queryParams: {
         session: sessionId,
       },

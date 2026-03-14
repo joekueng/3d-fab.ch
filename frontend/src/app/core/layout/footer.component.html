@@ -6,9 +6,15 @@
     </div>
 
     <div class="col links">
-      <a routerLink="/privacy">{{ "FOOTER.PRIVACY" | translate }}</a>
-      <a routerLink="/terms">{{ "FOOTER.TERMS" | translate }}</a>
-      <a routerLink="/contact">{{ "FOOTER.CONTACT" | translate }}</a>
+      <a [routerLink]="languageService.localizedPath('/privacy')">{{
+        "FOOTER.PRIVACY" | translate
+      }}</a>
+      <a [routerLink]="languageService.localizedPath('/terms')">{{
+        "FOOTER.TERMS" | translate
+      }}</a>
+      <a [routerLink]="languageService.localizedPath('/contact')">{{
+        "FOOTER.CONTACT" | translate
+      }}</a>
     </div>
 
     <div class="col social">
