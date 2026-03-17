@@ -273,7 +273,7 @@ export class ProductDetailComponent {
       this.shopService.resolveMediaUrl(image.hero) ??
       this.shopService.resolveMediaUrl(image.card) ??
       this.shopService.resolveMediaUrl(image.thumb)
-      );
+    );
   }
 
   private scheduleCartWarmup(): void {

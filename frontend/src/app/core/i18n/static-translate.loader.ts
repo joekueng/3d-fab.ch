@@ -14,7 +14,10 @@ type SupportedLang = 'it' | 'en' | 'de' | 'fr';
 const FALLBACK_LANG: SupportedLang = 'it';
 const translationCache = new Map<SupportedLang, Promise<TranslationObject>>();
 
-const translationLoaders: Record<SupportedLang, () => Promise<TranslationObject>> = {
+const translationLoaders: Record<
+  SupportedLang,
+  () => Promise<TranslationObject>
+> = {
   it: () =>
     import('../../../assets/i18n/it.json').then(
       (module) => module.default as TranslationObject,
@@ -51,8 +54,9 @@ export class StaticTranslateLoader implements TranslateLoader {
   }
 
   private loadTranslation(lang: SupportedLang): Promise<TranslationObject> {
-    const transferStateKey =
-      makeStateKey<TranslationObject>(`i18n:${lang.toLowerCase()}`);
+    const transferStateKey = makeStateKey<TranslationObject>(
+      `i18n:${lang.toLowerCase()}`,
+    );
     if (
       isPlatformBrowser(this.platformId) &&
       this.transferState.hasKey(transferStateKey)
