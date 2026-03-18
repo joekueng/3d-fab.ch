@@ -1,0 +1,17 @@
+<div
+  class="brand-animation"
+  [attr.data-variant]="variant()"
+  role="img"
+  [attr.aria-hidden]="decorative() ? 'true' : null"
+  [attr.aria-label]="decorative() ? null : ariaLabel()"
+>
+  @for (letter of resolvedLetters(); track letter.key) {
+    <img
+      class="brand-animation__letter"
+      [src]="letter.src"
+      alt=""
+      [attr.data-letter]="letter.key"
+      [style.--word-x]="letter.wordX"
+    />
+  }
+</div>

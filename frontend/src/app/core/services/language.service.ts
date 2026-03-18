@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Inject, Injectable, Optional, REQUEST, signal } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import {
   NavigationEnd,
@@ -6,6 +6,12 @@ import {
   Router,
   UrlTree,
 } from '@angular/router';
+import {
+  getNavigatorLanguagePreferences,
+  parseAcceptLanguage,
+  resolveInitialLanguage,
+} from '../i18n/language-resolution';
+import { RequestLike } from '../../../core/request-origin';
 
 @Injectable({
   providedIn: 'root',
@@ -22,6 +28,7 @@ export class LanguageService {
   constructor(
     private translate: TranslateService,
     private router: Router,
+    @Optional() @Inject(REQUEST) private request: RequestLike | null = null,
   ) {
     this.translate.addLangs(this.supportedLangs);
     this.translate.setFallbackLang('it');
@@ -34,13 +41,14 @@ export class LanguageService {
     });
 
     const initialTree = this.router.parseUrl(this.router.url);
-    const initialSegments = this.getPrimarySegments(initialTree);
-    const queryLang = this.getQueryLang(initialTree);
-    const initialLang = this.isSupportedLang(initialSegments[0])
-      ? initialSegments[0]
-      : this.isSupportedLang(queryLang)
-        ? queryLang
-        : 'it';
+    const initialLang = resolveInitialLanguage({
+      url: this.router.url,
+      preferredLanguages: this.request
+        ? parseAcceptLanguage(this.readRequestHeader('accept-language'))
+        : getNavigatorLanguagePreferences(
+            typeof navigator === 'undefined' ? null : navigator,
+          ),
+    });
     this.applyLanguage(initialLang);
     this.ensureLanguageInPath(initialTree);
 
@@ -149,6 +157,17 @@ export class LanguageService {
   private getQueryLang(urlTree: UrlTree): string | null {
     const lang = urlTree.queryParams['lang'];
     return typeof lang === 'string' ? lang.toLowerCase() : null;
+  }
+
+  private readRequestHeader(headerName: string): string | null {
+    const headerValue =
+      this.request?.headers?.[headerName.toLowerCase()] ??
+      this.request?.get?.(headerName.toLowerCase());
+    if (Array.isArray(headerValue)) {
+      return headerValue[0] ?? null;
+    }
+
+    return typeof headerValue === 'string' ? headerValue : null;
   }
 
   private isSupportedLang(

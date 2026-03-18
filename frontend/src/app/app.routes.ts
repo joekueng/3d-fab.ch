@@ -135,6 +135,31 @@ const appChildRoutes: Routes = [
 
 export const routes: Routes = [
   {
+    path: ':lang/calculator/animation-test',
+    canMatch: [langPrefixCanMatch],
+    loadComponent: () =>
+      import('./features/calculator/calculator-animation-test.component').then(
+        (m) => m.CalculatorAnimationTestComponent,
+      ),
+    data: {
+      seoTitleKey: 'SEO.ROUTES.CALCULATOR.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.CALCULATOR.DESCRIPTION',
+      seoRobots: 'noindex, nofollow',
+    },
+  },
+  {
+    path: 'calculator/animation-test',
+    loadComponent: () =>
+      import('./features/calculator/calculator-animation-test.component').then(
+        (m) => m.CalculatorAnimationTestComponent,
+      ),
+    data: {
+      seoTitleKey: 'SEO.ROUTES.CALCULATOR.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.CALCULATOR.DESCRIPTION',
+      seoRobots: 'noindex, nofollow',
+    },
+  },
+  {
     path: ':lang',
     canMatch: [langPrefixCanMatch],
     loadComponent: () =>

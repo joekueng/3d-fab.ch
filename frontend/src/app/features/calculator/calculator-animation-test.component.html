@@ -1,0 +1,31 @@
+<section class="animation-test-page">
+  <div class="animation-toolbar" role="group" aria-label="Animation variants">
+    <button
+      type="button"
+      class="variant-toggle"
+      [class.active]="variant() === 'site-intro'"
+      (click)="setVariant('site-intro')"
+    >
+      Site intro
+    </button>
+    <button
+      type="button"
+      class="variant-toggle"
+      [class.active]="variant() === 'calculator-loader'"
+      (click)="setVariant('calculator-loader')"
+    >
+      Calculator loader
+    </button>
+  </div>
+
+  <div
+    class="animation-stage"
+    [attr.data-variant]="variant()"
+  >
+    <app-brand-animation-logo
+      [variant]="variant()"
+      [decorative]="false"
+      ariaLabel="3D fab animation test"
+    ></app-brand-animation-logo>
+  </div>
+</section>

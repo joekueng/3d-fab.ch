@@ -141,6 +141,7 @@ export class ShopPageComponent {
         this.selectedCategory.set(result.catalog.category ?? null);
         this.products.set(result.catalog.products);
         this.applySeo(result.catalog.category ?? null);
+        this.restoreCatalogScrollIfNeeded();
       });
   }
 
@@ -351,6 +352,26 @@ export class ShopPageComponent {
       robots: 'index, follow',
       ogTitle: title,
       ogDescription: description,
+    });
+  }
+
+  private restoreCatalogScrollIfNeeded(): void {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const scrollY = Number(history.state?.shopRestoreScrollY);
+    if (!Number.isFinite(scrollY) || scrollY < 0) {
+      return;
+    }
+
+    const { shopRestoreScrollY: _ignored, ...nextState } = history.state ?? {};
+    const restore = () => window.scrollTo({ left: 0, top: scrollY });
+
+    history.replaceState(nextState, '');
+    window.requestAnimationFrame(() => {
+      restore();
+      window.setTimeout(restore, 60);
     });
   }
 }

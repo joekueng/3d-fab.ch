@@ -51,10 +51,16 @@ export class SeoService {
     this.supportedLangs,
   );
   private readonly ogLocaleByLang: Record<SupportedLang, string> = {
-    it: 'it_IT',
-    en: 'en_US',
-    de: 'de_DE',
-    fr: 'fr_FR',
+    it: 'it_CH',
+    en: 'en_CH',
+    de: 'de_CH',
+    fr: 'fr_CH',
+  };
+  private readonly seoLocaleByLang: Record<SupportedLang, string> = {
+    it: 'it-CH',
+    en: 'en-CH',
+    de: 'de-CH',
+    fr: 'fr-CH',
   };
 
   constructor(
@@ -315,7 +321,7 @@ export class SeoService {
     const suffix =
       suffixSegments.length > 0 ? `/${suffixSegments.join('/')}` : '';
 
-    this.document.documentElement.lang = lang;
+    this.document.documentElement.lang = this.seoLocaleByLang[lang];
 
     this.document.head
       .querySelectorAll('link[rel="alternate"][data-seo-managed="true"]')
@@ -323,7 +329,7 @@ export class SeoService {
 
     for (const alt of this.supportedLangs) {
       this.appendAlternateLink(
-        alt,
+        this.seoLocaleByLang[alt],
         `${this.document.location.origin}/${alt}${suffix}`,
       );
     }

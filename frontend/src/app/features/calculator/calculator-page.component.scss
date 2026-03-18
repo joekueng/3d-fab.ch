@@ -93,7 +93,7 @@
 
 .loader-content {
   text-align: center;
-  max-width: 300px;
+  max-width: 22rem;
   margin: 0 auto;
 
   /* Center content vertically within the stretched card */
@@ -101,12 +101,14 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
+  gap: var(--space-3);
 }
 
 .loading-title {
   font-size: 1.1rem;
   font-weight: 600;
-  margin: var(--space-4) 0 var(--space-2);
+  margin: 0;
   color: var(--color-text);
 }
 
@@ -114,23 +116,21 @@
   font-size: 0.9rem;
   color: var(--color-text-muted);
   line-height: 1.5;
+  margin: 0;
 }
 
-.spinner {
-  border: 3px solid var(--color-neutral-200);
-  border-left-color: var(--color-brand);
-  border-radius: 50%;
-  width: 48px;
-  height: 48px;
-  animation: spin 1s linear infinite;
+.loader-logo {
+  display: block;
+  width: min(100%, 16rem);
   margin: 0 auto;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+  --brand-animation-width: 16rem;
+  --brand-animation-height: 4.8rem;
+  --brand-animation-letter-width: 2.85rem;
+  --brand-animation-scale: 0.84;
+  --brand-animation-word-spacing: 0.97;
+  --brand-animation-width-mobile: 14rem;
+  --brand-animation-height-mobile: 4.1rem;
+  --brand-animation-letter-width-mobile: 2.45rem;
+  --brand-animation-scale-mobile: 0.84;
+  --brand-animation-loader-loop-duration: 2.5s;
 }

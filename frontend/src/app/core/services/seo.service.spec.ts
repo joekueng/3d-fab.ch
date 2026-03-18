@@ -94,14 +94,14 @@ describe('SeoService', () => {
     }));
 
     expect(alternates).toContain({
-      hreflang: 'en',
+      hreflang: 'en-CH',
       href: `${document.location.origin}/en/privacy`,
     });
     expect(alternates).toContain({
       hreflang: 'x-default',
       href: `${document.location.origin}/it/privacy`,
     });
-    expect(document.documentElement.lang).toBe('it');
+    expect(document.documentElement.lang).toBe('it-CH');
 
     const ogUrlCall = meta.updateTag.calls
       .allArgs()
@@ -109,6 +109,11 @@ describe('SeoService', () => {
     expect(ogUrlCall?.[0].content).toBe(
       `${document.location.origin}/it/privacy`,
     );
+
+    const ogLocaleCall = meta.updateTag.calls
+      .allArgs()
+      .find(([tag]) => tag.property === 'og:locale');
+    expect(ogLocaleCall?.[0].content).toBe('it_CH');
   });
 
   it('resolves translated route metadata for the active language', () => {
@@ -130,6 +135,6 @@ describe('SeoService', () => {
       .allArgs()
       .find(([tag]) => tag.name === 'description');
     expect(descriptionCall?.[0].content).toBe('About description');
-    expect(document.documentElement.lang).toBe('en');
+    expect(document.documentElement.lang).toBe('en-CH');
   });
 });

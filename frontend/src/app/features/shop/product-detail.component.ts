@@ -1,4 +1,4 @@
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { CommonModule, Location, isPlatformBrowser } from '@angular/common';
 import {
   afterNextRender,
   Component,
@@ -59,6 +59,7 @@ export class ProductDetailComponent {
     /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
+  private readonly location = inject(Location);
   private readonly router = inject(Router);
   private readonly translate = inject(TranslateService);
   private readonly seoService = inject(SeoService);
@@ -489,6 +490,11 @@ export class ProductDetailComponent {
         : null;
 
     if (returnUrl && this.shopRouteService.isCatalogUrl(returnUrl)) {
+      if (this.isBrowser && window.history.length > 1) {
+        this.location.back();
+        return;
+      }
+
       void this.router.navigateByUrl(returnUrl);
       return;
     }

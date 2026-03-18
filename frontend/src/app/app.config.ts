@@ -28,21 +28,12 @@ import {
 import { serverOriginInterceptor } from './core/interceptors/server-origin.interceptor';
 import { catchError, firstValueFrom, of } from 'rxjs';
 import { StaticTranslateLoader } from './core/i18n/static-translate.loader';
-
-type SupportedLang = 'it' | 'en' | 'de' | 'fr';
-const SUPPORTED_LANGS: readonly SupportedLang[] = ['it', 'en', 'de', 'fr'];
-
-function resolveLangFromUrl(url: string): SupportedLang {
-  const firstSegment = (url || '/')
-    .split('?')[0]
-    .split('#')[0]
-    .split('/')
-    .filter(Boolean)[0]
-    ?.toLowerCase();
-  return SUPPORTED_LANGS.includes(firstSegment as SupportedLang)
-    ? (firstSegment as SupportedLang)
-    : 'it';
-}
+import {
+  getNavigatorLanguagePreferences,
+  parseAcceptLanguage,
+  resolveInitialLanguage,
+  SUPPORTED_LANGS,
+} from './core/i18n/language-resolution';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -52,7 +43,7 @@ export const appConfig: ApplicationConfig = {
       withComponentInputBinding(),
       withViewTransitions(),
       withInMemoryScrolling({
-        scrollPositionRestoration: 'top',
+        scrollPositionRestoration: 'enabled',
       }),
     ),
     provideHttpClient(
@@ -72,13 +63,21 @@ export const appConfig: ApplicationConfig = {
       const router = inject(Router);
       const request = inject(REQUEST, { optional: true }) as {
         url?: string;
+        headers?: Record<string, string | string[] | undefined>;
       } | null;
 
       translate.addLangs([...SUPPORTED_LANGS]);
       translate.setFallbackLang('it');
       const requestedUrl =
         (typeof request?.url === 'string' && request.url) || router.url || '/';
-      const lang = resolveLangFromUrl(requestedUrl);
+      const lang = resolveInitialLanguage({
+        url: requestedUrl,
+        preferredLanguages: request
+          ? parseAcceptLanguage(readRequestHeader(request, 'accept-language'))
+          : getNavigatorLanguagePreferences(
+              typeof navigator === 'undefined' ? null : navigator,
+            ),
+      });
 
       return firstValueFrom(
         translate.use(lang).pipe(
@@ -96,3 +95,21 @@ export const appConfig: ApplicationConfig = {
     provideClientHydration(withEventReplay()),
   ],
 };
+
+function readRequestHeader(
+  request: {
+    headers?: Record<string, string | string[] | undefined>;
+  } | null,
+  headerName: string,
+): string | null {
+  if (!request?.headers) {
+    return null;
+  }
+
+  const headerValue = request.headers[headerName.toLowerCase()];
+  if (Array.isArray(headerValue)) {
+    return headerValue[0] ?? null;
+  }
+
+  return typeof headerValue === 'string' ? headerValue : null;
+}
