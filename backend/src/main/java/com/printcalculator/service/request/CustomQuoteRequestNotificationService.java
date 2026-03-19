@@ -30,6 +30,9 @@ public class CustomQuoteRequestNotificationService {
     @Value("${app.mail.contact-request.customer.enabled:true}")
     private boolean contactRequestCustomerMailEnabled;
 
+    @Value("${app.frontend.base-url:http://localhost:4200}")
+    private String frontendBaseUrl;
+
     public CustomQuoteRequestNotificationService(EmailNotificationService emailNotificationService,
                                                  ContactRequestLocalizationService localizationService) {
         this.emailNotificationService = emailNotificationService;
@@ -63,6 +66,7 @@ public class CustomQuoteRequestNotificationService {
         templateData.put("phone", safeValue(request.getPhone()));
         templateData.put("message", safeValue(request.getMessage()));
         templateData.put("attachmentsCount", attachmentsCount);
+        templateData.put("logoUrl", buildLogoUrl());
         templateData.put("currentYear", Year.now().getValue());
 
         emailNotificationService.sendEmail(
@@ -101,6 +105,7 @@ public class CustomQuoteRequestNotificationService {
         templateData.put("phone", safeValue(request.getPhone()));
         templateData.put("message", safeValue(request.getMessage()));
         templateData.put("attachmentsCount", attachmentsCount);
+        templateData.put("logoUrl", buildLogoUrl());
         templateData.put("currentYear", Year.now().getValue());
 
         String subject = localizationService.applyCustomerContactRequestTexts(templateData, language, request.getId());
@@ -118,5 +123,9 @@ public class CustomQuoteRequestNotificationService {
             return "-";
         }
         return value;
+    }
+
+    private String buildLogoUrl() {
+        return frontendBaseUrl.replaceAll("/+$", "") + "/assets/images/brand-logo-yellow.svg";
     }
 }
