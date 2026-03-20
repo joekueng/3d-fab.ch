@@ -287,7 +287,7 @@ export class ProductDetailComponent {
       this.shopService.resolveMediaUrl(image.hero) ??
       this.shopService.resolveMediaUrl(image.card) ??
       this.shopService.resolveMediaUrl(image.thumb)
-      );
+    );
   }
 
   private scheduleCartWarmup(): void {
@@ -774,9 +774,12 @@ export class ProductDetailComponent {
     const targetPath =
       product.localizedPaths?.[lang] ??
       `/${lang}/shop/p/${this.shopRouteService.productPathSegment(product)}`;
-    const normalizedTargetPath =
-      targetPath.startsWith('/') ? targetPath : `/${targetPath}`;
-    const currentPath = this.router.serializeUrl(currentTree).split(/[?#]/, 1)[0];
+    const normalizedTargetPath = targetPath.startsWith('/')
+      ? targetPath
+      : `/${targetPath}`;
+    const currentPath = this.router
+      .serializeUrl(currentTree)
+      .split(/[?#]/, 1)[0];
     if (currentPath === normalizedTargetPath) {
       return;
     }

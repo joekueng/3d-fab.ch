@@ -292,8 +292,9 @@ export class ShopService {
 
     return this.getProductCatalog().pipe(
       map((catalog) =>
-        catalog.products.find((product) =>
-          this.normalizePublicPath(product.publicPath) === normalizedPath,
+        catalog.products.find(
+          (product) =>
+            this.normalizePublicPath(product.publicPath) === normalizedPath,
         ),
       ),
       switchMap((product) => {

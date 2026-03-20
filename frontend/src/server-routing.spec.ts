@@ -20,9 +20,9 @@ describe('server routing redirects', () => {
   });
 
   it('redirects legacy shop product aliases to the canonical product route', () => {
-    expect(resolvePublicRedirectTarget('/shop/accessories/desk-cable-clip')).toBe(
-      '/it/shop/p/desk-cable-clip',
-    );
+    expect(
+      resolvePublicRedirectTarget('/shop/accessories/desk-cable-clip'),
+    ).toBe('/it/shop/p/desk-cable-clip');
     expect(
       resolvePublicRedirectTarget('/de/shop/zubehor/schreibtisch-kabelhalter'),
     ).toBe('/de/shop/p/schreibtisch-kabelhalter');

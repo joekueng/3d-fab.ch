@@ -360,18 +360,23 @@ export class SeoService {
     }, {});
   }
 
-  private normalizeAlternatePaths(paths: SeoMap | null | undefined): SeoMap | null {
+  private normalizeAlternatePaths(
+    paths: SeoMap | null | undefined,
+  ): SeoMap | null {
     if (!paths) {
       return null;
     }
 
-    const normalized = this.supportedLangs.reduce<SeoMap>((accumulator, lang) => {
-      const path = this.normalizeSeoPath(paths[lang]);
-      if (path) {
-        accumulator[lang] = path;
-      }
-      return accumulator;
-    }, {});
+    const normalized = this.supportedLangs.reduce<SeoMap>(
+      (accumulator, lang) => {
+        const path = this.normalizeSeoPath(paths[lang]);
+        if (path) {
+          accumulator[lang] = path;
+        }
+        return accumulator;
+      },
+      {},
+    );
 
     return Object.keys(normalized).length > 0 ? normalized : null;
   }
@@ -445,7 +450,10 @@ export class SeoService {
       if (!path) {
         continue;
       }
-      this.appendAlternateLink(this.seoLocaleByLang[alt], this.toAbsoluteUrl(path));
+      this.appendAlternateLink(
+        this.seoLocaleByLang[alt],
+        this.toAbsoluteUrl(path),
+      );
     }
     if (xDefaultPath) {
       this.appendAlternateLink('x-default', this.toAbsoluteUrl(xDefaultPath));
