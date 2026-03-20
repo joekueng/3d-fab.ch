@@ -268,7 +268,9 @@ describe('ShopService', () => {
     });
     catalogRequest.flush(buildCatalog());
 
-    httpMock.expectNone('http://localhost:8000/api/shop/products/desk-cable-clip');
+    httpMock.expectNone(
+      'http://localhost:8000/api/shop/products/desk-cable-clip',
+    );
     expect(errorResponse?.status).toBe(404);
   });
 
@@ -291,7 +293,9 @@ describe('ShopService', () => {
     });
     catalogRequest.flush(buildCatalog());
 
-    httpMock.expectNone('http://localhost:8000/api/shop/products/desk-cable-clip');
+    httpMock.expectNone(
+      'http://localhost:8000/api/shop/products/desk-cable-clip',
+    );
     expect(errorResponse?.status).toBe(404);
   });
 });

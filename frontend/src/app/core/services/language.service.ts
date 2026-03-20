@@ -67,7 +67,10 @@ export class LanguageService {
     }
 
     const currentTree = this.router.parseUrl(this.router.url);
-    const localizedRoute = this.resolveLocalizedRouteOverride(currentTree, lang);
+    const localizedRoute = this.resolveLocalizedRouteOverride(
+      currentTree,
+      lang,
+    );
     if (localizedRoute) {
       this.navigateToLocalizedRoute(currentTree, localizedRoute);
       return;
@@ -220,7 +223,9 @@ export class LanguageService {
       return null;
     }
 
-    const currentPath = this.getCleanPath(this.router.serializeUrl(currentTree));
+    const currentPath = this.getCleanPath(
+      this.router.serializeUrl(currentTree),
+    );
     const paths = Object.values(overrides)
       .map((path) => this.normalizeLocalizedRoutePath(path))
       .filter((path): path is string => !!path);

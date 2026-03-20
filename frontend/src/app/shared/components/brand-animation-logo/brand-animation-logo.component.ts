@@ -62,8 +62,7 @@ export class BrandAnimationLogoComponent {
   readonly resolvedLetters = computed<ResolvedAnimationLetter[]>(() =>
     LETTERS.map((letter) => ({
       key: letter.key,
-      src:
-        this.variant() === 'site-intro' ? letter.yellowSrc : letter.darkSrc,
+      src: this.variant() === 'site-intro' ? letter.yellowSrc : letter.darkSrc,
       wordX: letter.wordX,
     })),
   );

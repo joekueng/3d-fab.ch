@@ -99,5 +99,7 @@ function splitSegments(pathname: string): string[] {
 }
 
 function looksLikeLangToken(segment: string | null | undefined): boolean {
-  return typeof segment === 'string' && /^[a-z]{2}(?:-[a-z]{2})?$/i.test(segment);
+  return (
+    typeof segment === 'string' && /^[a-z]{2}(?:-[a-z]{2})?$/i.test(segment)
+  );
 }

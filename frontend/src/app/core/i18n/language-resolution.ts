@@ -54,7 +54,9 @@ export function parseAcceptLanguage(
       }
 
       const qualityParam = params.find((param) => param.startsWith('q='));
-      const quality = qualityParam ? Number.parseFloat(qualityParam.slice(2)) : 1;
+      const quality = qualityParam
+        ? Number.parseFloat(qualityParam.slice(2))
+        : 1;
       return {
         tag: rawTag,
         quality: Number.isFinite(quality) ? quality : 0,
@@ -70,7 +72,9 @@ export function parseAcceptLanguage(
         index: number;
       } => entry !== null && entry.quality > 0,
     )
-    .sort((left, right) => right.quality - left.quality || left.index - right.index)
+    .sort(
+      (left, right) => right.quality - left.quality || left.index - right.index,
+    )
     .map((entry) => entry.tag);
 }
 
@@ -102,9 +106,7 @@ function resolveExplicitLanguageFromUrl(
   const normalizedUrl = String(url ?? '/');
   const [pathAndQuery] = normalizedUrl.split('#', 1);
   const [rawPath, rawQuery] = pathAndQuery.split('?', 2);
-  const firstSegment = rawPath
-    .split('/')
-    .filter(Boolean)[0];
+  const firstSegment = rawPath.split('/').filter(Boolean)[0];
   const pathLanguage = normalizeSupportedLanguage(firstSegment);
   if (pathLanguage) {
     return pathLanguage;

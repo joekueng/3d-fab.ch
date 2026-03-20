@@ -29,14 +29,14 @@
   will-change: transform;
 }
 
-.brand-animation[data-variant='site-intro'] .brand-animation__letter {
-  animation: site-intro-preview var(--brand-animation-site-intro-duration, 1s) linear 1 forwards;
+.brand-animation[data-variant="site-intro"] .brand-animation__letter {
+  animation: site-intro-preview var(--brand-animation-site-intro-duration, 1s)
+    linear 1 forwards;
 }
 
-.brand-animation[data-variant='calculator-loader'] .brand-animation__letter {
+.brand-animation[data-variant="calculator-loader"] .brand-animation__letter {
   animation: calculator-loader-loop
-    var(--brand-animation-loader-loop-duration, 2.65s)
-    infinite;
+    var(--brand-animation-loader-loop-duration, 2.65s) infinite;
 }
 
 @keyframes site-intro-preview {
@@ -75,8 +75,7 @@
           var(--three-anchor-x) * var(--word-scale) * var(--word-spacing-factor)
         )
       )
-      scaleX(var(--loader-group-scale-x))
-      scaleY(var(--loader-group-scale-y));
+      scaleX(var(--loader-group-scale-x)) scaleY(var(--loader-group-scale-y));
   }
 
   12% {
@@ -87,8 +86,7 @@
           var(--three-anchor-x) * var(--word-scale) * var(--word-spacing-factor)
         )
       )
-      scaleX(var(--loader-group-scale-x))
-      scaleY(var(--loader-group-scale-y));
+      scaleX(var(--loader-group-scale-x)) scaleY(var(--loader-group-scale-y));
   }
 
   12% {
@@ -118,8 +116,7 @@
           var(--bee-anchor-x) * var(--word-scale) * var(--word-spacing-factor)
         )
       )
-      scaleX(var(--loader-group-scale-x))
-      scaleY(var(--loader-group-scale-y));
+      scaleX(var(--loader-group-scale-x)) scaleY(var(--loader-group-scale-y));
   }
 
   88% {
@@ -131,12 +128,11 @@
     transform: translate(-50%, -50%)
       translateX(
         calc(
-          (var(--bee-anchor-x) + var(--loader-exit-shift)) *
-            var(--word-scale) * var(--word-spacing-factor)
+          (var(--bee-anchor-x) + var(--loader-exit-shift)) * var(--word-scale) *
+            var(--word-spacing-factor)
         )
       )
-      scaleX(0.98)
-      scaleY(1.02);
+      scaleX(0.98) scaleY(1.02);
   }
 
   94.01%,
@@ -148,8 +144,7 @@
           var(--three-anchor-x) * var(--word-scale) * var(--word-spacing-factor)
         )
       )
-      scaleX(var(--loader-group-scale-x))
-      scaleY(var(--loader-group-scale-y));
+      scaleX(var(--loader-group-scale-x)) scaleY(var(--loader-group-scale-y));
   }
 }
 
