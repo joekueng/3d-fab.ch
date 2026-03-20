@@ -1,5 +1,10 @@
 <article class="product-card">
-  <a class="media" [routerLink]="productLink()" [state]="navigationState()">
+  <a
+    class="media"
+    [routerLink]="productLink()"
+    [state]="navigationState()"
+    (click)="rememberCatalogScroll()"
+  >
     @if (imageUrl(); as imageUrl) {
       <img
         [src]="imageUrl"
@@ -32,9 +37,12 @@
     </div>
 
     <h3 class="name">
-      <a [routerLink]="productLink()" [state]="navigationState()">{{
-        product().name
-      }}</a>
+      <a
+        [routerLink]="productLink()"
+        [state]="navigationState()"
+        (click)="rememberCatalogScroll()"
+        >{{ product().name }}</a
+      >
     </h3>
 
     <p class="excerpt">
@@ -62,6 +70,7 @@
         <a
           [routerLink]="productLink()"
           [state]="navigationState()"
+          (click)="rememberCatalogScroll()"
           class="view-btn"
           >{{ "SHOP.DETAILS" | translate }}</a
         >

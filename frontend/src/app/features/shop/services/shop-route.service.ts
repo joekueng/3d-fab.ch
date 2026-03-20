@@ -1,15 +1,14 @@
 import { Injectable } from '@angular/core';
 import { LanguageService } from '../../../core/services/language.service';
 
+type SupportedLang = 'it' | 'en' | 'de' | 'fr';
+
 export interface ShopProductRouteRef {
   id: string | null | undefined;
   name: string | null | undefined;
   slug?: string | null | undefined;
-}
-
-export interface ShopProductLookup {
-  idPrefix: string | null;
-  slugHint: string | null;
+  publicPath?: string | null | undefined;
+  localizedPaths?: Partial<Record<SupportedLang, string>> | null | undefined;
 }
 
 @Injectable({
@@ -26,51 +25,26 @@ export class ShopRouteService {
   }
 
   productCommands(product: ShopProductRouteRef): string[] {
+    const localizedPath = this.localizedProductPath(product);
+    if (localizedPath) {
+      return ['/', ...localizedPath.split('/').filter(Boolean)];
+    }
+
     const lang = this.languageService.currentLang();
     return ['/', lang, 'shop', 'p', this.productPathSegment(product)];
   }
 
   productPathSegment(product: ShopProductRouteRef): string {
+    const publicPath = String(product.publicPath ?? '').trim();
+    if (publicPath) {
+      return publicPath;
+    }
+
     const idPrefix = this.productIdPrefix(product.id);
     const tail =
       this.slugify(product.name) || this.slugify(product.slug) || 'product';
 
     return idPrefix ? `${idPrefix}-${tail}` : tail;
-  }
-
-  resolveProductLookup(
-    productPathSegment: string | null | undefined,
-  ): ShopProductLookup {
-    const normalized = String(productPathSegment ?? '')
-      .trim()
-      .toLowerCase();
-    if (!normalized) {
-      return {
-        idPrefix: null,
-        slugHint: null,
-      };
-    }
-
-    const bareUuidMatch = normalized.match(/^([0-9a-f]{8})$/);
-    if (bareUuidMatch) {
-      return {
-        idPrefix: bareUuidMatch[1],
-        slugHint: null,
-      };
-    }
-
-    const publicSlugMatch = normalized.match(/^([0-9a-f]{8})-(.+)$/);
-    if (publicSlugMatch) {
-      return {
-        idPrefix: publicSlugMatch[1],
-        slugHint: this.slugify(publicSlugMatch[2]) || null,
-      };
-    }
-
-    return {
-      idPrefix: null,
-      slugHint: normalized,
-    };
   }
 
   isCatalogUrl(url: string | null | undefined): boolean {
@@ -90,6 +64,12 @@ export class ShopRouteService {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '')
       .replace(/-{2,}/g, '-');
+  }
+
+  private localizedProductPath(product: ShopProductRouteRef): string | null {
+    const lang = this.languageService.currentLang();
+    const localizedPath = String(product.localizedPaths?.[lang] ?? '').trim();
+    return localizedPath.startsWith('/') ? localizedPath : null;
   }
 
   private productIdPrefix(productId: string | null | undefined): string {

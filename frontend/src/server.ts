@@ -5,6 +5,11 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import bootstrap from './main.server';
 import { resolveRequestOrigin } from './core/request-origin';
+import {
+  parseAcceptLanguage,
+  resolveInitialLanguage,
+} from './app/core/i18n/language-resolution';
+import { resolvePublicRedirectTarget } from './server-routing';
 
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
@@ -35,6 +40,28 @@ app.get(
     index: false,
   }),
 );
+
+app.get('/', (req, res) => {
+  const acceptLanguage = req.get('accept-language');
+  const preferredLanguages = parseAcceptLanguage(acceptLanguage);
+  const lang = resolveInitialLanguage({
+    preferredLanguages,
+  });
+
+  res.setHeader('Vary', 'Accept-Language');
+  res.setHeader('Cache-Control', 'private, no-store');
+  res.redirect(302, `/${lang}${querySuffix(req.originalUrl)}`);
+});
+
+app.get('**', (req, res, next) => {
+  const targetPath = resolvePublicRedirectTarget(req.path);
+  if (!targetPath) {
+    next();
+    return;
+  }
+
+  res.redirect(308, `${targetPath}${querySuffix(req.originalUrl)}`);
+});
 
 /**
  * Handle all other requests by rendering the Angular application.
@@ -67,3 +94,8 @@ if (isMainModule(import.meta.url)) {
 }
 
 export default app;
+
+function querySuffix(url: string): string {
+  const queryIndex = String(url ?? '').indexOf('?');
+  return queryIndex >= 0 ? String(url).slice(queryIndex) : '';
+}

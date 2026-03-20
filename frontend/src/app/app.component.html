@@ -1,1 +1,14 @@
 <router-outlet></router-outlet>
+
+@if (siteIntroState() !== "hidden") {
+  <div
+    class="site-intro"
+    [class.site-intro--closing]="siteIntroState() === 'closing'"
+    aria-hidden="true"
+  >
+    <app-brand-animation-logo
+      class="site-intro__logo"
+      variant="site-intro"
+    ></app-brand-animation-logo>
+  </div>
+}

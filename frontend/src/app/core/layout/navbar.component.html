@@ -1,8 +1,15 @@
 <header class="navbar">
   <div class="container navbar-inner">
-    <a [routerLink]="langService.localizedPath('/')" class="brand"
-      >3D <span class="highlight">fab</span></a
-    >
+    <a [routerLink]="langService.localizedPath('/')" class="brand">
+      <img
+        class="brand-logo"
+        ngSrc="/assets/images/Asset%202.svg"
+        alt="3D Fab"
+        width="380"
+        height="86"
+        priority
+      />
+    </a>
 
     <div
       class="mobile-toggle"

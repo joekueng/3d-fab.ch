@@ -72,10 +72,14 @@ public class QuoteSessionItemService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot modify a converted session");
         }
 
+        String ext = quoteStorageService.getSafeExtension(file.getOriginalFilename(), "");
+        if (ext.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported file type. Allowed: stl, 3mf");
+        }
+
         clamAVService.scan(file.getInputStream());
 
         Path sessionStorageDir = quoteStorageService.sessionStorageDir(session.getId());
-        String ext = quoteStorageService.getSafeExtension(file.getOriginalFilename(), "stl");
         String storedFilename = UUID.randomUUID() + "." + ext;
         Path persistentPath = quoteStorageService.resolveSessionPath(sessionStorageDir, storedFilename);
 

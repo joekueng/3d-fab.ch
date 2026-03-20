@@ -25,6 +25,21 @@
             color: #222222;
         }
 
+        .header {
+            text-align: center;
+            border-bottom: 1px solid #eeeeee;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .brand-logo {
+            display: block;
+            width: 220px;
+            max-width: 220px;
+            height: auto;
+            margin: 0 auto 16px;
+        }
+
         p {
             color: #444444;
             line-height: 1.5;
@@ -63,7 +78,10 @@
 </head>
 <body>
 <div class="container">
-    <h1>Nuova richiesta di contatto</h1>
+    <div class="header">
+        <img class="brand-logo" th:src="${logoUrl}" src="https://example.com/assets/images/brand-logo-yellow.svg" alt="3D-Fab">
+        <h1>Nuova richiesta di contatto</h1>
+    </div>
     <p>E' stata ricevuta una nuova richiesta dal form contatti/su misura.</p>
 
     <table>

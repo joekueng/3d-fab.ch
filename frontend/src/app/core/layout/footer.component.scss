@@ -38,9 +38,10 @@
 }
 
 .brand {
-  font-weight: 700;
-  color: white;
   display: block;
+  width: auto;
+  height: 1.85rem;
+  max-width: min(9.25rem, 46vw);
   margin-bottom: var(--space-2);
 }
 .copyright {

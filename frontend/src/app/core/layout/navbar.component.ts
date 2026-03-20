@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
 import {
   afterNextRender,
   Component,
@@ -30,7 +30,13 @@ import {
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, TranslateModule],
+  imports: [
+    CommonModule,
+    RouterLink,
+    RouterLinkActive,
+    TranslateModule,
+    NgOptimizedImage,
+  ],
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.scss'],
 })

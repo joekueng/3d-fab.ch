@@ -17,6 +17,7 @@ import { catchError, map } from 'rxjs/operators';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
 import { AppAlertComponent } from '../../shared/components/app-alert/app-alert.component';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
+import { BrandAnimationLogoComponent } from '../../shared/components/brand-animation-logo/brand-animation-logo.component';
 import { UploadFormComponent } from './components/upload-form/upload-form.component';
 import { QuoteResultComponent } from './components/quote-result/quote-result.component';
 import {
@@ -48,6 +49,7 @@ type TrackedPrintSettings = {
     AppCardComponent,
     AppAlertComponent,
     AppButtonComponent,
+    BrandAnimationLogoComponent,
     UploadFormComponent,
     QuoteResultComponent,
     SuccessStateComponent,

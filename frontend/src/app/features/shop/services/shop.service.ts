@@ -7,7 +7,9 @@ import {
   PublicMediaVariantDto,
 } from '../../../core/services/public-media.service';
 import { LanguageService } from '../../../core/services/language.service';
-import { ShopRouteService } from './shop-route.service';
+
+type SupportedLang = 'it' | 'en' | 'de' | 'fr';
+type LocalizedPathMap = Partial<Record<SupportedLang, string>>;
 
 export interface ShopCategoryRef {
   id: string;
@@ -84,6 +86,8 @@ export interface ShopProductSummary {
   defaultVariant: ShopProductVariantOption | null;
   primaryImage: PublicMediaUsageDto | null;
   model3d: ShopProductModel | null;
+  publicPath: string;
+  localizedPaths: LocalizedPathMap;
 }
 
 export interface ShopProductDetail {
@@ -108,6 +112,8 @@ export interface ShopProductDetail {
   primaryImage: PublicMediaUsageDto | null;
   images: PublicMediaUsageDto[];
   model3d: ShopProductModel | null;
+  publicPath: string;
+  localizedPaths: LocalizedPathMap;
 }
 
 export interface ShopProductCatalogResponse {
@@ -185,7 +191,6 @@ export interface ShopCategoryNavNode {
 export class ShopService {
   private readonly http = inject(HttpClient);
   private readonly languageService = inject(LanguageService);
-  private readonly shopRouteService = inject(ShopRouteService);
   private readonly apiUrl = `${environment.apiUrl}/api/shop`;
 
   readonly cart = signal<ShopCartResponse | null>(null);
@@ -278,16 +283,18 @@ export class ShopService {
   getProductByPublicPath(
     productPathSegment: string,
   ): Observable<ShopProductDetail> {
-    const lookup =
-      this.shopRouteService.resolveProductLookup(productPathSegment);
-    if (!lookup.idPrefix && lookup.slugHint) {
-      return this.getProduct(lookup.slugHint);
+    const normalizedPath = this.normalizePublicPath(productPathSegment);
+    if (!normalizedPath) {
+      return throwError(() => ({
+        status: 404,
+      }));
     }
 
     return this.getProductCatalog().pipe(
       map((catalog) =>
-        catalog.products.find((product) =>
-          product.id.toLowerCase().startsWith(lookup.idPrefix ?? ''),
+        catalog.products.find(
+          (product) =>
+            this.normalizePublicPath(product.publicPath) === normalizedPath,
         ),
       ),
       switchMap((product) => {
@@ -299,6 +306,12 @@ export class ShopService {
         return this.getProduct(product.slug);
       }),
     );
+  }
+
+  private normalizePublicPath(value: string | null | undefined): string {
+    return String(value ?? '')
+      .trim()
+      .toLowerCase();
   }
 
   loadCart(): Observable<ShopCartResponse> {

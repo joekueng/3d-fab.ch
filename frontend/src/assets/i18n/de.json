@@ -107,14 +107,14 @@
   },
   "CALC": {
     "TITLE": "3D-Angebot berechnen",
-    "SUBTITLE": "Laden Sie Ihre 3D-Datei (STL, 3MF, STEP) hoch, stellen Sie Qualität und Farbe ein und berechnen Sie sofort Preis und Lieferzeit.",
+    "SUBTITLE": "Laden Sie Ihre 3D-Datei (STL, 3MF) hoch, stellen Sie Qualität und Farbe ein und berechnen Sie sofort Preis und Lieferzeit.",
     "CTA_START": "Jetzt starten",
     "BUSINESS": "Unternehmen",
     "PRIVATE": "Privat",
     "MODE_EASY": "Basis",
     "MODE_ADVANCED": "Erweitert",
     "UPLOAD_LABEL": "Ziehen Sie Ihre 3D-Datei hierher",
-    "UPLOAD_SUB": "Wir unterstützen STL, 3MF, STEP bis 50MB",
+    "UPLOAD_SUB": "Wir unterstützen STL, 3MF bis 50MB",
     "MATERIAL": "Material",
     "QUALITY": "Qualität",
     "QUANTITY": "Menge",
@@ -141,11 +141,12 @@
     "BENEFITS_2": "Ausgewählte Materialien und Qualitätskontrolle",
     "BENEFITS_3": "CAD-Beratung, falls die Datei Änderungen benötigt",
     "ERR_FILE_REQUIRED": "Die Datei ist erforderlich.",
-    "STEP_WARNING": "Die 3D-Ansicht ist mit STEP- und 3MF-Dateien nicht kompatibel",
+    "STEP_WARNING": "Die 3D-Vorschau ist nur für STL-Dateien verfügbar.",
     "REMOVE_FILE": "Datei entfernen",
     "FALLBACK_MATERIAL": "PLA (Fallback)",
     "FALLBACK_QUALITY_STANDARD": "Standard",
     "ERR_FILE_TOO_LARGE": "Einige Dateien überschreiten das 200MB-Limit und wurden nicht hinzugefügt.",
+    "ERR_INVALID_FILE_TYPE": "Sie können nur Dateien vom Typ .stl oder .3mf hochladen.",
     "PRINT_SPEED": "Druckgeschwindigkeit",
     "COLOR": "Farbe",
     "ANALYZING_TITLE": "Analyse läuft...",
@@ -624,7 +625,7 @@
     "BTN_CONTACT": "Mit uns sprechen",
     "SEC_CALC_TITLE": "Korrekte Preisberechnung in wenigen Sekunden",
     "SEC_CALC_SUBTITLE": "Keine Registrierung erforderlich. Die Schätzung basiert auf echtem Slicing.",
-    "SEC_CALC_LIST_1": "Unterstützte Formate: STL, 3MF, STEP",
+    "SEC_CALC_LIST_1": "Unterstützte Formate: STL, 3MF",
     "CARD_CALC_EYEBROW": "Automatische Berechnung",
     "CARD_CALC_TITLE": "Preis und Lieferzeit mit einem Klick",
     "CARD_CALC_TAG": "Ohne Registrierung",
@@ -674,7 +675,7 @@
   },
   "DROPZONE": {
     "DEFAULT_LABEL": "Dateien hierher ziehen oder klicken zum Hochladen",
-    "DEFAULT_SUBTEXT": "Unterstützt .STL, .3MF, .STEP"
+    "DEFAULT_SUBTEXT": "Unterstützt .STL, .3MF"
   },
   "COLOR": {
     "AVAILABLE_COLORS": "Verfügbare Farben",

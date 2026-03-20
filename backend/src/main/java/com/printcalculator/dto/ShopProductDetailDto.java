@@ -2,6 +2,7 @@ package com.printcalculator.dto;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public record ShopProductDetailDto(
@@ -25,6 +26,8 @@ public record ShopProductDetailDto(
         List<ShopProductVariantOptionDto> variants,
         PublicMediaUsageDto primaryImage,
         List<PublicMediaUsageDto> images,
-        ShopProductModelDto model3d
+        ShopProductModelDto model3d,
+        String publicPath,
+        Map<String, String> localizedPaths
 ) {
 }

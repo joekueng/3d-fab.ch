@@ -96,7 +96,7 @@
     "BTN_CONTACT": "Parlez avec nous",
     "SEC_CALC_TITLE": "Prix correct en quelques secondes",
     "SEC_CALC_SUBTITLE": "Aucune inscription requise. L'estimation est effectuée via un vrai slicing.",
-    "SEC_CALC_LIST_1": "Formats pris en charge : STL, 3MF, STEP",
+    "SEC_CALC_LIST_1": "Formats pris en charge : STL, 3MF",
     "CARD_CALC_EYEBROW": "Calcul automatique",
     "CARD_CALC_TITLE": "Prix et délais en un clic",
     "CARD_CALC_TAG": "Sans inscription",
@@ -139,14 +139,14 @@
   },
   "CALC": {
     "TITLE": "Calculer un devis 3D",
-    "SUBTITLE": "Chargez votre fichier 3D (STL, 3MF, STEP), réglez la qualité et la couleur puis calculez immédiatement prix et délais.",
+    "SUBTITLE": "Chargez votre fichier 3D (STL, 3MF), réglez la qualité et la couleur puis calculez immédiatement prix et délais.",
     "CTA_START": "Commencer maintenant",
     "BUSINESS": "Entreprises",
     "PRIVATE": "Particuliers",
     "MODE_EASY": "Base",
     "MODE_ADVANCED": "Avancée",
     "UPLOAD_LABEL": "Glissez votre fichier 3D ici",
-    "UPLOAD_SUB": "Nous prenons en charge STL, 3MF, STEP jusqu'à 50MB",
+    "UPLOAD_SUB": "Nous prenons en charge STL, 3MF jusqu'à 50MB",
     "MATERIAL": "Matériau",
     "QUALITY": "Qualité",
     "PRINT_SPEED": "Vitesse d'impression",
@@ -185,11 +185,12 @@
     "NOTES_PLACEHOLDER": "Instructions spécifiques...",
     "SETUP_NOTE": "* Inclut {{cost}} comme coût de setup",
     "SHIPPING_NOTE": "* Frais d'expédition exclus, calculés à l'étape suivante",
-    "STEP_WARNING": "La visualisation 3D n'est pas compatible avec les fichiers STEP et 3MF",
+    "STEP_WARNING": "La prévisualisation 3D est disponible uniquement pour les fichiers STL.",
     "REMOVE_FILE": "Supprimer le fichier",
     "FALLBACK_MATERIAL": "PLA (fallback)",
     "FALLBACK_QUALITY_STANDARD": "Standard",
     "ERR_FILE_TOO_LARGE": "Certains fichiers dépassent la limite de 200MB et n'ont pas été ajoutés.",
+    "ERR_INVALID_FILE_TYPE": "Vous pouvez téléverser uniquement des fichiers .stl ou .3mf.",
     "ERROR_ZERO_PRICE": "Un problème est survenu pendant le calcul. Essayez un autre format ou contactez-nous directement via Demander une consultation.",
     "ZERO_RESULT_TITLE": "Résultat invalide",
     "ZERO_RESULT_HELP": "Le calcul a renvoyé des valeurs nulles invalides. Essayez un autre format de fichier ou contactez-nous directement via Demander une consultation."
@@ -680,7 +681,7 @@
   },
   "DROPZONE": {
     "DEFAULT_LABEL": "Glissez les fichiers ici ou cliquez pour téléverser",
-    "DEFAULT_SUBTEXT": "Prend en charge .STL, .3MF, .STEP"
+    "DEFAULT_SUBTEXT": "Prend en charge .STL, .3MF"
   },
   "COLOR": {
     "AVAILABLE_COLORS": "Couleurs disponibles",
