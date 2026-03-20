@@ -126,6 +126,9 @@ public class CustomQuoteRequestNotificationService {
     }
 
     private String buildLogoUrl() {
-        return frontendBaseUrl.replaceAll("/+$", "") + "/assets/images/brand-logo-yellow.svg";
+        String baseUrl = frontendBaseUrl == null || frontendBaseUrl.isBlank()
+                ? "http://localhost:4200"
+                : frontendBaseUrl;
+        return baseUrl.replaceAll("/+$", "") + "/assets/images/brand-logo-yellow.svg";
     }
 }
