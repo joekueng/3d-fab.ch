@@ -29,6 +29,7 @@ describe('SeoService', () => {
     data: Record<string, unknown>;
     translations: Record<string, string>;
   }): {
+    service: SeoService;
     meta: jasmine.SpyObj<Meta>;
     title: jasmine.SpyObj<Title>;
   } {
@@ -51,7 +52,7 @@ describe('SeoService', () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const service = new SeoService(router, title, meta, translate, document);
 
-    return { meta, title };
+    return { service, meta, title };
   }
 
   beforeEach(() => {
@@ -136,5 +137,53 @@ describe('SeoService', () => {
       .find(([tag]) => tag.name === 'description');
     expect(descriptionCall?.[0].content).toBe('About description');
     expect(document.documentElement.lang).toBe('en-CH');
+  });
+
+  it('applies canonical and hreflang values resolved from localized paths', () => {
+    const { service } = createService({
+      url: '/it/shop/p/12345678-supporto-cavo-scrivania',
+      data: {},
+      translations: {},
+    });
+
+    service.applyResolvedSeo({
+      title: 'Supporto cavo scrivania | 3D fab',
+      description: 'Accessorio tecnico',
+      robots: 'index, follow',
+      ogTitle: 'Supporto cavo scrivania | 3D fab',
+      ogDescription: 'Accessorio tecnico',
+      canonicalPath: '/it/shop/p/12345678-supporto-cavo-scrivania',
+      alternates: {
+        it: '/it/shop/p/12345678-supporto-cavo-scrivania',
+        en: '/en/shop/p/12345678-desk-cable-clip',
+        de: '/de/shop/p/12345678-schreibtisch-kabelhalter',
+      },
+      xDefault: '/it/shop/p/12345678-supporto-cavo-scrivania',
+    });
+
+    const canonical = document.head.querySelector(
+      'link[rel="canonical"]',
+    ) as HTMLLinkElement | null;
+    expect(canonical?.getAttribute('href')).toBe(
+      `${document.location.origin}/it/shop/p/12345678-supporto-cavo-scrivania`,
+    );
+
+    const alternates = Array.from(
+      document.head.querySelectorAll(
+        'link[rel="alternate"][data-seo-managed="true"]',
+      ),
+    ).map((node) => ({
+      hreflang: node.getAttribute('hreflang'),
+      href: node.getAttribute('href'),
+    }));
+
+    expect(alternates).toContain({
+      hreflang: 'de-CH',
+      href: `${document.location.origin}/de/shop/p/12345678-schreibtisch-kabelhalter`,
+    });
+    expect(alternates).toContain({
+      hreflang: 'x-default',
+      href: `${document.location.origin}/it/shop/p/12345678-supporto-cavo-scrivania`,
+    });
   });
 });

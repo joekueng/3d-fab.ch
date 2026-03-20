@@ -112,6 +112,13 @@ describe('ShopService', () => {
         defaultVariant: null,
         primaryImage: null,
         model3d: null,
+        publicPath: '12345678-supporto-cavo-scrivania',
+        localizedPaths: {
+          it: '/it/shop/p/12345678-supporto-cavo-scrivania',
+          en: '/en/shop/p/12345678-desk-cable-clip',
+          de: '/de/shop/p/12345678-schreibtisch-kabelhalter',
+          fr: '/fr/shop/p/12345678-support-cable-bureau',
+        },
       },
     ],
   });
@@ -142,6 +149,13 @@ describe('ShopService', () => {
     primaryImage: null,
     images: [],
     model3d: null,
+    publicPath: '12345678-supporto-cavo-scrivania',
+    localizedPaths: {
+      it: '/it/shop/p/12345678-supporto-cavo-scrivania',
+      en: '/en/shop/p/12345678-desk-cable-clip',
+      de: '/de/shop/p/12345678-schreibtisch-kabelhalter',
+      fr: '/fr/shop/p/12345678-support-cable-bureau',
+    },
   });
 
   beforeEach(() => {
@@ -235,14 +249,15 @@ describe('ShopService', () => {
     expect(response?.name).toBe('Supporto cavo scrivania');
   });
 
-  it('resolves product detail from uuid prefix even when slug tail does not match', () => {
-    let response: ShopProductDetail | undefined;
+  it('rejects product paths whose slug tail does not match the canonical path', () => {
+    let errorResponse: { status?: number } | undefined;
 
-    service
-      .getProductByPublicPath('12345678-qualunque-nome')
-      .subscribe((product) => {
-        response = product;
-      });
+    service.getProductByPublicPath('12345678-qualunque-nome').subscribe({
+      next: () => fail('Expected canonical path mismatch to return 404'),
+      error: (error) => {
+        errorResponse = error;
+      },
+    });
 
     const catalogRequest = httpMock.expectOne((request) => {
       return (
@@ -253,24 +268,18 @@ describe('ShopService', () => {
     });
     catalogRequest.flush(buildCatalog());
 
-    const detailRequest = httpMock.expectOne((request) => {
-      return (
-        request.method === 'GET' &&
-        request.url ===
-          'http://localhost:8000/api/shop/products/desk-cable-clip' &&
-        request.params.get('lang') === 'it'
-      );
-    });
-    detailRequest.flush(buildProduct());
-
-    expect(response?.id).toBe('12345678-abcd-4abc-9abc-1234567890ab');
+    httpMock.expectNone('http://localhost:8000/api/shop/products/desk-cable-clip');
+    expect(errorResponse?.status).toBe(404);
   });
 
-  it('resolves product detail from bare uuid prefix without slug tail', () => {
-    let response: ShopProductDetail | undefined;
+  it('rejects bare uuid product paths without the localized slug tail', () => {
+    let errorResponse: { status?: number } | undefined;
 
-    service.getProductByPublicPath('12345678').subscribe((product) => {
-      response = product;
+    service.getProductByPublicPath('12345678').subscribe({
+      next: () => fail('Expected bare uuid path to return 404'),
+      error: (error) => {
+        errorResponse = error;
+      },
     });
 
     const catalogRequest = httpMock.expectOne((request) => {
@@ -282,16 +291,7 @@ describe('ShopService', () => {
     });
     catalogRequest.flush(buildCatalog());
 
-    const detailRequest = httpMock.expectOne((request) => {
-      return (
-        request.method === 'GET' &&
-        request.url ===
-          'http://localhost:8000/api/shop/products/desk-cable-clip' &&
-        request.params.get('lang') === 'it'
-      );
-    });
-    detailRequest.flush(buildProduct());
-
-    expect(response?.id).toBe('12345678-abcd-4abc-9abc-1234567890ab');
+    httpMock.expectNone('http://localhost:8000/api/shop/products/desk-cable-clip');
+    expect(errorResponse?.status).toBe(404);
   });
 });

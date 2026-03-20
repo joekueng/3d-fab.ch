@@ -13,17 +13,17 @@ import {
 } from '../i18n/language-resolution';
 import { RequestLike } from '../../../core/request-origin';
 
+type SupportedLang = 'it' | 'en' | 'de' | 'fr';
+type LocalizedRouteOverrides = Partial<Record<SupportedLang, string>>;
+
 @Injectable({
   providedIn: 'root',
 })
 export class LanguageService {
-  currentLang = signal<'it' | 'en' | 'de' | 'fr'>('it');
-  private readonly supportedLangs: Array<'it' | 'en' | 'de' | 'fr'> = [
-    'it',
-    'en',
-    'de',
-    'fr',
-  ];
+  currentLang = signal<SupportedLang>('it');
+  private readonly defaultLang: SupportedLang = 'it';
+  private readonly supportedLangs: SupportedLang[] = ['it', 'en', 'de', 'fr'];
+  private localizedRouteOverrides: LocalizedRouteOverrides | null = null;
 
   constructor(
     private translate: TranslateService,
@@ -61,13 +61,18 @@ export class LanguageService {
     });
   }
 
-  switchLang(lang: 'it' | 'en' | 'de' | 'fr') {
+  switchLang(lang: SupportedLang) {
     if (!this.isSupportedLang(lang)) {
       return;
     }
-    this.applyLanguage(lang);
 
     const currentTree = this.router.parseUrl(this.router.url);
+    const localizedRoute = this.resolveLocalizedRouteOverride(currentTree, lang);
+    if (localizedRoute) {
+      this.navigateToLocalizedRoute(currentTree, localizedRoute);
+      return;
+    }
+
     const segments = this.getPrimarySegments(currentTree);
 
     let targetSegments: string[];
@@ -85,7 +90,7 @@ export class LanguageService {
     this.navigateIfChanged(currentTree, targetSegments);
   }
 
-  selectedLang(): 'it' | 'en' | 'de' | 'fr' {
+  selectedLang(): SupportedLang {
     const activeLang =
       typeof this.translate.currentLang === 'string'
         ? this.translate.currentLang.toLowerCase()
@@ -118,6 +123,16 @@ export class LanguageService {
     return `/${[lang, ...segments].join('/')}${suffix}`;
   }
 
+  setLocalizedRouteOverrides(
+    paths: LocalizedRouteOverrides | null | undefined,
+  ): void {
+    this.localizedRouteOverrides = this.normalizeLocalizedRouteOverrides(paths);
+  }
+
+  clearLocalizedRouteOverrides(): void {
+    this.localizedRouteOverrides = null;
+  }
+
   private ensureLanguageInPath(urlTree: UrlTree): void {
     const segments = this.getPrimarySegments(urlTree);
 
@@ -126,22 +141,25 @@ export class LanguageService {
       return;
     }
 
-    const queryLang = this.getQueryLang(urlTree);
-    const activeLang = this.isSupportedLang(queryLang)
-      ? queryLang
-      : this.currentLang();
-    if (activeLang !== this.currentLang()) {
-      this.applyLanguage(activeLang);
-    }
-    let targetSegments: string[];
-
     if (segments.length === 0) {
-      targetSegments = [activeLang];
-    } else if (this.looksLikeLangToken(segments[0])) {
-      targetSegments = [activeLang, ...segments.slice(1)];
-    } else {
-      targetSegments = [activeLang, ...segments];
+      const queryLang = this.getQueryLang(urlTree);
+      const rootLang = this.isSupportedLang(queryLang)
+        ? queryLang
+        : this.currentLang();
+      if (rootLang !== this.currentLang()) {
+        this.applyLanguage(rootLang);
+      }
+      this.navigateIfChanged(urlTree, [rootLang]);
+      return;
     }
+
+    if (this.currentLang() !== this.defaultLang) {
+      this.applyLanguage(this.defaultLang);
+    }
+
+    const targetSegments = this.looksLikeLangToken(segments[0])
+      ? [this.defaultLang, ...segments.slice(1)]
+      : [this.defaultLang, ...segments];
 
     this.navigateIfChanged(urlTree, targetSegments);
   }
@@ -172,10 +190,10 @@ export class LanguageService {
 
   private isSupportedLang(
     lang: string | null | undefined,
-  ): lang is 'it' | 'en' | 'de' | 'fr' {
+  ): lang is SupportedLang {
     return (
       typeof lang === 'string' &&
-      this.supportedLangs.includes(lang as 'it' | 'en' | 'de' | 'fr')
+      this.supportedLangs.includes(lang as SupportedLang)
     );
   }
 
@@ -185,12 +203,92 @@ export class LanguageService {
     );
   }
 
-  private applyLanguage(lang: 'it' | 'en' | 'de' | 'fr'): void {
+  private applyLanguage(lang: SupportedLang): void {
     if (this.currentLang() === lang && this.translate.currentLang === lang) {
       return;
     }
     this.translate.use(lang);
     this.currentLang.set(lang);
+  }
+
+  private resolveLocalizedRouteOverride(
+    currentTree: UrlTree,
+    lang: SupportedLang,
+  ): string | null {
+    const overrides = this.localizedRouteOverrides;
+    if (!overrides) {
+      return null;
+    }
+
+    const currentPath = this.getCleanPath(this.router.serializeUrl(currentTree));
+    const paths = Object.values(overrides)
+      .map((path) => this.normalizeLocalizedRoutePath(path))
+      .filter((path): path is string => !!path);
+    if (!paths.includes(currentPath)) {
+      return null;
+    }
+
+    return this.normalizeLocalizedRoutePath(overrides[lang]);
+  }
+
+  private normalizeLocalizedRouteOverrides(
+    paths: LocalizedRouteOverrides | null | undefined,
+  ): LocalizedRouteOverrides | null {
+    if (!paths) {
+      return null;
+    }
+
+    const normalized = this.supportedLangs.reduce<LocalizedRouteOverrides>(
+      (accumulator, lang) => {
+        const path = this.normalizeLocalizedRoutePath(paths[lang]);
+        if (path) {
+          accumulator[lang] = path;
+        }
+        return accumulator;
+      },
+      {},
+    );
+
+    return Object.keys(normalized).length > 0 ? normalized : null;
+  }
+
+  private normalizeLocalizedRoutePath(
+    path: string | null | undefined,
+  ): string | null {
+    const rawPath = String(path ?? '').trim();
+    if (!rawPath) {
+      return null;
+    }
+    const cleanPath = this.getCleanPath(rawPath);
+    return cleanPath.startsWith('/') ? cleanPath : null;
+  }
+
+  private navigateToLocalizedRoute(
+    currentTree: UrlTree,
+    localizedPath: string,
+  ): void {
+    const { lang: _unusedLang, ...queryParams } = currentTree.queryParams;
+    const targetTree = this.router.createUrlTree(
+      ['/', ...localizedPath.split('/').filter(Boolean)],
+      {
+        queryParams,
+        fragment: currentTree.fragment ?? undefined,
+      },
+    );
+
+    if (
+      this.router.serializeUrl(targetTree) ===
+      this.router.serializeUrl(currentTree)
+    ) {
+      return;
+    }
+
+    this.router.navigateByUrl(targetTree, { replaceUrl: true });
+  }
+
+  private getCleanPath(url: string): string {
+    const path = (url || '/').split('?')[0].split('#')[0];
+    return path || '/';
   }
 
   private navigateIfChanged(

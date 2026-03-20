@@ -399,6 +399,7 @@ public class PublicShopCatalogService {
                                                       Map<String, String> variantColorHexByMaterialAndColor,
                                                       String language) {
         List<PublicMediaUsageDto> images = productMediaBySlug.getOrDefault(productMediaUsageKey(entry.product()), List.of());
+        Map<String, String> localizedPaths = ShopPublicPathSupport.buildLocalizedProductPaths(entry.product());
         return new ShopProductSummaryDto(
                 entry.product().getId(),
                 entry.product().getSlug(),
@@ -415,7 +416,9 @@ public class PublicShopCatalogService {
                 resolvePriceTo(entry.variants()),
                 toVariantDto(entry.defaultVariant(), entry.defaultVariant(), variantColorHexByMaterialAndColor, language),
                 selectPrimaryMedia(images),
-                toProductModelDto(entry)
+                toProductModelDto(entry),
+                localizedPaths.getOrDefault(normalizeLanguage(language), localizedPaths.get("it")),
+                localizedPaths
         );
     }
 
@@ -426,6 +429,7 @@ public class PublicShopCatalogService {
         List<PublicMediaUsageDto> images = productMediaBySlug.getOrDefault(productMediaUsageKey(entry.product()), List.of());
         String localizedSeoTitle = entry.product().getSeoTitleForLanguage(language);
         String localizedSeoDescription = entry.product().getSeoDescriptionForLanguage(language);
+        Map<String, String> localizedPaths = ShopPublicPathSupport.buildLocalizedProductPaths(entry.product());
         return new ShopProductDetailDto(
                 entry.product().getId(),
                 entry.product().getSlug(),
@@ -453,7 +457,9 @@ public class PublicShopCatalogService {
                         .toList(),
                 selectPrimaryMedia(images),
                 images,
-                toProductModelDto(entry)
+                toProductModelDto(entry),
+                localizedPaths.getOrDefault(normalizeLanguage(language), localizedPaths.get("it")),
+                localizedPaths
         );
     }
 
@@ -512,6 +518,22 @@ public class PublicShopCatalogService {
             return null;
         }
         return raw;
+    }
+
+    private String normalizeLanguage(String language) {
+        String normalized = trimToNull(language);
+        if (normalized == null) {
+            return "it";
+        }
+        normalized = normalized.toLowerCase(Locale.ROOT);
+        int separatorIndex = normalized.indexOf('-');
+        if (separatorIndex > 0) {
+            normalized = normalized.substring(0, separatorIndex);
+        }
+        return switch (normalized) {
+            case "en", "de", "fr" -> normalized;
+            default -> "it";
+        };
     }
 
     private ShopProductModelDto toProductModelDto(ProductEntry entry) {

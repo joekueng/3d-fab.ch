@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import {
+  RESPONSE_INIT,
   afterNextRender,
   Component,
   DestroyRef,
@@ -60,6 +61,7 @@ export class ShopPageComponent {
   private readonly router = inject(Router);
   private readonly translate = inject(TranslateService);
   private readonly seoService = inject(SeoService);
+  private readonly responseInit = inject(RESPONSE_INIT, { optional: true });
   readonly languageService = inject(LanguageService);
   private readonly shopRouteService = inject(ShopRouteService);
   readonly shopService = inject(ShopService);
@@ -118,7 +120,10 @@ export class ShopPageComponent {
               this.error.set(
                 error?.status === 404 ? 'SHOP.NOT_FOUND' : 'SHOP.LOAD_ERROR',
               );
-              this.applyDefaultSeo();
+              if (error?.status === 404) {
+                this.setResponseStatus(404);
+              }
+              this.applyErrorSeo();
               return of(null);
             }),
             finalize(() => this.loading.set(false)),
@@ -353,6 +358,28 @@ export class ShopPageComponent {
       ogTitle: title,
       ogDescription: description,
     });
+  }
+
+  private applyErrorSeo(): void {
+    const title = `${this.translate.instant('SHOP.TITLE')} | 3D fab`;
+    const description = this.translate.instant('SHOP.CATALOG_META_DESCRIPTION');
+
+    this.seoService.applyResolvedSeo({
+      title,
+      description,
+      robots: 'noindex, nofollow',
+      ogTitle: title,
+      ogDescription: description,
+      canonicalPath: null,
+      alternates: null,
+      xDefault: null,
+    });
+  }
+
+  private setResponseStatus(status: number): void {
+    if (this.responseInit) {
+      this.responseInit.status = status;
+    }
   }
 
   private restoreCatalogScrollIfNeeded(): void {

@@ -17,7 +17,13 @@ export interface PageSeoOverride {
   ogDescriptionKey?: string | null;
 }
 
-type SupportedLang = 'it' | 'en' | 'de' | 'fr';
+export interface ResolvedPageSeo extends PageSeoOverride {
+  canonicalPath: string | null;
+  alternates?: SeoMap | null;
+  xDefault?: string | null;
+}
+
+export type SupportedLang = 'it' | 'en' | 'de' | 'fr';
 type SeoMap = Partial<Record<SupportedLang, string>>;
 type SeoTextDataKey =
   | 'seoTitle'
@@ -85,23 +91,10 @@ export class SeoService {
   applyPageSeo(override: PageSeoOverride): void {
     const cleanPath = this.getCleanPath(this.router.url);
     const lang = this.resolveLangFromPath(cleanPath);
-    const title =
-      this.resolveOverrideSeoText(override.title, override.titleKey) ??
-      this.defaultTitle(lang);
-    const description =
-      this.resolveOverrideSeoText(
-        override.description,
-        override.descriptionKey,
-      ) ?? this.defaultDescription(lang);
-    const robots = this.asString(override.robots) ?? 'index, follow';
-    const ogTitle =
-      this.resolveOverrideSeoText(override.ogTitle, override.ogTitleKey) ??
-      title;
-    const ogDescription =
-      this.resolveOverrideSeoText(
-        override.ogDescription,
-        override.ogDescriptionKey,
-      ) ?? description;
+    const { title, description, robots, ogTitle, ogDescription } =
+      this.resolvePageSeoOverride(override, lang);
+    const canonicalPath = this.buildLocalizedPath(cleanPath, lang);
+    const alternates = this.buildAlternatePaths(canonicalPath);
 
     this.applySeoValues(
       title,
@@ -110,6 +103,35 @@ export class SeoService {
       ogTitle,
       ogDescription,
       cleanPath,
+      canonicalPath,
+      alternates,
+      alternates.it ?? canonicalPath,
+      lang,
+    );
+  }
+
+  applyResolvedSeo(override: ResolvedPageSeo): void {
+    const cleanPath = this.getCleanPath(this.router.url);
+    const lang = this.resolveLangFromPath(cleanPath);
+    const { title, description, robots, ogTitle, ogDescription } =
+      this.resolvePageSeoOverride(override, lang);
+    const canonicalPath = this.normalizeSeoPath(override.canonicalPath);
+    const alternates = this.normalizeAlternatePaths(override.alternates);
+    const xDefault =
+      this.normalizeSeoPath(override.xDefault) ??
+      alternates?.it ??
+      canonicalPath;
+
+    this.applySeoValues(
+      title,
+      description,
+      robots,
+      ogTitle,
+      ogDescription,
+      cleanPath,
+      canonicalPath,
+      alternates,
+      xDefault,
       lang,
     );
   }
@@ -128,6 +150,8 @@ export class SeoService {
     const ogTitle = this.resolveSeoText(mergedData, 'ogTitle', lang) ?? title;
     const ogDescription =
       this.resolveSeoText(mergedData, 'ogDescription', lang) ?? description;
+    const canonicalPath = this.buildLocalizedPath(cleanPath, lang);
+    const alternates = this.buildAlternatePaths(canonicalPath);
 
     this.applySeoValues(
       title,
@@ -136,6 +160,9 @@ export class SeoService {
       ogTitle,
       ogDescription,
       cleanPath,
+      canonicalPath,
+      alternates,
+      alternates.it ?? canonicalPath,
       lang,
     );
   }
@@ -147,6 +174,9 @@ export class SeoService {
     ogTitle: string,
     ogDescription: string,
     cleanPath: string,
+    canonicalPath: string | null,
+    alternates: SeoMap | null,
+    xDefaultPath: string | null,
     lang: SupportedLang,
   ): void {
     this.titleService.setTitle(title);
@@ -166,12 +196,13 @@ export class SeoService {
       content: ogDescription,
     });
 
-    const canonicalPath = this.buildLocalizedPath(cleanPath, lang);
-    const canonical = `${this.document.location.origin}${canonicalPath}`;
-    this.metaService.updateTag({ property: 'og:url', content: canonical });
-    this.updateCanonicalTag(canonical);
+    const ogUrl = this.toAbsoluteUrl(canonicalPath ?? cleanPath);
+    this.metaService.updateTag({ property: 'og:url', content: ogUrl });
+    this.updateCanonicalTag(
+      canonicalPath ? this.toAbsoluteUrl(canonicalPath) : null,
+    );
     this.updateOpenGraphLocales(lang);
-    this.updateLangAndAlternates(canonicalPath, lang);
+    this.updateLangAndAlternates(alternates, xDefaultPath, lang);
   }
 
   private getMergedRouteData(
@@ -195,6 +226,43 @@ export class SeoService {
     key: string | null | undefined,
   ): string | undefined {
     return this.asString(value) ?? this.resolveTranslation(key);
+  }
+
+  private resolvePageSeoOverride(
+    override: PageSeoOverride,
+    lang: SupportedLang,
+  ): {
+    title: string;
+    description: string;
+    robots: string;
+    ogTitle: string;
+    ogDescription: string;
+  } {
+    const title =
+      this.resolveOverrideSeoText(override.title, override.titleKey) ??
+      this.defaultTitle(lang);
+    const description =
+      this.resolveOverrideSeoText(
+        override.description,
+        override.descriptionKey,
+      ) ?? this.defaultDescription(lang);
+    const robots = this.asString(override.robots) ?? 'index, follow';
+    const ogTitle =
+      this.resolveOverrideSeoText(override.ogTitle, override.ogTitleKey) ??
+      title;
+    const ogDescription =
+      this.resolveOverrideSeoText(
+        override.ogDescription,
+        override.ogDescriptionKey,
+      ) ?? description;
+
+    return {
+      title,
+      description,
+      robots,
+      ogTitle,
+      ogDescription,
+    };
   }
 
   private resolveSeoText(
@@ -281,10 +349,54 @@ export class SeoService {
     return `/${[lang, ...segments].join('/')}`;
   }
 
-  private updateCanonicalTag(url: string): void {
+  private buildAlternatePaths(canonicalPath: string): SeoMap {
+    const suffixSegments = canonicalPath.split('/').filter(Boolean).slice(1);
+    const suffix =
+      suffixSegments.length > 0 ? `/${suffixSegments.join('/')}` : '';
+
+    return this.supportedLangs.reduce<SeoMap>((accumulator, alt) => {
+      accumulator[alt] = `/${alt}${suffix}`;
+      return accumulator;
+    }, {});
+  }
+
+  private normalizeAlternatePaths(paths: SeoMap | null | undefined): SeoMap | null {
+    if (!paths) {
+      return null;
+    }
+
+    const normalized = this.supportedLangs.reduce<SeoMap>((accumulator, lang) => {
+      const path = this.normalizeSeoPath(paths[lang]);
+      if (path) {
+        accumulator[lang] = path;
+      }
+      return accumulator;
+    }, {});
+
+    return Object.keys(normalized).length > 0 ? normalized : null;
+  }
+
+  private normalizeSeoPath(path: string | null | undefined): string | null {
+    const rawPath = String(path ?? '').trim();
+    if (!rawPath) {
+      return null;
+    }
+    const normalized = this.getCleanPath(rawPath);
+    return normalized.startsWith('/') ? normalized : null;
+  }
+
+  private toAbsoluteUrl(path: string): string {
+    return `${this.document.location.origin}${path}`;
+  }
+
+  private updateCanonicalTag(url: string | null): void {
     let link = this.document.head.querySelector(
       'link[rel="canonical"]',
     ) as HTMLLinkElement | null;
+    if (!url) {
+      link?.remove();
+      return;
+    }
     if (!link) {
       link = this.document.createElement('link');
       link.setAttribute('rel', 'canonical');
@@ -314,29 +426,30 @@ export class SeoService {
   }
 
   private updateLangAndAlternates(
-    localizedPath: string,
+    alternates: SeoMap | null,
+    xDefaultPath: string | null,
     lang: SupportedLang,
   ): void {
-    const suffixSegments = localizedPath.split('/').filter(Boolean).slice(1);
-    const suffix =
-      suffixSegments.length > 0 ? `/${suffixSegments.join('/')}` : '';
-
     this.document.documentElement.lang = this.seoLocaleByLang[lang];
 
     this.document.head
       .querySelectorAll('link[rel="alternate"][data-seo-managed="true"]')
       .forEach((node) => node.remove());
 
-    for (const alt of this.supportedLangs) {
-      this.appendAlternateLink(
-        this.seoLocaleByLang[alt],
-        `${this.document.location.origin}/${alt}${suffix}`,
-      );
+    if (!alternates) {
+      return;
     }
-    this.appendAlternateLink(
-      'x-default',
-      `${this.document.location.origin}/it${suffix}`,
-    );
+
+    for (const alt of this.supportedLangs) {
+      const path = alternates[alt];
+      if (!path) {
+        continue;
+      }
+      this.appendAlternateLink(this.seoLocaleByLang[alt], this.toAbsoluteUrl(path));
+    }
+    if (xDefaultPath) {
+      this.appendAlternateLink('x-default', this.toAbsoluteUrl(xDefaultPath));
+    }
   }
 
   private appendAlternateLink(hreflang: string, href: string): void {

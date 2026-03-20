@@ -1,5 +1,10 @@
 import { Subject } from 'rxjs';
-import { DefaultUrlSerializer, Router, UrlTree } from '@angular/router';
+import {
+  DefaultUrlSerializer,
+  NavigationEnd,
+  Router,
+  UrlTree,
+} from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { LanguageService } from './language.service';
 import { RequestLike } from '../../../core/request-origin';
@@ -61,7 +66,14 @@ describe('LanguageService', () => {
       parseUrl: (url: string) => serializer.parse(url),
       createUrlTree,
       serializeUrl: (tree: UrlTree) => serializer.serialize(tree),
-      navigateByUrl: jasmine.createSpy('navigateByUrl'),
+      navigateByUrl: jasmine
+        .createSpy('navigateByUrl')
+        .and.callFake((tree: UrlTree) => {
+          const nextUrl = serializer.serialize(tree);
+          router.url = nextUrl;
+          events$.next(new NavigationEnd(1, nextUrl, nextUrl));
+          return Promise.resolve(true);
+        }),
     };
 
     return router as unknown as Router;
@@ -91,7 +103,28 @@ describe('LanguageService', () => {
     expect(navOptions.replaceUrl).toBeTrue();
   });
 
-  it('uses the preferred browser language when the URL has no language prefix', () => {
+  it('uses the preferred browser language on the root URL', () => {
+    const translate = createTranslateMock();
+    const router = createRouterMock('/');
+    const navigateSpy = router.navigateByUrl as unknown as jasmine.Spy;
+    const request: RequestLike = {
+      headers: {
+        'accept-language': 'de-CH,de;q=0.9,en;q=0.8,it;q=0.7',
+      },
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const service = new LanguageService(translate, router, request);
+
+    expect(translate.use).toHaveBeenCalledWith('de');
+    expect(navigateSpy).toHaveBeenCalledTimes(1);
+
+    const firstCall = navigateSpy.calls.mostRecent();
+    const tree = firstCall.args[0] as UrlTree;
+    expect(router.serializeUrl(tree)).toBe('/de');
+  });
+
+  it('uses the default language for non-root URLs without a language prefix', () => {
     const translate = createTranslateMock();
     const router = createRouterMock('/calculator?session=abc');
     const navigateSpy = router.navigateByUrl as unknown as jasmine.Spy;
@@ -109,7 +142,7 @@ describe('LanguageService', () => {
 
     const firstCall = navigateSpy.calls.mostRecent();
     const tree = firstCall.args[0] as UrlTree;
-    expect(router.serializeUrl(tree)).toBe('/de/calculator?session=abc');
+    expect(router.serializeUrl(tree)).toBe('/it/calculator?session=abc');
   });
 
   it('switches language while preserving path and query params', () => {
@@ -141,5 +174,24 @@ describe('LanguageService', () => {
     expect(service.localizedPath('/it/contact?topic=seo#form')).toBe(
       '/de/contact?topic=seo#form',
     );
+  });
+
+  it('switches product pages using the resolved localized route overrides', () => {
+    const translate = createTranslateMock();
+    const router = createRouterMock('/it/shop/p/12345678-supporto-cavo');
+    const navigateSpy = router.navigateByUrl as unknown as jasmine.Spy;
+    const service = new LanguageService(translate, router);
+
+    service.setLocalizedRouteOverrides({
+      it: '/it/shop/p/12345678-supporto-cavo',
+      de: '/de/shop/p/12345678-kabelhalter',
+    });
+    navigateSpy.calls.reset();
+
+    service.switchLang('de');
+
+    const call = navigateSpy.calls.mostRecent();
+    const tree = call.args[0] as UrlTree;
+    expect(router.serializeUrl(tree)).toBe('/de/shop/p/12345678-kabelhalter');
   });
 });
