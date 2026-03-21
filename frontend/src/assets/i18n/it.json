@@ -96,7 +96,7 @@
     "BTN_CONTACT": "Parla con noi",
     "SEC_CALC_TITLE": "Prezzo corretto in pochi secondi",
     "SEC_CALC_SUBTITLE": "Nessuna registrazione necessaria. La stima è effettuata tramite vero slicing.",
-    "SEC_CALC_LIST_1": "Formati supportati: STL, 3MF, STEP",
+    "SEC_CALC_LIST_1": "Formati supportati: STL, 3MF",
     "CARD_CALC_EYEBROW": "Calcolo automatico",
     "CARD_CALC_TITLE": "Prezzo e tempi in un click",
     "CARD_CALC_TAG": "Senza registrazione",
@@ -139,14 +139,14 @@
   },
   "CALC": {
     "TITLE": "Calcola Preventivo 3D",
-    "SUBTITLE": "Carica il tuo file 3D (STL, 3MF, STEP), imposta la qualità, il colore e calcola immediatamente prezzo e tempi.",
+    "SUBTITLE": "Carica il tuo file 3D (STL, 3MF), imposta la qualità, il colore e calcola immediatamente prezzo e tempi.",
     "CTA_START": "Inizia Ora",
     "BUSINESS": "Aziende",
     "PRIVATE": "Privati",
     "MODE_EASY": "Base",
     "MODE_ADVANCED": "Avanzata",
     "UPLOAD_LABEL": "Trascina il tuo file 3D qui",
-    "UPLOAD_SUB": "Supportiamo STL, 3MF, STEP fino a 50MB",
+    "UPLOAD_SUB": "Supportiamo STL, 3MF fino a 50MB",
     "MATERIAL": "Materiale",
     "QUALITY": "Qualità",
     "PRINT_SPEED": "Velocità di Stampa",
@@ -185,11 +185,12 @@
     "NOTES_PLACEHOLDER": "Istruzioni specifiche...",
     "SETUP_NOTE": "* Include {{cost}} come costo di setup",
     "SHIPPING_NOTE": "* Costi di spedizione esclusi, calcolati al passaggio successivo",
-    "STEP_WARNING": "La visualizzazione 3D non è compatibile con i file step e 3mf",
+    "STEP_WARNING": "La visualizzazione 3D è disponibile solo per i file STL",
     "REMOVE_FILE": "Rimuovi file",
     "FALLBACK_MATERIAL": "PLA (fallback)",
     "FALLBACK_QUALITY_STANDARD": "Standard",
     "ERR_FILE_TOO_LARGE": "Alcuni file superano il limite di 200MB e non sono stati aggiunti.",
+    "ERR_INVALID_FILE_TYPE": "Puoi caricare solo file .stl o .3mf.",
     "ERROR_ZERO_PRICE": "Qualcosa è andato storto nel calcolo. Prova un altro formato o contattaci direttamente con Richiedi Consulenza.",
     "ZERO_RESULT_TITLE": "Risultato non valido",
     "ZERO_RESULT_HELP": "Il calcolo ha restituito valori non validi (0). Prova con un altro formato file oppure contattaci direttamente con Richiedi Consulenza."
@@ -680,7 +681,7 @@
   },
   "DROPZONE": {
     "DEFAULT_LABEL": "Trascina i file qui o clicca per caricare",
-    "DEFAULT_SUBTEXT": "Supporta .STL, .3MF, .STEP"
+    "DEFAULT_SUBTEXT": "Supporta .STL, .3MF"
   },
   "COLOR": {
     "AVAILABLE_COLORS": "Colori disponibili",

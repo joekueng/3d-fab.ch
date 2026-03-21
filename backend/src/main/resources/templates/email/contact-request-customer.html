@@ -25,6 +25,21 @@
             color: #222222;
         }
 
+        .header {
+            text-align: center;
+            border-bottom: 1px solid #eeeeee;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .brand-logo {
+            display: block;
+            width: 220px;
+            max-width: 220px;
+            height: auto;
+            margin: 0 auto 16px;
+        }
+
         h2 {
             margin-top: 18px;
             color: #222222;
@@ -69,7 +84,10 @@
 </head>
 <body>
 <div class="container">
-    <h1 th:text="${headlineText}">We received your contact request</h1>
+    <div class="header">
+        <img class="brand-logo" th:src="${logoUrl}" src="https://example.com/assets/images/brand-logo-yellow.svg" alt="3D-Fab">
+        <h1 th:text="${headlineText}">We received your contact request</h1>
+    </div>
     <p th:text="${greetingText}">Hi customer,</p>
     <p th:text="${introText}">Thank you for contacting us. Our team will reply as soon as possible.</p>
     <p>

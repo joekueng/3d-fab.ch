@@ -74,4 +74,16 @@ export class ProductCardComponent {
       shopReturnUrl: this.router.url,
     };
   }
+
+  rememberCatalogScroll(): void {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const nextState = {
+      ...(history.state ?? {}),
+      shopRestoreScrollY: Math.max(0, Math.round(window.scrollY)),
+    };
+    history.replaceState(nextState, '');
+  }
 }

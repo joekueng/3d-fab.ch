@@ -12,7 +12,7 @@ import { TranslateModule } from '@ngx-translate/core';
 export class AppDropzoneComponent {
   label = input<string>('DROPZONE.DEFAULT_LABEL');
   subtext = input<string>('DROPZONE.DEFAULT_SUBTEXT');
-  accept = input<string>('.stl,.3mf,.step,.stp');
+  accept = input<string>('.stl,.3mf');
   multiple = input<boolean>(true);
 
   filesDropped = output<File[]>();

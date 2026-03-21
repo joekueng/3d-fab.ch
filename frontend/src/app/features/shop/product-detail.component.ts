@@ -1,5 +1,7 @@
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { CommonModule, Location, isPlatformBrowser } from '@angular/common';
 import {
+  RESPONSE_INIT,
+  afterNextRender,
   Component,
   DestroyRef,
   Injector,
@@ -58,12 +60,14 @@ export class ProductDetailComponent {
     /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
+  private readonly location = inject(Location);
   private readonly router = inject(Router);
   private readonly translate = inject(TranslateService);
   private readonly seoService = inject(SeoService);
   private readonly languageService = inject(LanguageService);
   private readonly shopRouteService = inject(ShopRouteService);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly responseInit = inject(RESPONSE_INIT, { optional: true });
   readonly shopService = inject(ShopService);
 
   readonly categorySlug = input<string | undefined>();
@@ -193,16 +197,12 @@ export class ProductDetailComponent {
   );
 
   constructor() {
-    if (!this.shopService.cartLoaded()) {
-      this.shopService
-        .loadCart()
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          error: () => {
-            this.shopService.cart.set(null);
-          },
-        });
-    }
+    afterNextRender(() => {
+      this.scheduleCartWarmup();
+    });
+    this.destroyRef.onDestroy(() => {
+      this.languageService.clearLocalizedRouteOverrides();
+    });
 
     combineLatest([
       toObservable(this.productSlug, { injector: this.injector }),
@@ -221,13 +221,17 @@ export class ProductDetailComponent {
         }),
         switchMap(([productSlug]) => {
           if (!productSlug) {
+            this.languageService.clearLocalizedRouteOverrides();
             this.error.set('SHOP.NOT_FOUND');
+            this.setResponseStatus(404);
+            this.applyFallbackSeo();
             this.loading.set(false);
             return of(null);
           }
 
           return this.shopService.getProductByPublicPath(productSlug).pipe(
             catchError((error) => {
+              this.languageService.clearLocalizedRouteOverrides();
               this.product.set(null);
               this.selectedVariantId.set(null);
               this.setSelectedImageAssetId(null);
@@ -235,6 +239,9 @@ export class ProductDetailComponent {
               this.error.set(
                 error?.status === 404 ? 'SHOP.NOT_FOUND' : 'SHOP.LOAD_ERROR',
               );
+              if (error?.status === 404) {
+                this.setResponseStatus(404);
+              }
               this.applyFallbackSeo();
               return of(null);
             }),
@@ -263,6 +270,7 @@ export class ProductDetailComponent {
             null,
         );
         this.quantity.set(1);
+        this.languageService.setLocalizedRouteOverrides(product.localizedPaths);
         this.syncPublicUrl(product);
         this.applySeo(product);
         this.modelFile.set(null);
@@ -280,6 +288,45 @@ export class ProductDetailComponent {
       this.shopService.resolveMediaUrl(image.card) ??
       this.shopService.resolveMediaUrl(image.thumb)
     );
+  }
+
+  private scheduleCartWarmup(): void {
+    if (typeof window === 'undefined') {
+      this.loadCartIfNeeded();
+      return;
+    }
+
+    const warmup = () => this.loadCartIfNeeded();
+    const idleCallback = (
+      window as Window & {
+        requestIdleCallback?: (
+          callback: IdleRequestCallback,
+          options?: IdleRequestOptions,
+        ) => number;
+      }
+    ).requestIdleCallback;
+
+    if (typeof idleCallback === 'function') {
+      idleCallback(() => warmup(), { timeout: 1500 });
+      return;
+    }
+
+    window.setTimeout(warmup, 300);
+  }
+
+  private loadCartIfNeeded(): void {
+    if (this.shopService.cartLoaded() || this.shopService.cartLoading()) {
+      return;
+    }
+
+    this.shopService
+      .loadCart()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        error: () => {
+          this.shopService.cart.set(null);
+        },
+      });
   }
 
   selectImage(mediaAssetId: string): void {
@@ -456,6 +503,11 @@ export class ProductDetailComponent {
         : null;
 
     if (returnUrl && this.shopRouteService.isCatalogUrl(returnUrl)) {
+      if (this.isBrowser && window.history.length > 1) {
+        this.location.back();
+        return;
+      }
+
       void this.router.navigateByUrl(returnUrl);
       return;
     }
@@ -515,25 +567,34 @@ export class ProductDetailComponent {
       this.translate.instant('SHOP.CATALOG_META_DESCRIPTION');
     const robots =
       product.indexable === false ? 'noindex, nofollow' : 'index, follow';
+    const lang = this.languageService.selectedLang();
+    const canonicalPath =
+      product.localizedPaths?.[lang] ?? product.localizedPaths?.it ?? null;
 
-    this.seoService.applyPageSeo({
+    this.seoService.applyResolvedSeo({
       title,
       description,
       robots,
       ogTitle: product.ogTitle || title,
       ogDescription: product.ogDescription || description,
+      canonicalPath,
+      alternates: product.localizedPaths,
+      xDefault: product.localizedPaths?.it ?? canonicalPath,
     });
   }
 
   private applyFallbackSeo(): void {
     const title = `${this.translate.instant('SHOP.TITLE')} | 3D fab`;
     const description = this.translate.instant('SHOP.CATALOG_META_DESCRIPTION');
-    this.seoService.applyPageSeo({
+    this.seoService.applyResolvedSeo({
       title,
       description,
-      robots: 'index, follow',
+      robots: 'noindex, nofollow',
       ogTitle: title,
       ogDescription: description,
+      canonicalPath: null,
+      alternates: null,
+      xDefault: null,
     });
   }
 
@@ -708,21 +769,23 @@ export class ProductDetailComponent {
       return;
     }
 
-    const currentProductSlug = this.productSlug()?.trim().toLowerCase() ?? '';
-    const targetProductSlug = this.shopRouteService.productPathSegment(product);
-    if (currentProductSlug === targetProductSlug) {
+    const currentTree = this.router.parseUrl(this.router.url);
+    const lang = this.languageService.selectedLang();
+    const targetPath =
+      product.localizedPaths?.[lang] ??
+      `/${lang}/shop/p/${this.shopRouteService.productPathSegment(product)}`;
+    const normalizedTargetPath = targetPath.startsWith('/')
+      ? targetPath
+      : `/${targetPath}`;
+    const currentPath = this.router
+      .serializeUrl(currentTree)
+      .split(/[?#]/, 1)[0];
+    if (currentPath === normalizedTargetPath) {
       return;
     }
 
-    const currentTree = this.router.parseUrl(this.router.url);
     const targetTree = this.router.createUrlTree(
-      [
-        '/',
-        this.languageService.selectedLang(),
-        'shop',
-        'p',
-        targetProductSlug,
-      ],
+      ['/', ...normalizedTargetPath.split('/').filter(Boolean)],
       {
         queryParams: currentTree.queryParams,
         fragment: currentTree.fragment ?? undefined,
@@ -740,5 +803,11 @@ export class ProductDetailComponent {
       replaceUrl: true,
       state: history.state,
     });
+  }
+
+  private setResponseStatus(status: number): void {
+    if (this.responseInit) {
+      this.responseInit.status = status;
+    }
   }
 }

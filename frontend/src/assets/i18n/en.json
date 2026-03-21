@@ -107,14 +107,14 @@
   },
   "CALC": {
     "TITLE": "3D Print Calculator",
-    "SUBTITLE": "Upload your 3D file (STL, 3MF, STEP...) and get an instant estimate of costs and print time.",
+    "SUBTITLE": "Upload your 3D file (STL, 3MF) and get an instant estimate of costs and print time.",
     "CTA_START": "Start Now",
     "BUSINESS": "Business",
     "PRIVATE": "Private",
     "MODE_EASY": "Quick",
     "MODE_ADVANCED": "Advanced",
     "UPLOAD_LABEL": "Drag your 3D file here",
-    "UPLOAD_SUB": "Supports STL, 3MF, STEP up to 50MB",
+    "UPLOAD_SUB": "Supports STL, 3MF up to 50MB",
     "MATERIAL": "Material",
     "QUALITY": "Quality",
     "QUANTITY": "Quantity",
@@ -141,11 +141,12 @@
     "BENEFITS_2": "Selected materials and quality control",
     "BENEFITS_3": "CAD consultation if file needs modifications",
     "ERR_FILE_REQUIRED": "File is required.",
-    "STEP_WARNING": "3D preview is not available for STEP files, but the calculator works perfectly. You can proceed with the quotation.",
+    "STEP_WARNING": "3D preview is available only for STL files.",
     "REMOVE_FILE": "Remove file",
     "FALLBACK_MATERIAL": "PLA (fallback)",
     "FALLBACK_QUALITY_STANDARD": "Standard",
     "ERR_FILE_TOO_LARGE": "Some files exceed the 200MB limit and were not added.",
+    "ERR_INVALID_FILE_TYPE": "You can upload only .stl or .3mf files.",
     "PRINT_SPEED": "Print speed",
     "COLOR": "Color",
     "ANALYZING_TITLE": "Analysis in progress...",
@@ -624,7 +625,7 @@
     "BTN_CONTACT": "Talk to us",
     "SEC_CALC_TITLE": "Accurate pricing in a few seconds",
     "SEC_CALC_SUBTITLE": "No registration required. The estimate is calculated through real slicing.",
-    "SEC_CALC_LIST_1": "Supported formats: STL, 3MF, STEP",
+    "SEC_CALC_LIST_1": "Supported formats: STL, 3MF",
     "CARD_CALC_EYEBROW": "Automatic calculation",
     "CARD_CALC_TITLE": "Price and lead time in one click",
     "CARD_CALC_TAG": "No registration",
@@ -674,7 +675,7 @@
   },
   "DROPZONE": {
     "DEFAULT_LABEL": "Drop files here or click to upload",
-    "DEFAULT_SUBTEXT": "Supports .stl, .3mf, .step"
+    "DEFAULT_SUBTEXT": "Supports .stl, .3mf"
   },
   "COLOR": {
     "AVAILABLE_COLORS": "Available colors",

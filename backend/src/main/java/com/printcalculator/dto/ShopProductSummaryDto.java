@@ -1,6 +1,7 @@
 package com.printcalculator.dto;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.UUID;
 
 public record ShopProductSummaryDto(
@@ -15,6 +16,8 @@ public record ShopProductSummaryDto(
         BigDecimal priceToChf,
         ShopProductVariantOptionDto defaultVariant,
         PublicMediaUsageDto primaryImage,
-        ShopProductModelDto model3d
+        ShopProductModelDto model3d,
+        String publicPath,
+        Map<String, String> localizedPaths
 ) {
 }

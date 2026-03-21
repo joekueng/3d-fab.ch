@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
 import {
+  RESPONSE_INIT,
+  afterNextRender,
   Component,
   DestroyRef,
   Injector,
@@ -59,6 +61,7 @@ export class ShopPageComponent {
   private readonly router = inject(Router);
   private readonly translate = inject(TranslateService);
   private readonly seoService = inject(SeoService);
+  private readonly responseInit = inject(RESPONSE_INIT, { optional: true });
   readonly languageService = inject(LanguageService);
   private readonly shopRouteService = inject(ShopRouteService);
   readonly shopService = inject(ShopService);
@@ -89,16 +92,9 @@ export class ShopPageComponent {
   readonly cartHasItems = computed(() => this.cartItems().length > 0);
 
   constructor() {
-    if (!this.shopService.cartLoaded()) {
-      this.shopService
-        .loadCart()
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          error: () => {
-            this.shopService.cart.set(null);
-          },
-        });
-    }
+    afterNextRender(() => {
+      this.scheduleCartWarmup();
+    });
 
     combineLatest([
       toObservable(this.categorySlug, { injector: this.injector }),
@@ -124,7 +120,10 @@ export class ShopPageComponent {
               this.error.set(
                 error?.status === 404 ? 'SHOP.NOT_FOUND' : 'SHOP.LOAD_ERROR',
               );
-              this.applyDefaultSeo();
+              if (error?.status === 404) {
+                this.setResponseStatus(404);
+              }
+              this.applyErrorSeo();
               return of(null);
             }),
             finalize(() => this.loading.set(false)),
@@ -147,6 +146,46 @@ export class ShopPageComponent {
         this.selectedCategory.set(result.catalog.category ?? null);
         this.products.set(result.catalog.products);
         this.applySeo(result.catalog.category ?? null);
+        this.restoreCatalogScrollIfNeeded();
+      });
+  }
+
+  private scheduleCartWarmup(): void {
+    if (typeof window === 'undefined') {
+      this.loadCartIfNeeded();
+      return;
+    }
+
+    const warmup = () => this.loadCartIfNeeded();
+    const idleCallback = (
+      window as Window & {
+        requestIdleCallback?: (
+          callback: IdleRequestCallback,
+          options?: IdleRequestOptions,
+        ) => number;
+      }
+    ).requestIdleCallback;
+
+    if (typeof idleCallback === 'function') {
+      idleCallback(() => warmup(), { timeout: 1500 });
+      return;
+    }
+
+    window.setTimeout(warmup, 300);
+  }
+
+  private loadCartIfNeeded(): void {
+    if (this.shopService.cartLoaded() || this.shopService.cartLoading()) {
+      return;
+    }
+
+    this.shopService
+      .loadCart()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        error: () => {
+          this.shopService.cart.set(null);
+        },
       });
   }
 
@@ -318,6 +357,48 @@ export class ShopPageComponent {
       robots: 'index, follow',
       ogTitle: title,
       ogDescription: description,
+    });
+  }
+
+  private applyErrorSeo(): void {
+    const title = `${this.translate.instant('SHOP.TITLE')} | 3D fab`;
+    const description = this.translate.instant('SHOP.CATALOG_META_DESCRIPTION');
+
+    this.seoService.applyResolvedSeo({
+      title,
+      description,
+      robots: 'noindex, nofollow',
+      ogTitle: title,
+      ogDescription: description,
+      canonicalPath: null,
+      alternates: null,
+      xDefault: null,
+    });
+  }
+
+  private setResponseStatus(status: number): void {
+    if (this.responseInit) {
+      this.responseInit.status = status;
+    }
+  }
+
+  private restoreCatalogScrollIfNeeded(): void {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const scrollY = Number(history.state?.shopRestoreScrollY);
+    if (!Number.isFinite(scrollY) || scrollY < 0) {
+      return;
+    }
+
+    const { shopRestoreScrollY: _ignored, ...nextState } = history.state ?? {};
+    const restore = () => window.scrollTo({ left: 0, top: scrollY });
+
+    history.replaceState(nextState, '');
+    window.requestAnimationFrame(() => {
+      restore();
+      window.setTimeout(restore, 60);
     });
   }
 }

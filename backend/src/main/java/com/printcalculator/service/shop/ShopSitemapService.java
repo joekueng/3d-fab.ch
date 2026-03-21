@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.text.Normalizer;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -19,7 +18,6 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -31,6 +29,12 @@ public class ShopSitemapService {
     private static final List<String> SUPPORTED_LANGUAGES = ShopProduct.SUPPORTED_LANGUAGES;
     private static final String DEFAULT_LANGUAGE = "it";
     private static final DateTimeFormatter LASTMOD_FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+    private static final Map<String, String> HREFLANG_BY_LANGUAGE = Map.of(
+            "it", "it-CH",
+            "en", "en-CH",
+            "de", "de-CH",
+            "fr", "fr-CH"
+    );
 
     private final ShopCategoryRepository shopCategoryRepository;
     private final ShopProductRepository shopProductRepository;
@@ -130,7 +134,7 @@ public class ShopSitemapService {
 
             Map<String, String> hrefByLanguage = new LinkedHashMap<>();
             for (String language : SUPPORTED_LANGUAGES) {
-                String publicSegment = localizedProductPathSegment(product, language);
+                String publicSegment = ShopPublicPathSupport.buildProductPathSegment(product, language);
                 hrefByLanguage.put(language, frontendBaseUrl + "/" + language + "/shop/p/" + pathEncodeSegment(publicSegment));
             }
 
@@ -169,7 +173,7 @@ public class ShopSitemapService {
                 continue;
             }
             xml.append("    <xhtml:link rel=\"alternate\" hreflang=\"")
-                    .append(language)
+                    .append(HREFLANG_BY_LANGUAGE.getOrDefault(language, language))
                     .append("\" href=\"")
                     .append(xmlEscape(href))
                     .append("\" />\n");
@@ -184,48 +188,6 @@ public class ShopSitemapService {
         }
 
         xml.append("  </url>\n");
-    }
-
-    private String localizedProductPathSegment(ShopProduct product, String language) {
-        String localizedName = product.getNameForLanguage(language);
-        String idPrefix = productIdPrefix(product.getId());
-        String tail = firstNonBlank(slugify(localizedName), slugify(product.getSlug()), "product");
-        return idPrefix.isBlank() ? tail : idPrefix + "-" + tail;
-    }
-
-    private String productIdPrefix(UUID productId) {
-        if (productId == null) {
-            return "";
-        }
-        String raw = productId.toString().trim().toLowerCase(Locale.ROOT);
-        int dashIndex = raw.indexOf('-');
-        if (dashIndex > 0) {
-            return raw.substring(0, dashIndex);
-        }
-        return raw.length() >= 8 ? raw.substring(0, 8) : raw;
-    }
-
-    static String slugify(String rawValue) {
-        String safeValue = rawValue == null ? "" : rawValue;
-        String normalized = Normalizer.normalize(safeValue, Normalizer.Form.NFD)
-                .replaceAll("\\p{M}+", "")
-                .toLowerCase(Locale.ROOT)
-                .replaceAll("[^a-z0-9]+", "-")
-                .replaceAll("^-+|-+$", "")
-                .replaceAll("-{2,}", "-");
-        return normalized;
-    }
-
-    private String firstNonBlank(String... values) {
-        if (values == null) {
-            return null;
-        }
-        for (String value : values) {
-            if (value != null && !value.isBlank()) {
-                return value;
-            }
-        }
-        return null;
     }
 
     private String pathEncodeSegment(String rawSegment) {
