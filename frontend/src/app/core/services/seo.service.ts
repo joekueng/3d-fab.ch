@@ -105,7 +105,7 @@ export class SeoService {
       cleanPath,
       canonicalPath,
       alternates,
-      alternates.it ?? canonicalPath,
+      this.buildXDefaultPath(canonicalPath, alternates),
       lang,
     );
   }
@@ -119,8 +119,7 @@ export class SeoService {
     const alternates = this.normalizeAlternatePaths(override.alternates);
     const xDefault =
       this.normalizeSeoPath(override.xDefault) ??
-      alternates?.it ??
-      canonicalPath;
+      this.buildXDefaultPath(canonicalPath, alternates);
 
     this.applySeoValues(
       title,
@@ -162,7 +161,7 @@ export class SeoService {
       cleanPath,
       canonicalPath,
       alternates,
-      alternates.it ?? canonicalPath,
+      this.buildXDefaultPath(canonicalPath, alternates),
       lang,
     );
   }
@@ -358,6 +357,25 @@ export class SeoService {
       accumulator[alt] = `/${alt}${suffix}`;
       return accumulator;
     }, {});
+  }
+
+  private buildXDefaultPath(
+    canonicalPath: string | null,
+    alternates: SeoMap | null,
+  ): string | null {
+    if (canonicalPath && this.isLocalizedHomePath(canonicalPath)) {
+      return '/';
+    }
+
+    return alternates?.it ?? canonicalPath;
+  }
+
+  private isLocalizedHomePath(path: string): boolean {
+    const segments = path.split('/').filter(Boolean);
+    return (
+      segments.length === 1 &&
+      this.supportedLangSet.has(segments[0] as SupportedLang)
+    );
   }
 
   private normalizeAlternatePaths(
