@@ -13,7 +13,7 @@ export function resolvePublicRedirectTarget(pathname: string): string | null {
     normalizedPath === '/' ? '/' : normalizedPath.replace(/\/+$/, '');
   const segments = splitSegments(trimmedPath);
   if (segments.length === 0) {
-    return `/${DEFAULT_LANG}`;
+    return null;
   }
 
   const firstSegment = segments[0].toLowerCase();

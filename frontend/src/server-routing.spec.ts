@@ -1,8 +1,8 @@
 import { resolvePublicRedirectTarget } from './server-routing';
 
 describe('server routing redirects', () => {
-  it('redirects the root path to the default language', () => {
-    expect(resolvePublicRedirectTarget('/')).toBe('/it');
+  it('does not handle the root path because it is resolved separately', () => {
+    expect(resolvePublicRedirectTarget('/')).toBeNull();
   });
 
   it('redirects unprefixed public pages to the default language', () => {
