@@ -117,6 +117,34 @@ describe('SeoService', () => {
     expect(ogLocaleCall?.[0].content).toBe('it_CH');
   });
 
+  it('uses the locale-adaptive root as x-default for home pages', () => {
+    createService({
+      url: '/de',
+      data: {
+        seoTitleKey: 'SEO.ROUTES.HOME.TITLE',
+        seoDescriptionKey: 'SEO.ROUTES.HOME.DESCRIPTION',
+      },
+      translations: {
+        'SEO.ROUTES.HOME.TITLE': '3D-Druck in Zürich | 3D fab',
+        'SEO.ROUTES.HOME.DESCRIPTION': '3D-Druckservice in Zürich',
+      },
+    });
+
+    const alternates = Array.from(
+      document.head.querySelectorAll(
+        'link[rel="alternate"][data-seo-managed="true"]',
+      ),
+    ).map((node) => ({
+      hreflang: node.getAttribute('hreflang'),
+      href: node.getAttribute('href'),
+    }));
+
+    expect(alternates).toContain({
+      hreflang: 'x-default',
+      href: `${document.location.origin}/`,
+    });
+  });
+
   it('resolves translated route metadata for the active language', () => {
     const { meta, title } = createService({
       url: '/en/about',

@@ -42,15 +42,22 @@ app.get(
 );
 
 app.get('/', (req, res) => {
-  const acceptLanguage = req.get('accept-language');
-  const preferredLanguages = parseAcceptLanguage(acceptLanguage);
+  const userAgent = req.get('user-agent');
+  const preferredLanguages = parseAcceptLanguage(req.get('accept-language'));
   const lang = resolveInitialLanguage({
     preferredLanguages,
   });
+  const stableRedirect = shouldUseStableRootRedirect(
+    userAgent,
+    preferredLanguages,
+  );
 
-  res.setHeader('Vary', 'Accept-Language');
+  res.setHeader('Vary', 'Accept-Language, User-Agent');
   res.setHeader('Cache-Control', 'private, no-store');
-  res.redirect(302, `/${lang}${querySuffix(req.originalUrl)}`);
+  res.redirect(
+    stableRedirect ? 308 : 302,
+    `/${stableRedirect ? 'it' : lang}${querySuffix(req.originalUrl)}`,
+  );
 });
 
 app.get('**', (req, res, next) => {
@@ -98,4 +105,22 @@ export default app;
 function querySuffix(url: string): string {
   const queryIndex = String(url ?? '').indexOf('?');
   return queryIndex >= 0 ? String(url).slice(queryIndex) : '';
+}
+
+function shouldUseStableRootRedirect(
+  userAgent: string | undefined,
+  preferredLanguages: readonly string[],
+): boolean {
+  return preferredLanguages.length === 0 || isLikelyCrawler(userAgent);
+}
+
+function isLikelyCrawler(userAgent: string | undefined): boolean {
+  const normalized = String(userAgent ?? '').toLowerCase();
+  if (!normalized) {
+    return false;
+  }
+
+  return /(bot|crawler|spider|slurp|bingpreview|google-read-aloud)/.test(
+    normalized,
+  );
 }

@@ -1,7 +1,7 @@
 import { resolvePublicRedirectTarget } from './server-routing';
 
 describe('server routing redirects', () => {
-  it('does not force a fixed-language redirect for the root path', () => {
+  it('does not handle the root path because it is resolved separately', () => {
     expect(resolvePublicRedirectTarget('/')).toBeNull();
   });
 
