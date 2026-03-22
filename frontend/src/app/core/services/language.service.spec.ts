@@ -7,7 +7,6 @@ import {
 } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { LanguageService } from './language.service';
-import { RequestLike } from '../../../core/request-origin';
 
 describe('LanguageService', () => {
   function createTranslateMock() {
@@ -83,14 +82,9 @@ describe('LanguageService', () => {
     const translate = createTranslateMock();
     const router = createRouterMock('/calculator?session=abc');
     const navigateSpy = router.navigateByUrl as unknown as jasmine.Spy;
-    const request: RequestLike = {
-      headers: {
-        'accept-language': 'it-CH,it;q=0.9,en;q=0.8',
-      },
-    };
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const service = new LanguageService(translate, router, request);
+    const service = new LanguageService(translate, router);
 
     expect(translate.use).toHaveBeenCalledWith('it');
     expect((translate as any).setFallbackLang).toHaveBeenCalledWith('it');
@@ -103,41 +97,31 @@ describe('LanguageService', () => {
     expect(navOptions.replaceUrl).toBeTrue();
   });
 
-  it('uses the preferred browser language on the root URL', () => {
+  it('uses the default language on the root URL', () => {
     const translate = createTranslateMock();
     const router = createRouterMock('/');
     const navigateSpy = router.navigateByUrl as unknown as jasmine.Spy;
-    const request: RequestLike = {
-      headers: {
-        'accept-language': 'de-CH,de;q=0.9,en;q=0.8,it;q=0.7',
-      },
-    };
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const service = new LanguageService(translate, router, request);
+    const service = new LanguageService(translate, router);
 
-    expect(translate.use).toHaveBeenCalledWith('de');
+    expect(translate.use).toHaveBeenCalledWith('it');
     expect(navigateSpy).toHaveBeenCalledTimes(1);
 
     const firstCall = navigateSpy.calls.mostRecent();
     const tree = firstCall.args[0] as UrlTree;
-    expect(router.serializeUrl(tree)).toBe('/de');
+    expect(router.serializeUrl(tree)).toBe('/it');
   });
 
   it('uses the default language for non-root URLs without a language prefix', () => {
     const translate = createTranslateMock();
     const router = createRouterMock('/calculator?session=abc');
     const navigateSpy = router.navigateByUrl as unknown as jasmine.Spy;
-    const request: RequestLike = {
-      headers: {
-        'accept-language': 'de-CH,de;q=0.9,en;q=0.8,it;q=0.7',
-      },
-    };
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const service = new LanguageService(translate, router, request);
+    const service = new LanguageService(translate, router);
 
-    expect(translate.use).toHaveBeenCalledWith('de');
+    expect(translate.use).toHaveBeenCalledWith('it');
     expect(navigateSpy).toHaveBeenCalledTimes(1);
 
     const firstCall = navigateSpy.calls.mostRecent();

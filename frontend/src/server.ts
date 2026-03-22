@@ -5,10 +5,6 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import bootstrap from './main.server';
 import { resolveRequestOrigin } from './core/request-origin';
-import {
-  parseAcceptLanguage,
-  resolveInitialLanguage,
-} from './app/core/i18n/language-resolution';
 import { resolvePublicRedirectTarget } from './server-routing';
 
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
@@ -40,18 +36,6 @@ app.get(
     index: false,
   }),
 );
-
-app.get('/', (req, res) => {
-  const acceptLanguage = req.get('accept-language');
-  const preferredLanguages = parseAcceptLanguage(acceptLanguage);
-  const lang = resolveInitialLanguage({
-    preferredLanguages,
-  });
-
-  res.setHeader('Vary', 'Accept-Language');
-  res.setHeader('Cache-Control', 'private, no-store');
-  res.redirect(302, `/${lang}${querySuffix(req.originalUrl)}`);
-});
 
 app.get('**', (req, res, next) => {
   const targetPath = resolvePublicRedirectTarget(req.path);

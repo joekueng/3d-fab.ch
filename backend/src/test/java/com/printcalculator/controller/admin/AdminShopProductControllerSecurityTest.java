@@ -1,9 +1,12 @@
 package com.printcalculator.controller.admin;
 
+import com.printcalculator.config.AllowedOriginService;
+import com.printcalculator.config.CorsConfig;
 import com.printcalculator.config.SecurityConfig;
 import com.printcalculator.dto.AdminTranslateShopProductResponse;
 import com.printcalculator.service.admin.AdminShopProductControllerService;
 import com.printcalculator.service.admin.AdminShopProductTranslationService;
+import com.printcalculator.security.AdminCsrfProtectionFilter;
 import com.printcalculator.security.AdminLoginThrottleService;
 import com.printcalculator.security.AdminSessionAuthenticationFilter;
 import com.printcalculator.security.AdminSessionService;
@@ -36,7 +39,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = {AdminAuthController.class, AdminShopProductController.class})
 @Import({
+        CorsConfig.class,
+        AllowedOriginService.class,
         SecurityConfig.class,
+        AdminCsrfProtectionFilter.class,
         AdminSessionAuthenticationFilter.class,
         AdminSessionService.class,
         AdminLoginThrottleService.class,
@@ -48,6 +54,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "admin.session.ttl-minutes=60"
 })
 class AdminShopProductControllerSecurityTest {
+
+    private static final String ALLOWED_ORIGIN = "http://localhost:4200";
 
     @Autowired
     private MockMvc mockMvc;
@@ -61,9 +69,20 @@ class AdminShopProductControllerSecurityTest {
     @Test
     void translateProduct_withoutAdminCookie_shouldReturn401() throws Exception {
         mockMvc.perform(post("/api/admin/shop/products/translate")
+                        .header(HttpHeaders.ORIGIN, ALLOWED_ORIGIN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"sourceLanguage\":\"it\",\"names\":{\"it\":\"Supporto cavo\"}}"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void translateProduct_withAdminCookieAndMissingOrigin_shouldReturn403() throws Exception {
+        mockMvc.perform(post("/api/admin/shop/products/translate")
+                        .cookie(loginAndExtractCookie())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"sourceLanguage\":\"it\",\"names\":{\"it\":\"Supporto cavo\"}}"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("CSRF_INVALID"));
     }
 
     @Test
@@ -82,6 +101,7 @@ class AdminShopProductControllerSecurityTest {
 
         mockMvc.perform(post("/api/admin/shop/products/translate")
                         .cookie(loginAndExtractCookie())
+                        .header(HttpHeaders.ORIGIN, ALLOWED_ORIGIN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -107,6 +127,7 @@ class AdminShopProductControllerSecurityTest {
                             req.setRemoteAddr("10.0.0.44");
                             return req;
                         })
+                        .header(HttpHeaders.ORIGIN, ALLOWED_ORIGIN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"password\":\"test-admin-password\"}"))
                 .andExpect(status().isOk())

@@ -1,7 +1,10 @@
 package com.printcalculator.controller;
 
+import com.printcalculator.config.AllowedOriginService;
+import com.printcalculator.config.CorsConfig;
 import com.printcalculator.config.SecurityConfig;
 import com.printcalculator.controller.admin.AdminAuthController;
+import com.printcalculator.security.AdminCsrfProtectionFilter;
 import com.printcalculator.security.AdminLoginThrottleService;
 import com.printcalculator.security.AdminSessionAuthenticationFilter;
 import com.printcalculator.security.AdminSessionService;
@@ -19,13 +22,18 @@ import org.springframework.test.web.servlet.MvcResult;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = AdminAuthController.class)
 @Import({
+        CorsConfig.class,
+        AllowedOriginService.class,
         SecurityConfig.class,
+        AdminCsrfProtectionFilter.class,
         AdminSessionAuthenticationFilter.class,
         AdminSessionService.class,
         AdminLoginThrottleService.class
@@ -37,6 +45,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 class AdminAuthSecurityTest {
 
+    private static final String ALLOWED_ORIGIN = "http://localhost:4200";
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -47,6 +57,7 @@ class AdminAuthSecurityTest {
                             req.setRemoteAddr("10.0.0.1");
                             return req;
                         })
+                        .header(HttpHeaders.ORIGIN, ALLOWED_ORIGIN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"password\":\"test-admin-password\"}"))
                 .andExpect(status().isOk())
@@ -69,6 +80,7 @@ class AdminAuthSecurityTest {
                             req.setRemoteAddr("10.0.0.2");
                             return req;
                         })
+                        .header(HttpHeaders.ORIGIN, ALLOWED_ORIGIN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"password\":\"wrong-password\"}"))
                 .andExpect(status().isUnauthorized())
@@ -83,6 +95,7 @@ class AdminAuthSecurityTest {
                             req.setRemoteAddr("10.0.0.3");
                             return req;
                         })
+                        .header(HttpHeaders.ORIGIN, ALLOWED_ORIGIN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"password\":\"wrong-password\"}"))
                 .andExpect(status().isUnauthorized())
@@ -93,10 +106,34 @@ class AdminAuthSecurityTest {
                             req.setRemoteAddr("10.0.0.3");
                             return req;
                         })
+                        .header(HttpHeaders.ORIGIN, ALLOWED_ORIGIN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"password\":\"wrong-password\"}"))
                 .andExpect(status().isTooManyRequests())
                 .andExpect(jsonPath("$.authenticated").value(false));
+    }
+
+    @Test
+    void loginWithoutTrustedOrigin_ShouldReturnForbidden() throws Exception {
+        mockMvc.perform(post("/api/admin/auth/login")
+                        .with(req -> {
+                            req.setRemoteAddr("10.0.0.30");
+                            return req;
+                        })
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"password\":\"test-admin-password\"}"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("CSRF_INVALID"));
+    }
+
+    @Test
+    void preflightFromAllowedOrigin_ShouldExposeCorsHeaders() throws Exception {
+        mockMvc.perform(options("/api/admin/auth/login")
+                        .header(HttpHeaders.ORIGIN, ALLOWED_ORIGIN)
+                        .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, ALLOWED_ORIGIN))
+                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true"));
     }
 
     @Test
@@ -112,6 +149,7 @@ class AdminAuthSecurityTest {
                             req.setRemoteAddr("10.0.0.4");
                             return req;
                         })
+                        .header(HttpHeaders.ORIGIN, ALLOWED_ORIGIN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"password\":\"test-admin-password\"}"))
                 .andExpect(status().isOk())

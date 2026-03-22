@@ -399,6 +399,8 @@ public class PublicShopCatalogService {
                                                       Map<String, String> variantColorHexByMaterialAndColor,
                                                       String language) {
         List<PublicMediaUsageDto> images = productMediaBySlug.getOrDefault(productMediaUsageKey(entry.product()), List.of());
+        String normalizedLanguage = normalizeLanguage(language);
+        String publicPathSegment = ShopPublicPathSupport.buildProductPathSegment(entry.product(), normalizedLanguage);
         Map<String, String> localizedPaths = ShopPublicPathSupport.buildLocalizedProductPaths(entry.product());
         return new ShopProductSummaryDto(
                 entry.product().getId(),
@@ -417,7 +419,7 @@ public class PublicShopCatalogService {
                 toVariantDto(entry.defaultVariant(), entry.defaultVariant(), variantColorHexByMaterialAndColor, language),
                 selectPrimaryMedia(images),
                 toProductModelDto(entry),
-                localizedPaths.getOrDefault(normalizeLanguage(language), localizedPaths.get("it")),
+                publicPathSegment,
                 localizedPaths
         );
     }
@@ -429,9 +431,10 @@ public class PublicShopCatalogService {
         List<PublicMediaUsageDto> images = productMediaBySlug.getOrDefault(productMediaUsageKey(entry.product()), List.of());
         String localizedSeoTitle = entry.product().getSeoTitleForLanguage(language);
         String localizedSeoDescription = entry.product().getSeoDescriptionForLanguage(language);
+        String normalizedLanguage = normalizeLanguage(language);
+        String publicPathSegment = ShopPublicPathSupport.buildProductPathSegment(entry.product(), normalizedLanguage);
         Map<String, String> localizedPaths = ShopPublicPathSupport.buildLocalizedProductPaths(entry.product());
-        return new ShopProductDetailDto(
-                entry.product().getId(),
+        return new ShopProductDetailDto(entry.product().getId(),
                 entry.product().getSlug(),
                 entry.product().getNameForLanguage(language),
                 entry.product().getExcerptForLanguage(language),
@@ -458,7 +461,7 @@ public class PublicShopCatalogService {
                 selectPrimaryMedia(images),
                 images,
                 toProductModelDto(entry),
-                localizedPaths.getOrDefault(normalizeLanguage(language), localizedPaths.get("it")),
+                publicPathSegment,
                 localizedPaths
         );
     }

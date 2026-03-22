@@ -1,5 +1,6 @@
 package com.printcalculator.config;
 
+import com.printcalculator.security.AdminCsrfProtectionFilter;
 import com.printcalculator.security.AdminSessionAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +19,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
+            AdminCsrfProtectionFilter adminCsrfProtectionFilter,
             AdminSessionAuthenticationFilter adminSessionAuthenticationFilter
     ) throws Exception {
         http
@@ -40,7 +42,8 @@ public class SecurityConfig {
                     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                     response.getWriter().write("{\"error\":\"UNAUTHORIZED\"}");
                 }))
-                .addFilterBefore(adminSessionAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(adminCsrfProtectionFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(adminSessionAuthenticationFilter, AdminCsrfProtectionFilter.class);
 
         return http.build();
     }

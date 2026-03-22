@@ -29,8 +29,6 @@ import { serverOriginInterceptor } from './core/interceptors/server-origin.inter
 import { catchError, firstValueFrom, of } from 'rxjs';
 import { StaticTranslateLoader } from './core/i18n/static-translate.loader';
 import {
-  getNavigatorLanguagePreferences,
-  parseAcceptLanguage,
   resolveInitialLanguage,
   SUPPORTED_LANGS,
 } from './core/i18n/language-resolution';
@@ -72,11 +70,6 @@ export const appConfig: ApplicationConfig = {
         (typeof request?.url === 'string' && request.url) || router.url || '/';
       const lang = resolveInitialLanguage({
         url: requestedUrl,
-        preferredLanguages: request
-          ? parseAcceptLanguage(readRequestHeader(request, 'accept-language'))
-          : getNavigatorLanguagePreferences(
-              typeof navigator === 'undefined' ? null : navigator,
-            ),
       });
 
       return firstValueFrom(
@@ -95,21 +88,3 @@ export const appConfig: ApplicationConfig = {
     provideClientHydration(withEventReplay()),
   ],
 };
-
-function readRequestHeader(
-  request: {
-    headers?: Record<string, string | string[] | undefined>;
-  } | null,
-  headerName: string,
-): string | null {
-  if (!request?.headers) {
-    return null;
-  }
-
-  const headerValue = request.headers[headerName.toLowerCase()];
-  if (Array.isArray(headerValue)) {
-    return headerValue[0] ?? null;
-  }
-
-  return typeof headerValue === 'string' ? headerValue : null;
-}
