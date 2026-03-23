@@ -8,24 +8,24 @@ import {
   PLATFORM_ID,
   computed,
   inject,
-  input,
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
-  EMPTY,
   catchError,
   combineLatest,
+  distinctUntilChanged,
   finalize,
+  map,
   of,
   switchMap,
   tap,
 } from 'rxjs';
 import { SeoService } from '../../core/services/seo.service';
 import { LanguageService } from '../../core/services/language.service';
-import { findColorHex, getColorHex } from '../../core/constants/colors.const';
+import { findColorHex } from '../../core/constants/colors.const';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
 import { StlViewerComponent } from '../../shared/components/stl-viewer/stl-viewer.component';
@@ -69,6 +69,7 @@ export class ProductDetailComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
   private readonly location = inject(Location);
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly translate = inject(TranslateService);
   private readonly seoService = inject(SeoService);
@@ -78,8 +79,9 @@ export class ProductDetailComponent {
   private readonly responseInit = inject(RESPONSE_INIT, { optional: true });
   readonly shopService = inject(ShopService);
 
-  readonly categorySlug = input<string | undefined>();
-  readonly productSlug = input<string | undefined>();
+  readonly routeCategorySlug = signal<string | null>(
+    this.readRouteParam('categorySlug'),
+  );
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -213,10 +215,20 @@ export class ProductDetailComponent {
     });
 
     combineLatest([
-      toObservable(this.productSlug, { injector: this.injector }),
+      this.route.paramMap.pipe(
+        map((params) => ({
+          categorySlug: this.normalizeRouteParam(params.get('categorySlug')),
+          productSlug: this.normalizeRouteParam(params.get('productSlug')),
+        })),
+        distinctUntilChanged(
+          (previous, current) =>
+            previous.categorySlug === current.categorySlug &&
+            previous.productSlug === current.productSlug,
+        ),
+      ),
       toObservable(this.languageService.currentLang, {
         injector: this.injector,
-      }),
+      }).pipe(distinctUntilChanged()),
     ])
       .pipe(
         tap(() => {
@@ -227,13 +239,9 @@ export class ProductDetailComponent {
           this.colorPopupOpen.set(false);
           this.modelModalOpen.set(false);
         }),
-        switchMap(([productSlug]) => {
-          if (productSlug === undefined) {
-            return EMPTY;
-          }
-
-          const normalizedProductSlug = productSlug.trim();
-          if (!normalizedProductSlug) {
+        switchMap(([routeParams]) => {
+          this.routeCategorySlug.set(routeParams.categorySlug);
+          if (!routeParams.productSlug) {
             this.languageService.clearLocalizedRouteOverrides();
             this.error.set('SHOP.NOT_FOUND');
             this.setResponseStatus(404);
@@ -243,7 +251,7 @@ export class ProductDetailComponent {
           }
 
           return this.shopService
-            .getProductByPublicPath(normalizedProductSlug)
+            .getProductByPublicPath(routeParams.productSlug)
             .pipe(
               catchError((error) => {
                 this.languageService.clearLocalizedRouteOverrides();
@@ -508,7 +516,8 @@ export class ProductDetailComponent {
   }
 
   productLinkRoot(): string[] {
-    const categorySlug = this.product()?.category.slug || this.categorySlug();
+    const categorySlug =
+      this.product()?.category.slug || this.routeCategorySlug();
     return this.shopRouteService.shopRootCommands(categorySlug);
   }
 
@@ -833,5 +842,16 @@ export class ProductDetailComponent {
     if (this.responseInit) {
       this.responseInit.status = status;
     }
+  }
+
+  private readRouteParam(name: string): string | null {
+    return this.normalizeRouteParam(this.route.snapshot.paramMap.get(name));
+  }
+
+  private normalizeRouteParam(
+    value: string | null | undefined,
+  ): string | null {
+    const normalized = String(value ?? '').trim();
+    return normalized || null;
   }
 }

@@ -8,17 +8,18 @@ import {
   Injector,
   computed,
   inject,
-  input,
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
   catchError,
   combineLatest,
+  distinctUntilChanged,
   finalize,
   forkJoin,
+  map,
   of,
   switchMap,
   tap,
@@ -59,6 +60,7 @@ import { ShopRouteService } from './services/shop-route.service';
 export class ShopPageComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly translate = inject(TranslateService);
   private readonly seoService = inject(SeoService);
@@ -68,7 +70,9 @@ export class ShopPageComponent {
   private readonly shopRouteService = inject(ShopRouteService);
   readonly shopService = inject(ShopService);
 
-  readonly categorySlug = input<string | undefined>();
+  readonly routeCategorySlug = signal<string | null>(
+    this.readRouteParam('categorySlug'),
+  );
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -84,7 +88,7 @@ export class ShopPageComponent {
   readonly cartLoading = this.shopService.cartLoading;
   readonly cartItemCount = this.shopService.cartItemCount;
   readonly currentCategorySlug = computed(
-    () => this.selectedCategory()?.slug ?? this.categorySlug() ?? null,
+    () => this.selectedCategory()?.slug ?? this.routeCategorySlug() ?? null,
   );
   readonly cartItems = computed(() =>
     (this.cart()?.items ?? []).filter(
@@ -99,18 +103,22 @@ export class ShopPageComponent {
     });
 
     combineLatest([
-      toObservable(this.categorySlug, { injector: this.injector }),
+      this.route.paramMap.pipe(
+        map((params) => this.normalizeRouteParam(params.get('categorySlug'))),
+        distinctUntilChanged(),
+      ),
       toObservable(this.languageService.currentLang, {
         injector: this.injector,
-      }),
+      }).pipe(distinctUntilChanged()),
     ])
       .pipe(
         tap(() => {
           this.loading.set(true);
           this.error.set(null);
         }),
-        switchMap(([categorySlug]) =>
-          forkJoin({
+        switchMap(([categorySlug]) => {
+          this.routeCategorySlug.set(categorySlug);
+          return forkJoin({
             categories: this.shopService.getCategories(),
             catalog: this.shopService.getProductCatalog(categorySlug ?? null),
           }).pipe(
@@ -128,8 +136,8 @@ export class ShopPageComponent {
               return of(null);
             }),
             finalize(() => this.loading.set(false)),
-          ),
-        ),
+          );
+        }),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((result) => {
@@ -141,7 +149,7 @@ export class ShopPageComponent {
         this.categoryNodes.set(
           this.shopService.flattenCategoryTree(
             result.categories,
-            result.catalog.category?.slug ?? this.categorySlug() ?? null,
+            result.catalog.category?.slug ?? this.routeCategorySlug() ?? null,
           ),
         );
         this.selectedCategory.set(result.catalog.category ?? null);
@@ -409,5 +417,16 @@ export class ShopPageComponent {
       restore();
       window.setTimeout(restore, 60);
     });
+  }
+
+  private readRouteParam(name: string): string | null {
+    return this.normalizeRouteParam(this.route.snapshot.paramMap.get(name));
+  }
+
+  private normalizeRouteParam(
+    value: string | null | undefined,
+  ): string | null {
+    const normalized = String(value ?? '').trim();
+    return normalized || null;
   }
 }

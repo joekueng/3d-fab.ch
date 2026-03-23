@@ -1,6 +1,6 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { map, Observable, switchMap, tap, throwError } from 'rxjs';
+import { map, Observable, tap, throwError } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import {
   PublicMediaUsageDto,
@@ -290,21 +290,11 @@ export class ShopService {
       }));
     }
 
-    return this.getProductCatalog().pipe(
-      map((catalog) =>
-        catalog.products.find(
-          (product) =>
-            this.normalizePublicPath(product.publicPath) === normalizedPath,
-        ),
-      ),
-      switchMap((product) => {
-        if (!product) {
-          return throwError(() => ({
-            status: 404,
-          }));
-        }
-        return this.getProduct(product.slug);
-      }),
+    return this.http.get<ShopProductDetail>(
+      `${this.apiUrl}/products/by-path/${encodeURIComponent(normalizedPath)}`,
+      {
+        params: this.buildLangParams(),
+      },
     );
   }
 

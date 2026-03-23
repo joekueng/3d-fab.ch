@@ -126,24 +126,40 @@ public class PublicShopCatalogService {
     }
 
     public ShopProductDetailDto getProduct(String slug, String language) {
-        CategoryContext categoryContext = loadCategoryContext(language);
-        PublicProductContext productContext = loadPublicProductContext(categoryContext, language);
+        String normalizedLanguage = normalizeLanguage(language);
+        CategoryContext categoryContext = loadCategoryContext(normalizedLanguage);
+        PublicProductContext productContext = loadPublicProductContext(categoryContext, normalizedLanguage);
+        ProductEntry entry = requirePublicProductEntry(
+                productContext.entriesBySlug().get(slug),
+                categoryContext
+        );
+        return toProductDetailDto(
+                entry,
+                productContext.productMediaBySlug(),
+                productContext.variantColorHexByMaterialAndColor(),
+                normalizedLanguage
+        );
+    }
 
-        ProductEntry entry = productContext.entriesBySlug().get(slug);
-        if (entry == null) {
+    public ShopProductDetailDto getProductByPublicPath(String publicPathSegment, String language) {
+        String normalizedLanguage = normalizeLanguage(language);
+        String normalizedPublicPath = normalizePublicPathSegment(publicPathSegment);
+        if (normalizedPublicPath == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found");
         }
 
-        ShopCategory category = entry.product().getCategory();
-        if (category == null || !categoryContext.categoriesById().containsKey(category.getId())) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found");
-        }
+        CategoryContext categoryContext = loadCategoryContext(normalizedLanguage);
+        PublicProductContext productContext = loadPublicProductContext(categoryContext, normalizedLanguage);
+        ProductEntry entry = requirePublicProductEntry(
+                productContext.entriesByPublicPath().get(normalizedPublicPath),
+                categoryContext
+        );
 
         return toProductDetailDto(
                 entry,
                 productContext.productMediaBySlug(),
                 productContext.variantColorHexByMaterialAndColor(),
-                language
+                normalizedLanguage
         );
     }
 
@@ -197,6 +213,7 @@ public class PublicShopCatalogService {
     }
 
     private PublicProductContext loadPublicProductContext(CategoryContext categoryContext, String language) {
+        String normalizedLanguage = normalizeLanguage(language);
         List<ProductEntry> entries = loadPublicProducts(categoryContext.categoriesById().keySet());
         Map<String, List<PublicMediaUsageDto>> productMediaBySlug = publicMediaQueryService.getUsageMediaMap(
                 SHOP_PRODUCT_MEDIA_USAGE_TYPE,
@@ -207,8 +224,21 @@ public class PublicShopCatalogService {
 
         Map<String, ProductEntry> entriesBySlug = entries.stream()
                 .collect(Collectors.toMap(entry -> entry.product().getSlug(), entry -> entry, (left, right) -> left, LinkedHashMap::new));
+        Map<String, ProductEntry> entriesByPublicPath = entries.stream()
+                .collect(Collectors.toMap(
+                        entry -> normalizePublicPathSegment(ShopPublicPathSupport.buildProductPathSegment(entry.product(), normalizedLanguage)),
+                        entry -> entry,
+                        (left, right) -> left,
+                        LinkedHashMap::new
+                ));
 
-        return new PublicProductContext(entries, entriesBySlug, productMediaBySlug, variantColorHexByMaterialAndColor);
+        return new PublicProductContext(
+                entries,
+                entriesBySlug,
+                entriesByPublicPath,
+                productMediaBySlug,
+                variantColorHexByMaterialAndColor
+        );
     }
 
     private Map<String, String> buildFilamentVariantColorHexMap() {
@@ -515,6 +545,27 @@ public class PublicShopCatalogService {
         return raw.toLowerCase(Locale.ROOT);
     }
 
+    private ProductEntry requirePublicProductEntry(ProductEntry entry, CategoryContext categoryContext) {
+        if (entry == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found");
+        }
+
+        ShopCategory category = entry.product().getCategory();
+        if (category == null || !categoryContext.categoriesById().containsKey(category.getId())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found");
+        }
+
+        return entry;
+    }
+
+    private String normalizePublicPathSegment(String publicPathSegment) {
+        String normalized = trimToNull(publicPathSegment);
+        if (normalized == null) {
+            return null;
+        }
+        return normalized.toLowerCase(Locale.ROOT);
+    }
+
     private String trimToNull(String value) {
         String raw = String.valueOf(value == null ? "" : value).trim();
         if (raw.isEmpty()) {
@@ -610,6 +661,7 @@ public class PublicShopCatalogService {
     private record PublicProductContext(
             List<ProductEntry> entries,
             Map<String, ProductEntry> entriesBySlug,
+            Map<String, ProductEntry> entriesByPublicPath,
             Map<String, List<PublicMediaUsageDto>> productMediaBySlug,
             Map<String, String> variantColorHexByMaterialAndColor
     ) {
