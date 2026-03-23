@@ -237,9 +237,7 @@ export class ProductDetailComponent {
               this.setSelectedImageAssetId(null);
               this.modelFile.set(null);
               const isNotFound = error?.status === 404;
-              this.error.set(
-                isNotFound ? 'SHOP.NOT_FOUND' : 'SHOP.LOAD_ERROR',
-              );
+              this.error.set(isNotFound ? 'SHOP.NOT_FOUND' : 'SHOP.LOAD_ERROR');
               this.setResponseStatus(isNotFound ? 404 : 503);
               if (this.shouldApplyFallbackSeo(error)) {
                 this.applyFallbackSeo();

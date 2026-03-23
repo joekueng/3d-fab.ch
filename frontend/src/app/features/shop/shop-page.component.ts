@@ -120,9 +120,7 @@ export class ShopPageComponent {
               this.categoryNodes.set([]);
               this.selectedCategory.set(null);
               this.products.set([]);
-              this.error.set(
-                isNotFound ? 'SHOP.NOT_FOUND' : 'SHOP.LOAD_ERROR',
-              );
+              this.error.set(isNotFound ? 'SHOP.NOT_FOUND' : 'SHOP.LOAD_ERROR');
               this.setResponseStatus(isNotFound ? 404 : 503);
               if (this.shouldApplyErrorSeo(error)) {
                 this.applyErrorSeo();
