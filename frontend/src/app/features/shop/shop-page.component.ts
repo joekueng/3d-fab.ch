@@ -1,5 +1,6 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
+  PLATFORM_ID,
   RESPONSE_INIT,
   afterNextRender,
   Component,
@@ -61,6 +62,7 @@ export class ShopPageComponent {
   private readonly router = inject(Router);
   private readonly translate = inject(TranslateService);
   private readonly seoService = inject(SeoService);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly responseInit = inject(RESPONSE_INIT, { optional: true });
   readonly languageService = inject(LanguageService);
   private readonly shopRouteService = inject(ShopRouteService);
@@ -113,17 +115,16 @@ export class ShopPageComponent {
             catalog: this.shopService.getProductCatalog(categorySlug ?? null),
           }).pipe(
             catchError((error) => {
+              const isNotFound = error?.status === 404;
               this.categories.set([]);
               this.categoryNodes.set([]);
               this.selectedCategory.set(null);
               this.products.set([]);
-              this.error.set(
-                error?.status === 404 ? 'SHOP.NOT_FOUND' : 'SHOP.LOAD_ERROR',
-              );
-              if (error?.status === 404) {
-                this.setResponseStatus(404);
+              this.error.set(isNotFound ? 'SHOP.NOT_FOUND' : 'SHOP.LOAD_ERROR');
+              this.setResponseStatus(isNotFound ? 404 : 503);
+              if (this.shouldApplyErrorSeo(error)) {
+                this.applyErrorSeo();
               }
-              this.applyErrorSeo();
               return of(null);
             }),
             finalize(() => this.loading.set(false)),
@@ -374,6 +375,14 @@ export class ShopPageComponent {
       alternates: null,
       xDefault: null,
     });
+  }
+
+  private shouldApplyErrorSeo(error: { status?: number } | null): boolean {
+    if (error?.status === 404) {
+      return true;
+    }
+
+    return !this.isBrowser;
   }
 
   private setResponseStatus(status: number): void {
