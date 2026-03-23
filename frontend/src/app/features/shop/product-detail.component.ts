@@ -14,7 +14,15 @@ import {
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { catchError, combineLatest, finalize, of, switchMap, tap } from 'rxjs';
+import {
+  EMPTY,
+  catchError,
+  combineLatest,
+  finalize,
+  of,
+  switchMap,
+  tap,
+} from 'rxjs';
 import { SeoService } from '../../core/services/seo.service';
 import { LanguageService } from '../../core/services/language.service';
 import { findColorHex, getColorHex } from '../../core/constants/colors.const';
@@ -220,7 +228,12 @@ export class ProductDetailComponent {
           this.modelModalOpen.set(false);
         }),
         switchMap(([productSlug]) => {
-          if (!productSlug) {
+          if (productSlug === undefined) {
+            return EMPTY;
+          }
+
+          const normalizedProductSlug = productSlug.trim();
+          if (!normalizedProductSlug) {
             this.languageService.clearLocalizedRouteOverrides();
             this.error.set('SHOP.NOT_FOUND');
             this.setResponseStatus(404);
@@ -229,23 +242,27 @@ export class ProductDetailComponent {
             return of(null);
           }
 
-          return this.shopService.getProductByPublicPath(productSlug).pipe(
-            catchError((error) => {
-              this.languageService.clearLocalizedRouteOverrides();
-              this.product.set(null);
-              this.selectedVariantId.set(null);
-              this.setSelectedImageAssetId(null);
-              this.modelFile.set(null);
-              const isNotFound = error?.status === 404;
-              this.error.set(isNotFound ? 'SHOP.NOT_FOUND' : 'SHOP.LOAD_ERROR');
-              this.setResponseStatus(isNotFound ? 404 : 503);
-              if (this.shouldApplyFallbackSeo(error)) {
-                this.applyFallbackSeo();
-              }
-              return of(null);
-            }),
-            finalize(() => this.loading.set(false)),
-          );
+          return this.shopService
+            .getProductByPublicPath(normalizedProductSlug)
+            .pipe(
+              catchError((error) => {
+                this.languageService.clearLocalizedRouteOverrides();
+                this.product.set(null);
+                this.selectedVariantId.set(null);
+                this.setSelectedImageAssetId(null);
+                this.modelFile.set(null);
+                const isNotFound = error?.status === 404;
+                this.error.set(
+                  isNotFound ? 'SHOP.NOT_FOUND' : 'SHOP.LOAD_ERROR',
+                );
+                this.setResponseStatus(isNotFound ? 404 : 503);
+                if (this.shouldApplyFallbackSeo(error)) {
+                  this.applyFallbackSeo();
+                }
+                return of(null);
+              }),
+              finalize(() => this.loading.set(false)),
+            );
         }),
         takeUntilDestroyed(this.destroyRef),
       )
