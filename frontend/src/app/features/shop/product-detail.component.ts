@@ -245,22 +245,24 @@ export class ProductDetailComponent {
           return this.shopService
             .getProductByPublicPath(normalizedProductSlug)
             .pipe(
-            catchError((error) => {
-              this.languageService.clearLocalizedRouteOverrides();
-              this.product.set(null);
-              this.selectedVariantId.set(null);
-              this.setSelectedImageAssetId(null);
-              this.modelFile.set(null);
-              const isNotFound = error?.status === 404;
-              this.error.set(isNotFound ? 'SHOP.NOT_FOUND' : 'SHOP.LOAD_ERROR');
-              this.setResponseStatus(isNotFound ? 404 : 503);
-              if (this.shouldApplyFallbackSeo(error)) {
-                this.applyFallbackSeo();
-              }
-              return of(null);
-            }),
-            finalize(() => this.loading.set(false)),
-          );
+              catchError((error) => {
+                this.languageService.clearLocalizedRouteOverrides();
+                this.product.set(null);
+                this.selectedVariantId.set(null);
+                this.setSelectedImageAssetId(null);
+                this.modelFile.set(null);
+                const isNotFound = error?.status === 404;
+                this.error.set(
+                  isNotFound ? 'SHOP.NOT_FOUND' : 'SHOP.LOAD_ERROR',
+                );
+                this.setResponseStatus(isNotFound ? 404 : 503);
+                if (this.shouldApplyFallbackSeo(error)) {
+                  this.applyFallbackSeo();
+                }
+                return of(null);
+              }),
+              finalize(() => this.loading.set(false)),
+            );
         }),
         takeUntilDestroyed(this.destroyRef),
       )
