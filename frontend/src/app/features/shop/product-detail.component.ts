@@ -236,13 +236,14 @@ export class ProductDetailComponent {
               this.selectedVariantId.set(null);
               this.setSelectedImageAssetId(null);
               this.modelFile.set(null);
+              const isNotFound = error?.status === 404;
               this.error.set(
-                error?.status === 404 ? 'SHOP.NOT_FOUND' : 'SHOP.LOAD_ERROR',
+                isNotFound ? 'SHOP.NOT_FOUND' : 'SHOP.LOAD_ERROR',
               );
-              if (error?.status === 404) {
-                this.setResponseStatus(404);
+              this.setResponseStatus(isNotFound ? 404 : 503);
+              if (this.shouldApplyFallbackSeo(error)) {
+                this.applyFallbackSeo();
               }
-              this.applyFallbackSeo();
               return of(null);
             }),
             finalize(() => this.loading.set(false)),
@@ -596,6 +597,14 @@ export class ProductDetailComponent {
       alternates: null,
       xDefault: null,
     });
+  }
+
+  private shouldApplyFallbackSeo(error: { status?: number } | null): boolean {
+    if (error?.status === 404) {
+      return true;
+    }
+
+    return !this.isBrowser;
   }
 
   private materialLabelForVariant(
