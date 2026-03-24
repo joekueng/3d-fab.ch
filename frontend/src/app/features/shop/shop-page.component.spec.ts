@@ -60,24 +60,26 @@ describe('ShopPageComponent', () => {
       'TranslateService',
       ['instant'],
     );
-    translate.instant.and.callFake((key: string, params?: { count?: number }) => {
-      const translations: Record<string, string> = {
-        'SHOP.TITLE': 'Technische Lösungen',
-        'SHOP.SUBTITLE': 'Fertige Produkte, die praktische Probleme lösen',
-        'SHOP.CATALOG_TITLE': 'Alle Produkte',
-        'SHOP.CATALOG_LABEL': 'Katalog',
-        'SHOP.SELECTED_CATEGORY': 'Ausgewählte Kategorie',
-        'SHOP.CATALOG_META_DESCRIPTION':
-          'Entdecken Sie 3D-gedruckte Produkte und technisches Zubehör.',
-        'SEO.ROUTES.SHOP.CATEGORY_TITLE': 'Shop-Kategorie | 3D fab',
-        'SEO.ROUTES.SHOP.CATEGORY_DESCRIPTION':
-          'Entdecken Sie Produkte dieser Kategorie und technische Lösungen.',
-      };
-      if (key === 'SHOP.CATEGORY_META') {
-        return `${params?.count ?? 0} Produkte in dieser Kategorie verfügbar`;
-      }
-      return translations[key] ?? key;
-    });
+    translate.instant.and.callFake(
+      (key: string, params?: { count?: number }) => {
+        const translations: Record<string, string> = {
+          'SHOP.TITLE': 'Technische Lösungen',
+          'SHOP.SUBTITLE': 'Fertige Produkte, die praktische Probleme lösen',
+          'SHOP.CATALOG_TITLE': 'Alle Produkte',
+          'SHOP.CATALOG_LABEL': 'Katalog',
+          'SHOP.SELECTED_CATEGORY': 'Ausgewählte Kategorie',
+          'SHOP.CATALOG_META_DESCRIPTION':
+            'Entdecken Sie 3D-gedruckte Produkte und technisches Zubehör.',
+          'SEO.ROUTES.SHOP.CATEGORY_TITLE': 'Shop-Kategorie | 3D fab',
+          'SEO.ROUTES.SHOP.CATEGORY_DESCRIPTION':
+            'Entdecken Sie Produkte dieser Kategorie und technische Lösungen.',
+        };
+        if (key === 'SHOP.CATEGORY_META') {
+          return `${params?.count ?? 0} Produkte in dieser Kategorie verfügbar`;
+        }
+        return translations[key] ?? key;
+      },
+    );
 
     const currentLang = signal<'it' | 'en' | 'de' | 'fr'>('de');
     const languageService = {
@@ -100,11 +102,17 @@ describe('ShopPageComponent', () => {
       flattenCategoryTree: jasmine
         .createSpy('flattenCategoryTree')
         .and.returnValue([]),
-      quantityForProduct: jasmine.createSpy('quantityForProduct').and.returnValue(0),
+      quantityForProduct: jasmine
+        .createSpy('quantityForProduct')
+        .and.returnValue(0),
       loadCart: jasmine.createSpy('loadCart').and.returnValue(of(null)),
       clearCart: jasmine.createSpy('clearCart').and.returnValue(of(null)),
-      removeCartItem: jasmine.createSpy('removeCartItem').and.returnValue(of(null)),
-      updateCartItem: jasmine.createSpy('updateCartItem').and.returnValue(of(null)),
+      removeCartItem: jasmine
+        .createSpy('removeCartItem')
+        .and.returnValue(of(null)),
+      updateCartItem: jasmine
+        .createSpy('updateCartItem')
+        .and.returnValue(of(null)),
     };
 
     const router = {
@@ -164,7 +172,9 @@ describe('ShopPageComponent', () => {
   });
 
   it('keeps noindex for categories explicitly marked as non-indexable', () => {
-    const { component, seoService } = createComponent('/de/shop/compatible-with-garmin');
+    const { component, seoService } = createComponent(
+      '/de/shop/compatible-with-garmin',
+    );
 
     (component as any).applySeo(buildCategory({ indexable: false }));
 
@@ -180,7 +190,9 @@ describe('ShopPageComponent', () => {
       '/de/shop/compatible-with-garmin',
     );
 
-    expect((component as any).shouldUseSoftSeoFallback({ status: 500 })).toBeTrue();
+    expect(
+      (component as any).shouldUseSoftSeoFallback({ status: 500 }),
+    ).toBeTrue();
     (component as any).setResponseStatus(200);
     (component as any).applySoftFallbackSeo('compatible-with-garmin');
 
@@ -203,7 +215,9 @@ describe('ShopPageComponent', () => {
       '/de/shop/compatible-with-garmin',
     );
 
-    expect((component as any).shouldUseSoftSeoFallback({ status: 404 })).toBeFalse();
+    expect(
+      (component as any).shouldUseSoftSeoFallback({ status: 404 }),
+    ).toBeFalse();
     (component as any).setResponseStatus(404);
     (component as any).applyHardErrorSeo();
 

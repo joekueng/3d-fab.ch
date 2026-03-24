@@ -97,7 +97,9 @@ describe('ProductDetailComponent', () => {
     const languageService = {
       currentLang,
       selectedLang: () => currentLang(),
-      setLocalizedRouteOverrides: jasmine.createSpy('setLocalizedRouteOverrides'),
+      setLocalizedRouteOverrides: jasmine.createSpy(
+        'setLocalizedRouteOverrides',
+      ),
       clearLocalizedRouteOverrides: jasmine.createSpy(
         'clearLocalizedRouteOverrides',
       ),
@@ -113,7 +115,9 @@ describe('ProductDetailComponent', () => {
         .createSpy('quantityForVariant')
         .and.returnValue(0),
       loadCart: jasmine.createSpy('loadCart').and.returnValue(of(null)),
-      resolveMediaUrl: jasmine.createSpy('resolveMediaUrl').and.returnValue(null),
+      resolveMediaUrl: jasmine
+        .createSpy('resolveMediaUrl')
+        .and.returnValue(null),
     };
 
     const router = {
@@ -126,9 +130,13 @@ describe('ProductDetailComponent', () => {
     } as unknown as Router;
 
     const activatedRoute = {
-      paramMap: of(convertToParamMap({ productSlug: '91823f84-bike-wall-hanger' })),
+      paramMap: of(
+        convertToParamMap({ productSlug: '91823f84-bike-wall-hanger' }),
+      ),
       snapshot: {
-        paramMap: convertToParamMap({ productSlug: '91823f84-bike-wall-hanger' }),
+        paramMap: convertToParamMap({
+          productSlug: '91823f84-bike-wall-hanger',
+        }),
       },
     } as unknown as ActivatedRoute;
 
@@ -200,7 +208,9 @@ describe('ProductDetailComponent', () => {
   it('builds a soft SSR fallback with 200 + index follow', () => {
     const { component, seoService, responseInit } = createComponent();
 
-    expect((component as any).shouldUseSoftSeoFallback({ status: 500 })).toBeTrue();
+    expect(
+      (component as any).shouldUseSoftSeoFallback({ status: 500 }),
+    ).toBeTrue();
     (component as any).setResponseStatus(200);
     (component as any).applySoftFallbackSeo('91823f84-bike-wall-hanger');
 
@@ -221,7 +231,9 @@ describe('ProductDetailComponent', () => {
   it('keeps hard fallback noindex for missing products', () => {
     const { component, seoService, responseInit } = createComponent();
 
-    expect((component as any).shouldUseSoftSeoFallback({ status: 404 })).toBeFalse();
+    expect(
+      (component as any).shouldUseSoftSeoFallback({ status: 404 }),
+    ).toBeFalse();
     (component as any).setResponseStatus(404);
     (component as any).applyHardFallbackSeo();
 

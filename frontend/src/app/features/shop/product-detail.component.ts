@@ -254,37 +254,35 @@ export class ProductDetailComponent {
           }
 
           const productSlug = routeParams.productSlug as string;
-          return this.shopService
-            .getProductByPublicPath(productSlug)
-            .pipe(
-              catchError((error) => {
-                this.languageService.clearLocalizedRouteOverrides();
-                this.product.set(null);
-                this.selectedVariantId.set(null);
-                this.setSelectedImageAssetId(null);
-                this.modelFile.set(null);
-                const isNotFound = error?.status === 404;
-                if (isNotFound) {
-                  this.error.set('SHOP.NOT_FOUND');
-                  this.setResponseStatus(404);
-                  this.applyHardFallbackSeo();
-                  return of(null);
-                }
-
-                if (this.shouldUseSoftSeoFallback(error)) {
-                  this.error.set(null);
-                  this.softFallbackActive.set(true);
-                  this.setResponseStatus(200);
-                  this.applySoftFallbackSeo(productSlug);
-                  return of(null);
-                }
-
-                this.error.set('SHOP.LOAD_ERROR');
-                this.setResponseStatus(503);
+          return this.shopService.getProductByPublicPath(productSlug).pipe(
+            catchError((error) => {
+              this.languageService.clearLocalizedRouteOverrides();
+              this.product.set(null);
+              this.selectedVariantId.set(null);
+              this.setSelectedImageAssetId(null);
+              this.modelFile.set(null);
+              const isNotFound = error?.status === 404;
+              if (isNotFound) {
+                this.error.set('SHOP.NOT_FOUND');
+                this.setResponseStatus(404);
+                this.applyHardFallbackSeo();
                 return of(null);
-              }),
-              finalize(() => this.loading.set(false)),
-            );
+              }
+
+              if (this.shouldUseSoftSeoFallback(error)) {
+                this.error.set(null);
+                this.softFallbackActive.set(true);
+                this.setResponseStatus(200);
+                this.applySoftFallbackSeo(productSlug);
+                return of(null);
+              }
+
+              this.error.set('SHOP.LOAD_ERROR');
+              this.setResponseStatus(503);
+              return of(null);
+            }),
+            finalize(() => this.loading.set(false)),
+          );
         }),
         takeUntilDestroyed(this.destroyRef),
       )
@@ -904,9 +902,7 @@ export class ProductDetailComponent {
     return this.normalizeRouteParam(this.route.snapshot.paramMap.get(name));
   }
 
-  private normalizeRouteParam(
-    value: string | null | undefined,
-  ): string | null {
+  private normalizeRouteParam(value: string | null | undefined): string | null {
     const normalized = String(value ?? '').trim();
     return normalized || null;
   }

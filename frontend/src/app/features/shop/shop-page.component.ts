@@ -528,9 +528,7 @@ export class ShopPageComponent {
     return this.normalizeRouteParam(this.route.snapshot.paramMap.get(name));
   }
 
-  private normalizeRouteParam(
-    value: string | null | undefined,
-  ): string | null {
+  private normalizeRouteParam(value: string | null | undefined): string | null {
     const normalized = String(value ?? '').trim();
     return normalized || null;
   }
