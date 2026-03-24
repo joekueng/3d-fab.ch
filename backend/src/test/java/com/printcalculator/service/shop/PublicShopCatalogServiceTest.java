@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -23,6 +24,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -89,6 +91,37 @@ class PublicShopCatalogServiceTest {
         assertEquals("12345678-bike-wall-hanger", response.publicPath());
         assertEquals("/en/shop/p/12345678-bike-wall-hanger", response.localizedPaths().get("en"));
         assertEquals("/it/shop/p/12345678-supporto-bici", response.localizedPaths().get("it"));
+    }
+
+    @Test
+    void getProductByPublicPath_shouldResolveLocalizedSegment() {
+        ShopCategory category = buildCategory();
+        ShopProduct product = buildProduct(category);
+        ShopProductVariant variant = buildVariant(product);
+
+        stubPublicCatalog(category, product, variant);
+
+        ShopProductDetailDto response = service.getProductByPublicPath("12345678-bike-wall-hanger", "en");
+
+        assertEquals("bike-wall-hanger", response.slug());
+        assertEquals("12345678-bike-wall-hanger", response.publicPath());
+        assertEquals("/en/shop/p/12345678-bike-wall-hanger", response.localizedPaths().get("en"));
+    }
+
+    @Test
+    void getProductByPublicPath_shouldRejectNonCanonicalSegment() {
+        ShopCategory category = buildCategory();
+        ShopProduct product = buildProduct(category);
+        ShopProductVariant variant = buildVariant(product);
+
+        stubPublicCatalog(category, product, variant);
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> service.getProductByPublicPath("12345678-wrong-tail", "en")
+        );
+
+        assertEquals(404, exception.getStatusCode().value());
     }
 
     private void stubPublicCatalog(ShopCategory category, ShopProduct product, ShopProductVariant variant) {

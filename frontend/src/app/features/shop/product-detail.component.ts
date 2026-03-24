@@ -8,24 +8,24 @@ import {
   PLATFORM_ID,
   computed,
   inject,
-  input,
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
-  EMPTY,
   catchError,
   combineLatest,
+  distinctUntilChanged,
   finalize,
+  map,
   of,
   switchMap,
   tap,
 } from 'rxjs';
 import { SeoService } from '../../core/services/seo.service';
 import { LanguageService } from '../../core/services/language.service';
-import { findColorHex, getColorHex } from '../../core/constants/colors.const';
+import { findColorHex } from '../../core/constants/colors.const';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
 import { StlViewerComponent } from '../../shared/components/stl-viewer/stl-viewer.component';
@@ -35,6 +35,7 @@ import {
   ShopService,
 } from './services/shop.service';
 import { ShopRouteService } from './services/shop-route.service';
+import { humanizeShopSlug } from './shop-seo-fallback';
 
 interface ShopMaterialOption {
   key: string;
@@ -69,6 +70,7 @@ export class ProductDetailComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
   private readonly location = inject(Location);
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly translate = inject(TranslateService);
   private readonly seoService = inject(SeoService);
@@ -78,10 +80,12 @@ export class ProductDetailComponent {
   private readonly responseInit = inject(RESPONSE_INIT, { optional: true });
   readonly shopService = inject(ShopService);
 
-  readonly categorySlug = input<string | undefined>();
-  readonly productSlug = input<string | undefined>();
+  readonly routeCategorySlug = signal<string | null>(
+    this.readRouteParam('categorySlug'),
+  );
 
   readonly loading = signal(true);
+  readonly softFallbackActive = signal(false);
   readonly error = signal<string | null>(null);
   readonly product = signal<ShopProductDetail | null>(null);
   readonly selectedVariantId = signal<string | null>(null);
@@ -213,56 +217,72 @@ export class ProductDetailComponent {
     });
 
     combineLatest([
-      toObservable(this.productSlug, { injector: this.injector }),
+      this.route.paramMap.pipe(
+        map((params) => ({
+          categorySlug: this.normalizeRouteParam(params.get('categorySlug')),
+          productSlug: this.normalizeRouteParam(params.get('productSlug')),
+        })),
+        distinctUntilChanged(
+          (previous, current) =>
+            previous.categorySlug === current.categorySlug &&
+            previous.productSlug === current.productSlug,
+        ),
+      ),
       toObservable(this.languageService.currentLang, {
         injector: this.injector,
-      }),
+      }).pipe(distinctUntilChanged()),
     ])
       .pipe(
         tap(() => {
           this.loading.set(true);
+          this.softFallbackActive.set(false);
           this.error.set(null);
           this.addSuccess.set(false);
           this.modelError.set(false);
           this.colorPopupOpen.set(false);
           this.modelModalOpen.set(false);
         }),
-        switchMap(([productSlug]) => {
-          if (productSlug === undefined) {
-            return EMPTY;
-          }
-
-          const normalizedProductSlug = productSlug.trim();
-          if (!normalizedProductSlug) {
+        switchMap(([routeParams]) => {
+          this.routeCategorySlug.set(routeParams.categorySlug);
+          if (!routeParams.productSlug) {
             this.languageService.clearLocalizedRouteOverrides();
             this.error.set('SHOP.NOT_FOUND');
             this.setResponseStatus(404);
-            this.applyFallbackSeo();
+            this.applyHardFallbackSeo();
             this.loading.set(false);
             return of(null);
           }
 
-          return this.shopService
-            .getProductByPublicPath(normalizedProductSlug)
-            .pipe(
-              catchError((error) => {
-                this.languageService.clearLocalizedRouteOverrides();
-                this.product.set(null);
-                this.selectedVariantId.set(null);
-                this.setSelectedImageAssetId(null);
-                this.modelFile.set(null);
-                const isNotFound = error?.status === 404;
-                this.error.set(
-                  isNotFound ? 'SHOP.NOT_FOUND' : 'SHOP.LOAD_ERROR',
-                );
-                this.setResponseStatus(isNotFound ? 404 : 503);
-                if (this.shouldApplyFallbackSeo(error)) {
-                  this.applyFallbackSeo();
-                }
+          const productSlug = routeParams.productSlug as string;
+          return this.shopService.getProductByPublicPath(productSlug).pipe(
+            catchError((error) => {
+              this.languageService.clearLocalizedRouteOverrides();
+              this.product.set(null);
+              this.selectedVariantId.set(null);
+              this.setSelectedImageAssetId(null);
+              this.modelFile.set(null);
+              const isNotFound = error?.status === 404;
+              if (isNotFound) {
+                this.error.set('SHOP.NOT_FOUND');
+                this.setResponseStatus(404);
+                this.applyHardFallbackSeo();
                 return of(null);
-              }),
-              finalize(() => this.loading.set(false)),
-            );
+              }
+
+              if (this.shouldUseSoftSeoFallback(error)) {
+                this.error.set(null);
+                this.softFallbackActive.set(true);
+                this.setResponseStatus(200);
+                this.applySoftFallbackSeo(productSlug);
+                return of(null);
+              }
+
+              this.error.set('SHOP.LOAD_ERROR');
+              this.setResponseStatus(503);
+              return of(null);
+            }),
+            finalize(() => this.loading.set(false)),
+          );
         }),
         takeUntilDestroyed(this.destroyRef),
       )
@@ -272,6 +292,7 @@ export class ProductDetailComponent {
         }
 
         this.product.set(product);
+        this.softFallbackActive.set(false);
         this.selectedVariantId.set(
           product.defaultVariant?.id ?? product.variants[0]?.id ?? null,
         );
@@ -508,7 +529,8 @@ export class ProductDetailComponent {
   }
 
   productLinkRoot(): string[] {
-    const categorySlug = this.product()?.category.slug || this.categorySlug();
+    const categorySlug =
+      this.product()?.category.slug || this.routeCategorySlug();
     return this.shopRouteService.shopRootCommands(categorySlug);
   }
 
@@ -599,7 +621,7 @@ export class ProductDetailComponent {
     });
   }
 
-  private applyFallbackSeo(): void {
+  private applyHardFallbackSeo(): void {
     const title = `${this.translate.instant('SHOP.TITLE')} | 3D fab`;
     const description = this.translate.instant('SHOP.CATALOG_META_DESCRIPTION');
     this.seoService.applyResolvedSeo({
@@ -614,12 +636,53 @@ export class ProductDetailComponent {
     });
   }
 
-  private shouldApplyFallbackSeo(error: { status?: number } | null): boolean {
-    if (error?.status === 404) {
-      return true;
+  private applySoftFallbackSeo(productSlug: string): void {
+    const title = this.buildSoftFallbackTitle(productSlug);
+    const description = this.resolveTranslatedText(
+      'SEO.ROUTES.SHOP.PRODUCT_DESCRIPTION',
+      this.translate.instant('SHOP.CATALOG_META_DESCRIPTION'),
+    );
+
+    this.seoService.applyResolvedSeo({
+      title,
+      description,
+      robots: 'index, follow',
+      ogTitle: title,
+      ogDescription: description,
+      canonicalPath: this.currentPath(),
+      alternates: null,
+      xDefault: null,
+    });
+  }
+
+  private shouldUseSoftSeoFallback(error: { status?: number } | null): boolean {
+    return !this.isBrowser && error?.status !== 404;
+  }
+
+  private buildSoftFallbackTitle(productSlug: string): string {
+    const humanized = humanizeShopSlug(productSlug, {
+      stripProductIdPrefix: true,
+    });
+    if (humanized) {
+      return `${humanized} | 3D fab`;
     }
 
-    return !this.isBrowser;
+    return this.resolveTranslatedText(
+      'SEO.ROUTES.SHOP.PRODUCT_TITLE',
+      `${this.translate.instant('SHOP.TITLE')} | 3D fab`,
+    );
+  }
+
+  private resolveTranslatedText(key: string, fallback: string): string {
+    const translated = this.translate.instant(key);
+    return typeof translated === 'string' && translated !== key
+      ? translated
+      : fallback;
+  }
+
+  private currentPath(): string {
+    const path = String(this.router.url ?? '/').split(/[?#]/, 1)[0] || '/';
+    return path.startsWith('/') ? path : `/${path}`;
   }
 
   private materialLabelForVariant(
@@ -833,5 +896,14 @@ export class ProductDetailComponent {
     if (this.responseInit) {
       this.responseInit.status = status;
     }
+  }
+
+  private readRouteParam(name: string): string | null {
+    return this.normalizeRouteParam(this.route.snapshot.paramMap.get(name));
+  }
+
+  private normalizeRouteParam(value: string | null | undefined): string | null {
+    const normalized = String(value ?? '').trim();
+    return normalized || null;
   }
 }
