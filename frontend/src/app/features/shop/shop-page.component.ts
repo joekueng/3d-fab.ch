@@ -42,6 +42,7 @@ import {
   ShopService,
 } from './services/shop.service';
 import { ShopRouteService } from './services/shop-route.service';
+import { humanizeShopSlug } from './shop-seo-fallback';
 
 @Component({
   selector: 'app-shop-page',
@@ -75,6 +76,8 @@ export class ShopPageComponent {
   );
 
   readonly loading = signal(true);
+  readonly softFallbackActive = signal(false);
+  readonly softFallbackCategoryLabel = signal<string | null>(null);
   readonly error = signal<string | null>(null);
   readonly categories = signal<ShopCategoryTree[]>([]);
   readonly categoryNodes = signal<ShopCategoryNavNode[]>([]);
@@ -96,6 +99,44 @@ export class ShopPageComponent {
     ),
   );
   readonly cartHasItems = computed(() => this.cartItems().length > 0);
+  readonly heroSubtitle = computed(() => {
+    this.languageService.currentLang();
+
+    const category = this.selectedCategory();
+    if (category) {
+      return (
+        category.description ||
+        this.translate.instant('SHOP.CATEGORY_META', {
+          count: category.productCount || 0,
+        })
+      );
+    }
+
+    if (this.softFallbackActive() && this.routeCategorySlug()) {
+      return this.resolveTranslatedText(
+        'SEO.ROUTES.SHOP.CATEGORY_DESCRIPTION',
+        this.translate.instant('SHOP.CATALOG_META_DESCRIPTION'),
+      );
+    }
+
+    return this.translate.instant('SHOP.SUBTITLE');
+  });
+  readonly catalogEyebrow = computed(() => {
+    this.languageService.currentLang();
+
+    return this.selectedCategory() || this.softFallbackCategoryLabel()
+      ? this.translate.instant('SHOP.SELECTED_CATEGORY')
+      : this.translate.instant('SHOP.CATALOG_LABEL');
+  });
+  readonly catalogTitle = computed(() => {
+    this.languageService.currentLang();
+
+    return (
+      this.selectedCategory()?.name ||
+      this.softFallbackCategoryLabel() ||
+      this.translate.instant('SHOP.CATALOG_TITLE')
+    );
+  });
 
   constructor() {
     afterNextRender(() => {
@@ -114,6 +155,8 @@ export class ShopPageComponent {
       .pipe(
         tap(() => {
           this.loading.set(true);
+          this.softFallbackActive.set(false);
+          this.softFallbackCategoryLabel.set(null);
           this.error.set(null);
         }),
         switchMap(([categorySlug]) => {
@@ -128,11 +171,26 @@ export class ShopPageComponent {
               this.categoryNodes.set([]);
               this.selectedCategory.set(null);
               this.products.set([]);
-              this.error.set(isNotFound ? 'SHOP.NOT_FOUND' : 'SHOP.LOAD_ERROR');
-              this.setResponseStatus(isNotFound ? 404 : 503);
-              if (this.shouldApplyErrorSeo(error)) {
-                this.applyErrorSeo();
+              if (isNotFound) {
+                this.error.set('SHOP.NOT_FOUND');
+                this.setResponseStatus(404);
+                this.applyHardErrorSeo();
+                return of(null);
               }
+
+              if (this.shouldUseSoftSeoFallback(error)) {
+                this.error.set(null);
+                this.softFallbackActive.set(true);
+                this.softFallbackCategoryLabel.set(
+                  categorySlug ? humanizeShopSlug(categorySlug) : null,
+                );
+                this.setResponseStatus(200);
+                this.applySoftFallbackSeo(categorySlug);
+                return of(null);
+              }
+
+              this.error.set('SHOP.LOAD_ERROR');
+              this.setResponseStatus(503);
               return of(null);
             }),
             finalize(() => this.loading.set(false)),
@@ -154,6 +212,8 @@ export class ShopPageComponent {
         );
         this.selectedCategory.set(result.catalog.category ?? null);
         this.products.set(result.catalog.products);
+        this.softFallbackActive.set(false);
+        this.softFallbackCategoryLabel.set(null);
         this.applySeo(result.catalog.category ?? null);
         this.restoreCatalogScrollIfNeeded();
       });
@@ -369,7 +429,7 @@ export class ShopPageComponent {
     });
   }
 
-  private applyErrorSeo(): void {
+  private applyHardErrorSeo(): void {
     const title = `${this.translate.instant('SHOP.TITLE')} | 3D fab`;
     const description = this.translate.instant('SHOP.CATALOG_META_DESCRIPTION');
 
@@ -385,12 +445,57 @@ export class ShopPageComponent {
     });
   }
 
-  private shouldApplyErrorSeo(error: { status?: number } | null): boolean {
-    if (error?.status === 404) {
-      return true;
+  private applySoftFallbackSeo(categorySlug: string | null): void {
+    if (!categorySlug) {
+      this.applyDefaultSeo();
+      return;
     }
 
-    return !this.isBrowser;
+    const title = this.buildSoftFallbackCategoryTitle(categorySlug);
+    const description = this.resolveTranslatedText(
+      'SEO.ROUTES.SHOP.CATEGORY_DESCRIPTION',
+      this.translate.instant('SHOP.CATALOG_META_DESCRIPTION'),
+    );
+
+    this.seoService.applyResolvedSeo({
+      title,
+      description,
+      robots: 'index, follow',
+      ogTitle: title,
+      ogDescription: description,
+      canonicalPath: this.currentPath(),
+      alternates: null,
+      xDefault: null,
+    });
+  }
+
+  private shouldUseSoftSeoFallback(error: { status?: number } | null): boolean {
+    return !this.isBrowser && error?.status !== 404;
+  }
+
+  private buildSoftFallbackCategoryTitle(categorySlug: string): string {
+    const shopTitle = this.translate.instant('SHOP.TITLE');
+    const humanized = humanizeShopSlug(categorySlug);
+    if (humanized) {
+      return `${humanized} | ${shopTitle} | 3D fab`;
+    }
+
+    return this.resolveTranslatedText(
+      'SEO.ROUTES.SHOP.CATEGORY_TITLE',
+      `${shopTitle} | 3D fab`,
+    );
+  }
+
+  private resolveTranslatedText(key: string, fallback: string): string {
+    const translated = this.translate.instant(key);
+    return typeof translated === 'string' && translated !== key
+      ? translated
+      : fallback;
+  }
+
+  private currentPath(): string {
+    const path = String(this.router.url ?? '/').split(/[?#]/, 1)[0] || '/';
+    return path.startsWith('/') ? path : `/${path}`;
   }
 
   private setResponseStatus(status: number): void {

@@ -35,6 +35,7 @@ import {
   ShopService,
 } from './services/shop.service';
 import { ShopRouteService } from './services/shop-route.service';
+import { humanizeShopSlug } from './shop-seo-fallback';
 
 interface ShopMaterialOption {
   key: string;
@@ -84,6 +85,7 @@ export class ProductDetailComponent {
   );
 
   readonly loading = signal(true);
+  readonly softFallbackActive = signal(false);
   readonly error = signal<string | null>(null);
   readonly product = signal<ShopProductDetail | null>(null);
   readonly selectedVariantId = signal<string | null>(null);
@@ -233,6 +235,7 @@ export class ProductDetailComponent {
       .pipe(
         tap(() => {
           this.loading.set(true);
+          this.softFallbackActive.set(false);
           this.error.set(null);
           this.addSuccess.set(false);
           this.modelError.set(false);
@@ -245,13 +248,14 @@ export class ProductDetailComponent {
             this.languageService.clearLocalizedRouteOverrides();
             this.error.set('SHOP.NOT_FOUND');
             this.setResponseStatus(404);
-            this.applyFallbackSeo();
+            this.applyHardFallbackSeo();
             this.loading.set(false);
             return of(null);
           }
 
+          const productSlug = routeParams.productSlug as string;
           return this.shopService
-            .getProductByPublicPath(routeParams.productSlug)
+            .getProductByPublicPath(productSlug)
             .pipe(
               catchError((error) => {
                 this.languageService.clearLocalizedRouteOverrides();
@@ -260,13 +264,23 @@ export class ProductDetailComponent {
                 this.setSelectedImageAssetId(null);
                 this.modelFile.set(null);
                 const isNotFound = error?.status === 404;
-                this.error.set(
-                  isNotFound ? 'SHOP.NOT_FOUND' : 'SHOP.LOAD_ERROR',
-                );
-                this.setResponseStatus(isNotFound ? 404 : 503);
-                if (this.shouldApplyFallbackSeo(error)) {
-                  this.applyFallbackSeo();
+                if (isNotFound) {
+                  this.error.set('SHOP.NOT_FOUND');
+                  this.setResponseStatus(404);
+                  this.applyHardFallbackSeo();
+                  return of(null);
                 }
+
+                if (this.shouldUseSoftSeoFallback(error)) {
+                  this.error.set(null);
+                  this.softFallbackActive.set(true);
+                  this.setResponseStatus(200);
+                  this.applySoftFallbackSeo(productSlug);
+                  return of(null);
+                }
+
+                this.error.set('SHOP.LOAD_ERROR');
+                this.setResponseStatus(503);
                 return of(null);
               }),
               finalize(() => this.loading.set(false)),
@@ -280,6 +294,7 @@ export class ProductDetailComponent {
         }
 
         this.product.set(product);
+        this.softFallbackActive.set(false);
         this.selectedVariantId.set(
           product.defaultVariant?.id ?? product.variants[0]?.id ?? null,
         );
@@ -608,7 +623,7 @@ export class ProductDetailComponent {
     });
   }
 
-  private applyFallbackSeo(): void {
+  private applyHardFallbackSeo(): void {
     const title = `${this.translate.instant('SHOP.TITLE')} | 3D fab`;
     const description = this.translate.instant('SHOP.CATALOG_META_DESCRIPTION');
     this.seoService.applyResolvedSeo({
@@ -623,12 +638,53 @@ export class ProductDetailComponent {
     });
   }
 
-  private shouldApplyFallbackSeo(error: { status?: number } | null): boolean {
-    if (error?.status === 404) {
-      return true;
+  private applySoftFallbackSeo(productSlug: string): void {
+    const title = this.buildSoftFallbackTitle(productSlug);
+    const description = this.resolveTranslatedText(
+      'SEO.ROUTES.SHOP.PRODUCT_DESCRIPTION',
+      this.translate.instant('SHOP.CATALOG_META_DESCRIPTION'),
+    );
+
+    this.seoService.applyResolvedSeo({
+      title,
+      description,
+      robots: 'index, follow',
+      ogTitle: title,
+      ogDescription: description,
+      canonicalPath: this.currentPath(),
+      alternates: null,
+      xDefault: null,
+    });
+  }
+
+  private shouldUseSoftSeoFallback(error: { status?: number } | null): boolean {
+    return !this.isBrowser && error?.status !== 404;
+  }
+
+  private buildSoftFallbackTitle(productSlug: string): string {
+    const humanized = humanizeShopSlug(productSlug, {
+      stripProductIdPrefix: true,
+    });
+    if (humanized) {
+      return `${humanized} | 3D fab`;
     }
 
-    return !this.isBrowser;
+    return this.resolveTranslatedText(
+      'SEO.ROUTES.SHOP.PRODUCT_TITLE',
+      `${this.translate.instant('SHOP.TITLE')} | 3D fab`,
+    );
+  }
+
+  private resolveTranslatedText(key: string, fallback: string): string {
+    const translated = this.translate.instant(key);
+    return typeof translated === 'string' && translated !== key
+      ? translated
+      : fallback;
+  }
+
+  private currentPath(): string {
+    const path = String(this.router.url ?? '/').split(/[?#]/, 1)[0] || '/';
+    return path.startsWith('/') ? path : `/${path}`;
   }
 
   private materialLabelForVariant(

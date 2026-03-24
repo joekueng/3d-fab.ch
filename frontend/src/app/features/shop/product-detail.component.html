@@ -4,7 +4,7 @@
       ← {{ "SHOP.BACK" | translate }}
     </button>
 
-    @if (loading()) {
+    @if (loading() || softFallbackActive()) {
       <div class="detail-grid skeleton-grid">
         <div class="skeleton-block"></div>
         <div class="skeleton-block"></div>
