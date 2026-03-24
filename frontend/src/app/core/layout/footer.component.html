@@ -1,14 +1,24 @@
 <footer class="footer">
   <div class="container footer-inner">
     <div class="col">
-      <span class="brand">3D fab</span>
+      <img
+        class="brand"
+        src="/assets/images/brand-logo-white.svg"
+        alt="3D Fab"
+      />
       <p class="copyright">&copy; 2026 3D fab.</p>
     </div>
 
     <div class="col links">
-      <a routerLink="/privacy">{{ "FOOTER.PRIVACY" | translate }}</a>
-      <a routerLink="/terms">{{ "FOOTER.TERMS" | translate }}</a>
-      <a routerLink="/contact">{{ "FOOTER.CONTACT" | translate }}</a>
+      <a [routerLink]="languageService.localizedPath('/privacy')">{{
+        "FOOTER.PRIVACY" | translate
+      }}</a>
+      <a [routerLink]="languageService.localizedPath('/terms')">{{
+        "FOOTER.TERMS" | translate
+      }}</a>
+      <a [routerLink]="languageService.localizedPath('/contact')">{{
+        "FOOTER.CONTACT" | translate
+      }}</a>
     </div>
 
     <div class="col social">

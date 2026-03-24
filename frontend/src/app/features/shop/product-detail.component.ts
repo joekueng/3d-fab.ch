@@ -1,21 +1,31 @@
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { CommonModule, Location, isPlatformBrowser } from '@angular/common';
 import {
+  RESPONSE_INIT,
+  afterNextRender,
   Component,
   DestroyRef,
   Injector,
   PLATFORM_ID,
   computed,
   inject,
-  input,
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { catchError, combineLatest, finalize, of, switchMap, tap } from 'rxjs';
+import {
+  catchError,
+  combineLatest,
+  distinctUntilChanged,
+  finalize,
+  map,
+  of,
+  switchMap,
+  tap,
+} from 'rxjs';
 import { SeoService } from '../../core/services/seo.service';
 import { LanguageService } from '../../core/services/language.service';
-import { getColorHex } from '../../core/constants/colors.const';
+import { findColorHex } from '../../core/constants/colors.const';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
 import { StlViewerComponent } from '../../shared/components/stl-viewer/stl-viewer.component';
@@ -25,6 +35,7 @@ import {
   ShopService,
 } from './services/shop.service';
 import { ShopRouteService } from './services/shop-route.service';
+import { humanizeShopSlug } from './shop-seo-fallback';
 
 interface ShopMaterialOption {
   key: string;
@@ -58,18 +69,23 @@ export class ProductDetailComponent {
     /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
+  private readonly location = inject(Location);
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly translate = inject(TranslateService);
   private readonly seoService = inject(SeoService);
   private readonly languageService = inject(LanguageService);
   private readonly shopRouteService = inject(ShopRouteService);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly responseInit = inject(RESPONSE_INIT, { optional: true });
   readonly shopService = inject(ShopService);
 
-  readonly categorySlug = input<string | undefined>();
-  readonly productSlug = input<string | undefined>();
+  readonly routeCategorySlug = signal<string | null>(
+    this.readRouteParam('categorySlug'),
+  );
 
   readonly loading = signal(true);
+  readonly softFallbackActive = signal(false);
   readonly error = signal<string | null>(null);
   readonly product = signal<ShopProductDetail | null>(null);
   readonly selectedVariantId = signal<string | null>(null);
@@ -193,53 +209,82 @@ export class ProductDetailComponent {
   );
 
   constructor() {
-    if (!this.shopService.cartLoaded()) {
-      this.shopService
-        .loadCart()
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          error: () => {
-            this.shopService.cart.set(null);
-          },
-        });
-    }
+    afterNextRender(() => {
+      this.scheduleCartWarmup();
+    });
+    this.destroyRef.onDestroy(() => {
+      this.languageService.clearLocalizedRouteOverrides();
+    });
 
     combineLatest([
-      toObservable(this.productSlug, { injector: this.injector }),
+      this.route.paramMap.pipe(
+        map((params) => ({
+          categorySlug: this.normalizeRouteParam(params.get('categorySlug')),
+          productSlug: this.normalizeRouteParam(params.get('productSlug')),
+        })),
+        distinctUntilChanged(
+          (previous, current) =>
+            previous.categorySlug === current.categorySlug &&
+            previous.productSlug === current.productSlug,
+        ),
+      ),
       toObservable(this.languageService.currentLang, {
         injector: this.injector,
-      }),
+      }).pipe(distinctUntilChanged()),
     ])
       .pipe(
         tap(() => {
           this.loading.set(true);
+          this.softFallbackActive.set(false);
           this.error.set(null);
           this.addSuccess.set(false);
           this.modelError.set(false);
           this.colorPopupOpen.set(false);
           this.modelModalOpen.set(false);
         }),
-        switchMap(([productSlug]) => {
-          if (!productSlug) {
+        switchMap(([routeParams]) => {
+          this.routeCategorySlug.set(routeParams.categorySlug);
+          if (!routeParams.productSlug) {
+            this.languageService.clearLocalizedRouteOverrides();
             this.error.set('SHOP.NOT_FOUND');
+            this.setResponseStatus(404);
+            this.applyHardFallbackSeo();
             this.loading.set(false);
             return of(null);
           }
 
-          return this.shopService.getProductByPublicPath(productSlug).pipe(
-            catchError((error) => {
-              this.product.set(null);
-              this.selectedVariantId.set(null);
-              this.selectedImageAssetId.set(null);
-              this.modelFile.set(null);
-              this.error.set(
-                error?.status === 404 ? 'SHOP.NOT_FOUND' : 'SHOP.LOAD_ERROR',
-              );
-              this.applyFallbackSeo();
-              return of(null);
-            }),
-            finalize(() => this.loading.set(false)),
-          );
+          const productSlug = routeParams.productSlug as string;
+          return this.shopService
+            .getProductByPublicPath(productSlug)
+            .pipe(
+              catchError((error) => {
+                this.languageService.clearLocalizedRouteOverrides();
+                this.product.set(null);
+                this.selectedVariantId.set(null);
+                this.setSelectedImageAssetId(null);
+                this.modelFile.set(null);
+                const isNotFound = error?.status === 404;
+                if (isNotFound) {
+                  this.error.set('SHOP.NOT_FOUND');
+                  this.setResponseStatus(404);
+                  this.applyHardFallbackSeo();
+                  return of(null);
+                }
+
+                if (this.shouldUseSoftSeoFallback(error)) {
+                  this.error.set(null);
+                  this.softFallbackActive.set(true);
+                  this.setResponseStatus(200);
+                  this.applySoftFallbackSeo(productSlug);
+                  return of(null);
+                }
+
+                this.error.set('SHOP.LOAD_ERROR');
+                this.setResponseStatus(503);
+                return of(null);
+              }),
+              finalize(() => this.loading.set(false)),
+            );
         }),
         takeUntilDestroyed(this.destroyRef),
       )
@@ -249,6 +294,7 @@ export class ProductDetailComponent {
         }
 
         this.product.set(product);
+        this.softFallbackActive.set(false);
         this.selectedVariantId.set(
           product.defaultVariant?.id ?? product.variants[0]?.id ?? null,
         );
@@ -257,12 +303,13 @@ export class ProductDetailComponent {
             product.defaultVariant ?? product.variants[0] ?? null,
           ),
         );
-        this.selectedImageAssetId.set(
+        this.setSelectedImageAssetId(
           product.primaryImage?.mediaAssetId ??
             product.images[0]?.mediaAssetId ??
             null,
         );
         this.quantity.set(1);
+        this.languageService.setLocalizedRouteOverrides(product.localizedPaths);
         this.syncPublicUrl(product);
         this.applySeo(product);
         this.modelFile.set(null);
@@ -282,8 +329,47 @@ export class ProductDetailComponent {
     );
   }
 
+  private scheduleCartWarmup(): void {
+    if (typeof window === 'undefined') {
+      this.loadCartIfNeeded();
+      return;
+    }
+
+    const warmup = () => this.loadCartIfNeeded();
+    const idleCallback = (
+      window as Window & {
+        requestIdleCallback?: (
+          callback: IdleRequestCallback,
+          options?: IdleRequestOptions,
+        ) => number;
+      }
+    ).requestIdleCallback;
+
+    if (typeof idleCallback === 'function') {
+      idleCallback(() => warmup(), { timeout: 1500 });
+      return;
+    }
+
+    window.setTimeout(warmup, 300);
+  }
+
+  private loadCartIfNeeded(): void {
+    if (this.shopService.cartLoaded() || this.shopService.cartLoading()) {
+      return;
+    }
+
+    this.shopService
+      .loadCart()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        error: () => {
+          this.shopService.cart.set(null);
+        },
+      });
+  }
+
   selectImage(mediaAssetId: string): void {
-    this.selectedImageAssetId.set(mediaAssetId);
+    this.setSelectedImageAssetId(mediaAssetId);
   }
 
   showPreviousImage(): void {
@@ -293,7 +379,7 @@ export class ProductDetailComponent {
     }
     const nextIndex =
       (this.selectedImageIndex() - 1 + images.length) % images.length;
-    this.selectedImageAssetId.set(images[nextIndex].mediaAssetId);
+    this.setSelectedImageAssetId(images[nextIndex].mediaAssetId);
   }
 
   showNextImage(): void {
@@ -302,7 +388,7 @@ export class ProductDetailComponent {
       return;
     }
     const nextIndex = (this.selectedImageIndex() + 1) % images.length;
-    this.selectedImageAssetId.set(images[nextIndex].mediaAssetId);
+    this.setSelectedImageAssetId(images[nextIndex].mediaAssetId);
   }
 
   selectVariant(variant: ShopProductVariantOption): void {
@@ -366,9 +452,12 @@ export class ProductDetailComponent {
     if (!sessionId) {
       return;
     }
-    this.router.navigate(['/checkout'], {
-      queryParams: { session: sessionId },
-    });
+    this.router.navigate(
+      ['/', this.languageService.selectedLang(), 'checkout'],
+      {
+        queryParams: { session: sessionId },
+      },
+    );
   }
 
   priceLabel(): number {
@@ -378,7 +467,9 @@ export class ProductDetailComponent {
   }
 
   colorLabel(variant: ShopProductVariantOption): string {
-    return variant.colorName || variant.variantLabel || '-';
+    return (
+      variant.colorLabel || variant.colorName || variant.variantLabel || '-'
+    );
   }
 
   colorHex(variant: ShopProductVariantOption | null | undefined): string {
@@ -440,7 +531,8 @@ export class ProductDetailComponent {
   }
 
   productLinkRoot(): string[] {
-    const categorySlug = this.product()?.category.slug || this.categorySlug();
+    const categorySlug =
+      this.product()?.category.slug || this.routeCategorySlug();
     return this.shopRouteService.shopRootCommands(categorySlug);
   }
 
@@ -451,6 +543,11 @@ export class ProductDetailComponent {
         : null;
 
     if (returnUrl && this.shopRouteService.isCatalogUrl(returnUrl)) {
+      if (this.isBrowser && window.history.length > 1) {
+        this.location.back();
+        return;
+      }
+
       void this.router.navigateByUrl(returnUrl);
       return;
     }
@@ -479,6 +576,10 @@ export class ProductDetailComponent {
       });
   }
 
+  private setSelectedImageAssetId(mediaAssetId: string | null): void {
+    this.selectedImageAssetId.set(mediaAssetId);
+  }
+
   private normalizeHexColor(value: string | null | undefined): string | null {
     const raw = String(value ?? '').trim();
     if (!raw) {
@@ -494,17 +595,7 @@ export class ProductDetailComponent {
   }
 
   private colorHexFromName(value: string | null | undefined): string | null {
-    const colorName = String(value ?? '').trim();
-    if (!colorName) {
-      return null;
-    }
-
-    const fallback = getColorHex(colorName);
-    if (!fallback || fallback === '#facf0a') {
-      return null;
-    }
-
-    return fallback;
+    return findColorHex(value);
   }
 
   private applySeo(product: ShopProductDetail): void {
@@ -516,26 +607,84 @@ export class ProductDetailComponent {
       this.translate.instant('SHOP.CATALOG_META_DESCRIPTION');
     const robots =
       product.indexable === false ? 'noindex, nofollow' : 'index, follow';
+    const lang = this.languageService.selectedLang();
+    const canonicalPath =
+      product.localizedPaths?.[lang] ?? product.localizedPaths?.it ?? null;
 
-    this.seoService.applyPageSeo({
+    this.seoService.applyResolvedSeo({
       title,
       description,
       robots,
       ogTitle: product.ogTitle || title,
       ogDescription: product.ogDescription || description,
+      canonicalPath,
+      alternates: product.localizedPaths,
+      xDefault: product.localizedPaths?.it ?? canonicalPath,
     });
   }
 
-  private applyFallbackSeo(): void {
+  private applyHardFallbackSeo(): void {
     const title = `${this.translate.instant('SHOP.TITLE')} | 3D fab`;
     const description = this.translate.instant('SHOP.CATALOG_META_DESCRIPTION');
-    this.seoService.applyPageSeo({
+    this.seoService.applyResolvedSeo({
+      title,
+      description,
+      robots: 'noindex, nofollow',
+      ogTitle: title,
+      ogDescription: description,
+      canonicalPath: null,
+      alternates: null,
+      xDefault: null,
+    });
+  }
+
+  private applySoftFallbackSeo(productSlug: string): void {
+    const title = this.buildSoftFallbackTitle(productSlug);
+    const description = this.resolveTranslatedText(
+      'SEO.ROUTES.SHOP.PRODUCT_DESCRIPTION',
+      this.translate.instant('SHOP.CATALOG_META_DESCRIPTION'),
+    );
+
+    this.seoService.applyResolvedSeo({
       title,
       description,
       robots: 'index, follow',
       ogTitle: title,
       ogDescription: description,
+      canonicalPath: this.currentPath(),
+      alternates: null,
+      xDefault: null,
     });
+  }
+
+  private shouldUseSoftSeoFallback(error: { status?: number } | null): boolean {
+    return !this.isBrowser && error?.status !== 404;
+  }
+
+  private buildSoftFallbackTitle(productSlug: string): string {
+    const humanized = humanizeShopSlug(productSlug, {
+      stripProductIdPrefix: true,
+    });
+    if (humanized) {
+      return `${humanized} | 3D fab`;
+    }
+
+    return this.resolveTranslatedText(
+      'SEO.ROUTES.SHOP.PRODUCT_TITLE',
+      `${this.translate.instant('SHOP.TITLE')} | 3D fab`,
+    );
+  }
+
+  private resolveTranslatedText(key: string, fallback: string): string {
+    const translated = this.translate.instant(key);
+    return typeof translated === 'string' && translated !== key
+      ? translated
+      : fallback;
+  }
+
+  private currentPath(): string {
+    const path = String(this.router.url ?? '/').split(/[?#]/, 1)[0] || '/';
+    return path.startsWith('/') ? path : `/${path}`;
   }
 
   private materialLabelForVariant(
@@ -709,21 +858,23 @@ export class ProductDetailComponent {
       return;
     }
 
-    const currentProductSlug = this.productSlug()?.trim().toLowerCase() ?? '';
-    const targetProductSlug = this.shopRouteService.productPathSegment(product);
-    if (currentProductSlug === targetProductSlug) {
+    const currentTree = this.router.parseUrl(this.router.url);
+    const lang = this.languageService.selectedLang();
+    const targetPath =
+      product.localizedPaths?.[lang] ??
+      `/${lang}/shop/p/${this.shopRouteService.productPathSegment(product)}`;
+    const normalizedTargetPath = targetPath.startsWith('/')
+      ? targetPath
+      : `/${targetPath}`;
+    const currentPath = this.router
+      .serializeUrl(currentTree)
+      .split(/[?#]/, 1)[0];
+    if (currentPath === normalizedTargetPath) {
       return;
     }
 
-    const currentTree = this.router.parseUrl(this.router.url);
     const targetTree = this.router.createUrlTree(
-      [
-        '/',
-        this.languageService.selectedLang(),
-        'shop',
-        'p',
-        targetProductSlug,
-      ],
+      ['/', ...normalizedTargetPath.split('/').filter(Boolean)],
       {
         queryParams: currentTree.queryParams,
         fragment: currentTree.fragment ?? undefined,
@@ -741,5 +892,22 @@ export class ProductDetailComponent {
       replaceUrl: true,
       state: history.state,
     });
+  }
+
+  private setResponseStatus(status: number): void {
+    if (this.responseInit) {
+      this.responseInit.status = status;
+    }
+  }
+
+  private readRouteParam(name: string): string | null {
+    return this.normalizeRouteParam(this.route.snapshot.paramMap.get(name));
+  }
+
+  private normalizeRouteParam(
+    value: string | null | undefined,
+  ): string | null {
+    const normalized = String(value ?? '').trim();
+    return normalized || null;
   }
 }

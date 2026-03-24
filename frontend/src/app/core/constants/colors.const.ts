@@ -11,6 +11,8 @@ export interface ColorCategory {
   colors: ColorOption[];
 }
 
+const DEFAULT_BRAND_COLOR = '#facf0a';
+
 export const PRODUCT_COLORS: ColorCategory[] = [
   {
     name: 'COLOR.CATEGORY_GLOSSY',
@@ -38,10 +40,81 @@ export const PRODUCT_COLORS: ColorCategory[] = [
   },
 ];
 
-export function getColorHex(value: string): string {
-  for (const cat of PRODUCT_COLORS) {
-    const found = cat.colors.find((c) => c.value === value);
-    if (found) return found.hex;
+export function normalizeColorValue(value: string | null | undefined): string {
+  return String(value ?? '')
+    .trim()
+    .toLowerCase()
+    .replace(/ß/g, 'ss')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ');
+}
+
+export function findColorHex(value: string | null | undefined): string | null {
+  const normalized = normalizeColorValue(value);
+  if (!normalized) {
+    return null;
   }
-  return '#facf0a'; // Default Brand Color if not found
+
+  for (const category of PRODUCT_COLORS) {
+    const match = category.colors.find(
+      (color) => normalizeColorValue(color.value) === normalized,
+    );
+    if (match) {
+      return match.hex;
+    }
+  }
+
+  return null;
+}
+
+export interface LocalizedColorLabelSet {
+  fallback?: string | null;
+  it?: string | null;
+  en?: string | null;
+  de?: string | null;
+  fr?: string | null;
+}
+
+export function resolveLocalizedColorLabel(
+  language: string | null | undefined,
+  labels: LocalizedColorLabelSet,
+): string | null {
+  const normalizedLanguage = String(language ?? '')
+    .trim()
+    .toLowerCase()
+    .split('-')[0];
+
+  const preferred =
+    normalizedLanguage === 'it'
+      ? labels.it
+      : normalizedLanguage === 'en'
+        ? labels.en
+        : normalizedLanguage === 'de'
+          ? labels.de
+          : normalizedLanguage === 'fr'
+            ? labels.fr
+            : null;
+
+  return (
+    firstNonBlank(preferred, labels.fallback) ??
+    firstNonBlank(labels.it, labels.en, labels.de, labels.fr)
+  );
+}
+
+function firstNonBlank(
+  ...values: Array<string | null | undefined>
+): string | null {
+  for (const value of values) {
+    const normalized = String(value ?? '').trim();
+    if (normalized) {
+      return normalized;
+    }
+  }
+  return null;
+}
+
+export function getColorHex(value: string): string {
+  return findColorHex(value) ?? DEFAULT_BRAND_COLOR;
 }

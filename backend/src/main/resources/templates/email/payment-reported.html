@@ -27,8 +27,17 @@
             margin-bottom: 20px;
         }
 
+        .brand-logo {
+            display: block;
+            width: 220px;
+            max-width: 220px;
+            height: auto;
+            margin: 0 auto 16px;
+        }
+
         .header h1 {
             color: #333333;
+            margin: 0;
         }
 
         .content {
@@ -70,6 +79,7 @@
 <body>
 <div class="container">
     <div class="header">
+        <img class="brand-logo" th:src="${logoUrl}" src="https://example.com/assets/images/brand-logo-yellow.svg" alt="3D-Fab">
         <h1 th:text="${headlineText}">Payment reported for order #00000000</h1>
     </div>
 

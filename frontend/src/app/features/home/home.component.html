@@ -1,6 +1,8 @@
 <main class="home-page">
   <section class="hero">
-    <div class="container hero-grid ui-content-grid ui-content-grid--spacious">
+    <div
+      class="container hero-grid ui-content-grid ui-content-grid--spacious ui-content-grid--split"
+    >
       <div class="hero-copy">
         <p class="eyebrow ui-eyebrow">{{ "HOME.HERO_EYEBROW" | translate }}</p>
         <h1
@@ -14,17 +16,47 @@
           {{ "HOME.HERO_SUBTITLE" | translate }}
         </p>
         <div class="hero-actions ui-inline-actions ui-inline-actions--wide">
-          <app-button variant="primary" routerLink="/calculator/basic">{{
-            "HOME.BTN_CALCULATE" | translate
-          }}</app-button>
-          <app-button variant="outline" routerLink="/shop">{{
-            "HOME.BTN_SHOP" | translate
-          }}</app-button>
-          <app-button variant="text" routerLink="/contact">{{
-            "HOME.BTN_CONTACT" | translate
-          }}</app-button>
+          <app-button
+            variant="primary"
+            [routerLink]="languageService.localizedPath('/calculator/basic')"
+            >{{ "HOME.BTN_CALCULATE" | translate }}</app-button
+          >
+          <app-button
+            variant="outline"
+            [routerLink]="languageService.localizedPath('/shop')"
+            >{{ "HOME.BTN_SHOP" | translate }}</app-button
+          >
+          <app-button
+            variant="text"
+            [routerLink]="languageService.localizedPath('/contact')"
+            >{{ "HOME.BTN_CONTACT" | translate }}</app-button
+          >
         </div>
       </div>
+      <aside class="hero-swiss-card">
+        <div class="hero-swiss-head">
+          <span class="hero-swiss-emblem" aria-hidden="true">
+            <span class="hero-swiss-cross"></span>
+          </span>
+          <p class="hero-swiss-kicker ui-eyebrow ui-eyebrow--compact">
+            {{ "HOME.HERO_SWISS_TITLE" | translate }}
+          </p>
+        </div>
+        <p class="hero-swiss-copy">
+          {{ "HOME.HERO_SWISS_COPY" | translate }}
+        </p>
+        <div class="hero-swiss-locations">
+          <span class="hero-swiss-chip">{{
+            "HOME.HERO_SWISS_LOCATION_1" | translate
+          }}</span>
+          <span class="hero-swiss-chip">{{
+            "HOME.HERO_SWISS_LOCATION_2" | translate
+          }}</span>
+          <span class="hero-swiss-chip">{{
+            "HOME.HERO_SWISS_LOCATION_3" | translate
+          }}</span>
+        </div>
+      </aside>
     </div>
   </section>
 
@@ -110,13 +142,13 @@
           <app-button
             variant="primary"
             [fullWidth]="true"
-            routerLink="/calculator/basic"
+            [routerLink]="languageService.localizedPath('/calculator/basic')"
             >{{ "HOME.BTN_OPEN_CALC" | translate }}</app-button
           >
           <app-button
             variant="outline"
             [fullWidth]="true"
-            routerLink="/contact"
+            [routerLink]="languageService.localizedPath('/contact')"
             >{{ "HOME.BTN_CONTACT" | translate }}</app-button
           >
         </div>
@@ -141,12 +173,16 @@
           <li>{{ "HOME.SEC_SHOP_LIST_3" | translate }}</li>
         </ul>
         <div class="shop-actions ui-inline-actions">
-          <app-button variant="primary" routerLink="/shop">{{
-            "HOME.BTN_DISCOVER" | translate
-          }}</app-button>
-          <app-button variant="outline" routerLink="/contact">{{
-            "HOME.BTN_REQ_SOLUTION" | translate
-          }}</app-button>
+          <app-button
+            variant="primary"
+            [routerLink]="languageService.localizedPath('/shop')"
+            >{{ "HOME.BTN_DISCOVER" | translate }}</app-button
+          >
+          <app-button
+            variant="outline"
+            [routerLink]="languageService.localizedPath('/contact')"
+            >{{ "HOME.BTN_REQ_SOLUTION" | translate }}</app-button
+          >
         </div>
       </div>
       <div
@@ -211,12 +247,16 @@
           {{ "HOME.SEC_ABOUT_TEXT" | translate }}
         </p>
         <div class="about-actions ui-inline-actions">
-          <app-button variant="primary" routerLink="/about">{{
-            "HOME.SEC_ABOUT_TITLE" | translate
-          }}</app-button>
-          <app-button variant="outline" routerLink="/contact">{{
-            "HOME.BTN_CONTACT" | translate
-          }}</app-button>
+          <app-button
+            variant="primary"
+            [routerLink]="languageService.localizedPath('/about')"
+            >{{ "HOME.SEC_ABOUT_TITLE" | translate }}</app-button
+          >
+          <app-button
+            variant="outline"
+            [routerLink]="languageService.localizedPath('/contact')"
+            >{{ "HOME.BTN_CONTACT" | translate }}</app-button
+          >
         </div>
       </div>
       <div class="about-media">

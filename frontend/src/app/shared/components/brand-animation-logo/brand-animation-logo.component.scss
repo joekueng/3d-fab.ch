@@ -1,0 +1,172 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.brand-animation {
+  --three-anchor-x: -9.4rem;
+  --bee-anchor-x: 10.2rem;
+  --word-scale: var(--brand-animation-scale, 1);
+  --word-spacing-factor: var(--brand-animation-word-spacing, 1);
+  --loader-group-scale-x: 0.94;
+  --loader-group-scale-y: 1.05;
+  --loader-exit-shift: 1.6rem;
+  position: relative;
+  width: min(100%, var(--brand-animation-width, 26rem));
+  height: var(--brand-animation-height, 8rem);
+  margin-inline: auto;
+}
+
+.brand-animation__letter {
+  --word-x: 0rem;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--brand-animation-letter-width, clamp(2.7rem, 6vw, 4rem));
+  height: auto;
+  transform: translate(-50%, -50%);
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.brand-animation[data-variant="site-intro"] .brand-animation__letter {
+  animation: site-intro-preview var(--brand-animation-site-intro-duration, 1s)
+    linear 1 forwards;
+}
+
+.brand-animation[data-variant="calculator-loader"] .brand-animation__letter {
+  animation: calculator-loader-loop
+    var(--brand-animation-loader-loop-duration, 2.65s) infinite;
+}
+
+@keyframes site-intro-preview {
+  0% {
+    transform: translate(-50%, -50%) translateX(0) scale(0.92);
+  }
+
+  20% {
+    transform: translate(-50%, -50%) translateX(0) scale(0.92);
+  }
+
+  80% {
+    transform: translate(-50%, -50%)
+      translateX(
+        calc(var(--word-x) * var(--word-scale) * var(--word-spacing-factor))
+      )
+      scale(1);
+  }
+
+  100% {
+    transform: translate(-50%, -50%)
+      translateX(
+        calc(var(--word-x) * var(--word-scale) * var(--word-spacing-factor))
+      )
+      scale(1);
+  }
+}
+
+@keyframes calculator-loader-loop {
+  0%,
+  5% {
+    opacity: 0;
+    transform: translate(-50%, -50%)
+      translateX(
+        calc(
+          var(--three-anchor-x) * var(--word-scale) * var(--word-spacing-factor)
+        )
+      )
+      scaleX(var(--loader-group-scale-x)) scaleY(var(--loader-group-scale-y));
+  }
+
+  12% {
+    opacity: 1;
+    transform: translate(-50%, -50%)
+      translateX(
+        calc(
+          var(--three-anchor-x) * var(--word-scale) * var(--word-spacing-factor)
+        )
+      )
+      scaleX(var(--loader-group-scale-x)) scaleY(var(--loader-group-scale-y));
+  }
+
+  12% {
+    animation-timing-function: cubic-bezier(0.22, 0.82, 0.28, 1);
+  }
+
+  38%,
+  56% {
+    opacity: 1;
+    transform: translate(-50%, -50%)
+      translateX(
+        calc(var(--word-x) * var(--word-scale) * var(--word-spacing-factor))
+      )
+      scale(1);
+  }
+
+  56% {
+    animation-timing-function: cubic-bezier(0.38, 0, 0.72, 1);
+  }
+
+  82%,
+  88% {
+    opacity: 1;
+    transform: translate(-50%, -50%)
+      translateX(
+        calc(
+          var(--bee-anchor-x) * var(--word-scale) * var(--word-spacing-factor)
+        )
+      )
+      scaleX(var(--loader-group-scale-x)) scaleY(var(--loader-group-scale-y));
+  }
+
+  88% {
+    animation-timing-function: cubic-bezier(0.4, 0, 1, 1);
+  }
+
+  94% {
+    opacity: 0;
+    transform: translate(-50%, -50%)
+      translateX(
+        calc(
+          (var(--bee-anchor-x) + var(--loader-exit-shift)) * var(--word-scale) *
+            var(--word-spacing-factor)
+        )
+      )
+      scaleX(0.98) scaleY(1.02);
+  }
+
+  94.01%,
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%)
+      translateX(
+        calc(
+          var(--three-anchor-x) * var(--word-scale) * var(--word-spacing-factor)
+        )
+      )
+      scaleX(var(--loader-group-scale-x)) scaleY(var(--loader-group-scale-y));
+  }
+}
+
+@media (max-width: 640px) {
+  .brand-animation {
+    width: min(100%, var(--brand-animation-width-mobile, 19rem));
+    height: var(--brand-animation-height-mobile, 6rem);
+    --word-scale: var(--brand-animation-scale-mobile, 0.74);
+  }
+
+  .brand-animation__letter {
+    width: var(--brand-animation-letter-width-mobile, 2.8rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-animation__letter {
+    animation: none !important;
+    transform: translate(-50%, -50%)
+      translateX(
+        calc(var(--word-x) * var(--word-scale) * var(--word-spacing-factor))
+      )
+      scale(1);
+  }
+}

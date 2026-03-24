@@ -71,7 +71,7 @@ public class PublicShopCatalogService {
 
     public List<ShopCategoryTreeDto> getCategories(String language) {
         CategoryContext categoryContext = loadCategoryContext(language);
-        return buildCategoryTree(null, categoryContext);
+        return buildCategoryTree(null, categoryContext, language);
     }
 
     public ShopCategoryDetailDto getCategory(String slug, String language) {
@@ -83,7 +83,7 @@ public class PublicShopCatalogService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found");
         }
 
-        return buildCategoryDetail(category, categoryContext);
+        return buildCategoryDetail(category, categoryContext, language);
     }
 
     public ShopProductCatalogResponseDto getProductCatalog(String categorySlug, Boolean featuredOnly, String language) {
@@ -114,7 +114,7 @@ public class PublicShopCatalogService {
                 .toList();
 
         ShopCategoryDetailDto selectedCategoryDetail = selectedCategory != null
-                ? buildCategoryDetail(selectedCategory, categoryContext)
+                ? buildCategoryDetail(selectedCategory, categoryContext, language)
                 : null;
 
         return new ShopProductCatalogResponseDto(
@@ -126,24 +126,40 @@ public class PublicShopCatalogService {
     }
 
     public ShopProductDetailDto getProduct(String slug, String language) {
-        CategoryContext categoryContext = loadCategoryContext(language);
-        PublicProductContext productContext = loadPublicProductContext(categoryContext, language);
+        String normalizedLanguage = normalizeLanguage(language);
+        CategoryContext categoryContext = loadCategoryContext(normalizedLanguage);
+        PublicProductContext productContext = loadPublicProductContext(categoryContext, normalizedLanguage);
+        ProductEntry entry = requirePublicProductEntry(
+                productContext.entriesBySlug().get(slug),
+                categoryContext
+        );
+        return toProductDetailDto(
+                entry,
+                productContext.productMediaBySlug(),
+                productContext.variantColorHexByMaterialAndColor(),
+                normalizedLanguage
+        );
+    }
 
-        ProductEntry entry = productContext.entriesBySlug().get(slug);
-        if (entry == null) {
+    public ShopProductDetailDto getProductByPublicPath(String publicPathSegment, String language) {
+        String normalizedLanguage = normalizeLanguage(language);
+        String normalizedPublicPath = normalizePublicPathSegment(publicPathSegment);
+        if (normalizedPublicPath == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found");
         }
 
-        ShopCategory category = entry.product().getCategory();
-        if (category == null || !categoryContext.categoriesById().containsKey(category.getId())) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found");
-        }
+        CategoryContext categoryContext = loadCategoryContext(normalizedLanguage);
+        PublicProductContext productContext = loadPublicProductContext(categoryContext, normalizedLanguage);
+        ProductEntry entry = requirePublicProductEntry(
+                productContext.entriesByPublicPath().get(normalizedPublicPath),
+                categoryContext
+        );
 
         return toProductDetailDto(
                 entry,
                 productContext.productMediaBySlug(),
                 productContext.variantColorHexByMaterialAndColor(),
-                language
+                normalizedLanguage
         );
     }
 
@@ -197,6 +213,7 @@ public class PublicShopCatalogService {
     }
 
     private PublicProductContext loadPublicProductContext(CategoryContext categoryContext, String language) {
+        String normalizedLanguage = normalizeLanguage(language);
         List<ProductEntry> entries = loadPublicProducts(categoryContext.categoriesById().keySet());
         Map<String, List<PublicMediaUsageDto>> productMediaBySlug = publicMediaQueryService.getUsageMediaMap(
                 SHOP_PRODUCT_MEDIA_USAGE_TYPE,
@@ -207,8 +224,21 @@ public class PublicShopCatalogService {
 
         Map<String, ProductEntry> entriesBySlug = entries.stream()
                 .collect(Collectors.toMap(entry -> entry.product().getSlug(), entry -> entry, (left, right) -> left, LinkedHashMap::new));
+        Map<String, ProductEntry> entriesByPublicPath = entries.stream()
+                .collect(Collectors.toMap(
+                        entry -> normalizePublicPathSegment(ShopPublicPathSupport.buildProductPathSegment(entry.product(), normalizedLanguage)),
+                        entry -> entry,
+                        (left, right) -> left,
+                        LinkedHashMap::new
+                ));
 
-        return new PublicProductContext(entries, entriesBySlug, productMediaBySlug, variantColorHexByMaterialAndColor);
+        return new PublicProductContext(
+                entries,
+                entriesBySlug,
+                entriesByPublicPath,
+                productMediaBySlug,
+                variantColorHexByMaterialAndColor
+        );
     }
 
     private Map<String, String> buildFilamentVariantColorHexMap() {
@@ -316,53 +346,63 @@ public class PublicShopCatalogService {
         return total;
     }
 
-    private List<ShopCategoryTreeDto> buildCategoryTree(UUID parentId, CategoryContext categoryContext) {
+    private List<ShopCategoryTreeDto> buildCategoryTree(UUID parentId,
+                                                        CategoryContext categoryContext,
+                                                        String language) {
         return categoryContext.childrenByParentId().getOrDefault(parentId, List.of()).stream()
                 .map(category -> new ShopCategoryTreeDto(
                         category.getId(),
                         category.getParentCategory() != null ? category.getParentCategory().getId() : null,
                         category.getSlug(),
-                        category.getName(),
-                        category.getDescription(),
-                        category.getSeoTitle(),
-                        category.getSeoDescription(),
+                        category.getNameForLanguage(language),
+                        category.getDescriptionForLanguage(language),
+                        category.getSeoTitleForLanguage(language),
+                        category.getSeoDescriptionForLanguage(language),
                         category.getOgTitle(),
                         category.getOgDescription(),
                         category.getIndexable(),
                         category.getSortOrder(),
                         categoryContext.descendantProductCounts().getOrDefault(category.getId(), 0),
                         selectPrimaryMedia(categoryContext.categoryMediaBySlug().get(categoryMediaUsageKey(category))),
-                        buildCategoryTree(category.getId(), categoryContext)
+                        buildCategoryTree(category.getId(), categoryContext, language)
                 ))
                 .toList();
     }
 
-    private ShopCategoryDetailDto buildCategoryDetail(ShopCategory category, CategoryContext categoryContext) {
+    private ShopCategoryDetailDto buildCategoryDetail(ShopCategory category,
+                                                      CategoryContext categoryContext,
+                                                      String language) {
         List<PublicMediaUsageDto> images = categoryContext.categoryMediaBySlug().getOrDefault(categoryMediaUsageKey(category), List.of());
+        String localizedSeoTitle = category.getSeoTitleForLanguage(language);
+        String localizedSeoDescription = category.getSeoDescriptionForLanguage(language);
         return new ShopCategoryDetailDto(
                 category.getId(),
                 category.getSlug(),
-                category.getName(),
-                category.getDescription(),
-                category.getSeoTitle(),
-                category.getSeoDescription(),
+                category.getNameForLanguage(language),
+                category.getDescriptionForLanguage(language),
+                localizedSeoTitle,
+                localizedSeoDescription,
                 category.getOgTitle(),
                 category.getOgDescription(),
                 category.getIndexable(),
                 category.getSortOrder(),
                 categoryContext.descendantProductCounts().getOrDefault(category.getId(), 0),
-                buildCategoryBreadcrumbs(category),
+                buildCategoryBreadcrumbs(category, language),
                 selectPrimaryMedia(images),
                 images,
-                buildCategoryTree(category.getId(), categoryContext)
+                buildCategoryTree(category.getId(), categoryContext, language)
         );
     }
 
-    private List<ShopCategoryRefDto> buildCategoryBreadcrumbs(ShopCategory category) {
+    private List<ShopCategoryRefDto> buildCategoryBreadcrumbs(ShopCategory category, String language) {
         List<ShopCategoryRefDto> breadcrumbs = new ArrayList<>();
         ShopCategory current = category;
         while (current != null) {
-            breadcrumbs.add(new ShopCategoryRefDto(current.getId(), current.getSlug(), current.getName()));
+            breadcrumbs.add(new ShopCategoryRefDto(
+                    current.getId(),
+                    current.getSlug(),
+                    current.getNameForLanguage(language)
+            ));
             current = current.getParentCategory();
         }
         java.util.Collections.reverse(breadcrumbs);
@@ -389,6 +429,9 @@ public class PublicShopCatalogService {
                                                       Map<String, String> variantColorHexByMaterialAndColor,
                                                       String language) {
         List<PublicMediaUsageDto> images = productMediaBySlug.getOrDefault(productMediaUsageKey(entry.product()), List.of());
+        String normalizedLanguage = normalizeLanguage(language);
+        String publicPathSegment = ShopPublicPathSupport.buildProductPathSegment(entry.product(), normalizedLanguage);
+        Map<String, String> localizedPaths = ShopPublicPathSupport.buildLocalizedProductPaths(entry.product());
         return new ShopProductSummaryDto(
                 entry.product().getId(),
                 entry.product().getSlug(),
@@ -399,13 +442,15 @@ public class PublicShopCatalogService {
                 new ShopCategoryRefDto(
                         entry.product().getCategory().getId(),
                         entry.product().getCategory().getSlug(),
-                        entry.product().getCategory().getName()
+                        entry.product().getCategory().getNameForLanguage(language)
                 ),
                 resolvePriceFrom(entry.variants()),
                 resolvePriceTo(entry.variants()),
-                toVariantDto(entry.defaultVariant(), entry.defaultVariant(), variantColorHexByMaterialAndColor),
+                toVariantDto(entry.defaultVariant(), entry.defaultVariant(), variantColorHexByMaterialAndColor, language),
                 selectPrimaryMedia(images),
-                toProductModelDto(entry)
+                toProductModelDto(entry),
+                publicPathSegment,
+                localizedPaths
         );
     }
 
@@ -416,8 +461,10 @@ public class PublicShopCatalogService {
         List<PublicMediaUsageDto> images = productMediaBySlug.getOrDefault(productMediaUsageKey(entry.product()), List.of());
         String localizedSeoTitle = entry.product().getSeoTitleForLanguage(language);
         String localizedSeoDescription = entry.product().getSeoDescriptionForLanguage(language);
-        return new ShopProductDetailDto(
-                entry.product().getId(),
+        String normalizedLanguage = normalizeLanguage(language);
+        String publicPathSegment = ShopPublicPathSupport.buildProductPathSegment(entry.product(), normalizedLanguage);
+        Map<String, String> localizedPaths = ShopPublicPathSupport.buildLocalizedProductPaths(entry.product());
+        return new ShopProductDetailDto(entry.product().getId(),
                 entry.product().getSlug(),
                 entry.product().getNameForLanguage(language),
                 entry.product().getExcerptForLanguage(language),
@@ -432,24 +479,27 @@ public class PublicShopCatalogService {
                 new ShopCategoryRefDto(
                         entry.product().getCategory().getId(),
                         entry.product().getCategory().getSlug(),
-                        entry.product().getCategory().getName()
+                        entry.product().getCategory().getNameForLanguage(language)
                 ),
-                buildCategoryBreadcrumbs(entry.product().getCategory()),
+                buildCategoryBreadcrumbs(entry.product().getCategory(), language),
                 resolvePriceFrom(entry.variants()),
                 resolvePriceTo(entry.variants()),
-                toVariantDto(entry.defaultVariant(), entry.defaultVariant(), variantColorHexByMaterialAndColor),
+                toVariantDto(entry.defaultVariant(), entry.defaultVariant(), variantColorHexByMaterialAndColor, language),
                 entry.variants().stream()
-                        .map(variant -> toVariantDto(variant, entry.defaultVariant(), variantColorHexByMaterialAndColor))
+                        .map(variant -> toVariantDto(variant, entry.defaultVariant(), variantColorHexByMaterialAndColor, language))
                         .toList(),
                 selectPrimaryMedia(images),
                 images,
-                toProductModelDto(entry)
+                toProductModelDto(entry),
+                publicPathSegment,
+                localizedPaths
         );
     }
 
     private ShopProductVariantOptionDto toVariantDto(ShopProductVariant variant,
                                                      ShopProductVariant defaultVariant,
-                                                     Map<String, String> variantColorHexByMaterialAndColor) {
+                                                     Map<String, String> variantColorHexByMaterialAndColor,
+                                                     String language) {
         if (variant == null) {
             return null;
         }
@@ -463,6 +513,7 @@ public class PublicShopCatalogService {
                 variant.getSku(),
                 variant.getVariantLabel(),
                 variant.getColorName(),
+                variant.getColorLabelForLanguage(language),
                 colorHex,
                 variant.getPriceChf(),
                 defaultVariant != null && Objects.equals(defaultVariant.getId(), variant.getId())
@@ -494,12 +545,49 @@ public class PublicShopCatalogService {
         return raw.toLowerCase(Locale.ROOT);
     }
 
+    private ProductEntry requirePublicProductEntry(ProductEntry entry, CategoryContext categoryContext) {
+        if (entry == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found");
+        }
+
+        ShopCategory category = entry.product().getCategory();
+        if (category == null || !categoryContext.categoriesById().containsKey(category.getId())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found");
+        }
+
+        return entry;
+    }
+
+    private String normalizePublicPathSegment(String publicPathSegment) {
+        String normalized = trimToNull(publicPathSegment);
+        if (normalized == null) {
+            return null;
+        }
+        return normalized.toLowerCase(Locale.ROOT);
+    }
+
     private String trimToNull(String value) {
         String raw = String.valueOf(value == null ? "" : value).trim();
         if (raw.isEmpty()) {
             return null;
         }
         return raw;
+    }
+
+    private String normalizeLanguage(String language) {
+        String normalized = trimToNull(language);
+        if (normalized == null) {
+            return "it";
+        }
+        normalized = normalized.toLowerCase(Locale.ROOT);
+        int separatorIndex = normalized.indexOf('-');
+        if (separatorIndex > 0) {
+            normalized = normalized.substring(0, separatorIndex);
+        }
+        return switch (normalized) {
+            case "en", "de", "fr" -> normalized;
+            default -> "it";
+        };
     }
 
     private ShopProductModelDto toProductModelDto(ProductEntry entry) {
@@ -573,6 +661,7 @@ public class PublicShopCatalogService {
     private record PublicProductContext(
             List<ProductEntry> entries,
             Map<String, ProductEntry> entriesBySlug,
+            Map<String, ProductEntry> entriesByPublicPath,
             Map<String, List<PublicMediaUsageDto>> productMediaBySlug,
             Map<String, String> variantColorHexByMaterialAndColor
     ) {

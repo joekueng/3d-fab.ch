@@ -44,6 +44,10 @@ create table filament_variant
 
     variant_display_name      text           not null, -- es: "PLA Nero Opaco BrandX"
     color_name                text           not null, -- Nero, Bianco, ecc.
+    color_label_it            text,
+    color_label_en            text,
+    color_label_de            text,
+    color_label_fr            text,
     color_hex                 text,
     finish_type               text           not null default 'GLOSSY'
         check (finish_type in ('GLOSSY', 'MATTE', 'MARBLE', 'SILK', 'TRANSLUCENT', 'SPECIAL')),
@@ -69,6 +73,22 @@ select filament_variant_id,
        spool_net_kg,
        (stock_spools * spool_net_kg) as stock_kg
 from filament_variant;
+
+alter table filament_variant
+    add column if not exists color_label_it text,
+    add column if not exists color_label_en text,
+    add column if not exists color_label_de text,
+    add column if not exists color_label_fr text;
+
+update filament_variant
+set color_label_it = coalesce(nullif(btrim(color_label_it), ''), color_name),
+    color_label_en = coalesce(nullif(btrim(color_label_en), ''), color_name),
+    color_label_de = coalesce(nullif(btrim(color_label_de), ''), color_name),
+    color_label_fr = coalesce(nullif(btrim(color_label_fr), ''), color_name)
+where nullif(btrim(color_label_it), '') is null
+   or nullif(btrim(color_label_en), '') is null
+   or nullif(btrim(color_label_de), '') is null
+   or nullif(btrim(color_label_fr), '') is null;
 
 create table printer_machine_profile
 (
@@ -1013,9 +1033,25 @@ CREATE TABLE IF NOT EXISTS shop_category
     parent_category_id  uuid REFERENCES shop_category (shop_category_id) ON DELETE SET NULL,
     slug                text        NOT NULL UNIQUE,
     name                text        NOT NULL,
+    name_it             text,
+    name_en             text,
+    name_de             text,
+    name_fr             text,
     description         text,
+    description_it      text,
+    description_en      text,
+    description_de      text,
+    description_fr      text,
     seo_title           text,
+    seo_title_it        text,
+    seo_title_en        text,
+    seo_title_de        text,
+    seo_title_fr        text,
     seo_description     text,
+    seo_description_it  text,
+    seo_description_en  text,
+    seo_description_de  text,
+    seo_description_fr  text,
     og_title            text,
     og_description      text,
     indexable           boolean     NOT NULL DEFAULT true,
@@ -1033,6 +1069,66 @@ CREATE INDEX IF NOT EXISTS ix_shop_category_parent_sort
 
 CREATE INDEX IF NOT EXISTS ix_shop_category_active_sort
     ON shop_category (is_active, sort_order, created_at DESC);
+
+ALTER TABLE shop_category
+    ADD COLUMN IF NOT EXISTS name_it text,
+    ADD COLUMN IF NOT EXISTS name_en text,
+    ADD COLUMN IF NOT EXISTS name_de text,
+    ADD COLUMN IF NOT EXISTS name_fr text,
+    ADD COLUMN IF NOT EXISTS description_it text,
+    ADD COLUMN IF NOT EXISTS description_en text,
+    ADD COLUMN IF NOT EXISTS description_de text,
+    ADD COLUMN IF NOT EXISTS description_fr text,
+    ADD COLUMN IF NOT EXISTS seo_title_it text,
+    ADD COLUMN IF NOT EXISTS seo_title_en text,
+    ADD COLUMN IF NOT EXISTS seo_title_de text,
+    ADD COLUMN IF NOT EXISTS seo_title_fr text,
+    ADD COLUMN IF NOT EXISTS seo_description_it text,
+    ADD COLUMN IF NOT EXISTS seo_description_en text,
+    ADD COLUMN IF NOT EXISTS seo_description_de text,
+    ADD COLUMN IF NOT EXISTS seo_description_fr text;
+
+UPDATE shop_category
+SET
+    name_it = COALESCE(NULLIF(btrim(name_it), ''), name),
+    name_en = COALESCE(NULLIF(btrim(name_en), ''), name),
+    name_de = COALESCE(NULLIF(btrim(name_de), ''), name),
+    name_fr = COALESCE(NULLIF(btrim(name_fr), ''), name),
+    description_it = COALESCE(NULLIF(btrim(description_it), ''), description),
+    description_en = COALESCE(NULLIF(btrim(description_en), ''), description),
+    description_de = COALESCE(NULLIF(btrim(description_de), ''), description),
+    description_fr = COALESCE(NULLIF(btrim(description_fr), ''), description),
+    seo_title_it = COALESCE(NULLIF(btrim(seo_title_it), ''), seo_title),
+    seo_title_en = COALESCE(NULLIF(btrim(seo_title_en), ''), seo_title),
+    seo_title_de = COALESCE(NULLIF(btrim(seo_title_de), ''), seo_title),
+    seo_title_fr = COALESCE(NULLIF(btrim(seo_title_fr), ''), seo_title),
+    seo_description_it = COALESCE(NULLIF(btrim(seo_description_it), ''), seo_description),
+    seo_description_en = COALESCE(NULLIF(btrim(seo_description_en), ''), seo_description),
+    seo_description_de = COALESCE(NULLIF(btrim(seo_description_de), ''), seo_description),
+    seo_description_fr = COALESCE(NULLIF(btrim(seo_description_fr), ''), seo_description)
+WHERE
+    NULLIF(btrim(name_it), '') IS NULL
+    OR NULLIF(btrim(name_en), '') IS NULL
+    OR NULLIF(btrim(name_de), '') IS NULL
+    OR NULLIF(btrim(name_fr), '') IS NULL
+    OR (description IS NOT NULL AND (
+        NULLIF(btrim(description_it), '') IS NULL
+        OR NULLIF(btrim(description_en), '') IS NULL
+        OR NULLIF(btrim(description_de), '') IS NULL
+        OR NULLIF(btrim(description_fr), '') IS NULL
+    ))
+    OR (seo_title IS NOT NULL AND (
+        NULLIF(btrim(seo_title_it), '') IS NULL
+        OR NULLIF(btrim(seo_title_en), '') IS NULL
+        OR NULLIF(btrim(seo_title_de), '') IS NULL
+        OR NULLIF(btrim(seo_title_fr), '') IS NULL
+    ))
+    OR (seo_description IS NOT NULL AND (
+        NULLIF(btrim(seo_description_it), '') IS NULL
+        OR NULLIF(btrim(seo_description_en), '') IS NULL
+        OR NULLIF(btrim(seo_description_de), '') IS NULL
+        OR NULLIF(btrim(seo_description_fr), '') IS NULL
+    ));
 
 CREATE TABLE IF NOT EXISTS shop_product
 (
@@ -1165,6 +1261,10 @@ CREATE TABLE IF NOT EXISTS shop_product_variant
     sku                     text UNIQUE,
     variant_label           text        NOT NULL,
     color_name              text        NOT NULL,
+    color_label_it          text,
+    color_label_en          text,
+    color_label_de          text,
+    color_label_fr          text,
     color_hex               text,
     internal_material_code  text        NOT NULL,
     price_chf               numeric(12, 2) NOT NULL DEFAULT 0.00 CHECK (price_chf >= 0),
@@ -1180,6 +1280,22 @@ CREATE INDEX IF NOT EXISTS ix_shop_product_variant_product_active_sort
 
 CREATE INDEX IF NOT EXISTS ix_shop_product_variant_sku
     ON shop_product_variant (sku);
+
+ALTER TABLE shop_product_variant
+    ADD COLUMN IF NOT EXISTS color_label_it text,
+    ADD COLUMN IF NOT EXISTS color_label_en text,
+    ADD COLUMN IF NOT EXISTS color_label_de text,
+    ADD COLUMN IF NOT EXISTS color_label_fr text;
+
+UPDATE shop_product_variant
+SET color_label_it = COALESCE(NULLIF(btrim(color_label_it), ''), color_name),
+    color_label_en = COALESCE(NULLIF(btrim(color_label_en), ''), color_name),
+    color_label_de = COALESCE(NULLIF(btrim(color_label_de), ''), color_name),
+    color_label_fr = COALESCE(NULLIF(btrim(color_label_fr), ''), color_name)
+WHERE NULLIF(btrim(color_label_it), '') IS NULL
+   OR NULLIF(btrim(color_label_en), '') IS NULL
+   OR NULLIF(btrim(color_label_de), '') IS NULL
+   OR NULLIF(btrim(color_label_fr), '') IS NULL;
 
 CREATE TABLE IF NOT EXISTS shop_product_model_asset
 (

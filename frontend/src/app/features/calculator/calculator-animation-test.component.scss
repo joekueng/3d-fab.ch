@@ -1,0 +1,60 @@
+:host {
+  display: block;
+}
+
+.animation-test-page {
+  min-height: 100vh;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 1.5rem;
+  padding: 2rem 1.5rem 3rem;
+  background: #fff;
+}
+
+.animation-toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem;
+  border: 1px solid rgba(16, 24, 32, 0.12);
+  border-radius: 999px;
+  background: #f7f5ef;
+}
+
+.variant-toggle {
+  min-height: 2.4rem;
+  padding: 0 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.variant-toggle.active {
+  background: #fff;
+  color: var(--color-text);
+  box-shadow: 0 6px 16px rgba(16, 24, 32, 0.08);
+}
+
+.animation-stage {
+  width: min(100%, 26rem);
+}
+
+@media (max-width: 640px) {
+  .animation-toolbar {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .animation-stage {
+    width: min(100%, 19rem);
+  }
+}

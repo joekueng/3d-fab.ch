@@ -56,6 +56,12 @@ public class PublicShopController {
         return ResponseEntity.ok(publicShopCatalogService.getProduct(slug, lang));
     }
 
+    @GetMapping("/products/by-path/{publicPath}")
+    public ResponseEntity<ShopProductDetailDto> getProductByPublicPath(@PathVariable String publicPath,
+                                                                       @RequestParam(required = false) String lang) {
+        return ResponseEntity.ok(publicShopCatalogService.getProductByPublicPath(publicPath, lang));
+    }
+
     @GetMapping("/products/{slug}/model")
     public ResponseEntity<Resource> getProductModel(@PathVariable String slug) throws IOException {
         PublicShopCatalogService.ProductModelDownload model = publicShopCatalogService.getProductModelDownload(slug);

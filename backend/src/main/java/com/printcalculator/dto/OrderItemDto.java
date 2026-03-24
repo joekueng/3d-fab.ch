@@ -17,9 +17,17 @@ public class OrderItemDto {
     private String shopProductName;
     private String shopVariantLabel;
     private String shopVariantColorName;
+    private String shopVariantColorLabelIt;
+    private String shopVariantColorLabelEn;
+    private String shopVariantColorLabelDe;
+    private String shopVariantColorLabelFr;
     private String shopVariantColorHex;
     private String filamentVariantDisplayName;
     private String filamentColorName;
+    private String filamentColorLabelIt;
+    private String filamentColorLabelEn;
+    private String filamentColorLabelDe;
+    private String filamentColorLabelFr;
     private String filamentColorHex;
     private String quality;
     private BigDecimal nozzleDiameterMm;
@@ -73,6 +81,18 @@ public class OrderItemDto {
     public String getShopVariantColorName() { return shopVariantColorName; }
     public void setShopVariantColorName(String shopVariantColorName) { this.shopVariantColorName = shopVariantColorName; }
 
+    public String getShopVariantColorLabelIt() { return shopVariantColorLabelIt; }
+    public void setShopVariantColorLabelIt(String shopVariantColorLabelIt) { this.shopVariantColorLabelIt = shopVariantColorLabelIt; }
+
+    public String getShopVariantColorLabelEn() { return shopVariantColorLabelEn; }
+    public void setShopVariantColorLabelEn(String shopVariantColorLabelEn) { this.shopVariantColorLabelEn = shopVariantColorLabelEn; }
+
+    public String getShopVariantColorLabelDe() { return shopVariantColorLabelDe; }
+    public void setShopVariantColorLabelDe(String shopVariantColorLabelDe) { this.shopVariantColorLabelDe = shopVariantColorLabelDe; }
+
+    public String getShopVariantColorLabelFr() { return shopVariantColorLabelFr; }
+    public void setShopVariantColorLabelFr(String shopVariantColorLabelFr) { this.shopVariantColorLabelFr = shopVariantColorLabelFr; }
+
     public String getShopVariantColorHex() { return shopVariantColorHex; }
     public void setShopVariantColorHex(String shopVariantColorHex) { this.shopVariantColorHex = shopVariantColorHex; }
 
@@ -81,6 +101,18 @@ public class OrderItemDto {
 
     public String getFilamentColorName() { return filamentColorName; }
     public void setFilamentColorName(String filamentColorName) { this.filamentColorName = filamentColorName; }
+
+    public String getFilamentColorLabelIt() { return filamentColorLabelIt; }
+    public void setFilamentColorLabelIt(String filamentColorLabelIt) { this.filamentColorLabelIt = filamentColorLabelIt; }
+
+    public String getFilamentColorLabelEn() { return filamentColorLabelEn; }
+    public void setFilamentColorLabelEn(String filamentColorLabelEn) { this.filamentColorLabelEn = filamentColorLabelEn; }
+
+    public String getFilamentColorLabelDe() { return filamentColorLabelDe; }
+    public void setFilamentColorLabelDe(String filamentColorLabelDe) { this.filamentColorLabelDe = filamentColorLabelDe; }
+
+    public String getFilamentColorLabelFr() { return filamentColorLabelFr; }
+    public void setFilamentColorLabelFr(String filamentColorLabelFr) { this.filamentColorLabelFr = filamentColorLabelFr; }
 
     public String getFilamentColorHex() { return filamentColorHex; }
     public void setFilamentColorHex(String filamentColorHex) { this.filamentColorHex = filamentColorHex; }

@@ -15,9 +15,8 @@ const appChildRoutes: Routes = [
     loadComponent: () =>
       import('./features/home/home.component').then((m) => m.HomeComponent),
     data: {
-      seoTitle: '3D fab | Stampa 3D su misura',
-      seoDescription:
-        'Servizio di stampa 3D con preventivo online immediato per prototipi, piccole serie e pezzi personalizzati.',
+      seoTitleKey: 'SEO.ROUTES.HOME.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.HOME.DESCRIPTION',
     },
   },
   {
@@ -27,9 +26,8 @@ const appChildRoutes: Routes = [
         (m) => m.CALCULATOR_ROUTES,
       ),
     data: {
-      seoTitle: 'Calcolatore preventivo stampa 3D | 3D fab',
-      seoDescription:
-        'Carica il file 3D e ottieni prezzo e tempi in pochi secondi con slicing reale.',
+      seoTitleKey: 'SEO.ROUTES.CALCULATOR.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.CALCULATOR.DESCRIPTION',
     },
   },
   {
@@ -37,9 +35,8 @@ const appChildRoutes: Routes = [
     loadChildren: () =>
       import('./features/shop/shop.routes').then((m) => m.SHOP_ROUTES),
     data: {
-      seoTitle: 'Shop 3D fab',
-      seoDescription:
-        'Catalogo prodotti stampati in 3D e soluzioni tecniche pronte all uso.',
+      seoTitleKey: 'SEO.ROUTES.SHOP.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.SHOP.DESCRIPTION',
     },
   },
   {
@@ -47,19 +44,28 @@ const appChildRoutes: Routes = [
     loadChildren: () =>
       import('./features/about/about.routes').then((m) => m.ABOUT_ROUTES),
     data: {
-      seoTitle: 'Chi siamo | 3D fab',
-      seoDescription:
-        'Scopri il team 3D fab e il laboratorio di stampa 3D con sedi in Ticino e Bienne.',
+      seoTitleKey: 'SEO.ROUTES.ABOUT.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.ABOUT.DESCRIPTION',
     },
   },
+  /* {
+    path: 'materials',
+    loadComponent: () =>
+      import('./features/materials/materials-page.component').then(
+        (m) => m.MaterialsPageComponent,
+      ),
+    data: {
+      seoTitleKey: 'SEO.ROUTES.MATERIALS.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.MATERIALS.DESCRIPTION',
+    },
+  },*/
   {
     path: 'contact',
     loadChildren: () =>
       import('./features/contact/contact.routes').then((m) => m.CONTACT_ROUTES),
     data: {
-      seoTitle: 'Contatti | 3D fab',
-      seoDescription:
-        'Contatta 3D fab per preventivi, supporto tecnico e richieste personalizzate di stampa 3D.',
+      seoTitleKey: 'SEO.ROUTES.CONTACT.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.CONTACT.DESCRIPTION',
     },
   },
   {
@@ -69,7 +75,8 @@ const appChildRoutes: Routes = [
         (m) => m.CheckoutComponent,
       ),
     data: {
-      seoTitle: 'Checkout | 3D fab',
+      seoTitleKey: 'SEO.ROUTES.CHECKOUT.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.CHECKOUT.DESCRIPTION',
       seoRobots: 'noindex, nofollow',
     },
   },
@@ -80,7 +87,8 @@ const appChildRoutes: Routes = [
         (m) => m.CheckoutComponent,
       ),
     data: {
-      seoTitle: 'Checkout | 3D fab',
+      seoTitleKey: 'SEO.ROUTES.CHECKOUT.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.CHECKOUT.DESCRIPTION',
       seoRobots: 'noindex, nofollow',
     },
   },
@@ -89,7 +97,8 @@ const appChildRoutes: Routes = [
     loadComponent: () =>
       import('./features/order/order.component').then((m) => m.OrderComponent),
     data: {
-      seoTitle: 'Ordine | 3D fab',
+      seoTitleKey: 'SEO.ROUTES.ORDER.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.ORDER.DESCRIPTION',
       seoRobots: 'noindex, nofollow',
     },
   },
@@ -98,7 +107,8 @@ const appChildRoutes: Routes = [
     loadComponent: () =>
       import('./features/order/order.component').then((m) => m.OrderComponent),
     data: {
-      seoTitle: 'Ordine | 3D fab',
+      seoTitleKey: 'SEO.ROUTES.ORDER.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.ORDER.DESCRIPTION',
       seoRobots: 'noindex, nofollow',
     },
   },
@@ -112,7 +122,8 @@ const appChildRoutes: Routes = [
     loadChildren: () =>
       import('./features/admin/admin.routes').then((m) => m.ADMIN_ROUTES),
     data: {
-      seoTitle: 'Admin | 3D fab',
+      seoTitleKey: 'SEO.ROUTES.ADMIN.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.ADMIN.DESCRIPTION',
       seoRobots: 'noindex, nofollow',
     },
   },
@@ -123,6 +134,31 @@ const appChildRoutes: Routes = [
 ];
 
 export const routes: Routes = [
+  {
+    path: ':lang/calculator/animation-test',
+    canMatch: [langPrefixCanMatch],
+    loadComponent: () =>
+      import('./features/calculator/calculator-animation-test.component').then(
+        (m) => m.CalculatorAnimationTestComponent,
+      ),
+    data: {
+      seoTitleKey: 'SEO.ROUTES.CALCULATOR.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.CALCULATOR.DESCRIPTION',
+      seoRobots: 'noindex, nofollow',
+    },
+  },
+  {
+    path: 'calculator/animation-test',
+    loadComponent: () =>
+      import('./features/calculator/calculator-animation-test.component').then(
+        (m) => m.CalculatorAnimationTestComponent,
+      ),
+    data: {
+      seoTitleKey: 'SEO.ROUTES.CALCULATOR.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.CALCULATOR.DESCRIPTION',
+      seoRobots: 'noindex, nofollow',
+    },
+  },
   {
     path: ':lang',
     canMatch: [langPrefixCanMatch],

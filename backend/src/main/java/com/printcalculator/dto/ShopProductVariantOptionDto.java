@@ -8,6 +8,7 @@ public record ShopProductVariantOptionDto(
         String sku,
         String variantLabel,
         String colorName,
+        String colorLabel,
         String colorHex,
         BigDecimal priceChf,
         Boolean isDefault

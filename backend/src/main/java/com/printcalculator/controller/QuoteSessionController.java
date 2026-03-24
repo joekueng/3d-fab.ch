@@ -130,6 +130,7 @@ public class QuoteSessionController {
     }
 
     @GetMapping("/{id}")
+    @Transactional(readOnly = true)
     public ResponseEntity<Map<String, Object>> getQuoteSession(@PathVariable UUID id) {
         QuoteSession session = sessionRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Session not found"));

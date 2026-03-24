@@ -4,6 +4,12 @@ import express from 'express';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import bootstrap from './main.server';
+import { resolveRequestOrigin } from './core/request-origin';
+import {
+  parseAcceptLanguage,
+  resolveInitialLanguage,
+} from './app/core/i18n/language-resolution';
+import { resolvePublicRedirectTarget } from './server-routing';
 
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
@@ -35,17 +41,47 @@ app.get(
   }),
 );
 
+app.get('/', (req, res) => {
+  const userAgent = req.get('user-agent');
+  const preferredLanguages = parseAcceptLanguage(req.get('accept-language'));
+  const lang = resolveInitialLanguage({
+    preferredLanguages,
+  });
+  const stableRedirect = shouldUseStableRootRedirect(
+    userAgent,
+    preferredLanguages,
+  );
+
+  res.setHeader('Vary', 'Accept-Language, User-Agent');
+  res.setHeader('Cache-Control', 'private, no-store');
+  res.redirect(
+    stableRedirect ? 308 : 302,
+    `/${stableRedirect ? 'it' : lang}${querySuffix(req.originalUrl)}`,
+  );
+});
+
+app.get('**', (req, res, next) => {
+  const targetPath = resolvePublicRedirectTarget(req.path);
+  if (!targetPath) {
+    next();
+    return;
+  }
+
+  res.redirect(308, `${targetPath}${querySuffix(req.originalUrl)}`);
+});
+
 /**
  * Handle all other requests by rendering the Angular application.
  */
 app.get('**', (req, res, next) => {
-  const { protocol, originalUrl, baseUrl, headers } = req;
+  const { originalUrl, baseUrl } = req;
+  const origin = resolveRequestOrigin(req);
 
   commonEngine
     .render({
       bootstrap,
       documentFilePath: indexHtml,
-      url: `${protocol}://${headers.host}${originalUrl}`,
+      url: `${origin ?? 'http://localhost:4000'}${originalUrl}`,
       publicPath: browserDistFolder,
       providers: [{ provide: APP_BASE_HREF, useValue: baseUrl }],
     })
@@ -65,3 +101,26 @@ if (isMainModule(import.meta.url)) {
 }
 
 export default app;
+
+function querySuffix(url: string): string {
+  const queryIndex = String(url ?? '').indexOf('?');
+  return queryIndex >= 0 ? String(url).slice(queryIndex) : '';
+}
+
+function shouldUseStableRootRedirect(
+  userAgent: string | undefined,
+  preferredLanguages: readonly string[],
+): boolean {
+  return preferredLanguages.length === 0 || isLikelyCrawler(userAgent);
+}
+
+function isLikelyCrawler(userAgent: string | undefined): boolean {
+  const normalized = String(userAgent ?? '').toLowerCase();
+  if (!normalized) {
+    return false;
+  }
+
+  return /(bot|crawler|spider|slurp|bingpreview|google-read-aloud)/.test(
+    normalized,
+  );
+}

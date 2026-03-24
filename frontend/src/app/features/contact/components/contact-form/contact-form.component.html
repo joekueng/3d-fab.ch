@@ -85,9 +85,11 @@
       <p class="ui-form-hint">{{ "CONTACT.UPLOAD_HINT" | translate }}</p>
       <p class="ui-form-hint upload-privacy-note">
         {{ "LEGAL.CONSENT.UPLOAD_NOTICE_PREFIX" | translate }}
-        <a href="/privacy" target="_blank" rel="noopener">{{
-          "LEGAL.CONSENT.UPLOAD_NOTICE_LINK" | translate
-        }}</a
+        <a
+          [href]="languageService.localizedPath('/privacy')"
+          target="_blank"
+          rel="noopener"
+          >{{ "LEGAL.CONSENT.UPLOAD_NOTICE_LINK" | translate }}</a
         >.
       </p>
 
@@ -161,13 +163,18 @@
         <span class="ui-checkbox__mark"></span>
         <span>
           {{ "LEGAL.CONSENT.LABEL_PREFIX" | translate }}
-          <a href="/terms" target="_blank" rel="noopener">{{
-            "LEGAL.CONSENT.TERMS_LINK" | translate
-          }}</a>
+          <a
+            [href]="languageService.localizedPath('/terms')"
+            target="_blank"
+            rel="noopener"
+            >{{ "LEGAL.CONSENT.TERMS_LINK" | translate }}</a
+          >
           {{ "LEGAL.CONSENT.AND" | translate }}
-          <a href="/privacy" target="_blank" rel="noopener">{{
-            "LEGAL.CONSENT.PRIVACY_LINK" | translate
-          }}</a
+          <a
+            [href]="languageService.localizedPath('/privacy')"
+            target="_blank"
+            rel="noopener"
+            >{{ "LEGAL.CONSENT.PRIVACY_LINK" | translate }}</a
           >.
         </span>
       </label>

@@ -102,6 +102,22 @@
                 />
               </label>
               <label class="form-field">
+                <span>Label IT</span>
+                <input type="text" [(ngModel)]="newVariant.colorLabelIt" />
+              </label>
+              <label class="form-field">
+                <span>Label EN</span>
+                <input type="text" [(ngModel)]="newVariant.colorLabelEn" />
+              </label>
+              <label class="form-field">
+                <span>Label DE</span>
+                <input type="text" [(ngModel)]="newVariant.colorLabelDe" />
+              </label>
+              <label class="form-field">
+                <span>Label FR</span>
+                <input type="text" [(ngModel)]="newVariant.colorLabelFr" />
+              </label>
+              <label class="form-field">
                 <span>Hex colore</span>
                 <input
                   type="text"
@@ -229,7 +245,7 @@
                     class="color-dot"
                     [style.background-color]="getVariantColorHex(variant)"
                   ></span>
-                  {{ variant.colorName || "N/D" }}
+                  {{ variant.colorLabelIt || variant.colorName || "N/D" }}
                 </span>
                 <span
                   >Stock spools:
@@ -289,6 +305,22 @@
             <label class="form-field">
               <span>Colore</span>
               <input type="text" [(ngModel)]="variant.colorName" />
+            </label>
+            <label class="form-field">
+              <span>Label IT</span>
+              <input type="text" [(ngModel)]="variant.colorLabelIt" />
+            </label>
+            <label class="form-field">
+              <span>Label EN</span>
+              <input type="text" [(ngModel)]="variant.colorLabelEn" />
+            </label>
+            <label class="form-field">
+              <span>Label DE</span>
+              <input type="text" [(ngModel)]="variant.colorLabelDe" />
+            </label>
+            <label class="form-field">
+              <span>Label FR</span>
+              <input type="text" [(ngModel)]="variant.colorLabelFr" />
             </label>
             <label class="form-field">
               <span>Hex colore</span>

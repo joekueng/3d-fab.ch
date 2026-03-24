@@ -1,6 +1,15 @@
 <header class="navbar">
   <div class="container navbar-inner">
-    <a routerLink="/" class="brand">3D <span class="highlight">fab</span></a>
+    <a [routerLink]="langService.localizedPath('/')" class="brand">
+      <img
+        class="brand-logo"
+        ngSrc="/assets/images/Asset%202.svg"
+        alt="3D Fab"
+        width="380"
+        height="86"
+        priority
+      />
+    </a>
 
     <div
       class="mobile-toggle"
@@ -14,33 +23,33 @@
 
     <nav class="nav-links" [class.open]="isMenuOpen">
       <a
-        routerLink="/"
+        [routerLink]="langService.localizedPath('/')"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }"
         (click)="closeMenu()"
         >{{ "NAV.HOME" | translate }}</a
       >
       <a
-        routerLink="/calculator/basic"
+        [routerLink]="langService.localizedPath('/calculator/basic')"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: false }"
         (click)="closeMenu()"
         >{{ "NAV.CALCULATOR" | translate }}</a
       >
-      <a routerLink="/shop" routerLinkActive="active" (click)="closeMenu()">{{
-        "NAV.SHOP" | translate
-      }}</a>
-      <a routerLink="/about" routerLinkActive="active" (click)="closeMenu()">{{
-        "NAV.ABOUT" | translate
-      }}</a>
       <a
-        routerLink="/materials"
+        [routerLink]="langService.localizedPath('/shop')"
         routerLinkActive="active"
         (click)="closeMenu()"
-        >{{ "NAV.MATERIALS" | translate }}</a
+        >{{ "NAV.SHOP" | translate }}</a
       >
       <a
-        routerLink="/contact"
+        [routerLink]="langService.localizedPath('/about')"
+        routerLinkActive="active"
+        (click)="closeMenu()"
+        >{{ "NAV.ABOUT" | translate }}</a
+      >
+      <a
+        [routerLink]="langService.localizedPath('/contact')"
         routerLinkActive="active"
         (click)="closeMenu()"
         >{{ "NAV.CONTACT" | translate }}</a
@@ -88,7 +97,10 @@
         }
       </select>
 
-      <div class="icon-placeholder" routerLink="/admin">
+      <div
+        class="icon-placeholder"
+        [routerLink]="langService.localizedPath('/admin')"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="20"
@@ -136,7 +148,9 @@
                 <div class="cart-line-copy">
                   <strong>{{ cartItemName(item) }}</strong>
                   @if (cartItemVariant(item); as variant) {
-                    <span class="cart-line-meta">{{ variant }}</span>
+                    <span class="cart-line-meta">{{
+                      variant | translate
+                    }}</span>
                   }
                   @if (cartItemColor(item); as color) {
                     <span class="cart-line-color">
@@ -144,7 +158,7 @@
                         class="color-dot"
                         [style.background-color]="cartItemColorHex(item)"
                       ></span>
-                      <span>{{ color }}</span>
+                      <span>{{ color | translate }}</span>
                     </span>
                   }
                 </div>

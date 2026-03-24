@@ -18,6 +18,8 @@ export interface AdminMediaTextTranslation {
   altText: string;
 }
 
+export type AdminShopLanguage = 'it' | 'en' | 'de' | 'fr';
+
 export interface AdminShopCategoryRef {
   id: string;
   slug: string;
@@ -30,9 +32,25 @@ export interface AdminShopCategory {
   parentCategoryName: string | null;
   slug: string;
   name: string;
+  nameIt: string;
+  nameEn: string;
+  nameDe: string;
+  nameFr: string;
   description: string | null;
+  descriptionIt: string | null;
+  descriptionEn: string | null;
+  descriptionDe: string | null;
+  descriptionFr: string | null;
   seoTitle: string | null;
+  seoTitleIt: string | null;
+  seoTitleEn: string | null;
+  seoTitleDe: string | null;
+  seoTitleFr: string | null;
   seoDescription: string | null;
+  seoDescriptionIt: string | null;
+  seoDescriptionEn: string | null;
+  seoDescriptionDe: string | null;
+  seoDescriptionFr: string | null;
   ogTitle: string | null;
   ogDescription: string | null;
   indexable: boolean;
@@ -54,9 +72,25 @@ export interface AdminUpsertShopCategoryPayload {
   parentCategoryId?: string | null;
   slug: string;
   name: string;
+  nameIt: string;
+  nameEn: string;
+  nameDe: string;
+  nameFr: string;
   description?: string;
+  descriptionIt?: string;
+  descriptionEn?: string;
+  descriptionDe?: string;
+  descriptionFr?: string;
   seoTitle?: string;
+  seoTitleIt?: string;
+  seoTitleEn?: string;
+  seoTitleDe?: string;
+  seoTitleFr?: string;
   seoDescription?: string;
+  seoDescriptionIt?: string;
+  seoDescriptionEn?: string;
+  seoDescriptionDe?: string;
+  seoDescriptionFr?: string;
   ogTitle?: string;
   ogDescription?: string;
   indexable: boolean;
@@ -69,6 +103,10 @@ export interface AdminShopProductVariant {
   sku: string | null;
   variantLabel: string;
   colorName: string;
+  colorLabelIt: string;
+  colorLabelEn: string;
+  colorLabelDe: string;
+  colorLabelFr: string;
   colorHex: string | null;
   internalMaterialCode: string;
   priceChf: number;
@@ -170,6 +208,10 @@ export interface AdminUpsertShopProductVariantPayload {
   sku?: string;
   variantLabel?: string;
   colorName: string;
+  colorLabelIt?: string;
+  colorLabelEn?: string;
+  colorLabelDe?: string;
+  colorLabelFr?: string;
   colorHex?: string;
   internalMaterialCode: string;
   priceChf: number;
@@ -213,6 +255,28 @@ export interface AdminUpsertShopProductPayload {
   isActive: boolean;
   sortOrder: number;
   variants: AdminUpsertShopProductVariantPayload[];
+}
+
+export interface AdminTranslateShopProductPayload {
+  categoryId?: string;
+  sourceLanguage: AdminShopLanguage;
+  overwriteExisting: boolean;
+  materialCodes: string[];
+  names: Record<AdminShopLanguage, string>;
+  excerpts: Record<AdminShopLanguage, string>;
+  descriptions: Record<AdminShopLanguage, string>;
+  seoTitles: Record<AdminShopLanguage, string>;
+  seoDescriptions: Record<AdminShopLanguage, string>;
+}
+
+export interface AdminTranslateShopProductResponse {
+  sourceLanguage: AdminShopLanguage;
+  targetLanguages: AdminShopLanguage[];
+  names: Partial<Record<AdminShopLanguage, string>>;
+  excerpts: Partial<Record<AdminShopLanguage, string>>;
+  descriptions: Partial<Record<AdminShopLanguage, string>>;
+  seoTitles: Partial<Record<AdminShopLanguage, string>>;
+  seoDescriptions: Partial<Record<AdminShopLanguage, string>>;
 }
 
 @Injectable({
@@ -309,6 +373,18 @@ export class AdminShopService {
     return this.http.delete<void>(`${this.productsBaseUrl}/${productId}`, {
       withCredentials: true,
     });
+  }
+
+  translateProduct(
+    payload: AdminTranslateShopProductPayload,
+  ): Observable<AdminTranslateShopProductResponse> {
+    return this.http.post<AdminTranslateShopProductResponse>(
+      `${this.productsBaseUrl}/translate`,
+      payload,
+      {
+        withCredentials: true,
+      },
+    );
   }
 
   uploadProductModel(

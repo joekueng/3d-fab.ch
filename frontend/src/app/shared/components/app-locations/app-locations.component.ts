@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { RouterLink } from '@angular/router';
+import { LanguageService } from '../../../core/services/language.service';
 import {
   AppToggleSelectorComponent,
   ToggleOption,
@@ -20,6 +21,7 @@ import {
   styleUrl: './app-locations.component.scss',
 })
 export class AppLocationsComponent {
+  readonly languageService = inject(LanguageService);
   selectedLocation: 'ticino' | 'bienne' = 'ticino';
 
   locationOptions: ToggleOption[] = [

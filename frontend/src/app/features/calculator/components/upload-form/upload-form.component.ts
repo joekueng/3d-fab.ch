@@ -30,6 +30,7 @@ import {
   VariantOption,
 } from '../../services/quote-estimator.service';
 import { getColorHex } from '../../../../core/constants/colors.const';
+import { LanguageService } from '../../../../core/services/language.service';
 
 interface FormItem {
   file: File;
@@ -106,6 +107,7 @@ export class UploadFormComponent implements OnInit {
   private estimator = inject(QuoteEstimatorService);
   private fb = inject(FormBuilder);
   private translate = inject(TranslateService);
+  readonly languageService = inject(LanguageService);
 
   form: FormGroup;
 
@@ -125,7 +127,8 @@ export class UploadFormComponent implements OnInit {
   private layerHeightsByNozzle: Record<string, SimpleOption[]> = {};
   private isPatchingSettings = false;
 
-  acceptedFormats = '.stl,.3mf,.step,.stp';
+  acceptedFormats = '.stl,.3mf';
+  private readonly allowedExtensions = ['stl', '3mf'] as const;
 
   constructor() {
     this.form = this.fb.group({
@@ -284,6 +287,13 @@ export class UploadFormComponent implements OnInit {
     return name.endsWith('.stl');
   }
 
+  isSupportedFile(file: File | null): boolean {
+    if (!file) return false;
+
+    const name = file.name.toLowerCase().trim();
+    return this.allowedExtensions.some((ext) => name.endsWith(`.${ext}`));
+  }
+
   canPreviewSelectedFile(): boolean {
     return this.isStlFile(this.getSelectedPreviewFile());
   }
@@ -338,13 +348,19 @@ export class UploadFormComponent implements OnInit {
   onFilesDropped(newFiles: File[]) {
     const MAX_SIZE = 200 * 1024 * 1024;
     const validItems: FormItem[] = [];
-    let hasError = false;
+    let hasInvalidType = false;
+    let hasOversize = false;
 
     const defaults = this.getCurrentGlobalItemDefaults();
 
     for (const file of newFiles) {
+      if (!this.isSupportedFile(file)) {
+        hasInvalidType = true;
+        continue;
+      }
+
       if (file.size > MAX_SIZE) {
-        hasError = true;
+        hasOversize = true;
         continue;
       }
 
@@ -365,7 +381,11 @@ export class UploadFormComponent implements OnInit {
       });
     }
 
-    if (hasError) {
+    if (hasInvalidType) {
+      alert(this.translate.instant('CALC.ERR_INVALID_FILE_TYPE'));
+    }
+
+    if (hasOversize) {
       alert(this.translate.instant('CALC.ERR_FILE_TOO_LARGE'));
     }
 

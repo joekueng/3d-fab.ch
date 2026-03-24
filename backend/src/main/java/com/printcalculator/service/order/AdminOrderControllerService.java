@@ -280,11 +280,19 @@ public class AdminOrderControllerService {
             itemDto.setShopProductName(item.getShopProductName());
             itemDto.setShopVariantLabel(item.getShopVariantLabel());
             itemDto.setShopVariantColorName(item.getShopVariantColorName());
+            itemDto.setShopVariantColorLabelIt(item.getShopProductVariant() != null ? item.getShopProductVariant().getColorLabelIt() : null);
+            itemDto.setShopVariantColorLabelEn(item.getShopProductVariant() != null ? item.getShopProductVariant().getColorLabelEn() : null);
+            itemDto.setShopVariantColorLabelDe(item.getShopProductVariant() != null ? item.getShopProductVariant().getColorLabelDe() : null);
+            itemDto.setShopVariantColorLabelFr(item.getShopProductVariant() != null ? item.getShopProductVariant().getColorLabelFr() : null);
             itemDto.setShopVariantColorHex(item.getShopVariantColorHex());
             if (item.getFilamentVariant() != null) {
                 itemDto.setFilamentVariantId(item.getFilamentVariant().getId());
                 itemDto.setFilamentVariantDisplayName(item.getFilamentVariant().getVariantDisplayName());
                 itemDto.setFilamentColorName(item.getFilamentVariant().getColorName());
+                itemDto.setFilamentColorLabelIt(item.getFilamentVariant().getColorLabelIt());
+                itemDto.setFilamentColorLabelEn(item.getFilamentVariant().getColorLabelEn());
+                itemDto.setFilamentColorLabelDe(item.getFilamentVariant().getColorLabelDe());
+                itemDto.setFilamentColorLabelFr(item.getFilamentVariant().getColorLabelFr());
                 itemDto.setFilamentColorHex(item.getFilamentVariant().getColorHex());
             }
             itemDto.setQuality(item.getQuality());

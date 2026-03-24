@@ -332,6 +332,10 @@
 }
 
 @media (max-width: 760px) {
+  .cart-card {
+    display: none;
+  }
+
   .product-grid {
     grid-template-columns: 1fr;
   }

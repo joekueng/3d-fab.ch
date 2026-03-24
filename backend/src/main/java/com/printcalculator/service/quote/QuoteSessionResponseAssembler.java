@@ -81,7 +81,15 @@ public class QuoteSessionResponseAssembler {
         dto.put("shopProductName", item.getShopProductName());
         dto.put("shopVariantLabel", item.getShopVariantLabel());
         dto.put("shopVariantColorName", item.getShopVariantColorName());
+        dto.put("shopVariantColorLabelIt", item.getShopProductVariant() != null ? item.getShopProductVariant().getColorLabelIt() : null);
+        dto.put("shopVariantColorLabelEn", item.getShopProductVariant() != null ? item.getShopProductVariant().getColorLabelEn() : null);
+        dto.put("shopVariantColorLabelDe", item.getShopProductVariant() != null ? item.getShopProductVariant().getColorLabelDe() : null);
+        dto.put("shopVariantColorLabelFr", item.getShopProductVariant() != null ? item.getShopProductVariant().getColorLabelFr() : null);
         dto.put("shopVariantColorHex", item.getShopVariantColorHex());
+        dto.put("filamentColorLabelIt", item.getFilamentVariant() != null ? item.getFilamentVariant().getColorLabelIt() : null);
+        dto.put("filamentColorLabelEn", item.getFilamentVariant() != null ? item.getFilamentVariant().getColorLabelEn() : null);
+        dto.put("filamentColorLabelDe", item.getFilamentVariant() != null ? item.getFilamentVariant().getColorLabelDe() : null);
+        dto.put("filamentColorLabelFr", item.getFilamentVariant() != null ? item.getFilamentVariant().getColorLabelFr() : null);
         dto.put("materialCode", item.getMaterialCode());
         dto.put("quality", item.getQuality());
         dto.put("nozzleDiameterMm", item.getNozzleDiameterMm());

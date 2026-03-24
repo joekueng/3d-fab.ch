@@ -4,6 +4,7 @@
     "CALCULATOR": "Rechner",
     "SHOP": "Shop",
     "ABOUT": "Über uns",
+    "MATERIALS": "Qualität & Materialien",
     "CONTACT": "Kontakt",
     "LANGUAGE_SELECTOR": "Sprachauswahl"
   },
@@ -38,16 +39,82 @@
     "TERMS": "AGB",
     "CONTACT": "Kontakt"
   },
+  "SEO": {
+    "DEFAULT": {
+      "TITLE": "3D fab | 3D-Druck nach Maß",
+      "DESCRIPTION": "3D-Druckservice nach Maß, technischer Shop und CAD-Support für Prototypen, Ersatzteile und Kleinserien."
+    },
+    "ROUTES": {
+      "HOME": {
+        "TITLE": "3D-Druck in Zürich | Prototypen, Ersatzteile und Kleinserien - 3D fab",
+        "DESCRIPTION": "3D-Druckservice in Zürich für Prototypen, Ersatzteile und Kleinserien. Technischer Shop und CAD-Service, mit schneller Angebotsanfrage aus STL-Dateien."
+      },
+      "CALCULATOR": {
+        "TITLE": "3D-Druck-Angebotsrechner | 3D fab",
+        "DESCRIPTION": "Laden Sie Ihre 3D-Datei hoch und erhalten Sie Preis und Lieferzeit in Sekunden mit echtem Slicing.",
+        "BASIC": {
+          "TITLE": "Einfacher 3D-Druck-Rechner | 3D fab",
+          "DESCRIPTION": "Berechnen Sie den Preis Ihres 3D-Drucks schnell mit dem Basis-Workflow."
+        },
+        "ADVANCED": {
+          "TITLE": "Erweiterter 3D-Druck-Rechner | 3D fab",
+          "DESCRIPTION": "Konfigurieren Sie erweiterte Druckparameter und erhalten Sie ein präzises Angebot mit echtem Slicing."
+        }
+      },
+      "SHOP": {
+        "TITLE": "3D fab Shop",
+        "DESCRIPTION": "Katalog mit 3D-gedruckten Produkten, technischem Zubehör und sofort einsatzbereiten Lösungen.",
+        "CATEGORY_TITLE": "Shop-Kategorie | 3D fab",
+        "CATEGORY_DESCRIPTION": "Entdecken Sie Produkte dieser Kategorie, verfügbare Varianten und technische 3D-Druck-Lösungen.",
+        "PRODUCT_TITLE": "Produkt | 3D fab",
+        "PRODUCT_DESCRIPTION": "Entdecken Sie Details, Materialien, Varianten und Verfügbarkeit des ausgewählten Produkts im 3D fab Shop."
+      },
+      "MATERIALS": {
+        "TITLE": "Qualität und Materialien | 3D fab",
+        "DESCRIPTION": "Vergleichen Sie 3D-Druckmaterialien mit interaktiven Radar-Charts, technischen Eigenschaften und referenzierten Quellen."
+      },
+      "ABOUT": {
+        "TITLE": "Über uns | 3D fab",
+        "DESCRIPTION": "Lernen Sie das Team von 3D fab und unser 3D-Druck-Labor für Prototypen, Ersatzteile und maßgeschneiderte Produktionen kennen."
+      },
+      "CONTACT": {
+        "TITLE": "Kontakt | 3D fab",
+        "DESCRIPTION": "Fordern Sie Informationen, individuelle Angebote oder technischen Support für Ihr 3D-Druck-Projekt an."
+      },
+      "LEGAL": {
+        "PRIVACY": {
+          "TITLE": "Datenschutz | 3D fab",
+          "DESCRIPTION": "Datenschutzerklärung von 3D fab: Datenverarbeitung, Zwecke und Kontaktangaben."
+        },
+        "TERMS": {
+          "TITLE": "AGB | 3D fab",
+          "DESCRIPTION": "Allgemeine Geschäftsbedingungen für den 3D-Druck-Service und den Angebotsrechner."
+        }
+      },
+      "CHECKOUT": {
+        "TITLE": "Checkout | 3D fab",
+        "DESCRIPTION": "Schließen Sie Ihre Anfrage ab und bestätigen Sie die Daten Ihrer 3D-Druck-Bestellung."
+      },
+      "ORDER": {
+        "TITLE": "Bestellung | 3D fab",
+        "DESCRIPTION": "Prüfen Sie die Zusammenfassung Ihrer Bestellung und den Status Ihrer 3D-Druck-Anfrage."
+      },
+      "ADMIN": {
+        "TITLE": "Admin | 3D fab",
+        "DESCRIPTION": "Geschützter Administrationsbereich von 3D fab."
+      }
+    }
+  },
   "CALC": {
     "TITLE": "3D-Angebot berechnen",
-    "SUBTITLE": "Laden Sie Ihre 3D-Datei (STL, 3MF, STEP) hoch, stellen Sie Qualität und Farbe ein und berechnen Sie sofort Preis und Lieferzeit.",
+    "SUBTITLE": "Laden Sie Ihre 3D-Datei (STL, 3MF) hoch, stellen Sie Qualität und Farbe ein und berechnen Sie sofort Preis und Lieferzeit.",
     "CTA_START": "Jetzt starten",
     "BUSINESS": "Unternehmen",
     "PRIVATE": "Privat",
     "MODE_EASY": "Basis",
     "MODE_ADVANCED": "Erweitert",
     "UPLOAD_LABEL": "Ziehen Sie Ihre 3D-Datei hierher",
-    "UPLOAD_SUB": "Wir unterstützen STL, 3MF, STEP bis 50MB",
+    "UPLOAD_SUB": "Wir unterstützen STL, 3MF bis 50MB",
     "MATERIAL": "Material",
     "QUALITY": "Qualität",
     "QUANTITY": "Menge",
@@ -74,11 +141,12 @@
     "BENEFITS_2": "Ausgewählte Materialien und Qualitätskontrolle",
     "BENEFITS_3": "CAD-Beratung, falls die Datei Änderungen benötigt",
     "ERR_FILE_REQUIRED": "Die Datei ist erforderlich.",
-    "STEP_WARNING": "Die 3D-Ansicht ist mit STEP- und 3MF-Dateien nicht kompatibel",
+    "STEP_WARNING": "Die 3D-Vorschau ist nur für STL-Dateien verfügbar.",
     "REMOVE_FILE": "Datei entfernen",
     "FALLBACK_MATERIAL": "PLA (Fallback)",
     "FALLBACK_QUALITY_STANDARD": "Standard",
     "ERR_FILE_TOO_LARGE": "Einige Dateien überschreiten das 200MB-Limit und wurden nicht hinzugefügt.",
+    "ERR_INVALID_FILE_TYPE": "Sie können nur Dateien vom Typ .stl oder .3mf hochladen.",
     "PRINT_SPEED": "Druckgeschwindigkeit",
     "COLOR": "Farbe",
     "ANALYZING_TITLE": "Analyse läuft...",
@@ -98,6 +166,7 @@
   "SHOP": {
     "TITLE": "Technische Lösungen",
     "SUBTITLE": "Fertige Produkte, die praktische Probleme lösen",
+    "HERO_EYEBROW": "Technischer Shop",
     "WIP_EYEBROW": "Work in progress",
     "WIP_TITLE": "Shop im Aufbau",
     "WIP_SUBTITLE": "Wir bereiten einen Shop mit ausgewählten Produkten und Funktionen zur automatischen Erstellung vor!",
@@ -108,6 +177,7 @@
     "CUSTOM_PART_FOOTER_TEXT": "Kontaktieren Sie uns für individuelle Teile.",
     "ADD_CART": "In den Warenkorb",
     "ADDING": "Wird hinzugefügt",
+    "ADD_SUCCESS": "Produkt zum Warenkorb hinzugefügt.",
     "BACK": "Zurück zum Shop",
     "NOT_FOUND": "Produkt nicht gefunden.",
     "DETAILS": "Details",
@@ -115,13 +185,39 @@
     "SUCCESS_TITLE": "Zum Warenkorb hinzugefügt",
     "SUCCESS_DESC": "Das Produkt wurde erfolgreich zum Warenkorb hinzugefügt.",
     "CONTINUE": "Weiter",
+    "VIEW_ALL": "Gesamten Shop ansehen",
+    "CATALOG_LABEL": "Katalog",
+    "CATALOG_TITLE": "Alle Produkte",
+    "CATALOG_META_DESCRIPTION": "Entdecken Sie 3D-gedruckte Produkte, technisches Zubehör und einsatzbereite Lösungen mit demselben Checkout wie im Rechner.",
+    "CUSTOM_PART_CTA": "Nicht gefunden, was Sie suchen? Fordern Sie ein individuelles Teil an.",
+    "CATEGORY_META": "{{count}} Produkte in dieser Kategorie verfügbar",
+    "CATEGORY_PANEL_KICKER": "Navigation",
+    "CATEGORY_PANEL_TITLE": "Kategorien",
+    "SELECTED_CATEGORY": "Ausgewählte Kategorie",
+    "ITEMS_FOUND": "Produkte",
+    "EMPTY_CATEGORY": "Derzeit sind in dieser Kategorie keine Produkte verfügbar.",
+    "FEATURED_KICKER": "Empfohlen",
+    "FEATURED_TITLE": "Produkte, die sich lohnen",
+    "FEATURED_BADGE": "Empfohlen",
+    "HIGHLIGHT_PRODUCTS": "Produkte",
+    "HIGHLIGHT_CART": "Im Warenkorb",
+    "HIGHLIGHT_READY": "Vorschau",
+    "PRICE_FROM": "Preis ab",
     "MODEL_OPEN": "3D-Ansicht öffnen",
     "MODEL_CLOSE": "3D-Ansicht schließen",
+    "MODEL_3D": "3D-Vorschau",
+    "MODEL_TITLE": "Modellvorschau",
+    "MODEL_LOADING": "Das 3D-Modell wird geladen.",
+    "MODEL_UNAVAILABLE": "3D-Vorschau nicht verfügbar.",
     "PREVIOUS_IMAGE": "Vorheriges Bild",
     "NEXT_IMAGE": "Nächstes Bild",
+    "BREADCRUMB_ROOT": "Shop",
+    "PRICE_LABEL": "Preis",
+    "EXCERPT_FALLBACK": "Produktseite in Vorbereitung.",
     "SELECT_MATERIAL": "Material",
     "SELECT_COLOR": "Farbe",
     "MATERIAL_COLOR_COUNT": "{{count}} Farben verfügbar",
+    "VARIANT": "Variante",
     "PROPERTY_UV": "UV-Beständigkeit",
     "PROPERTY_WEATHER": "Außeneinsatz",
     "PROPERTY_RIGIDITY": "Steifigkeit",
@@ -130,6 +226,22 @@
     "PROPERTY_LOW": "Niedrig",
     "PROPERTY_RIGID": "Steif",
     "PROPERTY_FLEXIBLE": "Flexibel",
+    "QUANTITY": "Menge",
+    "GO_TO_CHECKOUT": "Zum Checkout",
+    "IN_CART_SHORT": "Im Warenkorb x{{count}}",
+    "IN_CART_LONG": "Bereits im Warenkorb x{{count}}",
+    "DESCRIPTION_TITLE": "Beschreibung",
+    "CART_TITLE": "Warenkorb",
+    "CART_SUMMARY_TITLE": "Aktuelle Übersicht",
+    "CART_LOADING": "Warenkorb wird geladen.",
+    "CART_EMPTY": "Der Warenkorb ist leer. Fügen Sie ein Produkt hinzu.",
+    "CART_SUBTOTAL": "Zwischensumme Produkte",
+    "CART_SHIPPING": "Versand",
+    "CART_TOTAL": "Geschätzte Gesamtsumme",
+    "CLEAR_CART": "Leeren",
+    "REMOVE": "Entfernen",
+    "CART_UPDATE_ERROR": "Der Warenkorb konnte nicht aktualisiert werden. Bitte erneut versuchen.",
+    "ALL_CATEGORIES": "Alle Kategorien",
     "CATEGORIES": {
       "FILAMENTS": "Filamente",
       "ACCESSORIES": "Zubehör"
@@ -397,6 +509,8 @@
   "CHECKOUT": {
     "TITLE": "Checkout",
     "SUBTITLE": "Schließen Sie Ihre Bestellung ab, indem Sie Versand- und Zahlungsdetails eingeben.",
+    "CAD_SERVICE": "CAD-Service",
+    "CAD_REQUEST_REF": "bezogen auf Kontaktanfrage #{{id}}",
     "CONTACT_INFO": "Kontaktinformationen",
     "BILLING_ADDR": "Rechnungsadresse",
     "SHIPPING_ADDR": "Lieferadresse",
@@ -499,12 +613,19 @@
     "HERO_TITLE": "3D-Druckservice.<br>Von der Datei zum fertigen Teil.",
     "HERO_LEAD": "Mit dem fortschrittlichsten Rechner für Ihre 3D-Drucke: absolute Präzision und keine Überraschungen.",
     "HERO_SUBTITLE": "Wir bieten auch CAD-Services für individuelle Teile an!",
+    "HERO_SWISS_TITLE": "Mit Sitz in der Schweiz",
+    "HERO_SWISS_COPY": "Produktion und Support in der Schweiz.",
+    "HERO_SWISS_LOCATIONS_LABEL": "Standorte",
+    "HERO_SWISS_LOCATION_1": "Ticino",
+    "HERO_SWISS_LOCATION_2": "Zürich",
+    "HERO_SWISS_LOCATION_3": "Biel/Bienne",
+    "HERO_SWISS_NOTE": "In der ganzen Schweiz aktiv.",
     "BTN_CALCULATE": "Angebot berechnen",
     "BTN_SHOP": "Zum Shop",
     "BTN_CONTACT": "Mit uns sprechen",
     "SEC_CALC_TITLE": "Korrekte Preisberechnung in wenigen Sekunden",
     "SEC_CALC_SUBTITLE": "Keine Registrierung erforderlich. Die Schätzung basiert auf echtem Slicing.",
-    "SEC_CALC_LIST_1": "Unterstützte Formate: STL, 3MF, STEP",
+    "SEC_CALC_LIST_1": "Unterstützte Formate: STL, 3MF",
     "CARD_CALC_EYEBROW": "Automatische Berechnung",
     "CARD_CALC_TITLE": "Preis und Lieferzeit mit einem Klick",
     "CARD_CALC_TAG": "Ohne Registrierung",
@@ -543,11 +664,18 @@
     "ERR_ID_NOT_FOUND": "Bestell-ID nicht gefunden.",
     "ERR_LOAD_ORDER": "Bestelldetails konnten nicht geladen werden.",
     "ERR_REPORT_PAYMENT": "Zahlung konnte nicht gemeldet werden. Bitte erneut versuchen.",
+    "CAD_SERVICE": "CAD-Service ({{hours}}h)",
+    "ITEMS_TITLE": "Bestellartikel",
+    "ORDER_TYPE_LABEL": "Bestelltyp",
+    "ITEM_COUNT": "Positionen",
+    "TYPE_SHOP": "Shop",
+    "TYPE_CALCULATOR": "Rechner",
+    "TYPE_MIXED": "Gemischt",
     "NOT_AVAILABLE": "N/V"
   },
   "DROPZONE": {
     "DEFAULT_LABEL": "Dateien hierher ziehen oder klicken zum Hochladen",
-    "DEFAULT_SUBTEXT": "Unterstützt .STL, .3MF, .STEP"
+    "DEFAULT_SUBTEXT": "Unterstützt .STL, .3MF"
   },
   "COLOR": {
     "AVAILABLE_COLORS": "Verfügbare Farben",
@@ -560,6 +688,13 @@
       "BLUE": "Blau",
       "GREEN": "Grün",
       "YELLOW": "Gelb",
+      "ORANGE": "Orange",
+      "GRAY": "Grau",
+      "LIGHT_GRAY": "Hellgrau",
+      "DARK_GRAY": "Dunkelgrau",
+      "PURPLE": "Lila",
+      "BEIGE": "Beige",
+      "SAND_BEIGE": "Sandbeige",
       "MATTE_BLACK": "Matt Schwarz",
       "MATTE_WHITE": "Matt Weiß",
       "MATTE_GRAY": "Matt Grau"

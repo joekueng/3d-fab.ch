@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -124,6 +125,9 @@ public class QuoteController {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
+        if (!isSupportedInputFile(file)) {
+            throw new ResponseStatusException(BAD_REQUEST, "Unsupported file type. Allowed: stl, 3mf");
+        }
 
         // Scan for virus
         clamAVService.scan(file.getInputStream());
@@ -152,5 +156,15 @@ public class QuoteController {
         } finally {
             Files.deleteIfExists(tempInput);
         }
+    }
+
+    private boolean isSupportedInputFile(MultipartFile file) {
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null || originalFilename.isBlank()) {
+            return false;
+        }
+
+        String normalized = originalFilename.toLowerCase(Locale.ROOT);
+        return normalized.endsWith(".stl") || normalized.endsWith(".3mf");
     }
 }

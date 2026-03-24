@@ -42,6 +42,18 @@ public class ShopProductVariant {
     @Column(name = "color_name", nullable = false, length = Integer.MAX_VALUE)
     private String colorName;
 
+    @Column(name = "color_label_it", length = Integer.MAX_VALUE)
+    private String colorLabelIt;
+
+    @Column(name = "color_label_en", length = Integer.MAX_VALUE)
+    private String colorLabelEn;
+
+    @Column(name = "color_label_de", length = Integer.MAX_VALUE)
+    private String colorLabelDe;
+
+    @Column(name = "color_label_fr", length = Integer.MAX_VALUE)
+    private String colorLabelFr;
+
     @Column(name = "color_hex", length = Integer.MAX_VALUE)
     private String colorHex;
 
@@ -152,6 +164,38 @@ public class ShopProductVariant {
         this.colorName = colorName;
     }
 
+    public String getColorLabelIt() {
+        return colorLabelIt;
+    }
+
+    public void setColorLabelIt(String colorLabelIt) {
+        this.colorLabelIt = colorLabelIt;
+    }
+
+    public String getColorLabelEn() {
+        return colorLabelEn;
+    }
+
+    public void setColorLabelEn(String colorLabelEn) {
+        this.colorLabelEn = colorLabelEn;
+    }
+
+    public String getColorLabelDe() {
+        return colorLabelDe;
+    }
+
+    public void setColorLabelDe(String colorLabelDe) {
+        this.colorLabelDe = colorLabelDe;
+    }
+
+    public String getColorLabelFr() {
+        return colorLabelFr;
+    }
+
+    public void setColorLabelFr(String colorLabelFr) {
+        this.colorLabelFr = colorLabelFr;
+    }
+
     public String getColorHex() {
         return colorHex;
     }
@@ -214,5 +258,61 @@ public class ShopProductVariant {
 
     public void setUpdatedAt(OffsetDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getColorLabelForLanguage(String language) {
+        return resolveLocalizedValue(
+                language,
+                colorName,
+                colorLabelIt,
+                colorLabelEn,
+                colorLabelDe,
+                colorLabelFr
+        );
+    }
+
+    private String resolveLocalizedValue(String language,
+                                         String fallback,
+                                         String valueIt,
+                                         String valueEn,
+                                         String valueDe,
+                                         String valueFr) {
+        String normalizedLanguage = normalizeLanguage(language);
+        String preferred = switch (normalizedLanguage) {
+            case "it" -> valueIt;
+            case "en" -> valueEn;
+            case "de" -> valueDe;
+            case "fr" -> valueFr;
+            default -> null;
+        };
+        String resolved = firstNonBlank(preferred, fallback);
+        if (resolved != null) {
+            return resolved;
+        }
+        return firstNonBlank(valueIt, valueEn, valueDe, valueFr);
+    }
+
+    private String normalizeLanguage(String language) {
+        if (language == null) {
+            return "";
+        }
+        String normalized = language.trim().toLowerCase();
+        int separatorIndex = normalized.indexOf('-');
+        if (separatorIndex > 0) {
+            normalized = normalized.substring(0, separatorIndex);
+        }
+        return normalized;
+    }
+
+    private String firstNonBlank(String... values) {
+        if (values == null) {
+            return null;
+        }
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value;
+            }
+        }
+        return null;
     }
 }

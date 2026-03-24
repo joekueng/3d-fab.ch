@@ -57,7 +57,10 @@
       @if (loading()) {
         <app-card class="loading-state">
           <div class="loader-content">
-            <div class="spinner"></div>
+            <app-brand-animation-logo
+              class="loader-logo"
+              variant="calculator-loader"
+            ></app-brand-animation-logo>
             <h3 class="loading-title">
               {{ "CALC.ANALYZING_TITLE" | translate }}
             </h3>

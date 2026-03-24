@@ -1,5 +1,12 @@
-import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
+import {
+  afterNextRender,
+  Component,
+  DestroyRef,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   NavigationStart,
@@ -15,11 +22,21 @@ import {
   ShopService,
 } from '../../features/shop/services/shop.service';
 import { finalize } from 'rxjs';
+import {
+  findColorHex,
+  resolveLocalizedColorLabel,
+} from '../constants/colors.const';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, TranslateModule],
+  imports: [
+    CommonModule,
+    RouterLink,
+    RouterLinkActive,
+    TranslateModule,
+    NgOptimizedImage,
+  ],
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.scss'],
 })
@@ -54,16 +71,9 @@ export class NavbarComponent {
   ];
 
   constructor(public langService: LanguageService) {
-    if (!this.shopService.cartLoaded()) {
-      this.shopService
-        .loadCart()
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          error: () => {
-            this.shopService.cart.set(null);
-          },
-        });
-    }
+    afterNextRender(() => {
+      this.scheduleCartWarmup();
+    });
 
     this.router.events
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -92,6 +102,9 @@ export class NavbarComponent {
   toggleCart(): void {
     this.closeMenu();
     this.isCartOpen.update((open) => !open);
+    if (this.isCartOpen()) {
+      this.loadCartIfNeeded();
+    }
   }
 
   closeCart(): void {
@@ -129,7 +142,7 @@ export class NavbarComponent {
     }
 
     this.closeCart();
-    this.router.navigate(['/checkout'], {
+    this.router.navigate(['/', this.langService.selectedLang(), 'checkout'], {
       queryParams: {
         session: sessionId,
       },
@@ -143,15 +156,30 @@ export class NavbarComponent {
   }
 
   cartItemVariant(item: ShopCartItem): string | null {
-    return item.shopVariantLabel || item.shopVariantColorName || null;
+    return item.shopVariantLabel || this.cartItemColor(item);
   }
 
   cartItemColor(item: ShopCartItem): string | null {
-    return item.shopVariantColorName || item.colorCode || null;
+    return (
+      resolveLocalizedColorLabel(this.langService.selectedLang(), {
+        fallback: item.shopVariantColorName ?? item.colorCode,
+        it: item.shopVariantColorLabelIt,
+        en: item.shopVariantColorLabelEn,
+        de: item.shopVariantColorLabelDe,
+        fr: item.shopVariantColorLabelFr,
+      }) ??
+      item.shopVariantColorName ??
+      item.colorCode
+    );
   }
 
   cartItemColorHex(item: ShopCartItem): string {
-    return item.shopVariantColorHex || '#c9ced6';
+    return (
+      item.shopVariantColorHex ||
+      findColorHex(item.shopVariantColorName) ||
+      findColorHex(item.colorCode) ||
+      '#c9ced6'
+    );
   }
 
   trackByCartItem(_index: number, item: ShopCartItem): string {
@@ -171,6 +199,45 @@ export class NavbarComponent {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe();
+  }
+
+  private scheduleCartWarmup(): void {
+    if (typeof window === 'undefined') {
+      this.loadCartIfNeeded();
+      return;
+    }
+
+    const warmup = () => this.loadCartIfNeeded();
+    const idleCallback = (
+      window as Window & {
+        requestIdleCallback?: (
+          callback: IdleRequestCallback,
+          options?: IdleRequestOptions,
+        ) => number;
+      }
+    ).requestIdleCallback;
+
+    if (typeof idleCallback === 'function') {
+      idleCallback(() => warmup(), { timeout: 1500 });
+      return;
+    }
+
+    window.setTimeout(warmup, 300);
+  }
+
+  private loadCartIfNeeded(): void {
+    if (this.shopService.cartLoaded() || this.shopService.cartLoading()) {
+      return;
+    }
+
+    this.shopService
+      .loadCart()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        error: () => {
+          this.shopService.cart.set(null);
+        },
+      });
   }
 
   protected readonly routes = routes;

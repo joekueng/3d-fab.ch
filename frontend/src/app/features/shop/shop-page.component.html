@@ -1,15 +1,7 @@
 <section class="shop-page">
   <div class="container ui-simple-hero shop-hero">
     <h1 class="ui-simple-hero__title">{{ "NAV.SHOP" | translate }}</h1>
-    <p class="ui-simple-hero__subtitle">
-      {{
-        selectedCategory()
-          ? selectedCategory()?.description ||
-            ("SHOP.CATEGORY_META"
-              | translate: { count: selectedCategory()?.productCount || 0 })
-          : ("SHOP.SUBTITLE" | translate)
-      }}
-    </p>
+    <p class="ui-simple-hero__subtitle">{{ heroSubtitle() }}</p>
   </div>
 
   <div class="container shop-layout">
@@ -84,7 +76,9 @@
                 <div class="cart-line-copy">
                   <strong>{{ cartItemName(item) }}</strong>
                   @if (cartItemVariant(item); as variant) {
-                    <span class="cart-line-meta">{{ variant }}</span>
+                    <span class="cart-line-meta">{{
+                      variant | translate
+                    }}</span>
                   }
                   @if (cartItemColor(item); as color) {
                     <span class="cart-line-color">
@@ -92,7 +86,7 @@
                         class="color-dot"
                         [style.background-color]="cartItemColorHex(item)"
                       ></span>
-                      <span>{{ color }}</span>
+                      <span>{{ color | translate }}</span>
                     </span>
                   }
                 </div>
@@ -179,17 +173,9 @@
           <div class="section-head catalog-head">
             <div>
               <p class="ui-eyebrow ui-eyebrow--compact">
-                {{
-                  selectedCategory()
-                    ? ("SHOP.SELECTED_CATEGORY" | translate)
-                    : ("SHOP.CATALOG_LABEL" | translate)
-                }}
+                {{ catalogEyebrow() }}
               </p>
-              <h2 class="section-title">
-                {{
-                  selectedCategory()?.name || ("SHOP.CATALOG_TITLE" | translate)
-                }}
-              </h2>
+              <h2 class="section-title">{{ catalogTitle() }}</h2>
             </div>
             <span class="catalog-counter">
               {{ products().length }}
@@ -197,7 +183,7 @@
             </span>
           </div>
 
-          @if (loading()) {
+          @if (loading() || softFallbackActive()) {
             <div class="product-grid skeleton-grid">
               @for (ghost of [1, 2, 3, 4]; track ghost) {
                 <div class="skeleton-card"></div>
@@ -237,7 +223,10 @@
           </h2>
         </div>
 
-        <app-button variant="primary" routerLink="/contact">
+        <app-button
+          variant="primary"
+          [routerLink]="languageService.localizedPath('/contact')"
+        >
           {{ "NAV.CONTACT" | translate }}
         </app-button>
       </div>

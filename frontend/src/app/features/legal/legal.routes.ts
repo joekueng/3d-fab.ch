@@ -6,9 +6,8 @@ export const LEGAL_ROUTES: Routes = [
     loadComponent: () =>
       import('./privacy/privacy.component').then((m) => m.PrivacyComponent),
     data: {
-      seoTitle: 'Privacy Policy | 3D fab',
-      seoDescription:
-        'Informativa privacy di 3D fab: trattamento dati, finalita e contatti.',
+      seoTitleKey: 'SEO.ROUTES.LEGAL.PRIVACY.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.LEGAL.PRIVACY.DESCRIPTION',
     },
   },
   {
@@ -16,9 +15,8 @@ export const LEGAL_ROUTES: Routes = [
     loadComponent: () =>
       import('./terms/terms.component').then((m) => m.TermsComponent),
     data: {
-      seoTitle: 'Termini e condizioni | 3D fab',
-      seoDescription:
-        'Termini e condizioni del servizio di stampa 3D e del calcolatore preventivi.',
+      seoTitleKey: 'SEO.ROUTES.LEGAL.TERMS.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.LEGAL.TERMS.DESCRIPTION',
     },
   },
 ];
