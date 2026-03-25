@@ -1,3 +1,4 @@
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import {
   HttpClientTestingModule,
@@ -13,6 +14,11 @@ import { LanguageService } from '../../../core/services/language.service';
 describe('ShopService', () => {
   let service: ShopService;
   let httpMock: HttpTestingController;
+  const currentLang = signal<'it' | 'en' | 'de' | 'fr'>('it');
+  const languageService = {
+    currentLang,
+    selectedLang: jasmine.createSpy('selectedLang').and.returnValue('it'),
+  };
 
   const buildCart = (): ShopCartResponse => ({
     session: {
@@ -131,12 +137,13 @@ describe('ShopService', () => {
         ShopService,
         {
           provide: LanguageService,
-          useValue: {
-            selectedLang: () => 'it',
-          },
+          useValue: languageService,
         },
       ],
     });
+
+    currentLang.set('it');
+    languageService.selectedLang.and.returnValue('it');
 
     service = TestBed.inject(ShopService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -196,7 +203,7 @@ describe('ShopService', () => {
       return (
         request.method === 'GET' &&
         request.url ===
-          'http://localhost:8000/api/shop/products/by-path/12345678-supporto-cavo-scrivania' &&
+          'http://localhost:8000/api/shop/products/by-id-prefix/12345678' &&
         request.params.get('lang') === 'it'
       );
     });
@@ -206,47 +213,76 @@ describe('ShopService', () => {
     expect(response?.name).toBe('Supporto cavo scrivania');
   });
 
-  it('rejects product paths whose slug tail does not match the canonical path', () => {
-    let errorResponse: { status?: number } | undefined;
+  it('resolves products from the stable uuid prefix even if the slug tail is stale', () => {
+    let response: ShopProductDetail | undefined;
 
     service.getProductByPublicPath('12345678-qualunque-nome').subscribe({
-      next: () => fail('Expected canonical path mismatch to return 404'),
-      error: (error) => {
-        errorResponse = error;
+      next: (product) => {
+        response = product;
       },
+      error: () =>
+        fail('Expected stale slug tails to resolve from the uuid prefix'),
     });
 
     const request = httpMock.expectOne((request) => {
       return (
         request.method === 'GET' &&
         request.url ===
-          'http://localhost:8000/api/shop/products/by-path/12345678-qualunque-nome' &&
+          'http://localhost:8000/api/shop/products/by-id-prefix/12345678' &&
         request.params.get('lang') === 'it'
       );
     });
-    request.flush('Not found', { status: 404, statusText: 'Not Found' });
-    expect(errorResponse?.status).toBe(404);
+    request.flush(buildProduct());
+
+    expect(response?.id).toBe('12345678-abcd-4abc-9abc-1234567890ab');
   });
 
-  it('rejects bare uuid product paths without the localized slug tail', () => {
-    let errorResponse: { status?: number } | undefined;
+  it('resolves bare uuid product paths through the stable uuid prefix endpoint', () => {
+    let response: ShopProductDetail | undefined;
 
     service.getProductByPublicPath('12345678').subscribe({
-      next: () => fail('Expected bare uuid path to return 404'),
-      error: (error) => {
-        errorResponse = error;
+      next: (product) => {
+        response = product;
       },
+      error: () =>
+        fail('Expected bare uuid path to resolve from the uuid prefix'),
     });
 
     const request = httpMock.expectOne((request) => {
       return (
         request.method === 'GET' &&
         request.url ===
-          'http://localhost:8000/api/shop/products/by-path/12345678' &&
+          'http://localhost:8000/api/shop/products/by-id-prefix/12345678' &&
         request.params.get('lang') === 'it'
       );
     });
-    request.flush('Not found', { status: 404, statusText: 'Not Found' });
-    expect(errorResponse?.status).toBe(404);
+    request.flush(buildProduct());
+
+    expect(response?.publicPath).toBe('12345678-supporto-cavo-scrivania');
+  });
+
+  it('uses the route language for public shop lookups when translate.currentLang lags behind', () => {
+    let response: ShopProductDetail | undefined;
+
+    currentLang.set('de');
+    languageService.selectedLang.and.returnValue('en');
+
+    service
+      .getProductByPublicPath('12345678-schreibtisch-kabelhalter')
+      .subscribe((product) => {
+        response = product;
+      });
+
+    const request = httpMock.expectOne((request) => {
+      return (
+        request.method === 'GET' &&
+        request.url ===
+          'http://localhost:8000/api/shop/products/by-id-prefix/12345678' &&
+        request.params.get('lang') === 'de'
+      );
+    });
+    request.flush(buildProduct());
+
+    expect(response?.id).toBe('12345678-abcd-4abc-9abc-1234567890ab');
   });
 });

@@ -62,6 +62,8 @@ services:
     container_name: print-calculator-frontend-${ENV}
     ports:
       - "${FRONTEND_PORT}:80"
+    environment:
+      - SSR_INTERNAL_API_ORIGIN=http://backend:8000
     depends_on:
       - backend
     restart: always

@@ -163,6 +163,28 @@ public class PublicShopCatalogService {
         );
     }
 
+    public ShopProductDetailDto getProductByIdPrefix(String idPrefix, String language) {
+        String normalizedLanguage = normalizeLanguage(language);
+        String normalizedIdPrefix = normalizeProductIdPrefix(idPrefix);
+        if (normalizedIdPrefix == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found");
+        }
+
+        CategoryContext categoryContext = loadCategoryContext(normalizedLanguage);
+        PublicProductContext productContext = loadPublicProductContext(categoryContext, normalizedLanguage);
+        ProductEntry entry = requirePublicProductEntry(
+                productContext.entriesByIdPrefix().get(normalizedIdPrefix),
+                categoryContext
+        );
+
+        return toProductDetailDto(
+                entry,
+                productContext.productMediaBySlug(),
+                productContext.variantColorHexByMaterialAndColor(),
+                normalizedLanguage
+        );
+    }
+
     public ProductModelDownload getProductModelDownload(String slug) {
         CategoryContext categoryContext = loadCategoryContext(null);
         PublicProductContext productContext = loadPublicProductContext(categoryContext, null);
@@ -231,11 +253,19 @@ public class PublicShopCatalogService {
                         (left, right) -> left,
                         LinkedHashMap::new
                 ));
+        Map<String, ProductEntry> entriesByIdPrefix = entries.stream()
+                .collect(Collectors.toMap(
+                        entry -> normalizeProductIdPrefix(ShopPublicPathSupport.productIdPrefix(entry.product().getId())),
+                        entry -> entry,
+                        (left, right) -> left,
+                        LinkedHashMap::new
+                ));
 
         return new PublicProductContext(
                 entries,
                 entriesBySlug,
                 entriesByPublicPath,
+                entriesByIdPrefix,
                 productMediaBySlug,
                 variantColorHexByMaterialAndColor
         );
@@ -566,6 +596,15 @@ public class PublicShopCatalogService {
         return normalized.toLowerCase(Locale.ROOT);
     }
 
+    private String normalizeProductIdPrefix(String idPrefix) {
+        String normalized = trimToNull(idPrefix);
+        if (normalized == null) {
+            return null;
+        }
+        normalized = normalized.toLowerCase(Locale.ROOT);
+        return normalized.matches("^[0-9a-f]{8}$") ? normalized : null;
+    }
+
     private String trimToNull(String value) {
         String raw = String.valueOf(value == null ? "" : value).trim();
         if (raw.isEmpty()) {
@@ -662,6 +701,7 @@ public class PublicShopCatalogService {
             List<ProductEntry> entries,
             Map<String, ProductEntry> entriesBySlug,
             Map<String, ProductEntry> entriesByPublicPath,
+            Map<String, ProductEntry> entriesByIdPrefix,
             Map<String, List<PublicMediaUsageDto>> productMediaBySlug,
             Map<String, String> variantColorHexByMaterialAndColor
     ) {

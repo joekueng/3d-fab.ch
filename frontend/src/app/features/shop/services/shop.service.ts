@@ -290,18 +290,25 @@ export class ShopService {
       }));
     }
 
-    return this.http.get<ShopProductDetail>(
-      `${this.apiUrl}/products/by-path/${encodeURIComponent(normalizedPath)}`,
-      {
-        params: this.buildLangParams(),
-      },
-    );
+    const productIdPrefix = this.extractProductIdPrefix(normalizedPath);
+    const endpoint = productIdPrefix
+      ? `${this.apiUrl}/products/by-id-prefix/${encodeURIComponent(productIdPrefix)}`
+      : `${this.apiUrl}/products/by-path/${encodeURIComponent(normalizedPath)}`;
+
+    return this.http.get<ShopProductDetail>(endpoint, {
+      params: this.buildLangParams(),
+    });
   }
 
   private normalizePublicPath(value: string | null | undefined): string {
     return String(value ?? '')
       .trim()
       .toLowerCase();
+  }
+
+  private extractProductIdPrefix(value: string): string | null {
+    const match = value.match(/^([0-9a-f]{8})(?:-|$)/);
+    return match?.[1] ?? null;
   }
 
   loadCart(): Observable<ShopCartResponse> {
@@ -455,7 +462,10 @@ export class ShopService {
   }
 
   private buildLangParams(): HttpParams {
-    return new HttpParams().set('lang', this.languageService.selectedLang());
+    // Public shop URLs are localized. During direct loads the translation
+    // service can still momentarily reflect the browser language, while the
+    // route language has already been resolved from the URL.
+    return new HttpParams().set('lang', this.languageService.currentLang());
   }
 
   private setCart(cart: ShopCartResponse): void {

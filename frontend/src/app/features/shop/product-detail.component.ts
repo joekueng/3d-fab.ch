@@ -605,7 +605,7 @@ export class ProductDetailComponent {
       this.translate.instant('SHOP.CATALOG_META_DESCRIPTION');
     const robots =
       product.indexable === false ? 'noindex, nofollow' : 'index, follow';
-    const lang = this.languageService.selectedLang();
+    const lang = this.languageService.currentLang();
     const canonicalPath =
       product.localizedPaths?.[lang] ?? product.localizedPaths?.it ?? null;
 
@@ -857,7 +857,7 @@ export class ProductDetailComponent {
     }
 
     const currentTree = this.router.parseUrl(this.router.url);
-    const lang = this.languageService.selectedLang();
+    const lang = this.languageService.currentLang();
     const targetPath =
       product.localizedPaths?.[lang] ??
       `/${lang}/shop/p/${this.shopRouteService.productPathSegment(product)}`;
