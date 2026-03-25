@@ -92,10 +92,10 @@ describe('serverOriginInterceptor', () => {
   it('uses the internal SSR API origin for public shop discovery calls', () => {
     testGlobal.__SSR_INTERNAL_API_ORIGIN__ = 'http://backend:8000/';
 
-    http.get('/api/shop/products/by-path/example?lang=de').subscribe();
+    http.get('/api/shop/products/by-id-prefix/91823f84?lang=de').subscribe();
 
     const request = httpMock.expectOne(
-      'http://backend:8000/api/shop/products/by-path/example?lang=de',
+      'http://backend:8000/api/shop/products/by-id-prefix/91823f84?lang=de',
     );
     expect(request.request.headers.get('authorization')).toBe(
       'Basic dGVzdDp0ZXN0',
@@ -133,10 +133,10 @@ describe('serverOriginInterceptor', () => {
     http = TestBed.inject(HttpClient);
     httpMock = TestBed.inject(HttpTestingController);
 
-    http.get('/api/shop/products/by-path/example?lang=de').subscribe();
+    http.get('/api/shop/products/by-id-prefix/91823f84?lang=de').subscribe();
 
     const request = httpMock.expectOne(
-      'http://backend:8000/api/shop/products/by-path/example?lang=de',
+      'http://backend:8000/api/shop/products/by-id-prefix/91823f84?lang=de',
     );
     expect(request.request.headers.get('authorization')).toBeNull();
     expect(request.request.headers.get('cookie')).toBe('session=abc123');
@@ -184,10 +184,10 @@ describe('serverOriginInterceptor', () => {
     http = TestBed.inject(HttpClient);
     httpMock = TestBed.inject(HttpTestingController);
 
-    http.get('/api/shop/products/by-path/example?lang=de').subscribe();
+    http.get('/api/shop/products/by-id-prefix/91823f84?lang=de').subscribe();
 
     const request = httpMock.expectOne(
-      'https://dev.3d-fab.ch/api/shop/products/by-path/example?lang=de',
+      'https://dev.3d-fab.ch/api/shop/products/by-id-prefix/91823f84?lang=de',
     );
     expect(request.request.headers.get('authorization')).toBeNull();
     expect(request.request.headers.get('cookie')).toBe('session=abc123');

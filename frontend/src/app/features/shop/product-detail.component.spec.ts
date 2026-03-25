@@ -71,7 +71,13 @@ describe('ProductDetailComponent', () => {
     };
   }
 
-  function createComponent(routerUrl = '/de/shop/p/91823f84-bike-wall-hanger') {
+  function createComponent(
+    routerUrl = '/de/shop/p/91823f84-bike-wall-hanger',
+    options?: {
+      currentLang?: 'it' | 'en' | 'de' | 'fr';
+      selectedLang?: 'it' | 'en' | 'de' | 'fr';
+    },
+  ) {
     const responseInit: { status?: number } = {};
     const seoService = jasmine.createSpyObj<SeoService>('SeoService', [
       'applyResolvedSeo',
@@ -93,10 +99,12 @@ describe('ProductDetailComponent', () => {
       return translations[key] ?? key;
     });
 
-    const currentLang = signal<'it' | 'en' | 'de' | 'fr'>('de');
+    const currentLang = signal<'it' | 'en' | 'de' | 'fr'>(
+      options?.currentLang ?? 'de',
+    );
     const languageService = {
       currentLang,
-      selectedLang: () => currentLang(),
+      selectedLang: () => options?.selectedLang ?? currentLang(),
       setLocalizedRouteOverrides: jasmine.createSpy(
         'setLocalizedRouteOverrides',
       ),
@@ -189,6 +197,21 @@ describe('ProductDetailComponent', () => {
         canonicalPath: '/de/shop/p/91823f84-bike-wall-hanger',
         alternates: buildProduct().localizedPaths,
         xDefault: '/it/shop/p/91823f84-supporto-bici-muro',
+      }),
+    );
+  });
+
+  it('uses the route language for canonical SEO even if the selected translation language lags', () => {
+    const { component, seoService } = createComponent(undefined, {
+      currentLang: 'de',
+      selectedLang: 'en',
+    });
+
+    (component as any).applySeo(buildProduct());
+
+    expect(seoService.applyResolvedSeo).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        canonicalPath: '/de/shop/p/91823f84-bike-wall-hanger',
       }),
     );
   });

@@ -109,6 +109,21 @@ class PublicShopCatalogServiceTest {
     }
 
     @Test
+    void getProductByIdPrefix_shouldResolveLocalizedProduct() {
+        ShopCategory category = buildCategory();
+        ShopProduct product = buildProduct(category);
+        ShopProductVariant variant = buildVariant(product);
+
+        stubPublicCatalog(category, product, variant);
+
+        ShopProductDetailDto response = service.getProductByIdPrefix("12345678", "de");
+
+        assertEquals("bike-wall-hanger", response.slug());
+        assertEquals("12345678-bike-wall-hanger", response.publicPath());
+        assertEquals("/de/shop/p/12345678-bike-wall-hanger", response.localizedPaths().get("de"));
+    }
+
+    @Test
     void getProductByPublicPath_shouldRejectNonCanonicalSegment() {
         ShopCategory category = buildCategory();
         ShopProduct product = buildProduct(category);

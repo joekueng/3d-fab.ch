@@ -19,6 +19,7 @@ const FORWARDED_REQUEST_HEADERS = [
 const SHOP_DISCOVERY_API_PATTERNS = [
   /^\/api\/shop\/categories(?:\/[^/?#]+)?$/i,
   /^\/api\/shop\/products$/i,
+  /^\/api\/shop\/products\/by-id-prefix\/[^/?#]+$/i,
   /^\/api\/shop\/products\/by-path\/[^/?#]+$/i,
   /^\/api\/shop\/products\/[^/?#]+$/i,
 ] as const;
