@@ -295,12 +295,9 @@ export class ShopService {
       ? `${this.apiUrl}/products/by-id-prefix/${encodeURIComponent(productIdPrefix)}`
       : `${this.apiUrl}/products/by-path/${encodeURIComponent(normalizedPath)}`;
 
-    return this.http.get<ShopProductDetail>(
-      endpoint,
-      {
-        params: this.buildLangParams(),
-      },
-    );
+    return this.http.get<ShopProductDetail>(endpoint, {
+      params: this.buildLangParams(),
+    });
   }
 
   private normalizePublicPath(value: string | null | undefined): string {

@@ -137,7 +137,9 @@ export const serverOriginInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req);
   }
 
-  const request = inject(REQUEST, { optional: true }) as ServerRequestLike | null;
+  const request = inject(REQUEST, {
+    optional: true,
+  }) as ServerRequestLike | null;
   const origin = resolveApiOrigin(request, req.url);
   if (!origin) {
     return next(req);

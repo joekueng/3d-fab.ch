@@ -220,7 +220,8 @@ describe('ShopService', () => {
       next: (product) => {
         response = product;
       },
-      error: () => fail('Expected stale slug tails to resolve from the uuid prefix'),
+      error: () =>
+        fail('Expected stale slug tails to resolve from the uuid prefix'),
     });
 
     const request = httpMock.expectOne((request) => {
@@ -243,7 +244,8 @@ describe('ShopService', () => {
       next: (product) => {
         response = product;
       },
-      error: () => fail('Expected bare uuid path to resolve from the uuid prefix'),
+      error: () =>
+        fail('Expected bare uuid path to resolve from the uuid prefix'),
     });
 
     const request = httpMock.expectOne((request) => {
