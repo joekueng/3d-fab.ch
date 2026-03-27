@@ -30,6 +30,12 @@ export interface QuoteRequest {
   mode: 'easy' | 'advanced';
 }
 
+export interface PendingCalculatorDraft {
+  request: QuoteRequest;
+  sameSettingsForAll: boolean;
+  selectedFileName?: string | null;
+}
+
 export interface QuoteItem {
   id?: string;
   fileName: string;
@@ -130,6 +136,7 @@ export class QuoteEstimatorService {
     files: File[];
     message: string;
   } | null>(null);
+  private pendingCalculatorDraft = signal<PendingCalculatorDraft | null>(null);
 
   getOptions(): Observable<OptionsResponse> {
     const headers: any = {};
@@ -338,6 +345,16 @@ export class QuoteEstimatorService {
   getPendingConsultation() {
     const data = this.pendingConsultation();
     this.pendingConsultation.set(null);
+    return data;
+  }
+
+  setPendingCalculatorDraft(data: PendingCalculatorDraft | null) {
+    this.pendingCalculatorDraft.set(data);
+  }
+
+  consumePendingCalculatorDraft(): PendingCalculatorDraft | null {
+    const data = this.pendingCalculatorDraft();
+    this.pendingCalculatorDraft.set(null);
     return data;
   }
 

@@ -53,12 +53,12 @@
         "TITLE": "3D Printing Quote Calculator | 3D fab",
         "DESCRIPTION": "Upload your 3D file and get price and lead time in seconds with real slicing.",
         "BASIC": {
-          "TITLE": "Basic 3D Printing Calculator | 3D fab",
-          "DESCRIPTION": "Quickly estimate the price of your 3D print with the basic workflow."
+          "TITLE": "Fast 3D printing quote for ready files | 3D fab",
+          "DESCRIPTION": "Upload a ready STL or 3MF file and get a correct 3D printing price in seconds with the basic calculator."
         },
         "ADVANCED": {
-          "TITLE": "Advanced 3D Printing Calculator | 3D fab",
-          "DESCRIPTION": "Configure advanced print settings and get a precise quote based on real slicing."
+          "TITLE": "Precise 3D printing quote with materials and settings | 3D fab",
+          "DESCRIPTION": "Set material, layer height, supports and infill to get a more precise 3D printing quote."
         }
       },
       "SHOP": {
@@ -108,11 +108,84 @@
   "CALC": {
     "TITLE": "3D Print Calculator",
     "SUBTITLE": "Upload your 3D file (STL, 3MF) and get an instant estimate of costs and print time.",
+    "EYEBROW": "Online 3D printing quote",
     "CTA_START": "Start Now",
     "BUSINESS": "Business",
     "PRIVATE": "Private",
     "MODE_EASY": "Quick",
     "MODE_ADVANCED": "Advanced",
+    "WHEN_TO_USE_LABEL": "When to use it:",
+    "MODES": {
+      "BASIC": {
+        "TOGGLE_HINT": "For ready-to-print files",
+        "TITLE": "Fast quote for ready 3D files",
+        "SUBTITLE": "Basic mode is for users who want a correct price in seconds without dealing with advanced technical settings.",
+        "UPLOAD_HELP": "Upload an STL or 3MF file that is already exported, choose material and quality, and get a clear price and lead-time estimate right away.",
+        "WHEN_TO_USE": "Use Basic if your model is already final and you mainly need a simple, fast quote."
+      },
+      "ADVANCED": {
+        "TOGGLE_HINT": "More control over print and material",
+        "TITLE": "More precise quote with materials and settings",
+        "SUBTITLE": "Advanced mode is for users who want a more precise estimate by adjusting relevant print settings.",
+        "UPLOAD_HELP": "Upload your 3D file and set material, layer height, supports, infill and nozzle size to get closer to the final print configuration.",
+        "WHEN_TO_USE": "Use Advanced if you want to compare materials or settings and need more control over the outcome."
+      }
+    },
+    "COMPARE_KICKER": "Quick choice",
+    "COMPARE_TITLE": "Basic or Advanced?",
+    "COMPARE_SUBTITLE": "The two pages cover different use cases. Start with Basic for speed, then switch to Advanced when material or print settings matter.",
+    "COMPARE": {
+      "BASIC": {
+        "TITLE": "Basic: fast quote",
+        "TEXT": "Best if you already have a ready file and want a correct price quickly, without going into technical print details."
+      },
+      "ADVANCED": {
+        "TITLE": "Advanced: more precise quote",
+        "TEXT": "Best if you want to choose material, layer height, supports, infill and other settings that have more impact on the final result."
+      }
+    },
+    "MODEL_SOURCES": {
+      "KICKER": "3D models",
+      "TITLE": "Where to find 3D models to upload",
+      "TEXT": "If you do not have a file yet, start from these platforms. Always check license, dimensions and model quality before uploading it to the calculator.",
+      "FAVORITES_TITLE": "Our favorites",
+      "OTHERS_TITLE": "Others",
+      "ITEMS": {
+        "PRINTABLES": "Large catalog of printable models shared by the maker community.",
+        "MAKERWORLD": "Repository of ready-to-print models, especially useful for maker projects.",
+        "THINGIVERSE": "Long-running archive with a very large number of free models in many categories.",
+        "THANGS": "3D search engine and repository with related versions and collections.",
+        "CULTS3D": "Marketplace with both free and paid models across many use cases.",
+        "YEGGI": "Search engine that aggregates 3D models from different sites."
+      }
+    },
+    "FAQ": {
+      "KICKER": "Common questions",
+      "TITLE": "Mini FAQ",
+      "SUBTITLE": "Quick answers to the questions that most often block non-technical users.",
+      "ITEMS": {
+        "FILES": {
+          "Q": "Which files can I upload?",
+          "A": "You can upload STL or 3MF files. If you download a model from an external portal, make sure it is an actual 3D file and not just images or documentation."
+        },
+        "MODE": {
+          "Q": "How do I choose between Basic and Advanced?",
+          "A": "Choose Basic if you want a fast quote for a ready file. Choose Advanced if you need to compare materials or change settings that affect time, weight and price."
+        },
+        "NO_MODEL": {
+          "Q": "What if I do not have a 3D model yet?",
+          "A": "You can search on the platforms listed above or contact us if you need help with CAD design or adaptation."
+        },
+        "PRICE": {
+          "Q": "Is the shown price already reliable?",
+          "A": "It is an automatic estimate based on your file and the selected settings. Advanced mode is more precise because it accounts for more print parameters."
+        },
+        "BEFORE_UPLOAD": {
+          "Q": "What should I check before uploading?",
+          "A": "Check that the model has the correct scale, that the file is not corrupted and that the geometry really matches the final part you want to print."
+        }
+      }
+    },
     "UPLOAD_LABEL": "Drag your 3D file here",
     "UPLOAD_SUB": "Supports STL, 3MF up to 50MB",
     "MATERIAL": "Material",

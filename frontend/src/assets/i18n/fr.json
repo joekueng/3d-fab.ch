@@ -27,12 +27,12 @@
         "TITLE": "Calculateur de devis impression 3D | 3D fab",
         "DESCRIPTION": "Chargez votre fichier 3D et obtenez prix et délais en quelques secondes avec un vrai slicing.",
         "BASIC": {
-          "TITLE": "Calculateur impression 3D de base | 3D fab",
-          "DESCRIPTION": "Calculez rapidement le prix de votre impression 3D avec le parcours de base."
+          "TITLE": "Devis impression 3D rapide pour fichiers prets | 3D fab",
+          "DESCRIPTION": "Chargez un fichier STL ou 3MF deja pret et obtenez en quelques secondes un prix d impression 3D fiable avec le calculateur de base."
         },
         "ADVANCED": {
-          "TITLE": "Calculateur impression 3D avancé | 3D fab",
-          "DESCRIPTION": "Configurez des paramètres avancés et obtenez un devis précis basé sur un vrai slicing."
+          "TITLE": "Devis impression 3D precis avec materiaux et reglages | 3D fab",
+          "DESCRIPTION": "Definissez le materiau, la hauteur de couche, les supports et le remplissage pour obtenir un devis d impression 3D plus precis."
         }
       },
       "SHOP": {
@@ -140,11 +140,84 @@
   "CALC": {
     "TITLE": "Calculer un devis 3D",
     "SUBTITLE": "Chargez votre fichier 3D (STL, 3MF), réglez la qualité et la couleur puis calculez immédiatement prix et délais.",
+    "EYEBROW": "Devis impression 3D en ligne",
     "CTA_START": "Commencer maintenant",
     "BUSINESS": "Entreprises",
     "PRIVATE": "Particuliers",
     "MODE_EASY": "Base",
     "MODE_ADVANCED": "Avancée",
+    "WHEN_TO_USE_LABEL": "Quand l'utiliser :",
+    "MODES": {
+      "BASIC": {
+        "TOGGLE_HINT": "Pour fichiers deja prets",
+        "TITLE": "Devis rapide pour fichiers 3D deja prets",
+        "SUBTITLE": "Le mode Base est pense pour les utilisateurs qui veulent un prix fiable en quelques secondes sans gerer des reglages techniques avances.",
+        "UPLOAD_HELP": "Chargez un fichier STL ou 3MF deja exporte, choisissez le materiau et la qualite, puis obtenez tout de suite une estimation claire du prix et du delai.",
+        "WHEN_TO_USE": "Utilisez Base si votre modele est deja finalise et que vous voulez surtout un devis simple et rapide."
+      },
+      "ADVANCED": {
+        "TOGGLE_HINT": "Plus de controle sur l impression",
+        "TITLE": "Devis plus precis avec materiaux et reglages",
+        "SUBTITLE": "Le mode avance est pense pour les utilisateurs qui veulent une estimation plus precise en ajustant les parametres d impression importants.",
+        "UPLOAD_HELP": "Chargez votre fichier 3D et reglez le materiau, la hauteur de couche, les supports, le remplissage et la buse pour vous rapprocher de la configuration finale.",
+        "WHEN_TO_USE": "Utilisez Avancee si vous voulez comparer des materiaux ou des reglages et garder plus de controle sur le resultat."
+      }
+    },
+    "COMPARE_KICKER": "Choix rapide",
+    "COMPARE_TITLE": "Base ou Avancee ?",
+    "COMPARE_SUBTITLE": "Les deux pages repondent a des besoins differents. Commencez par Base pour aller vite, puis passez a Avancee quand le materiau ou les reglages d impression deviennent importants.",
+    "COMPARE": {
+      "BASIC": {
+        "TITLE": "Base : devis rapide",
+        "TEXT": "Ideal si vous avez deja un fichier pret et que vous voulez recevoir rapidement un prix fiable, sans entrer dans les details techniques."
+      },
+      "ADVANCED": {
+        "TITLE": "Avancee : devis plus precis",
+        "TEXT": "Ideal si vous voulez choisir le materiau, la hauteur de couche, les supports, le remplissage et d autres reglages qui influencent davantage le resultat final."
+      }
+    },
+    "MODEL_SOURCES": {
+      "KICKER": "Modeles 3D",
+      "TITLE": "Ou trouver des modeles 3D a charger",
+      "TEXT": "Si vous n avez pas encore de fichier, vous pouvez commencer par ces plateformes. Verifiez toujours la licence, les dimensions et la qualite du modele avant de le charger dans le calculateur.",
+      "FAVORITES_TITLE": "Nos preferes",
+      "OTHERS_TITLE": "Autres",
+      "ITEMS": {
+        "PRINTABLES": "Grand catalogue de modeles imprimables partages par la communaute maker.",
+        "MAKERWORLD": "Repository de modeles prets a imprimer, utile surtout pour les projets maker.",
+        "THINGIVERSE": "Archive historique avec un tres grand nombre de modeles gratuits dans de nombreuses categories.",
+        "THANGS": "Moteur de recherche et repository 3D avec versions et collections associees.",
+        "CULTS3D": "Marketplace avec des modeles gratuits et payants pour des usages tres varies.",
+        "YEGGI": "Moteur de recherche qui agrège des modeles 3D depuis plusieurs sites."
+      }
+    },
+    "FAQ": {
+      "KICKER": "Questions frequentes",
+      "TITLE": "Mini FAQ",
+      "SUBTITLE": "Des reponses rapides aux questions qui bloquent le plus souvent les utilisateurs non techniques.",
+      "ITEMS": {
+        "FILES": {
+          "Q": "Quels fichiers puis-je charger ?",
+          "A": "Vous pouvez charger des fichiers STL ou 3MF. Si vous telechargez un modele depuis un portail externe, verifiez qu il s agit bien d un vrai fichier 3D et pas seulement d images ou de documentation."
+        },
+        "MODE": {
+          "Q": "Comment choisir entre Base et Avancee ?",
+          "A": "Choisissez Base si vous voulez un devis rapide pour un fichier deja pret. Choisissez Avancee si vous devez comparer des materiaux ou modifier des reglages qui influencent le temps, le poids et le prix."
+        },
+        "NO_MODEL": {
+          "Q": "Et si je n ai pas encore de modele 3D ?",
+          "A": "Vous pouvez chercher sur les plateformes ci-dessus ou nous contacter si vous avez besoin d aide pour la conception ou l adaptation CAD."
+        },
+        "PRICE": {
+          "Q": "Le prix affiche est-il deja fiable ?",
+          "A": "C est une estimation automatique basee sur votre fichier et les reglages choisis. Le mode Avancee est plus precis car il tient compte d un plus grand nombre de parametres d impression."
+        },
+        "BEFORE_UPLOAD": {
+          "Q": "Que faut-il verifier avant le chargement ?",
+          "A": "Verifiez que le modele a la bonne echelle, que le fichier n est pas corrompu et que la geometrie correspond bien a la piece finale que vous voulez imprimer."
+        }
+      }
+    },
     "UPLOAD_LABEL": "Glissez votre fichier 3D ici",
     "UPLOAD_SUB": "Nous prenons en charge STL, 3MF jusqu'à 50MB",
     "MATERIAL": "Matériau",
