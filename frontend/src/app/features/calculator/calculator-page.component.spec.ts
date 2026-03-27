@@ -170,9 +170,7 @@ describe('CalculatorPageComponent', () => {
     expect(component.modeContentKey('TITLE')).toBe('CALC.MODES.BASIC.TITLE');
 
     component.mode.set('advanced');
-    expect(component.modeContentKey('TITLE')).toBe(
-      'CALC.MODES.ADVANCED.TITLE',
-    );
+    expect(component.modeContentKey('TITLE')).toBe('CALC.MODES.ADVANCED.TITLE');
   });
 
   it('exposes the expected external model sources and faq entries', () => {
