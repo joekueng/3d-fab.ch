@@ -78,8 +78,8 @@
         "DESCRIPTION": "Learn more about the 3D fab team and our 3D printing lab for prototypes, spare parts and custom production."
       },
       "CONTACT": {
-        "TITLE": "Contact | 3D fab",
-        "DESCRIPTION": "Request information, custom quotes or technical support for your 3D printing project."
+        "TITLE": "Custom parts and replacements | Contact - 3D fab",
+        "DESCRIPTION": "Need a custom part, a replacement piece or a model adjustment? Contact us even if you do not have a 3D file yet: we can start from photos, measurements or an existing part."
       },
       "LEGAL": {
         "PRIVACY": {
@@ -570,6 +570,12 @@
     "SUCCESS_TITLE": "Message Sent Successfully",
     "SUCCESS_DESC": "Thank you for contacting us. We have received your message and will send you a recap email shortly.",
     "SEND_ANOTHER": "Send Another Message",
+    "CAD_NOTE_EYEBROW": "Custom parts",
+    "CAD_NOTE_TITLE": "Modify or recreate a part",
+    "CAD_NOTE_TEXT": "Useful if you need to recreate a replacement part, adapt a model or validate an idea before printing. We can start from photos, dimensions, sketches or an existing part.",
+    "CAD_NOTE_ITEM_1": "You have a broken or hard-to-find part",
+    "CAD_NOTE_ITEM_2": "You want to adapt a model to a precise size",
+    "CAD_NOTE_ITEM_3": "You do not have a 3D file but can send photos or measurements",
     "FILE_TYPE_PDF": "PDF",
     "FILE_TYPE_3D": "3D",
     "FILE_TYPE_VIDEO": "Video",

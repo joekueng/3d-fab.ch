@@ -78,8 +78,8 @@
         "DESCRIPTION": "Lernen Sie das Team von 3D fab und unser 3D-Druck-Labor für Prototypen, Ersatzteile und maßgeschneiderte Produktionen kennen."
       },
       "CONTACT": {
-        "TITLE": "Kontakt | 3D fab",
-        "DESCRIPTION": "Fordern Sie Informationen, individuelle Angebote oder technischen Support für Ihr 3D-Druck-Projekt an."
+        "TITLE": "Individuelle Teile und Ersatzteile | Kontakt - 3D fab",
+        "DESCRIPTION": "Sie brauchen ein individuelles Teil, ein Ersatzteil oder eine Modellanpassung? Kontaktieren Sie uns auch ohne 3D-Datei: Wir koennen mit Fotos, Massen oder einem bestehenden Teil starten."
       },
       "LEGAL": {
         "PRIVACY": {
@@ -570,6 +570,12 @@
     "SUCCESS_TITLE": "Nachricht erfolgreich gesendet",
     "SUCCESS_DESC": "Vielen Dank für Ihre Kontaktaufnahme. Wir haben Ihre Nachricht erhalten und senden Ihnen in Kürze eine Zusammenfassungs-E-Mail.",
     "SEND_ANOTHER": "Weitere Nachricht senden",
+    "CAD_NOTE_EYEBROW": "Teile nach Mass",
+    "CAD_NOTE_TITLE": "Teile anpassen oder nachbauen",
+    "CAD_NOTE_TEXT": "Sinnvoll, wenn Sie ein Ersatzteil nachbauen, ein Modell anpassen oder eine Idee vor dem Druck pruefen moechten. Wir koennen mit Fotos, Massen, Skizzen oder einem bestehenden Teil starten.",
+    "CAD_NOTE_ITEM_1": "Sie haben ein defektes oder schwer auffindbares Teil",
+    "CAD_NOTE_ITEM_2": "Sie wollen ein Modell auf ein genaues Mass anpassen",
+    "CAD_NOTE_ITEM_3": "Sie haben keine 3D-Datei, koennen aber Fotos oder Masse senden",
     "FILE_TYPE_PDF": "PDF",
     "FILE_TYPE_3D": "3D",
     "FILE_TYPE_VIDEO": "Video",

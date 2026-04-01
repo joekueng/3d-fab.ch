@@ -52,8 +52,8 @@
         "DESCRIPTION": "Découvrez l'équipe de 3D fab et notre atelier d'impression 3D pour prototypes, pièces et productions sur mesure."
       },
       "CONTACT": {
-        "TITLE": "Contact | 3D fab",
-        "DESCRIPTION": "Demandez des informations, des devis personnalisés ou un support technique pour votre projet d'impression 3D."
+        "TITLE": "Pieces sur mesure et rechange | Contact - 3D fab",
+        "DESCRIPTION": "Vous avez besoin d une piece sur mesure, d une piece de rechange ou d une modification de modele ? Contactez-nous meme sans fichier 3D : nous pouvons partir de photos, de cotes ou d une piece existante."
       },
       "LEGAL": {
         "PRIVACY": {
@@ -635,6 +635,12 @@
     "SUCCESS_DESC": "Merci de nous avoir contactés. Nous avons reçu votre message et vous enverrons un e-mail récapitulatif prochainement.",
     "SEND_ANOTHER": "Envoyer un autre message",
     "HERO_SUBTITLE": "Nous sommes là pour vous aider. Remplissez le formulaire ci-dessous pour toute demande.",
+    "CAD_NOTE_EYEBROW": "Pieces sur mesure",
+    "CAD_NOTE_TITLE": "Modifier ou reproduire une piece",
+    "CAD_NOTE_TEXT": "Utile si vous devez recreer une piece de rechange, adapter un modele ou verifier une idee avant impression. Nous pouvons partir de photos, de cotes, d un croquis ou d une piece existante.",
+    "CAD_NOTE_ITEM_1": "Vous avez une piece cassee ou difficile a trouver",
+    "CAD_NOTE_ITEM_2": "Vous voulez adapter un modele a une dimension precise",
+    "CAD_NOTE_ITEM_3": "Vous n avez pas de fichier 3D mais vous pouvez envoyer des photos ou des cotes",
     "FILE_TYPE_PDF": "PDF",
     "FILE_TYPE_3D": "3D",
     "FILE_TYPE_VIDEO": "Vidéo",

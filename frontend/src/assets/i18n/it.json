@@ -52,8 +52,8 @@
         "DESCRIPTION": "Scopri il team 3D fab e il laboratorio di stampa 3D per prototipi, ricambi e produzioni su misura."
       },
       "CONTACT": {
-        "TITLE": "Contatti | 3D fab",
-        "DESCRIPTION": "Richiedi informazioni, preventivi personalizzati o supporto tecnico per il tuo progetto di stampa 3D."
+        "TITLE": "Pezzi su misura e ricambi | Contattaci - 3D fab",
+        "DESCRIPTION": "Hai bisogno di un pezzo su misura, di un ricambio o della modifica di un modello? Contattaci anche se non hai un file 3D: possiamo partire da foto, misure o da un pezzo esistente."
       },
       "LEGAL": {
         "PRIVACY": {
@@ -635,6 +635,12 @@
     "SUCCESS_DESC": "Grazie per averci contattato. Abbiamo ricevuto il tuo messaggio e ti invieremo una email di riepilogo a breve.",
     "SEND_ANOTHER": "Invia un altro messaggio",
     "HERO_SUBTITLE": "Siamo qui per aiutarti. Compila il modulo sottostante per qualsiasi richiesta.",
+    "CAD_NOTE_EYEBROW": "Pezzi su misura",
+    "CAD_NOTE_TITLE": "Modifica o replica di pezzi",
+    "CAD_NOTE_TEXT": "Utile se devi ricreare un ricambio, adattare un modello o verificare un'idea prima della stampa. Possiamo partire da foto, misure, schizzi o da un pezzo esistente.",
+    "CAD_NOTE_ITEM_1": "Hai un pezzo rotto o difficile da trovare",
+    "CAD_NOTE_ITEM_2": "Vuoi adattare un modello a una misura precisa",
+    "CAD_NOTE_ITEM_3": "Non hai un file 3D ma puoi inviare foto o misure",
     "FILE_TYPE_PDF": "PDF",
     "FILE_TYPE_3D": "3D",
     "FILE_TYPE_VIDEO": "Video",
