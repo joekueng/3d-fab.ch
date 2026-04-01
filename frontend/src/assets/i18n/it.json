@@ -27,12 +27,12 @@
         "TITLE": "Calcolatore preventivo stampa 3D | 3D fab",
         "DESCRIPTION": "Carica il file 3D e ottieni prezzo e tempi in pochi secondi con slicing reale.",
         "BASIC": {
-          "TITLE": "Calcolatore stampa 3D base | 3D fab",
-          "DESCRIPTION": "Calcola rapidamente il prezzo della tua stampa 3D in modalita base."
+          "TITLE": "Preventivo stampa 3D veloce da file pronti | 3D fab",
+          "DESCRIPTION": "Carica un file STL o 3MF gia pronto e ricevi un prezzo corretto in pochi secondi con il calcolatore base."
         },
         "ADVANCED": {
-          "TITLE": "Calcolatore stampa 3D avanzato | 3D fab",
-          "DESCRIPTION": "Configura parametri avanzati e ottieni un preventivo preciso con slicing reale."
+          "TITLE": "Preventivo stampa 3D preciso con materiali e impostazioni | 3D fab",
+          "DESCRIPTION": "Configura materiale, layer, supporti e riempimento per ottenere un preventivo stampa 3D piu preciso."
         }
       },
       "SHOP": {
@@ -52,8 +52,8 @@
         "DESCRIPTION": "Scopri il team 3D fab e il laboratorio di stampa 3D per prototipi, ricambi e produzioni su misura."
       },
       "CONTACT": {
-        "TITLE": "Contatti | 3D fab",
-        "DESCRIPTION": "Richiedi informazioni, preventivi personalizzati o supporto tecnico per il tuo progetto di stampa 3D."
+        "TITLE": "Pezzi su misura e ricambi | Contattaci - 3D fab",
+        "DESCRIPTION": "Hai bisogno di un pezzo su misura, di un ricambio o della modifica di un modello? Contattaci anche se non hai un file 3D: possiamo partire da foto, misure o da un pezzo esistente."
       },
       "LEGAL": {
         "PRIVACY": {
@@ -140,11 +140,84 @@
   "CALC": {
     "TITLE": "Calcola Preventivo 3D",
     "SUBTITLE": "Carica il tuo file 3D (STL, 3MF), imposta la qualità, il colore e calcola immediatamente prezzo e tempi.",
+    "EYEBROW": "Preventivo stampa 3D online",
     "CTA_START": "Inizia Ora",
     "BUSINESS": "Aziende",
     "PRIVATE": "Privati",
     "MODE_EASY": "Base",
     "MODE_ADVANCED": "Avanzata",
+    "WHEN_TO_USE_LABEL": "Quando usarla:",
+    "MODES": {
+      "BASIC": {
+        "TOGGLE_HINT": "Per file gia pronti",
+        "TITLE": "Preventivo veloce per file 3D gia pronti",
+        "SUBTITLE": "La modalita Base e pensata per chi vuole un prezzo corretto in pochi secondi senza gestire parametri tecnici avanzati.",
+        "UPLOAD_HELP": "Carica un file STL o 3MF gia esportato, scegli materiale e qualita, poi ricevi subito una stima chiara di prezzo e tempo.",
+        "WHEN_TO_USE": "Usa Base se il modello e pronto e ti serve soprattutto un preventivo rapido e semplice."
+      },
+      "ADVANCED": {
+        "TOGGLE_HINT": "Piu controllo su stampa e materiale",
+        "TITLE": "Preventivo piu preciso con materiali e impostazioni",
+        "SUBTITLE": "La modalita Avanzata e pensata per chi vuole una stima piu precisa regolando parametri di stampa rilevanti.",
+        "UPLOAD_HELP": "Carica il file 3D e imposta materiale, layer, supporti, riempimento e ugello per avvicinare di piu il preventivo alla configurazione finale.",
+        "WHEN_TO_USE": "Usa Avanzata se devi confrontare materiali o impostazioni e vuoi piu controllo sul risultato."
+      }
+    },
+    "COMPARE_KICKER": "Scelta rapida",
+    "COMPARE_TITLE": "Basic o Advanced?",
+    "COMPARE_SUBTITLE": "Le due pagine servono a casi d uso diversi. Parti da Base per fare presto, passa ad Avanzata quando il materiale o le impostazioni fanno la differenza.",
+    "COMPARE": {
+      "BASIC": {
+        "TITLE": "Base: preventivo veloce",
+        "TEXT": "Ideale se hai un file gia pronto e vuoi ricevere un prezzo corretto in modo semplice, senza entrare nei dettagli tecnici."
+      },
+      "ADVANCED": {
+        "TITLE": "Avanzata: preventivo piu preciso",
+        "TEXT": "Ideale se vuoi scegliere materiale, layer, supporti, riempimento e altre impostazioni che incidono di piu sul risultato finale."
+      }
+    },
+    "MODEL_SOURCES": {
+      "KICKER": "Modelli 3D",
+      "TITLE": "Dove trovare modelli 3D da caricare",
+      "TEXT": "Se non hai ancora un file, puoi partire da queste piattaforme. Controlla sempre licenza, dimensioni e qualita del modello prima di caricarlo nel calcolatore.",
+      "FAVORITES_TITLE": "I nostri preferiti",
+      "OTHERS_TITLE": "Altri",
+      "ITEMS": {
+        "PRINTABLES": "Ampio catalogo di modelli stampabili condivisi dalla community.",
+        "MAKERWORLD": "Repository con modelli pronti alla stampa, utile soprattutto in ambito maker.",
+        "THINGIVERSE": "Archivio storico con moltissimi modelli gratuiti in diverse categorie.",
+        "THANGS": "Motore di ricerca e repository 3D con raccolte e versioni correlate.",
+        "CULTS3D": "Marketplace con modelli gratuiti e a pagamento per progetti molto diversi.",
+        "YEGGI": "Motore di ricerca che aggrega modelli 3D da siti differenti."
+      }
+    },
+    "FAQ": {
+      "KICKER": "Dubbi comuni",
+      "TITLE": "Mini FAQ",
+      "SUBTITLE": "Le risposte rapide alle domande che bloccano piu spesso chi non usa abitualmente la stampa 3D.",
+      "ITEMS": {
+        "FILES": {
+          "Q": "Che file posso caricare?",
+          "A": "Puoi caricare file STL o 3MF. Se scarichi un modello da un portale esterno, verifica che sia gia un file 3D pronto e non solo immagini o documentazione."
+        },
+        "MODE": {
+          "Q": "Come scelgo tra Base e Avanzata?",
+          "A": "Scegli Base se vuoi un preventivo rapido per un file gia pronto. Scegli Avanzata se devi confrontare materiali o modificare impostazioni che cambiano tempo, peso e costo."
+        },
+        "NO_MODEL": {
+          "Q": "E se non ho ancora il modello 3D?",
+          "A": "Puoi cercarlo nei portali suggeriti qui sopra oppure contattarci se ti serve aiuto con progettazione o adattamento CAD."
+        },
+        "PRICE": {
+          "Q": "Il prezzo mostrato e gia affidabile?",
+          "A": "E una stima automatica basata sul file e sulle impostazioni selezionate. In modalita Avanzata la stima e piu precisa perche considera piu parametri di stampa."
+        },
+        "BEFORE_UPLOAD": {
+          "Q": "Cosa conviene controllare prima del caricamento?",
+          "A": "Controlla che il modello abbia la scala corretta, che il file non sia corrotto e che la geometria sia davvero quella finale che vuoi stampare."
+        }
+      }
+    },
     "UPLOAD_LABEL": "Trascina il tuo file 3D qui",
     "UPLOAD_SUB": "Supportiamo STL, 3MF fino a 50MB",
     "MATERIAL": "Materiale",
@@ -562,6 +635,12 @@
     "SUCCESS_DESC": "Grazie per averci contattato. Abbiamo ricevuto il tuo messaggio e ti invieremo una email di riepilogo a breve.",
     "SEND_ANOTHER": "Invia un altro messaggio",
     "HERO_SUBTITLE": "Siamo qui per aiutarti. Compila il modulo sottostante per qualsiasi richiesta.",
+    "CAD_NOTE_EYEBROW": "Pezzi su misura",
+    "CAD_NOTE_TITLE": "Modifica o replica di pezzi",
+    "CAD_NOTE_TEXT": "Utile se devi ricreare un ricambio, adattare un modello o verificare un'idea prima della stampa. Possiamo partire da foto, misure, schizzi o da un pezzo esistente.",
+    "CAD_NOTE_ITEM_1": "Hai un pezzo rotto o difficile da trovare",
+    "CAD_NOTE_ITEM_2": "Vuoi adattare un modello a una misura precisa",
+    "CAD_NOTE_ITEM_3": "Non hai un file 3D ma puoi inviare foto o misure",
     "FILE_TYPE_PDF": "PDF",
     "FILE_TYPE_3D": "3D",
     "FILE_TYPE_VIDEO": "Video",

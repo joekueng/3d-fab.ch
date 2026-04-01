@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   Component,
   computed,
   signal,
@@ -21,6 +22,7 @@ import { BrandAnimationLogoComponent } from '../../shared/components/brand-anima
 import { UploadFormComponent } from './components/upload-form/upload-form.component';
 import { QuoteResultComponent } from './components/quote-result/quote-result.component';
 import {
+  PendingCalculatorDraft,
   QuoteRequest,
   QuoteResult,
   QuoteEstimatorService,
@@ -57,7 +59,7 @@ type TrackedPrintSettings = {
   templateUrl: './calculator-page.component.html',
   styleUrl: './calculator-page.component.scss',
 })
-export class CalculatorPageComponent implements OnInit {
+export class CalculatorPageComponent implements OnInit, AfterViewInit {
   private readonly isBrowser: boolean;
   mode = signal<'easy' | 'advanced'>('easy');
   step = signal<'upload' | 'quote' | 'details' | 'success'>('upload');
@@ -70,6 +72,57 @@ export class CalculatorPageComponent implements OnInit {
   errorKey = signal<string>('CALC.ERROR_GENERIC');
   isZeroQuoteError = computed(
     () => this.error() && this.errorKey() === 'CALC.ERROR_ZERO_PRICE',
+  );
+  readonly faqIds = [
+    'FILES',
+    'MODE',
+    'NO_MODEL',
+    'PRICE',
+    'BEFORE_UPLOAD',
+  ] as const;
+  readonly modelSources = [
+    {
+      id: 'PRINTABLES',
+      label: 'Printables',
+      url: 'https://www.printables.com',
+    },
+    {
+      id: 'MAKERWORLD',
+      label: 'MakerWorld',
+      url: 'https://makerworld.com',
+    },
+    {
+      id: 'THINGIVERSE',
+      label: 'Thingiverse',
+      url: 'https://www.thingiverse.com',
+    },
+    {
+      id: 'THANGS',
+      label: 'Thangs',
+      url: 'https://thangs.com',
+    },
+    {
+      id: 'CULTS3D',
+      label: 'Cults3D',
+      url: 'https://cults3d.com',
+    },
+    {
+      id: 'YEGGI',
+      label: 'Yeggi',
+      url: 'https://www.yeggi.com',
+    },
+  ] as const;
+  readonly favoriteModelSourceIds = ['PRINTABLES', 'MAKERWORLD'] as const;
+  readonly favoriteModelSources = this.modelSources.filter((source) =>
+    this.favoriteModelSourceIds.includes(
+      source.id as (typeof this.favoriteModelSourceIds)[number],
+    ),
+  );
+  readonly otherModelSources = this.modelSources.filter(
+    (source) =>
+      !this.favoriteModelSourceIds.includes(
+        source.id as (typeof this.favoriteModelSourceIds)[number],
+      ),
   );
 
   orderSuccess = signal(false);
@@ -113,6 +166,31 @@ export class CalculatorPageComponent implements OnInit {
         }
       }
     });
+  }
+
+  ngAfterViewInit() {
+    const pendingDraft = this.estimator.consumePendingCalculatorDraft();
+    if (!pendingDraft || this.currentSessionId()) {
+      return;
+    }
+
+    this.uploadForm?.restoreRequestDraft(pendingDraft.request, {
+      sameSettingsForAll: pendingDraft.sameSettingsForAll,
+      selectedFileName: pendingDraft.selectedFileName,
+    });
+  }
+
+  modeContentKey(field: string): string {
+    const modeKey = this.mode() === 'easy' ? 'BASIC' : 'ADVANCED';
+    return `CALC.MODES.${modeKey}.${field}`;
+  }
+
+  modelSourceDescriptionKey(id: string): string {
+    return `CALC.MODEL_SOURCES.ITEMS.${id}`;
+  }
+
+  faqKey(id: string, field: string): string {
+    return `CALC.FAQ.ITEMS.${id}.${field}`;
   }
 
   loadSession(sessionId: string) {
@@ -533,7 +611,7 @@ export class CalculatorPageComponent implements OnInit {
     if (this.cadSessionLocked()) return;
 
     const targetPath = nextMode === 'easy' ? 'basic' : 'advanced';
-    const currentPath = this.route.snapshot.routeConfig?.path;
+    const currentPath = this.route.snapshot?.routeConfig?.path;
 
     this.mode.set(nextMode);
 
@@ -541,10 +619,52 @@ export class CalculatorPageComponent implements OnInit {
       return;
     }
 
+    if (!this.currentSessionId()) {
+      this.persistPendingDraftForModeSwitch();
+    }
+
     this.router.navigate(['..', targetPath], {
       relativeTo: this.route,
       queryParamsHandling: 'preserve',
     });
+  }
+
+  private currentSessionId(): string | null {
+    const fromResult = this.result()?.sessionId;
+    if (fromResult) {
+      return fromResult;
+    }
+
+    const snapshot = this.route.snapshot;
+    const fromQueryParamMap = snapshot?.queryParamMap?.get?.('session');
+    if (fromQueryParamMap) {
+      return fromQueryParamMap;
+    }
+
+    const fromQueryParams = snapshot?.queryParams?.['session'];
+    return typeof fromQueryParams === 'string' && fromQueryParams.length > 0
+      ? fromQueryParams
+      : null;
+  }
+
+  private persistPendingDraftForModeSwitch(): void {
+    if (!this.uploadForm) {
+      this.estimator.setPendingCalculatorDraft(null);
+      return;
+    }
+
+    const request = this.uploadForm.getCurrentRequestDraft();
+    if (!request.items.length) {
+      this.estimator.setPendingCalculatorDraft(null);
+      return;
+    }
+
+    const draft: PendingCalculatorDraft = {
+      request,
+      sameSettingsForAll: this.uploadForm.sameSettingsForAll(),
+      selectedFileName: this.uploadForm.selectedFile()?.name ?? null,
+    };
+    this.estimator.setPendingCalculatorDraft(draft);
   }
 
   private toTrackedSettingsFromRequest(
