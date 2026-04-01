@@ -1,5 +1,7 @@
 <div class="container ui-simple-hero">
-  <h1 class="ui-simple-hero__title">{{ modeContentKey("TITLE") | translate }}</h1>
+  <h1 class="ui-simple-hero__title">
+    {{ modeContentKey("TITLE") | translate }}
+  </h1>
   <p class="ui-simple-hero__subtitle">
     {{ modeContentKey("SUBTITLE") | translate }}
   </p>
@@ -106,7 +108,9 @@
     <section class="calculator-guide">
       <div class="model-source-section">
         <div class="model-source-intro">
-          <p class="guide-kicker">{{ "CALC.MODEL_SOURCES.KICKER" | translate }}</p>
+          <p class="guide-kicker">
+            {{ "CALC.MODEL_SOURCES.KICKER" | translate }}
+          </p>
           <h2>{{ "CALC.MODEL_SOURCES.TITLE" | translate }}</h2>
           <p>{{ "CALC.MODEL_SOURCES.TEXT" | translate }}</p>
         </div>
@@ -119,8 +123,12 @@
             @for (source of favoriteModelSources; track source.id) {
               <a
                 class="model-source-link model-source-link--favorite"
-                [class.model-source-link--printables]="source.id === 'PRINTABLES'"
-                [class.model-source-link--makerworld]="source.id === 'MAKERWORLD'"
+                [class.model-source-link--printables]="
+                  source.id === 'PRINTABLES'
+                "
+                [class.model-source-link--makerworld]="
+                  source.id === 'MAKERWORLD'
+                "
                 [href]="source.url"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -145,7 +153,9 @@
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <span class="model-source-link__name">{{ source.label }}</span>
+                  <span class="model-source-link__name">{{
+                    source.label
+                  }}</span>
                 </a>
               }
             </div>

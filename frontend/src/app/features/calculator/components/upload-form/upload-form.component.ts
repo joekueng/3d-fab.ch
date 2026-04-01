@@ -735,9 +735,7 @@ export class UploadFormComponent implements OnInit {
     });
 
     const sameSettingsForAll =
-      this.mode() === 'advanced'
-        ? options?.sameSettingsForAll ?? true
-        : true;
+      this.mode() === 'advanced' ? (options?.sameSettingsForAll ?? true) : true;
     this.onSameSettingsToggle(sameSettingsForAll);
 
     request.items.forEach((item, index) => {
