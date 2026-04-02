@@ -195,7 +195,10 @@ const MATERIALS: readonly MaterialRecord[] = [
       printability: 96,
       layerRangeMm: '0.12 - 0.24',
     },
-    pros: ['Facile da stampare.', 'Ottima qualita superficiale su pezzi visuali.'],
+    pros: [
+      'Facile da stampare.',
+      'Ottima qualita superficiale su pezzi visuali.',
+    ],
     cons: [
       'Fragile sotto urto.',
       'Scarsa resistenza al calore e all UV prolungato.',
@@ -282,10 +285,7 @@ const MATERIALS: readonly MaterialRecord[] = [
       'Maggiore tenacita rispetto al PLA standard.',
       'Buon compromesso per prototipi funzionali.',
     ],
-    cons: [
-      'Resistenza termica ancora moderata.',
-      'Meno rigido del PLA basic.',
-    ],
+    cons: ['Resistenza termica ancora moderata.', 'Meno rigido del PLA basic.'],
     idealFor: [
       'Pezzi funzionali leggeri',
       'Attrezzi non strutturali',
@@ -307,7 +307,8 @@ const MATERIALS: readonly MaterialRecord[] = [
   {
     id: 'asa',
     name: 'ASA',
-    summary: 'Polimero tecnico per esterno, piu stabile agli UV rispetto ad ABS.',
+    summary:
+      'Polimero tecnico per esterno, piu stabile agli UV rispetto ad ABS.',
     qualityTips: [
       'Camera chiusa e brim riducono warping.',
       'Layer 0.20-0.28 mm per bilanciare adesione e tempi.',
@@ -895,23 +896,33 @@ export class MaterialsPageComponent {
       },
       {
         label: 'Prezzo [CHF/kg]',
-        values: selected.map((material) => format(material.metrics.priceChfKg, 0)),
+        values: selected.map((material) =>
+          format(material.metrics.priceChfKg, 0),
+        ),
       },
       {
         label: 'Densita [g/cm3]',
-        values: selected.map((material) => format(material.metrics.densityGcm3, 2)),
+        values: selected.map((material) =>
+          format(material.metrics.densityGcm3, 2),
+        ),
       },
       {
         label: 'Resistenza a trazione [MPa]',
-        values: selected.map((material) => format(material.metrics.tensileMpa, 0)),
+        values: selected.map((material) =>
+          format(material.metrics.tensileMpa, 0),
+        ),
       },
       {
         label: 'Modulo elastico [GPa]',
-        values: selected.map((material) => format(material.metrics.modulusGpa, 2)),
+        values: selected.map((material) =>
+          format(material.metrics.modulusGpa, 2),
+        ),
       },
       {
         label: 'Allungamento a rottura [%]',
-        values: selected.map((material) => format(material.metrics.elongationPct, 1)),
+        values: selected.map((material) =>
+          format(material.metrics.elongationPct, 1),
+        ),
       },
       {
         label: 'HDT [C]',
@@ -1000,8 +1011,13 @@ export class MaterialsPageComponent {
     return this.languageService.localizedPath(path);
   }
 
-  private resolveUsageImage(usageKeyRaw: string): PublicMediaDisplayImage | null {
-    const usageKey = buildPublicMediaUsageScopeKey('MATERIALS_PAGE', usageKeyRaw);
+  private resolveUsageImage(
+    usageKeyRaw: string,
+  ): PublicMediaDisplayImage | null {
+    const usageKey = buildPublicMediaUsageScopeKey(
+      'MATERIALS_PAGE',
+      usageKeyRaw,
+    );
     const usageItems = this.mediaByUsage()[usageKey] ?? [];
     const primary = this.publicMediaService.pickPrimaryUsage(usageItems);
     return primary
@@ -1009,7 +1025,10 @@ export class MaterialsPageComponent {
       : null;
   }
 
-  private axisScore(material: MaterialRecord, axis: RadarAxis): {
+  private axisScore(
+    material: MaterialRecord,
+    axis: RadarAxis,
+  ): {
     rawValue: number;
     score: number;
   } {
@@ -1034,14 +1053,20 @@ export class MaterialsPageComponent {
     }).join(' ');
   }
 
-  private pointForScore(axisIndex: number, score: number): {
+  private pointForScore(
+    axisIndex: number,
+    score: number,
+  ): {
     x: number;
     y: number;
   } {
     return this.pointForRatio(axisIndex, this.visualRatio(score / 100));
   }
 
-  private pointForRatio(axisIndex: number, ratio: number): {
+  private pointForRatio(
+    axisIndex: number,
+    ratio: number,
+  ): {
     x: number;
     y: number;
   } {

@@ -109,8 +109,15 @@
             </p>
           </div>
 
-          <div class="selector-grid" role="group" aria-label="Selezione materiali">
-            @for (material of materials; track trackMaterial($index, material)) {
+          <div
+            class="selector-grid"
+            role="group"
+            aria-label="Selezione materiali"
+          >
+            @for (
+              material of materials;
+              track trackMaterial($index, material)
+            ) {
               <button
                 type="button"
                 class="selector-chip"
@@ -138,7 +145,8 @@
         <h2>Come leggere il confronto</h2>
         <p>
           Ogni asse mostra una proprieta tecnica. Il valore 100 rappresenta la
-          miglior performance relativa nel dataset attuale; 0 la meno favorevole.
+          miglior performance relativa nel dataset attuale; 0 la meno
+          favorevole.
         </p>
         <ul>
           @for (axis of radarAxes; track axis.id) {
@@ -166,7 +174,10 @@
           <thead>
             <tr>
               <th>Parametro</th>
-              @for (material of selectedMaterials(); track trackMaterial($index, material)) {
+              @for (
+                material of selectedMaterials();
+                track trackMaterial($index, material)
+              ) {
                 <th>{{ material.name }}</th>
               }
             </tr>
@@ -198,7 +209,10 @@
       </div>
 
       <div class="calculator-facts-grid">
-        @for (fact of calculatorFacts; track trackCalculatorFact($index, fact)) {
+        @for (
+          fact of calculatorFacts;
+          track trackCalculatorFact($index, fact)
+        ) {
           <article class="calculator-fact-card">
             <h3>{{ fact.title }}</h3>
             <p>{{ fact.description }}</p>
@@ -207,7 +221,10 @@
       </div>
 
       <div class="calculator-modes-grid">
-        @for (mode of calculatorModes; track trackCalculatorMode($index, mode)) {
+        @for (
+          mode of calculatorModes;
+          track trackCalculatorMode($index, mode)
+        ) {
           <article class="calculator-mode-card">
             <p class="calculator-mode-eyebrow">{{ mode.eyebrow }}</p>
             <h3>{{ mode.title }}</h3>
@@ -226,7 +243,10 @@
             </div>
 
             <p class="calculator-mode-output">{{ mode.outputs }}</p>
-            <a class="calculator-mode-link" [attr.href]="localizedPath(mode.path)">
+            <a
+              class="calculator-mode-link"
+              [attr.href]="localizedPath(mode.path)"
+            >
               {{ mode.ctaLabel }}
             </a>
           </article>
@@ -244,9 +264,14 @@
         </div>
 
         <div class="calculator-parameters-grid">
-          @for (parameter of calculatorParameters; track trackCalculatorParameter($index, parameter)) {
+          @for (
+            parameter of calculatorParameters;
+            track trackCalculatorParameter($index, parameter)
+          ) {
             <article class="calculator-parameter-card">
-              <p class="calculator-parameter-badge">{{ parameter.availability }}</p>
+              <p class="calculator-parameter-badge">
+                {{ parameter.availability }}
+              </p>
               <h4>{{ parameter.title }}</h4>
               <p>{{ parameter.explanation }}</p>
               <p class="calculator-parameter-effect">
@@ -268,7 +293,10 @@
         </div>
 
         <div class="visual-guide-grid">
-          @for (guide of qualityVisualCards(); track trackVisualGuide($index, guide)) {
+          @for (
+            guide of qualityVisualCards();
+            track trackVisualGuide($index, guide)
+          ) {
             <article class="visual-guide-card">
               <p class="visual-guide-category">{{ guide.category }}</p>
               <h3>{{ guide.title }}</h3>
@@ -277,10 +305,16 @@
                 @if (guide.image; as image) {
                   <picture>
                     @if (image.source.avifUrl) {
-                      <source [srcset]="image.source.avifUrl" type="image/avif" />
+                      <source
+                        [srcset]="image.source.avifUrl"
+                        type="image/avif"
+                      />
                     }
                     @if (image.source.webpUrl) {
-                      <source [srcset]="image.source.webpUrl" type="image/webp" />
+                      <source
+                        [srcset]="image.source.webpUrl"
+                        type="image/webp"
+                      />
                     }
                     <img
                       [src]="image.source.fallbackUrl"
@@ -294,7 +328,8 @@
                     <span>
                       Nessuna immagine assegnata. Carica asset backend con
                       usageType <code>MATERIALS_PAGE</code> e usageKey
-                      <code>{{ guide.usageKey }}</code>.
+                      <code>{{ guide.usageKey }}</code
+                      >.
                     </span>
                   </div>
                 }
@@ -318,8 +353,8 @@
     <div class="container">
       <h2>Indice completo fonti</h2>
       <p>
-        Tutti i link usati per metriche e descrizioni sono riportati qui in forma
-        centralizzata.
+        Tutti i link usati per metriche e descrizioni sono riportati qui in
+        forma centralizzata.
       </p>
       <ul class="global-source-list">
         @for (source of allSources(); track trackSource($index, source)) {

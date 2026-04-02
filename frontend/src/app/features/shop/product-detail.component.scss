@@ -334,10 +334,7 @@ h1 {
   margin-left: auto;
 }
 
-.product-quick-request-card
-  ::ng-deep
-  .shop-quick-request__actions
-  .btn {
+.product-quick-request-card ::ng-deep .shop-quick-request__actions .btn {
   width: 100%;
   min-width: 10.75rem;
 }

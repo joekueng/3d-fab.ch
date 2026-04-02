@@ -38,7 +38,9 @@ describe('MaterialsPageComponent', () => {
     const host = fixture.nativeElement as HTMLElement;
     const chartCard = host.querySelector('.chart-card') as HTMLElement;
     const legend = chartCard.querySelector('.chart-legend') as HTMLElement;
-    const selectorPanel = chartCard.querySelector('.selector-panel') as HTMLElement;
+    const selectorPanel = chartCard.querySelector(
+      '.selector-panel',
+    ) as HTMLElement;
 
     expect(chartCard).toBeTruthy();
     expect(legend).toBeTruthy();
@@ -52,24 +54,27 @@ describe('MaterialsPageComponent', () => {
     component.toggleMaterial('pla-matte');
     fixture.detectChanges();
 
-    expect(component.selectedMaterials().map((material) => material.id)).toEqual([
-      'pla-basic',
-      'pla-matte',
-      'asa',
-      'pet-cf',
-    ]);
+    expect(
+      component.selectedMaterials().map((material) => material.id),
+    ).toEqual(['pla-basic', 'pla-matte', 'asa', 'pet-cf']);
 
     const tableHeaders = Array.from(
-      fixture.nativeElement.querySelectorAll('thead th') as NodeListOf<HTMLTableCellElement>,
+      fixture.nativeElement.querySelectorAll(
+        'thead th',
+      ) as NodeListOf<HTMLTableCellElement>,
     ).map((cell) => cell.textContent?.trim());
 
     expect(tableHeaders).toContain('PLA Matte');
-    expect(fixture.nativeElement.querySelectorAll('.legend-item').length).toBe(4);
+    expect(fixture.nativeElement.querySelectorAll('.legend-item').length).toBe(
+      4,
+    );
   });
 
   it('renders the calculator guide with localized links and real-calculator copy', () => {
     const host = fixture.nativeElement as HTMLElement;
-    const calculatorSection = host.querySelector('.calculator-section') as HTMLElement;
+    const calculatorSection = host.querySelector(
+      '.calculator-section',
+    ) as HTMLElement;
     const modeLinks = Array.from(
       calculatorSection.querySelectorAll('.calculator-mode-link'),
     ) as HTMLAnchorElement[];

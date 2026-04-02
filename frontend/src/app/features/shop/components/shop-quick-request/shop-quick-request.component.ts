@@ -7,11 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import {
-  FormBuilder,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
@@ -231,7 +227,9 @@ export class ShopQuickRequestComponent implements OnDestroy {
 
     const extensionIndex = file.name.lastIndexOf('.');
     const extension =
-      extensionIndex >= 0 ? file.name.slice(extensionIndex + 1).toLowerCase() : '';
+      extensionIndex >= 0
+        ? file.name.slice(extensionIndex + 1).toLowerCase()
+        : '';
 
     return [
       'jpg',

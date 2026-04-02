@@ -29,7 +29,9 @@
       (ngSubmit)="onSubmit()"
     >
       <div class="shop-quick-request__main">
-        <label class="shop-quick-request__field shop-quick-request__field--email">
+        <label
+          class="shop-quick-request__field shop-quick-request__field--email"
+        >
           <span class="shop-quick-request__label">
             {{ "CONTACT.LABEL_EMAIL" | translate }}
           </span>
@@ -44,22 +46,26 @@
           }
         </label>
 
-        <label class="shop-quick-request__field shop-quick-request__field--message">
+        <label
+          class="shop-quick-request__field shop-quick-request__field--message"
+        >
           <span class="shop-quick-request__label">
             {{ "SHOP.QUICK_REQUEST_MESSAGE_LABEL" | translate }}
           </span>
-        <textarea
-          formControlName="message"
-          class="ui-form-control shop-quick-request__control shop-quick-request__textarea"
-          rows="1"
-          [placeholder]="'SHOP.QUICK_REQUEST_MESSAGE_PLACEHOLDER' | translate"
-        ></textarea>
+          <textarea
+            formControlName="message"
+            class="ui-form-control shop-quick-request__control shop-quick-request__textarea"
+            rows="1"
+            [placeholder]="'SHOP.QUICK_REQUEST_MESSAGE_PLACEHOLDER' | translate"
+          ></textarea>
           @if (messageError) {
             <span class="shop-quick-request__error">{{ messageError }}</span>
           }
         </label>
 
-        <div class="shop-quick-request__field shop-quick-request__field--upload">
+        <div
+          class="shop-quick-request__field shop-quick-request__field--upload"
+        >
           <span class="shop-quick-request__label">
             {{ "SHOP.QUICK_REQUEST_IMAGE_LABEL" | translate }}
           </span>
@@ -86,7 +92,9 @@
                 <div class="shop-quick-request__preview-meta">
                   <strong>{{ preview.file.name }}</strong>
                   <div class="shop-quick-request__preview-actions">
-                    <label class="shop-quick-request__upload shop-quick-request__upload--ghost">
+                    <label
+                      class="shop-quick-request__upload shop-quick-request__upload--ghost"
+                    >
                       <input
                         type="file"
                         hidden
@@ -113,15 +121,10 @@
         </div>
 
         <div class="shop-quick-request__actions">
-          <app-button
-            type="submit"
-            variant="primary"
-            [disabled]="submitting()"
-          >
+          <app-button type="submit" variant="primary" [disabled]="submitting()">
             {{
-              (submitting()
-                ? "CHECKOUT.PROCESSING"
-                : "SHOP.QUICK_REQUEST_SEND") | translate
+              (submitting() ? "CHECKOUT.PROCESSING" : "SHOP.QUICK_REQUEST_SEND")
+                | translate
             }}
           </app-button>
 
@@ -158,7 +161,7 @@
         </label>
 
         @if (
-          form.get('acceptLegal')?.invalid && form.get('acceptLegal')?.touched
+          form.get("acceptLegal")?.invalid && form.get("acceptLegal")?.touched
         ) {
           <div class="shop-quick-request__error">
             {{ "LEGAL.CONSENT.REQUIRED_ERROR" | translate }}

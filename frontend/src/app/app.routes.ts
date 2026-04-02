@@ -4,7 +4,7 @@ const SUPPORTED_LANGS = new Set(['it', 'en', 'de', 'fr']);
 
 const langPrefixCanMatch: CanMatchFn = (_route, segments) => {
   if (segments.length === 0) {
-    return   false;
+    return false;
   }
   return SUPPORTED_LANGS.has(segments[0].path.toLowerCase());
 };
@@ -48,7 +48,7 @@ const appChildRoutes: Routes = [
       seoDescriptionKey: 'SEO.ROUTES.ABOUT.DESCRIPTION',
     },
   },
-   {
+  {
     path: 'materials',
     loadComponent: () =>
       import('./features/materials/materials-page.component').then(
