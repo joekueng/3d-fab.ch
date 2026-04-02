@@ -4,39 +4,13 @@
       <p class="ui-eyebrow">Guida materiali</p>
       <h1>Qualita e Materiali</h1>
       <p class="hero-lead">
-        Confronta materiali in modo interattivo con radar chart, metriche tecniche,
-        vantaggi, limiti e fonti verificabili.
+        Confronta i materiali in modo interattivo con radar chart, metriche
+        tecniche e fonti verificabili. La sezione calcolatore qui sotto spiega
+        invece come usare davvero il tool online oggi.
       </p>
       <p class="hero-note">
-        Seleziona fino a {{ maxCompareCount }} materiali: il grafico aggiorna i
-        punteggi in tempo reale.
-      </p>
-    </div>
-  </section>
-
-  <section class="selector-section">
-    <div class="container">
-      <h2>Selezione confronto</h2>
-      <div class="selector-grid" role="group" aria-label="Selezione materiali">
-        @for (material of materials; track trackMaterial($index, material)) {
-          <button
-            type="button"
-            class="selector-chip"
-            [class.is-selected]="isSelected(material.id)"
-            [disabled]="!canSelect(material.id)"
-            (click)="toggleMaterial(material.id)"
-          >
-            <span
-              class="selector-dot"
-              [style.background-color]="legendDotColor(material.id)"
-            ></span>
-            <span>{{ material.name }}</span>
-          </button>
-        }
-      </div>
-      <p class="selector-help">
-        Nota: per l asse Economicita, un valore alto significa costo al kg piu
-        conveniente.
+        Seleziona fino a {{ maxCompareCount }} materiali: radar e tabella si
+        aggiornano in tempo reale.
       </p>
     </div>
   </section>
@@ -47,7 +21,8 @@
         <header class="chart-header">
           <h2>Radar chart comparativo</h2>
           <p>
-            Punteggi normalizzati 0-100 su tutto il set materiali (min-max scaling).
+            Punteggi normalizzati 0-100 su tutto il set materiali (min-max
+            scaling).
           </p>
         </header>
 
@@ -122,10 +97,45 @@
             </button>
           }
         </div>
+
+        <div class="selector-panel">
+          <div class="selector-panel__header">
+            <div>
+              <h3>Materiali nel confronto</h3>
+              <p>Scegli i materiali da confrontare direttamente nel radar.</p>
+            </div>
+            <p class="selector-count">
+              {{ selectedCount() }}/{{ maxCompareCount }}
+            </p>
+          </div>
+
+          <div class="selector-grid" role="group" aria-label="Selezione materiali">
+            @for (material of materials; track trackMaterial($index, material)) {
+              <button
+                type="button"
+                class="selector-chip"
+                [class.is-selected]="isSelected(material.id)"
+                [disabled]="!canSelect(material.id)"
+                (click)="toggleMaterial(material.id)"
+              >
+                <span
+                  class="selector-dot"
+                  [style.background-color]="legendDotColor(material.id)"
+                ></span>
+                <span>{{ material.name }}</span>
+              </button>
+            }
+          </div>
+
+          <p class="selector-help">
+            Nota: per l asse Economicita, un valore alto significa costo al kg
+            piu conveniente.
+          </p>
+        </div>
       </article>
 
       <article class="explain-card">
-        <h3>Spiegazione completa del radar</h3>
+        <h2>Come leggere il confronto</h2>
         <p>
           Ogni asse mostra una proprieta tecnica. Il valore 100 rappresenta la
           miglior performance relativa nel dataset attuale; 0 la meno favorevole.
@@ -139,9 +149,10 @@
           }
         </ul>
         <p>
-          La normalizzazione e calcolata su tutti i materiali mostrati in pagina.
-          Per leggibilita il radar usa un raggio minimo visivo: i valori minimi
-          restano i meno favorevoli, ma non collassano tutti nello stesso punto.
+          La normalizzazione e calcolata su tutti i materiali mostrati in
+          pagina. Per leggibilita il radar usa un raggio minimo visivo: i valori
+          minimi restano i meno favorevoli, ma non collassano tutti nello stesso
+          punto.
         </p>
       </article>
     </div>
@@ -175,202 +186,130 @@
     </div>
   </section>
 
-  <section class="quality-section">
+  <section class="calculator-section">
     <div class="container">
-      <h2>Layer, ugello e infill: esempi pratici</h2>
-      <p class="quality-intro">
-        Questa sezione non e un calcolatore interattivo: spiega visivamente cosa
-        cambia su oggetti reali e come leggere i risultati del vostro calcolatore.
-      </p>
-
-      <div class="visual-guide-grid">
-        @for (guide of qualityVisualCards(); track trackVisualGuide($index, guide)) {
-          <article class="visual-guide-card">
-            <p class="visual-guide-category">{{ guide.category }}</p>
-            <h3>{{ guide.title }}</h3>
-
-            <div class="visual-guide-media">
-              @if (guide.image; as image) {
-                <picture>
-                  @if (image.source.avifUrl) {
-                    <source [srcset]="image.source.avifUrl" type="image/avif" />
-                  }
-                  @if (image.source.webpUrl) {
-                    <source [srcset]="image.source.webpUrl" type="image/webp" />
-                  }
-                  <img
-                    [src]="image.source.fallbackUrl"
-                    [attr.alt]="image.altText || guide.title"
-                    width="640"
-                    height="420"
-                  />
-                </picture>
-              } @else {
-                <div class="media-fallback">
-                  <span>
-                    Nessuna immagine assegnata.
-                    Carica asset backend con usageType
-                    <code>MATERIALS_PAGE</code> e usageKey
-                    <code>{{ guide.usageKey }}</code>.
-                  </span>
-                </div>
-              }
-            </div>
-
-            <p><strong>Oggetto esempio:</strong> {{ guide.objectExample }}</p>
-            <p><strong>Meglio per:</strong> {{ guide.bestFor }}</p>
-            <p><strong>Limite:</strong> {{ guide.tradeoff }}</p>
-            <p class="visual-guide-calc">
-              <strong>Lettura nel calcolatore:</strong> {{ guide.calculatorRead }}
-            </p>
-          </article>
-        }
-      </div>
-
-      <article class="calculator-logic-card">
-        <h3>Come leggere il nostro calcolatore</h3>
+      <div class="section-heading">
+        <p class="ui-eyebrow">Calcolatore</p>
+        <h2>Come usare il calcolatore oggi</h2>
         <p>
-          Il calcolatore non sostituisce i profili slicer: serve a spiegare il
-          compromesso tra estetica, robustezza e tempi in modo coerente.
+          Questa sezione spiega il comportamento reale del calcolatore e i
+          controlli che incidono davvero sul preventivo.
         </p>
-        <div class="logic-table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Metrica</th>
-                <th>Cosa significa</th>
-                <th>Valore alto</th>
-                <th>Valore basso</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (rule of calculatorRules; track rule.metric) {
-                <tr>
-                  <th>{{ rule.metric }}</th>
-                  <td>{{ rule.whatItMeans }}</td>
-                  <td>{{ rule.whenHigh }}</td>
-                  <td>{{ rule.whenLow }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </article>
-
-      <div class="quality-layout">
-        <article class="quality-card">
-          <h3>Regole rapide per l utente</h3>
-          <ul>
-            <li>
-              Layer basso e ugello piccolo migliorano i dettagli, ma aumentano i
-              tempi.
-            </li>
-            <li>
-              Infill e perimetri alti migliorano resistenza, ma aumentano tempo e
-              materiale.
-            </li>
-            <li>
-              Per pezzi estetici usa profili fini; per pezzi funzionali scegli setup
-              bilanciati o robusti.
-            </li>
-          </ul>
-        </article>
       </div>
 
-      <div class="guides-grid">
-        @for (guide of qualityGuides; track trackGuide($index, guide)) {
-          <article class="guide-card">
-            <h3>{{ guide.title }}</h3>
-            <p><strong>Range consigliato:</strong> {{ guide.recommendation }}</p>
-            <p>{{ guide.explanation }}</p>
-            <p class="guide-effect">{{ guide.practicalEffect }}</p>
+      <div class="calculator-facts-grid">
+        @for (fact of calculatorFacts; track trackCalculatorFact($index, fact)) {
+          <article class="calculator-fact-card">
+            <h3>{{ fact.title }}</h3>
+            <p>{{ fact.description }}</p>
           </article>
         }
       </div>
-    </div>
-  </section>
 
-  <section class="materials-section">
-    <div class="container">
-      <h2>Schede materiali: spiegazioni, pro/contro, fonti</h2>
-      <div class="materials-grid">
-        @for (card of selectedCards(); track card.material.id) {
-          <article class="material-card">
-            <header>
-              <h3>{{ card.material.name }}</h3>
-              <p>{{ card.material.summary }}</p>
-            </header>
+      <div class="calculator-modes-grid">
+        @for (mode of calculatorModes; track trackCalculatorMode($index, mode)) {
+          <article class="calculator-mode-card">
+            <p class="calculator-mode-eyebrow">{{ mode.eyebrow }}</p>
+            <h3>{{ mode.title }}</h3>
+            <p>{{ mode.summary }}</p>
+            <p class="calculator-mode-when">
+              <strong>Quando usarla:</strong> {{ mode.useWhen }}
+            </p>
 
-            <div class="material-media">
-              @if (card.image; as image) {
-                <picture>
-                  @if (image.source.avifUrl) {
-                    <source [srcset]="image.source.avifUrl" type="image/avif" />
-                  }
-                  @if (image.source.webpUrl) {
-                    <source [srcset]="image.source.webpUrl" type="image/webp" />
-                  }
-                  <img
-                    [src]="image.source.fallbackUrl"
-                    [attr.alt]="image.altText || card.material.name"
-                    width="640"
-                    height="400"
-                  />
-                </picture>
-              } @else {
-                <div class="media-fallback">
-                  <span>
-                    Nessuna immagine assegnata.
-                    Carica asset backend con usageType
-                    <code>MATERIALS_PAGE</code> e usageKey
-                    <code>material-{{ card.material.id }}</code>.
-                  </span>
-                </div>
-              }
-            </div>
-
-            <div class="material-columns">
-              <div>
-                <h4>Vantaggi</h4>
-                <ul>
-                  @for (item of card.material.pros; track $index) {
-                    <li>{{ item }}</li>
-                  }
-                </ul>
-              </div>
-              <div>
-                <h4>Limiti</h4>
-                <ul>
-                  @for (item of card.material.cons; track $index) {
-                    <li>{{ item }}</li>
-                  }
-                </ul>
-              </div>
-              <div>
-                <h4>Ideale per</h4>
-                <ul>
-                  @for (item of card.material.idealFor; track $index) {
-                    <li>{{ item }}</li>
-                  }
-                </ul>
-              </div>
-            </div>
-
-            <div class="source-list">
-              <h4>Fonti citate</h4>
+            <div class="calculator-mode-block">
+              <h4>Controlli disponibili</h4>
               <ul>
-                @for (source of card.material.sources; track trackSource($index, source)) {
-                  <li>
-                    <a [href]="source.url" target="_blank" rel="noopener noreferrer">
-                      {{ source.label }}
-                    </a>
-                    <span class="source-kind">{{ source.kind }}</span>
-                  </li>
+                @for (control of mode.controls; track control) {
+                  <li>{{ control }}</li>
                 }
               </ul>
             </div>
+
+            <p class="calculator-mode-output">{{ mode.outputs }}</p>
+            <a class="calculator-mode-link" [attr.href]="localizedPath(mode.path)">
+              {{ mode.ctaLabel }}
+            </a>
           </article>
         }
+      </div>
+
+      <article class="calculator-parameters-card">
+        <div class="calculator-parameters-head">
+          <h3>Parametri che il calcolatore usa davvero</h3>
+          <p>
+            Qui sotto trovi solo controlli presenti oggi nel prodotto. Se usi la
+            modalita Avanzata, sono questi i parametri che incidono sul
+            preventivo.
+          </p>
+        </div>
+
+        <div class="calculator-parameters-grid">
+          @for (parameter of calculatorParameters; track trackCalculatorParameter($index, parameter)) {
+            <article class="calculator-parameter-card">
+              <p class="calculator-parameter-badge">{{ parameter.availability }}</p>
+              <h4>{{ parameter.title }}</h4>
+              <p>{{ parameter.explanation }}</p>
+              <p class="calculator-parameter-effect">
+                <strong>Effetto sul preventivo:</strong>
+                {{ parameter.calculatorEffect }}
+              </p>
+            </article>
+          }
+        </div>
+      </article>
+
+      <div class="calculator-visual-section">
+        <div class="calculator-visual-head">
+          <h3>Esempi pratici per leggere layer, ugello e riempimento</h3>
+          <p>
+            Questi esempi non sono un secondo calcolatore: servono per capire
+            meglio i parametri che imposti in modalita Avanzata.
+          </p>
+        </div>
+
+        <div class="visual-guide-grid">
+          @for (guide of qualityVisualCards(); track trackVisualGuide($index, guide)) {
+            <article class="visual-guide-card">
+              <p class="visual-guide-category">{{ guide.category }}</p>
+              <h3>{{ guide.title }}</h3>
+
+              <div class="visual-guide-media">
+                @if (guide.image; as image) {
+                  <picture>
+                    @if (image.source.avifUrl) {
+                      <source [srcset]="image.source.avifUrl" type="image/avif" />
+                    }
+                    @if (image.source.webpUrl) {
+                      <source [srcset]="image.source.webpUrl" type="image/webp" />
+                    }
+                    <img
+                      [src]="image.source.fallbackUrl"
+                      [attr.alt]="image.altText || guide.title"
+                      width="640"
+                      height="420"
+                    />
+                  </picture>
+                } @else {
+                  <div class="media-fallback">
+                    <span>
+                      Nessuna immagine assegnata. Carica asset backend con
+                      usageType <code>MATERIALS_PAGE</code> e usageKey
+                      <code>{{ guide.usageKey }}</code>.
+                    </span>
+                  </div>
+                }
+              </div>
+
+              <p><strong>Oggetto esempio:</strong> {{ guide.objectExample }}</p>
+              <p><strong>Meglio per:</strong> {{ guide.bestFor }}</p>
+              <p><strong>Limite:</strong> {{ guide.tradeoff }}</p>
+              <p class="visual-guide-calc">
+                <strong>Lettura nel calcolatore:</strong>
+                {{ guide.calculatorRead }}
+              </p>
+            </article>
+          }
+        </div>
       </div>
     </div>
   </section>

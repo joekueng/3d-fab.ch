@@ -29,6 +29,7 @@ import { findColorHex } from '../../core/constants/colors.const';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
 import { StlViewerComponent } from '../../shared/components/stl-viewer/stl-viewer.component';
+import { ShopQuickRequestComponent } from './components/shop-quick-request/shop-quick-request.component';
 import {
   ShopProductDetail,
   ShopProductVariantOption,
@@ -60,6 +61,7 @@ interface ShopMaterialProperty {
     AppButtonComponent,
     AppCardComponent,
     StlViewerComponent,
+    ShopQuickRequestComponent,
   ],
   templateUrl: './product-detail.component.html',
   styleUrl: './product-detail.component.scss',

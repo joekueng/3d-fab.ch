@@ -259,6 +259,89 @@ h1 {
   line-height: 1.6;
 }
 
+.detail-secondary {
+  display: grid;
+  gap: var(--space-5);
+  margin-top: var(--space-3);
+}
+
+.product-quick-request-card {
+  display: block;
+}
+
+.product-quick-request-card ::ng-deep .card {
+  border-radius: 1.3rem;
+  border-color: rgba(16, 24, 32, 0.14);
+  background: #fff;
+  box-shadow: 0 14px 32px rgba(16, 24, 32, 0.06);
+}
+
+.product-quick-request-card ::ng-deep .card:hover {
+  transform: none;
+  border-color: rgba(16, 24, 32, 0.16);
+  box-shadow: 0 14px 32px rgba(16, 24, 32, 0.06);
+}
+
+.product-quick-request-card ::ng-deep .card-body {
+  padding: clamp(1rem, 1vw + 0.7rem, 1.35rem);
+}
+
+.product-quick-request-card ::ng-deep .shop-quick-request {
+  gap: 0.75rem 1.2rem;
+}
+
+.product-quick-request-card ::ng-deep .shop-quick-request__copy {
+  flex-basis: 14rem;
+  max-width: 18rem;
+}
+
+.product-quick-request-card ::ng-deep .shop-quick-request__title {
+  font-size: clamp(1.1rem, 0.85vw + 0.95rem, 1.7rem);
+  line-height: 1.06;
+  max-width: 16rem;
+}
+
+.product-quick-request-card ::ng-deep .shop-quick-request__form {
+  gap: 0.7rem;
+}
+
+.product-quick-request-card ::ng-deep .shop-quick-request__control,
+.product-quick-request-card ::ng-deep .shop-quick-request__textarea {
+  min-height: 3rem;
+  height: 3rem;
+}
+
+.product-quick-request-card ::ng-deep .shop-quick-request__textarea {
+  resize: none;
+}
+
+.product-quick-request-card ::ng-deep .legal-consent--compact {
+  font-size: 0.75rem;
+}
+
+.product-quick-request-card ::ng-deep .legal-consent {
+  justify-self: end;
+  width: min(100%, 41rem);
+}
+
+.product-quick-request-card ::ng-deep .shop-quick-request__top {
+  gap: 0.6rem 0.85rem;
+}
+
+.product-quick-request-card ::ng-deep .shop-quick-request__actions {
+  flex-direction: column-reverse;
+  align-items: stretch;
+  margin-left: auto;
+}
+
+.product-quick-request-card
+  ::ng-deep
+  .shop-quick-request__actions
+  .btn {
+  width: 100%;
+  min-width: 10.75rem;
+}
+
 .purchase-card {
   display: grid;
   gap: 1rem;

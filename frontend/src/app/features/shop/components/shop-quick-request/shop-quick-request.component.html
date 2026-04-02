@@ -1,0 +1,170 @@
+@if (sent()) {
+  <app-success-state
+    context="contact"
+    (action)="resetForm()"
+  ></app-success-state>
+} @else {
+  <section class="shop-quick-request">
+    <header class="shop-quick-request__copy">
+      @if (eyebrowKey()) {
+        <p class="shop-quick-request__eyebrow">
+          {{ eyebrowKey() | translate }}
+        </p>
+      }
+
+      <h2 class="shop-quick-request__title">
+        {{ titleKey() | translate }}
+      </h2>
+
+      @if (descriptionKey()) {
+        <p class="shop-quick-request__description">
+          {{ descriptionKey() | translate }}
+        </p>
+      }
+    </header>
+
+    <form
+      class="shop-quick-request__form"
+      [formGroup]="form"
+      (ngSubmit)="onSubmit()"
+    >
+      <div class="shop-quick-request__main">
+        <label class="shop-quick-request__field shop-quick-request__field--email">
+          <span class="shop-quick-request__label">
+            {{ "CONTACT.LABEL_EMAIL" | translate }}
+          </span>
+          <input
+            formControlName="email"
+            type="email"
+            class="ui-form-control shop-quick-request__control"
+            [placeholder]="'CONTACT.PLACEHOLDER_EMAIL' | translate"
+          />
+          @if (emailError) {
+            <span class="shop-quick-request__error">{{ emailError }}</span>
+          }
+        </label>
+
+        <label class="shop-quick-request__field shop-quick-request__field--message">
+          <span class="shop-quick-request__label">
+            {{ "SHOP.QUICK_REQUEST_MESSAGE_LABEL" | translate }}
+          </span>
+        <textarea
+          formControlName="message"
+          class="ui-form-control shop-quick-request__control shop-quick-request__textarea"
+          rows="1"
+          [placeholder]="'SHOP.QUICK_REQUEST_MESSAGE_PLACEHOLDER' | translate"
+        ></textarea>
+          @if (messageError) {
+            <span class="shop-quick-request__error">{{ messageError }}</span>
+          }
+        </label>
+
+        <div class="shop-quick-request__field shop-quick-request__field--upload">
+          <span class="shop-quick-request__label">
+            {{ "SHOP.QUICK_REQUEST_IMAGE_LABEL" | translate }}
+          </span>
+
+          @if (files().length === 0) {
+            <label class="shop-quick-request__upload">
+              <input
+                type="file"
+                hidden
+                [accept]="acceptedFormats"
+                (change)="onFileSelected($event)"
+              />
+              <span>{{ "SHOP.QUICK_REQUEST_ADD_IMAGE" | translate }}</span>
+            </label>
+          } @else {
+            @if (files()[0]; as preview) {
+              <div class="shop-quick-request__preview">
+                <img
+                  [src]="preview.url"
+                  [alt]="preview.file.name"
+                  class="shop-quick-request__preview-image"
+                />
+
+                <div class="shop-quick-request__preview-meta">
+                  <strong>{{ preview.file.name }}</strong>
+                  <div class="shop-quick-request__preview-actions">
+                    <label class="shop-quick-request__upload shop-quick-request__upload--ghost">
+                      <input
+                        type="file"
+                        hidden
+                        [accept]="acceptedFormats"
+                        (change)="onFileSelected($event)"
+                      />
+                      <span>{{
+                        "SHOP.QUICK_REQUEST_CHANGE_IMAGE" | translate
+                      }}</span>
+                    </label>
+
+                    <button
+                      type="button"
+                      class="shop-quick-request__remove"
+                      (click)="removeFile()"
+                    >
+                      {{ "SHOP.QUICK_REQUEST_REMOVE_IMAGE" | translate }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+          }
+        </div>
+
+        <div class="shop-quick-request__actions">
+          <app-button
+            type="submit"
+            variant="primary"
+            [disabled]="submitting()"
+          >
+            {{
+              (submitting()
+                ? "CHECKOUT.PROCESSING"
+                : "SHOP.QUICK_REQUEST_SEND") | translate
+            }}
+          </app-button>
+
+          <app-button
+            type="button"
+            variant="outline"
+            (click)="openFullContact()"
+          >
+            {{ "NAV.CONTACT" | translate }}
+          </app-button>
+        </div>
+      </div>
+
+      <div class="legal-consent legal-consent--compact">
+        <label class="ui-checkbox">
+          <input type="checkbox" formControlName="acceptLegal" />
+          <span class="ui-checkbox__mark"></span>
+          <span>
+            {{ "LEGAL.CONSENT.LABEL_PREFIX" | translate }}
+            <a
+              [href]="languageService.localizedPath('/terms')"
+              target="_blank"
+              rel="noopener"
+              >{{ "LEGAL.CONSENT.TERMS_LINK" | translate }}</a
+            >
+            {{ "LEGAL.CONSENT.AND" | translate }}
+            <a
+              [href]="languageService.localizedPath('/privacy')"
+              target="_blank"
+              rel="noopener"
+              >{{ "LEGAL.CONSENT.PRIVACY_LINK" | translate }}</a
+            >.
+          </span>
+        </label>
+
+        @if (
+          form.get('acceptLegal')?.invalid && form.get('acceptLegal')?.touched
+        ) {
+          <div class="shop-quick-request__error">
+            {{ "LEGAL.CONSENT.REQUIRED_ERROR" | translate }}
+          </div>
+        }
+      </div>
+    </form>
+  </section>
+}

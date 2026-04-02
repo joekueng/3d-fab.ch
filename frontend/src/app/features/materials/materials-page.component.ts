@@ -7,6 +7,7 @@ import {
   PublicMediaUsageCollectionMap,
   buildPublicMediaUsageScopeKey,
 } from '../../core/services/public-media.service';
+import { LanguageService } from '../../core/services/language.service';
 
 interface MaterialSource {
   label: string;
@@ -82,27 +83,38 @@ interface AxisGuide {
   labelAnchor: 'start' | 'middle' | 'end';
 }
 
-interface MaterialCard {
-  material: MaterialRecord;
-  image: PublicMediaDisplayImage | null;
-}
-
 interface ComparisonRow {
   label: string;
   values: readonly string[];
 }
 
-interface QualityGuide {
-  id: string;
+interface CalculatorMode {
+  id: 'basic' | 'advanced';
+  eyebrow: string;
   title: string;
-  recommendation: string;
+  summary: string;
+  useWhen: string;
+  controls: readonly string[];
+  outputs: string;
+  ctaLabel: string;
+  path: string;
+}
+
+interface CalculatorFact {
+  title: string;
+  description: string;
+}
+
+interface CalculatorParameter {
+  title: string;
+  availability: 'Base' | 'Avanzata' | 'Base e Avanzata';
   explanation: string;
-  practicalEffect: string;
+  calculatorEffect: string;
 }
 
 interface QualityVisualGuide {
   id: string;
-  category: 'Layer' | 'Ugello' | 'Infill';
+  category: 'Layer' | 'Ugello' | 'Riempimento';
   title: string;
   objectExample: string;
   bestFor: string;
@@ -113,13 +125,6 @@ interface QualityVisualGuide {
 
 interface QualityVisualCard extends QualityVisualGuide {
   image: PublicMediaDisplayImage | null;
-}
-
-interface CalculatorRule {
-  metric: string;
-  whatItMeans: string;
-  whenHigh: string;
-  whenLow: string;
 }
 
 const MATERIALS: readonly MaterialRecord[] = [
@@ -548,42 +553,121 @@ const RADAR_AXES: readonly RadarAxis[] = [
   },
 ];
 
-const QUALITY_GUIDES: readonly QualityGuide[] = [
+const CALCULATOR_FACTS: readonly CalculatorFact[] = [
   {
-    id: 'layer-height',
-    title: 'Altezza layer',
-    recommendation: '0.12-0.16 fine | 0.20 standard | 0.28-0.32 draft',
-    explanation:
-      'Layer basso = migliore dettaglio e superfici piu uniformi; layer alto = stampa piu veloce.',
-    practicalEffect:
-      'Ridurre layer height aumenta tempi e puo migliorare precisione visiva su curve e scritte.',
+    title: 'Cosa restituisce davvero',
+    description:
+      'Il calcolatore produce un preventivo con prezzo stimato, tempo di stampa e consumo materiale. Sono questi i risultati reali che puoi leggere subito.',
   },
   {
-    id: 'nozzle-diameter',
+    title: 'Come funziona Base',
+    description:
+      'In Base scegli materiale e qualita. La qualita applica preset reali: Draft = 0.28 mm, 15% grid; Standard = 0.20 mm, 15% grid; High Definition = 0.12 mm, 20% gyroid.',
+  },
+  {
+    title: 'Come funziona Avanzata',
+    description:
+      'In Avanzata controlli direttamente materiale, ugello, layer, riempimento, pattern e supporti. Le combinazioni valide dipendono dalle regole ugello-layer e dai profili macchina disponibili.',
+  },
+];
+
+const CALCULATOR_MODES: readonly CalculatorMode[] = [
+  {
+    id: 'basic',
+    eyebrow: 'Modalita Base',
+    title: 'Preventivo veloce per file gia pronti',
+    summary:
+      'Pensata per chi vuole un prezzo corretto in pochi secondi senza entrare nei dettagli tecnici della stampa.',
+    useWhen:
+      'Usala quando il modello e gia pronto e vuoi soprattutto confrontare materiali o ottenere una prima stima rapida.',
+    controls: [
+      'Caricamento STL o 3MF.',
+      'Scelta materiale.',
+      'Scelta qualita con preset reali.',
+      'Colore selezionabile per ogni file.',
+    ],
+    outputs:
+      'Output: preventivo stimato, tempo stampa e peso materiale del job.',
+    ctaLabel: 'Apri Base',
+    path: '/calculator/basic',
+  },
+  {
+    id: 'advanced',
+    eyebrow: 'Modalita Avanzata',
+    title: 'Preventivo piu preciso con parametri di stampa',
+    summary:
+      'Pensata per chi vuole avvicinare il preventivo alla configurazione finale regolando i parametri che incidono davvero sul job.',
+    useWhen:
+      'Usala quando il materiale o il setup fanno la differenza e vuoi piu controllo sul risultato economico e produttivo.',
+    controls: [
+      'Materiale e colore.',
+      'Diametro ugello e altezza layer.',
+      'Riempimento percentuale e pattern.',
+      'Supporti e impostazioni globali o per singolo file.',
+    ],
+    outputs:
+      'Output: lo stesso preventivo del motore reale, ma con piu controllo sulle variabili di stampa.',
+    ctaLabel: 'Apri Avanzata',
+    path: '/calculator/advanced',
+  },
+];
+
+const CALCULATOR_PARAMETERS: readonly CalculatorParameter[] = [
+  {
+    title: 'Materiale',
+    availability: 'Base e Avanzata',
+    explanation:
+      'Il materiale viene scelto dalle opzioni rese disponibili dal sistema, con colori legati alle varianti filamento attive.',
+    calculatorEffect:
+      'Cambia prezzo materiale, compatibilita varianti e comportamento del preventivo.',
+  },
+  {
+    title: 'Qualita',
+    availability: 'Base',
+    explanation:
+      'In Base non imposti layer e riempimento singolarmente: scegli un preset che traduce la qualita in parametri reali.',
+    calculatorEffect:
+      'Il preset modifica layer height, infill pattern e densita con una configurazione standardizzata.',
+  },
+  {
     title: 'Diametro ugello',
-    recommendation: '0.4 mm standard | 0.6/0.8 mm per pezzi robusti',
+    availability: 'Avanzata',
     explanation:
-      'Ugello piccolo migliora i dettagli; ugello grande aumenta produttivita e portata.',
-    practicalEffect:
-      'Con materiali caricati fibra (CF) e preferibile ugello temprato e diametri >=0.4 mm.',
+      'L ugello disponibile dipende dalle opzioni attive della macchina. Ugelli diversi possono anche comportare costi di cambio ugello.',
+    calculatorEffect:
+      'Influenza i layer disponibili e puo cambiare il costo setup.',
   },
   {
-    id: 'infill',
-    title: 'Infill e perimetri',
-    recommendation: '15-25% prototipi | 30-45% parti funzionali',
+    title: 'Altezza layer',
+    availability: 'Avanzata',
     explanation:
-      'La robustezza dipende spesso piu dai perimetri che dal solo infill.',
-    practicalEffect:
-      'Aumentare perimetri migliora resistenza locale senza far esplodere i tempi come infill estremi.',
+      'Le altezze layer non sono libere: il frontend mostra solo le combinazioni consentite per l ugello selezionato.',
+    calculatorEffect:
+      'Incide su tempi di stampa e finezza del pezzo in modo diretto.',
   },
   {
-    id: 'speed-temperature',
-    title: 'Velocita e temperatura',
-    recommendation: 'Riduci velocita su tecnici (PC/CF/TPU), mantieni temperatura stabile',
+    title: 'Riempimento',
+    availability: 'Avanzata',
     explanation:
-      'Materiali difficili richiedono processo piu lento e termicamente controllato.',
-    practicalEffect:
-      'Velocita troppo alta genera sotto-estrusione, adesione layer debole e difetti superficiali.',
+      'La percentuale di infill si imposta manualmente per avvicinare il preventivo alla robustezza desiderata del pezzo.',
+    calculatorEffect:
+      'Aumenta o riduce peso e tempo in base alla densita scelta.',
+  },
+  {
+    title: 'Pattern riempimento',
+    availability: 'Avanzata',
+    explanation:
+      'Oggi il calcolatore espone pattern come grid, gyroid e cubic.',
+    calculatorEffect:
+      'Influisce sul modo in cui il volume interno viene riempito e quindi sul comportamento del profilo di stampa.',
+  },
+  {
+    title: 'Supporti',
+    availability: 'Avanzata',
+    explanation:
+      'Puoi attivarli o disattivarli direttamente in base alla geometria del file.',
+    calculatorEffect:
+      'Cambia il percorso di stampa e puo aumentare tempo e materiale.',
   },
 ];
 
@@ -595,7 +679,8 @@ const QUALITY_VISUAL_GUIDES: readonly QualityVisualGuide[] = [
     objectExample: 'Miniatura o testo piccolo con dettagli fini.',
     bestFor: 'Massimo dettaglio superficiale.',
     tradeoff: 'Tempo di stampa alto.',
-    calculatorRead: 'Nel calcolatore: qualita piu alta, tempo piu lungo.',
+    calculatorRead:
+      'Nel calcolatore: layer piu fine, piu dettaglio visivo e tempi piu lunghi.',
     usageKey: 'guide-layer-012',
   },
   {
@@ -605,7 +690,8 @@ const QUALITY_VISUAL_GUIDES: readonly QualityVisualGuide[] = [
     objectExample: 'Pezzo funzionale standard o cover tecnica.',
     bestFor: 'Compromesso qualita/tempo.',
     tradeoff: 'Dettaglio inferiore al 0.12 mm.',
-    calculatorRead: 'Nel calcolatore: profilo bilanciato.',
+    calculatorRead:
+      'Nel calcolatore: configurazione bilanciata per un preventivo standard.',
     usageKey: 'guide-layer-020',
   },
   {
@@ -615,7 +701,8 @@ const QUALITY_VISUAL_GUIDES: readonly QualityVisualGuide[] = [
     objectExample: 'Staffa di test o prototipo rapido.',
     bestFor: 'Riduzione tempi e pezzi voluminosi.',
     tradeoff: 'Superficie piu visibile a scalini.',
-    calculatorRead: 'Nel calcolatore: tempo piu corto, finitura piu bassa.',
+    calculatorRead:
+      'Nel calcolatore: layer piu alto, stampa piu rapida e finitura meno fine.',
     usageKey: 'guide-layer-028',
   },
   {
@@ -625,7 +712,8 @@ const QUALITY_VISUAL_GUIDES: readonly QualityVisualGuide[] = [
     objectExample: 'Scritta piccola o geometria sottile.',
     bestFor: 'Dettagli molto piccoli.',
     tradeoff: 'Tempi piu lunghi e portata ridotta.',
-    calculatorRead: 'Nel calcolatore favorisce precisione, non produttivita.',
+    calculatorRead:
+      'Nel calcolatore spinge verso dettagli fini, ma con meno produttivita.',
     usageKey: 'guide-nozzle-025',
   },
   {
@@ -635,49 +723,31 @@ const QUALITY_VISUAL_GUIDES: readonly QualityVisualGuide[] = [
     objectExample: 'Parti robuste, supporti, staffe.',
     bestFor: 'Resistenza e velocita su pezzi funzionali.',
     tradeoff: 'Dettaglio fine ridotto.',
-    calculatorRead: 'Nel calcolatore favorisce robustezza e tempi migliori.',
+    calculatorRead:
+      'Nel calcolatore abilita setup piu produttivi e meno orientati al dettaglio fine.',
     usageKey: 'guide-nozzle-060',
   },
   {
     id: 'infill-15',
-    category: 'Infill',
+    category: 'Riempimento',
     title: 'Infill 15% + 2/3 perimetri',
     objectExample: 'Oggetto estetico o mockup leggero.',
     bestFor: 'Ridurre peso e tempo.',
     tradeoff: 'Resistenza strutturale limitata.',
-    calculatorRead: 'Nel calcolatore: robustezza piu bassa, tempo piu breve.',
+    calculatorRead:
+      'Nel calcolatore usa meno materiale e tende a ridurre i tempi.',
     usageKey: 'guide-infill-15',
   },
   {
     id: 'infill-40',
-    category: 'Infill',
+    category: 'Riempimento',
     title: 'Infill 40% + 4 perimetri',
     objectExample: 'Componente con carico meccanico.',
     bestFor: 'Migliore resistenza funzionale.',
     tradeoff: 'Peso e tempo di stampa superiori.',
-    calculatorRead: 'Nel calcolatore: robustezza piu alta, tempo piu lungo.',
+    calculatorRead:
+      'Nel calcolatore aumenta materiale e tempo per avvicinarsi a un pezzo piu pieno.',
     usageKey: 'guide-infill-40',
-  },
-];
-
-const CALCULATOR_RULES: readonly CalculatorRule[] = [
-  {
-    metric: 'Qualita superficie',
-    whatItMeans: 'Quanto il pezzo appare pulito su curve, spigoli e testi.',
-    whenHigh: 'Layer piu basso e setup orientato al dettaglio.',
-    whenLow: 'Layer piu alto o impostazioni orientate alla velocita.',
-  },
-  {
-    metric: 'Robustezza stimata',
-    whatItMeans: 'Capacita del pezzo di sopportare uso meccanico.',
-    whenHigh: 'Infill/piu perimetri e materiali strutturali.',
-    whenLow: 'Pezzo leggero con pochi perimetri o infill ridotto.',
-  },
-  {
-    metric: 'Tempo relativo',
-    whatItMeans: 'Durata stimata rispetto a un profilo standard.',
-    whenHigh: 'Profilo lento e piu preciso o molto robusto.',
-    whenLow: 'Profilo rapido orientato a prototipazione.',
   },
 ];
 
@@ -709,12 +779,14 @@ const MAX_COMPARE_COUNT = 6;
 })
 export class MaterialsPageComponent {
   private readonly publicMediaService = inject(PublicMediaService);
+  readonly languageService = inject(LanguageService);
 
   readonly materials = MATERIALS;
   readonly radarAxes = RADAR_AXES;
   readonly maxCompareCount = MAX_COMPARE_COUNT;
-  readonly qualityGuides = QUALITY_GUIDES;
-  readonly calculatorRules = CALCULATOR_RULES;
+  readonly calculatorFacts = CALCULATOR_FACTS;
+  readonly calculatorModes = CALCULATOR_MODES;
+  readonly calculatorParameters = CALCULATOR_PARAMETERS;
 
   readonly selectedMaterialIds = signal<string[]>([
     'pla-basic',
@@ -723,16 +795,10 @@ export class MaterialsPageComponent {
   ]);
   readonly hoveredMaterialId = signal<string | null>(null);
 
-  private readonly pageMediaRequests = [
-    ...MATERIALS.map((material) => ({
-      usageType: 'MATERIALS_PAGE' as const,
-      usageKey: `material-${material.id}`,
-    })),
-    ...QUALITY_VISUAL_GUIDES.map((guide) => ({
-      usageType: 'MATERIALS_PAGE' as const,
-      usageKey: guide.usageKey,
-    })),
-  ];
+  private readonly pageMediaRequests = QUALITY_VISUAL_GUIDES.map((guide) => ({
+    usageType: 'MATERIALS_PAGE' as const,
+    usageKey: guide.usageKey,
+  }));
 
   private readonly mediaByUsage = toSignal(
     this.publicMediaService.getUsageCollections(this.pageMediaRequests),
@@ -746,23 +812,12 @@ export class MaterialsPageComponent {
     return MATERIALS.filter((material) => selectedIds.has(material.id));
   });
 
-  readonly selectedCards = computed<readonly MaterialCard[]>(() =>
-    this.selectedMaterials().map((material) => ({
-      material,
-      image: this.resolveMaterialImage(material.id),
-    })),
-  );
-
   readonly qualityVisualCards = computed<readonly QualityVisualCard[]>(() =>
     QUALITY_VISUAL_GUIDES.map((guide) => ({
       ...guide,
       image: this.resolveUsageImage(guide.usageKey),
     })),
   );
-
-  readonly selectionHint = computed(() => {
-    return `Materiali selezionati: ${this.selectedCount()} / ${MAX_COMPARE_COUNT}. Se superi il limite, viene sostituito il meno recente.`;
-  });
 
   readonly ringPolygons = computed(() => {
     const polygons: string[] = [];
@@ -914,25 +969,6 @@ export class MaterialsPageComponent {
       : '#9aa2ad';
   }
 
-  sourceDomain(url: string): string {
-    try {
-      return new URL(url).hostname.replace(/^www\./, '');
-    } catch {
-      return url;
-    }
-  }
-
-  sourceKindClass(kind: MaterialSource['kind']): string {
-    switch (kind) {
-      case 'Wikipedia':
-        return 'source-pill source-pill--wiki';
-      case 'Scheda tecnica':
-        return 'source-pill source-pill--tech';
-      case 'Vendor':
-        return 'source-pill source-pill--vendor';
-    }
-  }
-
   trackMaterial(_index: number, material: MaterialRecord): string {
     return material.id;
   }
@@ -941,16 +977,27 @@ export class MaterialsPageComponent {
     return source.url;
   }
 
-  trackGuide(_index: number, guide: QualityGuide): string {
-    return guide.id;
+  trackCalculatorFact(_index: number, fact: CalculatorFact): string {
+    return fact.title;
+  }
+
+  trackCalculatorMode(_index: number, mode: CalculatorMode): string {
+    return mode.id;
+  }
+
+  trackCalculatorParameter(
+    _index: number,
+    parameter: CalculatorParameter,
+  ): string {
+    return parameter.title;
   }
 
   trackVisualGuide(_index: number, guide: QualityVisualCard): string {
     return guide.id;
   }
 
-  private resolveMaterialImage(materialId: string): PublicMediaDisplayImage | null {
-    return this.resolveUsageImage(`material-${materialId}`);
+  localizedPath(path: string): string {
+    return this.languageService.localizedPath(path);
   }
 
   private resolveUsageImage(usageKeyRaw: string): PublicMediaDisplayImage | null {

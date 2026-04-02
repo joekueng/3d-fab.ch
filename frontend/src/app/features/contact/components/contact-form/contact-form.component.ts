@@ -1,7 +1,6 @@
 import {
   Component,
   signal,
-  effect,
   inject,
   OnDestroy,
   PLATFORM_ID,
@@ -14,6 +13,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ActivatedRoute } from '@angular/router';
 import { AppInputComponent } from '../../../../shared/components/app-input/app-input.component';
 import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
 import {
@@ -24,6 +24,10 @@ import { QuoteEstimatorService } from '../../../calculator/services/quote-estima
 import { QuoteRequestService } from '../../../../core/services/quote-request.service';
 import { LanguageService } from '../../../../core/services/language.service';
 import { SuccessStateComponent } from '../../../../shared/components/success-state/success-state.component';
+import {
+  ContactRequestDraftContext,
+  ContactRequestDraftService,
+} from '../../../../core/services/contact-request-draft.service';
 
 interface FilePreview {
   file: File;
@@ -48,11 +52,14 @@ interface FilePreview {
 })
 export class ContactFormComponent implements OnDestroy {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly route = inject(ActivatedRoute);
   form: FormGroup;
   sent = signal(false);
   files = signal<FilePreview[]>([]);
   readonly acceptedFormats =
     '.jpg,.jpeg,.png,.webp,.gif,.bmp,.svg,.heic,.heif,.pdf,.stl,.step,.stp,.3mf,.obj,.iges,.igs,.dwg,.dxf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.rtf,.csv,.mp4,.mov,.avi,.mkv,.webm,.m4v,.wmv';
+  private quickDraftContext: ContactRequestDraftContext | null = null;
+  private appliedQuickDraft = false;
 
   get isCompany(): boolean {
     return this.form.get('isCompany')?.value;
@@ -70,6 +77,9 @@ export class ContactFormComponent implements OnDestroy {
   ];
 
   private quoteRequestService = inject(QuoteRequestService);
+  private readonly contactRequestDraftService = inject(
+    ContactRequestDraftService,
+  );
   readonly languageService = inject(LanguageService);
 
   constructor(
@@ -115,12 +125,6 @@ export class ContactFormComponent implements OnDestroy {
       refPersonControl?.updateValueAndValidity();
     });
 
-    // Check for pending consultation data
-    effect(() => {
-      // Use timeout or run in constructor to ensure dependency availability?
-      // Actually best in constructor or ngOnInit. Let's stick to constructor logic but executed immediately.
-    });
-
     const pending = this.estimator.getPendingConsultation();
     if (pending) {
       this.form.patchValue({
@@ -142,6 +146,8 @@ export class ContactFormComponent implements OnDestroy {
       });
       this.files.set(filePreviews);
     }
+
+    this.applyQuickDraftPrefill();
   }
 
   ngOnDestroy(): void {
@@ -273,6 +279,12 @@ export class ContactFormComponent implements OnDestroy {
     if (this.form.valid) {
       const formVal = this.form.value;
       const isCompany = formVal.isCompany;
+      const message = this.appliedQuickDraft
+        ? this.contactRequestDraftService.buildSubmittedMessage(
+            formVal.message,
+            this.quickDraftContext,
+          )
+        : formVal.message;
 
       const requestDto: any = {
         requestType: formVal.requestType,
@@ -280,7 +292,7 @@ export class ContactFormComponent implements OnDestroy {
         language: this.languageService.selectedLang(),
         email: formVal.email,
         phone: formVal.phone,
-        message: formVal.message,
+        message,
         acceptTerms: formVal.acceptLegal,
         acceptPrivacy: formVal.acceptLegal,
       };
@@ -299,6 +311,11 @@ export class ContactFormComponent implements OnDestroy {
         )
         .subscribe({
           next: () => {
+            if (this.appliedQuickDraft) {
+              this.contactRequestDraftService.clearDraft();
+              this.appliedQuickDraft = false;
+              this.quickDraftContext = null;
+            }
             this.sent.set(true);
           },
           error: (err) => {
@@ -316,6 +333,11 @@ export class ContactFormComponent implements OnDestroy {
     this.form.reset({ requestType: 'custom', isCompany: false });
     this.revokeAllPreviewUrls();
     this.files.set([]);
+    if (this.appliedQuickDraft) {
+      this.contactRequestDraftService.clearDraft();
+      this.appliedQuickDraft = false;
+      this.quickDraftContext = null;
+    }
   }
 
   private getExtension(fileName: string): string {
@@ -373,5 +395,48 @@ export class ContactFormComponent implements OnDestroy {
 
   private revokeAllPreviewUrls(): void {
     this.files().forEach((file) => this.revokePreviewUrl(file));
+  }
+
+  private applyQuickDraftPrefill(): void {
+    if (this.route.snapshot.queryParamMap.get('prefill') !== 'shop-quick') {
+      return;
+    }
+
+    const draft = this.contactRequestDraftService.getDraft();
+    if (!draft) {
+      return;
+    }
+
+    this.appliedQuickDraft = true;
+    this.quickDraftContext = draft.context ?? null;
+
+    this.form.patchValue({
+      requestType: 'custom',
+      email: draft.email,
+      message: draft.message,
+      acceptLegal: draft.acceptLegal,
+    });
+
+    if (draft.files.length > 0) {
+      this.setFilesFromDraft(draft.files);
+    }
+  }
+
+  private setFilesFromDraft(files: File[]): void {
+    this.revokeAllPreviewUrls();
+
+    const filePreviews: FilePreview[] = files.map((file) => {
+      const type = this.getFileType(file);
+      return {
+        file,
+        type,
+        url:
+          this.isBrowser && this.shouldCreatePreview(type)
+            ? URL.createObjectURL(file)
+            : undefined,
+      };
+    });
+
+    this.files.set(filePreviews);
   }
 }

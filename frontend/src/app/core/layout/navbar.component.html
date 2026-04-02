@@ -43,6 +43,12 @@
         >{{ "NAV.SHOP" | translate }}</a
       >
       <a
+        [routerLink]="langService.localizedPath('/materials')"
+        routerLinkActive="active"
+        (click)="closeMenu()"
+        >{{ "NAV.MATERIALS" | translate }}</a
+      >
+      <a
         [routerLink]="langService.localizedPath('/about')"
         routerLinkActive="active"
         (click)="closeMenu()"
