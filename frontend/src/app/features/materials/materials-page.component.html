@@ -1,0 +1,397 @@
+<main class="materials-page">
+  <section class="hero">
+    <div class="container hero-inner">
+      <p class="ui-eyebrow">Guida materiali</p>
+      <h1>Qualita e Materiali</h1>
+      <p class="hero-lead">
+        Confronta materiali in modo interattivo con radar chart, metriche tecniche,
+        vantaggi, limiti e fonti verificabili.
+      </p>
+      <p class="hero-note">
+        Seleziona fino a {{ maxCompareCount }} materiali: il grafico aggiorna i
+        punteggi in tempo reale.
+      </p>
+    </div>
+  </section>
+
+  <section class="selector-section">
+    <div class="container">
+      <h2>Selezione confronto</h2>
+      <div class="selector-grid" role="group" aria-label="Selezione materiali">
+        @for (material of materials; track trackMaterial($index, material)) {
+          <button
+            type="button"
+            class="selector-chip"
+            [class.is-selected]="isSelected(material.id)"
+            [disabled]="!canSelect(material.id)"
+            (click)="toggleMaterial(material.id)"
+          >
+            <span
+              class="selector-dot"
+              [style.background-color]="legendDotColor(material.id)"
+            ></span>
+            <span>{{ material.name }}</span>
+          </button>
+        }
+      </div>
+      <p class="selector-help">
+        Nota: per l asse Economicita, un valore alto significa costo al kg piu
+        conveniente.
+      </p>
+    </div>
+  </section>
+
+  <section class="chart-section">
+    <div class="container chart-layout">
+      <article class="chart-card">
+        <header class="chart-header">
+          <h2>Radar chart comparativo</h2>
+          <p>
+            Punteggi normalizzati 0-100 su tutto il set materiali (min-max scaling).
+          </p>
+        </header>
+
+        <svg
+          class="radar-chart"
+          [attr.viewBox]="'0 0 ' + chartSize + ' ' + chartSize"
+          role="img"
+          aria-label="Radar chart materiali"
+        >
+          <g class="chart-rings">
+            @for (ring of ringPolygons(); track $index) {
+              <polygon [attr.points]="ring"></polygon>
+            }
+          </g>
+
+          <g class="chart-axes">
+            @for (axis of axisGuides(); track axis.id) {
+              <line
+                [attr.x1]="axis.fromX"
+                [attr.y1]="axis.fromY"
+                [attr.x2]="axis.x"
+                [attr.y2]="axis.y"
+              ></line>
+              <text
+                [attr.x]="axis.labelX"
+                [attr.y]="axis.labelY"
+                [attr.text-anchor]="axis.labelAnchor"
+              >
+                {{ radarAxes[$index].label }}
+              </text>
+            }
+          </g>
+
+          <g class="chart-series">
+            @for (series of radarSeries(); track series.material.id) {
+              <polygon
+                class="series-shape"
+                [attr.points]="series.points"
+                [style.stroke]="series.color"
+                [style.fill]="series.fill"
+                [class.is-hovered]="hoveredMaterialId() === series.material.id"
+                (mouseenter)="setHoveredMaterial(series.material.id)"
+                (mouseleave)="setHoveredMaterial(null)"
+              ></polygon>
+
+              @for (point of series.values; track point.axis.id) {
+                <circle
+                  class="series-node"
+                  [attr.cx]="point.x"
+                  [attr.cy]="point.y"
+                  r="4"
+                  [style.fill]="series.color"
+                ></circle>
+              }
+            }
+          </g>
+        </svg>
+
+        <div class="chart-legend">
+          @for (series of radarSeries(); track series.material.id) {
+            <button
+              type="button"
+              class="legend-item"
+              (mouseenter)="setHoveredMaterial(series.material.id)"
+              (mouseleave)="setHoveredMaterial(null)"
+            >
+              <span
+                class="legend-dot"
+                [style.background-color]="series.color"
+              ></span>
+              <span>{{ series.material.name }}</span>
+            </button>
+          }
+        </div>
+      </article>
+
+      <article class="explain-card">
+        <h3>Spiegazione completa del radar</h3>
+        <p>
+          Ogni asse mostra una proprieta tecnica. Il valore 100 rappresenta la
+          miglior performance relativa nel dataset attuale; 0 la meno favorevole.
+        </p>
+        <ul>
+          @for (axis of radarAxes; track axis.id) {
+            <li>
+              <strong>{{ axis.label }}:</strong>
+              {{ axis.description }}
+            </li>
+          }
+        </ul>
+        <p>
+          La normalizzazione e calcolata su tutti i materiali mostrati in pagina.
+          Per leggibilita il radar usa un raggio minimo visivo: i valori minimi
+          restano i meno favorevoli, ma non collassano tutti nello stesso punto.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section class="table-section">
+    <div class="container">
+      <h2>Tabella tecnica di confronto</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Parametro</th>
+              @for (material of selectedMaterials(); track trackMaterial($index, material)) {
+                <th>{{ material.name }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of comparisonRows(); track row.label) {
+              <tr>
+                <th>{{ row.label }}</th>
+                @for (value of row.values; track $index) {
+                  <td>{{ value }}</td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="quality-section">
+    <div class="container">
+      <h2>Layer, ugello e infill: esempi pratici</h2>
+      <p class="quality-intro">
+        Questa sezione non e un calcolatore interattivo: spiega visivamente cosa
+        cambia su oggetti reali e come leggere i risultati del vostro calcolatore.
+      </p>
+
+      <div class="visual-guide-grid">
+        @for (guide of qualityVisualCards(); track trackVisualGuide($index, guide)) {
+          <article class="visual-guide-card">
+            <p class="visual-guide-category">{{ guide.category }}</p>
+            <h3>{{ guide.title }}</h3>
+
+            <div class="visual-guide-media">
+              @if (guide.image; as image) {
+                <picture>
+                  @if (image.source.avifUrl) {
+                    <source [srcset]="image.source.avifUrl" type="image/avif" />
+                  }
+                  @if (image.source.webpUrl) {
+                    <source [srcset]="image.source.webpUrl" type="image/webp" />
+                  }
+                  <img
+                    [src]="image.source.fallbackUrl"
+                    [attr.alt]="image.altText || guide.title"
+                    width="640"
+                    height="420"
+                  />
+                </picture>
+              } @else {
+                <div class="media-fallback">
+                  <span>
+                    Nessuna immagine assegnata.
+                    Carica asset backend con usageType
+                    <code>MATERIALS_PAGE</code> e usageKey
+                    <code>{{ guide.usageKey }}</code>.
+                  </span>
+                </div>
+              }
+            </div>
+
+            <p><strong>Oggetto esempio:</strong> {{ guide.objectExample }}</p>
+            <p><strong>Meglio per:</strong> {{ guide.bestFor }}</p>
+            <p><strong>Limite:</strong> {{ guide.tradeoff }}</p>
+            <p class="visual-guide-calc">
+              <strong>Lettura nel calcolatore:</strong> {{ guide.calculatorRead }}
+            </p>
+          </article>
+        }
+      </div>
+
+      <article class="calculator-logic-card">
+        <h3>Come leggere il nostro calcolatore</h3>
+        <p>
+          Il calcolatore non sostituisce i profili slicer: serve a spiegare il
+          compromesso tra estetica, robustezza e tempi in modo coerente.
+        </p>
+        <div class="logic-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Metrica</th>
+                <th>Cosa significa</th>
+                <th>Valore alto</th>
+                <th>Valore basso</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (rule of calculatorRules; track rule.metric) {
+                <tr>
+                  <th>{{ rule.metric }}</th>
+                  <td>{{ rule.whatItMeans }}</td>
+                  <td>{{ rule.whenHigh }}</td>
+                  <td>{{ rule.whenLow }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <div class="quality-layout">
+        <article class="quality-card">
+          <h3>Regole rapide per l utente</h3>
+          <ul>
+            <li>
+              Layer basso e ugello piccolo migliorano i dettagli, ma aumentano i
+              tempi.
+            </li>
+            <li>
+              Infill e perimetri alti migliorano resistenza, ma aumentano tempo e
+              materiale.
+            </li>
+            <li>
+              Per pezzi estetici usa profili fini; per pezzi funzionali scegli setup
+              bilanciati o robusti.
+            </li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="guides-grid">
+        @for (guide of qualityGuides; track trackGuide($index, guide)) {
+          <article class="guide-card">
+            <h3>{{ guide.title }}</h3>
+            <p><strong>Range consigliato:</strong> {{ guide.recommendation }}</p>
+            <p>{{ guide.explanation }}</p>
+            <p class="guide-effect">{{ guide.practicalEffect }}</p>
+          </article>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="materials-section">
+    <div class="container">
+      <h2>Schede materiali: spiegazioni, pro/contro, fonti</h2>
+      <div class="materials-grid">
+        @for (card of selectedCards(); track card.material.id) {
+          <article class="material-card">
+            <header>
+              <h3>{{ card.material.name }}</h3>
+              <p>{{ card.material.summary }}</p>
+            </header>
+
+            <div class="material-media">
+              @if (card.image; as image) {
+                <picture>
+                  @if (image.source.avifUrl) {
+                    <source [srcset]="image.source.avifUrl" type="image/avif" />
+                  }
+                  @if (image.source.webpUrl) {
+                    <source [srcset]="image.source.webpUrl" type="image/webp" />
+                  }
+                  <img
+                    [src]="image.source.fallbackUrl"
+                    [attr.alt]="image.altText || card.material.name"
+                    width="640"
+                    height="400"
+                  />
+                </picture>
+              } @else {
+                <div class="media-fallback">
+                  <span>
+                    Nessuna immagine assegnata.
+                    Carica asset backend con usageType
+                    <code>MATERIALS_PAGE</code> e usageKey
+                    <code>material-{{ card.material.id }}</code>.
+                  </span>
+                </div>
+              }
+            </div>
+
+            <div class="material-columns">
+              <div>
+                <h4>Vantaggi</h4>
+                <ul>
+                  @for (item of card.material.pros; track $index) {
+                    <li>{{ item }}</li>
+                  }
+                </ul>
+              </div>
+              <div>
+                <h4>Limiti</h4>
+                <ul>
+                  @for (item of card.material.cons; track $index) {
+                    <li>{{ item }}</li>
+                  }
+                </ul>
+              </div>
+              <div>
+                <h4>Ideale per</h4>
+                <ul>
+                  @for (item of card.material.idealFor; track $index) {
+                    <li>{{ item }}</li>
+                  }
+                </ul>
+              </div>
+            </div>
+
+            <div class="source-list">
+              <h4>Fonti citate</h4>
+              <ul>
+                @for (source of card.material.sources; track trackSource($index, source)) {
+                  <li>
+                    <a [href]="source.url" target="_blank" rel="noopener noreferrer">
+                      {{ source.label }}
+                    </a>
+                    <span class="source-kind">{{ source.kind }}</span>
+                  </li>
+                }
+              </ul>
+            </div>
+          </article>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="global-sources">
+    <div class="container">
+      <h2>Indice completo fonti</h2>
+      <p>
+        Tutti i link usati per metriche e descrizioni sono riportati qui in forma
+        centralizzata.
+      </p>
+      <ul class="global-source-list">
+        @for (source of allSources(); track trackSource($index, source)) {
+          <li>
+            <a [href]="source.url" target="_blank" rel="noopener noreferrer">
+              {{ source.label }}
+            </a>
+            <span>{{ source.kind }}</span>
+          </li>
+        }
+      </ul>
+    </div>
+  </section>
+</main>
