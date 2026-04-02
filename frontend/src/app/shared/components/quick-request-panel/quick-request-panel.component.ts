@@ -10,14 +10,14 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
-import { SuccessStateComponent } from '../../../../shared/components/success-state/success-state.component';
-import { LanguageService } from '../../../../core/services/language.service';
+import { AppButtonComponent } from '../app-button/app-button.component';
+import { SuccessStateComponent } from '../success-state/success-state.component';
+import { LanguageService } from '../../../core/services/language.service';
 import {
   ContactRequestDraftContext,
   ContactRequestDraftService,
-} from '../../../../core/services/contact-request-draft.service';
-import { QuoteRequestService } from '../../../../core/services/quote-request.service';
+} from '../../../core/services/contact-request-draft.service';
+import { QuoteRequestService } from '../../../core/services/quote-request.service';
 
 interface FilePreview {
   file: File;
@@ -25,7 +25,7 @@ interface FilePreview {
 }
 
 @Component({
-  selector: 'app-shop-quick-request',
+  selector: 'app-quick-request-panel',
   standalone: true,
   imports: [
     CommonModule,
@@ -34,10 +34,10 @@ interface FilePreview {
     AppButtonComponent,
     SuccessStateComponent,
   ],
-  templateUrl: './shop-quick-request.component.html',
-  styleUrl: './shop-quick-request.component.scss',
+  templateUrl: './quick-request-panel.component.html',
+  styleUrl: './quick-request-panel.component.scss',
 })
-export class ShopQuickRequestComponent implements OnDestroy {
+export class QuickRequestPanelComponent implements OnDestroy {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);

@@ -212,13 +212,11 @@
   </div>
 
   <section class="container shop-custom-cta">
-    <app-card class="shop-custom-cta-card">
-      <app-shop-quick-request
-        eyebrowKey="SHOP.CUSTOM_PART_FOOTER_TITLE"
-        titleKey="SHOP.CUSTOM_PART_FOOTER_TEXT"
-        descriptionKey="SHOP.QUICK_REQUEST_HELP"
-        [draftContext]="{ source: 'shop_catalog' }"
-      ></app-shop-quick-request>
-    </app-card>
+    <app-quick-request-panel
+      eyebrowKey="SHOP.CUSTOM_PART_FOOTER_TITLE"
+      titleKey="SHOP.CUSTOM_PART_FOOTER_TEXT"
+      descriptionKey="SHOP.QUICK_REQUEST_HELP"
+      [draftContext]="{ source: 'shop_catalog' }"
+    ></app-quick-request-panel>
   </section>
 </section>

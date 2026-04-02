@@ -380,17 +380,15 @@
               </div>
             }
 
-            <app-card class="product-quick-request-card">
-              <app-shop-quick-request
-                eyebrowKey="SHOP.PRODUCT_QUICK_REQUEST_EYEBROW"
-                titleKey="SHOP.PRODUCT_QUICK_REQUEST_TITLE"
-                [draftContext]="{
-                  source: 'shop_product',
-                  productName: p.name,
-                  productSlug: p.slug,
-                }"
-              ></app-shop-quick-request>
-            </app-card>
+            <app-quick-request-panel
+              eyebrowKey="SHOP.PRODUCT_QUICK_REQUEST_EYEBROW"
+              titleKey="SHOP.PRODUCT_QUICK_REQUEST_TITLE"
+              [draftContext]="{
+                source: 'shop_product',
+                productName: p.name,
+                productSlug: p.slug,
+              }"
+            ></app-quick-request-panel>
           </section>
 
           @if (modelModalOpen()) {

@@ -32,8 +32,8 @@ import {
 } from '../../core/constants/colors.const';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
+import { QuickRequestPanelComponent } from '../../shared/components/quick-request-panel/quick-request-panel.component';
 import { ProductCardComponent } from './components/product-card/product-card.component';
-import { ShopQuickRequestComponent } from './components/shop-quick-request/shop-quick-request.component';
 import {
   ShopCategoryDetail,
   ShopCategoryNavNode,
@@ -53,8 +53,8 @@ import { humanizeShopSlug } from './shop-seo-fallback';
     TranslateModule,
     AppButtonComponent,
     AppCardComponent,
+    QuickRequestPanelComponent,
     ProductCardComponent,
-    ShopQuickRequestComponent,
   ],
   templateUrl: './shop-page.component.html',
   styleUrl: './shop-page.component.scss',

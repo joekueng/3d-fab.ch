@@ -256,14 +256,6 @@
   padding-bottom: var(--space-12);
 }
 
-.shop-custom-cta-card {
-  display: block;
-}
-
-.shop-custom-cta-card ::ng-deep .card-body {
-  padding: var(--space-4);
-}
-
 .section-title {
   margin: 0;
   font-size: clamp(1.5rem, 1vw + 1.2rem, 2rem);

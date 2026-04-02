@@ -28,8 +28,8 @@ import { LanguageService } from '../../core/services/language.service';
 import { findColorHex } from '../../core/constants/colors.const';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
+import { QuickRequestPanelComponent } from '../../shared/components/quick-request-panel/quick-request-panel.component';
 import { StlViewerComponent } from '../../shared/components/stl-viewer/stl-viewer.component';
-import { ShopQuickRequestComponent } from './components/shop-quick-request/shop-quick-request.component';
 import {
   ShopProductDetail,
   ShopProductVariantOption,
@@ -60,8 +60,8 @@ interface ShopMaterialProperty {
     TranslateModule,
     AppButtonComponent,
     AppCardComponent,
+    QuickRequestPanelComponent,
     StlViewerComponent,
-    ShopQuickRequestComponent,
   ],
   templateUrl: './product-detail.component.html',
   styleUrl: './product-detail.component.scss',
