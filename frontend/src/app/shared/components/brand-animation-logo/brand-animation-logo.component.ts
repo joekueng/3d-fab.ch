@@ -18,32 +18,32 @@ interface ResolvedAnimationLetter {
 const LETTERS: readonly AnimationLetter[] = [
   {
     key: '3',
-    darkSrc: '/assets/images/animation/31200.svg',
-    yellowSrc: '/assets/images/animation/3g1200.svg',
+    darkSrc: '/assets/images/animation/3-nero.svg',
+    yellowSrc: '/assets/images/animation/3-nero.svg',
     wordX: '-9.4rem',
   },
   {
     key: 'd',
-    darkSrc: '/assets/images/animation/d1200.svg',
-    yellowSrc: '/assets/images/animation/Dg1200.svg',
+    darkSrc: '/assets/images/animation/D-nero.svg',
+    yellowSrc: '/assets/images/animation/D-nero.svg',
     wordX: '-4.9rem',
   },
   {
     key: 'F',
-    darkSrc: '/assets/images/animation/F1200.svg',
-    yellowSrc: '/assets/images/animation/Fg1200.svg',
+    darkSrc: '/assets/images/animation/F-nero.svg',
+    yellowSrc: '/assets/images/animation/F-giallo.svg',
     wordX: '1rem',
   },
   {
     key: 'A',
-    darkSrc: '/assets/images/animation/A1200.svg',
-    yellowSrc: '/assets/images/animation/Ag1200.svg',
+    darkSrc: '/assets/images/animation/A-nero.svg',
+    yellowSrc: '/assets/images/animation/A-giallo.svg',
     wordX: '5.6rem',
   },
   {
     key: 'B',
-    darkSrc: '/assets/images/animation/B1200.svg',
-    yellowSrc: '/assets/images/animation/Bg1200.svg',
+    darkSrc: '/assets/images/animation/B-nero.svg',
+    yellowSrc: '/assets/images/animation/B%20giallo.svg',
     wordX: '10.2rem',
   },
 ] as const;
