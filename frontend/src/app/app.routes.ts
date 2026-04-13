@@ -48,7 +48,7 @@ const appChildRoutes: Routes = [
       seoDescriptionKey: 'SEO.ROUTES.ABOUT.DESCRIPTION',
     },
   },
-  /* {
+  {
     path: 'materials',
     loadComponent: () =>
       import('./features/materials/materials-page.component').then(
@@ -58,7 +58,7 @@ const appChildRoutes: Routes = [
       seoTitleKey: 'SEO.ROUTES.MATERIALS.TITLE',
       seoDescriptionKey: 'SEO.ROUTES.MATERIALS.DESCRIPTION',
     },
-  },*/
+  },
   {
     path: 'contact',
     loadChildren: () =>

@@ -11,7 +11,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
   catchError,
@@ -32,6 +32,7 @@ import {
 } from '../../core/constants/colors.const';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
+import { QuickRequestPanelComponent } from '../../shared/components/quick-request-panel/quick-request-panel.component';
 import { ProductCardComponent } from './components/product-card/product-card.component';
 import {
   ShopCategoryDetail,
@@ -50,9 +51,9 @@ import { humanizeShopSlug } from './shop-seo-fallback';
   imports: [
     CommonModule,
     TranslateModule,
-    RouterLink,
     AppButtonComponent,
     AppCardComponent,
+    QuickRequestPanelComponent,
     ProductCardComponent,
   ],
   templateUrl: './shop-page.component.html',

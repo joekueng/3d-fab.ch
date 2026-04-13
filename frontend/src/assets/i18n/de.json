@@ -37,6 +37,7 @@
   "FOOTER": {
     "PRIVACY": "Datenschutz",
     "TERMS": "AGB",
+    "MATERIALS": "Qualität & Materialien",
     "CONTACT": "Kontakt"
   },
   "SEO": {
@@ -53,12 +54,12 @@
         "TITLE": "3D-Druck-Angebotsrechner | 3D fab",
         "DESCRIPTION": "Laden Sie Ihre 3D-Datei hoch und erhalten Sie Preis und Lieferzeit in Sekunden mit echtem Slicing.",
         "BASIC": {
-          "TITLE": "Einfacher 3D-Druck-Rechner | 3D fab",
-          "DESCRIPTION": "Berechnen Sie den Preis Ihres 3D-Drucks schnell mit dem Basis-Workflow."
+          "TITLE": "Schnelles 3D-Druck-Angebot fuer fertige Dateien | 3D fab",
+          "DESCRIPTION": "Laden Sie eine fertige STL- oder 3MF-Datei hoch und erhalten Sie in Sekunden einen passenden 3D-Druck-Preis mit dem Basis-Rechner."
         },
         "ADVANCED": {
-          "TITLE": "Erweiterter 3D-Druck-Rechner | 3D fab",
-          "DESCRIPTION": "Konfigurieren Sie erweiterte Druckparameter und erhalten Sie ein präzises Angebot mit echtem Slicing."
+          "TITLE": "Praezises 3D-Druck-Angebot mit Material und Einstellungen | 3D fab",
+          "DESCRIPTION": "Waehlen Sie Material, Schichthoehe, Stuetzstrukturen und Infill fuer ein genaueres 3D-Druck-Angebot."
         }
       },
       "SHOP": {
@@ -78,8 +79,8 @@
         "DESCRIPTION": "Lernen Sie das Team von 3D fab und unser 3D-Druck-Labor für Prototypen, Ersatzteile und maßgeschneiderte Produktionen kennen."
       },
       "CONTACT": {
-        "TITLE": "Kontakt | 3D fab",
-        "DESCRIPTION": "Fordern Sie Informationen, individuelle Angebote oder technischen Support für Ihr 3D-Druck-Projekt an."
+        "TITLE": "Individuelle Teile und Ersatzteile | Kontakt - 3D fab",
+        "DESCRIPTION": "Sie brauchen ein individuelles Teil, ein Ersatzteil oder eine Modellanpassung? Kontaktieren Sie uns auch ohne 3D-Datei: Wir koennen mit Fotos, Massen oder einem bestehenden Teil starten."
       },
       "LEGAL": {
         "PRIVACY": {
@@ -108,11 +109,84 @@
   "CALC": {
     "TITLE": "3D-Angebot berechnen",
     "SUBTITLE": "Laden Sie Ihre 3D-Datei (STL, 3MF) hoch, stellen Sie Qualität und Farbe ein und berechnen Sie sofort Preis und Lieferzeit.",
+    "EYEBROW": "3D-Druck-Angebot online",
     "CTA_START": "Jetzt starten",
     "BUSINESS": "Unternehmen",
     "PRIVATE": "Privat",
     "MODE_EASY": "Basis",
     "MODE_ADVANCED": "Erweitert",
+    "WHEN_TO_USE_LABEL": "Wann verwenden:",
+    "MODES": {
+      "BASIC": {
+        "TOGGLE_HINT": "Fuer fertige Dateien",
+        "TITLE": "Schnelles Angebot fuer fertige 3D-Dateien",
+        "SUBTITLE": "Der Basis-Modus ist fuer Nutzer gedacht, die in Sekunden einen passenden Preis erhalten wollen, ohne technische Druckparameter im Detail zu verwalten.",
+        "UPLOAD_HELP": "Laden Sie eine bereits exportierte STL- oder 3MF-Datei hoch, waehlen Sie Material und Qualitaet und erhalten Sie sofort eine klare Preis- und Zeitabschaetzung.",
+        "WHEN_TO_USE": "Verwenden Sie Basis, wenn Ihr Modell fertig ist und Sie vor allem ein schnelles, einfaches Angebot brauchen."
+      },
+      "ADVANCED": {
+        "TOGGLE_HINT": "Mehr Kontrolle ueber Druck und Material",
+        "TITLE": "Genaueres Angebot mit Material und Einstellungen",
+        "SUBTITLE": "Der erweiterte Modus ist fuer Nutzer gedacht, die durch relevante Druckeinstellungen eine genauere Schaetzung erhalten wollen.",
+        "UPLOAD_HELP": "Laden Sie Ihre 3D-Datei hoch und stellen Sie Material, Schichthoehe, Stuetzstrukturen, Infill und Duese ein, um naeher an die spaetere Druckkonfiguration zu kommen.",
+        "WHEN_TO_USE": "Verwenden Sie Erweitert, wenn Sie Materialien oder Einstellungen vergleichen und mehr Kontrolle ueber das Ergebnis wollen."
+      }
+    },
+    "COMPARE_KICKER": "Schnelle Auswahl",
+    "COMPARE_TITLE": "Basis oder Erweitert?",
+    "COMPARE_SUBTITLE": "Die beiden Seiten sind fuer unterschiedliche Anwendungsfaelle gedacht. Starten Sie mit Basis fuer Geschwindigkeit und wechseln Sie zu Erweitert, wenn Material oder Druckeinstellungen wichtig werden.",
+    "COMPARE": {
+      "BASIC": {
+        "TITLE": "Basis: schnelles Angebot",
+        "TEXT": "Ideal, wenn Sie bereits eine fertige Datei haben und schnell einen passenden Preis moechten, ohne technische Druckdetails einzustellen."
+      },
+      "ADVANCED": {
+        "TITLE": "Erweitert: genaueres Angebot",
+        "TEXT": "Ideal, wenn Sie Material, Schichthoehe, Stuetzstrukturen, Infill und weitere Einstellungen waehlen moechten, die das Endergebnis staerker beeinflussen."
+      }
+    },
+    "MODEL_SOURCES": {
+      "KICKER": "3D-Modelle",
+      "TITLE": "Wo Sie 3D-Modelle zum Hochladen finden",
+      "TEXT": "Wenn Sie noch keine Datei haben, koennen Sie auf diesen Plattformen starten. Pruefen Sie vor dem Hochladen immer Lizenz, Abmessungen und Modellqualitaet.",
+      "FAVORITES_TITLE": "Unsere Favoriten",
+      "OTHERS_TITLE": "Weitere",
+      "ITEMS": {
+        "PRINTABLES": "Grosses Verzeichnis druckbarer Modelle aus der Maker-Community.",
+        "MAKERWORLD": "Repository mit druckfertigen Modellen, besonders nuetzlich fuer Maker-Projekte.",
+        "THINGIVERSE": "Langjaehriges Archiv mit sehr vielen kostenlosen Modellen in verschiedenen Kategorien.",
+        "THANGS": "3D-Suchmaschine und Repository mit verwandten Versionen und Sammlungen.",
+        "CULTS3D": "Marktplatz mit kostenlosen und kostenpflichtigen Modellen fuer viele Einsatzzwecke.",
+        "YEGGI": "Suchmaschine, die 3D-Modelle aus verschiedenen Seiten zusammenfuehrt."
+      }
+    },
+    "FAQ": {
+      "KICKER": "Hauefige Fragen",
+      "TITLE": "Mini-FAQ",
+      "SUBTITLE": "Kurze Antworten auf die Fragen, die nicht-technische Nutzer am haeufigsten ausbremsen.",
+      "ITEMS": {
+        "FILES": {
+          "Q": "Welche Dateien kann ich hochladen?",
+          "A": "Sie koennen STL- oder 3MF-Dateien hochladen. Wenn Sie ein Modell von einer externen Plattform herunterladen, stellen Sie sicher, dass es sich wirklich um eine 3D-Datei und nicht nur um Bilder oder Dokumentation handelt."
+        },
+        "MODE": {
+          "Q": "Wie waehle ich zwischen Basis und Erweitert?",
+          "A": "Waehlen Sie Basis fuer ein schnelles Angebot zu einer fertigen Datei. Waehlen Sie Erweitert, wenn Sie Materialien vergleichen oder Einstellungen aendern moechten, die Zeit, Gewicht und Preis beeinflussen."
+        },
+        "NO_MODEL": {
+          "Q": "Was, wenn ich noch kein 3D-Modell habe?",
+          "A": "Sie koennen auf den oben genannten Plattformen suchen oder uns kontaktieren, wenn Sie Hilfe bei CAD-Konstruktion oder Anpassungen brauchen."
+        },
+        "PRICE": {
+          "Q": "Ist der angezeigte Preis schon verlaesslich?",
+          "A": "Es handelt sich um eine automatische Schaetzung auf Basis Ihrer Datei und der gewaehlten Einstellungen. Der erweiterte Modus ist genauer, weil mehr Druckparameter beruecksichtigt werden."
+        },
+        "BEFORE_UPLOAD": {
+          "Q": "Was sollte ich vor dem Hochladen pruefen?",
+          "A": "Pruefen Sie, ob das Modell den richtigen Massstab hat, die Datei nicht beschaedigt ist und die Geometrie wirklich dem finalen Bauteil entspricht, das Sie drucken moechten."
+        }
+      }
+    },
     "UPLOAD_LABEL": "Ziehen Sie Ihre 3D-Datei hierher",
     "UPLOAD_SUB": "Wir unterstützen STL, 3MF bis 50MB",
     "MATERIAL": "Material",
@@ -175,6 +249,22 @@
     "WIP_NOTE": "Wir legen Wert darauf, die Dinge richtig zu machen: In der Zwischenzeit können Sie Preis und Lieferzeit einer 3D-Datei sofort mit unserem Rechner berechnen.",
     "CUSTOM_PART_FOOTER_TITLE": "Nicht das gefunden, was Sie suchen?",
     "CUSTOM_PART_FOOTER_TEXT": "Kontaktieren Sie uns für individuelle Teile.",
+    "QUICK_REQUEST_HELP": "Hinterlassen Sie Ihre E-Mail, beschreiben Sie das gewünschte Produkt oder Teil und fügen Sie bei Bedarf ein Foto hinzu.",
+    "QUICK_REQUEST_MESSAGE_LABEL": "Was benötigen Sie? *",
+    "QUICK_REQUEST_MESSAGE_PLACEHOLDER": "Beschreiben Sie das Produkt, das Teil oder die gewünschte Anpassung...",
+    "QUICK_REQUEST_IMAGE_LABEL": "Foto (optional)",
+    "QUICK_REQUEST_IMAGE_HINT": "Fügen Sie ein Referenzbild hinzu, damit die Anfrage klarer wird.",
+    "QUICK_REQUEST_ADD_IMAGE": "Foto hinzufügen",
+    "QUICK_REQUEST_CHANGE_IMAGE": "Foto ändern",
+    "QUICK_REQUEST_REMOVE_IMAGE": "Foto entfernen",
+    "QUICK_REQUEST_SEND": "Anfrage senden",
+    "QUICK_REQUEST_EMAIL_ERROR": "Geben Sie eine gültige E-Mail-Adresse ein.",
+    "QUICK_REQUEST_MESSAGE_ERROR": "Beschreiben Sie zuerst, was Sie benötigen.",
+    "QUICK_REQUEST_IMAGE_LIMIT_ERROR": "Hier kann nur ein Referenzbild hochgeladen werden.",
+    "QUICK_REQUEST_IMAGE_TYPE_ERROR": "Laden Sie ein JPG-, PNG-, WEBP-, GIF-, BMP-, SVG- oder HEIC-Bild hoch.",
+    "PRODUCT_QUICK_REQUEST_EYEBROW": "Brauchen Sie eine Variante?",
+    "PRODUCT_QUICK_REQUEST_TITLE": "Fragen Sie nach einer individuellen Version dieses Produkts.",
+    "PRODUCT_QUICK_REQUEST_TEXT": "Nützlich, wenn Sie eine andere Größe, eine andere Befestigung oder eine Anpassung des Produkts benötigen.",
     "ADD_CART": "In den Warenkorb",
     "ADDING": "Wird hinzugefügt",
     "ADD_SUCCESS": "Produkt zum Warenkorb hinzugefügt.",
@@ -497,6 +587,12 @@
     "SUCCESS_TITLE": "Nachricht erfolgreich gesendet",
     "SUCCESS_DESC": "Vielen Dank für Ihre Kontaktaufnahme. Wir haben Ihre Nachricht erhalten und senden Ihnen in Kürze eine Zusammenfassungs-E-Mail.",
     "SEND_ANOTHER": "Weitere Nachricht senden",
+    "CAD_NOTE_EYEBROW": "Teile nach Mass",
+    "CAD_NOTE_TITLE": "Teile anpassen oder nachbauen",
+    "CAD_NOTE_TEXT": "Sinnvoll, wenn Sie ein Ersatzteil nachbauen, ein Modell anpassen oder eine Idee vor dem Druck pruefen moechten. Wir koennen mit Fotos, Massen, Skizzen oder einem bestehenden Teil starten.",
+    "CAD_NOTE_ITEM_1": "Sie haben ein defektes oder schwer auffindbares Teil",
+    "CAD_NOTE_ITEM_2": "Sie wollen ein Modell auf ein genaues Mass anpassen",
+    "CAD_NOTE_ITEM_3": "Sie haben keine 3D-Datei, koennen aber Fotos oder Masse senden",
     "FILE_TYPE_PDF": "PDF",
     "FILE_TYPE_3D": "3D",
     "FILE_TYPE_VIDEO": "Video",

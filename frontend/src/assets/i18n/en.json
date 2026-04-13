@@ -37,6 +37,7 @@
   "FOOTER": {
     "PRIVACY": "Privacy",
     "TERMS": "Terms & Conditions",
+    "MATERIALS": "Quality & Materials",
     "CONTACT": "Contact Us"
   },
   "SEO": {
@@ -53,12 +54,12 @@
         "TITLE": "3D Printing Quote Calculator | 3D fab",
         "DESCRIPTION": "Upload your 3D file and get price and lead time in seconds with real slicing.",
         "BASIC": {
-          "TITLE": "Basic 3D Printing Calculator | 3D fab",
-          "DESCRIPTION": "Quickly estimate the price of your 3D print with the basic workflow."
+          "TITLE": "Fast 3D printing quote for ready files | 3D fab",
+          "DESCRIPTION": "Upload a ready STL or 3MF file and get a correct 3D printing price in seconds with the basic calculator."
         },
         "ADVANCED": {
-          "TITLE": "Advanced 3D Printing Calculator | 3D fab",
-          "DESCRIPTION": "Configure advanced print settings and get a precise quote based on real slicing."
+          "TITLE": "Precise 3D printing quote with materials and settings | 3D fab",
+          "DESCRIPTION": "Set material, layer height, supports and infill to get a more precise 3D printing quote."
         }
       },
       "SHOP": {
@@ -78,8 +79,8 @@
         "DESCRIPTION": "Learn more about the 3D fab team and our 3D printing lab for prototypes, spare parts and custom production."
       },
       "CONTACT": {
-        "TITLE": "Contact | 3D fab",
-        "DESCRIPTION": "Request information, custom quotes or technical support for your 3D printing project."
+        "TITLE": "Custom parts and replacements | Contact - 3D fab",
+        "DESCRIPTION": "Need a custom part, a replacement piece or a model adjustment? Contact us even if you do not have a 3D file yet: we can start from photos, measurements or an existing part."
       },
       "LEGAL": {
         "PRIVACY": {
@@ -108,11 +109,84 @@
   "CALC": {
     "TITLE": "3D Print Calculator",
     "SUBTITLE": "Upload your 3D file (STL, 3MF) and get an instant estimate of costs and print time.",
+    "EYEBROW": "Online 3D printing quote",
     "CTA_START": "Start Now",
     "BUSINESS": "Business",
     "PRIVATE": "Private",
     "MODE_EASY": "Quick",
     "MODE_ADVANCED": "Advanced",
+    "WHEN_TO_USE_LABEL": "When to use it:",
+    "MODES": {
+      "BASIC": {
+        "TOGGLE_HINT": "For ready-to-print files",
+        "TITLE": "Fast quote for ready 3D files",
+        "SUBTITLE": "Basic mode is for users who want a correct price in seconds without dealing with advanced technical settings.",
+        "UPLOAD_HELP": "Upload an STL or 3MF file that is already exported, choose material and quality, and get a clear price and lead-time estimate right away.",
+        "WHEN_TO_USE": "Use Basic if your model is already final and you mainly need a simple, fast quote."
+      },
+      "ADVANCED": {
+        "TOGGLE_HINT": "More control over print and material",
+        "TITLE": "More precise quote with materials and settings",
+        "SUBTITLE": "Advanced mode is for users who want a more precise estimate by adjusting relevant print settings.",
+        "UPLOAD_HELP": "Upload your 3D file and set material, layer height, supports, infill and nozzle size to get closer to the final print configuration.",
+        "WHEN_TO_USE": "Use Advanced if you want to compare materials or settings and need more control over the outcome."
+      }
+    },
+    "COMPARE_KICKER": "Quick choice",
+    "COMPARE_TITLE": "Basic or Advanced?",
+    "COMPARE_SUBTITLE": "The two pages cover different use cases. Start with Basic for speed, then switch to Advanced when material or print settings matter.",
+    "COMPARE": {
+      "BASIC": {
+        "TITLE": "Basic: fast quote",
+        "TEXT": "Best if you already have a ready file and want a correct price quickly, without going into technical print details."
+      },
+      "ADVANCED": {
+        "TITLE": "Advanced: more precise quote",
+        "TEXT": "Best if you want to choose material, layer height, supports, infill and other settings that have more impact on the final result."
+      }
+    },
+    "MODEL_SOURCES": {
+      "KICKER": "3D models",
+      "TITLE": "Where to find 3D models to upload",
+      "TEXT": "If you do not have a file yet, start from these platforms. Always check license, dimensions and model quality before uploading it to the calculator.",
+      "FAVORITES_TITLE": "Our favorites",
+      "OTHERS_TITLE": "Others",
+      "ITEMS": {
+        "PRINTABLES": "Large catalog of printable models shared by the maker community.",
+        "MAKERWORLD": "Repository of ready-to-print models, especially useful for maker projects.",
+        "THINGIVERSE": "Long-running archive with a very large number of free models in many categories.",
+        "THANGS": "3D search engine and repository with related versions and collections.",
+        "CULTS3D": "Marketplace with both free and paid models across many use cases.",
+        "YEGGI": "Search engine that aggregates 3D models from different sites."
+      }
+    },
+    "FAQ": {
+      "KICKER": "Common questions",
+      "TITLE": "Mini FAQ",
+      "SUBTITLE": "Quick answers to the questions that most often block non-technical users.",
+      "ITEMS": {
+        "FILES": {
+          "Q": "Which files can I upload?",
+          "A": "You can upload STL or 3MF files. If you download a model from an external portal, make sure it is an actual 3D file and not just images or documentation."
+        },
+        "MODE": {
+          "Q": "How do I choose between Basic and Advanced?",
+          "A": "Choose Basic if you want a fast quote for a ready file. Choose Advanced if you need to compare materials or change settings that affect time, weight and price."
+        },
+        "NO_MODEL": {
+          "Q": "What if I do not have a 3D model yet?",
+          "A": "You can search on the platforms listed above or contact us if you need help with CAD design or adaptation."
+        },
+        "PRICE": {
+          "Q": "Is the shown price already reliable?",
+          "A": "It is an automatic estimate based on your file and the selected settings. Advanced mode is more precise because it accounts for more print parameters."
+        },
+        "BEFORE_UPLOAD": {
+          "Q": "What should I check before uploading?",
+          "A": "Check that the model has the correct scale, that the file is not corrupted and that the geometry really matches the final part you want to print."
+        }
+      }
+    },
     "UPLOAD_LABEL": "Drag your 3D file here",
     "UPLOAD_SUB": "Supports STL, 3MF up to 50MB",
     "MATERIAL": "Material",
@@ -175,6 +249,22 @@
     "WIP_NOTE": "We care about doing this right. In the meantime, you can get instant pricing and lead time from our calculator.",
     "CUSTOM_PART_FOOTER_TITLE": "Can't find what you're looking for?",
     "CUSTOM_PART_FOOTER_TEXT": "Contact us for custom parts.",
+    "QUICK_REQUEST_HELP": "Leave your email, describe the product or part you need, and attach a photo if it helps.",
+    "QUICK_REQUEST_MESSAGE_LABEL": "What do you need? *",
+    "QUICK_REQUEST_MESSAGE_PLACEHOLDER": "Describe the product, part, or modification you need...",
+    "QUICK_REQUEST_IMAGE_LABEL": "Photo (optional)",
+    "QUICK_REQUEST_IMAGE_HINT": "Attach one reference image to make the request clearer.",
+    "QUICK_REQUEST_ADD_IMAGE": "Add photo",
+    "QUICK_REQUEST_CHANGE_IMAGE": "Change photo",
+    "QUICK_REQUEST_REMOVE_IMAGE": "Remove photo",
+    "QUICK_REQUEST_SEND": "Send request",
+    "QUICK_REQUEST_EMAIL_ERROR": "Enter a valid email address.",
+    "QUICK_REQUEST_MESSAGE_ERROR": "Describe what you need before sending.",
+    "QUICK_REQUEST_IMAGE_LIMIT_ERROR": "You can upload only one reference image here.",
+    "QUICK_REQUEST_IMAGE_TYPE_ERROR": "Upload a JPG, PNG, WEBP, GIF, BMP, SVG, or HEIC image.",
+    "PRODUCT_QUICK_REQUEST_EYEBROW": "Need a variation?",
+    "PRODUCT_QUICK_REQUEST_TITLE": "Ask for a custom version of this product.",
+    "PRODUCT_QUICK_REQUEST_TEXT": "Useful if you need another size, a mounting change, or a product adaptation.",
     "ADD_CART": "Add to Cart",
     "ADDING": "Adding to cart",
     "ADD_SUCCESS": "Product added to cart.",
@@ -497,6 +587,12 @@
     "SUCCESS_TITLE": "Message Sent Successfully",
     "SUCCESS_DESC": "Thank you for contacting us. We have received your message and will send you a recap email shortly.",
     "SEND_ANOTHER": "Send Another Message",
+    "CAD_NOTE_EYEBROW": "Custom parts",
+    "CAD_NOTE_TITLE": "Modify or recreate a part",
+    "CAD_NOTE_TEXT": "Useful if you need to recreate a replacement part, adapt a model or validate an idea before printing. We can start from photos, dimensions, sketches or an existing part.",
+    "CAD_NOTE_ITEM_1": "You have a broken or hard-to-find part",
+    "CAD_NOTE_ITEM_2": "You want to adapt a model to a precise size",
+    "CAD_NOTE_ITEM_3": "You do not have a 3D file but can send photos or measurements",
     "FILE_TYPE_PDF": "PDF",
     "FILE_TYPE_3D": "3D",
     "FILE_TYPE_VIDEO": "Video",

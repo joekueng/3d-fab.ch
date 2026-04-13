@@ -1,0 +1,371 @@
+<main class="materials-page">
+  <section class="hero">
+    <div class="container hero-inner">
+      <p class="ui-eyebrow">Guida materiali</p>
+      <h1>Qualita e Materiali</h1>
+      <p class="hero-lead">
+        Confronta i materiali in modo interattivo con radar chart, metriche
+        tecniche e fonti verificabili. La sezione calcolatore qui sotto spiega
+        invece come usare davvero il tool online oggi.
+      </p>
+      <p class="hero-note">
+        Seleziona fino a {{ maxCompareCount }} materiali: radar e tabella si
+        aggiornano in tempo reale.
+      </p>
+    </div>
+  </section>
+
+  <section class="chart-section">
+    <div class="container chart-layout">
+      <article class="chart-card">
+        <header class="chart-header">
+          <h2>Radar chart comparativo</h2>
+          <p>
+            Punteggi normalizzati 0-100 su tutto il set materiali (min-max
+            scaling).
+          </p>
+        </header>
+
+        <svg
+          class="radar-chart"
+          [attr.viewBox]="'0 0 ' + chartSize + ' ' + chartSize"
+          role="img"
+          aria-label="Radar chart materiali"
+        >
+          <g class="chart-rings">
+            @for (ring of ringPolygons(); track $index) {
+              <polygon [attr.points]="ring"></polygon>
+            }
+          </g>
+
+          <g class="chart-axes">
+            @for (axis of axisGuides(); track axis.id) {
+              <line
+                [attr.x1]="axis.fromX"
+                [attr.y1]="axis.fromY"
+                [attr.x2]="axis.x"
+                [attr.y2]="axis.y"
+              ></line>
+              <text
+                [attr.x]="axis.labelX"
+                [attr.y]="axis.labelY"
+                [attr.text-anchor]="axis.labelAnchor"
+              >
+                {{ radarAxes[$index].label }}
+              </text>
+            }
+          </g>
+
+          <g class="chart-series">
+            @for (series of radarSeries(); track series.material.id) {
+              <polygon
+                class="series-shape"
+                [attr.points]="series.points"
+                [style.stroke]="series.color"
+                [style.fill]="series.fill"
+                [class.is-hovered]="hoveredMaterialId() === series.material.id"
+                (mouseenter)="setHoveredMaterial(series.material.id)"
+                (mouseleave)="setHoveredMaterial(null)"
+              ></polygon>
+
+              @for (point of series.values; track point.axis.id) {
+                <circle
+                  class="series-node"
+                  [attr.cx]="point.x"
+                  [attr.cy]="point.y"
+                  r="4"
+                  [style.fill]="series.color"
+                ></circle>
+              }
+            }
+          </g>
+        </svg>
+
+        <div class="chart-legend">
+          @for (series of radarSeries(); track series.material.id) {
+            <button
+              type="button"
+              class="legend-item"
+              (mouseenter)="setHoveredMaterial(series.material.id)"
+              (mouseleave)="setHoveredMaterial(null)"
+            >
+              <span
+                class="legend-dot"
+                [style.background-color]="series.color"
+              ></span>
+              <span>{{ series.material.name }}</span>
+            </button>
+          }
+        </div>
+
+        <div class="selector-panel">
+          <div class="selector-panel__header">
+            <div>
+              <h3>Materiali nel confronto</h3>
+              <p>Scegli i materiali da confrontare direttamente nel radar.</p>
+            </div>
+            <p class="selector-count">
+              {{ selectedCount() }}/{{ maxCompareCount }}
+            </p>
+          </div>
+
+          <div
+            class="selector-grid"
+            role="group"
+            aria-label="Selezione materiali"
+          >
+            @for (
+              material of materials;
+              track trackMaterial($index, material)
+            ) {
+              <button
+                type="button"
+                class="selector-chip"
+                [class.is-selected]="isSelected(material.id)"
+                [disabled]="!canSelect(material.id)"
+                (click)="toggleMaterial(material.id)"
+              >
+                <span
+                  class="selector-dot"
+                  [style.background-color]="legendDotColor(material.id)"
+                ></span>
+                <span>{{ material.name }}</span>
+              </button>
+            }
+          </div>
+
+          <p class="selector-help">
+            Nota: per l asse Economicita, un valore alto significa costo al kg
+            piu conveniente.
+          </p>
+        </div>
+      </article>
+
+      <article class="explain-card">
+        <h2>Come leggere il confronto</h2>
+        <p>
+          Ogni asse mostra una proprieta tecnica. Il valore 100 rappresenta la
+          miglior performance relativa nel dataset attuale; 0 la meno
+          favorevole.
+        </p>
+        <ul>
+          @for (axis of radarAxes; track axis.id) {
+            <li>
+              <strong>{{ axis.label }}:</strong>
+              {{ axis.description }}
+            </li>
+          }
+        </ul>
+        <p>
+          La normalizzazione e calcolata su tutti i materiali mostrati in
+          pagina. Per leggibilita il radar usa un raggio minimo visivo: i valori
+          minimi restano i meno favorevoli, ma non collassano tutti nello stesso
+          punto.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section class="table-section">
+    <div class="container">
+      <h2>Tabella tecnica di confronto</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Parametro</th>
+              @for (
+                material of selectedMaterials();
+                track trackMaterial($index, material)
+              ) {
+                <th>{{ material.name }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of comparisonRows(); track row.label) {
+              <tr>
+                <th>{{ row.label }}</th>
+                @for (value of row.values; track $index) {
+                  <td>{{ value }}</td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="calculator-section">
+    <div class="container">
+      <div class="section-heading">
+        <p class="ui-eyebrow">Calcolatore</p>
+        <h2>Come usare il calcolatore oggi</h2>
+        <p>
+          Questa sezione spiega il comportamento reale del calcolatore e i
+          controlli che incidono davvero sul preventivo.
+        </p>
+      </div>
+
+      <div class="calculator-facts-grid">
+        @for (
+          fact of calculatorFacts;
+          track trackCalculatorFact($index, fact)
+        ) {
+          <article class="calculator-fact-card">
+            <h3>{{ fact.title }}</h3>
+            <p>{{ fact.description }}</p>
+          </article>
+        }
+      </div>
+
+      <div class="calculator-modes-grid">
+        @for (
+          mode of calculatorModes;
+          track trackCalculatorMode($index, mode)
+        ) {
+          <article class="calculator-mode-card">
+            <p class="calculator-mode-eyebrow">{{ mode.eyebrow }}</p>
+            <h3>{{ mode.title }}</h3>
+            <p>{{ mode.summary }}</p>
+            <p class="calculator-mode-when">
+              <strong>Quando usarla:</strong> {{ mode.useWhen }}
+            </p>
+
+            <div class="calculator-mode-block">
+              <h4>Controlli disponibili</h4>
+              <ul>
+                @for (control of mode.controls; track control) {
+                  <li>{{ control }}</li>
+                }
+              </ul>
+            </div>
+
+            <p class="calculator-mode-output">{{ mode.outputs }}</p>
+            <a
+              class="calculator-mode-link"
+              [attr.href]="localizedPath(mode.path)"
+            >
+              {{ mode.ctaLabel }}
+            </a>
+          </article>
+        }
+      </div>
+
+      <article class="calculator-parameters-card">
+        <div class="calculator-parameters-head">
+          <h3>Parametri che il calcolatore usa davvero</h3>
+          <p>
+            Qui sotto trovi solo controlli presenti oggi nel prodotto. Se usi la
+            modalita Avanzata, sono questi i parametri che incidono sul
+            preventivo.
+          </p>
+        </div>
+
+        <div class="calculator-parameters-grid">
+          @for (
+            parameter of calculatorParameters;
+            track trackCalculatorParameter($index, parameter)
+          ) {
+            <article class="calculator-parameter-card">
+              <p class="calculator-parameter-badge">
+                {{ parameter.availability }}
+              </p>
+              <h4>{{ parameter.title }}</h4>
+              <p>{{ parameter.explanation }}</p>
+              <p class="calculator-parameter-effect">
+                <strong>Effetto sul preventivo:</strong>
+                {{ parameter.calculatorEffect }}
+              </p>
+            </article>
+          }
+        </div>
+      </article>
+
+      <div class="calculator-visual-section">
+        <div class="calculator-visual-head">
+          <h3>Esempi pratici per leggere layer, ugello e riempimento</h3>
+          <p>
+            Questi esempi non sono un secondo calcolatore: servono per capire
+            meglio i parametri che imposti in modalita Avanzata.
+          </p>
+        </div>
+
+        <div class="visual-guide-grid">
+          @for (
+            guide of qualityVisualCards();
+            track trackVisualGuide($index, guide)
+          ) {
+            <article class="visual-guide-card">
+              <p class="visual-guide-category">{{ guide.category }}</p>
+              <h3>{{ guide.title }}</h3>
+
+              <div class="visual-guide-media">
+                @if (guide.image; as image) {
+                  <picture>
+                    @if (image.source.avifUrl) {
+                      <source
+                        [srcset]="image.source.avifUrl"
+                        type="image/avif"
+                      />
+                    }
+                    @if (image.source.webpUrl) {
+                      <source
+                        [srcset]="image.source.webpUrl"
+                        type="image/webp"
+                      />
+                    }
+                    <img
+                      [src]="image.source.fallbackUrl"
+                      [attr.alt]="image.altText || guide.title"
+                      width="640"
+                      height="420"
+                    />
+                  </picture>
+                } @else {
+                  <div class="media-fallback">
+                    <span>
+                      Nessuna immagine assegnata. Carica asset backend con
+                      usageType <code>MATERIALS_PAGE</code> e usageKey
+                      <code>{{ guide.usageKey }}</code
+                      >.
+                    </span>
+                  </div>
+                }
+              </div>
+
+              <p><strong>Oggetto esempio:</strong> {{ guide.objectExample }}</p>
+              <p><strong>Meglio per:</strong> {{ guide.bestFor }}</p>
+              <p><strong>Limite:</strong> {{ guide.tradeoff }}</p>
+              <p class="visual-guide-calc">
+                <strong>Lettura nel calcolatore:</strong>
+                {{ guide.calculatorRead }}
+              </p>
+            </article>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="global-sources">
+    <div class="container">
+      <h2>Indice completo fonti</h2>
+      <p>
+        Tutti i link usati per metriche e descrizioni sono riportati qui in
+        forma centralizzata.
+      </p>
+      <ul class="global-source-list">
+        @for (source of allSources(); track trackSource($index, source)) {
+          <li>
+            <a [href]="source.url" target="_blank" rel="noopener noreferrer">
+              {{ source.label }}
+            </a>
+            <span>{{ source.kind }}</span>
+          </li>
+        }
+      </ul>
+    </div>
+  </section>
+</main>

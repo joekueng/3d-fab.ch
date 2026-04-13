@@ -259,6 +259,12 @@ h1 {
   line-height: 1.6;
 }
 
+.detail-secondary {
+  display: grid;
+  gap: var(--space-5);
+  margin-top: var(--space-3);
+}
+
 .purchase-card {
   display: grid;
   gap: 1rem;

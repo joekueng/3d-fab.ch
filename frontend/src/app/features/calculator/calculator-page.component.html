@@ -1,6 +1,10 @@
 <div class="container ui-simple-hero">
-  <h1 class="ui-simple-hero__title">{{ "CALC.TITLE" | translate }}</h1>
-  <p class="ui-simple-hero__subtitle">{{ "CALC.SUBTITLE" | translate }}</p>
+  <h1 class="ui-simple-hero__title">
+    {{ modeContentKey("TITLE") | translate }}
+  </h1>
+  <p class="ui-simple-hero__subtitle">
+    {{ modeContentKey("SUBTITLE") | translate }}
+  </p>
 
   @if (error()) {
     <app-alert type="error">{{ errorKey() | translate }}</app-alert>
@@ -98,5 +102,85 @@
         </app-card>
       }
     </div>
+  </div>
+
+  <div class="container calculator-guides">
+    <section class="calculator-guide">
+      <div class="model-source-section">
+        <div class="model-source-intro">
+          <p class="guide-kicker">
+            {{ "CALC.MODEL_SOURCES.KICKER" | translate }}
+          </p>
+          <h2>{{ "CALC.MODEL_SOURCES.TITLE" | translate }}</h2>
+          <p>{{ "CALC.MODEL_SOURCES.TEXT" | translate }}</p>
+        </div>
+
+        <div class="model-source-links">
+          <div class="model-source-group">
+            <p class="model-source-group__label">
+              {{ "CALC.MODEL_SOURCES.FAVORITES_TITLE" | translate }}
+            </p>
+            @for (source of favoriteModelSources; track source.id) {
+              <a
+                class="model-source-link model-source-link--favorite"
+                [class.model-source-link--printables]="
+                  source.id === 'PRINTABLES'
+                "
+                [class.model-source-link--makerworld]="
+                  source.id === 'MAKERWORLD'
+                "
+                [href]="source.url"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span class="model-source-link__name">{{ source.label }}</span>
+                <span class="model-source-link__description">{{
+                  modelSourceDescriptionKey(source.id) | translate
+                }}</span>
+              </a>
+            }
+          </div>
+
+          <div class="model-source-group">
+            <p class="model-source-group__label">
+              {{ "CALC.MODEL_SOURCES.OTHERS_TITLE" | translate }}
+            </p>
+            <div class="model-source-compact-list">
+              @for (source of otherModelSources; track source.id) {
+                <a
+                  class="model-source-link model-source-link--compact"
+                  [href]="source.url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <span class="model-source-link__name">{{
+                    source.label
+                  }}</span>
+                </a>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="calculator-guide">
+      <app-card class="guide-card">
+        <div class="guide-header guide-header--compact">
+          <p class="guide-kicker">{{ "CALC.FAQ.KICKER" | translate }}</p>
+          <h2>{{ "CALC.FAQ.TITLE" | translate }}</h2>
+          <p>{{ "CALC.FAQ.SUBTITLE" | translate }}</p>
+        </div>
+
+        <div class="faq-list">
+          @for (faqId of faqIds; track faqId) {
+            <details class="faq-item">
+              <summary>{{ faqKey(faqId, "Q") | translate }}</summary>
+              <p>{{ faqKey(faqId, "A") | translate }}</p>
+            </details>
+          }
+        </div>
+      </app-card>
+    </section>
   </div>
 }

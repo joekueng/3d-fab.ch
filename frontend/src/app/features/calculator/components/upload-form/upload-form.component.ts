@@ -573,12 +573,17 @@ export class UploadFormComponent implements OnInit {
 
     const patch: any = {};
     if (settings.materialCode) patch.material = settings.materialCode;
+    if (settings.quality) {
+      patch.quality = this.normalizeQualityValue(settings.quality);
+    }
 
     const layer = Number(settings.layerHeightMm);
     if (Number.isFinite(layer)) {
       patch.layerHeight = layer;
-      patch.quality =
-        layer >= 0.24 ? 'draft' : layer <= 0.12 ? 'extra_fine' : 'standard';
+      if (!patch.quality) {
+        patch.quality =
+          layer >= 0.24 ? 'draft' : layer <= 0.12 ? 'extra_fine' : 'standard';
+      }
     }
 
     const nozzle = Number(settings.nozzleDiameterMm);
@@ -703,6 +708,69 @@ export class UploadFormComponent implements OnInit {
       this.emitPrintSettingsChange();
     }
 
+    this.emitItemSettingsDiffChange();
+  }
+
+  restoreRequestDraft(
+    request: QuoteRequest,
+    options?: {
+      sameSettingsForAll?: boolean;
+      selectedFileName?: string | null;
+    },
+  ) {
+    if (!request?.items?.length) {
+      return;
+    }
+
+    this.setFiles(request.items.map((item) => item.file));
+    this.patchSettings({
+      materialCode: request.material,
+      quality: request.quality,
+      layerHeightMm: request.layerHeight,
+      nozzleDiameterMm: request.nozzleDiameter,
+      infillPercent: request.infillDensity,
+      infillPattern: request.infillPattern,
+      supportsEnabled: request.supportEnabled,
+      notes: request.notes,
+    });
+
+    const sameSettingsForAll =
+      this.mode() === 'advanced' ? (options?.sameSettingsForAll ?? true) : true;
+    this.onSameSettingsToggle(sameSettingsForAll);
+
+    request.items.forEach((item, index) => {
+      this.updateItemQuantityByIndex(index, Number(item.quantity || 1));
+      this.setItemPrintSettingsByIndex(index, {
+        material: item.material ?? request.material,
+        quality: item.quality ?? request.quality,
+        nozzleDiameter: item.nozzleDiameter ?? request.nozzleDiameter,
+        layerHeight: item.layerHeight ?? request.layerHeight,
+        infillDensity: item.infillDensity ?? request.infillDensity,
+        infillPattern: item.infillPattern ?? request.infillPattern,
+        supportEnabled: item.supportEnabled ?? request.supportEnabled,
+      });
+
+      if (item.color) {
+        this.updateItemColor(index, {
+          colorName: item.color,
+          filamentVariantId: item.filamentVariantId,
+        });
+      }
+    });
+
+    const selectedFileName = this.normalizeFileName(
+      options?.selectedFileName ?? '',
+    );
+    const target =
+      this.items().find(
+        (item) => this.normalizeFileName(item.file.name) === selectedFileName,
+      ) ?? this.items()[this.items().length - 1];
+
+    if (target) {
+      this.selectFile(target.file);
+    }
+
+    this.emitPrintSettingsChange();
     this.emitItemSettingsDiffChange();
   }
 

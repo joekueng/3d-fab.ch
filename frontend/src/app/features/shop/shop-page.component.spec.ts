@@ -1,4 +1,5 @@
 import { PLATFORM_ID, RESPONSE_INIT, signal } from '@angular/core';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
@@ -129,7 +130,7 @@ describe('ShopPageComponent', () => {
 
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
-      imports: [ShopPageComponent],
+      imports: [ShopPageComponent, HttpClientTestingModule],
       providers: [
         { provide: SeoService, useValue: seoService },
         { provide: TranslateService, useValue: translate },

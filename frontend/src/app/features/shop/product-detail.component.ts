@@ -28,6 +28,7 @@ import { LanguageService } from '../../core/services/language.service';
 import { findColorHex } from '../../core/constants/colors.const';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
+import { QuickRequestPanelComponent } from '../../shared/components/quick-request-panel/quick-request-panel.component';
 import { StlViewerComponent } from '../../shared/components/stl-viewer/stl-viewer.component';
 import {
   ShopProductDetail,
@@ -59,6 +60,7 @@ interface ShopMaterialProperty {
     TranslateModule,
     AppButtonComponent,
     AppCardComponent,
+    QuickRequestPanelComponent,
     StlViewerComponent,
   ],
   templateUrl: './product-detail.component.html',

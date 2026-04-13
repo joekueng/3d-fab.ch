@@ -30,7 +30,7 @@
         >{{ "NAV.HOME" | translate }}</a
       >
       <a
-        [routerLink]="langService.localizedPath('/calculator/basic')"
+        [routerLink]="langService.localizedPath('/calculator')"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: false }"
         (click)="closeMenu()"
@@ -41,6 +41,12 @@
         routerLinkActive="active"
         (click)="closeMenu()"
         >{{ "NAV.SHOP" | translate }}</a
+      >
+      <a
+        [routerLink]="langService.localizedPath('/materials')"
+        routerLinkActive="active"
+        (click)="closeMenu()"
+        >{{ "NAV.MATERIALS" | translate }}</a
       >
       <a
         [routerLink]="langService.localizedPath('/about')"
