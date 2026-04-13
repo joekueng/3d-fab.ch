@@ -229,7 +229,7 @@ public class OrderEmailListener {
     }
 
     private String buildLogoUrl() {
-        return frontendBaseUrl.replaceAll("/+$", "") + "/assets/images/brand-logo-yellow.svg";
+        return frontendBaseUrl.replaceAll("/+$", "") + "/assets/images/SVG/logo-giallo-spesso.svg";
     }
 
     private String applyOrderConfirmationTexts(Map<String, Object> templateData, String language, String orderNumber) {

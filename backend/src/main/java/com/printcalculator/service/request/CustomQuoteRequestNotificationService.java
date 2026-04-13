@@ -129,6 +129,6 @@ public class CustomQuoteRequestNotificationService {
         String baseUrl = frontendBaseUrl == null || frontendBaseUrl.isBlank()
                 ? "http://localhost:4200"
                 : frontendBaseUrl;
-        return baseUrl.replaceAll("/+$", "") + "/assets/images/brand-logo-yellow.svg";
+        return baseUrl.replaceAll("/+$", "") + "/assets/images/SVG/logo-giallo-spesso.svg";
     }
 }
