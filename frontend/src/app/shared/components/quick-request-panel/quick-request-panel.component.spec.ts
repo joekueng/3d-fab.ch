@@ -48,7 +48,10 @@ describe('QuickRequestPanelComponent', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(QuickRequestPanelComponent);
-    fixture.componentRef.setInput('eyebrowKey', 'SHOP.CUSTOM_PART_FOOTER_TITLE');
+    fixture.componentRef.setInput(
+      'eyebrowKey',
+      'SHOP.CUSTOM_PART_FOOTER_TITLE',
+    );
     fixture.componentRef.setInput('titleKey', 'SHOP.CUSTOM_PART_FOOTER_TEXT');
     fixture.componentRef.setInput('descriptionKey', 'SHOP.QUICK_REQUEST_HELP');
     fixture.detectChanges();
