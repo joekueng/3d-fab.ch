@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { ContactFormComponent } from './components/contact-form/contact-form.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
+import { FeaturePanelComponent } from '../../shared/components/feature-panel/feature-panel.component';
 
 @Component({
   selector: 'app-contact-page',
@@ -12,6 +13,7 @@ import { AppCardComponent } from '../../shared/components/app-card/app-card.comp
     TranslateModule,
     ContactFormComponent,
     AppCardComponent,
+    FeaturePanelComponent,
   ],
   templateUrl: './contact-page.component.html',
   styleUrl: './contact-page.component.scss',

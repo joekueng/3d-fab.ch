@@ -11,6 +11,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AppButtonComponent } from '../app-button/app-button.component';
+import { FeaturePanelComponent } from '../feature-panel/feature-panel.component';
 import { SuccessStateComponent } from '../success-state/success-state.component';
 import { LanguageService } from '../../../core/services/language.service';
 import {
@@ -32,6 +33,7 @@ interface FilePreview {
     ReactiveFormsModule,
     TranslateModule,
     AppButtonComponent,
+    FeaturePanelComponent,
     SuccessStateComponent,
   ],
   templateUrl: './quick-request-panel.component.html',

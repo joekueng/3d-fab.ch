@@ -1,28 +1,24 @@
-<main class="materials-page">
-  <section class="hero">
-    <div class="container hero-inner">
-      <p class="ui-eyebrow">Guida materiali</p>
-      <h1>Qualita e Materiali</h1>
-      <p class="hero-lead">
-        Confronta i materiali in modo interattivo con radar chart, metriche
-        tecniche e fonti verificabili. La sezione calcolatore qui sotto spiega
-        invece come usare davvero il tool online oggi.
-      </p>
-      <p class="hero-note">
-        Seleziona fino a {{ maxCompareCount }} materiali: radar e tabella si
-        aggiornano in tempo reale.
-      </p>
-    </div>
+<main class="materials-page ui-page-surface">
+  <section class="container ui-simple-hero materials-hero">
+    <h1 class="ui-simple-hero__title">Qualita e Materiali</h1>
+    <p class="ui-simple-hero__subtitle">
+      Confronta i materiali piu usati con grafici, dati tecnici e fonti
+      consultabili. Piu sotto trovi anche una guida chiara al funzionamento
+      del calcolatore.
+    </p>
   </section>
 
-  <section class="chart-section">
-    <div class="container chart-layout">
-      <article class="chart-card">
-        <header class="chart-header">
-          <h2>Radar chart comparativo</h2>
-          <p>
-            Punteggi normalizzati 0-100 su tutto il set materiali (min-max
-            scaling).
+  <section class="container materials-section">
+    <div class="chart-layout">
+      <article class="materials-panel materials-panel--chart">
+        <header class="materials-panel__header">
+          <div>
+            <p class="ui-eyebrow ui-eyebrow--compact">Confronto</p>
+            <h2>Grafico radar comparativo</h2>
+          </div>
+          <p class="materials-panel__description">
+            I valori sono riportati su una scala da 0 a 100 per facilitare il
+            confronto tra i materiali presenti in pagina.
           </p>
         </header>
 
@@ -30,7 +26,7 @@
           class="radar-chart"
           [attr.viewBox]="'0 0 ' + chartSize + ' ' + chartSize"
           role="img"
-          aria-label="Radar chart materiali"
+          aria-label="Grafico radar materiali"
         >
           <g class="chart-rings">
             @for (ring of ringPolygons(); track $index) {
@@ -81,29 +77,9 @@
           </g>
         </svg>
 
-        <div class="chart-legend">
-          @for (series of radarSeries(); track series.material.id) {
-            <button
-              type="button"
-              class="legend-item"
-              (mouseenter)="setHoveredMaterial(series.material.id)"
-              (mouseleave)="setHoveredMaterial(null)"
-            >
-              <span
-                class="legend-dot"
-                [style.background-color]="series.color"
-              ></span>
-              <span>{{ series.material.name }}</span>
-            </button>
-          }
-        </div>
-
         <div class="selector-panel">
           <div class="selector-panel__header">
-            <div>
-              <h3>Materiali nel confronto</h3>
-              <p>Scegli i materiali da confrontare direttamente nel radar.</p>
-            </div>
+            <h3>Materiali nel confronto</h3>
             <p class="selector-count">
               {{ selectedCount() }}/{{ maxCompareCount }}
             </p>
@@ -123,6 +99,11 @@
                 class="selector-chip"
                 [class.is-selected]="isSelected(material.id)"
                 [disabled]="!canSelect(material.id)"
+                [attr.aria-pressed]="isSelected(material.id)"
+                [style.--selector-accent]="legendDotColor(material.id)"
+                [style.--selector-fill]="legendFillColor(material.id)"
+                (mouseenter)="setHoveredMaterial(material.id)"
+                (mouseleave)="setHoveredMaterial(null)"
                 (click)="toggleMaterial(material.id)"
               >
                 <span
@@ -135,18 +116,23 @@
           </div>
 
           <p class="selector-help">
-            Nota: per l asse Economicita, un valore alto significa costo al kg
-            piu conveniente.
+            Nota: nell asse Convenienza, un valore piu alto indica un costo al
+            kg piu favorevole.
           </p>
         </div>
       </article>
 
-      <article class="explain-card">
-        <h2>Come leggere il confronto</h2>
+      <article class="materials-panel materials-panel--aside">
+        <header class="materials-panel__header">
+          <div>
+            <p class="ui-eyebrow ui-eyebrow--compact">Lettura</p>
+            <h2>Come leggere il confronto</h2>
+          </div>
+        </header>
         <p>
           Ogni asse mostra una proprieta tecnica. Il valore 100 rappresenta la
-          miglior performance relativa nel dataset attuale; 0 la meno
-          favorevole.
+          prestazione relativa piu alta tra i materiali confrontati; 0 la piu
+          bassa.
         </p>
         <ul>
           @for (axis of radarAxes; track axis.id) {
@@ -156,55 +142,50 @@
             </li>
           }
         </ul>
-        <p>
-          La normalizzazione e calcolata su tutti i materiali mostrati in
-          pagina. Per leggibilita il radar usa un raggio minimo visivo: i valori
-          minimi restano i meno favorevoli, ma non collassano tutti nello stesso
-          punto.
-        </p>
       </article>
     </div>
   </section>
 
-  <section class="table-section">
-    <div class="container">
+  <section class="container materials-section">
+    <div class="materials-section-head">
+      <p class="ui-eyebrow ui-eyebrow--compact">Confronto tecnico</p>
       <h2>Tabella tecnica di confronto</h2>
-      <div class="table-wrap">
-        <table>
-          <thead>
+    </div>
+    <div class="ui-table-wrap materials-table-wrap">
+      <table class="ui-data-table">
+        <thead>
+          <tr>
+            <th>Parametro</th>
+            @for (
+              material of selectedMaterials();
+              track trackMaterial($index, material)
+            ) {
+              <th>{{ material.name }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of comparisonRows(); track row.label) {
             <tr>
-              <th>Parametro</th>
-              @for (
-                material of selectedMaterials();
-                track trackMaterial($index, material)
-              ) {
-                <th>{{ material.name }}</th>
+              <th>{{ row.label }}</th>
+              @for (value of row.values; track $index) {
+                <td>{{ value }}</td>
               }
             </tr>
-          </thead>
-          <tbody>
-            @for (row of comparisonRows(); track row.label) {
-              <tr>
-                <th>{{ row.label }}</th>
-                @for (value of row.values; track $index) {
-                  <td>{{ value }}</td>
-                }
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+          }
+        </tbody>
+      </table>
     </div>
   </section>
 
-  <section class="calculator-section">
+  <section class="materials-section materials-section--muted">
     <div class="container">
-      <div class="section-heading">
-        <p class="ui-eyebrow">Calcolatore</p>
-        <h2>Come usare il calcolatore oggi</h2>
+      <div class="materials-section-head">
+        <p class="ui-eyebrow ui-eyebrow--compact">Calcolatore</p>
+        <h2>Come usare il calcolatore</h2>
         <p>
-          Questa sezione spiega il comportamento reale del calcolatore e i
-          controlli che incidono davvero sul preventivo.
+          Questa sezione spiega quali parametri influenzano il preventivo e
+          come leggere correttamente il risultato.
         </p>
       </div>
 
@@ -230,7 +211,7 @@
             <h3>{{ mode.title }}</h3>
             <p>{{ mode.summary }}</p>
             <p class="calculator-mode-when">
-              <strong>Quando usarla:</strong> {{ mode.useWhen }}
+              <strong>Ideale se:</strong> {{ mode.useWhen }}
             </p>
 
             <div class="calculator-mode-block">
@@ -255,11 +236,11 @@
 
       <article class="calculator-parameters-card">
         <div class="calculator-parameters-head">
-          <h3>Parametri che il calcolatore usa davvero</h3>
+          <h3>Parametri del calcolatore</h3>
           <p>
-            Qui sotto trovi solo controlli presenti oggi nel prodotto. Se usi la
-            modalita Avanzata, sono questi i parametri che incidono sul
-            preventivo.
+            Qui sotto trovi i controlli attualmente disponibili nel
+            calcolatore. In modalita Avanzata, sono questi i parametri che
+            influenzano il preventivo.
           </p>
         </div>
 
@@ -275,7 +256,7 @@
               <h4>{{ parameter.title }}</h4>
               <p>{{ parameter.explanation }}</p>
               <p class="calculator-parameter-effect">
-                <strong>Effetto sul preventivo:</strong>
+                <strong>Impatto sul preventivo:</strong>
                 {{ parameter.calculatorEffect }}
               </p>
             </article>
@@ -287,8 +268,8 @@
         <div class="calculator-visual-head">
           <h3>Esempi pratici per leggere layer, ugello e riempimento</h3>
           <p>
-            Questi esempi non sono un secondo calcolatore: servono per capire
-            meglio i parametri che imposti in modalita Avanzata.
+            Questi esempi aiutano a capire meglio come layer, ugello e
+            riempimento influenzano il risultato.
           </p>
         </div>
 
@@ -325,21 +306,16 @@
                   </picture>
                 } @else {
                   <div class="media-fallback">
-                    <span>
-                      Nessuna immagine assegnata. Carica asset backend con
-                      usageType <code>MATERIALS_PAGE</code> e usageKey
-                      <code>{{ guide.usageKey }}</code
-                      >.
-                    </span>
+                    <span>Immagine di esempio in aggiornamento.</span>
                   </div>
                 }
               </div>
 
-              <p><strong>Oggetto esempio:</strong> {{ guide.objectExample }}</p>
+              <p><strong>Esempio tipico:</strong> {{ guide.objectExample }}</p>
               <p><strong>Meglio per:</strong> {{ guide.bestFor }}</p>
               <p><strong>Limite:</strong> {{ guide.tradeoff }}</p>
               <p class="visual-guide-calc">
-                <strong>Lettura nel calcolatore:</strong>
+                <strong>Effetto tipico:</strong>
                 {{ guide.calculatorRead }}
               </p>
             </article>
@@ -349,23 +325,24 @@
     </div>
   </section>
 
-  <section class="global-sources">
-    <div class="container">
-      <h2>Indice completo fonti</h2>
+  <section class="container materials-section ui-page-surface__body">
+    <div class="materials-section-head">
+      <p class="ui-eyebrow ui-eyebrow--compact">Fonti</p>
+      <h2>Fonti consultate</h2>
       <p>
-        Tutti i link usati per metriche e descrizioni sono riportati qui in
-        forma centralizzata.
+        Qui trovi tutte le fonti utilizzate per i dati tecnici e le
+        descrizioni dei materiali.
       </p>
-      <ul class="global-source-list">
-        @for (source of allSources(); track trackSource($index, source)) {
-          <li>
-            <a [href]="source.url" target="_blank" rel="noopener noreferrer">
-              {{ source.label }}
-            </a>
-            <span>{{ source.kind }}</span>
-          </li>
-        }
-      </ul>
     </div>
+    <ul class="global-source-list">
+      @for (source of allSources(); track trackSource($index, source)) {
+        <li>
+          <a [href]="source.url" target="_blank" rel="noopener noreferrer">
+            {{ source.label }}
+          </a>
+          <span>{{ source.kind }}</span>
+        </li>
+      }
+    </ul>
   </section>
 </main>

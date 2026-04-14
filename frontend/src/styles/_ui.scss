@@ -43,6 +43,14 @@
   margin-top: var(--space-6);
 }
 
+.ui-page-surface {
+  background: var(--color-bg);
+}
+
+.ui-page-surface__body {
+  padding-bottom: var(--space-12);
+}
+
 .ui-stack {
   display: grid;
   gap: var(--space-4);
