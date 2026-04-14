@@ -17,13 +17,14 @@
   display: inline-flex;
   align-items: center;
   text-decoration: none;
+  flex: 0 0 auto;
 }
 
 .brand-logo {
   display: block;
-  width: auto;
-  height: 2.1rem;
-  max-width: min(11rem, 40vw);
+  width: clamp(12.5rem, 18vw, 15rem);
+  height: auto;
+  max-width: 100%;
 }
 
 .nav-links {
@@ -335,6 +336,10 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .brand-logo {
+    width: min(12rem, 46vw);
+  }
+
   .mobile-toggle {
     display: flex;
     order: 2; /* Place after actions */
