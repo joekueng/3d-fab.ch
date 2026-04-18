@@ -7,11 +7,21 @@ import {
 } from '../services/admin-operations.service';
 import { AdminOrdersService } from '../services/admin-orders.service';
 import { CopyOnClickDirective } from '../../../shared/directives/copy-on-click.directive';
+import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
+import { AppInputComponent } from '../../../shared/components/app-input/app-input.component';
+import { AppTextareaComponent } from '../../../shared/components/app-textarea/app-textarea.component';
 
 @Component({
   selector: 'app-admin-cad-invoices',
   standalone: true,
-  imports: [CommonModule, FormsModule, CopyOnClickDirective],
+  imports: [
+    CommonModule,
+    FormsModule,
+    CopyOnClickDirective,
+    AppButtonComponent,
+    AppInputComponent,
+    AppTextareaComponent,
+  ],
   templateUrl: './admin-cad-invoices.component.html',
   styleUrl: './admin-cad-invoices.component.scss',
 })

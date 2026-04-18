@@ -1,40 +1,33 @@
+import { CommonModule } from '@angular/common';
 import { Component, computed, forwardRef, input } from '@angular/core';
 import {
   ControlValueAccessor,
   NG_VALUE_ACCESSOR,
   ReactiveFormsModule,
-  FormsModule,
 } from '@angular/forms';
-import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-select',
+  selector: 'app-checkbox',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
-  host: {
-    '[attr.name]': 'name() || null',
-  },
+  imports: [CommonModule, ReactiveFormsModule],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => AppSelectComponent),
+      useExisting: forwardRef(() => AppCheckboxComponent),
       multi: true,
     },
   ],
-  templateUrl: './app-select.component.html',
-  styleUrl: './app-select.component.scss',
+  templateUrl: './app-checkbox.component.html',
+  styleUrl: './app-checkbox.component.scss',
 })
-export class AppSelectComponent implements ControlValueAccessor {
-  label = input<string>('');
-  id = input<string>('select-' + Math.random().toString(36).substr(2, 9));
+export class AppCheckboxComponent implements ControlValueAccessor {
+  id = input<string>('checkbox-' + Math.random().toString(36).slice(2, 11));
   name = input<string>('');
-  compact = input<boolean>(false);
-  options = input<{ label: string; value: any }[]>([]);
-  error = input<string | null>(null);
-  required = input<boolean>(false);
+  label = input<string>('');
+  variant = input<'default' | 'pill'>('default');
   disabledInput = input<boolean>(false, { alias: 'disabled' });
 
-  value: any = '';
+  checked = false;
   private controlDisabled = false;
   readonly isDisabled = computed(
     () => this.controlDisabled || this.disabledInput(),
@@ -43,21 +36,31 @@ export class AppSelectComponent implements ControlValueAccessor {
   onChange: any = () => {};
   onTouched: any = () => {};
 
-  writeValue(obj: any): void {
-    this.value = obj;
+  checkboxClass(): string {
+    return this.variant() === 'pill'
+      ? 'ui-checkbox ui-checkbox--pill'
+      : 'ui-checkbox';
   }
+
+  writeValue(obj: any): void {
+    this.checked = !!obj;
+  }
+
   registerOnChange(fn: any): void {
     this.onChange = fn;
   }
+
   registerOnTouched(fn: any): void {
     this.onTouched = fn;
   }
+
   setDisabledState(isDisabled: boolean): void {
     this.controlDisabled = isDisabled;
   }
 
-  onModelChange(val: any) {
-    this.value = val;
-    this.onChange(val);
+  onInput(event: Event): void {
+    const nextValue = (event.target as HTMLInputElement).checked;
+    this.checked = nextValue;
+    this.onChange(nextValue);
   }
 }

@@ -7,21 +7,19 @@
       }
     </label>
   }
-  <select
+  <textarea
     [id]="id()"
     [attr.name]="name() || null"
-    [ngModel]="value"
-    (ngModelChange)="onModelChange($event)"
-    (blur)="onTouched()"
+    [placeholder]="placeholder()"
+    [value]="value"
+    [rows]="rows()"
     [disabled]="isDisabled()"
+    [readOnly]="readonly()"
     [required]="required()"
     class="ui-form-control"
-  >
-    @for (opt of options(); track opt.value) {
-      <option [ngValue]="opt.value">{{ opt.label }}</option>
-    }
-    <ng-content select="option,optgroup"></ng-content>
-  </select>
+    (input)="onInput($event)"
+    (blur)="onTouched()"
+  ></textarea>
   @if (error()) {
     <span class="ui-form-error">{{ error() }}</span>
   }

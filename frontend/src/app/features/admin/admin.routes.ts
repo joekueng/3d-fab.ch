@@ -59,6 +59,11 @@ export const ADMIN_ROUTES: Routes = [
       },
       {
         path: 'home-media',
+        pathMatch: 'full',
+        redirectTo: 'media',
+      },
+      {
+        path: 'media',
         loadComponent: () =>
           import('./pages/admin-home-media.component').then(
             (m) => m.AdminHomeMediaComponent,

@@ -1,43 +1,55 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   Component,
-  PLATFORM_ID,
-  inject,
   OnDestroy,
   OnInit,
+  PLATFORM_ID,
+  inject,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { of, switchMap } from 'rxjs';
 import {
   AdminCreateMediaUsagePayload,
-  AdminMediaLanguage,
   AdminMediaAsset,
+  AdminMediaLanguage,
   AdminMediaService,
   AdminMediaTranslation,
   AdminMediaUsage,
 } from '../services/admin-media.service';
+import { FeaturePanelComponent } from '../../../shared/components/feature-panel/feature-panel.component';
+import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
+import { AppCheckboxComponent } from '../../../shared/components/app-checkbox/app-checkbox.component';
+import { AppInputComponent } from '../../../shared/components/app-input/app-input.component';
 
-type HomeSectionKey =
-  | 'shop-gallery'
-  | 'founders-gallery'
-  | 'capability-prototyping'
-  | 'capability-custom-parts'
-  | 'capability-small-series'
-  | 'capability-cad'
-  | 'joe'
-  | 'matteo';
+type MediaCollectionId = 'home' | 'materials' | 'about';
+type MediaUsageType = 'HOME_SECTION' | 'ABOUT_MEMBER' | 'MATERIALS_PAGE';
+type MediaVariantName = 'card' | 'hero';
 
-type HomeMediaUsageType = 'HOME_SECTION' | 'ABOUT_MEMBER';
-
-interface HomeMediaSectionConfig {
-  usageType: HomeMediaUsageType;
-  usageKey: HomeSectionKey;
-  groupId: 'galleries' | 'capabilities' | 'about-members';
+interface MediaCollectionConfig {
+  id: MediaCollectionId;
   title: string;
-  preferredVariantName: 'card' | 'hero';
+  description: string;
 }
 
-interface HomeMediaFormState {
+interface MediaSectionGroup {
+  id: string;
+  collectionId: MediaCollectionId;
+  title: string;
+  description: string;
+}
+
+interface MediaSectionConfig {
+  id: string;
+  usageType: MediaUsageType;
+  usageKey: string;
+  collectionId: MediaCollectionId;
+  groupId: string;
+  title: string;
+  description: string;
+  preferredVariantName: MediaVariantName;
+}
+
+interface MediaFormState {
   file: File | null;
   previewUrl: string | null;
   activeLanguage: AdminMediaLanguage;
@@ -48,7 +60,7 @@ interface HomeMediaFormState {
   saving: boolean;
 }
 
-interface HomeMediaItem {
+interface MediaItem {
   usageId: string;
   mediaAssetId: string;
   originalFilename: string;
@@ -60,13 +72,8 @@ interface HomeMediaItem {
   createdAt: string;
 }
 
-interface HomeMediaSectionView extends HomeMediaSectionConfig {
-  items: HomeMediaItem[];
-}
-
-interface HomeMediaSectionGroup {
-  id: HomeMediaSectionConfig['groupId'];
-  title: string;
+interface MediaSectionView extends MediaSectionConfig {
+  items: MediaItem[];
 }
 
 const SUPPORTED_MEDIA_LANGUAGES: readonly AdminMediaLanguage[] = [
@@ -86,107 +93,234 @@ const MEDIA_LANGUAGE_LABELS: Readonly<Record<AdminMediaLanguage, string>> = {
 @Component({
   selector: 'app-admin-home-media',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    FeaturePanelComponent,
+    AppButtonComponent,
+    AppCheckboxComponent,
+    AppInputComponent,
+  ],
   templateUrl: './admin-home-media.component.html',
   styleUrl: './admin-home-media.component.scss',
 })
 export class AdminHomeMediaComponent implements OnInit, OnDestroy {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly adminMediaService = inject(AdminMediaService);
+
   readonly mediaLanguages = SUPPORTED_MEDIA_LANGUAGES;
   readonly mediaLanguageLabels = MEDIA_LANGUAGE_LABELS;
 
-  readonly sectionGroups: readonly HomeMediaSectionGroup[] = [
+  readonly collections: readonly MediaCollectionConfig[] = [
     {
-      id: 'galleries',
-      title: 'Gallery e visual principali',
+      id: 'home',
+      title: 'Home',
+      description: 'Gallery principali e card capability.',
     },
     {
-      id: 'capabilities',
-      title: 'Cosa puoi ottenere',
+      id: 'materials',
+      title: 'Materiali e qualita',
+      description: 'Guide visive per layer, ugelli e riempimento.',
+    },
+    {
+      id: 'about',
+      title: 'Chi siamo',
+      description: 'Ritratti e visual del team.',
+    },
+  ];
+
+  readonly sectionGroups: readonly MediaSectionGroup[] = [
+    {
+      id: 'home-galleries',
+      collectionId: 'home',
+      title: 'Gallery e visual principali',
+      description: 'Elementi hero e gallery della homepage.',
+    },
+    {
+      id: 'home-capabilities',
+      collectionId: 'home',
+      title: 'Capability',
+      description: 'Card che spiegano i servizi principali in home.',
+    },
+    {
+      id: 'materials-quality',
+      collectionId: 'materials',
+      title: 'Guide qualita',
+      description: 'Confronti pratici usati nella pagina materiali.',
     },
     {
       id: 'about-members',
-      title: 'Chi siamo',
+      collectionId: 'about',
+      title: 'Team',
+      description: 'Media associati ai membri della pagina Chi siamo.',
     },
   ];
 
-  readonly sectionConfigs: readonly HomeMediaSectionConfig[] = [
+  readonly sectionConfigs: readonly MediaSectionConfig[] = [
     {
+      id: 'HOME_SECTION::shop-gallery',
       usageType: 'HOME_SECTION',
       usageKey: 'shop-gallery',
-      groupId: 'galleries',
+      collectionId: 'home',
+      groupId: 'home-galleries',
       title: 'Home: gallery shop',
+      description: 'Visual della gallery prodotti in home.',
       preferredVariantName: 'card',
     },
     {
+      id: 'HOME_SECTION::founders-gallery',
       usageType: 'HOME_SECTION',
       usageKey: 'founders-gallery',
-      groupId: 'galleries',
+      collectionId: 'home',
+      groupId: 'home-galleries',
       title: 'Home: gallery founders',
+      description: 'Visual del blocco founders in homepage.',
       preferredVariantName: 'hero',
     },
     {
+      id: 'HOME_SECTION::capability-prototyping',
       usageType: 'HOME_SECTION',
       usageKey: 'capability-prototyping',
-      groupId: 'capabilities',
+      collectionId: 'home',
+      groupId: 'home-capabilities',
       title: 'Home: prototipazione veloce',
+      description: 'Card capability dedicata alla prototipazione.',
       preferredVariantName: 'card',
     },
     {
+      id: 'HOME_SECTION::capability-custom-parts',
       usageType: 'HOME_SECTION',
       usageKey: 'capability-custom-parts',
-      groupId: 'capabilities',
+      collectionId: 'home',
+      groupId: 'home-capabilities',
       title: 'Home: pezzi personalizzati',
+      description: 'Card capability dedicata ai pezzi custom.',
       preferredVariantName: 'card',
     },
     {
+      id: 'HOME_SECTION::capability-small-series',
       usageType: 'HOME_SECTION',
       usageKey: 'capability-small-series',
-      groupId: 'capabilities',
+      collectionId: 'home',
+      groupId: 'home-capabilities',
       title: 'Home: piccole serie',
+      description: 'Card capability dedicata alle piccole serie.',
       preferredVariantName: 'card',
     },
     {
+      id: 'HOME_SECTION::capability-cad',
       usageType: 'HOME_SECTION',
       usageKey: 'capability-cad',
-      groupId: 'capabilities',
+      collectionId: 'home',
+      groupId: 'home-capabilities',
       title: 'Home: consulenza e CAD',
+      description: 'Card capability dedicata a consulenza e CAD.',
       preferredVariantName: 'card',
     },
     {
+      id: 'MATERIALS_PAGE::guide-layer-012',
+      usageType: 'MATERIALS_PAGE',
+      usageKey: 'guide-layer-012',
+      collectionId: 'materials',
+      groupId: 'materials-quality',
+      title: 'Qualita: layer 0.12 mm',
+      description: 'Confronto visivo per layer fine.',
+      preferredVariantName: 'card',
+    },
+    {
+      id: 'MATERIALS_PAGE::guide-layer-020',
+      usageType: 'MATERIALS_PAGE',
+      usageKey: 'guide-layer-020',
+      collectionId: 'materials',
+      groupId: 'materials-quality',
+      title: 'Qualita: layer 0.20 mm',
+      description: 'Confronto visivo per layer standard.',
+      preferredVariantName: 'card',
+    },
+    {
+      id: 'MATERIALS_PAGE::guide-layer-028',
+      usageType: 'MATERIALS_PAGE',
+      usageKey: 'guide-layer-028',
+      collectionId: 'materials',
+      groupId: 'materials-quality',
+      title: 'Qualita: layer 0.28 mm',
+      description: 'Confronto visivo per layer rapido.',
+      preferredVariantName: 'card',
+    },
+    {
+      id: 'MATERIALS_PAGE::guide-nozzle-025',
+      usageType: 'MATERIALS_PAGE',
+      usageKey: 'guide-nozzle-025',
+      collectionId: 'materials',
+      groupId: 'materials-quality',
+      title: 'Qualita: ugello 0.25 mm',
+      description: 'Esempio visivo per ugello piccolo.',
+      preferredVariantName: 'card',
+    },
+    {
+      id: 'MATERIALS_PAGE::guide-nozzle-060',
+      usageType: 'MATERIALS_PAGE',
+      usageKey: 'guide-nozzle-060',
+      collectionId: 'materials',
+      groupId: 'materials-quality',
+      title: 'Qualita: ugello 0.60 mm',
+      description: 'Esempio visivo per ugello orientato alla produttivita.',
+      preferredVariantName: 'card',
+    },
+    {
+      id: 'MATERIALS_PAGE::guide-infill-15',
+      usageType: 'MATERIALS_PAGE',
+      usageKey: 'guide-infill-15',
+      collectionId: 'materials',
+      groupId: 'materials-quality',
+      title: 'Qualita: infill 15%',
+      description: 'Confronto visivo per riempimento leggero.',
+      preferredVariantName: 'card',
+    },
+    {
+      id: 'MATERIALS_PAGE::guide-infill-40',
+      usageType: 'MATERIALS_PAGE',
+      usageKey: 'guide-infill-40',
+      collectionId: 'materials',
+      groupId: 'materials-quality',
+      title: 'Qualita: infill 40%',
+      description: 'Confronto visivo per riempimento piu strutturale.',
+      preferredVariantName: 'card',
+    },
+    {
+      id: 'ABOUT_MEMBER::joe',
       usageType: 'ABOUT_MEMBER',
       usageKey: 'joe',
+      collectionId: 'about',
       groupId: 'about-members',
       title: 'Chi siamo: Joe',
+      description: 'Media del profilo Joe.',
       preferredVariantName: 'card',
     },
     {
+      id: 'ABOUT_MEMBER::matteo',
       usageType: 'ABOUT_MEMBER',
       usageKey: 'matteo',
+      collectionId: 'about',
       groupId: 'about-members',
       title: 'Chi siamo: Matteo',
+      description: 'Media del profilo Matteo.',
       preferredVariantName: 'card',
     },
   ];
 
-  sections: HomeMediaSectionView[] = [];
+  sections: MediaSectionView[] = [];
+  selectedCollectionId: MediaCollectionId = 'home';
   loading = false;
   errorMessage: string | null = null;
   successMessage: string | null = null;
   actingUsageIds = new Set<string>();
 
-  private readonly formStateByKey: Record<HomeSectionKey, HomeMediaFormState> =
-    {
-      'shop-gallery': this.createEmptyFormState(),
-      'founders-gallery': this.createEmptyFormState(),
-      'capability-prototyping': this.createEmptyFormState(),
-      'capability-custom-parts': this.createEmptyFormState(),
-      'capability-small-series': this.createEmptyFormState(),
-      'capability-cad': this.createEmptyFormState(),
-      joe: this.createEmptyFormState(),
-      matteo: this.createEmptyFormState(),
-    };
+  private readonly formStateById = new Map<string, MediaFormState>(
+    this.sectionConfigs.map(
+      (config) => [config.id, this.createEmptyFormState()] as const,
+    ),
+  );
 
   get configuredSectionCount(): number {
     return this.sectionConfigs.length;
@@ -199,17 +333,25 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
     );
   }
 
+  get selectedCollection(): MediaCollectionConfig {
+    return (
+      this.collections.find(
+        (collection) => collection.id === this.selectedCollectionId,
+      ) ?? this.collections[0]
+    );
+  }
+
   ngOnInit(): void {
-    this.loadHomeMedia();
+    this.loadMedia();
   }
 
   ngOnDestroy(): void {
-    (Object.keys(this.formStateByKey) as HomeSectionKey[]).forEach((key) => {
-      this.revokePreviewUrl(this.formStateByKey[key].previewUrl);
+    Array.from(this.formStateById.values()).forEach((formState) => {
+      this.revokePreviewUrl(formState.previewUrl);
     });
   }
 
-  loadHomeMedia(): void {
+  loadMedia(): void {
     this.loading = true;
     this.errorMessage = null;
     this.successMessage = null;
@@ -221,32 +363,73 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
           items: this.buildSectionItems(assets, config),
         }));
         this.loading = false;
-        (Object.keys(this.formStateByKey) as HomeSectionKey[]).forEach(
-          (key) => {
-            if (!this.formStateByKey[key].saving) {
-              this.resetForm(key);
-            }
-          },
-        );
+        this.sectionConfigs.forEach((config) => {
+          if (!this.getFormState(config.id).saving) {
+            this.resetForm(config.id);
+          }
+        });
       },
       error: (error) => {
         this.loading = false;
         this.errorMessage = this.extractErrorMessage(
           error,
-          'Impossibile caricare i media della home.',
+          'Impossibile caricare i media.',
         );
       },
     });
   }
 
-  getFormState(sectionKey: HomeSectionKey): HomeMediaFormState {
-    return this.formStateByKey[sectionKey];
+  selectCollection(collectionId: MediaCollectionId): void {
+    this.selectedCollectionId = collectionId;
+    this.errorMessage = null;
+    this.successMessage = null;
   }
 
-  onFileSelected(sectionKey: HomeSectionKey, event: Event): void {
+  collectionSectionCount(collectionId: MediaCollectionId): number {
+    return this.sectionConfigs.filter(
+      (config) => config.collectionId === collectionId,
+    ).length;
+  }
+
+  collectionActiveImageCount(collectionId: MediaCollectionId): number {
+    return this.sections
+      .filter((section) => section.collectionId === collectionId)
+      .reduce((total, section) => total + section.items.length, 0);
+  }
+
+  getVisibleGroups(): MediaSectionGroup[] {
+    return this.sectionGroups.filter(
+      (group) =>
+        group.collectionId === this.selectedCollectionId &&
+        this.getSectionsForGroup(group.id).length > 0,
+    );
+  }
+
+  getVisibleSectionCount(): number {
+    return this.sections.filter(
+      (section) => section.collectionId === this.selectedCollectionId,
+    ).length;
+  }
+
+  getVisibleActiveImageCount(): number {
+    return this.sections
+      .filter((section) => section.collectionId === this.selectedCollectionId)
+      .reduce((total, section) => total + section.items.length, 0);
+  }
+
+  getFormState(sectionId: string): MediaFormState {
+    let formState = this.formStateById.get(sectionId);
+    if (!formState) {
+      formState = this.createEmptyFormState();
+      this.formStateById.set(sectionId, formState);
+    }
+    return formState;
+  }
+
+  onFileSelected(sectionId: string, event: Event): void {
     const input = event.target as HTMLInputElement | null;
     const file = input?.files?.[0] ?? null;
-    const formState = this.getFormState(sectionKey);
+    const formState = this.getFormState(sectionId);
 
     this.revokePreviewUrl(formState.previewUrl);
     formState.file = file;
@@ -261,12 +444,12 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
     }
   }
 
-  prepareAdd(sectionKey: HomeSectionKey): void {
-    this.resetForm(sectionKey);
+  prepareAdd(sectionId: string): void {
+    this.resetForm(sectionId);
   }
 
-  prepareReplace(sectionKey: HomeSectionKey, item: HomeMediaItem): void {
-    const formState = this.getFormState(sectionKey);
+  prepareReplace(sectionId: string, item: MediaItem): void {
+    const formState = this.getFormState(sectionId);
     this.revokePreviewUrl(formState.previewUrl);
     formState.file = null;
     formState.previewUrl = item.previewUrl;
@@ -276,13 +459,13 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
     formState.replacingUsageId = item.usageId;
   }
 
-  cancelReplace(sectionKey: HomeSectionKey): void {
-    this.resetForm(sectionKey);
+  cancelReplace(sectionId: string): void {
+    this.resetForm(sectionId);
   }
 
-  uploadForSection(sectionKey: HomeSectionKey): void {
-    const section = this.sections.find((item) => item.usageKey === sectionKey);
-    const formState = this.getFormState(sectionKey);
+  uploadForSection(sectionId: string): void {
+    const section = this.sections.find((item) => item.id === sectionId);
+    const formState = this.getFormState(sectionId);
 
     if (!section || !formState.file || formState.saving) {
       return;
@@ -341,21 +524,21 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
         next: () => {
           formState.saving = false;
           this.successMessage = formState.replacingUsageId
-            ? 'Immagine home sostituita.'
-            : 'Immagine home caricata.';
-          this.loadHomeMedia();
+            ? 'Media sostituito.'
+            : 'Media caricato.';
+          this.loadMedia();
         },
         error: (error) => {
           formState.saving = false;
           this.errorMessage = this.extractErrorMessage(
             error,
-            'Upload immagine non riuscito.',
+            'Upload media non riuscito.',
           );
         },
       });
   }
 
-  setPrimary(item: HomeMediaItem): void {
+  setPrimary(item: MediaItem): void {
     if (item.isPrimary || this.actingUsageIds.has(item.usageId)) {
       return;
     }
@@ -369,20 +552,20 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.actingUsageIds.delete(item.usageId);
-          this.successMessage = 'Immagine principale aggiornata.';
-          this.loadHomeMedia();
+          this.successMessage = 'Media principale aggiornato.';
+          this.loadMedia();
         },
         error: (error) => {
           this.actingUsageIds.delete(item.usageId);
           this.errorMessage = this.extractErrorMessage(
             error,
-            'Aggiornamento immagine principale non riuscito.',
+            'Aggiornamento media principale non riuscito.',
           );
         },
       });
   }
 
-  saveSortOrder(item: HomeMediaItem): void {
+  saveSortOrder(item: MediaItem): void {
     if (
       this.actingUsageIds.has(item.usageId) ||
       item.draftSortOrder === item.sortOrder
@@ -399,8 +582,8 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.actingUsageIds.delete(item.usageId);
-          this.successMessage = 'Ordine immagine aggiornato.';
-          this.loadHomeMedia();
+          this.successMessage = 'Ordine media aggiornato.';
+          this.loadMedia();
         },
         error: (error) => {
           this.actingUsageIds.delete(item.usageId);
@@ -412,7 +595,7 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
       });
   }
 
-  removeFromHome(item: HomeMediaItem): void {
+  deactivateUsage(item: MediaItem): void {
     if (this.actingUsageIds.has(item.usageId)) {
       return;
     }
@@ -426,14 +609,14 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.actingUsageIds.delete(item.usageId);
-          this.successMessage = 'Immagine rimossa dalla home.';
-          this.loadHomeMedia();
+          this.successMessage = 'Media disattivato.';
+          this.loadMedia();
         },
         error: (error) => {
           this.actingUsageIds.delete(item.usageId);
           this.errorMessage = this.extractErrorMessage(
             error,
-            'Rimozione immagine dalla home non riuscita.',
+            'Disattivazione media non riuscita.',
           );
         },
       });
@@ -443,71 +626,71 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
     return this.actingUsageIds.has(usageId);
   }
 
-  setActiveLanguage(
-    sectionKey: HomeSectionKey,
-    language: AdminMediaLanguage,
-  ): void {
-    this.getFormState(sectionKey).activeLanguage = language;
+  setActiveLanguage(sectionId: string, language: AdminMediaLanguage): void {
+    this.getFormState(sectionId).activeLanguage = language;
   }
 
-  getActiveTranslation(sectionKey: HomeSectionKey): AdminMediaTranslation {
-    const formState = this.getFormState(sectionKey);
+  getActiveTranslation(sectionId: string): AdminMediaTranslation {
+    const formState = this.getFormState(sectionId);
     return formState.translations[formState.activeLanguage];
   }
 
   isLanguageComplete(
-    sectionKey: HomeSectionKey,
+    sectionId: string,
     language: AdminMediaLanguage,
   ): boolean {
     return this.isTranslationComplete(
-      this.getFormState(sectionKey).translations[language],
+      this.getFormState(sectionId).translations[language],
     );
   }
 
-  isLanguageStarted(
-    sectionKey: HomeSectionKey,
-    language: AdminMediaLanguage,
-  ): boolean {
+  isLanguageStarted(sectionId: string, language: AdminMediaLanguage): boolean {
     return this.isTranslationStarted(
-      this.getFormState(sectionKey).translations[language],
+      this.getFormState(sectionId).translations[language],
     );
   }
 
   isLanguageIncomplete(
-    sectionKey: HomeSectionKey,
+    sectionId: string,
     language: AdminMediaLanguage,
   ): boolean {
     return (
-      this.isLanguageStarted(sectionKey, language) &&
-      !this.isLanguageComplete(sectionKey, language)
+      this.isLanguageStarted(sectionId, language) &&
+      !this.isLanguageComplete(sectionId, language)
     );
   }
 
   getItemTranslation(
-    item: HomeMediaItem,
+    item: MediaItem,
     language: AdminMediaLanguage,
   ): AdminMediaTranslation {
     return item.translations[language];
   }
 
-  getSectionsForGroup(
-    groupId: HomeMediaSectionGroup['id'],
-  ): HomeMediaSectionView[] {
+  getSectionsForGroup(groupId: string): MediaSectionView[] {
     return this.sections.filter((section) => section.groupId === groupId);
   }
 
-  trackSection(_: number, section: HomeMediaSectionView): string {
-    return section.usageKey;
+  trackCollection(_: number, collection: MediaCollectionConfig): string {
+    return collection.id;
   }
 
-  trackItem(_: number, item: HomeMediaItem): string {
+  trackGroup(_: number, group: MediaSectionGroup): string {
+    return group.id;
+  }
+
+  trackSection(_: number, section: MediaSectionView): string {
+    return section.id;
+  }
+
+  trackItem(_: number, item: MediaItem): string {
     return item.usageId;
   }
 
   private buildSectionItems(
     assets: readonly AdminMediaAsset[],
-    config: HomeMediaSectionConfig,
-  ): HomeMediaItem[] {
+    config: MediaSectionConfig,
+  ): MediaItem[] {
     return assets
       .flatMap((asset) =>
         asset.usages
@@ -517,7 +700,7 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
               usage.usageType === config.usageType &&
               usage.usageKey === config.usageKey,
           )
-          .map((usage) => this.toHomeMediaItem(asset, usage, config)),
+          .map((usage) => this.toMediaItem(asset, usage, config)),
       )
       .sort((left, right) => {
         if (left.sortOrder !== right.sortOrder) {
@@ -527,11 +710,11 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
       });
   }
 
-  private toHomeMediaItem(
+  private toMediaItem(
     asset: AdminMediaAsset,
     usage: AdminMediaUsage,
-    config: HomeMediaSectionConfig,
-  ): HomeMediaItem {
+    config: MediaSectionConfig,
+  ): MediaItem {
     return {
       usageId: usage.id,
       mediaAssetId: asset.id,
@@ -547,7 +730,7 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
 
   private resolvePreviewUrl(
     asset: AdminMediaAsset,
-    preferredVariantName: 'card' | 'hero',
+    preferredVariantName: MediaVariantName,
   ): string | null {
     const variantOrder =
       preferredVariantName === 'hero'
@@ -572,13 +755,13 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
     return null;
   }
 
-  private resetForm(sectionKey: HomeSectionKey): void {
-    const formState = this.getFormState(sectionKey);
-    const section = this.sections.find((item) => item.usageKey === sectionKey);
+  private resetForm(sectionId: string): void {
+    const formState = this.getFormState(sectionId);
+    const section = this.sections.find((item) => item.id === sectionId);
     const nextSortOrder = (section?.items.at(-1)?.sortOrder ?? -1) + 1;
 
     this.revokePreviewUrl(formState.previewUrl);
-    this.formStateByKey[sectionKey] = {
+    this.formStateById.set(sectionId, {
       file: null,
       previewUrl: null,
       activeLanguage: 'it',
@@ -587,7 +770,7 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
       isPrimary: (section?.items.length ?? 0) === 0,
       replacingUsageId: null,
       saving: false,
-    };
+    });
   }
 
   private revokePreviewUrl(previewUrl: string | null): void {
@@ -605,7 +788,7 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
     return normalized.trim();
   }
 
-  private createEmptyFormState(): HomeMediaFormState {
+  private createEmptyFormState(): MediaFormState {
     return {
       file: null,
       previewUrl: null,

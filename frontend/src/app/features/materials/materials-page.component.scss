@@ -1,7 +1,18 @@
 .materials-page {
+  --materials-page-bg: #faf9f6;
   --materials-accent: #c23b22;
   --materials-muted: var(--color-text-muted);
   color: var(--color-text-main);
+  background: var(--materials-page-bg);
+}
+
+.materials-hero,
+.materials-section {
+  background: var(--materials-page-bg);
+}
+
+.materials-hero {
+  position: relative;
 }
 
 .materials-hero .ui-simple-hero__subtitle {
@@ -15,7 +26,7 @@
 
 .materials-section--muted {
   padding-top: 0;
-  background: transparent;
+  background: var(--materials-page-bg);
   border: 0;
 }
 

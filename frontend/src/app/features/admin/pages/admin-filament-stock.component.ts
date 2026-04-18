@@ -10,16 +10,35 @@ import {
 } from '../services/admin-operations.service';
 import { forkJoin } from 'rxjs';
 import { getColorHex } from '../../../core/constants/colors.const';
+import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
+import { AppCheckboxComponent } from '../../../shared/components/app-checkbox/app-checkbox.component';
+import { AppInputComponent } from '../../../shared/components/app-input/app-input.component';
+import { AppSelectComponent } from '../../../shared/components/app-select/app-select.component';
 
 @Component({
   selector: 'app-admin-filament-stock',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    AppButtonComponent,
+    AppCheckboxComponent,
+    AppInputComponent,
+    AppSelectComponent,
+  ],
   templateUrl: './admin-filament-stock.component.html',
   styleUrl: './admin-filament-stock.component.scss',
 })
 export class AdminFilamentStockComponent implements OnInit {
   private readonly adminOperationsService = inject(AdminOperationsService);
+  readonly finishTypeOptions = [
+    { label: 'GLOSSY', value: 'GLOSSY' },
+    { label: 'MATTE', value: 'MATTE' },
+    { label: 'MARBLE', value: 'MARBLE' },
+    { label: 'SILK', value: 'SILK' },
+    { label: 'TRANSLUCENT', value: 'TRANSLUCENT' },
+    { label: 'SPECIAL', value: 'SPECIAL' },
+  ];
 
   materials: AdminFilamentMaterialType[] = [];
   variants: AdminFilamentVariant[] = [];
@@ -358,6 +377,13 @@ export class AdminFilamentStockComponent implements OnInit {
 
   toggleQuickInsertCollapsed(): void {
     this.quickInsertCollapsed = !this.quickInsertCollapsed;
+  }
+
+  materialTypeOptions(): { label: string; value: number }[] {
+    return this.materials.map((material) => ({
+      label: material.materialCode,
+      value: material.id,
+    }));
   }
 
   private toVariantPayload(

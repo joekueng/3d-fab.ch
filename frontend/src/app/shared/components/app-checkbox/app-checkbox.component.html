@@ -1,0 +1,13 @@
+<label [class]="checkboxClass()">
+  <input
+    [id]="id()"
+    type="checkbox"
+    [attr.name]="name() || null"
+    [checked]="checked"
+    [disabled]="isDisabled()"
+    (change)="onInput($event)"
+    (blur)="onTouched()"
+  />
+  <span class="ui-checkbox__mark" aria-hidden="true"></span>
+  <span>{{ label() }}</span>
+</label>

@@ -1,180 +1,186 @@
 <main class="materials-page ui-page-surface">
-  <section class="container ui-simple-hero materials-hero">
-    <h1 class="ui-simple-hero__title">Qualita e Materiali</h1>
-    <p class="ui-simple-hero__subtitle">
-      Confronta i materiali piu usati con grafici, dati tecnici e fonti
-      consultabili. Piu sotto trovi anche una guida chiara al funzionamento
-      del calcolatore.
-    </p>
+  <section class="materials-hero">
+    <div class="container ui-simple-hero">
+      <h1 class="ui-simple-hero__title">Qualita e Materiali</h1>
+      <p class="ui-simple-hero__subtitle">
+        Confronta i materiali piu usati con grafici, dati tecnici e fonti
+        consultabili. Piu sotto trovi anche una guida chiara al funzionamento
+        del calcolatore.
+      </p>
+    </div>
   </section>
 
-  <section class="container materials-section">
-    <div class="chart-layout">
-      <article class="materials-panel materials-panel--chart">
-        <header class="materials-panel__header">
-          <div>
-            <p class="ui-eyebrow ui-eyebrow--compact">Confronto</p>
-            <h2>Grafico radar comparativo</h2>
-          </div>
-          <p class="materials-panel__description">
-            I valori sono riportati su una scala da 0 a 100 per facilitare il
-            confronto tra i materiali presenti in pagina.
-          </p>
-        </header>
+  <section class="materials-section">
+    <div class="container">
+      <div class="chart-layout">
+        <article class="materials-panel materials-panel--chart">
+          <header class="materials-panel__header">
+            <div>
+              <p class="ui-eyebrow ui-eyebrow--compact">Confronto</p>
+              <h2>Grafico radar comparativo</h2>
+            </div>
+            <p class="materials-panel__description">
+              I valori sono riportati su una scala da 0 a 100 per facilitare il
+              confronto tra i materiali presenti in pagina.
+            </p>
+          </header>
 
-        <svg
-          class="radar-chart"
-          [attr.viewBox]="'0 0 ' + chartSize + ' ' + chartSize"
-          role="img"
-          aria-label="Grafico radar materiali"
-        >
-          <g class="chart-rings">
-            @for (ring of ringPolygons(); track $index) {
-              <polygon [attr.points]="ring"></polygon>
-            }
-          </g>
-
-          <g class="chart-axes">
-            @for (axis of axisGuides(); track axis.id) {
-              <line
-                [attr.x1]="axis.fromX"
-                [attr.y1]="axis.fromY"
-                [attr.x2]="axis.x"
-                [attr.y2]="axis.y"
-              ></line>
-              <text
-                [attr.x]="axis.labelX"
-                [attr.y]="axis.labelY"
-                [attr.text-anchor]="axis.labelAnchor"
-              >
-                {{ radarAxes[$index].label }}
-              </text>
-            }
-          </g>
-
-          <g class="chart-series">
-            @for (series of radarSeries(); track series.material.id) {
-              <polygon
-                class="series-shape"
-                [attr.points]="series.points"
-                [style.stroke]="series.color"
-                [style.fill]="series.fill"
-                [class.is-hovered]="hoveredMaterialId() === series.material.id"
-                (mouseenter)="setHoveredMaterial(series.material.id)"
-                (mouseleave)="setHoveredMaterial(null)"
-              ></polygon>
-
-              @for (point of series.values; track point.axis.id) {
-                <circle
-                  class="series-node"
-                  [attr.cx]="point.x"
-                  [attr.cy]="point.y"
-                  r="4"
-                  [style.fill]="series.color"
-                ></circle>
+          <svg
+            class="radar-chart"
+            [attr.viewBox]="'0 0 ' + chartSize + ' ' + chartSize"
+            role="img"
+            aria-label="Grafico radar materiali"
+          >
+            <g class="chart-rings">
+              @for (ring of ringPolygons(); track $index) {
+                <polygon [attr.points]="ring"></polygon>
               }
-            }
-          </g>
-        </svg>
+            </g>
 
-        <div class="selector-panel">
-          <div class="selector-panel__header">
-            <h3>Materiali nel confronto</h3>
-            <p class="selector-count">
-              {{ selectedCount() }}/{{ maxCompareCount }}
+            <g class="chart-axes">
+              @for (axis of axisGuides(); track axis.id) {
+                <line
+                  [attr.x1]="axis.fromX"
+                  [attr.y1]="axis.fromY"
+                  [attr.x2]="axis.x"
+                  [attr.y2]="axis.y"
+                ></line>
+                <text
+                  [attr.x]="axis.labelX"
+                  [attr.y]="axis.labelY"
+                  [attr.text-anchor]="axis.labelAnchor"
+                >
+                  {{ radarAxes[$index].label }}
+                </text>
+              }
+            </g>
+
+            <g class="chart-series">
+              @for (series of radarSeries(); track series.material.id) {
+                <polygon
+                  class="series-shape"
+                  [attr.points]="series.points"
+                  [style.stroke]="series.color"
+                  [style.fill]="series.fill"
+                  [class.is-hovered]="hoveredMaterialId() === series.material.id"
+                  (mouseenter)="setHoveredMaterial(series.material.id)"
+                  (mouseleave)="setHoveredMaterial(null)"
+                ></polygon>
+
+                @for (point of series.values; track point.axis.id) {
+                  <circle
+                    class="series-node"
+                    [attr.cx]="point.x"
+                    [attr.cy]="point.y"
+                    r="4"
+                    [style.fill]="series.color"
+                  ></circle>
+                }
+              }
+            </g>
+          </svg>
+
+          <div class="selector-panel">
+            <div class="selector-panel__header">
+              <h3>Materiali nel confronto</h3>
+              <p class="selector-count">
+                {{ selectedCount() }}/{{ maxCompareCount }}
+              </p>
+            </div>
+
+            <div
+              class="selector-grid"
+              role="group"
+              aria-label="Selezione materiali"
+            >
+              @for (
+                material of materials;
+                track trackMaterial($index, material)
+              ) {
+                <button
+                  type="button"
+                  class="selector-chip"
+                  [class.is-selected]="isSelected(material.id)"
+                  [disabled]="!canSelect(material.id)"
+                  [attr.aria-pressed]="isSelected(material.id)"
+                  [style.--selector-accent]="legendDotColor(material.id)"
+                  [style.--selector-fill]="legendFillColor(material.id)"
+                  (mouseenter)="setHoveredMaterial(material.id)"
+                  (mouseleave)="setHoveredMaterial(null)"
+                  (click)="toggleMaterial(material.id)"
+                >
+                  <span
+                    class="selector-dot"
+                    [style.background-color]="legendDotColor(material.id)"
+                  ></span>
+                  <span>{{ material.name }}</span>
+                </button>
+              }
+            </div>
+
+            <p class="selector-help">
+              Nota: nell asse Convenienza, un valore piu alto indica un costo
+              al kg piu favorevole.
             </p>
           </div>
+        </article>
 
-          <div
-            class="selector-grid"
-            role="group"
-            aria-label="Selezione materiali"
-          >
-            @for (
-              material of materials;
-              track trackMaterial($index, material)
-            ) {
-              <button
-                type="button"
-                class="selector-chip"
-                [class.is-selected]="isSelected(material.id)"
-                [disabled]="!canSelect(material.id)"
-                [attr.aria-pressed]="isSelected(material.id)"
-                [style.--selector-accent]="legendDotColor(material.id)"
-                [style.--selector-fill]="legendFillColor(material.id)"
-                (mouseenter)="setHoveredMaterial(material.id)"
-                (mouseleave)="setHoveredMaterial(null)"
-                (click)="toggleMaterial(material.id)"
-              >
-                <span
-                  class="selector-dot"
-                  [style.background-color]="legendDotColor(material.id)"
-                ></span>
-                <span>{{ material.name }}</span>
-              </button>
-            }
-          </div>
-
-          <p class="selector-help">
-            Nota: nell asse Convenienza, un valore piu alto indica un costo al
-            kg piu favorevole.
+        <article class="materials-panel materials-panel--aside">
+          <header class="materials-panel__header">
+            <div>
+              <p class="ui-eyebrow ui-eyebrow--compact">Lettura</p>
+              <h2>Come leggere il confronto</h2>
+            </div>
+          </header>
+          <p>
+            Ogni asse mostra una proprieta tecnica. Il valore 100 rappresenta la
+            prestazione relativa piu alta tra i materiali confrontati; 0 la piu
+            bassa.
           </p>
-        </div>
-      </article>
-
-      <article class="materials-panel materials-panel--aside">
-        <header class="materials-panel__header">
-          <div>
-            <p class="ui-eyebrow ui-eyebrow--compact">Lettura</p>
-            <h2>Come leggere il confronto</h2>
-          </div>
-        </header>
-        <p>
-          Ogni asse mostra una proprieta tecnica. Il valore 100 rappresenta la
-          prestazione relativa piu alta tra i materiali confrontati; 0 la piu
-          bassa.
-        </p>
-        <ul>
-          @for (axis of radarAxes; track axis.id) {
-            <li>
-              <strong>{{ axis.label }}:</strong>
-              {{ axis.description }}
-            </li>
-          }
-        </ul>
-      </article>
+          <ul>
+            @for (axis of radarAxes; track axis.id) {
+              <li>
+                <strong>{{ axis.label }}:</strong>
+                {{ axis.description }}
+              </li>
+            }
+          </ul>
+        </article>
+      </div>
     </div>
   </section>
 
-  <section class="container materials-section">
-    <div class="materials-section-head">
-      <p class="ui-eyebrow ui-eyebrow--compact">Confronto tecnico</p>
-      <h2>Tabella tecnica di confronto</h2>
-    </div>
-    <div class="ui-table-wrap materials-table-wrap">
-      <table class="ui-data-table">
-        <thead>
-          <tr>
-            <th>Parametro</th>
-            @for (
-              material of selectedMaterials();
-              track trackMaterial($index, material)
-            ) {
-              <th>{{ material.name }}</th>
-            }
-          </tr>
-        </thead>
-        <tbody>
-          @for (row of comparisonRows(); track row.label) {
+  <section class="materials-section">
+    <div class="container">
+      <div class="materials-section-head">
+        <p class="ui-eyebrow ui-eyebrow--compact">Confronto tecnico</p>
+        <h2>Tabella tecnica di confronto</h2>
+      </div>
+      <div class="ui-table-wrap materials-table-wrap">
+        <table class="ui-data-table">
+          <thead>
             <tr>
-              <th>{{ row.label }}</th>
-              @for (value of row.values; track $index) {
-                <td>{{ value }}</td>
+              <th>Parametro</th>
+              @for (
+                material of selectedMaterials();
+                track trackMaterial($index, material)
+              ) {
+                <th>{{ material.name }}</th>
               }
             </tr>
-          }
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            @for (row of comparisonRows(); track row.label) {
+              <tr>
+                <th>{{ row.label }}</th>
+                @for (value of row.values; track $index) {
+                  <td>{{ value }}</td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
     </div>
   </section>
 
@@ -325,24 +331,26 @@
     </div>
   </section>
 
-  <section class="container materials-section ui-page-surface__body">
-    <div class="materials-section-head">
-      <p class="ui-eyebrow ui-eyebrow--compact">Fonti</p>
-      <h2>Fonti consultate</h2>
-      <p>
-        Qui trovi tutte le fonti utilizzate per i dati tecnici e le
-        descrizioni dei materiali.
-      </p>
+  <section class="materials-section ui-page-surface__body">
+    <div class="container">
+      <div class="materials-section-head">
+        <p class="ui-eyebrow ui-eyebrow--compact">Fonti</p>
+        <h2>Fonti consultate</h2>
+        <p>
+          Qui trovi tutte le fonti utilizzate per i dati tecnici e le
+          descrizioni dei materiali.
+        </p>
+      </div>
+      <ul class="global-source-list">
+        @for (source of allSources(); track trackSource($index, source)) {
+          <li>
+            <a [href]="source.url" target="_blank" rel="noopener noreferrer">
+              {{ source.label }}
+            </a>
+            <span>{{ source.kind }}</span>
+          </li>
+        }
+      </ul>
     </div>
-    <ul class="global-source-list">
-      @for (source of allSources(); track trackSource($index, source)) {
-        <li>
-          <a [href]="source.url" target="_blank" rel="noopener noreferrer">
-            {{ source.label }}
-          </a>
-          <span>{{ source.kind }}</span>
-        </li>
-      }
-    </ul>
   </section>
 </main>

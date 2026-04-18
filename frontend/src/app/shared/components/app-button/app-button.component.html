@@ -1,6 +1,6 @@
 <button
   [type]="type()"
-  [class]="'btn btn-' + variant() + ' ' + (fullWidth() ? 'w-full' : '')"
+  [class]="buttonClass()"
   [disabled]="disabled()"
   (click)="handleClick($event)"
 >

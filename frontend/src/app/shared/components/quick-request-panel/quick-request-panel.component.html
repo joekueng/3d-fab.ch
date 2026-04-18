@@ -106,6 +106,8 @@
           <app-button
             type="submit"
             variant="primary"
+            size="sm"
+            [fullWidth]="true"
             [disabled]="submitting()"
           >
             {{
@@ -119,6 +121,8 @@
           <app-button
             type="button"
             variant="outline"
+            size="sm"
+            [fullWidth]="true"
             (click)="openFullContact()"
           >
             {{ "NAV.CONTACT" | translate }}

@@ -1,30 +1,34 @@
 <div class="container">
   <section class="admin-login-page">
     <div class="admin-login-card">
-      <h1>Back-office</h1>
+      <div class="admin-login-copy">
+        <h1>Back-office</h1>
+        <p>Accesso riservato all'amministrazione operativa.</p>
+      </div>
 
-      <form (ngSubmit)="submit()">
-        <label for="admin-password">Password</label>
-        <input
+      <form class="admin-login-form" (ngSubmit)="submit()">
+        <app-input
           id="admin-password"
           name="password"
+          label="Password"
           type="password"
-          [(ngModel)]="password"
-          [disabled]="loading || lockSecondsRemaining > 0"
           autocomplete="current-password"
-          required
-        />
+          [(ngModel)]="password"
+          [required]="true"
+          [disabled]="loading || lockSecondsRemaining > 0"
+        ></app-input>
 
-        <button
+        <app-button
           type="submit"
+          [fullWidth]="true"
           [disabled]="loading || !password.trim() || lockSecondsRemaining > 0"
         >
           {{ loading ? "Accesso..." : "Accedi" }}
-        </button>
+        </app-button>
       </form>
 
       @if (errorMessage) {
-        <p class="error">{{ errorMessage }}</p>
+        <p class="ui-banner ui-banner--error">{{ errorMessage }}</p>
       }
       @if (lockSecondsRemaining > 0) {
         <p class="hint">Riprova tra {{ lockSecondsRemaining }}s.</p>

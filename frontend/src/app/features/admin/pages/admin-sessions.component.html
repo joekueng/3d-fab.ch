@@ -4,18 +4,17 @@
       <h2>Sessioni quote</h2>
       <p>Sessioni create dal configuratore con stato e conversione ordine.</p>
     </div>
-    <button
-      type="button"
-      class="ui-button"
-      (click)="loadSessions()"
-      [disabled]="loading"
-    >
+    <app-button type="button" (click)="loadSessions()" [disabled]="loading">
       Aggiorna
-    </button>
+    </app-button>
   </header>
 
-  <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
-  <p class="success" *ngIf="successMessage">{{ successMessage }}</p>
+  <p class="ui-banner ui-banner--error" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </p>
+  <p class="ui-banner ui-banner--success" *ngIf="successMessage">
+    {{ successMessage }}
+  </p>
 
   <div class="table-wrap ui-table-wrap" *ngIf="!loading; else loadingTpl">
     <table class="ui-data-table">
@@ -51,16 +50,16 @@
               }}
             </td>
             <td class="actions">
-              <button
+              <app-button
                 type="button"
-                class="ui-button ui-button--ghost"
+                variant="ghost"
                 (click)="toggleSessionDetail(session)"
               >
                 {{ isDetailOpen(session.id) ? "Nascondi" : "Vedi" }}
-              </button>
-              <button
+              </app-button>
+              <app-button
                 type="button"
-                class="ui-button ui-button--danger"
+                variant="danger"
                 (click)="deleteSession(session)"
                 [disabled]="
                   isDeletingSession(session.id) || !!session.convertedOrderId
@@ -74,7 +73,7 @@
                 {{
                   isDeletingSession(session.id) ? "Eliminazione..." : "Elimina"
                 }}
-              </button>
+              </app-button>
             </td>
           </tr>
           <tr *ngIf="isDetailOpen(session.id)">

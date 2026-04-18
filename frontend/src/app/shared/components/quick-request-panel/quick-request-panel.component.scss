@@ -183,19 +183,12 @@
   margin-top: 0.08rem;
 }
 
-:host ::ng-deep .quick-request__actions .btn {
-  min-height: 2.35rem;
-  padding: 0.42rem 0.8rem;
-  border-radius: 0.85rem;
-  font-size: 0.92rem;
-}
-
 .legal-consent a {
   color: var(--color-brand);
   text-decoration: underline;
 }
 
-:host ::ng-deep .quick-request__actions .btn {
+.quick-request__actions app-button {
   width: 100%;
   min-width: 10.75rem;
 }
@@ -227,10 +220,7 @@
     margin-left: 0;
   }
 
-  :host ::ng-deep .quick-request__actions .btn {
-    min-height: 2.15rem;
-    padding: 0.36rem 0.68rem;
-    font-size: 0.86rem;
+  .quick-request__actions app-button {
     min-width: 0;
   }
 }
