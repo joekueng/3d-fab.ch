@@ -1,0 +1,19 @@
+<section class="feature-panel">
+  @if (eyebrow() || title() || description()) {
+    <header class="feature-panel__header">
+      @if (eyebrow()) {
+        <p class="feature-panel__eyebrow">{{ eyebrow() }}</p>
+      }
+
+      <h2 class="feature-panel__title">{{ title() }}</h2>
+
+      @if (description()) {
+        <p class="feature-panel__description">{{ description() }}</p>
+      }
+    </header>
+  }
+
+  <div class="feature-panel__body">
+    <ng-content></ng-content>
+  </div>
+</section>

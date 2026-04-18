@@ -7,65 +7,72 @@
         gestisci lo stato fino all'ordine.
       </p>
     </div>
-    <button type="button" (click)="loadCadInvoices()" [disabled]="loading">
+    <app-button type="button" (click)="loadCadInvoices()" [disabled]="loading">
       Aggiorna
-    </button>
+    </app-button>
   </header>
 
-  <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
-  <p class="success" *ngIf="successMessage">{{ successMessage }}</p>
+  <p class="ui-banner ui-banner--error" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </p>
+  <p class="ui-banner ui-banner--success" *ngIf="successMessage">
+    {{ successMessage }}
+  </p>
 
   <section class="create-box">
     <h2>Crea nuova fattura CAD</h2>
     <div class="form-grid">
-      <label>
-        <span>ID Sessione (opzionale)</span>
-        <input
-          [(ngModel)]="form.sessionId"
-          placeholder="UUID sessione quote"
-          type="text"
-        />
-      </label>
-      <label>
-        <span>ID Richiesta Contatto (opzionale)</span>
-        <input
-          [(ngModel)]="form.sourceRequestId"
-          placeholder="UUID richiesta contatto"
-          type="text"
-        />
-      </label>
-      <label>
-        <span>Ore CAD</span>
-        <input [(ngModel)]="form.cadHours" min="0.1" step="0.1" type="number" />
-      </label>
-      <label>
-        <span>Tariffa CAD CHF/h (opzionale)</span>
-        <input
-          [(ngModel)]="form.cadHourlyRateChf"
-          placeholder="Se vuoto usa pricing policy attiva"
-          min="0"
-          step="0.05"
-          type="number"
-        />
-      </label>
-      <label class="notes-field">
-        <span>Nota (opzionale)</span>
-        <textarea
-          [(ngModel)]="form.notes"
-          placeholder="Nota visibile nel checkout CAD (es. dettagli lavorazione)"
-          rows="3"
-        ></textarea>
-      </label>
+      <app-input
+        name="sessionId"
+        [(ngModel)]="form.sessionId"
+        label="ID Sessione (opzionale)"
+        placeholder="UUID sessione quote"
+      ></app-input>
+      <app-input
+        name="sourceRequestId"
+        [(ngModel)]="form.sourceRequestId"
+        label="ID Richiesta Contatto (opzionale)"
+        placeholder="UUID richiesta contatto"
+      ></app-input>
+      <app-input
+        name="cadHours"
+        [(ngModel)]="form.cadHours"
+        label="Ore CAD"
+        type="number"
+        min="0.1"
+        step="0.1"
+      ></app-input>
+      <app-input
+        name="cadHourlyRateChf"
+        [(ngModel)]="form.cadHourlyRateChf"
+        label="Tariffa CAD CHF/h (opzionale)"
+        placeholder="Se vuoto usa pricing policy attiva"
+        type="number"
+        min="0"
+        step="0.05"
+      ></app-input>
+      <app-textarea
+        class="notes-field"
+        name="notes"
+        [(ngModel)]="form.notes"
+        label="Nota (opzionale)"
+        placeholder="Nota visibile nel checkout CAD (es. dettagli lavorazione)"
+        [rows]="3"
+      ></app-textarea>
     </div>
     <div class="create-actions">
-      <button type="button" (click)="createCadInvoice()" [disabled]="creating">
+      <app-button
+        type="button"
+        (click)="createCadInvoice()"
+        [disabled]="creating"
+      >
         {{ creating ? "Creazione..." : "Crea link checkout CAD" }}
-      </button>
+      </app-button>
     </div>
   </section>
 
-  <section class="table-wrap" *ngIf="!loading; else loadingTpl">
-    <table>
+  <section class="table-wrap ui-table-wrap" *ngIf="!loading; else loadingTpl">
+    <table class="ui-data-table">
       <thead>
         <tr>
           <th>Sessione</th>
@@ -112,28 +119,28 @@
             <ng-template #noOrder>-</ng-template>
           </td>
           <td class="actions">
-            <button
+            <app-button
               type="button"
-              class="ghost"
+              variant="ghost"
               (click)="openCheckout(row.checkoutPath)"
             >
               Apri checkout
-            </button>
-            <button
+            </app-button>
+            <app-button
               type="button"
-              class="ghost"
+              variant="ghost"
               (click)="copyCheckout(row.checkoutPath)"
             >
               Copia link
-            </button>
-            <button
+            </app-button>
+            <app-button
               type="button"
-              class="ghost"
+              variant="ghost"
               *ngIf="row.convertedOrderId"
               (click)="downloadInvoice(row.convertedOrderId)"
             >
               Scarica fattura
-            </button>
+            </app-button>
           </td>
         </tr>
         <tr *ngIf="invoices.length === 0">

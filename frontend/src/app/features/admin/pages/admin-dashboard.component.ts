@@ -7,11 +7,21 @@ import {
   AdminOrdersService,
 } from '../services/admin-orders.service';
 import { CopyOnClickDirective } from '../../../shared/directives/copy-on-click.directive';
+import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
+import { AppInputComponent } from '../../../shared/components/app-input/app-input.component';
+import { AppSelectComponent } from '../../../shared/components/app-select/app-select.component';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, CopyOnClickDirective],
+  imports: [
+    CommonModule,
+    FormsModule,
+    CopyOnClickDirective,
+    AppButtonComponent,
+    AppInputComponent,
+    AppSelectComponent,
+  ],
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.scss',
 })
@@ -65,6 +75,33 @@ export class AdminDashboardComponent implements OnInit {
     'CANCELLED',
   ];
   readonly orderTypeFilterOptions = ['ALL', 'SHOP', 'CALCULATOR', 'MIXED'];
+  readonly paymentMethodSelectOptions = this.paymentMethodOptions.map(
+    (option) => ({
+      label: option,
+      value: option,
+    }),
+  );
+  readonly paymentStatusFilterSelectOptions =
+    this.paymentStatusFilterOptions.map((option) => ({
+      label: option,
+      value: option,
+    }));
+  readonly orderStatusFilterSelectOptions = this.orderStatusFilterOptions.map(
+    (option) => ({
+      label: option,
+      value: option,
+    }),
+  );
+  readonly orderTypeFilterSelectOptions = this.orderTypeFilterOptions.map(
+    (option) => ({
+      label: option,
+      value: option,
+    }),
+  );
+  readonly orderStatusSelectOptions = this.orderStatusOptions.map((option) => ({
+    label: option,
+    value: option,
+  }));
 
   ngOnInit(): void {
     this.loadOrders();
@@ -246,14 +283,12 @@ export class AdminDashboardComponent implements OnInit {
       });
   }
 
-  onStatusChange(event: Event): void {
-    const value = (event.target as HTMLSelectElement | null)?.value ?? '';
-    this.selectedStatus = value;
+  onStatusChange(value: string): void {
+    this.selectedStatus = value ?? '';
   }
 
-  onPaymentMethodChange(event: Event): void {
-    const value = (event.target as HTMLSelectElement | null)?.value ?? 'OTHER';
-    this.selectedPaymentMethod = value;
+  onPaymentMethodChange(value: string): void {
+    this.selectedPaymentMethod = value ?? 'OTHER';
   }
 
   openPrintDetails(): void {

@@ -9,4 +9,5 @@ import { Component, input } from '@angular/core';
 export class AppCardComponent {
   title = input<string>('');
   subtitle = input<string>('');
+  bodyPadding = input<string>('');
 }

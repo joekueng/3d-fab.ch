@@ -1,25 +1,3 @@
-.section-card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--space-4);
-}
-
-.section-header h2 {
-  margin: 0;
-}
-
-.section-header p {
-  margin: var(--space-2) 0 0;
-  color: var(--color-text-muted);
-}
-
 .header-copy {
   display: grid;
   gap: var(--space-1);
@@ -186,16 +164,6 @@ tbody tr.selected {
   margin: 0;
 }
 
-.error {
-  color: var(--color-danger-500);
-  margin: 0;
-}
-
-.success {
-  color: #157347;
-  margin: 0;
-}
-
 .status-editor {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -247,7 +215,7 @@ tbody tr.selected {
     align-items: stretch;
   }
 
-  .status-editor button {
+  .status-editor app-button {
     width: 100%;
   }
 }

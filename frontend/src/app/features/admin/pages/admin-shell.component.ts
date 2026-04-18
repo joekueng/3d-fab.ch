@@ -8,13 +8,20 @@ import {
   RouterOutlet,
 } from '@angular/router';
 import { AdminAuthService } from '../services/admin-auth.service';
+import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
 
 const SUPPORTED_LANGS = new Set(['it', 'en', 'de', 'fr']);
 
 @Component({
   selector: 'app-admin-shell',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [
+    CommonModule,
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+    AppButtonComponent,
+  ],
   templateUrl: './admin-shell.component.html',
   styleUrl: './admin-shell.component.scss',
 })

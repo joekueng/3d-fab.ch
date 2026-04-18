@@ -4,22 +4,6 @@
   gap: var(--space-5);
 }
 
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--space-4);
-}
-
-.dashboard-header h1 {
-  margin: 0;
-}
-
-.dashboard-header p {
-  margin: var(--space-2) 0 0;
-  color: var(--color-text-muted);
-}
-
 .header-actions {
   display: flex;
   gap: var(--space-2);
@@ -49,12 +33,6 @@
 .toolbar-field {
   display: grid;
   gap: var(--space-1);
-}
-
-.toolbar-field span {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--color-text-muted);
 }
 
 tbody tr {
@@ -104,12 +82,6 @@ tbody tr.no-results:hover {
 .status-editor {
   display: grid;
   gap: var(--space-2);
-}
-
-.status-editor label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--color-text-muted);
 }
 
 .doc-actions {
@@ -192,7 +164,7 @@ tbody tr.no-results:hover {
   align-items: flex-start;
 }
 
-.item-actions button {
+.item-actions app-button {
   justify-self: start;
 }
 
@@ -202,11 +174,6 @@ tbody tr.no-results:hover {
   height: 12px;
   border-radius: 50%;
   border: 1px solid var(--color-border);
-}
-
-.error {
-  color: var(--color-danger-500);
-  margin: 0;
 }
 
 .order-type-badge,

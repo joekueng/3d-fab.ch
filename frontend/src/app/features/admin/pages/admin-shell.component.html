@@ -7,22 +7,60 @@
       </div>
 
       <div class="menu-scroll">
-        <nav class="menu">
-          <a routerLink="orders" routerLinkActive="active">Ordini</a>
-          <a routerLink="filament-stock" routerLinkActive="active"
+        <nav class="menu ui-admin-nav">
+          <a
+            class="ui-admin-nav__item"
+            routerLink="orders"
+            routerLinkActive="is-active"
+            >Ordini</a
+          >
+          <a
+            class="ui-admin-nav__item"
+            routerLink="filament-stock"
+            routerLinkActive="is-active"
             >Stock filamenti</a
           >
-          <a routerLink="contact-requests" routerLinkActive="active"
+          <a
+            class="ui-admin-nav__item"
+            routerLink="contact-requests"
+            routerLinkActive="is-active"
             >Richieste contatto</a
           >
-          <a routerLink="sessions" routerLinkActive="active">Sessioni</a>
-          <a routerLink="cad-invoices" routerLinkActive="active">Fatture CAD</a>
-          <a routerLink="home-media" routerLinkActive="active">Media home</a>
-          <a routerLink="shop" routerLinkActive="active">Shop</a>
+          <a
+            class="ui-admin-nav__item"
+            routerLink="sessions"
+            routerLinkActive="is-active"
+            >Sessioni</a
+          >
+          <a
+            class="ui-admin-nav__item"
+            routerLink="cad-invoices"
+            routerLinkActive="is-active"
+            >Fatture CAD</a
+          >
+          <a
+            class="ui-admin-nav__item"
+            routerLink="media"
+            routerLinkActive="is-active"
+            >Media</a
+          >
+          <a
+            class="ui-admin-nav__item"
+            routerLink="shop"
+            routerLinkActive="is-active"
+            >Shop</a
+          >
         </nav>
       </div>
 
-      <button type="button" class="logout" (click)="logout()">Logout</button>
+      <app-button
+        type="button"
+        variant="ghost"
+        class="logout"
+        (click)="logout()"
+      >
+        Logout
+      </app-button>
     </aside>
 
     <main class="content">

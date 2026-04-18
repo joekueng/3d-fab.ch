@@ -5,18 +5,17 @@
       <p>Richieste preventivo personalizzato ricevute dal sito.</p>
       <span class="total-pill ui-pill">{{ requests.length }} richieste</span>
     </div>
-    <button
-      type="button"
-      class="ui-button"
-      (click)="loadRequests()"
-      [disabled]="loading"
-    >
+    <app-button type="button" (click)="loadRequests()" [disabled]="loading">
       Aggiorna
-    </button>
+    </app-button>
   </header>
 
-  <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
-  <p class="success" *ngIf="successMessage">{{ successMessage }}</p>
+  <p class="ui-banner ui-banner--error" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </p>
+  <p class="ui-banner ui-banner--success" *ngIf="successMessage">
+    {{ successMessage }}
+  </p>
 
   <div class="workspace ui-split-workspace" *ngIf="!loading; else loadingTpl">
     <section class="list-panel">
@@ -145,21 +144,16 @@
       </dl>
 
       <div class="status-editor">
-        <div class="status-editor-field">
-          <label for="contact-request-status">Stato richiesta</label>
-          <select
-            class="ui-form-control"
-            id="contact-request-status"
-            [ngModel]="selectedStatus"
-            (ngModelChange)="selectedStatus = $event"
-          >
-            <option *ngFor="let status of statusOptions" [ngValue]="status">
-              {{ status }}
-            </option>
-          </select>
-        </div>
-        <button
-          class="ui-button"
+        <app-select
+          class="status-editor-field"
+          id="contact-request-status"
+          [compact]="true"
+          label="Stato richiesta"
+          [options]="statusSelectOptions"
+          [ngModel]="selectedStatus"
+          (ngModelChange)="selectedStatus = $event"
+        ></app-select>
+        <app-button
           type="button"
           (click)="updateRequestStatus()"
           [disabled]="
@@ -170,7 +164,7 @@
           "
         >
           {{ updatingStatus ? "Salvataggio..." : "Aggiorna stato" }}
-        </button>
+        </app-button>
       </div>
 
       <div class="message-box">
@@ -200,13 +194,13 @@
                 >
               </p>
             </div>
-            <button
+            <app-button
               type="button"
-              class="ui-button ui-button--ghost"
+              variant="ghost"
               (click)="downloadAttachment(attachment)"
             >
               Scarica file
-            </button>
+            </app-button>
           </article>
         </div>
       </div>

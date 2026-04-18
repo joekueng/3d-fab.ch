@@ -5,82 +5,57 @@
       <p>Seleziona un ordine a sinistra e gestiscilo nel dettaglio a destra.</p>
     </div>
     <div class="header-actions">
-      <button
-        type="button"
-        class="ui-button"
-        (click)="loadOrders()"
-        [disabled]="loading"
-      >
+      <app-button type="button" (click)="loadOrders()" [disabled]="loading">
         Aggiorna
-      </button>
+      </app-button>
     </div>
   </header>
 
-  <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+  <p class="ui-banner ui-banner--error" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </p>
 
   <div class="workspace ui-split-workspace" *ngIf="!loading; else loadingTpl">
     <section class="list-panel">
       <h2>Lista ordini</h2>
       <div class="list-toolbar">
-        <label class="toolbar-field" for="order-search">
-          <span>Cerca UUID</span>
-          <input
-            class="ui-form-control"
-            id="order-search"
-            type="search"
-            [ngModel]="orderSearchTerm"
-            (ngModelChange)="onSearchChange($event)"
-            placeholder="UUID completo o prefisso (es. 738131d8)"
-          />
-        </label>
-        <label class="toolbar-field" for="payment-status-filter">
-          <span>Stato pagamento</span>
-          <select
-            class="ui-form-control"
-            id="payment-status-filter"
-            [ngModel]="paymentStatusFilter"
-            (ngModelChange)="onPaymentStatusFilterChange($event)"
-          >
-            <option
-              *ngFor="let option of paymentStatusFilterOptions"
-              [ngValue]="option"
-            >
-              {{ option }}
-            </option>
-          </select>
-        </label>
-        <label class="toolbar-field" for="order-status-filter">
-          <span>Stato ordine</span>
-          <select
-            class="ui-form-control"
-            id="order-status-filter"
-            [ngModel]="orderStatusFilter"
-            (ngModelChange)="onOrderStatusFilterChange($event)"
-          >
-            <option
-              *ngFor="let option of orderStatusFilterOptions"
-              [ngValue]="option"
-            >
-              {{ option }}
-            </option>
-          </select>
-        </label>
-        <label class="toolbar-field" for="order-type-filter">
-          <span>Tipo ordine</span>
-          <select
-            class="ui-form-control"
-            id="order-type-filter"
-            [ngModel]="orderTypeFilter"
-            (ngModelChange)="onOrderTypeFilterChange($event)"
-          >
-            <option
-              *ngFor="let option of orderTypeFilterOptions"
-              [ngValue]="option"
-            >
-              {{ option }}
-            </option>
-          </select>
-        </label>
+        <app-input
+          class="toolbar-field"
+          id="order-search"
+          [compact]="true"
+          label="Cerca UUID"
+          type="search"
+          [ngModel]="orderSearchTerm"
+          (ngModelChange)="onSearchChange($event)"
+          placeholder="UUID completo o prefisso (es. 738131d8)"
+        ></app-input>
+        <app-select
+          class="toolbar-field"
+          id="payment-status-filter"
+          [compact]="true"
+          label="Stato pagamento"
+          [options]="paymentStatusFilterSelectOptions"
+          [ngModel]="paymentStatusFilter"
+          (ngModelChange)="onPaymentStatusFilterChange($event)"
+        ></app-select>
+        <app-select
+          class="toolbar-field"
+          id="order-status-filter"
+          [compact]="true"
+          label="Stato ordine"
+          [options]="orderStatusFilterSelectOptions"
+          [ngModel]="orderStatusFilter"
+          (ngModelChange)="onOrderStatusFilterChange($event)"
+        ></app-select>
+        <app-select
+          class="toolbar-field"
+          id="order-type-filter"
+          [compact]="true"
+          label="Tipo ordine"
+          [options]="orderTypeFilterSelectOptions"
+          [ngModel]="orderTypeFilter"
+          (ngModelChange)="onOrderTypeFilterChange($event)"
+        ></app-select>
       </div>
       <div class="table-wrap ui-table-wrap">
         <table class="ui-data-table">
@@ -176,44 +151,33 @@
 
       <div class="actions-block">
         <div class="status-editor">
-          <label for="order-status">Stato ordine</label>
-          <select
-            class="ui-form-control"
+          <app-select
             id="order-status"
-            [value]="selectedStatus"
-            (change)="onStatusChange($event)"
-          >
-            <option *ngFor="let option of orderStatusOptions" [value]="option">
-              {{ option }}
-            </option>
-          </select>
-          <button
-            class="ui-button"
+            [compact]="true"
+            label="Stato ordine"
+            [options]="orderStatusSelectOptions"
+            [ngModel]="selectedStatus"
+            (ngModelChange)="onStatusChange($event)"
+          ></app-select>
+          <app-button
             type="button"
             (click)="updateStatus()"
             [disabled]="updatingStatus"
           >
             {{ updatingStatus ? "Salvataggio..." : "Aggiorna stato" }}
-          </button>
+          </app-button>
         </div>
 
         <div class="status-editor">
-          <label for="payment-method">Metodo pagamento</label>
-          <select
-            class="ui-form-control"
+          <app-select
             id="payment-method"
-            [value]="selectedPaymentMethod"
-            (change)="onPaymentMethodChange($event)"
-          >
-            <option
-              *ngFor="let option of paymentMethodOptions"
-              [value]="option"
-            >
-              {{ option }}
-            </option>
-          </select>
-          <button
-            class="ui-button"
+            [compact]="true"
+            label="Metodo pagamento"
+            [options]="paymentMethodSelectOptions"
+            [ngModel]="selectedPaymentMethod"
+            (ngModelChange)="onPaymentMethodChange($event)"
+          ></app-select>
+          <app-button
             type="button"
             (click)="updatePaymentMethod()"
             [disabled]="confirmingPayment"
@@ -221,33 +185,29 @@
             {{
               confirmingPayment ? "Salvataggio..." : "Cambia metodo pagamento"
             }}
-          </button>
+          </app-button>
         </div>
       </div>
 
       <div class="doc-actions">
-        <button
+        <app-button
           type="button"
-          class="ui-button ui-button--ghost"
+          variant="ghost"
           (click)="downloadConfirmation()"
         >
           Scarica conferma + QR bill
-        </button>
-        <button
-          type="button"
-          class="ui-button ui-button--ghost"
-          (click)="downloadInvoice()"
-        >
+        </app-button>
+        <app-button type="button" variant="ghost" (click)="downloadInvoice()">
           Scarica fattura
-        </button>
-        <button
+        </app-button>
+        <app-button
           type="button"
-          class="ui-button ui-button--ghost"
+          variant="ghost"
           (click)="openPrintDetails()"
           [disabled]="!hasPrintItems(selectedOrder)"
         >
           Dettagli stampa
-        </button>
+        </app-button>
       </div>
 
       <div class="items">
@@ -298,9 +258,9 @@
             </p>
           </div>
           <div class="item-actions">
-            <button
+            <app-button
               type="button"
-              class="ui-button ui-button--ghost"
+              variant="ghost"
               (click)="
                 downloadItemFile(
                   item.id,
@@ -309,7 +269,7 @@
               "
             >
               {{ downloadItemLabel(item) }}
-            </button>
+            </app-button>
           </div>
         </div>
       </div>
@@ -337,13 +297,14 @@
   <div class="modal-card" (click)="$event.stopPropagation()">
     <header class="modal-header">
       <h3>Dettagli stampa ordine {{ selectedOrder.orderNumber }}</h3>
-      <button
+      <app-button
+        class="close-btn"
         type="button"
-        class="ui-button ui-button--ghost close-btn"
+        variant="ghost"
         (click)="closePrintDetails()"
       >
         Chiudi
-      </button>
+      </app-button>
     </header>
 
     <div class="modal-grid ui-meta-grid">

@@ -34,19 +34,20 @@ describe('MaterialsPageComponent', () => {
     fixture.detectChanges();
   });
 
-  it('renders the selector below the radar and removes material cards', () => {
+  it('renders the selector below the radar without a duplicate legend', () => {
     const host = fixture.nativeElement as HTMLElement;
-    const chartCard = host.querySelector('.chart-card') as HTMLElement;
-    const legend = chartCard.querySelector('.chart-legend') as HTMLElement;
+    const heroTitle = host.querySelector('.ui-simple-hero__title');
+    const chartCard = host.querySelector(
+      '.materials-panel--chart',
+    ) as HTMLElement;
     const selectorPanel = chartCard.querySelector(
       '.selector-panel',
     ) as HTMLElement;
 
+    expect(heroTitle?.textContent?.trim()).toBe('Qualita e Materiali');
     expect(chartCard).toBeTruthy();
-    expect(legend).toBeTruthy();
     expect(selectorPanel).toBeTruthy();
-    expect(legend.nextElementSibling).toBe(selectorPanel);
-    expect(host.querySelector('.materials-section')).toBeNull();
+    expect(chartCard.querySelector('.chart-legend')).toBeNull();
     expect(host.querySelectorAll('.material-card').length).toBe(0);
   });
 
@@ -56,7 +57,7 @@ describe('MaterialsPageComponent', () => {
 
     expect(
       component.selectedMaterials().map((material) => material.id),
-    ).toEqual(['pla-basic', 'pla-matte', 'asa', 'pet-cf']);
+    ).toEqual(['pla-basic', 'asa', 'pet-cf', 'pla-matte']);
 
     const tableHeaders = Array.from(
       fixture.nativeElement.querySelectorAll(
@@ -65,27 +66,50 @@ describe('MaterialsPageComponent', () => {
     ).map((cell) => cell.textContent?.trim());
 
     expect(tableHeaders).toContain('PLA Matte');
-    expect(fixture.nativeElement.querySelectorAll('.legend-item').length).toBe(
-      4,
-    );
+    expect(
+      fixture.nativeElement.querySelectorAll('.selector-chip.is-selected')
+        .length,
+    ).toBe(4);
+  });
+
+  it('keeps selected chip and radar colors aligned by selection order', () => {
+    component.toggleMaterial('pla-matte');
+    component.toggleMaterial('tpu-95a-hf');
+    fixture.detectChanges();
+
+    expect(component.legendDotColor('pla-basic')).toBe('#c23b22');
+    expect(component.legendDotColor('asa')).toBe('#2663d3');
+    expect(component.legendDotColor('pet-cf')).toBe('#0f8f6f');
+    expect(component.legendDotColor('pla-matte')).toBe('#8a44c9');
+    expect(component.radarSeries().map((series) => series.color)).toEqual([
+      '#c23b22',
+      '#2663d3',
+      '#0f8f6f',
+      '#8a44c9',
+      '#c77510',
+    ]);
   });
 
   it('renders the calculator guide with localized links and real-calculator copy', () => {
     const host = fixture.nativeElement as HTMLElement;
     const calculatorSection = host.querySelector(
-      '.calculator-section',
+      '.materials-section--muted',
     ) as HTMLElement;
     const modeLinks = Array.from(
       calculatorSection.querySelectorAll('.calculator-mode-link'),
     ) as HTMLAnchorElement[];
 
     expect(calculatorSection.textContent).toContain(
-      'controlli che incidono davvero sul preventivo',
+      'quali parametri influenzano il preventivo',
     );
     expect(calculatorSection.textContent).toContain(
-      'Parametri che il calcolatore usa davvero',
+      'Parametri del calcolatore',
     );
-    expect(calculatorSection.textContent).not.toContain('Cosa non fa oggi');
+    expect(host.textContent).not.toContain('davvero');
+    expect(host.textContent).not.toContain('tool online');
+    expect(host.textContent).not.toContain('Seleziona fino a');
+    expect(host.textContent).not.toContain('raggio minimo visivo');
+    expect(host.textContent).not.toContain('usageType');
     expect(modeLinks.map((link) => link.getAttribute('href'))).toEqual([
       '/it/calculator/basic',
       '/it/calculator/advanced',

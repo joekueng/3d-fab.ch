@@ -43,6 +43,14 @@
   margin-top: var(--space-6);
 }
 
+.ui-page-surface {
+  background: var(--color-bg);
+}
+
+.ui-page-surface__body {
+  padding-bottom: var(--space-12);
+}
+
 .ui-stack {
   display: grid;
   gap: var(--space-4);
@@ -188,6 +196,40 @@
 
 .ui-inline-actions--wide {
   gap: var(--space-4);
+}
+
+.ui-admin-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.ui-admin-nav__item {
+  width: 100%;
+  text-decoration: none;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  font: inherit;
+  font-weight: 600;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-card);
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+  white-space: nowrap;
+}
+
+.ui-admin-nav__item:hover {
+  border-color: var(--color-brand);
+  color: var(--color-text);
+}
+
+.ui-admin-nav__item.is-active {
+  background: #fff5b8;
+  color: var(--color-text);
+  border-color: var(--color-brand);
 }
 
 .ui-section-block {
@@ -387,6 +429,10 @@
   margin-bottom: var(--space-4);
 }
 
+.ui-form-group--flush {
+  margin-bottom: 0;
+}
+
 .ui-form-label {
   font-size: 0.875rem;
   font-weight: 500;
@@ -397,6 +443,12 @@
   margin: 0;
   font-size: 0.78rem;
   color: var(--color-text-muted);
+}
+
+.ui-form-error {
+  margin-top: var(--space-1);
+  font-size: 0.75rem;
+  color: var(--color-danger-500);
 }
 
 .ui-form-control {
@@ -538,6 +590,27 @@ select.ui-form-control {
 
 .ui-checkbox input:checked + .ui-checkbox__mark::after {
   transform: rotate(45deg) scale(1);
+}
+
+.ui-checkbox--pill {
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.38rem 0.72rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-bg-card);
+}
+
+.ui-checkbox--pill .ui-checkbox__mark {
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0;
+  border-radius: 0.32rem;
+}
+
+.ui-checkbox--pill:hover {
+  border-color: var(--color-brand);
+  background: var(--color-surface-muted);
 }
 
 .ui-soft-panel {
@@ -731,6 +804,48 @@ select.ui-form-control {
 .ui-button:disabled {
   opacity: 0.65;
   cursor: default;
+}
+
+.ui-button--block {
+  width: 100%;
+}
+
+.ui-button--sm {
+  min-height: 2.35rem;
+  padding: 0.42rem 0.8rem;
+  border-radius: 0.85rem;
+  font-size: 0.92rem;
+}
+
+.ui-button--secondary {
+  background: var(--color-neutral-200);
+  color: var(--color-neutral-900);
+}
+
+.ui-button--secondary:hover:not(:disabled) {
+  background: var(--color-neutral-300);
+}
+
+.ui-button--outline {
+  background: transparent;
+  border: 2px solid var(--color-brand);
+  color: var(--color-neutral-900);
+  padding: calc(var(--space-2) - 1px) calc(var(--space-4) - 1px);
+}
+
+.ui-button--outline:hover:not(:disabled) {
+  background: var(--color-brand);
+}
+
+.ui-button--text {
+  background: transparent;
+  color: var(--color-text-muted);
+  padding: var(--space-2);
+}
+
+.ui-button--text:hover:not(:disabled) {
+  background: transparent;
+  color: var(--color-text);
 }
 
 .ui-button--ghost {
@@ -1037,6 +1152,85 @@ select.ui-form-control {
 .ui-empty-state {
   margin: 0;
   color: var(--color-text-muted);
+}
+
+.admin-shell .content .section-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.admin-shell .content .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.admin-shell .content .section-header h1,
+.admin-shell .content .section-header h2,
+.admin-shell .content .section-header h3 {
+  margin: 0;
+}
+
+.admin-shell .content .section-header p {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-muted);
+}
+
+.admin-shell .content .alerts {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.admin-shell .content .error {
+  margin: 0;
+  color: var(--color-danger-500);
+}
+
+.admin-shell .content .success {
+  margin: 0;
+  color: var(--color-success-500);
+}
+
+.admin-shell .content .form-field > span,
+.admin-shell .content .toolbar-field > span,
+.admin-shell .content .form-grid label > span,
+.admin-shell .content .status-editor label,
+.admin-shell .content .status-editor-field label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.admin-shell .content .ui-checkbox {
+  gap: 0.85rem;
+  font-size: 1rem;
+}
+
+.admin-shell .content .ui-checkbox__mark {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.admin-shell .content .ui-file-picker__button,
+.admin-shell .content .ui-file-picker__name {
+  font-size: 1rem;
+}
+
+.admin-shell .content .ui-language-toolbar {
+  padding: var(--space-2);
+}
+
+.admin-shell .content .ui-language-toolbar__copy span,
+.admin-shell .content .ui-language-toolbar__copy p,
+.admin-shell .content .ui-language-toolbar__button {
+  font-size: 0.9rem;
+}
+
+.admin-shell .content .ui-language-toolbar__button {
+  min-width: 2.8rem;
+  padding: 0.4rem 0.6rem;
 }
 
 @media (min-width: 768px) {

@@ -3,6 +3,8 @@ import { Component, inject, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
+import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
+import { AppInputComponent } from '../../../shared/components/app-input/app-input.component';
 import {
   AdminAuthResponse,
   AdminAuthService,
@@ -13,7 +15,7 @@ const SUPPORTED_LANGS = new Set(['it', 'en', 'de', 'fr']);
 @Component({
   selector: 'app-admin-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AppInputComponent, AppButtonComponent],
   templateUrl: './admin-login.component.html',
   styleUrl: './admin-login.component.scss',
 })
