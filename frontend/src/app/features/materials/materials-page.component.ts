@@ -592,7 +592,8 @@ const CALCULATOR_MODES: readonly CalculatorMode[] = [
       'Scelta qualita con preset predefiniti.',
       'Colore selezionabile per ogni file.',
     ],
-    outputs: 'Restituisce preventivo stimato, tempo di stampa e peso del materiale.',
+    outputs:
+      'Restituisce preventivo stimato, tempo di stampa e peso del materiale.',
     ctaLabel: 'Apri Base',
     path: '/calculator/basic',
   },
@@ -645,8 +646,7 @@ const CALCULATOR_PARAMETERS: readonly CalculatorParameter[] = [
   {
     title: 'Altezza layer',
     availability: 'Avanzata',
-    explanation:
-      'Le altezze layer selezionabili dipendono dall ugello scelto.',
+    explanation: 'Le altezze layer selezionabili dipendono dall ugello scelto.',
     calculatorEffect:
       'Incide direttamente su tempi di stampa e definizione del pezzo.',
   },
@@ -693,7 +693,8 @@ const QUALITY_VISUAL_GUIDES: readonly QualityVisualGuide[] = [
     objectExample: 'Pezzo funzionale standard o cover tecnica.',
     bestFor: 'Compromesso qualita/tempo.',
     tradeoff: 'Dettaglio inferiore al 0.12 mm.',
-    calculatorRead: 'Configurazione bilanciata, adatta a un preventivo standard.',
+    calculatorRead:
+      'Configurazione bilanciata, adatta a un preventivo standard.',
     usageKey: 'guide-layer-020',
   },
   {
@@ -713,7 +714,8 @@ const QUALITY_VISUAL_GUIDES: readonly QualityVisualGuide[] = [
     objectExample: 'Scritta piccola o geometria sottile.',
     bestFor: 'Dettagli molto piccoli.',
     tradeoff: 'Tempi piu lunghi e portata ridotta.',
-    calculatorRead: 'Favorisce dettagli molto fini, ma con minore produttivita.',
+    calculatorRead:
+      'Favorisce dettagli molto fini, ma con minore produttivita.',
     usageKey: 'guide-nozzle-025',
   },
   {
@@ -723,7 +725,8 @@ const QUALITY_VISUAL_GUIDES: readonly QualityVisualGuide[] = [
     objectExample: 'Parti robuste, supporti, staffe.',
     bestFor: 'Resistenza e velocita su pezzi funzionali.',
     tradeoff: 'Dettaglio fine ridotto.',
-    calculatorRead: 'Favorisce configurazioni piu produttive e meno orientate al dettaglio fine.',
+    calculatorRead:
+      'Favorisce configurazioni piu produttive e meno orientate al dettaglio fine.',
     usageKey: 'guide-nozzle-060',
   },
   {
@@ -743,7 +746,8 @@ const QUALITY_VISUAL_GUIDES: readonly QualityVisualGuide[] = [
     objectExample: 'Componente con carico meccanico.',
     bestFor: 'Migliore resistenza funzionale.',
     tradeoff: 'Peso e tempo di stampa superiori.',
-    calculatorRead: 'Aumenta materiale e tempo di stampa, avvicinandosi a un pezzo piu pieno.',
+    calculatorRead:
+      'Aumenta materiale e tempo di stampa, avvicinandosi a un pezzo piu pieno.',
     usageKey: 'guide-infill-40',
   },
 ];
