@@ -62,7 +62,9 @@
                   [attr.points]="series.points"
                   [style.stroke]="series.color"
                   [style.fill]="series.fill"
-                  [class.is-hovered]="hoveredMaterialId() === series.material.id"
+                  [class.is-hovered]="
+                    hoveredMaterialId() === series.material.id
+                  "
                   (mouseenter)="setHoveredMaterial(series.material.id)"
                   (mouseleave)="setHoveredMaterial(null)"
                 ></polygon>
@@ -119,8 +121,8 @@
             </div>
 
             <p class="selector-help">
-              Nota: nell asse Convenienza, un valore piu alto indica un costo
-              al kg piu favorevole.
+              Nota: nell asse Convenienza, un valore piu alto indica un costo al
+              kg piu favorevole.
             </p>
           </div>
         </article>
@@ -190,8 +192,8 @@
         <p class="ui-eyebrow ui-eyebrow--compact">Calcolatore</p>
         <h2>Come usare il calcolatore</h2>
         <p>
-          Questa sezione spiega quali parametri influenzano il preventivo e
-          come leggere correttamente il risultato.
+          Questa sezione spiega quali parametri influenzano il preventivo e come
+          leggere correttamente il risultato.
         </p>
       </div>
 
@@ -244,9 +246,9 @@
         <div class="calculator-parameters-head">
           <h3>Parametri del calcolatore</h3>
           <p>
-            Qui sotto trovi i controlli attualmente disponibili nel
-            calcolatore. In modalita Avanzata, sono questi i parametri che
-            influenzano il preventivo.
+            Qui sotto trovi i controlli attualmente disponibili nel calcolatore.
+            In modalita Avanzata, sono questi i parametri che influenzano il
+            preventivo.
           </p>
         </div>
 

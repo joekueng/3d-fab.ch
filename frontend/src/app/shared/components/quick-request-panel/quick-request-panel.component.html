@@ -38,9 +38,7 @@
             formControlName="message"
             class="ui-form-control quick-request__control quick-request__textarea"
             rows="1"
-            [placeholder]="
-              'SHOP.QUICK_REQUEST_MESSAGE_PLACEHOLDER' | translate
-            "
+            [placeholder]="'SHOP.QUICK_REQUEST_MESSAGE_PLACEHOLDER' | translate"
           ></textarea>
           @if (messageError) {
             <span class="quick-request__error">{{ messageError }}</span>
@@ -111,10 +109,8 @@
             [disabled]="submitting()"
           >
             {{
-              (submitting()
-                ? "CHECKOUT.PROCESSING"
-                : "SHOP.QUICK_REQUEST_SEND"
-              ) | translate
+              (submitting() ? "CHECKOUT.PROCESSING" : "SHOP.QUICK_REQUEST_SEND")
+                | translate
             }}
           </app-button>
 
