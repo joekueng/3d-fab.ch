@@ -50,6 +50,7 @@ type RadarAxisId =
 interface RadarAxis {
   id: RadarAxisId;
   label: string;
+  chartLabelLines?: readonly string[];
   description: string;
   unit: string;
   lowerIsBetter?: boolean;
@@ -81,6 +82,7 @@ interface AxisGuide {
   labelX: number;
   labelY: number;
   labelAnchor: 'start' | 'middle' | 'end';
+  labelLines: readonly string[];
 }
 
 interface ComparisonRow {
@@ -88,21 +90,13 @@ interface ComparisonRow {
   values: readonly string[];
 }
 
-interface CalculatorMode {
-  id: 'basic' | 'advanced';
-  eyebrow: string;
-  title: string;
-  summary: string;
-  useWhen: string;
-  controls: readonly string[];
-  outputs: string;
-  ctaLabel: string;
-  path: string;
-}
-
 interface CalculatorFact {
   title: string;
   description: string;
+  detailsTitle?: string;
+  details?: readonly string[];
+  ctaLabel?: string;
+  path?: string;
 }
 
 interface CalculatorParameter {
@@ -523,7 +517,7 @@ const RADAR_AXES: readonly RadarAxis[] = [
   },
   {
     id: 'printability',
-    label: 'Stampabilita',
+    label: 'Stampabilità',
     description:
       'Indice sintetico che considera facilita di stampa, sensibilita all umidita e stabilita del processo.',
     unit: 'indice',
@@ -538,14 +532,14 @@ const RADAR_AXES: readonly RadarAxis[] = [
   },
   {
     id: 'modulus',
-    label: 'Rigidita',
+    label: 'Rigidità',
     description: 'Modulo elastico (GPa).',
     unit: 'GPa',
     accessor: (material) => material.metrics.modulusGpa,
   },
   {
     id: 'elongation',
-    label: 'Flessibilita',
+    label: 'Flessibilità',
     description: 'Allungamento a rottura (%).',
     unit: '%',
     accessor: (material) => material.metrics.elongationPct,
@@ -553,6 +547,7 @@ const RADAR_AXES: readonly RadarAxis[] = [
   {
     id: 'hdt',
     label: 'Resistenza termica',
+    chartLabelLines: ['Resistenza', 'termica'],
     description: 'HDT: temperatura di deformazione del materiale (C).',
     unit: 'C',
     accessor: (material) => material.metrics.hdtC,
@@ -563,58 +558,34 @@ const CALCULATOR_FACTS: readonly CalculatorFact[] = [
   {
     title: 'Cosa restituisce il calcolatore',
     description:
-      'Il calcolatore restituisce un preventivo stimato con prezzo, tempo di stampa e consumo materiale.',
+      'Il calcolatore restituisce un prezzo fisso corretto, il tempo di stampa e il consumo materiale a partire dal file e dalle impostazioni selezionate.',
+    details: [
+      'Utile per confrontare rapidamente materiali, qualita e configurazioni prima dell ordine.',
+      'Se cambi materiale, layer, riempimento o supporti, cambia anche il prezzo mostrato.',
+    ],
   },
   {
     title: 'Modalita Base',
     description:
-      'In Base scegli materiale e qualita. La qualita corrisponde a impostazioni di stampa predefinite: Draft = 0.28 mm, 15% grid; Standard = 0.20 mm, 15% grid; High Definition = 0.12 mm, 20% gyroid.',
+      'Pensata per file gia pronti: scegli materiale e qualita, senza entrare nei dettagli tecnici della stampa.',
+    detailsTitle: 'Preset disponibili:',
+    details: [
+      'Draft = 0.28 mm, 15% grid.',
+      'Standard = 0.20 mm, 15% grid.',
+      'High Definition = 0.12 mm, 20% gyroid.',
+    ],
+    ctaLabel: 'Apri Base',
+    path: '/calculator/basic#calculator-workspace',
   },
   {
     title: 'Modalita Avanzata',
     description:
-      'In Avanzata controlli direttamente materiale, ugello, layer, riempimento, pattern e supporti. Le combinazioni disponibili dipendono dall ugello selezionato e dai profili macchina attivi.',
-  },
-];
-
-const CALCULATOR_MODES: readonly CalculatorMode[] = [
-  {
-    id: 'basic',
-    eyebrow: 'Modalita Base',
-    title: 'Preventivo veloce per file gia pronti',
-    summary:
-      'Prezzo corretto in pochi secondi, senza entrare nei dettagli tecnici della stampa.',
-    useWhen:
-      'Hai gia un modello pronto e vuoi confrontare materiali o ottenere una prima stima rapida.',
-    controls: [
-      'Caricamento STL o 3MF.',
-      'Scelta materiale.',
-      'Scelta qualita con preset predefiniti.',
-      'Colore selezionabile per ogni file.',
+      'Pensata per un prezzo corretto in base alle impostazioni reali: controlli materiale, ugello, altezza layer, riempimento, pattern e supporti.',
+    details: [
+      'Le combinazioni disponibili dipendono dall ugello selezionato e dai profili macchina attivi.',
     ],
-    outputs:
-      'Restituisce preventivo stimato, tempo di stampa e peso del materiale.',
-    ctaLabel: 'Apri Base',
-    path: '/calculator/basic',
-  },
-  {
-    id: 'advanced',
-    eyebrow: 'Modalita Avanzata',
-    title: 'Preventivo piu preciso con parametri di stampa',
-    summary:
-      'Stima piu vicina alla configurazione finale, con controllo diretto sui parametri di stampa principali.',
-    useWhen:
-      'Materiale e configurazione fanno la differenza e vuoi piu controllo su costi, tempi e impostazioni.',
-    controls: [
-      'Materiale e colore.',
-      'Diametro ugello e altezza layer.',
-      'Riempimento percentuale e pattern.',
-      'Supporti e impostazioni globali o per singolo file.',
-    ],
-    outputs:
-      'Restituisce lo stesso tipo di preventivo, con maggiore controllo sulle variabili di stampa.',
     ctaLabel: 'Apri Avanzata',
-    path: '/calculator/advanced',
+    path: '/calculator/advanced#calculator-workspace',
   },
 ];
 
@@ -625,7 +596,7 @@ const CALCULATOR_PARAMETERS: readonly CalculatorParameter[] = [
     explanation:
       'Il materiale puo essere scelto tra le varianti attive disponibili, ciascuna associata ai colori ordinabili.',
     calculatorEffect:
-      'Influisce sul costo del materiale e sulle opzioni disponibili nel preventivo.',
+      'Influisce sul costo del materiale e sul prezzo finale mostrato.',
   },
   {
     title: 'Qualita',
@@ -646,7 +617,7 @@ const CALCULATOR_PARAMETERS: readonly CalculatorParameter[] = [
   {
     title: 'Altezza layer',
     availability: 'Avanzata',
-    explanation: 'Le altezze layer selezionabili dipendono dall ugello scelto.',
+    explanation: "Le altezze layer selezionabili dipendono dall'ugello scelto.",
     calculatorEffect:
       'Incide direttamente su tempi di stampa e definizione del pezzo.',
   },
@@ -654,7 +625,7 @@ const CALCULATOR_PARAMETERS: readonly CalculatorParameter[] = [
     title: 'Riempimento',
     availability: 'Avanzata',
     explanation:
-      'La percentuale di infill si imposta manualmente per avvicinare il preventivo alla robustezza desiderata del pezzo.',
+      'La percentuale di infill si imposta manualmente per adattare il pezzo alla robustezza desiderata.',
     calculatorEffect:
       'Aumenta o riduce peso e tempo in base alla densita scelta.',
   },
@@ -694,7 +665,7 @@ const QUALITY_VISUAL_GUIDES: readonly QualityVisualGuide[] = [
     bestFor: 'Compromesso qualita/tempo.',
     tradeoff: 'Dettaglio inferiore al 0.12 mm.',
     calculatorRead:
-      'Configurazione bilanciata, adatta a un preventivo standard.',
+      'Configurazione bilanciata, adatta a una stampa standard.',
     usageKey: 'guide-layer-020',
   },
   {
@@ -790,7 +761,6 @@ export class MaterialsPageComponent {
   readonly radarAxes = RADAR_AXES;
   readonly maxCompareCount = MAX_COMPARE_COUNT;
   readonly calculatorFacts = CALCULATOR_FACTS;
-  readonly calculatorModes = CALCULATOR_MODES;
   readonly calculatorParameters = CALCULATOR_PARAMETERS;
 
   readonly selectedMaterialIds = signal<string[]>([
@@ -848,6 +818,7 @@ export class MaterialsPageComponent {
       const inner = this.pointForRatio(index, CHART_INNER_RATIO);
       const outer = this.pointForRatio(index, 1);
       const label = this.pointForRatio(index, 1.18);
+      const labelLines = axis.chartLabelLines ?? [axis.label];
       const anchor: 'start' | 'middle' | 'end' =
         Math.abs(label.x - CHART_CENTER) < 12
           ? 'middle'
@@ -862,8 +833,9 @@ export class MaterialsPageComponent {
         x: outer.x,
         y: outer.y,
         labelX: label.x,
-        labelY: label.y,
+        labelY: label.y - (labelLines.length - 1) * 6,
         labelAnchor: anchor,
+        labelLines,
       };
     }),
   );
@@ -1007,10 +979,6 @@ export class MaterialsPageComponent {
 
   trackCalculatorFact(_index: number, fact: CalculatorFact): string {
     return fact.title;
-  }
-
-  trackCalculatorMode(_index: number, mode: CalculatorMode): string {
-    return mode.id;
   }
 
   trackCalculatorParameter(
