@@ -47,7 +47,9 @@
           [class.is-active]="collection.id === selectedCollectionId"
           (click)="selectCollection(collection.id)"
         >
-          <span class="media-context-trigger__title">{{ collection.title }}</span>
+          <span class="media-context-trigger__title">{{
+            collection.title
+          }}</span>
           <span class="media-context-trigger__meta">
             {{ collectionSectionCount(collection.id) }} sezioni
             <span aria-hidden="true">•</span>
@@ -77,7 +79,10 @@
         </div>
       </section>
 
-      <div class="group-stack ui-stack" *ngIf="getVisibleGroups().length; else emptyCollectionTpl">
+      <div
+        class="group-stack ui-stack"
+        *ngIf="getVisibleGroups().length; else emptyCollectionTpl"
+      >
         <section
           class="group-card ui-subpanel ui-subpanel--warm"
           *ngFor="let group of getVisibleGroups(); trackBy: trackGroup"
@@ -184,7 +189,9 @@
                           [class.incomplete]="
                             isLanguageIncomplete(section.id, language)
                           "
-                          [class.empty]="!isLanguageStarted(section.id, language)"
+                          [class.empty]="
+                            !isLanguageStarted(section.id, language)
+                          "
                           (click)="setActiveLanguage(section.id, language)"
                         >
                           <span class="image-language-button__label">
@@ -208,7 +215,9 @@
 
                     <app-input
                       label="Titolo ({{
-                        mediaLanguageLabels[getFormState(section.id).activeLanguage]
+                        mediaLanguageLabels[
+                          getFormState(section.id).activeLanguage
+                        ]
                       }})"
                       [(ngModel)]="getActiveTranslation(section.id).title"
                       placeholder="Titolo immagine"
@@ -217,7 +226,9 @@
 
                     <app-input
                       label="Alt text ({{
-                        mediaLanguageLabels[getFormState(section.id).activeLanguage]
+                        mediaLanguageLabels[
+                          getFormState(section.id).activeLanguage
+                        ]
                       }})"
                       [(ngModel)]="getActiveTranslation(section.id).altText"
                       placeholder="Testo alternativo"
@@ -252,7 +263,7 @@
                         getFormState(section.id).saving
                           ? "Salvataggio..."
                           : getFormState(section.id).replacingUsageId
-                          ? "Sostituisci media"
+                            ? "Sostituisci media"
                             : "Carica media"
                       }}
                     </app-button>

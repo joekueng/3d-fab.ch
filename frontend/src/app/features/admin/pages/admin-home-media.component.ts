@@ -635,10 +635,7 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
     return formState.translations[formState.activeLanguage];
   }
 
-  isLanguageComplete(
-    sectionId: string,
-    language: AdminMediaLanguage,
-  ): boolean {
+  isLanguageComplete(sectionId: string, language: AdminMediaLanguage): boolean {
     return this.isTranslationComplete(
       this.getFormState(sectionId).translations[language],
     );
