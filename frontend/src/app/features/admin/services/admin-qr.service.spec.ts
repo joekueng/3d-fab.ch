@@ -63,9 +63,11 @@ describe('AdminQrService', () => {
   });
 
   it('loads overview stats with credentials', () => {
-    service.getOverviewStats('2026-04-01', '2026-04-20').subscribe((response) => {
-      expect(response.totalQrLinks).toBe(3);
-    });
+    service
+      .getOverviewStats('2026-04-01', '2026-04-20')
+      .subscribe((response) => {
+        expect(response.totalQrLinks).toBe(3);
+      });
 
     const request = httpMock.expectOne(
       'http://localhost:8000/api/admin/qr-links/overview?from=2026-04-01&to=2026-04-20',

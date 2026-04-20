@@ -48,7 +48,10 @@
         title="QR disponibili"
         description="Seleziona un QR esistente o crea una nuova destinazione."
       >
-        <div class="qr-list ui-admin-nav" *ngIf="qrLinks.length; else emptyListTpl">
+        <div
+          class="qr-list ui-admin-nav"
+          *ngIf="qrLinks.length; else emptyListTpl"
+        >
           <button
             *ngFor="let qrLink of qrLinks"
             type="button"
@@ -76,7 +79,8 @@
             <p class="editor-copy">
               URL pubblico:
               <code class="ui-code-pill">{{
-                selectedQr()?.publicUrl || "/api/public/qr/" + (form.slug || "...")
+                selectedQr()?.publicUrl ||
+                  "/api/public/qr/" + (form.slug || "...")
               }}</code>
             </p>
           </div>
@@ -169,7 +173,10 @@
               </p>
             </div>
 
-            <div class="preview-frame" *ngIf="selectedQrId; else previewHintTpl">
+            <div
+              class="preview-frame"
+              *ngIf="selectedQrId; else previewHintTpl"
+            >
               <p *ngIf="previewLoading">Generazione anteprima...</p>
               <img
                 *ngIf="!previewLoading && previewUrl"
@@ -219,11 +226,8 @@
             >
               {{ overviewLoading ? "Aggiornamento..." : "Aggiorna" }}
             </app-button>
-
           </div>
-
         </div>
-
       </header>
 
       <div *ngIf="overview as currentOverview; else noOverviewTpl">
@@ -252,15 +256,23 @@
               <h4>Andamento giornaliero</h4>
             </header>
 
-            <div class="daily-chart" *ngIf="currentOverview.daily.length; else noDailyTpl">
+            <div
+              class="daily-chart"
+              *ngIf="currentOverview.daily.length; else noDailyTpl"
+            >
               <div class="daily-chart__bars">
-                <div class="daily-bar" *ngFor="let row of currentOverview.daily">
+                <div
+                  class="daily-bar"
+                  *ngFor="let row of currentOverview.daily"
+                >
                   <div
                     class="daily-bar__value"
                     [style.height]="dailyBarHeight(row.scans)"
                     [title]="row.date + ': ' + row.scans + ' scansioni'"
                   ></div>
-                  <span class="daily-bar__label">{{ row.date | slice: 5 : 10 }}</span>
+                  <span class="daily-bar__label">{{
+                    row.date | slice: 5 : 10
+                  }}</span>
                 </div>
               </div>
             </div>
@@ -293,11 +305,16 @@
               <h4>Località piu frequenti</h4>
             </header>
 
-            <div class="rank-chart" *ngIf="topLocationRows().length; else noLocationTpl">
+            <div
+              class="rank-chart"
+              *ngIf="topLocationRows().length; else noLocationTpl"
+            >
               <div class="rank-row" *ngFor="let row of topLocationRows()">
                 <div class="rank-row__meta">
                   <strong>{{ row.label }}</strong>
-                  <span>{{ row.countryCode || row.countryName || "Geo proxy" }}</span>
+                  <span>{{
+                    row.countryCode || row.countryName || "Geo proxy"
+                  }}</span>
                 </div>
                 <div class="rank-row__bar-wrap">
                   <div
@@ -338,7 +355,11 @@
                 <td>{{ row.uniqueVisitors }}</td>
                 <td>{{ formatTopLocation(row) }}</td>
                 <td>
-                  {{ row.lastScannedAt ? (row.lastScannedAt | date: "short") : "-" }}
+                  {{
+                    row.lastScannedAt
+                      ? (row.lastScannedAt | date: "short")
+                      : "-"
+                  }}
                 </td>
                 <td>
                   <app-button
@@ -376,7 +397,9 @@
 </ng-template>
 
 <ng-template #noOverviewTpl>
-  <p class="empty-state">Nessuna statistica disponibile nel range selezionato.</p>
+  <p class="empty-state">
+    Nessuna statistica disponibile nel range selezionato.
+  </p>
 </ng-template>
 
 <ng-template #noDailyTpl>
@@ -389,6 +412,7 @@
 
 <ng-template #noLocationTpl>
   <p class="empty-state">
-    Nessuna località disponibile: servono header geo dal proxy nel range selezionato.
+    Nessuna località disponibile: servono header geo dal proxy nel range
+    selezionato.
   </p>
 </ng-template>
