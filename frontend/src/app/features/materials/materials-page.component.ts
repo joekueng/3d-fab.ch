@@ -114,7 +114,7 @@ interface CalculatorParameter {
 
 interface QualityVisualGuide {
   id: string;
-  category: 'Layer' | 'Ugello' | 'Riempimento';
+  category: 'Layer' | 'Ugelli' | 'Riempimento';
   title: string;
   objectExample: string;
   bestFor: string;
@@ -563,7 +563,7 @@ const CALCULATOR_FACTS: readonly CalculatorFact[] = [
   {
     title: 'Cosa restituisce il calcolatore',
     description:
-      'Il calcolatore restituisce un preventivo stimato con prezzo, tempo di stampa e consumo materiale.',
+      'Il calcolatore restituisce una stima con prezzo, tempo di stampa e consumo materiale.',
   },
   {
     title: 'Modalita Base',
@@ -581,7 +581,7 @@ const CALCULATOR_MODES: readonly CalculatorMode[] = [
   {
     id: 'basic',
     eyebrow: 'Modalita Base',
-    title: 'Preventivo veloce per file gia pronti',
+    title: 'Calcolo veloce per file gia pronti',
     summary:
       'Prezzo corretto in pochi secondi, senza entrare nei dettagli tecnici della stampa.',
     useWhen:
@@ -593,14 +593,14 @@ const CALCULATOR_MODES: readonly CalculatorMode[] = [
       'Colore selezionabile per ogni file.',
     ],
     outputs:
-      'Restituisce preventivo stimato, tempo di stampa e peso del materiale.',
+      'Restituisce stima di prezzo, tempo di stampa e peso del materiale.',
     ctaLabel: 'Apri Base',
     path: '/calculator/basic',
   },
   {
     id: 'advanced',
     eyebrow: 'Modalita Avanzata',
-    title: 'Preventivo piu preciso con parametri di stampa',
+    title: 'Configurazione avanzata con parametri di stampa',
     summary:
       'Stima piu vicina alla configurazione finale, con controllo diretto sui parametri di stampa principali.',
     useWhen:
@@ -612,7 +612,7 @@ const CALCULATOR_MODES: readonly CalculatorMode[] = [
       'Supporti e impostazioni globali o per singolo file.',
     ],
     outputs:
-      'Restituisce lo stesso tipo di preventivo, con maggiore controllo sulle variabili di stampa.',
+      'Restituisce la stessa stima, con maggiore controllo sulle variabili di stampa.',
     ctaLabel: 'Apri Avanzata',
     path: '/calculator/advanced',
   },
@@ -625,7 +625,7 @@ const CALCULATOR_PARAMETERS: readonly CalculatorParameter[] = [
     explanation:
       'Il materiale puo essere scelto tra le varianti attive disponibili, ciascuna associata ai colori ordinabili.',
     calculatorEffect:
-      'Influisce sul costo del materiale e sulle opzioni disponibili nel preventivo.',
+      'Influisce sul prezzo del materiale e sulle opzioni disponibili nel calcolatore.',
   },
   {
     title: 'Qualita',
@@ -639,7 +639,7 @@ const CALCULATOR_PARAMETERS: readonly CalculatorParameter[] = [
     title: 'Diametro ugello',
     availability: 'Avanzata',
     explanation:
-      'Gli ugelli disponibili dipendono dalla macchina e dalla configurazione attiva. Ugelli diversi possono comportare anche costi di cambio.',
+      'Nel calcolatore sono disponibili ugelli 0.40 mm e 0.60 mm. Ogni ugello abilita altezze layer diverse e puo comportare costi di cambio.',
     calculatorEffect:
       'Influisce sulle altezze layer selezionabili e puo incidere sul costo di preparazione.',
   },
@@ -654,7 +654,7 @@ const CALCULATOR_PARAMETERS: readonly CalculatorParameter[] = [
     title: 'Riempimento',
     availability: 'Avanzata',
     explanation:
-      'La percentuale di infill si imposta manualmente per avvicinare il preventivo alla robustezza desiderata del pezzo.',
+      'La percentuale di infill si imposta manualmente per adattare resistenza, peso e tempi al pezzo.',
     calculatorEffect:
       'Aumenta o riduce peso e tempo in base alla densita scelta.',
   },
@@ -694,7 +694,7 @@ const QUALITY_VISUAL_GUIDES: readonly QualityVisualGuide[] = [
     bestFor: 'Compromesso qualita/tempo.',
     tradeoff: 'Dettaglio inferiore al 0.12 mm.',
     calculatorRead:
-      'Configurazione bilanciata, adatta a un preventivo standard.',
+      'Configurazione bilanciata, adatta a un uso standard.',
     usageKey: 'guide-layer-020',
   },
   {
@@ -708,31 +708,22 @@ const QUALITY_VISUAL_GUIDES: readonly QualityVisualGuide[] = [
     usageKey: 'guide-layer-028',
   },
   {
-    id: 'nozzle-025',
-    category: 'Ugello',
-    title: 'Ugello 0.25 mm',
-    objectExample: 'Scritta piccola o geometria sottile.',
-    bestFor: 'Dettagli molto piccoli.',
-    tradeoff: 'Tempi piu lunghi e portata ridotta.',
+    id: 'nozzles-040-060',
+    category: 'Ugelli',
+    title: 'Ugelli 0.40 mm e 0.60 mm',
+    objectExample:
+      '0.40 mm per uso generale, 0.60 mm per pezzi piu rapidi o piu robusti.',
+    bestFor: 'Scegliere il compromesso corretto tra dettaglio e produttivita.',
+    tradeoff:
+      'Ogni ugello abilita altezze layer diverse e cambia finitura, tempi e portata.',
     calculatorRead:
-      'Favorisce dettagli molto fini, ma con minore produttivita.',
-    usageKey: 'guide-nozzle-025',
-  },
-  {
-    id: 'nozzle-060',
-    category: 'Ugello',
-    title: 'Ugello 0.60 mm',
-    objectExample: 'Parti robuste, supporti, staffe.',
-    bestFor: 'Resistenza e velocita su pezzi funzionali.',
-    tradeoff: 'Dettaglio fine ridotto.',
-    calculatorRead:
-      'Favorisce configurazioni piu produttive e meno orientate al dettaglio fine.',
+      'Nel calcolatore 0.40 mm apre layer piu fini; 0.60 mm favorisce layer piu alti e una stampa piu veloce.',
     usageKey: 'guide-nozzle-060',
   },
   {
     id: 'infill-15',
     category: 'Riempimento',
-    title: 'Infill 15% + 2/3 perimetri',
+    title: 'Infill 15% + 2 perimetri',
     objectExample: 'Oggetto estetico o mockup leggero.',
     bestFor: 'Ridurre peso e tempo.',
     tradeoff: 'Resistenza strutturale limitata.',

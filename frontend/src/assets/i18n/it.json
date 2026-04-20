@@ -495,7 +495,8 @@
       "S4": {
         "TITLE": "4. Cookie e tracciamento",
         "P1": "4.1. Non utilizziamo cookie di profilazione, marketing o tracciamento di terze parti.",
-        "P2": "4.2. Non usiamo sistemi di advertising tracking. Eventuali dati tecnici temporanei sono usati solo per il funzionamento della sessione."
+        "P2": "4.2. Non usiamo sistemi di advertising tracking. Eventuali dati tecnici temporanei sono usati solo per il funzionamento della sessione.",
+        "P3": "4.3. I QR pubblici generati dal back-office possono registrare data/ora della scansione, lingua stimata dal browser e una stima tecnica del visitatore ottenuta con hash irreversibile. Non chiediamo GPS al telefono e non conserviamo l'IP in chiaro."
       },
       "S5": {
         "TITLE": "5. Condivisione dei dati",

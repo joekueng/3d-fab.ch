@@ -192,8 +192,8 @@
         <p class="ui-eyebrow ui-eyebrow--compact">Calcolatore</p>
         <h2>Come usare il calcolatore</h2>
         <p>
-          Questa sezione spiega quali parametri influenzano il preventivo e come
-          leggere correttamente il risultato.
+          Questa sezione spiega quali parametri influenzano prezzo, tempi e
+          risultato finale, e come leggere correttamente il risultato.
         </p>
       </div>
 
@@ -247,8 +247,8 @@
           <h3>Parametri del calcolatore</h3>
           <p>
             Qui sotto trovi i controlli attualmente disponibili nel calcolatore.
-            In modalita Avanzata, sono questi i parametri che influenzano il
-            preventivo.
+            In modalita Avanzata, sono questi i parametri che influenzano
+            prezzo, tempi e resa finale.
           </p>
         </div>
 
@@ -261,12 +261,14 @@
               <p class="calculator-parameter-badge">
                 {{ parameter.availability }}
               </p>
-              <h4>{{ parameter.title }}</h4>
-              <p>{{ parameter.explanation }}</p>
-              <p class="calculator-parameter-effect">
-                <strong>Impatto sul preventivo:</strong>
-                {{ parameter.calculatorEffect }}
-              </p>
+              <div class="calculator-parameter-copy">
+                <h4>{{ parameter.title }}</h4>
+                <p>{{ parameter.explanation }}</p>
+              </div>
+              <div class="calculator-parameter-effect">
+                <span>Impatto nel calcolatore</span>
+                <p>{{ parameter.calculatorEffect }}</p>
+              </div>
             </article>
           }
         </div>
@@ -274,10 +276,12 @@
 
       <div class="calculator-visual-section">
         <div class="calculator-visual-head">
-          <h3>Esempi pratici per leggere layer, ugello e riempimento</h3>
+          <h3>Esempi pratici per leggere layer, ugelli e riempimento</h3>
           <p>
-            Questi esempi aiutano a capire meglio come layer, ugello e
-            riempimento influenzano il risultato.
+            Questi esempi aiutano a capire meglio come layer, ugelli e
+            riempimento influenzano il risultato. Nel calcolatore gli ugelli
+            disponibili sono 0.40 mm e 0.60 mm, e ognuno abilita altezze layer
+            diverse.
           </p>
         </div>
 
@@ -319,13 +323,26 @@
                 }
               </div>
 
-              <p><strong>Esempio tipico:</strong> {{ guide.objectExample }}</p>
-              <p><strong>Meglio per:</strong> {{ guide.bestFor }}</p>
-              <p><strong>Limite:</strong> {{ guide.tradeoff }}</p>
-              <p class="visual-guide-calc">
-                <strong>Effetto tipico:</strong>
-                {{ guide.calculatorRead }}
-              </p>
+              <div class="visual-guide-spec-list">
+                <div class="visual-guide-spec">
+                  <span class="visual-guide-spec__label">Esempio tipico</span>
+                  <p class="visual-guide-spec__text">{{ guide.objectExample }}</p>
+                </div>
+                <div class="visual-guide-spec">
+                  <span class="visual-guide-spec__label">Meglio per</span>
+                  <p class="visual-guide-spec__text">{{ guide.bestFor }}</p>
+                </div>
+                <div class="visual-guide-spec">
+                  <span class="visual-guide-spec__label">Limite</span>
+                  <p class="visual-guide-spec__text">{{ guide.tradeoff }}</p>
+                </div>
+                <div class="visual-guide-spec">
+                  <span class="visual-guide-spec__label">Effetto tipico</span>
+                  <p class="visual-guide-spec__text visual-guide-calc">
+                    {{ guide.calculatorRead }}
+                  </p>
+                </div>
+              </div>
             </article>
           }
         </div>

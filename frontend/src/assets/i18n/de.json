@@ -429,7 +429,8 @@
       "S4": {
         "TITLE": "4. Cookies und Tracking",
         "P1": "4.1. Wir verwenden keine Profiling-, Marketing- oder Drittanbieter-Tracking-Cookies.",
-        "P2": "4.2. Wir verwenden keine Advertising-Tracking-Systeme. Etwaige temporäre technische Daten werden nur für den Betrieb der Sitzung genutzt."
+        "P2": "4.2. Wir verwenden keine Advertising-Tracking-Systeme. Etwaige temporäre technische Daten werden nur für den Betrieb der Sitzung genutzt.",
+        "P3": "4.3. Im Back-office erzeugte öffentliche QR-Links können Datum/Uhrzeit des Scans, die vom Browser geschätzte Sprache und eine technische Besucherschätzung auf Basis eines irreversiblen Hashes erfassen. Wir fragen kein GPS am Telefon ab und speichern die IP-Adresse nicht im Klartext."
       },
       "S5": {
         "TITLE": "5. Datenweitergabe",

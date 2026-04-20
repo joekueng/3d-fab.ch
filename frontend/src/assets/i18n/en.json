@@ -429,7 +429,8 @@
       "S4": {
         "TITLE": "4. Cookies and tracking",
         "P1": "4.1. We do not use profiling, marketing or third-party tracking cookies.",
-        "P2": "4.2. We do not use advertising tracking systems. Any temporary technical data is used only for session operation."
+        "P2": "4.2. We do not use advertising tracking systems. Any temporary technical data is used only for session operation.",
+        "P3": "4.3. Public QR links generated from the back-office may record scan date/time, browser-estimated language and a technical visitor estimate obtained through an irreversible hash. We do not request GPS from the phone and we do not store the IP address in plain text."
       },
       "S5": {
         "TITLE": "5. Data sharing",
