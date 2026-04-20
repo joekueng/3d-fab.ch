@@ -1,0 +1,26 @@
+<div class="ui-form-group" [class.ui-form-group--flush]="compact()">
+  @if (label()) {
+    <label class="ui-form-label" [for]="id()">
+      {{ label() }}
+      @if (required()) {
+        <span class="required-mark">*</span>
+      }
+    </label>
+  }
+  <textarea
+    [id]="id()"
+    [attr.name]="name() || null"
+    [placeholder]="placeholder()"
+    [value]="value"
+    [rows]="rows()"
+    [disabled]="isDisabled()"
+    [readOnly]="readonly()"
+    [required]="required()"
+    class="ui-form-control"
+    (input)="onInput($event)"
+    (blur)="onTouched()"
+  ></textarea>
+  @if (error()) {
+    <span class="ui-form-error">{{ error() }}</span>
+  }
+</div>

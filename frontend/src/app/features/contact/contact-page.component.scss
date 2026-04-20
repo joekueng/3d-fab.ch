@@ -1,8 +1,23 @@
-.contact-hero {
+.contact-page {
   background: var(--color-bg);
 }
 
 .content {
-  padding: 2rem 0 5rem;
+  display: grid;
+  gap: var(--space-5);
   max-width: 800px;
+}
+
+.contact-cad-note__list {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--color-text);
+  display: grid;
+  gap: 0.45rem;
+}
+
+@media (max-width: 640px) {
+  .content {
+    gap: var(--space-4);
+  }
 }

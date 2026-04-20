@@ -1,6 +1,6 @@
-<div class="form-group">
+<div class="ui-form-group" [class.ui-form-group--flush]="compact()">
   @if (label()) {
-    <label [for]="id()">
+    <label class="ui-form-label" [for]="id()">
       {{ label() }}
       @if (required()) {
         <span class="required-mark">*</span>
@@ -10,14 +10,24 @@
   <input
     [id]="id()"
     [type]="type()"
+    [attr.name]="name() || null"
     [placeholder]="placeholder()"
+    [attr.autocomplete]="autocomplete() || null"
+    [attr.autocapitalize]="autocapitalize() || null"
+    [attr.min]="min() ?? null"
+    [attr.max]="max() ?? null"
+    [attr.step]="step() ?? null"
+    [attr.inputmode]="inputmode() || null"
+    [attr.spellcheck]="spellcheck()"
     [value]="value"
     (input)="onInput($event)"
     (blur)="onTouched()"
-    [disabled]="disabled"
-    class="form-control"
+    [disabled]="isDisabled()"
+    [readOnly]="readonly()"
+    [required]="required()"
+    class="ui-form-control"
   />
   @if (error()) {
-    <span class="error-text">{{ error() }}</span>
+    <span class="ui-form-error">{{ error() }}</span>
   }
 </div>

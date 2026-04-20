@@ -60,24 +60,8 @@
   color: #944329;
 }
 
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--space-4);
-}
-
 .shop-header {
   align-items: flex-start;
-}
-
-.shop-header h1 {
-  margin: 0;
-}
-
-.shop-header p {
-  margin: var(--space-2) 0 0;
-  color: var(--color-text-muted);
 }
 
 .workspace {

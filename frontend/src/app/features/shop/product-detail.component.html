@@ -366,18 +366,30 @@
                   }
                 </div>
               </app-card>
-
-              @if (descriptionPlainText(p.description)) {
-                <div class="description-block">
-                  <h2>{{ "SHOP.DESCRIPTION_TITLE" | translate }}</h2>
-                  <div
-                    class="description-block__content"
-                    [innerHTML]="descriptionRichHtml(p.description)"
-                  ></div>
-                </div>
-              }
             </section>
           </div>
+
+          <section class="detail-secondary">
+            @if (descriptionPlainText(p.description)) {
+              <div class="description-block">
+                <h2>{{ "SHOP.DESCRIPTION_TITLE" | translate }}</h2>
+                <div
+                  class="description-block__content"
+                  [innerHTML]="descriptionRichHtml(p.description)"
+                ></div>
+              </div>
+            }
+
+            <app-quick-request-panel
+              eyebrowKey="SHOP.PRODUCT_QUICK_REQUEST_EYEBROW"
+              titleKey="SHOP.PRODUCT_QUICK_REQUEST_TITLE"
+              [draftContext]="{
+                source: 'shop_product',
+                productName: p.name,
+                productSlug: p.slug,
+              }"
+            ></app-quick-request-panel>
+          </section>
 
           @if (modelModalOpen()) {
             <button

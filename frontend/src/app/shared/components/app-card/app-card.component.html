@@ -9,7 +9,10 @@
       }
     </header>
   }
-  <div class="card-body">
+  <div
+    class="card-body"
+    [style.--app-card-body-padding]="bodyPadding() || null"
+  >
     <ng-content></ng-content>
   </div>
 </div>

@@ -4,27 +4,32 @@
       <h2>Stock filamenti</h2>
       <p>Gestione materiali, varianti e stock per il calcolatore.</p>
     </div>
-    <button type="button" (click)="loadData()" [disabled]="loading">
+    <app-button type="button" (click)="loadData()" [disabled]="loading">
       Aggiorna
-    </button>
+    </app-button>
   </header>
 
   <div class="alerts">
-    <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
-    <p class="success" *ngIf="successMessage">{{ successMessage }}</p>
+    <p class="ui-banner ui-banner--error" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </p>
+    <p class="ui-banner ui-banner--success" *ngIf="successMessage">
+      {{ successMessage }}
+    </p>
   </div>
 
   <div class="content" *ngIf="!loading; else loadingTpl">
     <section class="panel">
       <div class="panel-header">
         <h3>Inserimento rapido</h3>
-        <button
+        <app-button
           type="button"
-          class="panel-toggle"
+          variant="ghost"
+          size="sm"
           (click)="toggleQuickInsertCollapsed()"
         >
           {{ quickInsertCollapsed ? "Espandi" : "Collassa" }}
-        </button>
+        </app-button>
       </div>
 
       <div *ngIf="!quickInsertCollapsed; else quickInsertCollapsedTpl">
@@ -32,162 +37,148 @@
           <section class="subpanel">
             <h4>Nuovo materiale</h4>
             <div class="form-grid">
-              <label class="form-field form-field--wide">
-                <span>Codice materiale</span>
-                <input
-                  type="text"
-                  [(ngModel)]="newMaterial.materialCode"
-                  placeholder="PLA, PETG, TPU..."
-                />
-              </label>
-              <label class="form-field form-field--wide">
-                <span>Etichetta tecnico</span>
-                <input
-                  type="text"
-                  [(ngModel)]="newMaterial.technicalTypeLabel"
-                  [disabled]="!newMaterial.isTechnical"
-                  placeholder="alta temperatura, rinforzato..."
-                />
-              </label>
+              <app-input
+                class="form-field--wide"
+                label="Codice materiale"
+                [(ngModel)]="newMaterial.materialCode"
+                placeholder="PLA, PETG, TPU..."
+                [compact]="true"
+              />
+              <app-input
+                class="form-field--wide"
+                label="Etichetta tecnico"
+                [(ngModel)]="newMaterial.technicalTypeLabel"
+                [disabled]="!newMaterial.isTechnical"
+                placeholder="alta temperatura, rinforzato..."
+                [compact]="true"
+              />
             </div>
 
             <div class="toggle-group">
-              <label class="toggle">
-                <input type="checkbox" [(ngModel)]="newMaterial.isFlexible" />
-                <span>Flessibile</span>
-              </label>
-              <label class="toggle">
-                <input type="checkbox" [(ngModel)]="newMaterial.isTechnical" />
-                <span>Tecnico</span>
-              </label>
+              <app-checkbox
+                label="Flessibile"
+                variant="pill"
+                [(ngModel)]="newMaterial.isFlexible"
+              />
+              <app-checkbox
+                label="Tecnico"
+                variant="pill"
+                [(ngModel)]="newMaterial.isTechnical"
+              />
             </div>
 
-            <button
+            <app-button
               type="button"
               (click)="createMaterial()"
               [disabled]="creatingMaterial"
             >
               {{ creatingMaterial ? "Salvataggio..." : "Aggiungi materiale" }}
-            </button>
+            </app-button>
           </section>
 
           <section class="subpanel">
             <h4>Nuova variante</h4>
             <div class="form-grid">
-              <label class="form-field">
-                <span>Materiale</span>
-                <select [(ngModel)]="newVariant.materialTypeId">
-                  <option
-                    *ngFor="let material of materials; trackBy: trackById"
-                    [ngValue]="material.id"
-                  >
-                    {{ material.materialCode }}
-                  </option>
-                </select>
-              </label>
-              <label class="form-field">
-                <span>Nome variante</span>
-                <input
-                  type="text"
-                  [(ngModel)]="newVariant.variantDisplayName"
-                  placeholder="PLA Nero Opaco BrandX"
-                />
-              </label>
-              <label class="form-field">
-                <span>Colore</span>
-                <input
-                  type="text"
-                  [(ngModel)]="newVariant.colorName"
-                  placeholder="Nero, Bianco..."
-                />
-              </label>
-              <label class="form-field">
-                <span>Label IT</span>
-                <input type="text" [(ngModel)]="newVariant.colorLabelIt" />
-              </label>
-              <label class="form-field">
-                <span>Label EN</span>
-                <input type="text" [(ngModel)]="newVariant.colorLabelEn" />
-              </label>
-              <label class="form-field">
-                <span>Label DE</span>
-                <input type="text" [(ngModel)]="newVariant.colorLabelDe" />
-              </label>
-              <label class="form-field">
-                <span>Label FR</span>
-                <input type="text" [(ngModel)]="newVariant.colorLabelFr" />
-              </label>
-              <label class="form-field">
-                <span>Hex colore</span>
-                <input
-                  type="text"
-                  [(ngModel)]="newVariant.colorHex"
-                  placeholder="#1A1A1A"
-                />
-              </label>
-              <label class="form-field">
-                <span>Finitura</span>
-                <select [(ngModel)]="newVariant.finishType">
-                  <option value="GLOSSY">GLOSSY</option>
-                  <option value="MATTE">MATTE</option>
-                  <option value="MARBLE">MARBLE</option>
-                  <option value="SILK">SILK</option>
-                  <option value="TRANSLUCENT">TRANSLUCENT</option>
-                  <option value="SPECIAL">SPECIAL</option>
-                </select>
-              </label>
-              <label class="form-field">
-                <span>Brand</span>
-                <input
-                  type="text"
-                  [(ngModel)]="newVariant.brand"
-                  placeholder="Bambu, SUNLU..."
-                />
-              </label>
-              <label class="form-field">
-                <span>Costo CHF/kg</span>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  [(ngModel)]="newVariant.costChfPerKg"
-                />
-              </label>
-              <label class="form-field">
-                <span>Stock spool</span>
-                <input
-                  type="number"
-                  step="0.001"
-                  min="0"
-                  max="999.999"
-                  [(ngModel)]="newVariant.stockSpools"
-                />
-              </label>
-              <label class="form-field">
-                <span>Spool netto kg</span>
-                <input
-                  type="number"
-                  step="0.001"
-                  min="0.001"
-                  max="999.999"
-                  [(ngModel)]="newVariant.spoolNetKg"
-                />
-              </label>
+              <app-select
+                label="Materiale"
+                [(ngModel)]="newVariant.materialTypeId"
+                [options]="materialTypeOptions()"
+                [compact]="true"
+              />
+              <app-input
+                label="Nome variante"
+                [(ngModel)]="newVariant.variantDisplayName"
+                placeholder="PLA Nero Opaco BrandX"
+                [compact]="true"
+              />
+              <app-input
+                label="Colore"
+                [(ngModel)]="newVariant.colorName"
+                placeholder="Nero, Bianco..."
+                [compact]="true"
+              />
+              <app-input
+                label="Label IT"
+                [(ngModel)]="newVariant.colorLabelIt"
+                [compact]="true"
+              />
+              <app-input
+                label="Label EN"
+                [(ngModel)]="newVariant.colorLabelEn"
+                [compact]="true"
+              />
+              <app-input
+                label="Label DE"
+                [(ngModel)]="newVariant.colorLabelDe"
+                [compact]="true"
+              />
+              <app-input
+                label="Label FR"
+                [(ngModel)]="newVariant.colorLabelFr"
+                [compact]="true"
+              />
+              <app-input
+                label="Hex colore"
+                [(ngModel)]="newVariant.colorHex"
+                placeholder="#1A1A1A"
+                [compact]="true"
+              />
+              <app-select
+                label="Finitura"
+                [(ngModel)]="newVariant.finishType"
+                [options]="finishTypeOptions"
+                [compact]="true"
+              />
+              <app-input
+                label="Brand"
+                [(ngModel)]="newVariant.brand"
+                placeholder="Bambu, SUNLU..."
+                [compact]="true"
+              />
+              <app-input
+                label="Costo CHF/kg"
+                type="number"
+                [(ngModel)]="newVariant.costChfPerKg"
+                min="0"
+                step="0.01"
+                [compact]="true"
+              />
+              <app-input
+                label="Stock spool"
+                type="number"
+                [(ngModel)]="newVariant.stockSpools"
+                min="0"
+                max="999.999"
+                step="0.001"
+                [compact]="true"
+              />
+              <app-input
+                label="Spool netto kg"
+                type="number"
+                [(ngModel)]="newVariant.spoolNetKg"
+                min="0.001"
+                max="999.999"
+                step="0.001"
+                [compact]="true"
+              />
             </div>
 
             <div class="toggle-group">
-              <label class="toggle">
-                <input type="checkbox" [(ngModel)]="newVariant.isMatte" />
-                <span>Matte</span>
-              </label>
-              <label class="toggle">
-                <input type="checkbox" [(ngModel)]="newVariant.isSpecial" />
-                <span>Special</span>
-              </label>
-              <label class="toggle">
-                <input type="checkbox" [(ngModel)]="newVariant.isActive" />
-                <span>Attiva</span>
-              </label>
+              <app-checkbox
+                label="Matte"
+                variant="pill"
+                [(ngModel)]="newVariant.isMatte"
+              />
+              <app-checkbox
+                label="Special"
+                variant="pill"
+                [(ngModel)]="newVariant.isSpecial"
+              />
+              <app-checkbox
+                label="Attiva"
+                variant="pill"
+                [(ngModel)]="newVariant.isActive"
+              />
             </div>
 
             <p class="variant-meta">
@@ -205,13 +196,13 @@
               >
             </p>
 
-            <button
+            <app-button
               type="button"
               (click)="createVariant()"
               [disabled]="creatingVariant || !materials.length"
             >
               {{ creatingVariant ? "Salvataggio..." : "Aggiungi variante" }}
-            </button>
+            </app-button>
           </section>
         </div>
       </div>
@@ -271,9 +262,9 @@
               <span class="badge ok" *ngIf="!isLowStock(variant)"
                 >Stock ok</span
               >
-              <button
+              <app-button
                 type="button"
-                class="btn-delete"
+                variant="danger"
                 (click)="openDeleteVariant(variant)"
                 [disabled]="deletingVariantIds.has(variant.id)"
               >
@@ -282,109 +273,107 @@
                     ? "Eliminazione..."
                     : "Elimina"
                 }}
-              </button>
+              </app-button>
             </div>
           </div>
 
           <div class="form-grid" *ngIf="isVariantExpanded(variant.id)">
-            <label class="form-field">
-              <span>Materiale</span>
-              <select [(ngModel)]="variant.materialTypeId">
-                <option
-                  *ngFor="let material of materials; trackBy: trackById"
-                  [ngValue]="material.id"
-                >
-                  {{ material.materialCode }}
-                </option>
-              </select>
-            </label>
-            <label class="form-field">
-              <span>Nome variante</span>
-              <input type="text" [(ngModel)]="variant.variantDisplayName" />
-            </label>
-            <label class="form-field">
-              <span>Colore</span>
-              <input type="text" [(ngModel)]="variant.colorName" />
-            </label>
-            <label class="form-field">
-              <span>Label IT</span>
-              <input type="text" [(ngModel)]="variant.colorLabelIt" />
-            </label>
-            <label class="form-field">
-              <span>Label EN</span>
-              <input type="text" [(ngModel)]="variant.colorLabelEn" />
-            </label>
-            <label class="form-field">
-              <span>Label DE</span>
-              <input type="text" [(ngModel)]="variant.colorLabelDe" />
-            </label>
-            <label class="form-field">
-              <span>Label FR</span>
-              <input type="text" [(ngModel)]="variant.colorLabelFr" />
-            </label>
-            <label class="form-field">
-              <span>Hex colore</span>
-              <input type="text" [(ngModel)]="variant.colorHex" />
-            </label>
-            <label class="form-field">
-              <span>Finitura</span>
-              <select [(ngModel)]="variant.finishType">
-                <option value="GLOSSY">GLOSSY</option>
-                <option value="MATTE">MATTE</option>
-                <option value="MARBLE">MARBLE</option>
-                <option value="SILK">SILK</option>
-                <option value="TRANSLUCENT">TRANSLUCENT</option>
-                <option value="SPECIAL">SPECIAL</option>
-              </select>
-            </label>
-            <label class="form-field">
-              <span>Brand</span>
-              <input type="text" [(ngModel)]="variant.brand" />
-            </label>
-            <label class="form-field">
-              <span>Costo CHF/kg</span>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                [(ngModel)]="variant.costChfPerKg"
-              />
-            </label>
-            <label class="form-field">
-              <span>Stock spool</span>
-              <input
-                type="number"
-                step="0.001"
-                min="0"
-                max="999.999"
-                [(ngModel)]="variant.stockSpools"
-              />
-            </label>
-            <label class="form-field">
-              <span>Spool netto kg</span>
-              <input
-                type="number"
-                step="0.001"
-                min="0.001"
-                max="999.999"
-                [(ngModel)]="variant.spoolNetKg"
-              />
-            </label>
+            <app-select
+              label="Materiale"
+              [(ngModel)]="variant.materialTypeId"
+              [options]="materialTypeOptions()"
+              [compact]="true"
+            />
+            <app-input
+              label="Nome variante"
+              [(ngModel)]="variant.variantDisplayName"
+              [compact]="true"
+            />
+            <app-input
+              label="Colore"
+              [(ngModel)]="variant.colorName"
+              [compact]="true"
+            />
+            <app-input
+              label="Label IT"
+              [(ngModel)]="variant.colorLabelIt"
+              [compact]="true"
+            />
+            <app-input
+              label="Label EN"
+              [(ngModel)]="variant.colorLabelEn"
+              [compact]="true"
+            />
+            <app-input
+              label="Label DE"
+              [(ngModel)]="variant.colorLabelDe"
+              [compact]="true"
+            />
+            <app-input
+              label="Label FR"
+              [(ngModel)]="variant.colorLabelFr"
+              [compact]="true"
+            />
+            <app-input
+              label="Hex colore"
+              [(ngModel)]="variant.colorHex"
+              [compact]="true"
+            />
+            <app-select
+              label="Finitura"
+              [(ngModel)]="variant.finishType"
+              [options]="finishTypeOptions"
+              [compact]="true"
+            />
+            <app-input
+              label="Brand"
+              [(ngModel)]="variant.brand"
+              [compact]="true"
+            />
+            <app-input
+              label="Costo CHF/kg"
+              type="number"
+              [(ngModel)]="variant.costChfPerKg"
+              min="0"
+              step="0.01"
+              [compact]="true"
+            />
+            <app-input
+              label="Stock spool"
+              type="number"
+              [(ngModel)]="variant.stockSpools"
+              min="0"
+              max="999.999"
+              step="0.001"
+              [compact]="true"
+            />
+            <app-input
+              label="Spool netto kg"
+              type="number"
+              [(ngModel)]="variant.spoolNetKg"
+              min="0.001"
+              max="999.999"
+              step="0.001"
+              [compact]="true"
+            />
           </div>
 
           <div class="toggle-group" *ngIf="isVariantExpanded(variant.id)">
-            <label class="toggle">
-              <input type="checkbox" [(ngModel)]="variant.isMatte" />
-              <span>Matte</span>
-            </label>
-            <label class="toggle">
-              <input type="checkbox" [(ngModel)]="variant.isSpecial" />
-              <span>Special</span>
-            </label>
-            <label class="toggle">
-              <input type="checkbox" [(ngModel)]="variant.isActive" />
-              <span>Attiva</span>
-            </label>
+            <app-checkbox
+              label="Matte"
+              variant="pill"
+              [(ngModel)]="variant.isMatte"
+            />
+            <app-checkbox
+              label="Special"
+              variant="pill"
+              [(ngModel)]="variant.isSpecial"
+            />
+            <app-checkbox
+              label="Attiva"
+              variant="pill"
+              [(ngModel)]="variant.isActive"
+            />
           </div>
 
           <p class="variant-meta" *ngIf="isVariantExpanded(variant.id)">
@@ -402,7 +391,7 @@
             >
           </p>
 
-          <button
+          <app-button
             type="button"
             *ngIf="isVariantExpanded(variant.id)"
             (click)="saveVariant(variant)"
@@ -413,7 +402,7 @@
                 ? "Salvataggio..."
                 : "Salva variante"
             }}
-          </button>
+          </app-button>
         </article>
       </div>
       <p class="muted" *ngIf="variants.length === 0">
@@ -424,13 +413,14 @@
     <section class="panel">
       <div class="panel-header">
         <h3>Materiali</h3>
-        <button
+        <app-button
           type="button"
-          class="panel-toggle"
+          variant="ghost"
+          size="sm"
           (click)="toggleMaterialsCollapsed()"
         >
           {{ materialsCollapsed ? "Espandi" : "Collassa" }}
-        </button>
+        </app-button>
       </div>
 
       <div *ngIf="!materialsCollapsed; else materialsCollapsedTpl">
@@ -440,32 +430,35 @@
             *ngFor="let material of materials; trackBy: trackById"
           >
             <div class="form-grid">
-              <label class="form-field form-field--wide">
-                <span>Codice</span>
-                <input type="text" [(ngModel)]="material.materialCode" />
-              </label>
-              <label class="form-field form-field--wide">
-                <span>Etichetta tecnico</span>
-                <input
-                  type="text"
-                  [(ngModel)]="material.technicalTypeLabel"
-                  [disabled]="!material.isTechnical"
-                />
-              </label>
+              <app-input
+                class="form-field--wide"
+                label="Codice"
+                [(ngModel)]="material.materialCode"
+                [compact]="true"
+              />
+              <app-input
+                class="form-field--wide"
+                label="Etichetta tecnico"
+                [(ngModel)]="material.technicalTypeLabel"
+                [disabled]="!material.isTechnical"
+                [compact]="true"
+              />
             </div>
 
             <div class="toggle-group">
-              <label class="toggle">
-                <input type="checkbox" [(ngModel)]="material.isFlexible" />
-                <span>Flessibile</span>
-              </label>
-              <label class="toggle">
-                <input type="checkbox" [(ngModel)]="material.isTechnical" />
-                <span>Tecnico</span>
-              </label>
+              <app-checkbox
+                label="Flessibile"
+                variant="pill"
+                [(ngModel)]="material.isFlexible"
+              />
+              <app-checkbox
+                label="Tecnico"
+                variant="pill"
+                [(ngModel)]="material.isTechnical"
+              />
             </div>
 
-            <button
+            <app-button
               type="button"
               (click)="saveMaterial(material)"
               [disabled]="savingMaterialIds.has(material.id)"
@@ -475,7 +468,7 @@
                   ? "Salvataggio..."
                   : "Salva materiale"
               }}
-            </button>
+            </app-button>
           </article>
         </div>
         <p class="muted" *ngIf="materials.length === 0">
@@ -512,16 +505,16 @@
   </p>
   <p class="muted">L'operazione non è reversibile.</p>
   <div class="dialog-actions">
-    <button
+    <app-button
       type="button"
-      class="btn-secondary"
+      variant="ghost"
       (click)="closeDeleteVariantDialog()"
     >
       Annulla
-    </button>
-    <button
+    </app-button>
+    <app-button
       type="button"
-      class="btn-delete"
+      variant="danger"
       (click)="confirmDeleteVariant()"
       [disabled]="variantToDelete && deletingVariantIds.has(variantToDelete.id)"
     >
@@ -530,6 +523,6 @@
           ? "Eliminazione..."
           : "Conferma elimina"
       }}
-    </button>
+    </app-button>
   </div>
 </div>

@@ -1,0 +1,391 @@
+<main class="materials-page ui-page-surface">
+  <section class="materials-hero">
+    <div class="container ui-simple-hero">
+      <h1 class="ui-simple-hero__title">{{ pageContent().HERO.TITLE }}</h1>
+      <p class="ui-simple-hero__subtitle">
+        {{ pageContent().HERO.SUBTITLE_PREFIX }}
+        <a class="materials-inline-link" href="#materials-calculator">
+          {{ pageContent().HERO.LINK_LABEL }}
+        </a>
+        {{ pageContent().HERO.SUBTITLE_SUFFIX }}
+      </p>
+    </div>
+  </section>
+
+  <section class="materials-section">
+    <div class="container">
+      <div class="chart-layout">
+        <article class="materials-panel materials-panel--chart">
+          <header class="materials-panel__header">
+            <div>
+              <p class="ui-eyebrow ui-eyebrow--compact">
+                {{ pageContent().RADAR.EYEBROW }}
+              </p>
+              <h2>{{ pageContent().RADAR.TITLE }}</h2>
+            </div>
+            <p class="materials-panel__description">
+              {{ pageContent().RADAR.DESCRIPTION }}
+            </p>
+          </header>
+
+          <svg
+            class="radar-chart"
+            [attr.viewBox]="'0 0 ' + chartSize + ' ' + chartSize"
+            role="img"
+            [attr.aria-label]="pageContent().RADAR.ARIA_LABEL"
+          >
+            <g class="chart-rings">
+              @for (ring of ringPolygons(); track $index) {
+                <polygon [attr.points]="ring"></polygon>
+              }
+            </g>
+
+            <g class="chart-axes">
+              @for (axis of axisGuides(); track axis.id) {
+                <line
+                  [attr.x1]="axis.fromX"
+                  [attr.y1]="axis.fromY"
+                  [attr.x2]="axis.x"
+                  [attr.y2]="axis.y"
+                ></line>
+                <text
+                  [attr.x]="axis.labelX"
+                  [attr.y]="axis.labelY"
+                  [attr.text-anchor]="axis.labelAnchor"
+                >
+                  @for (labelLine of axis.labelLines; track $index) {
+                    <tspan
+                      [attr.x]="axis.labelX"
+                      [attr.dy]="$index === 0 ? 0 : '1.1em'"
+                    >
+                      {{ labelLine }}
+                    </tspan>
+                  }
+                </text>
+              }
+            </g>
+
+            <g class="chart-series">
+              @for (series of radarSeries(); track series.material.id) {
+                <polygon
+                  class="series-shape"
+                  [attr.points]="series.points"
+                  [style.stroke]="series.color"
+                  [style.fill]="series.fill"
+                  [class.is-hovered]="
+                    hoveredMaterialId() === series.material.id
+                  "
+                  (mouseenter)="setHoveredMaterial(series.material.id)"
+                  (mouseleave)="setHoveredMaterial(null)"
+                ></polygon>
+
+                @for (point of series.values; track point.axis.id) {
+                  <circle
+                    class="series-node"
+                    [attr.cx]="point.x"
+                    [attr.cy]="point.y"
+                    r="4"
+                    [style.fill]="series.color"
+                  ></circle>
+                }
+              }
+            </g>
+          </svg>
+
+          <div class="selector-panel">
+            <div class="selector-panel__header">
+              <h3>{{ pageContent().RADAR.SELECTOR_TITLE }}</h3>
+              <p class="selector-count">
+                {{ selectedCount() }}/{{ maxCompareCount }}
+              </p>
+            </div>
+
+            <div
+              class="selector-grid"
+              role="group"
+              [attr.aria-label]="pageContent().RADAR.SELECTOR_ARIA_LABEL"
+            >
+              @for (
+                material of materials();
+                track trackMaterial($index, material)
+              ) {
+                <button
+                  type="button"
+                  class="selector-chip"
+                  [class.is-selected]="isSelected(material.id)"
+                  [disabled]="!canSelect(material.id)"
+                  [attr.aria-pressed]="isSelected(material.id)"
+                  [style.--selector-accent]="legendDotColor(material.id)"
+                  [style.--selector-fill]="legendFillColor(material.id)"
+                  (mouseenter)="setHoveredMaterial(material.id)"
+                  (mouseleave)="setHoveredMaterial(null)"
+                  (click)="toggleMaterial(material.id)"
+                >
+                  <span
+                    class="selector-dot"
+                    [style.background-color]="legendDotColor(material.id)"
+                  ></span>
+                  <span>{{ material.name }}</span>
+                </button>
+              }
+            </div>
+            <br />
+            <p class="selector-help">
+              {{ pageContent().RADAR.SELECTOR_HELP }}
+            </p>
+          </div>
+        </article>
+
+        <article class="materials-panel materials-panel--aside">
+          <header class="materials-panel__header">
+            <div>
+              <h2>{{ pageContent().RADAR.READING_TITLE }}</h2>
+            </div>
+          </header>
+          <p>{{ pageContent().RADAR.READING_DESCRIPTION }}</p>
+          <ul>
+            @for (axis of radarAxes(); track axis.id) {
+              <li>
+                <strong>{{ axis.label }}:</strong>
+                {{ axis.description }}
+              </li>
+            }
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="materials-section">
+    <div class="container">
+      <div class="materials-section-head">
+        <p class="ui-eyebrow ui-eyebrow--compact">
+          {{ pageContent().TABLE.EYEBROW }}
+        </p>
+        <h2>{{ pageContent().TABLE.TITLE }}</h2>
+      </div>
+      <div class="ui-table-wrap materials-table-wrap">
+        <table class="ui-data-table">
+          <thead>
+            <tr>
+              <th>{{ pageContent().TABLE.PARAMETER_HEADER }}</th>
+              @for (
+                material of selectedMaterials();
+                track trackMaterial($index, material)
+              ) {
+                <th>{{ material.name }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (
+              row of comparisonRows();
+              track trackComparisonRow($index, row)
+            ) {
+              <tr>
+                <th>{{ row.label }}</th>
+                @for (value of row.values; track $index) {
+                  <td>{{ value }}</td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section
+    id="materials-calculator"
+    class="materials-section materials-section--muted materials-section--calculator"
+  >
+    <div class="container">
+      <div class="materials-section-head">
+        <p class="ui-eyebrow ui-eyebrow--compact">
+          {{ pageContent().CALCULATOR.SECTION_EYEBROW }}
+        </p>
+        <h2>{{ pageContent().CALCULATOR.SECTION_TITLE }}</h2>
+        <p>{{ pageContent().CALCULATOR.SECTION_DESCRIPTION }}</p>
+      </div>
+
+      <div class="calculator-facts-grid">
+        @for (
+          fact of calculatorFacts();
+          track trackCalculatorFact($index, fact)
+        ) {
+          <article class="calculator-fact-card">
+            <p class="calculator-fact-eyebrow">{{ fact.eyebrow }}</p>
+            <h3>{{ fact.title }}</h3>
+            <p>{{ fact.description }}</p>
+            @if (fact.detail) {
+              <p class="calculator-fact-detail">
+                @if (fact.detailLabel) {
+                  <strong>{{ fact.detailLabel }}:</strong>
+                }
+                {{ fact.detail }}
+              </p>
+            }
+            @if (fact.note) {
+              <p class="calculator-fact-note">
+                @if (fact.noteLabel) {
+                  <strong>{{ fact.noteLabel }}:</strong>
+                }
+                {{ fact.note }}
+              </p>
+            }
+            @if (fact.ctaLabel && fact.path) {
+              <div class="calculator-fact-actions">
+                <a
+                  class="ui-button ui-button--sm"
+                  [attr.href]="localizedPath(fact.path)"
+                >
+                  {{ fact.ctaLabel }}
+                </a>
+              </div>
+            }
+          </article>
+        }
+      </div>
+
+      <article class="calculator-parameters-card">
+        <div class="calculator-parameters-head">
+          <h3>{{ pageContent().CALCULATOR.PARAMETERS.TITLE }}</h3>
+          <p>{{ pageContent().CALCULATOR.PARAMETERS.DESCRIPTION }}</p>
+        </div>
+
+        <div class="calculator-parameters-grid">
+          @for (
+            parameter of calculatorParameters();
+            track trackCalculatorParameter($index, parameter)
+          ) {
+            <article class="calculator-parameter-card">
+              <p class="calculator-parameter-badge">
+                {{ parameter.availability }}
+              </p>
+              <div class="calculator-parameter-copy">
+                <h4>{{ parameter.title }}</h4>
+                <p>{{ parameter.explanation }}</p>
+              </div>
+              <div class="calculator-parameter-effect">
+                <span>{{
+                  pageContent().CALCULATOR.PARAMETERS.EFFECT_LABEL
+                }}</span>
+                <p>{{ parameter.calculatorEffect }}</p>
+              </div>
+            </article>
+          }
+        </div>
+      </article>
+
+      <div class="calculator-visual-section">
+        <div class="calculator-visual-head">
+          <h3>{{ pageContent().CALCULATOR.GUIDES.TITLE }}</h3>
+          <p>{{ pageContent().CALCULATOR.GUIDES.DESCRIPTION }}</p>
+        </div>
+
+        <div class="visual-guide-grid">
+          @for (
+            guide of qualityVisualCards();
+            track trackVisualGuide($index, guide)
+          ) {
+            <article class="visual-guide-card">
+              <p class="visual-guide-category">{{ guide.category }}</p>
+              <h3>{{ guide.title }}</h3>
+
+              <div class="visual-guide-media">
+                @if (guide.image; as image) {
+                  <picture>
+                    @if (image.source.avifUrl) {
+                      <source
+                        [srcset]="image.source.avifUrl"
+                        type="image/avif"
+                      />
+                    }
+                    @if (image.source.webpUrl) {
+                      <source
+                        [srcset]="image.source.webpUrl"
+                        type="image/webp"
+                      />
+                    }
+                    <img
+                      [src]="image.source.fallbackUrl"
+                      [attr.alt]="image.altText || guide.title"
+                      width="640"
+                      height="420"
+                    />
+                  </picture>
+                } @else {
+                  <div class="media-fallback">
+                    <span>{{
+                      pageContent().CALCULATOR.GUIDES.FALLBACK_IMAGE
+                    }}</span>
+                  </div>
+                }
+              </div>
+
+              <div class="visual-guide-spec-list">
+                <div class="visual-guide-spec">
+                  <span class="visual-guide-spec__label">
+                    {{
+                      pageContent().CALCULATOR.GUIDES.SPEC_LABELS.OBJECT_EXAMPLE
+                    }}
+                  </span>
+                  <p class="visual-guide-spec__text">
+                    {{ guide.objectExample }}
+                  </p>
+                </div>
+                <div class="visual-guide-spec">
+                  <span class="visual-guide-spec__label">
+                    {{ pageContent().CALCULATOR.GUIDES.SPEC_LABELS.BEST_FOR }}
+                  </span>
+                  <p class="visual-guide-spec__text">{{ guide.bestFor }}</p>
+                </div>
+                @if (guide.tradeoff) {
+                  <div class="visual-guide-spec">
+                    <span class="visual-guide-spec__label">
+                      {{ pageContent().CALCULATOR.GUIDES.SPEC_LABELS.TRADEOFF }}
+                    </span>
+                    <p class="visual-guide-spec__text">{{ guide.tradeoff }}</p>
+                  </div>
+                }
+                <div class="visual-guide-spec">
+                  <span class="visual-guide-spec__label">
+                    {{
+                      pageContent().CALCULATOR.GUIDES.SPEC_LABELS
+                        .CALCULATOR_READ
+                    }}
+                  </span>
+                  <p class="visual-guide-spec__text visual-guide-calc">
+                    {{ guide.calculatorRead }}
+                  </p>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="materials-section ui-page-surface__body">
+    <div class="container">
+      <div class="materials-section-head">
+        <p class="ui-eyebrow ui-eyebrow--compact">
+          {{ pageContent().SOURCES.EYEBROW }}
+        </p>
+        <h2>{{ pageContent().SOURCES.TITLE }}</h2>
+        <p>{{ pageContent().SOURCES.DESCRIPTION }}</p>
+      </div>
+      <ul class="global-source-list">
+        @for (source of allSources(); track trackSource($index, source)) {
+          <li>
+            <a [href]="source.url" target="_blank" rel="noopener noreferrer">
+              {{ source.label }}
+            </a>
+            <span>{{ source.kind }}</span>
+          </li>
+        }
+      </ul>
+    </div>
+  </section>
+</main>

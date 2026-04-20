@@ -1,5 +1,5 @@
 .shop-page {
-  background: linear-gradient(180deg, #faf7ef 0%, var(--color-bg) 13rem);
+  background: var(--color-bg);
 }
 
 .shop-hero .ui-simple-hero__subtitle {
@@ -254,28 +254,6 @@
 
 .shop-custom-cta {
   padding-bottom: var(--space-12);
-}
-
-.shop-custom-cta-card {
-  display: block;
-}
-
-.shop-custom-cta-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-5);
-}
-
-.shop-custom-cta-copy {
-  display: grid;
-  gap: var(--space-1);
-}
-
-.shop-custom-cta-title {
-  margin: 0;
-  font-size: clamp(1.15rem, 0.45vw + 1.02rem, 1.45rem);
-  line-height: 1.25;
 }
 
 .section-title {

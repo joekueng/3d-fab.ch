@@ -3,10 +3,10 @@
     <a [routerLink]="langService.localizedPath('/')" class="brand">
       <img
         class="brand-logo"
-        ngSrc="/assets/images/Asset%202.svg"
+        ngSrc="/assets/images/SVG/logo-giallo-spesso.svg"
         alt="3D Fab"
-        width="380"
-        height="86"
+        width="390"
+        height="44"
         priority
       />
     </a>
@@ -30,7 +30,7 @@
         >{{ "NAV.HOME" | translate }}</a
       >
       <a
-        [routerLink]="langService.localizedPath('/calculator/basic')"
+        [routerLink]="langService.localizedPath('/calculator')"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: false }"
         (click)="closeMenu()"
@@ -41,6 +41,12 @@
         routerLinkActive="active"
         (click)="closeMenu()"
         >{{ "NAV.SHOP" | translate }}</a
+      >
+      <a
+        [routerLink]="langService.localizedPath('/materials')"
+        routerLinkActive="active"
+        (click)="closeMenu()"
+        >{{ "NAV.MATERIALS" | translate }}</a
       >
       <a
         [routerLink]="langService.localizedPath('/about')"

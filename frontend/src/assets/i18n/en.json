@@ -37,6 +37,7 @@
   "FOOTER": {
     "PRIVACY": "Privacy",
     "TERMS": "Terms & Conditions",
+    "MATERIALS": "Quality & Materials",
     "CONTACT": "Contact Us"
   },
   "SEO": {
@@ -53,12 +54,12 @@
         "TITLE": "3D Printing Quote Calculator | 3D fab",
         "DESCRIPTION": "Upload your 3D file and get price and lead time in seconds with real slicing.",
         "BASIC": {
-          "TITLE": "Basic 3D Printing Calculator | 3D fab",
-          "DESCRIPTION": "Quickly estimate the price of your 3D print with the basic workflow."
+          "TITLE": "Fast 3D printing quote for ready files | 3D fab",
+          "DESCRIPTION": "Upload a ready STL or 3MF file and get a correct 3D printing price in seconds with the basic calculator."
         },
         "ADVANCED": {
-          "TITLE": "Advanced 3D Printing Calculator | 3D fab",
-          "DESCRIPTION": "Configure advanced print settings and get a precise quote based on real slicing."
+          "TITLE": "Precise 3D printing quote with materials and settings | 3D fab",
+          "DESCRIPTION": "Set material, layer height, supports and infill to get a more precise 3D printing quote."
         }
       },
       "SHOP": {
@@ -78,8 +79,8 @@
         "DESCRIPTION": "Learn more about the 3D fab team and our 3D printing lab for prototypes, spare parts and custom production."
       },
       "CONTACT": {
-        "TITLE": "Contact | 3D fab",
-        "DESCRIPTION": "Request information, custom quotes or technical support for your 3D printing project."
+        "TITLE": "Custom parts and replacements | Contact - 3D fab",
+        "DESCRIPTION": "Need a custom part, a replacement piece or a model adjustment? Contact us even if you do not have a 3D file yet: we can start from photos, measurements or an existing part."
       },
       "LEGAL": {
         "PRIVACY": {
@@ -105,14 +106,549 @@
       }
     }
   },
+  "MATERIALS_PAGE": {
+    "HERO": {
+      "TITLE": "Quality & Materials",
+      "SUBTITLE_PREFIX": "Technical guide to a curated set of materials. Compare print-quality tradeoffs and see how to use the",
+      "LINK_LABEL": "calculator",
+      "SUBTITLE_SUFFIX": "."
+    },
+    "RADAR": {
+      "EYEBROW": "Comparison",
+      "TITLE": "Radar Chart",
+      "DESCRIPTION": "Select one or more materials to view their properties.",
+      "ARIA_LABEL": "Materials radar chart",
+      "SELECTOR_TITLE": "Materials in comparison",
+      "SELECTOR_ARIA_LABEL": "Material selection",
+      "SELECTOR_HELP": "Note: on the Economy axis, a higher value means a lower cost per kg.",
+      "READING_TITLE": "How to read the comparison",
+      "READING_DESCRIPTION": "Each axis shows a technical property. The highest value represents the strongest relative performance among the compared materials.",
+      "AXES": {
+        "economy": {
+          "LABEL": "Economy",
+          "DESCRIPTION": "Index based on price per kg: a higher value means a more favorable cost.",
+          "UNIT": "CHF/kg"
+        },
+        "printability": {
+          "LABEL": "Printability",
+          "DESCRIPTION": "Synthetic index that reflects ease of printing, moisture sensitivity and process stability.",
+          "UNIT": "index"
+        },
+        "tensile": {
+          "LABEL": "Strength",
+          "DESCRIPTION": "Material tensile strength (MPa).",
+          "UNIT": "MPa"
+        },
+        "modulus": {
+          "LABEL": "Stiffness",
+          "DESCRIPTION": "Elastic modulus (GPa).",
+          "UNIT": "GPa"
+        },
+        "elongation": {
+          "LABEL": "Flexibility",
+          "DESCRIPTION": "Elongation at break (%).",
+          "UNIT": "%"
+        },
+        "hdt": {
+          "LABEL": "Heat resistance",
+          "LABEL_LINES": ["Heat", "resistance"],
+          "DESCRIPTION": "HDT: heat deflection temperature of the material (C).",
+          "UNIT": "C"
+        }
+      }
+    },
+    "TABLE": {
+      "EYEBROW": "Technical data",
+      "TITLE": "Comparison table",
+      "PARAMETER_HEADER": "Parameter",
+      "ROWS": {
+        "printability": "Printability [0-100 index]",
+        "layer-range": "Recommended layer [mm]",
+        "price": "Price [CHF/kg]",
+        "density": "Density [g/cm3]",
+        "tensile": "Tensile strength [MPa]",
+        "modulus": "Elastic modulus [GPa]",
+        "elongation": "Elongation at break [%]",
+        "hdt": "Heat deflection temperature [C]",
+        "extrusion": "Extrusion temperature [C]"
+      }
+    },
+    "CALCULATOR": {
+      "SECTION_EYEBROW": "Calculator",
+      "SECTION_TITLE": "How to use the calculator",
+      "SECTION_DESCRIPTION": "This section explains which parameters affect the final price, lead time and the final outcome, and how to read the result correctly.",
+      "FACTS": {
+        "overview": {
+          "EYEBROW": "Calculator",
+          "TITLE": "What the calculator returns",
+          "DESCRIPTION": "The calculator returns the final print price, print time and material consumption.",
+          "DETAIL_LABEL": "In both modes",
+          "DETAIL": "you can choose both material and color.",
+          "CTA_LABEL": "Open calculator"
+        },
+        "basic": {
+          "EYEBROW": "Basic mode",
+          "TITLE": "Basic mode",
+          "DESCRIPTION": "In Basic you choose material, color and quality.",
+          "DETAIL_LABEL": "Quality",
+          "DETAIL": "Draft = 0.28 mm, 15% grid. Standard = 0.20 mm, 15% grid. High Definition = 0.12 mm, 20% gyroid.",
+          "NOTE_LABEL": "Best if",
+          "NOTE": "you do not need to manage each print parameter in detail.",
+          "CTA_LABEL": "Open Basic"
+        },
+        "advanced": {
+          "EYEBROW": "Advanced mode",
+          "TITLE": "Advanced mode",
+          "DESCRIPTION": "In Advanced you directly control material, color, nozzle, layer height, infill, pattern and supports.",
+          "DETAIL_LABEL": "Active profiles",
+          "DETAIL": "Available combinations depend on the active machine profiles.",
+          "NOTE_LABEL": "Best if",
+          "NOTE": "you already know the exact settings you want to apply to your file.",
+          "CTA_LABEL": "Open Advanced"
+        }
+      },
+      "PARAMETERS": {
+        "TITLE": "Calculator parameters",
+        "DESCRIPTION": "Below you can find the controls currently available in the calculator. In Advanced mode, these are the parameters that affect the final price, lead time and the final finish.",
+        "EFFECT_LABEL": "Impact in the calculator",
+        "ITEMS": {
+          "material": {
+            "TITLE": "Material",
+            "AVAILABILITY": "Basic and Advanced",
+            "EXPLANATION": "The material can be chosen from the active variants currently available, each one linked to the colors that can be ordered.",
+            "CALCULATOR_EFFECT": "It affects material price and the options available in the calculator."
+          },
+          "quality": {
+            "TITLE": "Quality",
+            "AVAILABILITY": "Basic",
+            "EXPLANATION": "In Basic you do not set layer height and infill separately: you choose a predefined preset.",
+            "CALCULATOR_EFFECT": "It automatically defines layer height, infill pattern and density."
+          },
+          "nozzleDiameter": {
+            "TITLE": "Nozzle diameter",
+            "AVAILABILITY": "Advanced",
+            "EXPLANATION": "The calculator currently offers 0.40 mm and 0.60 mm nozzles. Each nozzle unlocks different layer heights and may involve changeover costs.",
+            "CALCULATOR_EFFECT": "It affects which layer heights can be selected and may influence setup cost."
+          },
+          "layerHeight": {
+            "TITLE": "Layer height",
+            "AVAILABILITY": "Advanced",
+            "EXPLANATION": "The available layer heights depend on the selected nozzle.",
+            "CALCULATOR_EFFECT": "It directly affects print time and part definition."
+          },
+          "infill": {
+            "TITLE": "Infill",
+            "AVAILABILITY": "Advanced",
+            "EXPLANATION": "The infill percentage is set manually to match the desired balance of strength, weight and lead time.",
+            "CALCULATOR_EFFECT": "It increases or reduces weight and time depending on the chosen density."
+          },
+          "infillPattern": {
+            "TITLE": "Infill pattern",
+            "AVAILABILITY": "Advanced",
+            "EXPLANATION": "Patterns such as grid, gyroid and cubic are available.",
+            "CALCULATOR_EFFECT": "It affects the internal structure of the part and can change time, material use and mechanical behavior."
+          },
+          "supports": {
+            "TITLE": "Supports",
+            "AVAILABILITY": "Advanced",
+            "EXPLANATION": "You can enable or disable them directly according to the geometry of the file.",
+            "CALCULATOR_EFFECT": "It changes the print path and can increase both time and material."
+          }
+        }
+      },
+      "GUIDES": {
+        "TITLE": "Practical examples for reading layer height, nozzles and infill",
+        "DESCRIPTION": "These examples help explain how layer height, nozzles and infill affect the result. In the calculator, the available nozzles are 0.40 mm and 0.60 mm, and each one unlocks different layer heights.",
+        "FALLBACK_IMAGE": "Example image is being updated.",
+        "SPEC_LABELS": {
+          "OBJECT_EXAMPLE": "Typical example",
+          "BEST_FOR": "Best for",
+          "TRADEOFF": "Tradeoff",
+          "CALCULATOR_READ": "Typical effect"
+        },
+        "CATEGORIES": {
+          "layer": "Layer",
+          "nozzles": "Nozzles",
+          "infill": "Infill"
+        },
+        "ITEMS": {
+          "layer-012": {
+            "TITLE": "Layer 0.12 mm",
+            "OBJECT_EXAMPLE": "Miniature or small text with fine detail.",
+            "BEST_FOR": "Maximum surface detail.",
+            "TRADEOFF": "Long print time.",
+            "CALCULATOR_READ": "More visible detail, but longer print times."
+          },
+          "layer-020": {
+            "TITLE": "Layer 0.20 mm",
+            "OBJECT_EXAMPLE": "Standard functional part or technical cover.",
+            "BEST_FOR": "Balanced quality and speed.",
+            "TRADEOFF": "Less detail than 0.12 mm.",
+            "CALCULATOR_READ": "Balanced setup, suitable for a standard use case."
+          },
+          "layer-028": {
+            "TITLE": "Layer 0.28 mm",
+            "OBJECT_EXAMPLE": "Test bracket or quick prototype.",
+            "BEST_FOR": "Lower lead time and larger parts.",
+            "TRADEOFF": "More visible layer stepping.",
+            "CALCULATOR_READ": "Faster print, with a rougher finish."
+          },
+          "nozzles-040-060": {
+            "TITLE": "Nozzles 0.40 mm and 0.60 mm",
+            "OBJECT_EXAMPLE": "0.40 mm for general use, 0.60 mm for faster or stronger parts.",
+            "BEST_FOR": "Choosing the right balance between detail and productivity.",
+            "TRADEOFF": "",
+            "CALCULATOR_READ": "In the calculator, 0.40 mm opens finer layers; 0.60 mm favors taller layers and faster printing."
+          },
+          "infill-15": {
+            "TITLE": "Infill 15% + 2 walls",
+            "OBJECT_EXAMPLE": "Decorative object or lightweight mockup.",
+            "BEST_FOR": "Reducing weight and lead time.",
+            "TRADEOFF": "Limited structural strength.",
+            "CALCULATOR_READ": "Uses less material and usually keeps print time lower."
+          },
+          "infill-40": {
+            "TITLE": "Infill 40% + 4 walls",
+            "OBJECT_EXAMPLE": "Component under mechanical load.",
+            "BEST_FOR": "Higher functional strength.",
+            "TRADEOFF": "Higher weight and longer print time.",
+            "CALCULATOR_READ": "Increases material and print time, moving closer to a more solid part."
+          }
+        }
+      }
+    },
+    "SOURCES": {
+      "EYEBROW": "Sources",
+      "TITLE": "Sources consulted",
+      "DESCRIPTION": "Here you can find all the sources used for the technical data and material descriptions.",
+      "KINDS": {
+        "wikipedia": "Wikipedia",
+        "tech-sheet": "Tech sheet",
+        "product-sheet": "Product page"
+      }
+    },
+    "MATERIALS": {
+      "tpu-95a-hf": {
+        "NAME": "TPU 95A HF",
+        "SUMMARY": "Very flexible material, useful when you need to absorb shocks and vibrations.",
+        "QUALITY_TIPS": [
+          "Reduce speed and acceleration for more stable extrusion.",
+          "Use medium to tall layers to reduce artifacts on soft surfaces."
+        ],
+        "PROS": [
+          "Very high flexibility and impact resilience.",
+          "Good layer adhesion on soft geometries."
+        ],
+        "CONS": [
+          "Sensitive to moisture during printing and storage.",
+          "Very low stiffness and limited heat resistance."
+        ],
+        "IDEAL_FOR": ["Gaskets", "Bumpers", "Grips", "Impact-resistant covers"],
+        "SOURCES": {
+          "wikipedia-tpu": {
+            "LABEL": "Wikipedia - Thermoplastic polyurethane"
+          },
+          "bambu-tpu-95a-hf": {
+            "LABEL": "Bambu Lab - TPU 95A HF"
+          },
+          "ultimaker-tpu-95a": {
+            "LABEL": "Ultimaker - TPU 95A"
+          }
+        }
+      },
+      "pla-basic": {
+        "NAME": "PLA Basic",
+        "SUMMARY": "Straightforward choice for quick prototypes with good finish and stable printing behavior.",
+        "QUALITY_TIPS": [
+          "For visual quality use 0.12-0.16 mm layers.",
+          "For productivity use 0.20-0.24 mm layers."
+        ],
+        "PROS": [
+          "Easy to print.",
+          "Very good surface quality on visual parts."
+        ],
+        "CONS": [
+          "Brittle under impact.",
+          "Poor resistance to heat and prolonged UV exposure."
+        ],
+        "IDEAL_FOR": ["Mockups", "Quick prototypes", "Indoor visual parts"],
+        "SOURCES": {
+          "wikipedia-pla": {
+            "LABEL": "Wikipedia - Polylactic acid"
+          },
+          "bambu-pla-basic": {
+            "LABEL": "Bambu Lab - PLA Basic"
+          },
+          "ultimaker-pla": {
+            "LABEL": "Ultimaker - PLA"
+          }
+        }
+      },
+      "pla-matte": {
+        "NAME": "PLA Matte",
+        "SUMMARY": "PLA with a matte finish for presentation models and appearance-first parts.",
+        "QUALITY_TIPS": [
+          "0.16-0.24 mm layers keep the matte effect more even.",
+          "Consistent cooling helps surface texture."
+        ],
+        "PROS": [
+          "Clean matte appearance.",
+          "Prints as easily as standard PLA."
+        ],
+        "CONS": [
+          "Limited mechanical properties for structural use.",
+          "Heat sensitive like other PLA materials."
+        ],
+        "IDEAL_FOR": ["Display objects", "Product design", "Aesthetic mockups"],
+        "SOURCES": {
+          "wikipedia-pla": {
+            "LABEL": "Wikipedia - Polylactic acid"
+          },
+          "bambu-pla-matte": {
+            "LABEL": "Bambu Lab - PLA Matte"
+          }
+        }
+      },
+      "pla-tough-plus": {
+        "NAME": "PLA Tough+",
+        "SUMMARY": "Compromise between easy-to-print PLA and better toughness for light functional use.",
+        "QUALITY_TIPS": [
+          "0.20 mm layers are a good balance between speed and precision.",
+          "Use 3-4 walls to improve impact robustness."
+        ],
+        "PROS": [
+          "Higher toughness than standard PLA.",
+          "Good compromise for functional prototypes."
+        ],
+        "CONS": [
+          "Heat resistance is still moderate.",
+          "Less stiff than PLA Basic."
+        ],
+        "IDEAL_FOR": [
+          "Light functional parts",
+          "Non-structural tools",
+          "Test components"
+        ],
+        "SOURCES": {
+          "wikipedia-pla": {
+            "LABEL": "Wikipedia - Polylactic acid"
+          },
+          "bambu-pla-tough": {
+            "LABEL": "Bambu Lab - PLA Tough"
+          }
+        }
+      },
+      "asa": {
+        "NAME": "ASA",
+        "SUMMARY": "Technical outdoor polymer, more UV stable than ABS.",
+        "QUALITY_TIPS": [
+          "An enclosed chamber and brim reduce warping.",
+          "0.20-0.28 mm layers balance adhesion and lead time."
+        ],
+        "PROS": [
+          "Good UV and weather resistance.",
+          "Suitable for functional outdoor components."
+        ],
+        "CONS": [
+          "Needs thermal control while printing.",
+          "Can warp without an adequate setup."
+        ],
+        "IDEAL_FOR": [
+          "Outdoor covers",
+          "Outdoor brackets",
+          "Sun-exposed parts"
+        ],
+        "SOURCES": {
+          "wikipedia-asa": {
+            "LABEL": "Wikipedia - Acrylonitrile styrene acrylate"
+          },
+          "bambu-asa": {
+            "LABEL": "Bambu Lab - ASA"
+          },
+          "ultimaker-asa": {
+            "LABEL": "Ultimaker - ASA"
+          }
+        }
+      },
+      "pc": {
+        "NAME": "PC",
+        "SUMMARY": "Technical material with high mechanical and thermal resistance for robust parts.",
+        "QUALITY_TIPS": [
+          "A heated chamber and very dry material are preferred.",
+          "0.20-0.28 mm layers reduce residual stress compared with very fine layers."
+        ],
+        "PROS": [
+          "Very resistant to impact and heat.",
+          "High dimensional stability on technical parts."
+        ],
+        "CONS": [
+          "Demanding to print at high temperatures.",
+          "An imperfect setup easily leads to deformation."
+        ],
+        "IDEAL_FOR": [
+          "Technical housings",
+          "High-load brackets",
+          "Parts near heat sources"
+        ],
+        "SOURCES": {
+          "wikipedia-pc": {
+            "LABEL": "Wikipedia - Polycarbonate"
+          },
+          "bambu-pc": {
+            "LABEL": "Bambu Lab - PC"
+          },
+          "ultimaker-pc": {
+            "LABEL": "Ultimaker - PC"
+          }
+        }
+      },
+      "pa12-cf": {
+        "NAME": "PA12-CF",
+        "SUMMARY": "Carbon-reinforced nylon focused on stiffness and stability for functional parts.",
+        "QUALITY_TIPS": [
+          "Material and environment must be dry before printing.",
+          "0.20-0.28 mm layers with a hardened nozzle and the recommended setup work best."
+        ],
+        "PROS": [
+          "Excellent stiffness-to-weight ratio.",
+          "Good dimensional stability for technical fixtures."
+        ],
+        "CONS": [
+          "Higher cost and printing complexity than entry-level materials.",
+          "Requires moisture control and a suitable nozzle."
+        ],
+        "IDEAL_FOR": [
+          "Jigs and fixtures",
+          "Light structural parts",
+          "Technical mechanical components"
+        ],
+        "SOURCES": {
+          "wikipedia-nylon-12": {
+            "LABEL": "Wikipedia - Nylon 12"
+          },
+          "ultimaker-pa12-cf": {
+            "LABEL": "Ultimaker - Nylon 12 Carbon Fiber"
+          },
+          "product-pa12-cf": {
+            "LABEL": "Product page - PA12-CF"
+          }
+        }
+      },
+      "pet-cf": {
+        "NAME": "PET-CF",
+        "SUMMARY": "Rigid technical material with carbon fiber, very stable on precision parts.",
+        "QUALITY_TIPS": [
+          "A hardened nozzle is mandatory because of the abrasive fiber.",
+          "0.20-0.28 mm layers balance adhesion and final stiffness."
+        ],
+        "PROS": [
+          "High mechanical and thermal performance.",
+          "Low deformation on functional geometries."
+        ],
+        "CONS": [
+          "Abrasive: a hardened nozzle is required.",
+          "High cost, not ideal for low-cost prototypes."
+        ],
+        "IDEAL_FOR": [
+          "Precision technical components",
+          "Rigid supports",
+          "Parts with high thermal stability"
+        ],
+        "SOURCES": {
+          "wikipedia-pet": {
+            "LABEL": "Wikipedia - Polyethylene terephthalate"
+          },
+          "wikipedia-cfrp": {
+            "LABEL": "Wikipedia - Carbon fiber reinforced polymer"
+          },
+          "bambu-pet-cf": {
+            "LABEL": "Bambu Lab - PET-CF"
+          }
+        }
+      }
+    }
+  },
   "CALC": {
     "TITLE": "3D Print Calculator",
     "SUBTITLE": "Upload your 3D file (STL, 3MF) and get an instant estimate of costs and print time.",
+    "EYEBROW": "Online 3D printing quote",
     "CTA_START": "Start Now",
     "BUSINESS": "Business",
     "PRIVATE": "Private",
     "MODE_EASY": "Quick",
     "MODE_ADVANCED": "Advanced",
+    "WHEN_TO_USE_LABEL": "When to use it:",
+    "MODES": {
+      "BASIC": {
+        "TOGGLE_HINT": "For ready-to-print files",
+        "TITLE": "Fast quote for ready 3D files",
+        "SUBTITLE": "Basic mode is for users who want a correct price in seconds without dealing with advanced technical settings.",
+        "UPLOAD_HELP": "Upload an STL or 3MF file that is already exported, choose material and quality, and get a clear price and lead-time estimate right away.",
+        "WHEN_TO_USE": "Use Basic if your model is already final and you mainly need a simple, fast quote."
+      },
+      "ADVANCED": {
+        "TOGGLE_HINT": "More control over print and material",
+        "TITLE": "More precise quote with materials and settings",
+        "SUBTITLE": "Advanced mode is for users who want a more precise estimate by adjusting relevant print settings.",
+        "UPLOAD_HELP": "Upload your 3D file and set material, layer height, supports, infill and nozzle size to get closer to the final print configuration.",
+        "WHEN_TO_USE": "Use Advanced if you want to compare materials or settings and need more control over the outcome."
+      }
+    },
+    "COMPARE_KICKER": "Quick choice",
+    "COMPARE_TITLE": "Basic or Advanced?",
+    "COMPARE_SUBTITLE": "The two pages cover different use cases. Start with Basic for speed, then switch to Advanced when material or print settings matter.",
+    "COMPARE": {
+      "BASIC": {
+        "TITLE": "Basic: fast quote",
+        "TEXT": "Best if you already have a ready file and want a correct price quickly, without going into technical print details."
+      },
+      "ADVANCED": {
+        "TITLE": "Advanced: more precise quote",
+        "TEXT": "Best if you want to choose material, layer height, supports, infill and other settings that have more impact on the final result."
+      }
+    },
+    "MODEL_SOURCES": {
+      "KICKER": "3D models",
+      "TITLE": "Where to find 3D models to upload",
+      "TEXT": "If you do not have a file yet, start from these platforms. Always check license, dimensions and model quality before uploading it to the calculator.",
+      "FAVORITES_TITLE": "Our favorites",
+      "OTHERS_TITLE": "Others",
+      "ITEMS": {
+        "PRINTABLES": "Large catalog of printable models shared by the maker community.",
+        "MAKERWORLD": "Repository of ready-to-print models, especially useful for maker projects.",
+        "THINGIVERSE": "Long-running archive with a very large number of free models in many categories.",
+        "THANGS": "3D search engine and repository with related versions and collections.",
+        "CULTS3D": "Marketplace with both free and paid models across many use cases.",
+        "YEGGI": "Search engine that aggregates 3D models from different sites."
+      }
+    },
+    "FAQ": {
+      "KICKER": "Common questions",
+      "TITLE": "Mini FAQ",
+      "SUBTITLE": "Quick answers to the questions that most often block non-technical users.",
+      "ITEMS": {
+        "FILES": {
+          "Q": "Which files can I upload?",
+          "A": "You can upload STL or 3MF files. If you download a model from an external portal, make sure it is an actual 3D file and not just images or documentation."
+        },
+        "MODE": {
+          "Q": "How do I choose between Basic and Advanced?",
+          "A": "Choose Basic if you want a fast quote for a ready file. Choose Advanced if you need to compare materials or change settings that affect time, weight and price."
+        },
+        "NO_MODEL": {
+          "Q": "What if I do not have a 3D model yet?",
+          "A": "You can search on the platforms listed above or contact us if you need help with CAD design or adaptation."
+        },
+        "PRICE": {
+          "Q": "Is the shown price already reliable?",
+          "A": "It is an automatic estimate based on your file and the selected settings. Advanced mode is more precise because it accounts for more print parameters."
+        },
+        "BEFORE_UPLOAD": {
+          "Q": "What should I check before uploading?",
+          "A": "Check that the model has the correct scale, that the file is not corrupted and that the geometry really matches the final part you want to print."
+        }
+      }
+    },
     "UPLOAD_LABEL": "Drag your 3D file here",
     "UPLOAD_SUB": "Supports STL, 3MF up to 50MB",
     "MATERIAL": "Material",
@@ -175,6 +711,22 @@
     "WIP_NOTE": "We care about doing this right. In the meantime, you can get instant pricing and lead time from our calculator.",
     "CUSTOM_PART_FOOTER_TITLE": "Can't find what you're looking for?",
     "CUSTOM_PART_FOOTER_TEXT": "Contact us for custom parts.",
+    "QUICK_REQUEST_HELP": "Leave your email, describe the product or part you need, and attach a photo if it helps.",
+    "QUICK_REQUEST_MESSAGE_LABEL": "What do you need? *",
+    "QUICK_REQUEST_MESSAGE_PLACEHOLDER": "Describe the product, part, or modification you need...",
+    "QUICK_REQUEST_IMAGE_LABEL": "Photo (optional)",
+    "QUICK_REQUEST_IMAGE_HINT": "Attach one reference image to make the request clearer.",
+    "QUICK_REQUEST_ADD_IMAGE": "Add photo",
+    "QUICK_REQUEST_CHANGE_IMAGE": "Change photo",
+    "QUICK_REQUEST_REMOVE_IMAGE": "Remove photo",
+    "QUICK_REQUEST_SEND": "Send request",
+    "QUICK_REQUEST_EMAIL_ERROR": "Enter a valid email address.",
+    "QUICK_REQUEST_MESSAGE_ERROR": "Describe what you need before sending.",
+    "QUICK_REQUEST_IMAGE_LIMIT_ERROR": "You can upload only one reference image here.",
+    "QUICK_REQUEST_IMAGE_TYPE_ERROR": "Upload a JPG, PNG, WEBP, GIF, BMP, SVG, or HEIC image.",
+    "PRODUCT_QUICK_REQUEST_EYEBROW": "Need a variation?",
+    "PRODUCT_QUICK_REQUEST_TITLE": "Ask for a custom version of this product.",
+    "PRODUCT_QUICK_REQUEST_TEXT": "Useful if you need another size, a mounting change, or a product adaptation.",
     "ADD_CART": "Add to Cart",
     "ADDING": "Adding to cart",
     "ADD_SUCCESS": "Product added to cart.",
@@ -339,7 +891,8 @@
       "S4": {
         "TITLE": "4. Cookies and tracking",
         "P1": "4.1. We do not use profiling, marketing or third-party tracking cookies.",
-        "P2": "4.2. We do not use advertising tracking systems. Any temporary technical data is used only for session operation."
+        "P2": "4.2. We do not use advertising tracking systems. Any temporary technical data is used only for session operation.",
+        "P3": "4.3. Public QR links generated from the back-office may record scan date/time, browser-estimated language and a technical visitor estimate obtained through an irreversible hash. We do not request GPS from the phone and we do not store the IP address in plain text."
       },
       "S5": {
         "TITLE": "5. Data sharing",
@@ -497,6 +1050,12 @@
     "SUCCESS_TITLE": "Message Sent Successfully",
     "SUCCESS_DESC": "Thank you for contacting us. We have received your message and will send you a recap email shortly.",
     "SEND_ANOTHER": "Send Another Message",
+    "CAD_NOTE_EYEBROW": "Custom parts",
+    "CAD_NOTE_TITLE": "Modify or recreate a part",
+    "CAD_NOTE_TEXT": "Useful if you need to recreate a replacement part, adapt a model or validate an idea before printing. We can start from photos, dimensions, sketches or an existing part.",
+    "CAD_NOTE_ITEM_1": "You have a broken or hard-to-find part",
+    "CAD_NOTE_ITEM_2": "You want to adapt a model to a precise size",
+    "CAD_NOTE_ITEM_3": "You do not have a 3D file but can send photos or measurements",
     "FILE_TYPE_PDF": "PDF",
     "FILE_TYPE_3D": "3D",
     "FILE_TYPE_VIDEO": "Video",

@@ -212,24 +212,10 @@
   </div>
 
   <section class="container shop-custom-cta">
-    <app-card class="shop-custom-cta-card">
-      <div class="shop-custom-cta-inner">
-        <div class="shop-custom-cta-copy">
-          <p class="panel-kicker">
-            {{ "SHOP.CUSTOM_PART_FOOTER_TITLE" | translate }}
-          </p>
-          <h2 class="shop-custom-cta-title">
-            {{ "SHOP.CUSTOM_PART_FOOTER_TEXT" | translate }}
-          </h2>
-        </div>
-
-        <app-button
-          variant="primary"
-          [routerLink]="languageService.localizedPath('/contact')"
-        >
-          {{ "NAV.CONTACT" | translate }}
-        </app-button>
-      </div>
-    </app-card>
+    <app-quick-request-panel
+      eyebrowKey="SHOP.CUSTOM_PART_FOOTER_TITLE"
+      titleKey="SHOP.CUSTOM_PART_FOOTER_TEXT"
+      [draftContext]="{ source: 'shop_catalog' }"
+    ></app-quick-request-panel>
   </section>
 </section>

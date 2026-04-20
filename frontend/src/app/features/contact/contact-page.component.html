@@ -1,12 +1,26 @@
-<div class="container ui-simple-hero contact-hero">
-  <h1 class="ui-simple-hero__title">{{ "CONTACT.TITLE" | translate }}</h1>
-  <p class="ui-simple-hero__subtitle">
-    {{ "CONTACT.HERO_SUBTITLE" | translate }}
-  </p>
-</div>
+<section class="contact-page ui-page-surface">
+  <div class="container ui-simple-hero">
+    <h1 class="ui-simple-hero__title">{{ "CONTACT.TITLE" | translate }}</h1>
+    <p class="ui-simple-hero__subtitle">
+      {{ "CONTACT.HERO_SUBTITLE" | translate }}
+    </p>
+  </div>
 
-<div class="container content">
-  <app-card>
-    <app-contact-form></app-contact-form>
-  </app-card>
-</div>
+  <div class="container content ui-page-surface__body">
+    <app-card>
+      <app-contact-form></app-contact-form>
+    </app-card>
+
+    <app-feature-panel
+      [eyebrow]="'CONTACT.CAD_NOTE_EYEBROW' | translate"
+      [title]="'CONTACT.CAD_NOTE_TITLE' | translate"
+      [description]="'CONTACT.CAD_NOTE_TEXT' | translate"
+    >
+      <ul class="contact-cad-note__list">
+        <li>{{ "CONTACT.CAD_NOTE_ITEM_1" | translate }}</li>
+        <li>{{ "CONTACT.CAD_NOTE_ITEM_2" | translate }}</li>
+        <li>{{ "CONTACT.CAD_NOTE_ITEM_3" | translate }}</li>
+      </ul>
+    </app-feature-panel>
+  </div>
+</section>

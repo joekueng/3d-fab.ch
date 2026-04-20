@@ -11,6 +11,7 @@
   "FOOTER": {
     "PRIVACY": "Confidentialité",
     "TERMS": "Conditions générales",
+    "MATERIALS": "Qualité & matériaux",
     "CONTACT": "Contactez-nous"
   },
   "SEO": {
@@ -27,12 +28,12 @@
         "TITLE": "Calculateur de devis impression 3D | 3D fab",
         "DESCRIPTION": "Chargez votre fichier 3D et obtenez prix et délais en quelques secondes avec un vrai slicing.",
         "BASIC": {
-          "TITLE": "Calculateur impression 3D de base | 3D fab",
-          "DESCRIPTION": "Calculez rapidement le prix de votre impression 3D avec le parcours de base."
+          "TITLE": "Devis impression 3D rapide pour fichiers prets | 3D fab",
+          "DESCRIPTION": "Chargez un fichier STL ou 3MF deja pret et obtenez en quelques secondes un prix d impression 3D fiable avec le calculateur de base."
         },
         "ADVANCED": {
-          "TITLE": "Calculateur impression 3D avancé | 3D fab",
-          "DESCRIPTION": "Configurez des paramètres avancés et obtenez un devis précis basé sur un vrai slicing."
+          "TITLE": "Devis impression 3D precis avec materiaux et reglages | 3D fab",
+          "DESCRIPTION": "Definissez le materiau, la hauteur de couche, les supports et le remplissage pour obtenir un devis d impression 3D plus precis."
         }
       },
       "SHOP": {
@@ -52,8 +53,8 @@
         "DESCRIPTION": "Découvrez l'équipe de 3D fab et notre atelier d'impression 3D pour prototypes, pièces et productions sur mesure."
       },
       "CONTACT": {
-        "TITLE": "Contact | 3D fab",
-        "DESCRIPTION": "Demandez des informations, des devis personnalisés ou un support technique pour votre projet d'impression 3D."
+        "TITLE": "Pieces sur mesure et rechange | Contact - 3D fab",
+        "DESCRIPTION": "Vous avez besoin d une piece sur mesure, d une piece de rechange ou d une modification de modele ? Contactez-nous meme sans fichier 3D : nous pouvons partir de photos, de cotes ou d une piece existante."
       },
       "LEGAL": {
         "PRIVACY": {
@@ -76,6 +77,476 @@
       "ADMIN": {
         "TITLE": "Admin | 3D fab",
         "DESCRIPTION": "Espace d'administration restreint de 3D fab."
+      }
+    }
+  },
+  "MATERIALS_PAGE": {
+    "HERO": {
+      "TITLE": "Qualité & matériaux",
+      "SUBTITLE_PREFIX": "Guide technique sur une selection de materiaux. Comparez la qualite d'impression et les compromis de production, puis voyez comment utiliser le",
+      "LINK_LABEL": "calculateur",
+      "SUBTITLE_SUFFIX": "."
+    },
+    "RADAR": {
+      "EYEBROW": "Comparaison",
+      "TITLE": "Graphique radar",
+      "DESCRIPTION": "Selectionnez un ou plusieurs materiaux pour afficher leurs proprietes.",
+      "ARIA_LABEL": "Graphique radar des materiaux",
+      "SELECTOR_TITLE": "Materiaux compares",
+      "SELECTOR_ARIA_LABEL": "Selection des materiaux",
+      "SELECTOR_HELP": "Note : sur l'axe Economie, une valeur plus elevee signifie un cout par kg plus bas.",
+      "READING_TITLE": "Comment lire la comparaison",
+      "READING_DESCRIPTION": "Chaque axe montre une propriete technique. La valeur la plus elevee represente la meilleure performance relative parmi les materiaux compares.",
+      "AXES": {
+        "economy": {
+          "LABEL": "Economie",
+          "DESCRIPTION": "Indice base sur le prix au kg : une valeur elevee indique un cout plus avantageux.",
+          "UNIT": "CHF/kg"
+        },
+        "printability": {
+          "LABEL": "Imprimabilite",
+          "DESCRIPTION": "Indice synthetique qui prend en compte la facilite d'impression, la sensibilite a l'humidite et la stabilite du processus.",
+          "UNIT": "indice"
+        },
+        "tensile": {
+          "LABEL": "Resistance",
+          "DESCRIPTION": "Resistance a la traction du materiau (MPa).",
+          "UNIT": "MPa"
+        },
+        "modulus": {
+          "LABEL": "Rigidite",
+          "DESCRIPTION": "Module elastique (GPa).",
+          "UNIT": "GPa"
+        },
+        "elongation": {
+          "LABEL": "Flexibilite",
+          "DESCRIPTION": "Allongement a la rupture (%).",
+          "UNIT": "%"
+        },
+        "hdt": {
+          "LABEL": "Resistance thermique",
+          "LABEL_LINES": ["Resistance", "thermique"],
+          "DESCRIPTION": "HDT : temperature de deformation du materiau (C).",
+          "UNIT": "C"
+        }
+      }
+    },
+    "TABLE": {
+      "EYEBROW": "Donnees techniques",
+      "TITLE": "Tableau de comparaison",
+      "PARAMETER_HEADER": "Parametre",
+      "ROWS": {
+        "printability": "Imprimabilite [indice 0-100]",
+        "layer-range": "Hauteur de couche recommandee [mm]",
+        "price": "Prix [CHF/kg]",
+        "density": "Densite [g/cm3]",
+        "tensile": "Resistance a la traction [MPa]",
+        "modulus": "Module elastique [GPa]",
+        "elongation": "Allongement a la rupture [%]",
+        "hdt": "Temperature de deformation [C]",
+        "extrusion": "Temperature d'extrusion [C]"
+      }
+    },
+    "CALCULATOR": {
+      "SECTION_EYEBROW": "Calculateur",
+      "SECTION_TITLE": "Comment utiliser le calculateur",
+      "SECTION_DESCRIPTION": "Cette section explique quels parametres influencent le prix final, le delai et le resultat final, et comment lire correctement le resultat.",
+      "FACTS": {
+        "overview": {
+          "EYEBROW": "Calculateur",
+          "TITLE": "Ce que retourne le calculateur",
+          "DESCRIPTION": "Le calculateur retourne le prix final d'impression, le temps d'impression et la consommation de matiere.",
+          "DETAIL_LABEL": "Dans les deux modes",
+          "DETAIL": "vous pouvez choisir le materiau et la couleur.",
+          "CTA_LABEL": "Ouvrir le calculateur"
+        },
+        "basic": {
+          "EYEBROW": "Mode de base",
+          "TITLE": "Mode de base",
+          "DESCRIPTION": "En mode de base, vous choisissez le materiau, la couleur et la qualite.",
+          "DETAIL_LABEL": "Qualite",
+          "DETAIL": "Draft = 0.28 mm, 15% grid. Standard = 0.20 mm, 15% grid. High Definition = 0.12 mm, 20% gyroid.",
+          "NOTE_LABEL": "Ideal si",
+          "NOTE": "vous ne connaissez pas chaque parametre d'impression en detail.",
+          "CTA_LABEL": "Ouvrir Base"
+        },
+        "advanced": {
+          "EYEBROW": "Mode avance",
+          "TITLE": "Mode avance",
+          "DESCRIPTION": "En mode avance, vous controlez directement le materiau, la couleur, la buse, la hauteur de couche, le remplissage, le motif et les supports.",
+          "DETAIL_LABEL": "Profils actifs",
+          "DETAIL": "Les combinaisons disponibles dependent des profils machine actifs.",
+          "NOTE_LABEL": "Ideal si",
+          "NOTE": "vous savez deja exactement quels reglages appliquer a votre fichier.",
+          "CTA_LABEL": "Ouvrir Avance"
+        }
+      },
+      "PARAMETERS": {
+        "TITLE": "Parametres du calculateur",
+        "DESCRIPTION": "Vous trouverez ci-dessous les controles actuellement disponibles dans le calculateur. En mode avance, ce sont eux qui influencent le prix final, le delai et le rendu final.",
+        "EFFECT_LABEL": "Impact dans le calculateur",
+        "ITEMS": {
+          "material": {
+            "TITLE": "Materiau",
+            "AVAILABILITY": "Base et Avance",
+            "EXPLANATION": "Le materiau peut etre choisi parmi les variantes actives disponibles, chacune associee aux couleurs commandables.",
+            "CALCULATOR_EFFECT": "Il influence le prix de la matiere et les options disponibles dans le calculateur."
+          },
+          "quality": {
+            "TITLE": "Qualite",
+            "AVAILABILITY": "Base",
+            "EXPLANATION": "En mode de base, vous ne reglez pas separement la hauteur de couche et le remplissage : vous choisissez un preset predefini.",
+            "CALCULATOR_EFFECT": "Il definit automatiquement la hauteur de couche, le motif de remplissage et la densite."
+          },
+          "nozzleDiameter": {
+            "TITLE": "Diametre de buse",
+            "AVAILABILITY": "Avance",
+            "EXPLANATION": "Le calculateur propose actuellement des buses de 0.40 mm et 0.60 mm. Chaque buse active des hauteurs de couche differentes et peut impliquer un cout de changement.",
+            "CALCULATOR_EFFECT": "Il influence les hauteurs de couche selectionnables et peut affecter le cout de preparation."
+          },
+          "layerHeight": {
+            "TITLE": "Hauteur de couche",
+            "AVAILABILITY": "Avance",
+            "EXPLANATION": "Les hauteurs de couche disponibles dependent de la buse choisie.",
+            "CALCULATOR_EFFECT": "Elle influence directement le temps d'impression et le niveau de detail de la piece."
+          },
+          "infill": {
+            "TITLE": "Remplissage",
+            "AVAILABILITY": "Avance",
+            "EXPLANATION": "Le pourcentage de remplissage se regle manuellement pour adapter la resistance, le poids et le delai a la piece.",
+            "CALCULATOR_EFFECT": "Il augmente ou reduit le poids et le temps selon la densite choisie."
+          },
+          "infillPattern": {
+            "TITLE": "Motif de remplissage",
+            "AVAILABILITY": "Avance",
+            "EXPLANATION": "Des motifs comme grid, gyroid et cubic sont disponibles.",
+            "CALCULATOR_EFFECT": "Il influence la structure interne de la piece et peut modifier le temps, la consommation de matiere et le comportement mecanique."
+          },
+          "supports": {
+            "TITLE": "Supports",
+            "AVAILABILITY": "Avance",
+            "EXPLANATION": "Vous pouvez les activer ou les desactiver directement selon la geometrie du fichier.",
+            "CALCULATOR_EFFECT": "Ils changent la trajectoire d'impression et peuvent augmenter le temps et la matiere."
+          }
+        }
+      },
+      "GUIDES": {
+        "TITLE": "Exemples pratiques pour lire la hauteur de couche, les buses et le remplissage",
+        "DESCRIPTION": "Ces exemples aident a mieux comprendre comment la hauteur de couche, les buses et le remplissage influencent le resultat. Dans le calculateur, les buses disponibles sont 0.40 mm et 0.60 mm, et chacune active des hauteurs de couche differentes.",
+        "FALLBACK_IMAGE": "Image d'exemple en cours de mise a jour.",
+        "SPEC_LABELS": {
+          "OBJECT_EXAMPLE": "Exemple typique",
+          "BEST_FOR": "Mieux pour",
+          "TRADEOFF": "Limite",
+          "CALCULATOR_READ": "Effet typique"
+        },
+        "CATEGORIES": {
+          "layer": "Layer",
+          "nozzles": "Buses",
+          "infill": "Remplissage"
+        },
+        "ITEMS": {
+          "layer-012": {
+            "TITLE": "Layer 0.12 mm",
+            "OBJECT_EXAMPLE": "Miniature ou petit texte avec des details fins.",
+            "BEST_FOR": "Detail de surface maximal.",
+            "TRADEOFF": "Temps d'impression eleve.",
+            "CALCULATOR_READ": "Plus de detail visible, mais des temps d'impression plus longs."
+          },
+          "layer-020": {
+            "TITLE": "Layer 0.20 mm",
+            "OBJECT_EXAMPLE": "Piece fonctionnelle standard ou capot technique.",
+            "BEST_FOR": "Bon compromis qualite/temps.",
+            "TRADEOFF": "Moins de detail qu'en 0.12 mm.",
+            "CALCULATOR_READ": "Configuration equilibree, adaptee a un usage standard."
+          },
+          "layer-028": {
+            "TITLE": "Layer 0.28 mm",
+            "OBJECT_EXAMPLE": "Support de test ou prototype rapide.",
+            "BEST_FOR": "Reduction des delais et pieces volumineuses.",
+            "TRADEOFF": "Surface avec marches plus visibles.",
+            "CALCULATOR_READ": "Impression plus rapide, avec une finition moins fine."
+          },
+          "nozzles-040-060": {
+            "TITLE": "Buses 0.40 mm et 0.60 mm",
+            "OBJECT_EXAMPLE": "0.40 mm pour l'usage general, 0.60 mm pour des pieces plus rapides ou plus robustes.",
+            "BEST_FOR": "Choisir le bon compromis entre detail et productivite.",
+            "TRADEOFF": "",
+            "CALCULATOR_READ": "Dans le calculateur, 0.40 mm ouvre des couches plus fines ; 0.60 mm favorise des couches plus hautes et une impression plus rapide."
+          },
+          "infill-15": {
+            "TITLE": "Infill 15% + 2 perimetres",
+            "OBJECT_EXAMPLE": "Objet esthetique ou maquette legere.",
+            "BEST_FOR": "Reduire le poids et le delai.",
+            "TRADEOFF": "Resistance structurelle limitee.",
+            "CALCULATOR_READ": "Reduit la matiere et aide a contenir le temps d'impression."
+          },
+          "infill-40": {
+            "TITLE": "Infill 40% + 4 perimetres",
+            "OBJECT_EXAMPLE": "Composant soumis a une charge mecanique.",
+            "BEST_FOR": "Meilleure resistance fonctionnelle.",
+            "TRADEOFF": "Poids et temps d'impression plus eleves.",
+            "CALCULATOR_READ": "Augmente la matiere et le temps d'impression, et rapproche la piece d'un volume plus plein."
+          }
+        }
+      }
+    },
+    "SOURCES": {
+      "EYEBROW": "Sources",
+      "TITLE": "Sources consultees",
+      "DESCRIPTION": "Vous trouverez ici toutes les sources utilisees pour les donnees techniques et les descriptions des materiaux.",
+      "KINDS": {
+        "wikipedia": "Wikipedia",
+        "tech-sheet": "Fiche technique",
+        "product-sheet": "Fiche produit"
+      }
+    },
+    "MATERIALS": {
+      "tpu-95a-hf": {
+        "NAME": "TPU 95A HF",
+        "SUMMARY": "Materiau tres flexible, utile lorsqu'il faut absorber chocs et vibrations.",
+        "QUALITY_TIPS": [
+          "Reduire la vitesse et les accelerations pour une extrusion plus stable.",
+          "Utiliser des couches moyennes a hautes pour reduire les artefacts sur les surfaces souples."
+        ],
+        "PROS": [
+          "Tres grande flexibilite et excellente resilience aux chocs.",
+          "Bonne adhesion entre couches sur les geometries souples."
+        ],
+        "CONS": [
+          "Sensible a l'humidite pendant l'impression et le stockage.",
+          "Rigidite tres faible et resistance thermique limitee."
+        ],
+        "IDEAL_FOR": ["Joints", "Bumpers", "Grips", "Capots antichoc"],
+        "SOURCES": {
+          "wikipedia-tpu": {
+            "LABEL": "Wikipedia - Polyurethane thermoplastique"
+          },
+          "bambu-tpu-95a-hf": {
+            "LABEL": "Bambu Lab - TPU 95A HF"
+          },
+          "ultimaker-tpu-95a": {
+            "LABEL": "Ultimaker - TPU 95A"
+          }
+        }
+      },
+      "pla-basic": {
+        "NAME": "PLA Basic",
+        "SUMMARY": "Choix simple pour des prototypes rapides avec une bonne finition et une impression stable.",
+        "QUALITY_TIPS": [
+          "Pour la qualite visuelle, utilisez des couches de 0.12-0.16 mm.",
+          "Pour la productivite, utilisez des couches de 0.20-0.24 mm."
+        ],
+        "PROS": [
+          "Facile a imprimer.",
+          "Tres bonne qualite de surface sur les pieces visuelles."
+        ],
+        "CONS": [
+          "Fragile en cas de choc.",
+          "Faible resistance a la chaleur et a une exposition UV prolongee."
+        ],
+        "IDEAL_FOR": [
+          "Maquettes",
+          "Prototypes rapides",
+          "Pieces esthetiques interieures"
+        ],
+        "SOURCES": {
+          "wikipedia-pla": {
+            "LABEL": "Wikipedia - Acide polylactique"
+          },
+          "bambu-pla-basic": {
+            "LABEL": "Bambu Lab - PLA Basic"
+          },
+          "ultimaker-pla": {
+            "LABEL": "Ultimaker - PLA"
+          }
+        }
+      },
+      "pla-matte": {
+        "NAME": "PLA Matte",
+        "SUMMARY": "PLA a rendu mat pour les modeles d'exposition et les pieces ou l'esthetique prime.",
+        "QUALITY_TIPS": [
+          "Des couches de 0.16-0.24 mm conservent mieux l'effet mat.",
+          "Un refroidissement constant aide la texture de surface."
+        ],
+        "PROS": [
+          "Aspect mat propre.",
+          "S'imprime aussi facilement que le PLA standard."
+        ],
+        "CONS": [
+          "Proprietes mecaniques limitees pour un usage structurel.",
+          "Sensible a la chaleur comme les autres PLA."
+        ],
+        "IDEAL_FOR": [
+          "Objets d'exposition",
+          "Design produit",
+          "Mockups esthetiques"
+        ],
+        "SOURCES": {
+          "wikipedia-pla": {
+            "LABEL": "Wikipedia - Acide polylactique"
+          },
+          "bambu-pla-matte": {
+            "LABEL": "Bambu Lab - PLA Matte"
+          }
+        }
+      },
+      "pla-tough-plus": {
+        "NAME": "PLA Tough+",
+        "SUMMARY": "Compromis entre la facilite du PLA et une meilleure tenacite pour un usage fonctionnel leger.",
+        "QUALITY_TIPS": [
+          "Des couches de 0.20 mm offrent un bon compromis entre vitesse et precision.",
+          "Utilisez 3 a 4 perimetres pour augmenter la robustesse aux chocs."
+        ],
+        "PROS": [
+          "Plus tenace que le PLA standard.",
+          "Bon compromis pour des prototypes fonctionnels."
+        ],
+        "CONS": [
+          "La resistance thermique reste moderee.",
+          "Moins rigide que le PLA Basic."
+        ],
+        "IDEAL_FOR": [
+          "Pieces fonctionnelles legeres",
+          "Outils non structurels",
+          "Composants de test"
+        ],
+        "SOURCES": {
+          "wikipedia-pla": {
+            "LABEL": "Wikipedia - Acide polylactique"
+          },
+          "bambu-pla-tough": {
+            "LABEL": "Bambu Lab - PLA Tough"
+          }
+        }
+      },
+      "asa": {
+        "NAME": "ASA",
+        "SUMMARY": "Polymere technique pour l'exterieur, plus stable aux UV que l'ABS.",
+        "QUALITY_TIPS": [
+          "Une chambre fermee et un brim reduisent le warping.",
+          "Des couches de 0.20-0.28 mm equilibrent adhesion et delai."
+        ],
+        "PROS": [
+          "Bonne resistance aux UV et aux intemperies.",
+          "Adapte aux composants fonctionnels exterieurs."
+        ],
+        "CONS": [
+          "Necessite un bon controle thermique a l'impression.",
+          "Peut se deformer sans setup adapte."
+        ],
+        "IDEAL_FOR": [
+          "Capots exterieurs",
+          "Supports outdoor",
+          "Pieces exposees au soleil"
+        ],
+        "SOURCES": {
+          "wikipedia-asa": {
+            "LABEL": "Wikipedia - Acrylonitrile styrene acrylate"
+          },
+          "bambu-asa": {
+            "LABEL": "Bambu Lab - ASA"
+          },
+          "ultimaker-asa": {
+            "LABEL": "Ultimaker - ASA"
+          }
+        }
+      },
+      "pc": {
+        "NAME": "PC",
+        "SUMMARY": "Materiau technique a haute resistance mecanique et thermique pour des pieces robustes.",
+        "QUALITY_TIPS": [
+          "Une chambre chaude et un materiau bien sec sont preferables.",
+          "Des couches de 0.20-0.28 mm reduisent les contraintes residuelles par rapport aux couches tres fines."
+        ],
+        "PROS": [
+          "Tres resistant aux chocs et a la chaleur.",
+          "Bonne stabilite dimensionnelle sur les pieces techniques."
+        ],
+        "CONS": [
+          "Impression exigeante a haute temperature.",
+          "Un setup imparfait conduit facilement aux deformations."
+        ],
+        "IDEAL_FOR": [
+          "Boitiers techniques",
+          "Supports a forte charge",
+          "Pieces proches de sources de chaleur"
+        ],
+        "SOURCES": {
+          "wikipedia-pc": {
+            "LABEL": "Wikipedia - Polycarbonate"
+          },
+          "bambu-pc": {
+            "LABEL": "Bambu Lab - PC"
+          },
+          "ultimaker-pc": {
+            "LABEL": "Ultimaker - PC"
+          }
+        }
+      },
+      "pa12-cf": {
+        "NAME": "PA12-CF",
+        "SUMMARY": "Nylon renforce carbone oriente rigidite et stabilite pour des pieces fonctionnelles.",
+        "QUALITY_TIPS": [
+          "Le materiau et l'environnement doivent etre secs avant l'impression.",
+          "Des couches de 0.20-0.28 mm avec une buse trempee et le setup recommande donnent le meilleur resultat."
+        ],
+        "PROS": [
+          "Excellent rapport rigidite/poids.",
+          "Bonne stabilite dimensionnelle pour les gabarits techniques."
+        ],
+        "CONS": [
+          "Cout et complexite d'impression superieurs aux materiaux de base.",
+          "Demande un controle de l'humidite et une buse adaptee."
+        ],
+        "IDEAL_FOR": [
+          "Jigs et gabarits",
+          "Pieces structurelles legeres",
+          "Composants mecaniques techniques"
+        ],
+        "SOURCES": {
+          "wikipedia-nylon-12": {
+            "LABEL": "Wikipedia - Nylon 12"
+          },
+          "ultimaker-pa12-cf": {
+            "LABEL": "Ultimaker - Nylon 12 Carbon Fiber"
+          },
+          "product-pa12-cf": {
+            "LABEL": "Fiche produit - PA12-CF"
+          }
+        }
+      },
+      "pet-cf": {
+        "NAME": "PET-CF",
+        "SUMMARY": "Materiau technique rigide avec fibre de carbone, tres stable sur les pieces de precision.",
+        "QUALITY_TIPS": [
+          "Une buse trempee est obligatoire a cause de l'abrasivite de la fibre.",
+          "Des couches de 0.20-0.28 mm equilibrent adhesion et rigidite finale."
+        ],
+        "PROS": [
+          "Hautes performances mecaniques et thermiques.",
+          "Faible deformation sur les geometries fonctionnelles."
+        ],
+        "CONS": [
+          "Abrasif : une buse trempee est necessaire.",
+          "Cout eleve, peu adapte aux prototypes economiques."
+        ],
+        "IDEAL_FOR": [
+          "Composants techniques de precision",
+          "Supports rigides",
+          "Pieces avec forte stabilite thermique"
+        ],
+        "SOURCES": {
+          "wikipedia-pet": {
+            "LABEL": "Wikipedia - Polyethylene terephthalate"
+          },
+          "wikipedia-cfrp": {
+            "LABEL": "Wikipedia - Polymere renforce de fibre de carbone"
+          },
+          "bambu-pet-cf": {
+            "LABEL": "Bambu Lab - PET-CF"
+          }
+        }
       }
     }
   },
@@ -140,11 +611,84 @@
   "CALC": {
     "TITLE": "Calculer un devis 3D",
     "SUBTITLE": "Chargez votre fichier 3D (STL, 3MF), réglez la qualité et la couleur puis calculez immédiatement prix et délais.",
+    "EYEBROW": "Devis impression 3D en ligne",
     "CTA_START": "Commencer maintenant",
     "BUSINESS": "Entreprises",
     "PRIVATE": "Particuliers",
     "MODE_EASY": "Base",
     "MODE_ADVANCED": "Avancée",
+    "WHEN_TO_USE_LABEL": "Quand l'utiliser :",
+    "MODES": {
+      "BASIC": {
+        "TOGGLE_HINT": "Pour fichiers deja prets",
+        "TITLE": "Devis rapide pour fichiers 3D deja prets",
+        "SUBTITLE": "Le mode Base est pense pour les utilisateurs qui veulent un prix fiable en quelques secondes sans gerer des reglages techniques avances.",
+        "UPLOAD_HELP": "Chargez un fichier STL ou 3MF deja exporte, choisissez le materiau et la qualite, puis obtenez tout de suite une estimation claire du prix et du delai.",
+        "WHEN_TO_USE": "Utilisez Base si votre modele est deja finalise et que vous voulez surtout un devis simple et rapide."
+      },
+      "ADVANCED": {
+        "TOGGLE_HINT": "Plus de controle sur l impression",
+        "TITLE": "Devis plus precis avec materiaux et reglages",
+        "SUBTITLE": "Le mode avance est pense pour les utilisateurs qui veulent une estimation plus precise en ajustant les parametres d impression importants.",
+        "UPLOAD_HELP": "Chargez votre fichier 3D et reglez le materiau, la hauteur de couche, les supports, le remplissage et la buse pour vous rapprocher de la configuration finale.",
+        "WHEN_TO_USE": "Utilisez Avancee si vous voulez comparer des materiaux ou des reglages et garder plus de controle sur le resultat."
+      }
+    },
+    "COMPARE_KICKER": "Choix rapide",
+    "COMPARE_TITLE": "Base ou Avancee ?",
+    "COMPARE_SUBTITLE": "Les deux pages repondent a des besoins differents. Commencez par Base pour aller vite, puis passez a Avancee quand le materiau ou les reglages d impression deviennent importants.",
+    "COMPARE": {
+      "BASIC": {
+        "TITLE": "Base : devis rapide",
+        "TEXT": "Ideal si vous avez deja un fichier pret et que vous voulez recevoir rapidement un prix fiable, sans entrer dans les details techniques."
+      },
+      "ADVANCED": {
+        "TITLE": "Avancee : devis plus precis",
+        "TEXT": "Ideal si vous voulez choisir le materiau, la hauteur de couche, les supports, le remplissage et d autres reglages qui influencent davantage le resultat final."
+      }
+    },
+    "MODEL_SOURCES": {
+      "KICKER": "Modeles 3D",
+      "TITLE": "Ou trouver des modeles 3D a charger",
+      "TEXT": "Si vous n avez pas encore de fichier, vous pouvez commencer par ces plateformes. Verifiez toujours la licence, les dimensions et la qualite du modele avant de le charger dans le calculateur.",
+      "FAVORITES_TITLE": "Nos preferes",
+      "OTHERS_TITLE": "Autres",
+      "ITEMS": {
+        "PRINTABLES": "Grand catalogue de modeles imprimables partages par la communaute maker.",
+        "MAKERWORLD": "Repository de modeles prets a imprimer, utile surtout pour les projets maker.",
+        "THINGIVERSE": "Archive historique avec un tres grand nombre de modeles gratuits dans de nombreuses categories.",
+        "THANGS": "Moteur de recherche et repository 3D avec versions et collections associees.",
+        "CULTS3D": "Marketplace avec des modeles gratuits et payants pour des usages tres varies.",
+        "YEGGI": "Moteur de recherche qui agrège des modeles 3D depuis plusieurs sites."
+      }
+    },
+    "FAQ": {
+      "KICKER": "Questions frequentes",
+      "TITLE": "Mini FAQ",
+      "SUBTITLE": "Des reponses rapides aux questions qui bloquent le plus souvent les utilisateurs non techniques.",
+      "ITEMS": {
+        "FILES": {
+          "Q": "Quels fichiers puis-je charger ?",
+          "A": "Vous pouvez charger des fichiers STL ou 3MF. Si vous telechargez un modele depuis un portail externe, verifiez qu il s agit bien d un vrai fichier 3D et pas seulement d images ou de documentation."
+        },
+        "MODE": {
+          "Q": "Comment choisir entre Base et Avancee ?",
+          "A": "Choisissez Base si vous voulez un devis rapide pour un fichier deja pret. Choisissez Avancee si vous devez comparer des materiaux ou modifier des reglages qui influencent le temps, le poids et le prix."
+        },
+        "NO_MODEL": {
+          "Q": "Et si je n ai pas encore de modele 3D ?",
+          "A": "Vous pouvez chercher sur les plateformes ci-dessus ou nous contacter si vous avez besoin d aide pour la conception ou l adaptation CAD."
+        },
+        "PRICE": {
+          "Q": "Le prix affiche est-il deja fiable ?",
+          "A": "C est une estimation automatique basee sur votre fichier et les reglages choisis. Le mode Avancee est plus precis car il tient compte d un plus grand nombre de parametres d impression."
+        },
+        "BEFORE_UPLOAD": {
+          "Q": "Que faut-il verifier avant le chargement ?",
+          "A": "Verifiez que le modele a la bonne echelle, que le fichier n est pas corrompu et que la geometrie correspond bien a la piece finale que vous voulez imprimer."
+        }
+      }
+    },
     "UPLOAD_LABEL": "Glissez votre fichier 3D ici",
     "UPLOAD_SUB": "Nous prenons en charge STL, 3MF jusqu'à 50MB",
     "MATERIAL": "Matériau",
@@ -239,6 +783,22 @@
     "WIP_NOTE": "Nous tenons à bien faire les choses : en attendant, vous pouvez calculer immédiatement prix et délais d'un fichier 3D avec notre calculateur.",
     "CUSTOM_PART_FOOTER_TITLE": "Vous ne trouvez pas ce que vous cherchez ?",
     "CUSTOM_PART_FOOTER_TEXT": "Contactez-nous pour des pièces personnalisées.",
+    "QUICK_REQUEST_HELP": "Laissez votre e-mail, décrivez le produit ou la pièce souhaitée et ajoutez une photo si cela peut aider.",
+    "QUICK_REQUEST_MESSAGE_LABEL": "De quoi avez-vous besoin ? *",
+    "QUICK_REQUEST_MESSAGE_PLACEHOLDER": "Décrivez le produit, la pièce ou la modification souhaitée...",
+    "QUICK_REQUEST_IMAGE_LABEL": "Photo (optionnelle)",
+    "QUICK_REQUEST_IMAGE_HINT": "Ajoutez une image de référence pour rendre la demande plus claire.",
+    "QUICK_REQUEST_ADD_IMAGE": "Ajouter une photo",
+    "QUICK_REQUEST_CHANGE_IMAGE": "Changer la photo",
+    "QUICK_REQUEST_REMOVE_IMAGE": "Supprimer la photo",
+    "QUICK_REQUEST_SEND": "Envoyer la demande",
+    "QUICK_REQUEST_EMAIL_ERROR": "Saisissez une adresse e-mail valide.",
+    "QUICK_REQUEST_MESSAGE_ERROR": "Décrivez votre besoin avant d'envoyer.",
+    "QUICK_REQUEST_IMAGE_LIMIT_ERROR": "Vous pouvez téléverser une seule image de référence ici.",
+    "QUICK_REQUEST_IMAGE_TYPE_ERROR": "Téléversez une image JPG, PNG, WEBP, GIF, BMP, SVG ou HEIC.",
+    "PRODUCT_QUICK_REQUEST_EYEBROW": "Besoin d'une variante ?",
+    "PRODUCT_QUICK_REQUEST_TITLE": "Demandez une version personnalisée de ce produit.",
+    "PRODUCT_QUICK_REQUEST_TEXT": "Utile si vous avez besoin d'une autre taille, d'une fixation différente ou d'une adaptation du produit.",
     "ADD_CART": "Ajouter au panier",
     "ADDING": "Ajout en cours",
     "ADD_SUCCESS": "Produit ajouté au panier.",
@@ -405,7 +965,8 @@
       "S4": {
         "TITLE": "4. Cookies et traçage",
         "P1": "4.1. Nous n'utilisons pas de cookies de profilage, de marketing ou de traçage de tiers.",
-        "P2": "4.2. Nous n'utilisons pas de systèmes de tracking publicitaire. Les éventuelles données techniques temporaires sont utilisées uniquement pour le fonctionnement de la session."
+        "P2": "4.2. Nous n'utilisons pas de systèmes de tracking publicitaire. Les éventuelles données techniques temporaires sont utilisées uniquement pour le fonctionnement de la session.",
+        "P3": "4.3. Les QR publics générés depuis le back-office peuvent enregistrer la date/heure du scan, la langue estimée du navigateur et une estimation technique du visiteur obtenue via un hash irréversible. Nous ne demandons pas le GPS du téléphone et nous ne conservons pas l'adresse IP en clair."
       },
       "S5": {
         "TITLE": "5. Partage des données",
@@ -562,6 +1123,12 @@
     "SUCCESS_DESC": "Merci de nous avoir contactés. Nous avons reçu votre message et vous enverrons un e-mail récapitulatif prochainement.",
     "SEND_ANOTHER": "Envoyer un autre message",
     "HERO_SUBTITLE": "Nous sommes là pour vous aider. Remplissez le formulaire ci-dessous pour toute demande.",
+    "CAD_NOTE_EYEBROW": "Pieces sur mesure",
+    "CAD_NOTE_TITLE": "Modifier ou reproduire une piece",
+    "CAD_NOTE_TEXT": "Utile si vous devez recreer une piece de rechange, adapter un modele ou verifier une idee avant impression. Nous pouvons partir de photos, de cotes, d un croquis ou d une piece existante.",
+    "CAD_NOTE_ITEM_1": "Vous avez une piece cassee ou difficile a trouver",
+    "CAD_NOTE_ITEM_2": "Vous voulez adapter un modele a une dimension precise",
+    "CAD_NOTE_ITEM_3": "Vous n avez pas de fichier 3D mais vous pouvez envoyer des photos ou des cotes",
     "FILE_TYPE_PDF": "PDF",
     "FILE_TYPE_3D": "3D",
     "FILE_TYPE_VIDEO": "Vidéo",

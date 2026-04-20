@@ -23,7 +23,7 @@ import { BrandAnimationLogoComponent } from './shared/components/brand-animation
 export class AppComponent {
   private readonly seoService = inject(SeoService);
   private readonly destroyRef = inject(DestroyRef);
-  readonly siteIntroState = signal<'hidden' | 'active' | 'closing'>('hidden');
+  readonly siteIntroState = signal<'hidden' | 'active' | 'closing'>('active');
 
   constructor(@Optional() @Inject(PLATFORM_ID) platformId?: Object) {
     if (!isPlatformBrowser(platformId ?? 'browser')) {
@@ -31,8 +31,6 @@ export class AppComponent {
     }
 
     afterNextRender(() => {
-      this.siteIntroState.set('active');
-
       const closeTimeoutId = window.setTimeout(() => {
         this.siteIntroState.set('closing');
       }, 1020);

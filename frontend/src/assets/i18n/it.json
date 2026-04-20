@@ -11,6 +11,7 @@
   "FOOTER": {
     "PRIVACY": "Privacy",
     "TERMS": "Termini & Condizioni",
+    "MATERIALS": "Qualita e Materiali",
     "CONTACT": "Contattaci"
   },
   "SEO": {
@@ -27,12 +28,12 @@
         "TITLE": "Calcolatore preventivo stampa 3D | 3D fab",
         "DESCRIPTION": "Carica il file 3D e ottieni prezzo e tempi in pochi secondi con slicing reale.",
         "BASIC": {
-          "TITLE": "Calcolatore stampa 3D base | 3D fab",
-          "DESCRIPTION": "Calcola rapidamente il prezzo della tua stampa 3D in modalita base."
+          "TITLE": "Preventivo stampa 3D veloce da file pronti | 3D fab",
+          "DESCRIPTION": "Carica un file STL o 3MF gia pronto e ricevi un prezzo corretto in pochi secondi con il calcolatore base."
         },
         "ADVANCED": {
-          "TITLE": "Calcolatore stampa 3D avanzato | 3D fab",
-          "DESCRIPTION": "Configura parametri avanzati e ottieni un preventivo preciso con slicing reale."
+          "TITLE": "Preventivo stampa 3D preciso con materiali e impostazioni | 3D fab",
+          "DESCRIPTION": "Configura materiale, layer, supporti e riempimento per ottenere un preventivo stampa 3D piu preciso."
         }
       },
       "SHOP": {
@@ -52,8 +53,8 @@
         "DESCRIPTION": "Scopri il team 3D fab e il laboratorio di stampa 3D per prototipi, ricambi e produzioni su misura."
       },
       "CONTACT": {
-        "TITLE": "Contatti | 3D fab",
-        "DESCRIPTION": "Richiedi informazioni, preventivi personalizzati o supporto tecnico per il tuo progetto di stampa 3D."
+        "TITLE": "Pezzi su misura e ricambi | Contattaci - 3D fab",
+        "DESCRIPTION": "Hai bisogno di un pezzo su misura, di un ricambio o della modifica di un modello? Contattaci anche se non hai un file 3D: possiamo partire da foto, misure o da un pezzo esistente."
       },
       "LEGAL": {
         "PRIVACY": {
@@ -76,6 +77,469 @@
       "ADMIN": {
         "TITLE": "Admin | 3D fab",
         "DESCRIPTION": "Area amministrativa riservata di 3D fab."
+      }
+    }
+  },
+  "MATERIALS_PAGE": {
+    "HERO": {
+      "TITLE": "Qualita e Materiali",
+      "SUBTITLE_PREFIX": "Guida tecnica su una selezione di materiali. Confronto qualita di stampa disponibili e spiegazione all'utilizzo del",
+      "LINK_LABEL": "calcolatore",
+      "SUBTITLE_SUFFIX": "."
+    },
+    "RADAR": {
+      "EYEBROW": "Confronto",
+      "TITLE": "Grafico Radar",
+      "DESCRIPTION": "Seleziona uno o piu materiali per visualizzare le proprieta.",
+      "ARIA_LABEL": "Grafico radar materiali",
+      "SELECTOR_TITLE": "Materiali nel confronto",
+      "SELECTOR_ARIA_LABEL": "Selezione materiali",
+      "SELECTOR_HELP": "Nota: nell asse Convenienza, un valore piu alto indica un costo al kg piu basso.",
+      "READING_TITLE": "Come leggere il confronto",
+      "READING_DESCRIPTION": "Ogni asse mostra una proprieta tecnica. Il valore massimo rappresenta la prestazione relativa piu alta tra i materiali confrontati.",
+      "AXES": {
+        "economy": {
+          "LABEL": "Convenienza",
+          "DESCRIPTION": "Indice basato sul prezzo al kg: un valore alto indica un costo piu favorevole.",
+          "UNIT": "CHF/kg"
+        },
+        "printability": {
+          "LABEL": "Stampabilita",
+          "DESCRIPTION": "Indice sintetico che considera facilita di stampa, sensibilita all umidita e stabilita del processo.",
+          "UNIT": "indice"
+        },
+        "tensile": {
+          "LABEL": "Resistenza",
+          "DESCRIPTION": "Resistenza a trazione del materiale (MPa).",
+          "UNIT": "MPa"
+        },
+        "modulus": {
+          "LABEL": "Rigidita",
+          "DESCRIPTION": "Modulo elastico (GPa).",
+          "UNIT": "GPa"
+        },
+        "elongation": {
+          "LABEL": "Flessibilita",
+          "DESCRIPTION": "Allungamento a rottura (%).",
+          "UNIT": "%"
+        },
+        "hdt": {
+          "LABEL": "Resistenza termica",
+          "LABEL_LINES": ["Resistenza", "termica"],
+          "DESCRIPTION": "HDT: temperatura di deformazione del materiale (C).",
+          "UNIT": "C"
+        }
+      }
+    },
+    "TABLE": {
+      "EYEBROW": "Dati tecnici",
+      "TITLE": "Tabella di confronto",
+      "PARAMETER_HEADER": "Parametro",
+      "ROWS": {
+        "printability": "Stampabilita [indice 0-100]",
+        "layer-range": "Layer consigliato [mm]",
+        "price": "Prezzo [CHF/kg]",
+        "density": "Densita [g/cm3]",
+        "tensile": "Resistenza a trazione [MPa]",
+        "modulus": "Modulo elastico [GPa]",
+        "elongation": "Allungamento a rottura [%]",
+        "hdt": "Temperatura di deformazione [C]",
+        "extrusion": "Temperatura estrusione [C]"
+      }
+    },
+    "CALCULATOR": {
+      "SECTION_EYEBROW": "Calcolatore",
+      "SECTION_TITLE": "Come usare il calcolatore",
+      "SECTION_DESCRIPTION": "Questa sezione spiega quali parametri influenzano il prezzo finale, i tempi e il risultato finale, e come leggere correttamente il risultato.",
+      "FACTS": {
+        "overview": {
+          "EYEBROW": "Calcolatore",
+          "TITLE": "Cosa restituisce il calcolatore",
+          "DESCRIPTION": "Il calcolatore restituisce il prezzo finale di stampa, il tempo di stampa e il consumo materiale.",
+          "DETAIL_LABEL": "In entrambe le modalita",
+          "DETAIL": "puoi scegliere materiale e colore.",
+          "CTA_LABEL": "Apri calcolatore"
+        },
+        "basic": {
+          "EYEBROW": "Modalita Base",
+          "TITLE": "Modalita Base",
+          "DESCRIPTION": "In Base scegli materiale, colore e qualita.",
+          "DETAIL_LABEL": "Qualita",
+          "DETAIL": "Draft = 0.28 mm, 15% grid. Standard = 0.20 mm, 15% grid. High Definition = 0.12 mm, 20% gyroid.",
+          "NOTE_LABEL": "Ideale se",
+          "NOTE": "non conosci nel dettaglio i singoli parametri di stampa.",
+          "CTA_LABEL": "Apri Base"
+        },
+        "advanced": {
+          "EYEBROW": "Modalita Avanzata",
+          "TITLE": "Modalita Avanzata",
+          "DESCRIPTION": "In Avanzata controlli direttamente materiale, colore, ugello, layer, riempimento, pattern e supporti.",
+          "DETAIL_LABEL": "Profili attivi",
+          "DETAIL": "Le combinazioni disponibili dipendono dai profili di macchina attivi.",
+          "NOTE_LABEL": "Ideale se",
+          "NOTE": "conosci esattamente le impostazioni che vuoi applicare al tuo file.",
+          "CTA_LABEL": "Apri Avanzata"
+        }
+      },
+      "PARAMETERS": {
+        "TITLE": "Parametri del calcolatore",
+        "DESCRIPTION": "Qui sotto trovi i controlli attualmente disponibili nel calcolatore. In modalita Avanzata, sono questi i parametri che influenzano il prezzo finale, i tempi e la resa finale.",
+        "EFFECT_LABEL": "Impatto nel calcolatore",
+        "ITEMS": {
+          "material": {
+            "TITLE": "Materiale",
+            "AVAILABILITY": "Base e Avanzata",
+            "EXPLANATION": "Il materiale puo essere scelto tra le varianti attive disponibili, ciascuna associata ai colori ordinabili.",
+            "CALCULATOR_EFFECT": "Influisce sul prezzo del materiale e sulle opzioni disponibili nel calcolatore."
+          },
+          "quality": {
+            "TITLE": "Qualita",
+            "AVAILABILITY": "Base",
+            "EXPLANATION": "In Base non imposti layer e riempimento singolarmente: scegli un preset predefinito.",
+            "CALCULATOR_EFFECT": "Definisce automaticamente altezza layer, pattern di riempimento e densita."
+          },
+          "nozzleDiameter": {
+            "TITLE": "Diametro ugello",
+            "AVAILABILITY": "Avanzata",
+            "EXPLANATION": "Nel calcolatore sono disponibili ugelli 0.40 mm e 0.60 mm. Ogni ugello abilita altezze layer diverse e puo comportare costi di cambio.",
+            "CALCULATOR_EFFECT": "Influisce sulle altezze layer selezionabili e puo incidere sul costo di preparazione."
+          },
+          "layerHeight": {
+            "TITLE": "Altezza layer",
+            "AVAILABILITY": "Avanzata",
+            "EXPLANATION": "Le altezze layer selezionabili dipendono dall'ugello scelto.",
+            "CALCULATOR_EFFECT": "Incide direttamente su tempi di stampa e definizione del pezzo."
+          },
+          "infill": {
+            "TITLE": "Riempimento",
+            "AVAILABILITY": "Avanzata",
+            "EXPLANATION": "La percentuale di infill si imposta manualmente per adattare resistenza, peso e tempi al pezzo.",
+            "CALCULATOR_EFFECT": "Aumenta o riduce peso e tempo in base alla densita scelta."
+          },
+          "infillPattern": {
+            "TITLE": "Pattern riempimento",
+            "AVAILABILITY": "Avanzata",
+            "EXPLANATION": "Sono disponibili pattern come grid, gyroid e cubic.",
+            "CALCULATOR_EFFECT": "Influisce sulla struttura interna del pezzo e puo modificare tempi, consumo materiale e comportamento meccanico."
+          },
+          "supports": {
+            "TITLE": "Supporti",
+            "AVAILABILITY": "Avanzata",
+            "EXPLANATION": "Puoi attivarli o disattivarli direttamente in base alla geometria del file.",
+            "CALCULATOR_EFFECT": "Cambia il percorso di stampa e puo aumentare tempo e materiale."
+          }
+        }
+      },
+      "GUIDES": {
+        "TITLE": "Esempi pratici per leggere layer, ugelli e riempimento",
+        "DESCRIPTION": "Questi esempi aiutano a capire meglio come layer, ugelli e riempimento influenzano il risultato. Nel calcolatore gli ugelli disponibili sono 0.40 mm e 0.60 mm, e ognuno abilita altezze layer diverse.",
+        "FALLBACK_IMAGE": "Immagine di esempio in aggiornamento.",
+        "SPEC_LABELS": {
+          "OBJECT_EXAMPLE": "Esempio tipico",
+          "BEST_FOR": "Meglio per",
+          "TRADEOFF": "Limite",
+          "CALCULATOR_READ": "Effetto tipico"
+        },
+        "CATEGORIES": {
+          "layer": "Layer",
+          "nozzles": "Ugelli",
+          "infill": "Riempimento"
+        },
+        "ITEMS": {
+          "layer-012": {
+            "TITLE": "Layer 0.12 mm",
+            "OBJECT_EXAMPLE": "Miniatura o testo piccolo con dettagli fini.",
+            "BEST_FOR": "Massimo dettaglio superficiale.",
+            "TRADEOFF": "Tempo di stampa alto.",
+            "CALCULATOR_READ": "Piu dettaglio visivo, ma tempi di stampa piu lunghi."
+          },
+          "layer-020": {
+            "TITLE": "Layer 0.20 mm",
+            "OBJECT_EXAMPLE": "Pezzo funzionale standard o cover tecnica.",
+            "BEST_FOR": "Compromesso qualita/tempo.",
+            "TRADEOFF": "Dettaglio inferiore al 0.12 mm.",
+            "CALCULATOR_READ": "Configurazione bilanciata, adatta a un uso standard."
+          },
+          "layer-028": {
+            "TITLE": "Layer 0.28 mm",
+            "OBJECT_EXAMPLE": "Staffa di test o prototipo rapido.",
+            "BEST_FOR": "Riduzione tempi e pezzi voluminosi.",
+            "TRADEOFF": "Superficie piu visibile a scalini.",
+            "CALCULATOR_READ": "Stampa piu rapida, con finitura meno fine."
+          },
+          "nozzles-040-060": {
+            "TITLE": "Ugelli 0.40 mm e 0.60 mm",
+            "OBJECT_EXAMPLE": "0.40 mm per uso generale, 0.60 mm per pezzi piu rapidi o piu robusti.",
+            "BEST_FOR": "Scegliere il compromesso corretto tra dettaglio e produttivita.",
+            "TRADEOFF": "",
+            "CALCULATOR_READ": "Nel calcolatore 0.40 mm apre layer piu fini; 0.60 mm favorisce layer piu alti e una stampa piu veloce."
+          },
+          "infill-15": {
+            "TITLE": "Infill 15% + 2 perimetri",
+            "OBJECT_EXAMPLE": "Oggetto estetico o mockup leggero.",
+            "BEST_FOR": "Ridurre peso e tempo.",
+            "TRADEOFF": "Resistenza strutturale limitata.",
+            "CALCULATOR_READ": "Riduce materiale e tende a contenere i tempi di stampa."
+          },
+          "infill-40": {
+            "TITLE": "Infill 40% + 4 perimetri",
+            "OBJECT_EXAMPLE": "Componente con carico meccanico.",
+            "BEST_FOR": "Migliore resistenza funzionale.",
+            "TRADEOFF": "Peso e tempo di stampa superiori.",
+            "CALCULATOR_READ": "Aumenta materiale e tempo di stampa, avvicinandosi a un pezzo piu pieno."
+          }
+        }
+      }
+    },
+    "SOURCES": {
+      "EYEBROW": "Fonti",
+      "TITLE": "Fonti consultate",
+      "DESCRIPTION": "Qui trovi tutte le fonti utilizzate per i dati tecnici e le descrizioni dei materiali.",
+      "KINDS": {
+        "wikipedia": "Wikipedia",
+        "tech-sheet": "Scheda tecnica",
+        "product-sheet": "Scheda prodotto"
+      }
+    },
+    "MATERIALS": {
+      "tpu-95a-hf": {
+        "NAME": "TPU 95A HF",
+        "SUMMARY": "Materiale molto flessibile, utile quando serve assorbire urti e vibrazioni.",
+        "QUALITY_TIPS": [
+          "Riduci velocita e accelerazioni per stabilita estrusione.",
+          "Usa layer medio-alto per ridurre artefatti su superfici morbide."
+        ],
+        "PROS": [
+          "Altissima flessibilita e resilienza agli urti.",
+          "Buona adesione tra layer su geometrie morbide."
+        ],
+        "CONS": [
+          "Sensibile all umidita durante stampa e conservazione.",
+          "Rigidita molto bassa e resistenza termica limitata."
+        ],
+        "IDEAL_FOR": ["Guarnizioni", "Bumper", "Grip", "Cover antiurto"],
+        "SOURCES": {
+          "wikipedia-tpu": {
+            "LABEL": "Wikipedia - Poliuretano termoplastico"
+          },
+          "bambu-tpu-95a-hf": {
+            "LABEL": "Bambu Lab - TPU 95A HF"
+          },
+          "ultimaker-tpu-95a": {
+            "LABEL": "Ultimaker - TPU 95A"
+          }
+        }
+      },
+      "pla-basic": {
+        "NAME": "PLA Basic",
+        "SUMMARY": "Scelta semplice per prototipi rapidi con buona finitura e stabilita di stampa.",
+        "QUALITY_TIPS": [
+          "Per qualita visuale usa layer 0.12-0.16 mm.",
+          "Per produttivita usa layer 0.20-0.24 mm."
+        ],
+        "PROS": [
+          "Facile da stampare.",
+          "Ottima qualita superficiale su pezzi visuali."
+        ],
+        "CONS": [
+          "Fragile sotto urto.",
+          "Scarsa resistenza al calore e all UV prolungato."
+        ],
+        "IDEAL_FOR": ["Mockup", "Prototipi rapidi", "Pezzi estetici indoor"],
+        "SOURCES": {
+          "wikipedia-pla": {
+            "LABEL": "Wikipedia - Acido polilattico"
+          },
+          "bambu-pla-basic": {
+            "LABEL": "Bambu Lab - PLA Basic"
+          },
+          "ultimaker-pla": {
+            "LABEL": "Ultimaker - PLA"
+          }
+        }
+      },
+      "pla-matte": {
+        "NAME": "PLA Matte",
+        "SUMMARY": "PLA con resa opaca per priorita estetica su modelli e parti espositive.",
+        "QUALITY_TIPS": [
+          "Layer 0.16-0.24 mm mantiene effetto opaco uniforme.",
+          "Raffreddamento costante aiuta la texture superficiale."
+        ],
+        "PROS": ["Aspetto opaco pulito.", "Stampa semplice come il PLA base."],
+        "CONS": [
+          "Proprieta meccaniche limitate per uso strutturale.",
+          "Sensibile al calore come altri PLA."
+        ],
+        "IDEAL_FOR": [
+          "Oggetti espositivi",
+          "Design prodotto",
+          "Mockup estetici"
+        ],
+        "SOURCES": {
+          "wikipedia-pla": {
+            "LABEL": "Wikipedia - Acido polilattico"
+          },
+          "bambu-pla-matte": {
+            "LABEL": "Bambu Lab - PLA Matte"
+          }
+        }
+      },
+      "pla-tough-plus": {
+        "NAME": "PLA Tough+",
+        "SUMMARY": "Compromesso tra facilita del PLA e maggiore tenacita per uso funzionale leggero.",
+        "QUALITY_TIPS": [
+          "Layer 0.20 mm e un buon compromesso velocita/precisione.",
+          "Usa 3-4 perimetri per aumentare robustezza in urto."
+        ],
+        "PROS": [
+          "Maggiore tenacita rispetto al PLA standard.",
+          "Buon compromesso per prototipi funzionali."
+        ],
+        "CONS": [
+          "Resistenza termica ancora moderata.",
+          "Meno rigido del PLA basic."
+        ],
+        "IDEAL_FOR": [
+          "Pezzi funzionali leggeri",
+          "Attrezzi non strutturali",
+          "Componenti test"
+        ],
+        "SOURCES": {
+          "wikipedia-pla": {
+            "LABEL": "Wikipedia - Acido polilattico"
+          },
+          "bambu-pla-tough": {
+            "LABEL": "Bambu Lab - PLA Tough"
+          }
+        }
+      },
+      "asa": {
+        "NAME": "ASA",
+        "SUMMARY": "Polimero tecnico per esterno, piu stabile agli UV rispetto ad ABS.",
+        "QUALITY_TIPS": [
+          "Camera chiusa e brim riducono warping.",
+          "Layer 0.20-0.28 mm per bilanciare adesione e tempi."
+        ],
+        "PROS": [
+          "Buona resistenza UV e intemperie.",
+          "Adatto a componenti outdoor funzionali."
+        ],
+        "CONS": [
+          "Richiede controllo termico in stampa.",
+          "Puo warpare senza setup adeguato."
+        ],
+        "IDEAL_FOR": [
+          "Cover esterne",
+          "Staffe outdoor",
+          "Parti esposte al sole"
+        ],
+        "SOURCES": {
+          "wikipedia-asa": {
+            "LABEL": "Wikipedia - Acrilonitrile stirene acrilato"
+          },
+          "bambu-asa": {
+            "LABEL": "Bambu Lab - ASA"
+          },
+          "ultimaker-asa": {
+            "LABEL": "Ultimaker - ASA"
+          }
+        }
+      },
+      "pc": {
+        "NAME": "PC",
+        "SUMMARY": "Materiale tecnico ad alta resistenza meccanica e termica per parti robuste.",
+        "QUALITY_TIPS": [
+          "Preferibile camera calda e materiale ben asciutto.",
+          "Layer 0.20-0.28 mm riduce stress residui rispetto a layer sottili."
+        ],
+        "PROS": [
+          "Molto resistente all urto e al calore.",
+          "Stabilita dimensionale elevata su pezzi tecnici."
+        ],
+        "CONS": [
+          "Stampa impegnativa con alta temperatura.",
+          "Setup non ottimale porta facilmente a deformazioni."
+        ],
+        "IDEAL_FOR": [
+          "Alloggiamenti tecnici",
+          "Staffe ad alto carico",
+          "Parti vicino a fonti di calore"
+        ],
+        "SOURCES": {
+          "wikipedia-pc": {
+            "LABEL": "Wikipedia - Policarbonato"
+          },
+          "bambu-pc": {
+            "LABEL": "Bambu Lab - PC"
+          },
+          "ultimaker-pc": {
+            "LABEL": "Ultimaker - PC"
+          }
+        }
+      },
+      "pa12-cf": {
+        "NAME": "PA12-CF",
+        "SUMMARY": "Nylon rinforzato carbonio orientato a rigidita e stabilita su parti funzionali.",
+        "QUALITY_TIPS": [
+          "Materiale e ambiente devono essere asciutti prima della stampa.",
+          "Layer 0.20-0.28 mm con ugello temprato e setup consigliato."
+        ],
+        "PROS": [
+          "Ottimo rapporto rigidita/peso.",
+          "Buona stabilita dimensionale per fixture tecniche."
+        ],
+        "CONS": [
+          "Costo e complessita stampa superiori ai materiali base.",
+          "Richiede gestione umidita e ugello adeguato."
+        ],
+        "IDEAL_FOR": [
+          "Jig e fixture",
+          "Parti strutturali leggere",
+          "Componenti meccanici tecnici"
+        ],
+        "SOURCES": {
+          "wikipedia-nylon-12": {
+            "LABEL": "Wikipedia - Nylon 12"
+          },
+          "ultimaker-pa12-cf": {
+            "LABEL": "Ultimaker - Nylon 12 Carbon Fiber"
+          },
+          "product-pa12-cf": {
+            "LABEL": "Scheda prodotto - PA12-CF"
+          }
+        }
+      },
+      "pet-cf": {
+        "NAME": "PET-CF",
+        "SUMMARY": "Materiale tecnico rigido con fibra di carbonio, molto stabile su pezzi di precisione.",
+        "QUALITY_TIPS": [
+          "Ugello temprato obbligatorio per abrasivita della fibra.",
+          "Layer 0.20-0.28 mm bilancia adesione e rigidita finale."
+        ],
+        "PROS": [
+          "Alte prestazioni meccaniche e termiche.",
+          "Bassa deformazione su geometrie funzionali."
+        ],
+        "CONS": [
+          "Abrasivo: serve ugello temprato.",
+          "Costo alto, non ideale per prototipi economici."
+        ],
+        "IDEAL_FOR": [
+          "Componenti tecnici di precisione",
+          "Supporti rigidi",
+          "Parti con stabilita termica elevata"
+        ],
+        "SOURCES": {
+          "wikipedia-pet": {
+            "LABEL": "Wikipedia - Polietilene tereftalato"
+          },
+          "wikipedia-cfrp": {
+            "LABEL": "Wikipedia - Polimero rinforzato con fibra di carbonio"
+          },
+          "bambu-pet-cf": {
+            "LABEL": "Bambu Lab - PET-CF"
+          }
+        }
       }
     }
   },
@@ -140,11 +604,84 @@
   "CALC": {
     "TITLE": "Calcola Preventivo 3D",
     "SUBTITLE": "Carica il tuo file 3D (STL, 3MF), imposta la qualità, il colore e calcola immediatamente prezzo e tempi.",
+    "EYEBROW": "Preventivo stampa 3D online",
     "CTA_START": "Inizia Ora",
     "BUSINESS": "Aziende",
     "PRIVATE": "Privati",
     "MODE_EASY": "Base",
     "MODE_ADVANCED": "Avanzata",
+    "WHEN_TO_USE_LABEL": "Quando usarla:",
+    "MODES": {
+      "BASIC": {
+        "TOGGLE_HINT": "Per file gia pronti",
+        "TITLE": "Preventivo veloce per file 3D gia pronti",
+        "SUBTITLE": "La modalita Base e pensata per chi vuole un prezzo corretto in pochi secondi senza gestire parametri tecnici avanzati.",
+        "UPLOAD_HELP": "Carica un file STL o 3MF gia esportato, scegli materiale e qualita, poi ricevi subito una stima chiara di prezzo e tempo.",
+        "WHEN_TO_USE": "Usa Base se il modello e pronto e ti serve soprattutto un preventivo rapido e semplice."
+      },
+      "ADVANCED": {
+        "TOGGLE_HINT": "Piu controllo su stampa e materiale",
+        "TITLE": "Preventivo piu preciso con materiali e impostazioni",
+        "SUBTITLE": "La modalita Avanzata e pensata per chi vuole una stima piu precisa regolando parametri di stampa rilevanti.",
+        "UPLOAD_HELP": "Carica il file 3D e imposta materiale, layer, supporti, riempimento e ugello per avvicinare di piu il preventivo alla configurazione finale.",
+        "WHEN_TO_USE": "Usa Avanzata se devi confrontare materiali o impostazioni e vuoi piu controllo sul risultato."
+      }
+    },
+    "COMPARE_KICKER": "Scelta rapida",
+    "COMPARE_TITLE": "Basic o Advanced?",
+    "COMPARE_SUBTITLE": "Le due pagine servono a casi d uso diversi. Parti da Base per fare presto, passa ad Avanzata quando il materiale o le impostazioni fanno la differenza.",
+    "COMPARE": {
+      "BASIC": {
+        "TITLE": "Base: preventivo veloce",
+        "TEXT": "Ideale se hai un file gia pronto e vuoi ricevere un prezzo corretto in modo semplice, senza entrare nei dettagli tecnici."
+      },
+      "ADVANCED": {
+        "TITLE": "Avanzata: preventivo piu preciso",
+        "TEXT": "Ideale se vuoi scegliere materiale, layer, supporti, riempimento e altre impostazioni che incidono di piu sul risultato finale."
+      }
+    },
+    "MODEL_SOURCES": {
+      "KICKER": "Modelli 3D",
+      "TITLE": "Dove trovare modelli 3D da caricare",
+      "TEXT": "Se non hai ancora un file, puoi partire da queste piattaforme. Controlla sempre licenza, dimensioni e qualita del modello prima di caricarlo nel calcolatore.",
+      "FAVORITES_TITLE": "I nostri preferiti",
+      "OTHERS_TITLE": "Altri",
+      "ITEMS": {
+        "PRINTABLES": "Ampio catalogo di modelli stampabili condivisi dalla community.",
+        "MAKERWORLD": "Repository con modelli pronti alla stampa, utile soprattutto in ambito maker.",
+        "THINGIVERSE": "Archivio storico con moltissimi modelli gratuiti in diverse categorie.",
+        "THANGS": "Motore di ricerca e repository 3D con raccolte e versioni correlate.",
+        "CULTS3D": "Marketplace con modelli gratuiti e a pagamento per progetti molto diversi.",
+        "YEGGI": "Motore di ricerca che aggrega modelli 3D da siti differenti."
+      }
+    },
+    "FAQ": {
+      "KICKER": "Dubbi comuni",
+      "TITLE": "Mini FAQ",
+      "SUBTITLE": "Le risposte rapide alle domande che bloccano piu spesso chi non usa abitualmente la stampa 3D.",
+      "ITEMS": {
+        "FILES": {
+          "Q": "Che file posso caricare?",
+          "A": "Puoi caricare file STL o 3MF. Se scarichi un modello da un portale esterno, verifica che sia gia un file 3D pronto e non solo immagini o documentazione."
+        },
+        "MODE": {
+          "Q": "Come scelgo tra Base e Avanzata?",
+          "A": "Scegli Base se vuoi un preventivo rapido per un file gia pronto. Scegli Avanzata se devi confrontare materiali o modificare impostazioni che cambiano tempo, peso e costo."
+        },
+        "NO_MODEL": {
+          "Q": "E se non ho ancora il modello 3D?",
+          "A": "Puoi cercarlo nei portali suggeriti qui sopra oppure contattarci se ti serve aiuto con progettazione o adattamento CAD."
+        },
+        "PRICE": {
+          "Q": "Il prezzo mostrato e gia affidabile?",
+          "A": "E una stima automatica basata sul file e sulle impostazioni selezionate. In modalita Avanzata la stima e piu precisa perche considera piu parametri di stampa."
+        },
+        "BEFORE_UPLOAD": {
+          "Q": "Cosa conviene controllare prima del caricamento?",
+          "A": "Controlla che il modello abbia la scala corretta, che il file non sia corrotto e che la geometria sia davvero quella finale che vuoi stampare."
+        }
+      }
+    },
     "UPLOAD_LABEL": "Trascina il tuo file 3D qui",
     "UPLOAD_SUB": "Supportiamo STL, 3MF fino a 50MB",
     "MATERIAL": "Materiale",
@@ -237,6 +774,23 @@
     "WIP_CTA_CALC": "Vai al calcolatore",
     "WIP_RETURN_LATER": "Torna tra un po'",
     "WIP_NOTE": "Ci teniamo a fare le cose fatte bene: nel frattempo puoi calcolare subito prezzo e tempi di un file 3D con il nostro calcolatore.",
+    "CUSTOM_PART_FOOTER_TITLE": "Non trovi quello che cerchi?",
+    "CUSTOM_PART_FOOTER_TEXT": "Contattaci per pezzi personalizzati.",
+    "QUICK_REQUEST_MESSAGE_LABEL": "Cosa ti serve? *",
+    "QUICK_REQUEST_MESSAGE_PLACEHOLDER": "Descrivi il prodotto, il pezzo o la modifica che desideri...",
+    "QUICK_REQUEST_IMAGE_LABEL": "Foto (opzionale)",
+    "QUICK_REQUEST_IMAGE_HINT": "Aggiungi una sola immagine di riferimento per rendere la richiesta piu chiara.",
+    "QUICK_REQUEST_ADD_IMAGE": "Aggiungi foto",
+    "QUICK_REQUEST_CHANGE_IMAGE": "Cambia foto",
+    "QUICK_REQUEST_REMOVE_IMAGE": "Rimuovi foto",
+    "QUICK_REQUEST_SEND": "Invia richiesta",
+    "QUICK_REQUEST_EMAIL_ERROR": "Inserisci un indirizzo email valido.",
+    "QUICK_REQUEST_MESSAGE_ERROR": "Descrivi cosa ti serve prima di inviare.",
+    "QUICK_REQUEST_IMAGE_LIMIT_ERROR": "Qui puoi caricare una sola immagine di riferimento.",
+    "QUICK_REQUEST_IMAGE_TYPE_ERROR": "Carica un'immagine JPG, PNG, WEBP, GIF, BMP, SVG o HEIC.",
+    "PRODUCT_QUICK_REQUEST_EYEBROW": "Serve una variante?",
+    "PRODUCT_QUICK_REQUEST_TITLE": "Richiedi una versione personalizzata di questo prodotto.",
+    "PRODUCT_QUICK_REQUEST_TEXT": "Utile se hai bisogno di un'altra misura, di un fissaggio diverso o di un adattamento del prodotto.",
     "ADD_CART": "Aggiungi al Carrello",
     "ADDING": "Aggiunta in corso",
     "ADD_SUCCESS": "Prodotto aggiunto al carrello.",
@@ -253,8 +807,6 @@
     "CATALOG_TITLE": "Tutti i prodotti",
     "CATALOG_META_DESCRIPTION": "Scopri prodotti stampati in 3D, accessori tecnici e soluzioni pronte all uso con lo stesso checkout del calcolatore.",
     "CUSTOM_PART_CTA": "Non trovi quello che cerchi? Richiedi un pezzo personalizzato.",
-    "CUSTOM_PART_FOOTER_TITLE": "Non trovi quello che cerchi?",
-    "CUSTOM_PART_FOOTER_TEXT": "Contattaci per pezzi personalizzati.",
     "CATEGORY_META": "{{count}} prodotti disponibili in questa categoria",
     "CATEGORY_PANEL_KICKER": "Navigazione",
     "CATEGORY_PANEL_TITLE": "Categorie",
@@ -405,7 +957,8 @@
       "S4": {
         "TITLE": "4. Cookie e tracciamento",
         "P1": "4.1. Non utilizziamo cookie di profilazione, marketing o tracciamento di terze parti.",
-        "P2": "4.2. Non usiamo sistemi di advertising tracking. Eventuali dati tecnici temporanei sono usati solo per il funzionamento della sessione."
+        "P2": "4.2. Non usiamo sistemi di advertising tracking. Eventuali dati tecnici temporanei sono usati solo per il funzionamento della sessione.",
+        "P3": "4.3. I QR pubblici generati dal back-office possono registrare data/ora della scansione, lingua stimata dal browser e una stima tecnica del visitatore ottenuta con hash irreversibile. Non chiediamo GPS al telefono e non conserviamo l'IP in chiaro."
       },
       "S5": {
         "TITLE": "5. Condivisione dei dati",
@@ -562,6 +1115,12 @@
     "SUCCESS_DESC": "Grazie per averci contattato. Abbiamo ricevuto il tuo messaggio e ti invieremo una email di riepilogo a breve.",
     "SEND_ANOTHER": "Invia un altro messaggio",
     "HERO_SUBTITLE": "Siamo qui per aiutarti. Compila il modulo sottostante per qualsiasi richiesta.",
+    "CAD_NOTE_EYEBROW": "Pezzi su misura",
+    "CAD_NOTE_TITLE": "Modifica o replica di pezzi",
+    "CAD_NOTE_TEXT": "Utile se devi ricreare un ricambio, adattare un modello o verificare un'idea prima della stampa. Possiamo partire da foto, misure, schizzi o da un pezzo esistente.",
+    "CAD_NOTE_ITEM_1": "Hai un pezzo rotto o difficile da trovare",
+    "CAD_NOTE_ITEM_2": "Vuoi adattare un modello a una misura precisa",
+    "CAD_NOTE_ITEM_3": "Non hai un file 3D ma puoi inviare foto o misure",
     "FILE_TYPE_PDF": "PDF",
     "FILE_TYPE_3D": "3D",
     "FILE_TYPE_VIDEO": "Video",

@@ -8,11 +8,19 @@ import {
   AdminOperationsService,
 } from '../services/admin-operations.service';
 import { CopyOnClickDirective } from '../../../shared/directives/copy-on-click.directive';
+import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
+import { AppSelectComponent } from '../../../shared/components/app-select/app-select.component';
 
 @Component({
   selector: 'app-admin-contact-requests',
   standalone: true,
-  imports: [CommonModule, FormsModule, CopyOnClickDirective],
+  imports: [
+    CommonModule,
+    FormsModule,
+    CopyOnClickDirective,
+    AppButtonComponent,
+    AppSelectComponent,
+  ],
   templateUrl: './admin-contact-requests.component.html',
   styleUrl: './admin-contact-requests.component.scss',
 })
@@ -21,6 +29,10 @@ export class AdminContactRequestsComponent implements OnInit {
   private readonly adminOperationsService = inject(AdminOperationsService);
 
   readonly statusOptions = ['NEW', 'PENDING', 'IN_PROGRESS', 'DONE', 'CLOSED'];
+  readonly statusSelectOptions = this.statusOptions.map((status) => ({
+    label: status,
+    value: status,
+  }));
   requests: AdminContactRequest[] = [];
   selectedRequest: AdminContactRequestDetail | null = null;
   selectedRequestId: string | null = null;

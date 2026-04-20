@@ -1,0 +1,418 @@
+<section class="section-card ui-stack ui-stack--roomy">
+  <header class="section-header">
+    <div class="ui-stack ui-stack--dense">
+      <p class="ui-eyebrow ui-eyebrow--compact">Back-office QR</p>
+      <h2>QR tracciati</h2>
+      <p class="section-description">
+        Crea QR con redirect lingua automatico oppure passa alla vista
+        statistiche globali con grafici aggregati.
+      </p>
+    </div>
+
+    <div class="header-actions ui-inline-actions">
+      <article class="ui-stat-chip">
+        <strong>{{ qrLinks.length }}</strong>
+        <span>QR totali</span>
+      </article>
+      <article class="ui-stat-chip">
+        <strong>{{ activeQrCount() }}</strong>
+        <span>attivi</span>
+      </article>
+      <app-button type="button" variant="secondary" (click)="startCreateQr()">
+        Nuovo QR
+      </app-button>
+      <app-button type="button" (click)="loadQrLinks()">Aggiorna</app-button>
+    </div>
+  </header>
+
+  <div class="mode-switch">
+    <app-toggle-selector
+      [options]="viewModeOptions"
+      [selectedValue]="viewMode"
+      (selectionChange)="setViewMode($event)"
+    />
+  </div>
+
+  <p class="ui-banner ui-banner--error" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </p>
+  <p class="ui-banner ui-banner--success" *ngIf="successMessage">
+    {{ successMessage }}
+  </p>
+
+  <div *ngIf="!loading; else loadingTpl">
+    <div class="qr-layout" *ngIf="viewMode === 'manage'">
+      <app-feature-panel
+        class="qr-sidebar"
+        eyebrow="Collezione"
+        title="QR disponibili"
+        description="Seleziona un QR esistente o crea una nuova destinazione."
+      >
+        <div
+          class="qr-list ui-admin-nav"
+          *ngIf="qrLinks.length; else emptyListTpl"
+        >
+          <button
+            *ngFor="let qrLink of qrLinks"
+            type="button"
+            class="ui-admin-nav__item qr-trigger"
+            [class.is-active]="qrLink.id === selectedQrId"
+            (click)="selectQr(qrLink)"
+          >
+            <span class="qr-trigger__title">{{ qrLink.name }}</span>
+            <span class="qr-trigger__meta">
+              /{{ qrLink.slug }}
+              <span aria-hidden="true">•</span>
+              {{ qrLink.isActive ? "Attivo" : "Disattivo" }}
+            </span>
+          </button>
+        </div>
+      </app-feature-panel>
+
+      <section class="ui-subpanel editor-panel">
+        <header class="editor-header ui-row ui-row--between ui-row--wrap">
+          <div class="ui-stack ui-stack--dense">
+            <p class="ui-eyebrow ui-eyebrow--compact">
+              {{ selectedQrId ? "QR esistente" : "Nuovo QR" }}
+            </p>
+            <h3>{{ selectedQrId ? form.name || "Modifica QR" : "Crea QR" }}</h3>
+            <p class="editor-copy">
+              URL pubblico:
+              <code class="ui-code-pill">{{
+                selectedQr()?.publicUrl ||
+                  "/api/public/qr/" + (form.slug || "...")
+              }}</code>
+            </p>
+          </div>
+
+          <div class="ui-inline-actions">
+            <app-button
+              type="button"
+              variant="ghost"
+              [disabled]="!selectedQr()?.publicUrl"
+              [appCopyOnClick]="selectedQr()?.publicUrl"
+            >
+              Copia URL pubblico
+            </app-button>
+            <app-button
+              type="button"
+              variant="outline"
+              [disabled]="!selectedQrId"
+              (click)="downloadSvg()"
+            >
+              Scarica SVG
+            </app-button>
+            <app-button type="button" [disabled]="saving" (click)="saveQr()">
+              {{ saving ? "Salvataggio..." : "Salva" }}
+            </app-button>
+          </div>
+        </header>
+
+        <div class="editor-grid">
+          <div class="form-grid ui-form-grid ui-form-grid--two">
+            <app-input
+              label="Nome"
+              name="qrName"
+              [(ngModel)]="form.name"
+              placeholder="Flyer Fiera 2026"
+            />
+
+            <div class="slug-field ui-stack ui-stack--dense">
+              <app-input
+                label="Slug"
+                name="qrSlug"
+                [(ngModel)]="form.slug"
+                placeholder="flyer-fiera-2026"
+              />
+              <app-button
+                type="button"
+                size="sm"
+                variant="ghost"
+                (click)="slugifyFromName()"
+              >
+                Genera da nome
+              </app-button>
+            </div>
+
+            <app-input
+              label="Target path"
+              name="qrTargetPath"
+              [(ngModel)]="form.targetPath"
+              placeholder="/contact"
+            />
+
+            <label class="toggle-card">
+              <span class="toggle-card__copy">
+                <strong>QR attivo</strong>
+                <small>Se disattivo, lo slug restituisce 404.</small>
+              </span>
+              <input
+                type="checkbox"
+                [checked]="form.isActive"
+                (change)="form.isActive = !form.isActive"
+              />
+            </label>
+
+            <div class="form-field--wide">
+              <app-textarea
+                label="Note interne"
+                name="qrNotes"
+                [(ngModel)]="form.notes"
+                [rows]="4"
+                placeholder="Distribuzione, campagna, materiale stampato, varianti."
+              />
+            </div>
+          </div>
+
+          <aside class="preview-panel ui-subpanel">
+            <div class="preview-panel__header ui-stack ui-stack--dense">
+              <h4>Preview SVG</h4>
+              <p>
+                Quiet zone da 2 moduli inclusa nel file per ridurre il rischio
+                di ritaglio in stampa.
+              </p>
+            </div>
+
+            <div
+              class="preview-frame"
+              *ngIf="selectedQrId; else previewHintTpl"
+            >
+              <p *ngIf="previewLoading">Generazione anteprima...</p>
+              <img
+                *ngIf="!previewLoading && previewUrl"
+                [src]="previewUrl"
+                alt="Anteprima QR SVG"
+              />
+            </div>
+          </aside>
+        </div>
+
+        <p class="slug-warning ui-banner ui-banner--warning">
+          Cambiare lo slug rompe i QR gia stampati con il vecchio URL.
+        </p>
+      </section>
+    </div>
+
+    <section class="ui-subpanel overview-panel" *ngIf="viewMode === 'overview'">
+      <header class="overview-header ui-row ui-row--between ui-row--wrap">
+        <div class="ui-stack ui-stack--dense">
+          <h3>Statistiche di tutti i QR</h3>
+          <p class="section-description">
+            Range {{ fromDate }} -> {{ toDate }}. I bot sospetti sono esclusi
+            dai conteggi.
+          </p>
+        </div>
+
+        <div>
+          <div class="stats-filters ui-inline-actions">
+            <app-input
+              type="date"
+              label="Da"
+              name="overviewFromDate"
+              [(ngModel)]="fromDate"
+            />
+            <app-input
+              type="date"
+              label="A"
+              name="overviewToDate"
+              [(ngModel)]="toDate"
+            />
+            <app-button
+              type="button"
+              variant="secondary"
+              size="sm"
+              [disabled]="overviewLoading"
+              (click)="loadOverviewStats()"
+            >
+              {{ overviewLoading ? "Aggiornamento..." : "Aggiorna" }}
+            </app-button>
+          </div>
+        </div>
+      </header>
+
+      <div *ngIf="overview as currentOverview; else noOverviewTpl">
+        <div class="stats-cards">
+          <article class="ui-stat-chip">
+            <strong>{{ currentOverview.rawScans }}</strong>
+            <span>scansioni</span>
+          </article>
+          <article class="ui-stat-chip">
+            <strong>{{ currentOverview.uniqueVisitors }}</strong>
+            <span>visitatori unici stimati</span>
+          </article>
+          <article class="ui-stat-chip">
+            <strong>{{ currentOverview.totalQrLinks }}</strong>
+            <span>QR configurati</span>
+          </article>
+          <article class="ui-stat-chip">
+            <strong>{{ currentOverview.activeQrLinks }}</strong>
+            <span>QR attivi</span>
+          </article>
+        </div>
+
+        <div class="overview-grid">
+          <section class="chart-panel">
+            <header class="chart-panel__header">
+              <h4>Andamento giornaliero</h4>
+            </header>
+
+            <div
+              class="daily-chart"
+              *ngIf="currentOverview.daily.length; else noDailyTpl"
+            >
+              <div class="daily-chart__bars">
+                <div
+                  class="daily-bar"
+                  *ngFor="let row of currentOverview.daily"
+                >
+                  <div
+                    class="daily-bar__value"
+                    [style.height]="dailyBarHeight(row.scans)"
+                    [title]="row.date + ': ' + row.scans + ' scansioni'"
+                  ></div>
+                  <span class="daily-bar__label">{{
+                    row.date | slice: 5 : 10
+                  }}</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="chart-panel">
+            <header class="chart-panel__header">
+              <h4>QR piu scansionati</h4>
+            </header>
+
+            <div class="rank-chart" *ngIf="topQrRows().length; else noRankTpl">
+              <div class="rank-row" *ngFor="let row of topQrRows()">
+                <div class="rank-row__meta">
+                  <strong>{{ row.name }}</strong>
+                  <span>/{{ row.slug }}</span>
+                </div>
+                <div class="rank-row__bar-wrap">
+                  <div
+                    class="rank-row__bar"
+                    [style.width]="overviewBarWidth(row.rawScans)"
+                  ></div>
+                </div>
+                <div class="rank-row__value">{{ row.rawScans }}</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="chart-panel">
+            <header class="chart-panel__header">
+              <h4>Località piu frequenti</h4>
+            </header>
+
+            <div
+              class="rank-chart"
+              *ngIf="topLocationRows().length; else noLocationTpl"
+            >
+              <div class="rank-row" *ngFor="let row of topLocationRows()">
+                <div class="rank-row__meta">
+                  <strong>{{ row.label }}</strong>
+                  <span>{{
+                    row.countryCode || row.countryName || "Geo proxy"
+                  }}</span>
+                </div>
+                <div class="rank-row__bar-wrap">
+                  <div
+                    class="rank-row__bar"
+                    [style.width]="locationBarWidth(row.scans)"
+                  ></div>
+                </div>
+                <div class="rank-row__value">{{ row.scans }}</div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="table-wrap ui-table-wrap">
+          <table class="ui-data-table">
+            <thead>
+              <tr>
+                <th>QR</th>
+                <th>Slug</th>
+                <th>Target</th>
+                <th>Stato</th>
+                <th>Scan</th>
+                <th>Unici</th>
+                <th>Località</th>
+                <th>Ultimo scan</th>
+                <th>Azioni</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of currentOverview.qrLinks">
+                <td>{{ row.name }}</td>
+                <td [title]="row.publicUrl" [appCopyOnClick]="row.publicUrl">
+                  {{ row.slug }}
+                </td>
+                <td>{{ row.targetPath }}</td>
+                <td>{{ row.isActive ? "Attivo" : "Disattivo" }}</td>
+                <td>{{ row.rawScans }}</td>
+                <td>{{ row.uniqueVisitors }}</td>
+                <td>{{ formatTopLocation(row) }}</td>
+                <td>
+                  {{
+                    row.lastScannedAt
+                      ? (row.lastScannedAt | date: "short")
+                      : "-"
+                  }}
+                </td>
+                <td>
+                  <app-button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    (click)="openQrFromOverview(row.qrLinkId)"
+                  >
+                    Apri
+                  </app-button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+</section>
+
+<ng-template #loadingTpl>
+  <p>Caricamento QR...</p>
+</ng-template>
+
+<ng-template #emptyListTpl>
+  <p class="empty-state">
+    Nessun QR configurato. Crea il primo dal pannello di destra.
+  </p>
+</ng-template>
+
+<ng-template #previewHintTpl>
+  <div class="preview-frame preview-frame--empty">
+    <p>Salva il QR per generare l'anteprima SVG scaricabile.</p>
+  </div>
+</ng-template>
+
+<ng-template #noOverviewTpl>
+  <p class="empty-state">
+    Nessuna statistica disponibile nel range selezionato.
+  </p>
+</ng-template>
+
+<ng-template #noDailyTpl>
+  <p class="empty-state">Nessun dato giornaliero disponibile.</p>
+</ng-template>
+
+<ng-template #noRankTpl>
+  <p class="empty-state">Nessun QR con scansioni nel range selezionato.</p>
+</ng-template>
+
+<ng-template #noLocationTpl>
+  <p class="empty-state">
+    Nessuna località disponibile: servono header geo dal proxy nel range
+    selezionato.
+  </p>
+</ng-template>

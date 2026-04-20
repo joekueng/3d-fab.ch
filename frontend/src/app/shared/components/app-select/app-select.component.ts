@@ -1,4 +1,4 @@
-import { Component, input, output, forwardRef } from '@angular/core';
+import { Component, computed, forwardRef, input } from '@angular/core';
 import {
   ControlValueAccessor,
   NG_VALUE_ACCESSOR,
@@ -11,6 +11,9 @@ import { CommonModule } from '@angular/common';
   selector: 'app-select',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  host: {
+    '[attr.name]': 'name() || null',
+  },
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -24,11 +27,18 @@ import { CommonModule } from '@angular/common';
 export class AppSelectComponent implements ControlValueAccessor {
   label = input<string>('');
   id = input<string>('select-' + Math.random().toString(36).substr(2, 9));
+  name = input<string>('');
+  compact = input<boolean>(false);
   options = input<{ label: string; value: any }[]>([]);
   error = input<string | null>(null);
+  required = input<boolean>(false);
+  disabledInput = input<boolean>(false, { alias: 'disabled' });
 
   value: any = '';
-  disabled = false;
+  private controlDisabled = false;
+  readonly isDisabled = computed(
+    () => this.controlDisabled || this.disabledInput(),
+  );
 
   onChange: any = () => {};
   onTouched: any = () => {};
@@ -43,7 +53,7 @@ export class AppSelectComponent implements ControlValueAccessor {
     this.onTouched = fn;
   }
   setDisabledState(isDisabled: boolean): void {
-    this.disabled = isDisabled;
+    this.controlDisabled = isDisabled;
   }
 
   onModelChange(val: any) {

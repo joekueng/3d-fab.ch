@@ -39,5 +39,5 @@
 }
 
 .card-body {
-  padding: var(--space-6);
+  padding: var(--app-card-body-padding, var(--space-6));
 }

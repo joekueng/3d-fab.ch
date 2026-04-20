@@ -58,7 +58,19 @@ export const ADMIN_ROUTES: Routes = [
           ),
       },
       {
+        path: 'qr',
+        loadComponent: () =>
+          import('./pages/admin-qr-links.component').then(
+            (m) => m.AdminQrLinksComponent,
+          ),
+      },
+      {
         path: 'home-media',
+        pathMatch: 'full',
+        redirectTo: 'media',
+      },
+      {
+        path: 'media',
         loadComponent: () =>
           import('./pages/admin-home-media.component').then(
             (m) => m.AdminHomeMediaComponent,

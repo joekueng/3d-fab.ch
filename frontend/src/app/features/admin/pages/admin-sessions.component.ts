@@ -6,11 +6,12 @@ import {
   AdminQuoteSessionDetail,
 } from '../services/admin-operations.service';
 import { CopyOnClickDirective } from '../../../shared/directives/copy-on-click.directive';
+import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
 
 @Component({
   selector: 'app-admin-sessions',
   standalone: true,
-  imports: [CommonModule, CopyOnClickDirective],
+  imports: [CommonModule, CopyOnClickDirective, AppButtonComponent],
   templateUrl: './admin-sessions.component.html',
   styleUrl: './admin-sessions.component.scss',
 })

@@ -1,20 +1,28 @@
-<div class="form-group">
+<div class="ui-form-group" [class.ui-form-group--flush]="compact()">
   @if (label()) {
-    <label [for]="id()">{{ label() }}</label>
+    <label class="ui-form-label" [for]="id()">
+      {{ label() }}
+      @if (required()) {
+        <span class="required-mark">*</span>
+      }
+    </label>
   }
   <select
     [id]="id()"
+    [attr.name]="name() || null"
     [ngModel]="value"
     (ngModelChange)="onModelChange($event)"
     (blur)="onTouched()"
-    [disabled]="disabled"
-    class="form-control"
+    [disabled]="isDisabled()"
+    [required]="required()"
+    class="ui-form-control"
   >
-    @for (opt of options(); track opt.label) {
+    @for (opt of options(); track opt.value) {
       <option [ngValue]="opt.value">{{ opt.label }}</option>
     }
+    <ng-content select="option,optgroup"></ng-content>
   </select>
   @if (error()) {
-    <span class="error-text">{{ error() }}</span>
+    <span class="ui-form-error">{{ error() }}</span>
   }
 </div>
