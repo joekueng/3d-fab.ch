@@ -50,6 +50,7 @@ type RadarAxisId =
 interface RadarAxis {
   id: RadarAxisId;
   label: string;
+  chartLabelLines?: readonly string[];
   description: string;
   unit: string;
   lowerIsBetter?: boolean;
@@ -81,6 +82,7 @@ interface AxisGuide {
   labelX: number;
   labelY: number;
   labelAnchor: 'start' | 'middle' | 'end';
+  labelLines: readonly string[];
 }
 
 interface ComparisonRow {
@@ -519,7 +521,7 @@ const RADAR_AXES: readonly RadarAxis[] = [
   },
   {
     id: 'printability',
-    label: 'Stampabilita',
+    label: 'Stampabilità',
     description:
       'Indice sintetico che considera facilita di stampa, sensibilita all umidita e stabilita del processo.',
     unit: 'indice',
@@ -534,14 +536,14 @@ const RADAR_AXES: readonly RadarAxis[] = [
   },
   {
     id: 'modulus',
-    label: 'Rigidita',
+    label: 'Rigidità',
     description: 'Modulo elastico (GPa).',
     unit: 'GPa',
     accessor: (material) => material.metrics.modulusGpa,
   },
   {
     id: 'elongation',
-    label: 'Flessibilita',
+    label: 'Flessibilità',
     description: 'Allungamento a rottura (%).',
     unit: '%',
     accessor: (material) => material.metrics.elongationPct,
@@ -549,6 +551,7 @@ const RADAR_AXES: readonly RadarAxis[] = [
   {
     id: 'hdt',
     label: 'Resistenza termica',
+    chartLabelLines: ['Resistenza', 'termica'],
     description: 'HDT: temperatura di deformazione del materiale (C).',
     unit: 'C',
     accessor: (material) => material.metrics.hdtC,
@@ -571,15 +574,14 @@ const CALCULATOR_FACTS: readonly CalculatorFact[] = [
     id: 'basic',
     eyebrow: 'Modalita Base',
     title: 'Modalita Base',
-    description:
-      'In Base scegli materiale, colore e qualita.',
+    description: 'In Base scegli materiale, colore e qualita.',
     detailLabel: 'Qualita',
     detail:
       'Draft = 0.28 mm, 15% grid. Standard = 0.20 mm, 15% grid. High Definition = 0.12 mm, 20% gyroid.',
     noteLabel: 'Ideale se',
     note: 'non conosci nel dettaglio i singoli parametri di stampa.',
     ctaLabel: 'Apri Base',
-    path: '/calculator/basic',
+    path: '/calculator/basic#calculator-workspace',
   },
   {
     id: 'advanced',
@@ -594,7 +596,7 @@ const CALCULATOR_FACTS: readonly CalculatorFact[] = [
     note:
       'conosci esattamente le impostazioni che vuoi applicare al tuo file.',
     ctaLabel: 'Apri Avanzata',
-    path: '/calculator/advanced',
+    path: '/calculator/advanced#calculator-workspace',
   },
 ];
 
@@ -626,7 +628,7 @@ const CALCULATOR_PARAMETERS: readonly CalculatorParameter[] = [
   {
     title: 'Altezza layer',
     availability: 'Avanzata',
-    explanation: 'Le altezze layer selezionabili dipendono dall ugello scelto.',
+    explanation: "Le altezze layer selezionabili dipendono dall'ugello scelto.",
     calculatorEffect:
       'Incide direttamente su tempi di stampa e definizione del pezzo.',
   },
@@ -817,6 +819,7 @@ export class MaterialsPageComponent {
       const inner = this.pointForRatio(index, CHART_INNER_RATIO);
       const outer = this.pointForRatio(index, 1);
       const label = this.pointForRatio(index, 1.18);
+      const labelLines = axis.chartLabelLines ?? [axis.label];
       const anchor: 'start' | 'middle' | 'end' =
         Math.abs(label.x - CHART_CENTER) < 12
           ? 'middle'
@@ -831,8 +834,9 @@ export class MaterialsPageComponent {
         x: outer.x,
         y: outer.y,
         labelX: label.x,
-        labelY: label.y,
+        labelY: label.y - (labelLines.length - 1) * 6,
         labelAnchor: anchor,
+        labelLines,
       };
     }),
   );

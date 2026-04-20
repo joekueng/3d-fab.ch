@@ -20,6 +20,10 @@
   line-height: 1.5;
 }
 
+.materials-inline-link {
+  font-weight: 700;
+}
+
 .materials-section {
   padding: 0 0 var(--space-10);
 }
@@ -28,6 +32,10 @@
   padding-top: 0;
   background: var(--materials-page-bg);
   border: 0;
+}
+
+.materials-section--calculator {
+  scroll-margin-top: calc(64px + var(--space-4));
 }
 
 .materials-section-head {
@@ -87,6 +95,7 @@
   max-width: 520px;
   margin: 0 auto;
   display: block;
+  overflow: visible;
 }
 
 .chart-rings polygon {
@@ -205,7 +214,6 @@
 }
 
 .selector-help {
-  margin-top: 0.8rem;
   color: var(--materials-muted);
 }
 

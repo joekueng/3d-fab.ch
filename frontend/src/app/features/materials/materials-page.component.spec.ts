@@ -92,12 +92,18 @@ describe('MaterialsPageComponent', () => {
 
   it('renders the compact calculator guide with localized links', () => {
     const host = fixture.nativeElement as HTMLElement;
+    const heroLink = host.querySelector(
+      '.materials-inline-link',
+    ) as HTMLAnchorElement;
     const calculatorSection = host.querySelector(
       '.materials-section--muted',
     ) as HTMLElement;
     const actionLinks = Array.from(
       calculatorSection.querySelectorAll('.calculator-fact-actions a'),
     ) as HTMLAnchorElement[];
+    const factCards = Array.from(
+      calculatorSection.querySelectorAll('.calculator-fact-card'),
+    ) as HTMLElement[];
 
     expect(calculatorSection.textContent).toContain(
       'quali parametri influenzano prezzo, tempi e risultato finale',
@@ -108,21 +114,25 @@ describe('MaterialsPageComponent', () => {
     expect(calculatorSection.textContent).toContain(
       'Il calcolatore restituisce prezzo, tempo di stampa e consumo materiale.',
     );
-    expect(calculatorSection.textContent).toContain(
-      'Modalita Base',
-    );
-    expect(calculatorSection.textContent).toContain(
-      'Modalita Avanzata',
-    );
+    expect(calculatorSection.querySelector('.calculator-mode-card')).toBeNull();
+    expect(factCards.length).toBe(3);
+    expect(factCards[1]?.textContent).toContain('Modalita Base');
+    expect(factCards[1]?.textContent).toContain('Draft = 0.28 mm, 15% grid.');
+    expect(factCards[1]?.textContent).toContain('Ideale se');
+    expect(factCards[2]?.textContent).toContain('Modalita Avanzata');
+    expect(factCards[2]?.textContent).toContain('profili di macchina attivi');
+    expect(factCards[2]?.textContent).toContain('Ideale se');
     expect(host.textContent).not.toContain('davvero');
     expect(host.textContent).not.toContain('tool online');
     expect(host.textContent).not.toContain('Seleziona fino a');
     expect(host.textContent).not.toContain('raggio minimo visivo');
     expect(host.textContent).not.toContain('usageType');
+    expect(heroLink.getAttribute('href')).toBe('#materials-calculator');
+    expect(calculatorSection.getAttribute('id')).toBe('materials-calculator');
     expect(actionLinks.map((link) => link.getAttribute('href'))).toEqual([
       '/it/calculator',
-      '/it/calculator/basic',
-      '/it/calculator/advanced',
+      '/it/calculator/basic#calculator-workspace',
+      '/it/calculator/advanced#calculator-workspace',
     ]);
   });
 });

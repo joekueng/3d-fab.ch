@@ -3,9 +3,12 @@
     <div class="container ui-simple-hero">
       <h1 class="ui-simple-hero__title">Qualita e Materiali</h1>
       <p class="ui-simple-hero__subtitle">
-        Confronta i materiali piu usati con grafici, dati tecnici e fonti
-        consultabili. Piu sotto trovi anche una guida chiara al funzionamento
-        del calcolatore.
+        Guida tecnica su una selezione di materiali. Confronto qualità di stampa
+        disponibili e spiegazione all'utilizzo del
+        <a class="materials-inline-link" href="#materials-calculator">
+          calcolatore
+        </a>
+        .
       </p>
     </div>
   </section>
@@ -17,11 +20,10 @@
           <header class="materials-panel__header">
             <div>
               <p class="ui-eyebrow ui-eyebrow--compact">Confronto</p>
-              <h2>Grafico radar comparativo</h2>
+              <h2>Grafico Radar</h2>
             </div>
             <p class="materials-panel__description">
-              I valori sono riportati su una scala da 0 a 100 per facilitare il
-              confronto tra i materiali presenti in pagina.
+              Seleziona uno o piu materiali per visualizzare le proprietà.
             </p>
           </header>
 
@@ -50,7 +52,14 @@
                   [attr.y]="axis.labelY"
                   [attr.text-anchor]="axis.labelAnchor"
                 >
-                  {{ radarAxes[$index].label }}
+                  @for (labelLine of axis.labelLines; track $index) {
+                    <tspan
+                      [attr.x]="axis.labelX"
+                      [attr.dy]="$index === 0 ? 0 : '1.1em'"
+                    >
+                      {{ labelLine }}
+                    </tspan>
+                  }
                 </text>
               }
             </g>
@@ -119,10 +128,10 @@
                 </button>
               }
             </div>
-
+            <br />
             <p class="selector-help">
               Nota: nell asse Convenienza, un valore piu alto indica un costo al
-              kg piu favorevole.
+              kg più basso.
             </p>
           </div>
         </article>
@@ -130,14 +139,13 @@
         <article class="materials-panel materials-panel--aside">
           <header class="materials-panel__header">
             <div>
-              <p class="ui-eyebrow ui-eyebrow--compact">Lettura</p>
               <h2>Come leggere il confronto</h2>
             </div>
           </header>
           <p>
-            Ogni asse mostra una proprieta tecnica. Il valore 100 rappresenta la
-            prestazione relativa piu alta tra i materiali confrontati; 0 la piu
-            bassa.
+            Ogni asse mostra una proprietà tecnica. Il valore massimo
+            rappresenta la prestazione relativa piu alta tra i materiali
+            confrontati.
           </p>
           <ul>
             @for (axis of radarAxes; track axis.id) {
@@ -155,8 +163,8 @@
   <section class="materials-section">
     <div class="container">
       <div class="materials-section-head">
-        <p class="ui-eyebrow ui-eyebrow--compact">Confronto tecnico</p>
-        <h2>Tabella tecnica di confronto</h2>
+        <p class="ui-eyebrow ui-eyebrow--compact">Dati tecnici</p>
+        <h2>Tabella di confronto</h2>
       </div>
       <div class="ui-table-wrap materials-table-wrap">
         <table class="ui-data-table">
@@ -186,7 +194,10 @@
     </div>
   </section>
 
-  <section class="materials-section materials-section--muted">
+  <section
+    id="materials-calculator"
+    class="materials-section materials-section--muted materials-section--calculator"
+  >
     <div class="container">
       <div class="materials-section-head">
         <p class="ui-eyebrow ui-eyebrow--compact">Calcolatore</p>
