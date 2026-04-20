@@ -119,9 +119,9 @@ describe('MaterialsPageComponent', () => {
       '.materials-section--muted',
     ) as HTMLElement;
 
-    expect(host.querySelector('.ui-simple-hero__title')?.textContent?.trim()).toBe(
-      'Qualita e Materiali',
-    );
+    expect(
+      host.querySelector('.ui-simple-hero__title')?.textContent?.trim(),
+    ).toBe('Qualita e Materiali');
     expect(calculatorSection.textContent).toContain(
       'Come usare il calcolatore',
     );
@@ -149,15 +149,13 @@ describe('MaterialsPageComponent', () => {
 
     await switchLanguage('en');
 
-    expect(host.querySelector('.ui-simple-hero__title')?.textContent?.trim()).toBe(
-      'Quality & Materials',
-    );
+    expect(
+      host.querySelector('.ui-simple-hero__title')?.textContent?.trim(),
+    ).toBe('Quality & Materials');
     expect(calculatorSection.textContent).toContain(
       'How to use the calculator',
     );
-    expect(calculatorSection.textContent).toContain(
-      'Calculator parameters',
-    );
+    expect(calculatorSection.textContent).toContain('Calculator parameters');
     expect(calculatorSection.textContent).toContain(
       'final print price',
     );

@@ -178,7 +178,10 @@
             </tr>
           </thead>
           <tbody>
-            @for (row of comparisonRows(); track trackComparisonRow($index, row)) {
+            @for (
+              row of comparisonRows();
+              track trackComparisonRow($index, row)
+            ) {
               <tr>
                 <th>{{ row.label }}</th>
                 @for (value of row.values; track $index) {
@@ -264,7 +267,9 @@
                 <p>{{ parameter.explanation }}</p>
               </div>
               <div class="calculator-parameter-effect">
-                <span>{{ pageContent().CALCULATOR.PARAMETERS.EFFECT_LABEL }}</span>
+                <span>{{
+                  pageContent().CALCULATOR.PARAMETERS.EFFECT_LABEL
+                }}</span>
                 <p>{{ parameter.calculatorEffect }}</p>
               </div>
             </article>
@@ -311,7 +316,9 @@
                   </picture>
                 } @else {
                   <div class="media-fallback">
-                    <span>{{ pageContent().CALCULATOR.GUIDES.FALLBACK_IMAGE }}</span>
+                    <span>{{
+                      pageContent().CALCULATOR.GUIDES.FALLBACK_IMAGE
+                    }}</span>
                   </div>
                 }
               </div>
@@ -319,7 +326,9 @@
               <div class="visual-guide-spec-list">
                 <div class="visual-guide-spec">
                   <span class="visual-guide-spec__label">
-                    {{ pageContent().CALCULATOR.GUIDES.SPEC_LABELS.OBJECT_EXAMPLE }}
+                    {{
+                      pageContent().CALCULATOR.GUIDES.SPEC_LABELS.OBJECT_EXAMPLE
+                    }}
                   </span>
                   <p class="visual-guide-spec__text">
                     {{ guide.objectExample }}
@@ -341,7 +350,10 @@
                 }
                 <div class="visual-guide-spec">
                   <span class="visual-guide-spec__label">
-                    {{ pageContent().CALCULATOR.GUIDES.SPEC_LABELS.CALCULATOR_READ }}
+                    {{
+                      pageContent().CALCULATOR.GUIDES.SPEC_LABELS
+                        .CALCULATOR_READ
+                    }}
                   </span>
                   <p class="visual-guide-spec__text visual-guide-calc">
                     {{ guide.calculatorRead }}

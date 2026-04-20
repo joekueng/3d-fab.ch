@@ -365,15 +365,16 @@
           "Layer 0.16-0.24 mm mantiene effetto opaco uniforme.",
           "Raffreddamento costante aiuta la texture superficiale."
         ],
-        "PROS": [
-          "Aspetto opaco pulito.",
-          "Stampa semplice come il PLA base."
-        ],
+        "PROS": ["Aspetto opaco pulito.", "Stampa semplice come il PLA base."],
         "CONS": [
           "Proprieta meccaniche limitate per uso strutturale.",
           "Sensibile al calore come altri PLA."
         ],
-        "IDEAL_FOR": ["Oggetti espositivi", "Design prodotto", "Mockup estetici"],
+        "IDEAL_FOR": [
+          "Oggetti espositivi",
+          "Design prodotto",
+          "Mockup estetici"
+        ],
         "SOURCES": {
           "wikipedia-pla": {
             "LABEL": "Wikipedia - Acido polilattico"
@@ -427,7 +428,11 @@
           "Richiede controllo termico in stampa.",
           "Puo warpare senza setup adeguato."
         ],
-        "IDEAL_FOR": ["Cover esterne", "Staffe outdoor", "Parti esposte al sole"],
+        "IDEAL_FOR": [
+          "Cover esterne",
+          "Staffe outdoor",
+          "Parti esposte al sole"
+        ],
         "SOURCES": {
           "wikipedia-asa": {
             "LABEL": "Wikipedia - Acrilonitrile stirene acrilato"
