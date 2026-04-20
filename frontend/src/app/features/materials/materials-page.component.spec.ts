@@ -128,9 +128,7 @@ describe('MaterialsPageComponent', () => {
     expect(calculatorSection.textContent).toContain(
       'Parametri del calcolatore',
     );
-    expect(calculatorSection.textContent).toContain(
-      'prezzo finale di stampa',
-    );
+    expect(calculatorSection.textContent).toContain('prezzo finale di stampa');
     expect(component.radarAxes()[1]?.label).toBe('Stampabilita');
     expect(component.comparisonRows()[0]?.label).toBe(
       'Stampabilita [indice 0-100]',
@@ -156,9 +154,7 @@ describe('MaterialsPageComponent', () => {
       'How to use the calculator',
     );
     expect(calculatorSection.textContent).toContain('Calculator parameters');
-    expect(calculatorSection.textContent).toContain(
-      'final print price',
-    );
+    expect(calculatorSection.textContent).toContain('final print price');
     expect(component.radarAxes()[1]?.label).toBe('Printability');
     expect(component.comparisonRows()[0]?.label).toBe(
       'Printability [0-100 index]',
