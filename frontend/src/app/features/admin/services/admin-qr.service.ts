@@ -104,9 +104,7 @@ export class AdminQrService {
     });
   }
 
-  createQrLink(
-    payload: AdminUpsertQrLinkPayload,
-  ): Observable<AdminQrLink> {
+  createQrLink(payload: AdminUpsertQrLinkPayload): Observable<AdminQrLink> {
     return this.http.post<AdminQrLink>(this.baseUrl, payload, {
       withCredentials: true,
     });
@@ -116,9 +114,13 @@ export class AdminQrService {
     qrLinkId: string,
     payload: AdminUpsertQrLinkPayload,
   ): Observable<AdminQrLink> {
-    return this.http.patch<AdminQrLink>(`${this.baseUrl}/${qrLinkId}`, payload, {
-      withCredentials: true,
-    });
+    return this.http.patch<AdminQrLink>(
+      `${this.baseUrl}/${qrLinkId}`,
+      payload,
+      {
+        withCredentials: true,
+      },
+    );
   }
 
   getQrLinkStats(
@@ -134,9 +136,12 @@ export class AdminQrService {
       query.set('to', to);
     }
     const suffix = query.toString() ? `?${query.toString()}` : '';
-    return this.http.get<AdminQrLinkStats>(`${this.baseUrl}/${qrLinkId}/stats${suffix}`, {
-      withCredentials: true,
-    });
+    return this.http.get<AdminQrLinkStats>(
+      `${this.baseUrl}/${qrLinkId}/stats${suffix}`,
+      {
+        withCredentials: true,
+      },
+    );
   }
 
   getOverviewStats(

@@ -693,8 +693,7 @@ const QUALITY_VISUAL_GUIDES: readonly QualityVisualGuide[] = [
     objectExample: 'Pezzo funzionale standard o cover tecnica.',
     bestFor: 'Compromesso qualita/tempo.',
     tradeoff: 'Dettaglio inferiore al 0.12 mm.',
-    calculatorRead:
-      'Configurazione bilanciata, adatta a un uso standard.',
+    calculatorRead: 'Configurazione bilanciata, adatta a un uso standard.',
     usageKey: 'guide-layer-020',
   },
   {
