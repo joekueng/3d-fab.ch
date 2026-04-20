@@ -343,7 +343,12 @@
           "Empfindlich gegen Feuchtigkeit wahrend Druck und Lagerung.",
           "Sehr geringe Steifigkeit und begrenzte Warmebestandigkeit."
         ],
-        "IDEAL_FOR": ["Dichtungen", "Bumper", "Griffe", "Stossfeste Abdeckungen"],
+        "IDEAL_FOR": [
+          "Dichtungen",
+          "Bumper",
+          "Griffe",
+          "Stossfeste Abdeckungen"
+        ],
         "SOURCES": {
           "wikipedia-tpu": {
             "LABEL": "Wikipedia - Thermoplastisches Polyurethan"
@@ -371,7 +376,11 @@
           "Sprode bei Schlagbelastung.",
           "Geringe Hitze- und UV-Bestandigkeit."
         ],
-        "IDEAL_FOR": ["Mockups", "Schnelle Prototypen", "Optische Teile fur Innenraume"],
+        "IDEAL_FOR": [
+          "Mockups",
+          "Schnelle Prototypen",
+          "Optische Teile fur Innenraume"
+        ],
         "SOURCES": {
           "wikipedia-pla": {
             "LABEL": "Wikipedia - Polymilchsaure"
@@ -399,7 +408,11 @@
           "Begrenzte mechanische Eigenschaften fur strukturelle Anwendungen.",
           "Wie andere PLA-Materialien hitzeempfindlich."
         ],
-        "IDEAL_FOR": ["Ausstellungsobjekte", "Produktdesign", "Asthetische Mockups"],
+        "IDEAL_FOR": [
+          "Ausstellungsobjekte",
+          "Produktdesign",
+          "Asthetische Mockups"
+        ],
         "SOURCES": {
           "wikipedia-pla": {
             "LABEL": "Wikipedia - Polymilchsaure"
@@ -453,7 +466,11 @@
           "Benotigt thermische Kontrolle beim Drucken.",
           "Kann ohne passendes Setup stark verziehen."
         ],
-        "IDEAL_FOR": ["Aussenabdeckungen", "Outdoor-Halterungen", "Sonnenexponierte Teile"],
+        "IDEAL_FOR": [
+          "Aussenabdeckungen",
+          "Outdoor-Halterungen",
+          "Sonnenexponierte Teile"
+        ],
         "SOURCES": {
           "wikipedia-asa": {
             "LABEL": "Wikipedia - Acrylonitril-Styrol-Acrylat"

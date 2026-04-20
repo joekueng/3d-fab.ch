@@ -345,7 +345,11 @@
           "Fragile en cas de choc.",
           "Faible resistance a la chaleur et a une exposition UV prolongee."
         ],
-        "IDEAL_FOR": ["Maquettes", "Prototypes rapides", "Pieces esthetiques interieures"],
+        "IDEAL_FOR": [
+          "Maquettes",
+          "Prototypes rapides",
+          "Pieces esthetiques interieures"
+        ],
         "SOURCES": {
           "wikipedia-pla": {
             "LABEL": "Wikipedia - Acide polylactique"
@@ -373,7 +377,11 @@
           "Proprietes mecaniques limitees pour un usage structurel.",
           "Sensible a la chaleur comme les autres PLA."
         ],
-        "IDEAL_FOR": ["Objets d'exposition", "Design produit", "Mockups esthetiques"],
+        "IDEAL_FOR": [
+          "Objets d'exposition",
+          "Design produit",
+          "Mockups esthetiques"
+        ],
         "SOURCES": {
           "wikipedia-pla": {
             "LABEL": "Wikipedia - Acide polylactique"
@@ -427,7 +435,11 @@
           "Necessite un bon controle thermique a l'impression.",
           "Peut se deformer sans setup adapte."
         ],
-        "IDEAL_FOR": ["Capots exterieurs", "Supports outdoor", "Pieces exposees au soleil"],
+        "IDEAL_FOR": [
+          "Capots exterieurs",
+          "Supports outdoor",
+          "Pieces exposees au soleil"
+        ],
         "SOURCES": {
           "wikipedia-asa": {
             "LABEL": "Wikipedia - Acrylonitrile styrene acrylate"

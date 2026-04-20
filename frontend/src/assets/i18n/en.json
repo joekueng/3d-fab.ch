@@ -453,7 +453,11 @@
           "Needs thermal control while printing.",
           "Can warp without an adequate setup."
         ],
-        "IDEAL_FOR": ["Outdoor covers", "Outdoor brackets", "Sun-exposed parts"],
+        "IDEAL_FOR": [
+          "Outdoor covers",
+          "Outdoor brackets",
+          "Sun-exposed parts"
+        ],
         "SOURCES": {
           "wikipedia-asa": {
             "LABEL": "Wikipedia - Acrylonitrile styrene acrylate"

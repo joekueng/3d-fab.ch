@@ -750,7 +750,9 @@ export class MaterialsPageComponent {
 
   readonly pageContent = computed<MaterialsPageTranslations>(() => {
     this.languageService.currentLang();
-    return this.translate.instant('MATERIALS_PAGE') as MaterialsPageTranslations;
+    return this.translate.instant(
+      'MATERIALS_PAGE',
+    ) as MaterialsPageTranslations;
   });
 
   readonly materials = computed<readonly MaterialRecord[]>(() => {
@@ -819,21 +821,23 @@ export class MaterialsPageComponent {
     });
   });
 
-  readonly calculatorParameters = computed<readonly CalculatorParameter[]>(() => {
-    const page = this.pageContent();
+  readonly calculatorParameters = computed<readonly CalculatorParameter[]>(
+    () => {
+      const page = this.pageContent();
 
-    return CALCULATOR_PARAMETER_CONFIGS.map((config) => {
-      const translated = page.CALCULATOR.PARAMETERS.ITEMS[config.id];
+      return CALCULATOR_PARAMETER_CONFIGS.map((config) => {
+        const translated = page.CALCULATOR.PARAMETERS.ITEMS[config.id];
 
-      return {
-        id: config.id,
-        title: translated.TITLE,
-        availability: translated.AVAILABILITY,
-        explanation: translated.EXPLANATION,
-        calculatorEffect: translated.CALCULATOR_EFFECT,
-      };
-    });
-  });
+        return {
+          id: config.id,
+          title: translated.TITLE,
+          availability: translated.AVAILABILITY,
+          explanation: translated.EXPLANATION,
+          calculatorEffect: translated.CALCULATOR_EFFECT,
+        };
+      });
+    },
+  );
 
   readonly selectedCount = computed(() => this.selectedMaterialIds().length);
 
