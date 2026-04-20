@@ -8,6 +8,7 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-6);
+  scroll-margin-top: calc(64px + var(--space-4));
   @media (min-width: 768px) {
     grid-template-columns: 1.5fr 1fr;
     gap: var(--space-8);
@@ -262,30 +263,22 @@
 
 .model-source-link--favorite {
   --favorite-accent: var(--color-brand);
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid
-    color-mix(in srgb, var(--favorite-accent) 38%, var(--color-border));
-  border-radius: var(--radius-md);
-  background: color-mix(
+  --favorite-border-color: color-mix(
     in srgb,
-    var(--favorite-accent) 12%,
-    var(--color-bg-card)
+    var(--favorite-accent) 50%,
+    var(--color-border)
   );
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--favorite-border-color);
+  border-radius: var(--radius-md);
+  background: #fff;
   box-shadow: inset 0 0 0 1px
     color-mix(in srgb, var(--favorite-accent) 16%, #fff);
 
   &:hover {
     color: var(--color-text);
-    background: color-mix(
-      in srgb,
-      var(--favorite-accent) 18%,
-      var(--color-bg-card)
-    );
-    border-color: color-mix(
-      in srgb,
-      var(--favorite-accent) 70%,
-      var(--color-border)
-    );
+    background: #fff;
+    border-color: var(--favorite-border-color);
     transform: translateX(2px);
   }
 }
@@ -357,6 +350,7 @@
 .model-source-link--compact .model-source-link__name::after {
   content: " ->";
   font-weight: 500;
+  color: currentColor;
 }
 
 .faq-list {
@@ -372,10 +366,27 @@
   padding: var(--space-4);
 
   summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
     cursor: pointer;
     font-weight: 600;
     color: var(--color-text);
     list-style: none;
+
+    &::after {
+      content: "⌄";
+      flex-shrink: 0;
+      color: var(--color-text-muted);
+      font-size: 1rem;
+      line-height: 1;
+      transition: transform 0.2s ease;
+    }
+  }
+
+  &[open] summary::after {
+    transform: rotate(180deg);
   }
 
   summary::-webkit-details-marker {
