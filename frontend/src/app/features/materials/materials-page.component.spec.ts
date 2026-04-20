@@ -116,9 +116,7 @@ describe('MaterialsPageComponent', () => {
     expect(factCards[1]?.textContent).toContain('Preset disponibili:');
     expect(factCards[1]?.textContent).toContain('Draft = 0.28 mm, 15% grid.');
     expect(factCards[1]?.textContent).not.toContain('Ideale se');
-    expect(factCards[2]?.textContent).toContain(
-      'profili macchina attivi',
-    );
+    expect(factCards[2]?.textContent).toContain('profili macchina attivi');
     expect(factCards[2]?.textContent).not.toContain('Ideale se');
     expect(host.textContent).not.toContain('davvero');
     expect(host.textContent).not.toContain('tool online');

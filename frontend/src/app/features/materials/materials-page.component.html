@@ -3,8 +3,8 @@
     <div class="container ui-simple-hero">
       <h1 class="ui-simple-hero__title">Qualita e Materiali</h1>
       <p class="ui-simple-hero__subtitle">
-        Guida tecnica su una selezione di materiali. Confronto qualità di
-        stampa disponibili e spiegazione all'utilizzo del
+        Guida tecnica su una selezione di materiali. Confronto qualità di stampa
+        disponibili e spiegazione all'utilizzo del
         <a class="materials-inline-link" href="#materials-calculator">
           calcolatore
         </a>
@@ -71,7 +71,9 @@
                   [attr.points]="series.points"
                   [style.stroke]="series.color"
                   [style.fill]="series.fill"
-                  [class.is-hovered]="hoveredMaterialId() === series.material.id"
+                  [class.is-hovered]="
+                    hoveredMaterialId() === series.material.id
+                  "
                   (mouseenter)="setHoveredMaterial(series.material.id)"
                   (mouseleave)="setHoveredMaterial(null)"
                 ></polygon>
@@ -126,10 +128,10 @@
                 </button>
               }
             </div>
-            <br>
+            <br />
             <p class="selector-help">
-              Nota: nell asse Convenienza, un valore piu alto indica un costo
-              al kg più basso.
+              Nota: nell asse Convenienza, un valore piu alto indica un costo al
+              kg più basso.
             </p>
           </div>
         </article>
@@ -141,8 +143,9 @@
             </div>
           </header>
           <p>
-            Ogni asse mostra una proprietà tecnica. Il valore massimo rappresenta la
-            prestazione relativa piu alta tra i materiali confrontati.
+            Ogni asse mostra una proprietà tecnica. Il valore massimo
+            rappresenta la prestazione relativa piu alta tra i materiali
+            confrontati.
           </p>
           <ul>
             @for (axis of radarAxes; track axis.id) {
@@ -211,7 +214,9 @@
             <p>{{ fact.description }}</p>
             @if (fact.details?.length) {
               @if (fact.detailsTitle) {
-                <p class="calculator-fact-list-title">{{ fact.detailsTitle }}</p>
+                <p class="calculator-fact-list-title">
+                  {{ fact.detailsTitle }}
+                </p>
               }
               <ul class="calculator-fact-list">
                 @for (detail of fact.details; track detail) {
@@ -235,9 +240,9 @@
         <div class="calculator-parameters-head">
           <h3>Parametri del calcolatore</h3>
           <p>
-            Qui sotto trovi i controlli attualmente disponibili nel
-            calcolatore. In modalita Avanzata, sono questi i parametri che
-            determinano il prezzo finale.
+            Qui sotto trovi i controlli attualmente disponibili nel calcolatore.
+            In modalita Avanzata, sono questi i parametri che determinano il
+            prezzo finale.
           </p>
         </div>
 
