@@ -267,9 +267,10 @@
 }
 
 .calculator-fact-card {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 0.55rem;
-  align-content: start;
+  height: 100%;
 }
 
 .calculator-fact-card p {
@@ -313,7 +314,8 @@
 }
 
 .calculator-fact-actions {
-  margin-top: var(--space-2);
+  margin-top: auto;
+  padding-top: var(--space-2);
 }
 
 .calculator-parameters-card {

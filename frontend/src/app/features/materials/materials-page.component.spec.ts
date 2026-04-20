@@ -1,5 +1,9 @@
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { firstValueFrom, of } from 'rxjs';
+import enTranslations from '../../../assets/i18n/en.json';
+import itTranslations from '../../../assets/i18n/it.json';
 import { MaterialsPageComponent } from './materials-page.component';
 import { PublicMediaService } from '../../core/services/public-media.service';
 import { LanguageService } from '../../core/services/language.service';
@@ -7,27 +11,43 @@ import { LanguageService } from '../../core/services/language.service';
 describe('MaterialsPageComponent', () => {
   let fixture: ComponentFixture<MaterialsPageComponent>;
   let component: MaterialsPageComponent;
+  let translate: TranslateService;
+  let publicMediaService: jasmine.SpyObj<PublicMediaService>;
 
-  const publicMediaService = jasmine.createSpyObj<PublicMediaService>(
-    'PublicMediaService',
-    ['getUsageCollections', 'pickPrimaryUsage', 'toDisplayImage'],
-  );
-  const languageService = jasmine.createSpyObj<LanguageService>(
-    'LanguageService',
-    ['localizedPath'],
-  );
+  const currentLang = signal<'it' | 'en' | 'de' | 'fr'>('it');
+  const languageServiceStub = {
+    currentLang,
+    localizedPath: (path: string) => `/${currentLang()}${path}`,
+  };
+
+  async function switchLanguage(lang: 'it' | 'en') {
+    await firstValueFrom(translate.use(lang));
+    currentLang.set(lang);
+    fixture.detectChanges();
+  }
 
   beforeEach(async () => {
+    currentLang.set('it');
+
+    publicMediaService = jasmine.createSpyObj<PublicMediaService>(
+      'PublicMediaService',
+      ['getUsageCollections', 'pickPrimaryUsage', 'toDisplayImage'],
+    );
     publicMediaService.getUsageCollections.and.returnValue(of({}));
-    languageService.localizedPath.and.callFake((path: string) => `/it${path}`);
 
     await TestBed.configureTestingModule({
-      imports: [MaterialsPageComponent],
+      imports: [MaterialsPageComponent, TranslateModule.forRoot()],
       providers: [
         { provide: PublicMediaService, useValue: publicMediaService },
-        { provide: LanguageService, useValue: languageService },
+        { provide: LanguageService, useValue: languageServiceStub },
       ],
     }).compileComponents();
+
+    translate = TestBed.inject(TranslateService);
+    translate.setFallbackLang('it');
+    translate.setTranslation('it', itTranslations);
+    translate.setTranslation('en', enTranslations);
+    await firstValueFrom(translate.use('it'));
 
     fixture = TestBed.createComponent(MaterialsPageComponent);
     component = fixture.componentInstance;
@@ -90,7 +110,7 @@ describe('MaterialsPageComponent', () => {
     ]);
   });
 
-  it('renders the compact calculator guide with localized links', () => {
+  it('updates static copy, computed content and localized links when the language changes', async () => {
     const host = fixture.nativeElement as HTMLElement;
     const heroLink = host.querySelector(
       '.materials-inline-link',
@@ -98,41 +118,61 @@ describe('MaterialsPageComponent', () => {
     const calculatorSection = host.querySelector(
       '.materials-section--muted',
     ) as HTMLElement;
-    const actionLinks = Array.from(
-      calculatorSection.querySelectorAll('.calculator-fact-actions a'),
-    ) as HTMLAnchorElement[];
-    const factCards = Array.from(
-      calculatorSection.querySelectorAll('.calculator-fact-card'),
-    ) as HTMLElement[];
 
+    expect(host.querySelector('.ui-simple-hero__title')?.textContent?.trim()).toBe(
+      'Qualita e Materiali',
+    );
     expect(calculatorSection.textContent).toContain(
-      'quali parametri influenzano prezzo, tempi e risultato finale',
+      'Come usare il calcolatore',
     );
     expect(calculatorSection.textContent).toContain(
       'Parametri del calcolatore',
     );
     expect(calculatorSection.textContent).toContain(
-      'Il calcolatore restituisce prezzo, tempo di stampa e consumo materiale.',
+      'prezzo finale automatico di stampa',
     );
-    expect(calculatorSection.querySelector('.calculator-mode-card')).toBeNull();
-    expect(factCards.length).toBe(3);
-    expect(factCards[1]?.textContent).toContain('Modalita Base');
-    expect(factCards[1]?.textContent).toContain('Draft = 0.28 mm, 15% grid.');
-    expect(factCards[1]?.textContent).toContain('Ideale se');
-    expect(factCards[2]?.textContent).toContain('Modalita Avanzata');
-    expect(factCards[2]?.textContent).toContain('profili di macchina attivi');
-    expect(factCards[2]?.textContent).toContain('Ideale se');
-    expect(host.textContent).not.toContain('davvero');
-    expect(host.textContent).not.toContain('tool online');
-    expect(host.textContent).not.toContain('Seleziona fino a');
-    expect(host.textContent).not.toContain('raggio minimo visivo');
-    expect(host.textContent).not.toContain('usageType');
+    expect(component.radarAxes()[1]?.label).toBe('Stampabilita');
+    expect(component.comparisonRows()[0]?.label).toBe(
+      'Stampabilita [indice 0-100]',
+    );
     expect(heroLink.getAttribute('href')).toBe('#materials-calculator');
     expect(calculatorSection.getAttribute('id')).toBe('materials-calculator');
-    expect(actionLinks.map((link) => link.getAttribute('href'))).toEqual([
+    expect(
+      Array.from(
+        calculatorSection.querySelectorAll('.calculator-fact-actions a'),
+      ).map((link) => link.getAttribute('href')),
+    ).toEqual([
       '/it/calculator',
       '/it/calculator/basic#calculator-workspace',
       '/it/calculator/advanced#calculator-workspace',
+    ]);
+
+    await switchLanguage('en');
+
+    expect(host.querySelector('.ui-simple-hero__title')?.textContent?.trim()).toBe(
+      'Quality & Materials',
+    );
+    expect(calculatorSection.textContent).toContain(
+      'How to use the calculator',
+    );
+    expect(calculatorSection.textContent).toContain(
+      'Calculator parameters',
+    );
+    expect(calculatorSection.textContent).toContain(
+      'automatic final print price',
+    );
+    expect(component.radarAxes()[1]?.label).toBe('Printability');
+    expect(component.comparisonRows()[0]?.label).toBe(
+      'Printability [0-100 index]',
+    );
+    expect(
+      Array.from(
+        calculatorSection.querySelectorAll('.calculator-fact-actions a'),
+      ).map((link) => link.getAttribute('href')),
+    ).toEqual([
+      '/en/calculator',
+      '/en/calculator/basic#calculator-workspace',
+      '/en/calculator/advanced#calculator-workspace',
     ]);
   });
 });

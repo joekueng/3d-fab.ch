@@ -1,14 +1,13 @@
 <main class="materials-page ui-page-surface">
   <section class="materials-hero">
     <div class="container ui-simple-hero">
-      <h1 class="ui-simple-hero__title">Qualita e Materiali</h1>
+      <h1 class="ui-simple-hero__title">{{ pageContent().HERO.TITLE }}</h1>
       <p class="ui-simple-hero__subtitle">
-        Guida tecnica su una selezione di materiali. Confronto qualità di stampa
-        disponibili e spiegazione all'utilizzo del
+        {{ pageContent().HERO.SUBTITLE_PREFIX }}
         <a class="materials-inline-link" href="#materials-calculator">
-          calcolatore
+          {{ pageContent().HERO.LINK_LABEL }}
         </a>
-        .
+        {{ pageContent().HERO.SUBTITLE_SUFFIX }}
       </p>
     </div>
   </section>
@@ -19,11 +18,13 @@
         <article class="materials-panel materials-panel--chart">
           <header class="materials-panel__header">
             <div>
-              <p class="ui-eyebrow ui-eyebrow--compact">Confronto</p>
-              <h2>Grafico Radar</h2>
+              <p class="ui-eyebrow ui-eyebrow--compact">
+                {{ pageContent().RADAR.EYEBROW }}
+              </p>
+              <h2>{{ pageContent().RADAR.TITLE }}</h2>
             </div>
             <p class="materials-panel__description">
-              Seleziona uno o piu materiali per visualizzare le proprietà.
+              {{ pageContent().RADAR.DESCRIPTION }}
             </p>
           </header>
 
@@ -31,7 +32,7 @@
             class="radar-chart"
             [attr.viewBox]="'0 0 ' + chartSize + ' ' + chartSize"
             role="img"
-            aria-label="Grafico radar materiali"
+            [attr.aria-label]="pageContent().RADAR.ARIA_LABEL"
           >
             <g class="chart-rings">
               @for (ring of ringPolygons(); track $index) {
@@ -93,7 +94,7 @@
 
           <div class="selector-panel">
             <div class="selector-panel__header">
-              <h3>Materiali nel confronto</h3>
+              <h3>{{ pageContent().RADAR.SELECTOR_TITLE }}</h3>
               <p class="selector-count">
                 {{ selectedCount() }}/{{ maxCompareCount }}
               </p>
@@ -102,10 +103,10 @@
             <div
               class="selector-grid"
               role="group"
-              aria-label="Selezione materiali"
+              [attr.aria-label]="pageContent().RADAR.SELECTOR_ARIA_LABEL"
             >
               @for (
-                material of materials;
+                material of materials();
                 track trackMaterial($index, material)
               ) {
                 <button
@@ -130,8 +131,7 @@
             </div>
             <br />
             <p class="selector-help">
-              Nota: nell asse Convenienza, un valore piu alto indica un costo al
-              kg più basso.
+              {{ pageContent().RADAR.SELECTOR_HELP }}
             </p>
           </div>
         </article>
@@ -139,16 +139,12 @@
         <article class="materials-panel materials-panel--aside">
           <header class="materials-panel__header">
             <div>
-              <h2>Come leggere il confronto</h2>
+              <h2>{{ pageContent().RADAR.READING_TITLE }}</h2>
             </div>
           </header>
-          <p>
-            Ogni asse mostra una proprietà tecnica. Il valore massimo
-            rappresenta la prestazione relativa piu alta tra i materiali
-            confrontati.
-          </p>
+          <p>{{ pageContent().RADAR.READING_DESCRIPTION }}</p>
           <ul>
-            @for (axis of radarAxes; track axis.id) {
+            @for (axis of radarAxes(); track axis.id) {
               <li>
                 <strong>{{ axis.label }}:</strong>
                 {{ axis.description }}
@@ -163,14 +159,16 @@
   <section class="materials-section">
     <div class="container">
       <div class="materials-section-head">
-        <p class="ui-eyebrow ui-eyebrow--compact">Dati tecnici</p>
-        <h2>Tabella di confronto</h2>
+        <p class="ui-eyebrow ui-eyebrow--compact">
+          {{ pageContent().TABLE.EYEBROW }}
+        </p>
+        <h2>{{ pageContent().TABLE.TITLE }}</h2>
       </div>
       <div class="ui-table-wrap materials-table-wrap">
         <table class="ui-data-table">
           <thead>
             <tr>
-              <th>Parametro</th>
+              <th>{{ pageContent().TABLE.PARAMETER_HEADER }}</th>
               @for (
                 material of selectedMaterials();
                 track trackMaterial($index, material)
@@ -180,7 +178,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (row of comparisonRows(); track row.label) {
+            @for (row of comparisonRows(); track trackComparisonRow($index, row)) {
               <tr>
                 <th>{{ row.label }}</th>
                 @for (value of row.values; track $index) {
@@ -200,17 +198,16 @@
   >
     <div class="container">
       <div class="materials-section-head">
-        <p class="ui-eyebrow ui-eyebrow--compact">Calcolatore</p>
-        <h2>Come usare il calcolatore</h2>
-        <p>
-          Questa sezione spiega quali parametri influenzano prezzo, tempi e
-          risultato finale, e come leggere correttamente il risultato.
+        <p class="ui-eyebrow ui-eyebrow--compact">
+          {{ pageContent().CALCULATOR.SECTION_EYEBROW }}
         </p>
+        <h2>{{ pageContent().CALCULATOR.SECTION_TITLE }}</h2>
+        <p>{{ pageContent().CALCULATOR.SECTION_DESCRIPTION }}</p>
       </div>
 
       <div class="calculator-facts-grid">
         @for (
-          fact of calculatorFacts;
+          fact of calculatorFacts();
           track trackCalculatorFact($index, fact)
         ) {
           <article class="calculator-fact-card">
@@ -249,17 +246,13 @@
 
       <article class="calculator-parameters-card">
         <div class="calculator-parameters-head">
-          <h3>Parametri del calcolatore</h3>
-          <p>
-            Qui sotto trovi i controlli attualmente disponibili nel calcolatore.
-            In modalita Avanzata, sono questi i parametri che influenzano
-            prezzo, tempi e resa finale.
-          </p>
+          <h3>{{ pageContent().CALCULATOR.PARAMETERS.TITLE }}</h3>
+          <p>{{ pageContent().CALCULATOR.PARAMETERS.DESCRIPTION }}</p>
         </div>
 
         <div class="calculator-parameters-grid">
           @for (
-            parameter of calculatorParameters;
+            parameter of calculatorParameters();
             track trackCalculatorParameter($index, parameter)
           ) {
             <article class="calculator-parameter-card">
@@ -271,7 +264,7 @@
                 <p>{{ parameter.explanation }}</p>
               </div>
               <div class="calculator-parameter-effect">
-                <span>Impatto nel calcolatore</span>
+                <span>{{ pageContent().CALCULATOR.PARAMETERS.EFFECT_LABEL }}</span>
                 <p>{{ parameter.calculatorEffect }}</p>
               </div>
             </article>
@@ -281,13 +274,8 @@
 
       <div class="calculator-visual-section">
         <div class="calculator-visual-head">
-          <h3>Esempi pratici per leggere layer, ugelli e riempimento</h3>
-          <p>
-            Questi esempi aiutano a capire meglio come layer, ugelli e
-            riempimento influenzano il risultato. Nel calcolatore gli ugelli
-            disponibili sono 0.40 mm e 0.60 mm, e ognuno abilita altezze layer
-            diverse.
-          </p>
+          <h3>{{ pageContent().CALCULATOR.GUIDES.TITLE }}</h3>
+          <p>{{ pageContent().CALCULATOR.GUIDES.DESCRIPTION }}</p>
         </div>
 
         <div class="visual-guide-grid">
@@ -323,28 +311,38 @@
                   </picture>
                 } @else {
                   <div class="media-fallback">
-                    <span>Immagine di esempio in aggiornamento.</span>
+                    <span>{{ pageContent().CALCULATOR.GUIDES.FALLBACK_IMAGE }}</span>
                   </div>
                 }
               </div>
 
               <div class="visual-guide-spec-list">
                 <div class="visual-guide-spec">
-                  <span class="visual-guide-spec__label">Esempio tipico</span>
+                  <span class="visual-guide-spec__label">
+                    {{ pageContent().CALCULATOR.GUIDES.SPEC_LABELS.OBJECT_EXAMPLE }}
+                  </span>
                   <p class="visual-guide-spec__text">
                     {{ guide.objectExample }}
                   </p>
                 </div>
                 <div class="visual-guide-spec">
-                  <span class="visual-guide-spec__label">Meglio per</span>
+                  <span class="visual-guide-spec__label">
+                    {{ pageContent().CALCULATOR.GUIDES.SPEC_LABELS.BEST_FOR }}
+                  </span>
                   <p class="visual-guide-spec__text">{{ guide.bestFor }}</p>
                 </div>
+                @if (guide.tradeoff) {
+                  <div class="visual-guide-spec">
+                    <span class="visual-guide-spec__label">
+                      {{ pageContent().CALCULATOR.GUIDES.SPEC_LABELS.TRADEOFF }}
+                    </span>
+                    <p class="visual-guide-spec__text">{{ guide.tradeoff }}</p>
+                  </div>
+                }
                 <div class="visual-guide-spec">
-                  <span class="visual-guide-spec__label">Limite</span>
-                  <p class="visual-guide-spec__text">{{ guide.tradeoff }}</p>
-                </div>
-                <div class="visual-guide-spec">
-                  <span class="visual-guide-spec__label">Effetto tipico</span>
+                  <span class="visual-guide-spec__label">
+                    {{ pageContent().CALCULATOR.GUIDES.SPEC_LABELS.CALCULATOR_READ }}
+                  </span>
                   <p class="visual-guide-spec__text visual-guide-calc">
                     {{ guide.calculatorRead }}
                   </p>
@@ -360,12 +358,11 @@
   <section class="materials-section ui-page-surface__body">
     <div class="container">
       <div class="materials-section-head">
-        <p class="ui-eyebrow ui-eyebrow--compact">Fonti</p>
-        <h2>Fonti consultate</h2>
-        <p>
-          Qui trovi tutte le fonti utilizzate per i dati tecnici e le
-          descrizioni dei materiali.
+        <p class="ui-eyebrow ui-eyebrow--compact">
+          {{ pageContent().SOURCES.EYEBROW }}
         </p>
+        <h2>{{ pageContent().SOURCES.TITLE }}</h2>
+        <p>{{ pageContent().SOURCES.DESCRIPTION }}</p>
       </div>
       <ul class="global-source-list">
         @for (source of allSources(); track trackSource($index, source)) {
