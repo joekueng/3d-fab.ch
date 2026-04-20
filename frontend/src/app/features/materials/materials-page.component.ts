@@ -571,8 +571,7 @@ const CALCULATOR_FACTS: readonly CalculatorFact[] = [
     id: 'basic',
     eyebrow: 'Modalita Base',
     title: 'Modalita Base',
-    description:
-      'In Base scegli materiale, colore e qualita.',
+    description: 'In Base scegli materiale, colore e qualita.',
     detailLabel: 'Qualita',
     detail:
       'Draft = 0.28 mm, 15% grid. Standard = 0.20 mm, 15% grid. High Definition = 0.12 mm, 20% gyroid.',
@@ -591,8 +590,7 @@ const CALCULATOR_FACTS: readonly CalculatorFact[] = [
     detail:
       'Le combinazioni disponibili dipendono dai profili di macchina attivi.',
     noteLabel: 'Ideale se',
-    note:
-      'conosci esattamente le impostazioni che vuoi applicare al tuo file.',
+    note: 'conosci esattamente le impostazioni che vuoi applicare al tuo file.',
     ctaLabel: 'Apri Avanzata',
     path: '/calculator/advanced',
   },

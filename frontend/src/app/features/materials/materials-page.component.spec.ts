@@ -108,12 +108,8 @@ describe('MaterialsPageComponent', () => {
     expect(calculatorSection.textContent).toContain(
       'Il calcolatore restituisce prezzo, tempo di stampa e consumo materiale.',
     );
-    expect(calculatorSection.textContent).toContain(
-      'Modalita Base',
-    );
-    expect(calculatorSection.textContent).toContain(
-      'Modalita Avanzata',
-    );
+    expect(calculatorSection.textContent).toContain('Modalita Base');
+    expect(calculatorSection.textContent).toContain('Modalita Avanzata');
     expect(host.textContent).not.toContain('davvero');
     expect(host.textContent).not.toContain('tool online');
     expect(host.textContent).not.toContain('Seleziona fino a');
