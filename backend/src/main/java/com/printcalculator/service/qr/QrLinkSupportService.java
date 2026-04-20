@@ -184,14 +184,11 @@ public class QrLinkSupportService {
         return """
                 <?xml version="1.0" encoding="UTF-8"?>
                 <svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" viewBox="0 0 %d %d" shape-rendering="crispEdges" role="img" aria-label="QR Code">
-                  <rect width="%d" height="%d" fill="#FFFFFF"/>
                   <path fill="#000000" d="%s"/>
                 </svg>
                 """.formatted(
                 renderedSize,
                 renderedSize,
-                fullSize,
-                fullSize,
                 fullSize,
                 fullSize,
                 path
