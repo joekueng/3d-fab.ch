@@ -3,6 +3,7 @@ package com.printcalculator.service.qr;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class QrLinkSupportServiceTest {
@@ -28,6 +29,9 @@ class QrLinkSupportServiceTest {
 
         assertTrue(svg.contains("<svg"));
         assertTrue(svg.contains("shape-rendering=\"crispEdges\""));
+        assertTrue(svg.contains("<path fill=\"#000000\""));
+        assertFalse(svg.contains("<rect"));
+        assertFalse(svg.contains("fill=\"#FFFFFF\""));
         assertEquals(
                 "https://3d-fab.ch/api/public/qr/flyer-fiera-2026",
                 service.buildPublicUrl("flyer-fiera-2026")
