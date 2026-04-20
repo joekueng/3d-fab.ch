@@ -129,7 +129,7 @@ describe('MaterialsPageComponent', () => {
       'Parametri del calcolatore',
     );
     expect(calculatorSection.textContent).toContain(
-      'prezzo finale automatico di stampa',
+      'prezzo finale di stampa',
     );
     expect(component.radarAxes()[1]?.label).toBe('Stampabilita');
     expect(component.comparisonRows()[0]?.label).toBe(
@@ -159,7 +159,7 @@ describe('MaterialsPageComponent', () => {
       'Calculator parameters',
     );
     expect(calculatorSection.textContent).toContain(
-      'automatic final print price',
+      'final print price',
     );
     expect(component.radarAxes()[1]?.label).toBe('Printability');
     expect(component.comparisonRows()[0]?.label).toBe(
