@@ -90,27 +90,37 @@ describe('MaterialsPageComponent', () => {
     ]);
   });
 
-  it('renders the calculator guide with localized links and real-calculator copy', () => {
+  it('renders the compact calculator guide with localized links', () => {
     const host = fixture.nativeElement as HTMLElement;
     const calculatorSection = host.querySelector(
       '.materials-section--muted',
     ) as HTMLElement;
-    const modeLinks = Array.from(
-      calculatorSection.querySelectorAll('.calculator-mode-link'),
+    const actionLinks = Array.from(
+      calculatorSection.querySelectorAll('.calculator-fact-actions a'),
     ) as HTMLAnchorElement[];
 
     expect(calculatorSection.textContent).toContain(
-      'quali parametri influenzano il preventivo',
+      'quali parametri influenzano prezzo, tempi e risultato finale',
     );
     expect(calculatorSection.textContent).toContain(
       'Parametri del calcolatore',
+    );
+    expect(calculatorSection.textContent).toContain(
+      'Il calcolatore restituisce prezzo, tempo di stampa e consumo materiale.',
+    );
+    expect(calculatorSection.textContent).toContain(
+      'Modalita Base',
+    );
+    expect(calculatorSection.textContent).toContain(
+      'Modalita Avanzata',
     );
     expect(host.textContent).not.toContain('davvero');
     expect(host.textContent).not.toContain('tool online');
     expect(host.textContent).not.toContain('Seleziona fino a');
     expect(host.textContent).not.toContain('raggio minimo visivo');
     expect(host.textContent).not.toContain('usageType');
-    expect(modeLinks.map((link) => link.getAttribute('href'))).toEqual([
+    expect(actionLinks.map((link) => link.getAttribute('href'))).toEqual([
+      '/it/calculator',
       '/it/calculator/basic',
       '/it/calculator/advanced',
     ]);

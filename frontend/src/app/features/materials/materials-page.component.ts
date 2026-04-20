@@ -88,21 +88,17 @@ interface ComparisonRow {
   values: readonly string[];
 }
 
-interface CalculatorMode {
-  id: 'basic' | 'advanced';
+interface CalculatorFact {
+  id: 'overview' | 'basic' | 'advanced';
   eyebrow: string;
   title: string;
-  summary: string;
-  useWhen: string;
-  controls: readonly string[];
-  outputs: string;
-  ctaLabel: string;
-  path: string;
-}
-
-interface CalculatorFact {
-  title: string;
   description: string;
+  detailLabel?: string;
+  detail?: string;
+  noteLabel?: string;
+  note?: string;
+  ctaLabel?: string;
+  path?: string;
 }
 
 interface CalculatorParameter {
@@ -561,58 +557,42 @@ const RADAR_AXES: readonly RadarAxis[] = [
 
 const CALCULATOR_FACTS: readonly CalculatorFact[] = [
   {
+    id: 'overview',
+    eyebrow: 'Calcolatore',
     title: 'Cosa restituisce il calcolatore',
     description:
-      'Il calcolatore restituisce una stima con prezzo, tempo di stampa e consumo materiale.',
+      'Il calcolatore restituisce prezzo, tempo di stampa e consumo materiale.',
+    detailLabel: 'In entrambe le modalita',
+    detail: 'puoi scegliere materiale e colore.',
+    ctaLabel: 'Apri calcolatore',
+    path: '/calculator',
   },
-  {
-    title: 'Modalita Base',
-    description:
-      'In Base scegli materiale e qualita. La qualita corrisponde a impostazioni di stampa predefinite: Draft = 0.28 mm, 15% grid; Standard = 0.20 mm, 15% grid; High Definition = 0.12 mm, 20% gyroid.',
-  },
-  {
-    title: 'Modalita Avanzata',
-    description:
-      'In Avanzata controlli direttamente materiale, ugello, layer, riempimento, pattern e supporti. Le combinazioni disponibili dipendono dall ugello selezionato e dai profili macchina attivi.',
-  },
-];
-
-const CALCULATOR_MODES: readonly CalculatorMode[] = [
   {
     id: 'basic',
     eyebrow: 'Modalita Base',
-    title: 'Calcolo veloce per file gia pronti',
-    summary:
-      'Prezzo corretto in pochi secondi, senza entrare nei dettagli tecnici della stampa.',
-    useWhen:
-      'Hai gia un modello pronto e vuoi confrontare materiali o ottenere una prima stima rapida.',
-    controls: [
-      'Caricamento STL o 3MF.',
-      'Scelta materiale.',
-      'Scelta qualita con preset predefiniti.',
-      'Colore selezionabile per ogni file.',
-    ],
-    outputs:
-      'Restituisce stima di prezzo, tempo di stampa e peso del materiale.',
+    title: 'Modalita Base',
+    description:
+      'In Base scegli materiale, colore e qualita.',
+    detailLabel: 'Qualita',
+    detail:
+      'Draft = 0.28 mm, 15% grid. Standard = 0.20 mm, 15% grid. High Definition = 0.12 mm, 20% gyroid.',
+    noteLabel: 'Ideale se',
+    note: 'non conosci nel dettaglio i singoli parametri di stampa.',
     ctaLabel: 'Apri Base',
     path: '/calculator/basic',
   },
   {
     id: 'advanced',
     eyebrow: 'Modalita Avanzata',
-    title: 'Configurazione avanzata con parametri di stampa',
-    summary:
-      'Stima piu vicina alla configurazione finale, con controllo diretto sui parametri di stampa principali.',
-    useWhen:
-      'Materiale e configurazione fanno la differenza e vuoi piu controllo su costi, tempi e impostazioni.',
-    controls: [
-      'Materiale e colore.',
-      'Diametro ugello e altezza layer.',
-      'Riempimento percentuale e pattern.',
-      'Supporti e impostazioni globali o per singolo file.',
-    ],
-    outputs:
-      'Restituisce la stessa stima, con maggiore controllo sulle variabili di stampa.',
+    title: 'Modalita Avanzata',
+    description:
+      'In Avanzata controlli direttamente materiale, colore, ugello, layer, riempimento, pattern e supporti.',
+    detailLabel: 'Profili attivi',
+    detail:
+      'Le combinazioni disponibili dipendono dai profili di macchina attivi.',
+    noteLabel: 'Ideale se',
+    note:
+      'conosci esattamente le impostazioni che vuoi applicare al tuo file.',
     ctaLabel: 'Apri Avanzata',
     path: '/calculator/advanced',
   },
@@ -781,7 +761,6 @@ export class MaterialsPageComponent {
   readonly radarAxes = RADAR_AXES;
   readonly maxCompareCount = MAX_COMPARE_COUNT;
   readonly calculatorFacts = CALCULATOR_FACTS;
-  readonly calculatorModes = CALCULATOR_MODES;
   readonly calculatorParameters = CALCULATOR_PARAMETERS;
 
   readonly selectedMaterialIds = signal<string[]>([
@@ -997,11 +976,7 @@ export class MaterialsPageComponent {
   }
 
   trackCalculatorFact(_index: number, fact: CalculatorFact): string {
-    return fact.title;
-  }
-
-  trackCalculatorMode(_index: number, mode: CalculatorMode): string {
-    return mode.id;
+    return fact.id;
   }
 
   trackCalculatorParameter(

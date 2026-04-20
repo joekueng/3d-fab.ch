@@ -203,41 +203,35 @@
           track trackCalculatorFact($index, fact)
         ) {
           <article class="calculator-fact-card">
+            <p class="calculator-fact-eyebrow">{{ fact.eyebrow }}</p>
             <h3>{{ fact.title }}</h3>
             <p>{{ fact.description }}</p>
-          </article>
-        }
-      </div>
-
-      <div class="calculator-modes-grid">
-        @for (
-          mode of calculatorModes;
-          track trackCalculatorMode($index, mode)
-        ) {
-          <article class="calculator-mode-card">
-            <p class="calculator-mode-eyebrow">{{ mode.eyebrow }}</p>
-            <h3>{{ mode.title }}</h3>
-            <p>{{ mode.summary }}</p>
-            <p class="calculator-mode-when">
-              <strong>Ideale se:</strong> {{ mode.useWhen }}
-            </p>
-
-            <div class="calculator-mode-block">
-              <h4>Controlli disponibili</h4>
-              <ul>
-                @for (control of mode.controls; track control) {
-                  <li>{{ control }}</li>
+            @if (fact.detail) {
+              <p class="calculator-fact-detail">
+                @if (fact.detailLabel) {
+                  <strong>{{ fact.detailLabel }}:</strong>
                 }
-              </ul>
-            </div>
-
-            <p class="calculator-mode-output">{{ mode.outputs }}</p>
-            <a
-              class="calculator-mode-link"
-              [attr.href]="localizedPath(mode.path)"
-            >
-              {{ mode.ctaLabel }}
-            </a>
+                {{ fact.detail }}
+              </p>
+            }
+            @if (fact.note) {
+              <p class="calculator-fact-note">
+                @if (fact.noteLabel) {
+                  <strong>{{ fact.noteLabel }}:</strong>
+                }
+                {{ fact.note }}
+              </p>
+            }
+            @if (fact.ctaLabel && fact.path) {
+              <div class="calculator-fact-actions">
+                <a
+                  class="ui-button ui-button--sm"
+                  [attr.href]="localizedPath(fact.path)"
+                >
+                  {{ fact.ctaLabel }}
+                </a>
+              </div>
+            }
           </article>
         }
       </div>
