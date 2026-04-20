@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { TranslateService } from '@ngx-translate/core';
 import {
   PublicMediaDisplayImage,
   PublicMediaService,
@@ -9,9 +10,28 @@ import {
 } from '../../core/services/public-media.service';
 import { LanguageService } from '../../core/services/language.service';
 
+type MaterialId =
+  | 'tpu-95a-hf'
+  | 'pla-basic'
+  | 'pla-matte'
+  | 'pla-tough-plus'
+  | 'asa'
+  | 'pc'
+  | 'pa12-cf'
+  | 'pet-cf';
+
+type MaterialSourceKindId = 'wikipedia' | 'tech-sheet' | 'product-sheet';
+
+interface MaterialSourceConfig {
+  id: string;
+  kindId: MaterialSourceKindId;
+  url: string;
+}
+
 interface MaterialSource {
+  id: string;
   label: string;
-  kind: 'Wikipedia' | 'Scheda tecnica' | 'Scheda prodotto';
+  kind: string;
   url: string;
 }
 
@@ -27,8 +47,14 @@ interface MaterialMetrics {
   layerRangeMm: string;
 }
 
+interface MaterialConfig {
+  id: MaterialId;
+  metrics: MaterialMetrics;
+  sources: readonly MaterialSourceConfig[];
+}
+
 interface MaterialRecord {
-  id: string;
+  id: MaterialId;
   name: string;
   summary: string;
   qualityTips: readonly string[];
@@ -47,10 +73,16 @@ type RadarAxisId =
   | 'elongation'
   | 'hdt';
 
+interface RadarAxisConfig {
+  id: RadarAxisId;
+  lowerIsBetter?: boolean;
+  accessor: (material: MaterialRecord) => number;
+}
+
 interface RadarAxis {
   id: RadarAxisId;
   label: string;
-  chartLabelLines?: readonly string[];
+  labelLines: readonly string[];
   description: string;
   unit: string;
   lowerIsBetter?: boolean;
@@ -85,30 +117,89 @@ interface AxisGuide {
   labelLines: readonly string[];
 }
 
+type ComparisonRowId =
+  | 'printability'
+  | 'layer-range'
+  | 'price'
+  | 'density'
+  | 'tensile'
+  | 'modulus'
+  | 'elongation'
+  | 'hdt'
+  | 'extrusion';
+
+interface ComparisonRowConfig {
+  id: ComparisonRowId;
+  accessor: (material: MaterialRecord) => number | string;
+  fractionDigits?: number;
+}
+
 interface ComparisonRow {
+  id: ComparisonRowId;
   label: string;
   values: readonly string[];
 }
 
+type CalculatorFactId = 'overview' | 'basic' | 'advanced';
+
+interface CalculatorFactConfig {
+  id: CalculatorFactId;
+  path?: string;
+}
+
 interface CalculatorFact {
+  id: CalculatorFactId;
+  eyebrow: string;
   title: string;
   description: string;
-  detailsTitle?: string;
-  details?: readonly string[];
+  detailLabel?: string;
+  detail?: string;
+  noteLabel?: string;
+  note?: string;
   ctaLabel?: string;
   path?: string;
 }
 
+type CalculatorParameterId =
+  | 'material'
+  | 'quality'
+  | 'nozzleDiameter'
+  | 'layerHeight'
+  | 'infill'
+  | 'infillPattern'
+  | 'supports';
+
+interface CalculatorParameterConfig {
+  id: CalculatorParameterId;
+}
+
 interface CalculatorParameter {
+  id: CalculatorParameterId;
   title: string;
-  availability: 'Base' | 'Avanzata' | 'Base e Avanzata';
+  availability: string;
   explanation: string;
   calculatorEffect: string;
 }
 
+type GuideCategoryId = 'layer' | 'nozzles' | 'infill';
+
+type QualityVisualGuideId =
+  | 'layer-012'
+  | 'layer-020'
+  | 'layer-028'
+  | 'nozzles-040-060'
+  | 'infill-15'
+  | 'infill-40';
+
+interface QualityVisualGuideConfig {
+  id: QualityVisualGuideId;
+  categoryId: GuideCategoryId;
+  usageKey: string;
+}
+
 interface QualityVisualGuide {
-  id: string;
-  category: 'Layer' | 'Ugello' | 'Riempimento';
+  id: QualityVisualGuideId;
+  category: string;
   title: string;
   objectExample: string;
   bestFor: string;
@@ -126,16 +217,115 @@ interface MaterialSeriesStyle {
   fill: string;
 }
 
-const MATERIALS: readonly MaterialRecord[] = [
+interface MaterialSourceTranslation {
+  LABEL: string;
+}
+
+interface MaterialTranslation {
+  NAME: string;
+  SUMMARY: string;
+  QUALITY_TIPS: readonly string[];
+  PROS: readonly string[];
+  CONS: readonly string[];
+  IDEAL_FOR: readonly string[];
+  SOURCES: Record<string, MaterialSourceTranslation>;
+}
+
+interface RadarAxisTranslation {
+  LABEL: string;
+  LABEL_LINES?: readonly string[];
+  DESCRIPTION: string;
+  UNIT: string;
+}
+
+interface CalculatorFactTranslation {
+  EYEBROW: string;
+  TITLE: string;
+  DESCRIPTION: string;
+  DETAIL_LABEL?: string;
+  DETAIL?: string;
+  NOTE_LABEL?: string;
+  NOTE?: string;
+  CTA_LABEL?: string;
+}
+
+interface CalculatorParameterTranslation {
+  TITLE: string;
+  AVAILABILITY: string;
+  EXPLANATION: string;
+  CALCULATOR_EFFECT: string;
+}
+
+interface QualityVisualGuideTranslation {
+  TITLE: string;
+  OBJECT_EXAMPLE: string;
+  BEST_FOR: string;
+  TRADEOFF: string;
+  CALCULATOR_READ: string;
+}
+
+interface MaterialsPageTranslations {
+  HERO: {
+    TITLE: string;
+    SUBTITLE_PREFIX: string;
+    LINK_LABEL: string;
+    SUBTITLE_SUFFIX: string;
+  };
+  RADAR: {
+    EYEBROW: string;
+    TITLE: string;
+    DESCRIPTION: string;
+    ARIA_LABEL: string;
+    SELECTOR_TITLE: string;
+    SELECTOR_ARIA_LABEL: string;
+    SELECTOR_HELP: string;
+    READING_TITLE: string;
+    READING_DESCRIPTION: string;
+    AXES: Record<RadarAxisId, RadarAxisTranslation>;
+  };
+  TABLE: {
+    EYEBROW: string;
+    TITLE: string;
+    PARAMETER_HEADER: string;
+    ROWS: Record<ComparisonRowId, string>;
+  };
+  CALCULATOR: {
+    SECTION_EYEBROW: string;
+    SECTION_TITLE: string;
+    SECTION_DESCRIPTION: string;
+    FACTS: Record<CalculatorFactId, CalculatorFactTranslation>;
+    PARAMETERS: {
+      TITLE: string;
+      DESCRIPTION: string;
+      EFFECT_LABEL: string;
+      ITEMS: Record<CalculatorParameterId, CalculatorParameterTranslation>;
+    };
+    GUIDES: {
+      TITLE: string;
+      DESCRIPTION: string;
+      FALLBACK_IMAGE: string;
+      SPEC_LABELS: {
+        OBJECT_EXAMPLE: string;
+        BEST_FOR: string;
+        TRADEOFF: string;
+        CALCULATOR_READ: string;
+      };
+      CATEGORIES: Record<GuideCategoryId, string>;
+      ITEMS: Record<QualityVisualGuideId, QualityVisualGuideTranslation>;
+    };
+  };
+  SOURCES: {
+    EYEBROW: string;
+    TITLE: string;
+    DESCRIPTION: string;
+    KINDS: Record<MaterialSourceKindId, string>;
+  };
+  MATERIALS: Record<MaterialId, MaterialTranslation>;
+}
+
+const MATERIAL_CONFIGS: readonly MaterialConfig[] = [
   {
     id: 'tpu-95a-hf',
-    name: 'TPU 95A HF',
-    summary:
-      'Materiale molto flessibile, utile quando serve assorbire urti e vibrazioni.',
-    qualityTips: [
-      'Riduci velocita e accelerazioni per stabilita estrusione.',
-      'Usa layer medio-alto per ridurre artefatti su superfici morbide.',
-    ],
     metrics: {
       priceChfKg: 30,
       densityGcm3: 1.22,
@@ -147,42 +337,26 @@ const MATERIALS: readonly MaterialRecord[] = [
       printability: 70,
       layerRangeMm: '0.20 - 0.32',
     },
-    pros: [
-      'Altissima flessibilita e resilienza agli urti.',
-      'Buona adesione tra layer su geometrie morbide.',
-    ],
-    cons: [
-      'Sensibile all umidita durante stampa e conservazione.',
-      'Rigidita molto bassa e resistenza termica limitata.',
-    ],
-    idealFor: ['Guarnizioni', 'Bumper', 'Grip', 'Cover antiurto'],
     sources: [
       {
-        label: 'Wikipedia - Thermoplastic polyurethane',
-        kind: 'Wikipedia',
+        id: 'wikipedia-tpu',
+        kindId: 'wikipedia',
         url: 'https://en.wikipedia.org/wiki/Thermoplastic_polyurethane',
       },
       {
-        label: 'Bambu Lab - TPU 95A HF',
-        kind: 'Scheda prodotto',
+        id: 'bambu-tpu-95a-hf',
+        kindId: 'product-sheet',
         url: 'https://eu.store.bambulab.com/it/products/tpu-95a-hf',
       },
       {
-        label: 'Ultimaker - TPU 95A',
-        kind: 'Scheda tecnica',
+        id: 'ultimaker-tpu-95a',
+        kindId: 'tech-sheet',
         url: 'https://ultimaker.com/materials/s-series-tpu-95a/',
       },
     ],
   },
   {
     id: 'pla-basic',
-    name: 'PLA Basic',
-    summary:
-      'Scelta semplice per prototipi rapidi con buona finitura e stabilita di stampa.',
-    qualityTips: [
-      'Per qualita visuale usa layer 0.12-0.16 mm.',
-      'Per produttivita usa layer 0.20-0.24 mm.',
-    ],
     metrics: {
       priceChfKg: 18,
       densityGcm3: 1.24,
@@ -194,42 +368,26 @@ const MATERIALS: readonly MaterialRecord[] = [
       printability: 96,
       layerRangeMm: '0.12 - 0.24',
     },
-    pros: [
-      'Facile da stampare.',
-      'Ottima qualita superficiale su pezzi visuali.',
-    ],
-    cons: [
-      'Fragile sotto urto.',
-      'Scarsa resistenza al calore e all UV prolungato.',
-    ],
-    idealFor: ['Mockup', 'Prototipi rapidi', 'Pezzi estetici indoor'],
     sources: [
       {
-        label: 'Wikipedia - Polylactic acid',
-        kind: 'Wikipedia',
+        id: 'wikipedia-pla',
+        kindId: 'wikipedia',
         url: 'https://en.wikipedia.org/wiki/Polylactic_acid',
       },
       {
-        label: 'Bambu Lab - PLA Basic',
-        kind: 'Scheda prodotto',
+        id: 'bambu-pla-basic',
+        kindId: 'product-sheet',
         url: 'https://eu.store.bambulab.com/it/products/pla-basic-filament',
       },
       {
-        label: 'Ultimaker - PLA',
-        kind: 'Scheda tecnica',
+        id: 'ultimaker-pla',
+        kindId: 'tech-sheet',
         url: 'https://ultimaker.com/materials/pla/',
       },
     ],
   },
   {
     id: 'pla-matte',
-    name: 'PLA Matte',
-    summary:
-      'PLA con resa opaca per priorita estetica su modelli e parti espositive.',
-    qualityTips: [
-      'Layer 0.16-0.24 mm mantiene effetto opaco uniforme.',
-      'Raffreddamento costante aiuta la texture superficiale.',
-    ],
     metrics: {
       priceChfKg: 18,
       densityGcm3: 1.31,
@@ -241,34 +399,21 @@ const MATERIALS: readonly MaterialRecord[] = [
       printability: 94,
       layerRangeMm: '0.16 - 0.24',
     },
-    pros: ['Aspetto opaco pulito.', 'Stampa semplice come il PLA base.'],
-    cons: [
-      'Proprieta meccaniche limitate per uso strutturale.',
-      'Sensibile al calore come altri PLA.',
-    ],
-    idealFor: ['Oggetti espositivi', 'Design prodotto', 'Mockup estetici'],
     sources: [
       {
-        label: 'Wikipedia - Polylactic acid',
-        kind: 'Wikipedia',
+        id: 'wikipedia-pla',
+        kindId: 'wikipedia',
         url: 'https://en.wikipedia.org/wiki/Polylactic_acid',
       },
       {
-        label: 'Bambu Lab - PLA Matte',
-        kind: 'Scheda prodotto',
+        id: 'bambu-pla-matte',
+        kindId: 'product-sheet',
         url: 'https://eu.store.bambulab.com/it/products/pla-matte',
       },
     ],
   },
   {
     id: 'pla-tough-plus',
-    name: 'PLA Tough+',
-    summary:
-      'Compromesso tra facilita del PLA e maggiore tenacita per uso funzionale leggero.',
-    qualityTips: [
-      'Layer 0.20 mm e un buon compromesso velocita/precisione.',
-      'Usa 3-4 perimetri per aumentare robustezza in urto.',
-    ],
     metrics: {
       priceChfKg: 22,
       densityGcm3: 1.21,
@@ -280,38 +425,21 @@ const MATERIALS: readonly MaterialRecord[] = [
       printability: 89,
       layerRangeMm: '0.16 - 0.24',
     },
-    pros: [
-      'Maggiore tenacita rispetto al PLA standard.',
-      'Buon compromesso per prototipi funzionali.',
-    ],
-    cons: ['Resistenza termica ancora moderata.', 'Meno rigido del PLA basic.'],
-    idealFor: [
-      'Pezzi funzionali leggeri',
-      'Attrezzi non strutturali',
-      'Componenti test',
-    ],
     sources: [
       {
-        label: 'Wikipedia - Polylactic acid',
-        kind: 'Wikipedia',
+        id: 'wikipedia-pla',
+        kindId: 'wikipedia',
         url: 'https://en.wikipedia.org/wiki/Polylactic_acid',
       },
       {
-        label: 'Bambu Lab - PLA Tough',
-        kind: 'Scheda prodotto',
+        id: 'bambu-pla-tough',
+        kindId: 'product-sheet',
         url: 'https://eu.store.bambulab.com/it/products/pla-tough-upgrade',
       },
     ],
   },
   {
     id: 'asa',
-    name: 'ASA',
-    summary:
-      'Polimero tecnico per esterno, piu stabile agli UV rispetto ad ABS.',
-    qualityTips: [
-      'Camera chiusa e brim riducono warping.',
-      'Layer 0.20-0.28 mm per bilanciare adesione e tempi.',
-    ],
     metrics: {
       priceChfKg: 23,
       densityGcm3: 1.07,
@@ -323,42 +451,26 @@ const MATERIALS: readonly MaterialRecord[] = [
       printability: 64,
       layerRangeMm: '0.20 - 0.28',
     },
-    pros: [
-      'Buona resistenza UV e intemperie.',
-      'Adatto a componenti outdoor funzionali.',
-    ],
-    cons: [
-      'Richiede controllo termico in stampa.',
-      'Puo warpare senza setup adeguato.',
-    ],
-    idealFor: ['Cover esterne', 'Staffe outdoor', 'Parti esposte al sole'],
     sources: [
       {
-        label: 'Wikipedia - Acrylonitrile styrene acrylate',
-        kind: 'Wikipedia',
+        id: 'wikipedia-asa',
+        kindId: 'wikipedia',
         url: 'https://en.wikipedia.org/wiki/Acrylonitrile_styrene_acrylate',
       },
       {
-        label: 'Bambu Lab - ASA',
-        kind: 'Scheda prodotto',
+        id: 'bambu-asa',
+        kindId: 'product-sheet',
         url: 'https://eu.store.bambulab.com/it/products/asa-filament',
       },
       {
-        label: 'Ultimaker - ASA',
-        kind: 'Scheda tecnica',
+        id: 'ultimaker-asa',
+        kindId: 'tech-sheet',
         url: 'https://ultimaker.com/materials/method-series-asa/',
       },
     ],
   },
   {
     id: 'pc',
-    name: 'PC',
-    summary:
-      'Materiale tecnico ad alta resistenza meccanica e termica per parti robuste.',
-    qualityTips: [
-      'Preferibile camera calda e materiale ben asciutto.',
-      'Layer 0.20-0.28 mm riduce stress residui rispetto a layer sottili.',
-    ],
     metrics: {
       priceChfKg: 39,
       densityGcm3: 1.2,
@@ -370,46 +482,26 @@ const MATERIALS: readonly MaterialRecord[] = [
       printability: 47,
       layerRangeMm: '0.20 - 0.28',
     },
-    pros: [
-      'Molto resistente all urto e al calore.',
-      'Stabilita dimensionale elevata su pezzi tecnici.',
-    ],
-    cons: [
-      'Stampa impegnativa con alta temperatura.',
-      'Setup non ottimale porta facilmente a deformazioni.',
-    ],
-    idealFor: [
-      'Alloggiamenti tecnici',
-      'Staffe ad alto carico',
-      'Parti vicino a fonti di calore',
-    ],
     sources: [
       {
-        label: 'Wikipedia - Polycarbonate',
-        kind: 'Wikipedia',
+        id: 'wikipedia-pc',
+        kindId: 'wikipedia',
         url: 'https://en.wikipedia.org/wiki/Polycarbonate',
       },
       {
-        label: 'Bambu Lab - PC',
-        kind: 'Scheda prodotto',
+        id: 'bambu-pc',
+        kindId: 'product-sheet',
         url: 'https://eu.store.bambulab.com/it/products/pc-filament',
       },
       {
-        label: 'Ultimaker - PC',
-        kind: 'Scheda tecnica',
+        id: 'ultimaker-pc',
+        kindId: 'tech-sheet',
         url: 'https://ultimaker.com/materials/s-series-pc/',
       },
     ],
   },
   {
     id: 'pa12-cf',
-    name: 'PA12-CF',
-    summary:
-      'Nylon rinforzato carbonio orientato a rigidita e stabilita su parti funzionali.',
-    qualityTips: [
-      'Materiale e ambiente devono essere asciutti prima della stampa.',
-      'Layer 0.20-0.28 mm con ugello temprato e setup consigliato.',
-    ],
     metrics: {
       priceChfKg: 50,
       densityGcm3: 1.06,
@@ -421,46 +513,26 @@ const MATERIALS: readonly MaterialRecord[] = [
       printability: 42,
       layerRangeMm: '0.20 - 0.28',
     },
-    pros: [
-      'Ottimo rapporto rigidita/peso.',
-      'Buona stabilita dimensionale per fixture tecniche.',
-    ],
-    cons: [
-      'Costo e complessita stampa superiori ai materiali base.',
-      'Richiede gestione umidita e ugello adeguato.',
-    ],
-    idealFor: [
-      'Jig e fixture',
-      'Parti strutturali leggere',
-      'Componenti meccanici tecnici',
-    ],
     sources: [
       {
-        label: 'Wikipedia - Nylon 12',
-        kind: 'Wikipedia',
+        id: 'wikipedia-nylon-12',
+        kindId: 'wikipedia',
         url: 'https://en.wikipedia.org/wiki/Nylon_12',
       },
       {
-        label: 'Ultimaker - Nylon 12 Carbon Fiber',
-        kind: 'Scheda tecnica',
+        id: 'ultimaker-pa12-cf',
+        kindId: 'tech-sheet',
         url: 'https://ultimaker.com/materials/method-series-nylon-12-carbon-fiber/',
       },
       {
-        label: 'Scheda prodotto - PA12-CF',
-        kind: 'Scheda prodotto',
+        id: 'product-pa12-cf',
+        kindId: 'product-sheet',
         url: 'https://www.amazon.de/-/en/ERYONE-Carbon-Filament-Printer-Printers/dp/B0CHDS7YD2/',
       },
     ],
   },
   {
     id: 'pet-cf',
-    name: 'PET-CF',
-    summary:
-      'Materiale tecnico rigido con fibra di carbonio, molto stabile su pezzi di precisione.',
-    qualityTips: [
-      'Ugello temprato obbligatorio per abrasivita della fibra.',
-      'Layer 0.20-0.28 mm bilancia adesione e rigidita finale.',
-    ],
     metrics: {
       priceChfKg: 83,
       densityGcm3: 1.29,
@@ -472,252 +544,154 @@ const MATERIALS: readonly MaterialRecord[] = [
       printability: 39,
       layerRangeMm: '0.20 - 0.28',
     },
-    pros: [
-      'Alte prestazioni meccaniche e termiche.',
-      'Bassa deformazione su geometrie funzionali.',
-    ],
-    cons: [
-      'Abrasivo: serve ugello temprato.',
-      'Costo alto, non ideale per prototipi economici.',
-    ],
-    idealFor: [
-      'Componenti tecnici di precisione',
-      'Supporti rigidi',
-      'Parti con stabilita termica elevata',
-    ],
     sources: [
       {
-        label: 'Wikipedia - Polyethylene terephthalate',
-        kind: 'Wikipedia',
+        id: 'wikipedia-pet',
+        kindId: 'wikipedia',
         url: 'https://en.wikipedia.org/wiki/Polyethylene_terephthalate',
       },
       {
-        label: 'Wikipedia - Carbon fiber reinforced polymer',
-        kind: 'Wikipedia',
+        id: 'wikipedia-cfrp',
+        kindId: 'wikipedia',
         url: 'https://en.wikipedia.org/wiki/Carbon_fiber_reinforced_polymer',
       },
       {
-        label: 'Bambu Lab - PET-CF',
-        kind: 'Scheda prodotto',
+        id: 'bambu-pet-cf',
+        kindId: 'product-sheet',
         url: 'https://eu.store.bambulab.com/it/products/pet-cf',
       },
     ],
   },
 ];
 
-const RADAR_AXES: readonly RadarAxis[] = [
+const RADAR_AXIS_CONFIGS: readonly RadarAxisConfig[] = [
   {
     id: 'economy',
-    label: 'Convenienza',
-    description:
-      'Indice basato sul prezzo al kg: un valore alto indica un costo piu favorevole.',
-    unit: 'CHF/kg',
     lowerIsBetter: true,
     accessor: (material) => material.metrics.priceChfKg,
   },
   {
     id: 'printability',
-    label: 'Stampabilità',
-    description:
-      'Indice sintetico che considera facilita di stampa, sensibilita all umidita e stabilita del processo.',
-    unit: 'indice',
     accessor: (material) => material.metrics.printability,
   },
   {
     id: 'tensile',
-    label: 'Resistenza',
-    description: 'Resistenza a trazione del materiale (MPa).',
-    unit: 'MPa',
     accessor: (material) => material.metrics.tensileMpa,
   },
   {
     id: 'modulus',
-    label: 'Rigidità',
-    description: 'Modulo elastico (GPa).',
-    unit: 'GPa',
     accessor: (material) => material.metrics.modulusGpa,
   },
   {
     id: 'elongation',
-    label: 'Flessibilità',
-    description: 'Allungamento a rottura (%).',
-    unit: '%',
     accessor: (material) => material.metrics.elongationPct,
   },
   {
     id: 'hdt',
-    label: 'Resistenza termica',
-    chartLabelLines: ['Resistenza', 'termica'],
-    description: 'HDT: temperatura di deformazione del materiale (C).',
-    unit: 'C',
     accessor: (material) => material.metrics.hdtC,
   },
 ];
 
-const CALCULATOR_FACTS: readonly CalculatorFact[] = [
+const COMPARISON_ROW_CONFIGS: readonly ComparisonRowConfig[] = [
   {
-    title: 'Cosa restituisce il calcolatore',
-    description:
-      'Il calcolatore restituisce un prezzo fisso corretto, il tempo di stampa e il consumo materiale a partire dal file e dalle impostazioni selezionate.',
-    details: [
-      'Utile per confrontare rapidamente materiali, qualita e configurazioni prima dell ordine.',
-      'Se cambi materiale, layer, riempimento o supporti, cambia anche il prezzo mostrato.',
-    ],
+    id: 'printability',
+    accessor: (material) => material.metrics.printability,
+    fractionDigits: 0,
   },
   {
-    title: 'Modalita Base',
-    description:
-      'Pensata per file gia pronti: scegli materiale e qualita, senza entrare nei dettagli tecnici della stampa.',
-    detailsTitle: 'Preset disponibili:',
-    details: [
-      'Draft = 0.28 mm, 15% grid.',
-      'Standard = 0.20 mm, 15% grid.',
-      'High Definition = 0.12 mm, 20% gyroid.',
-    ],
-    ctaLabel: 'Apri Base',
+    id: 'layer-range',
+    accessor: (material) => material.metrics.layerRangeMm,
+  },
+  {
+    id: 'price',
+    accessor: (material) => material.metrics.priceChfKg,
+    fractionDigits: 0,
+  },
+  {
+    id: 'density',
+    accessor: (material) => material.metrics.densityGcm3,
+    fractionDigits: 2,
+  },
+  {
+    id: 'tensile',
+    accessor: (material) => material.metrics.tensileMpa,
+    fractionDigits: 0,
+  },
+  {
+    id: 'modulus',
+    accessor: (material) => material.metrics.modulusGpa,
+    fractionDigits: 2,
+  },
+  {
+    id: 'elongation',
+    accessor: (material) => material.metrics.elongationPct,
+    fractionDigits: 1,
+  },
+  {
+    id: 'hdt',
+    accessor: (material) => material.metrics.hdtC,
+    fractionDigits: 0,
+  },
+  {
+    id: 'extrusion',
+    accessor: (material) => material.metrics.extrusionC,
+  },
+];
+
+const CALCULATOR_FACT_CONFIGS: readonly CalculatorFactConfig[] = [
+  {
+    id: 'overview',
+    path: '/calculator',
+  },
+  {
+    id: 'basic',
     path: '/calculator/basic#calculator-workspace',
   },
   {
-    title: 'Modalita Avanzata',
-    description:
-      'Pensata per un prezzo corretto in base alle impostazioni reali: controlli materiale, ugello, altezza layer, riempimento, pattern e supporti.',
-    details: [
-      'Le combinazioni disponibili dipendono dall ugello selezionato e dai profili macchina attivi.',
-    ],
-    ctaLabel: 'Apri Avanzata',
+    id: 'advanced',
     path: '/calculator/advanced#calculator-workspace',
   },
 ];
 
-const CALCULATOR_PARAMETERS: readonly CalculatorParameter[] = [
-  {
-    title: 'Materiale',
-    availability: 'Base e Avanzata',
-    explanation:
-      'Il materiale puo essere scelto tra le varianti attive disponibili, ciascuna associata ai colori ordinabili.',
-    calculatorEffect:
-      'Influisce sul costo del materiale e sul prezzo finale mostrato.',
-  },
-  {
-    title: 'Qualita',
-    availability: 'Base',
-    explanation:
-      'In Base non imposti layer e riempimento singolarmente: scegli un preset predefinito.',
-    calculatorEffect:
-      'Definisce automaticamente altezza layer, pattern di riempimento e densita.',
-  },
-  {
-    title: 'Diametro ugello',
-    availability: 'Avanzata',
-    explanation:
-      'Gli ugelli disponibili dipendono dalla macchina e dalla configurazione attiva. Ugelli diversi possono comportare anche costi di cambio.',
-    calculatorEffect:
-      'Influisce sulle altezze layer selezionabili e puo incidere sul costo di preparazione.',
-  },
-  {
-    title: 'Altezza layer',
-    availability: 'Avanzata',
-    explanation: "Le altezze layer selezionabili dipendono dall'ugello scelto.",
-    calculatorEffect:
-      'Incide direttamente su tempi di stampa e definizione del pezzo.',
-  },
-  {
-    title: 'Riempimento',
-    availability: 'Avanzata',
-    explanation:
-      'La percentuale di infill si imposta manualmente per adattare il pezzo alla robustezza desiderata.',
-    calculatorEffect:
-      'Aumenta o riduce peso e tempo in base alla densita scelta.',
-  },
-  {
-    title: 'Pattern riempimento',
-    availability: 'Avanzata',
-    explanation: 'Sono disponibili pattern come grid, gyroid e cubic.',
-    calculatorEffect:
-      'Influisce sulla struttura interna del pezzo e puo modificare tempi, consumo materiale e comportamento meccanico.',
-  },
-  {
-    title: 'Supporti',
-    availability: 'Avanzata',
-    explanation:
-      'Puoi attivarli o disattivarli direttamente in base alla geometria del file.',
-    calculatorEffect:
-      'Cambia il percorso di stampa e puo aumentare tempo e materiale.',
-  },
+const CALCULATOR_PARAMETER_CONFIGS: readonly CalculatorParameterConfig[] = [
+  { id: 'material' },
+  { id: 'quality' },
+  { id: 'nozzleDiameter' },
+  { id: 'layerHeight' },
+  { id: 'infill' },
+  { id: 'infillPattern' },
+  { id: 'supports' },
 ];
 
-const QUALITY_VISUAL_GUIDES: readonly QualityVisualGuide[] = [
+const QUALITY_VISUAL_GUIDE_CONFIGS: readonly QualityVisualGuideConfig[] = [
   {
     id: 'layer-012',
-    category: 'Layer',
-    title: 'Layer 0.12 mm',
-    objectExample: 'Miniatura o testo piccolo con dettagli fini.',
-    bestFor: 'Massimo dettaglio superficiale.',
-    tradeoff: 'Tempo di stampa alto.',
-    calculatorRead: 'Piu dettaglio visivo, ma tempi di stampa piu lunghi.',
+    categoryId: 'layer',
     usageKey: 'guide-layer-012',
   },
   {
     id: 'layer-020',
-    category: 'Layer',
-    title: 'Layer 0.20 mm',
-    objectExample: 'Pezzo funzionale standard o cover tecnica.',
-    bestFor: 'Compromesso qualita/tempo.',
-    tradeoff: 'Dettaglio inferiore al 0.12 mm.',
-    calculatorRead: 'Configurazione bilanciata, adatta a una stampa standard.',
+    categoryId: 'layer',
     usageKey: 'guide-layer-020',
   },
   {
     id: 'layer-028',
-    category: 'Layer',
-    title: 'Layer 0.28 mm',
-    objectExample: 'Staffa di test o prototipo rapido.',
-    bestFor: 'Riduzione tempi e pezzi voluminosi.',
-    tradeoff: 'Superficie piu visibile a scalini.',
-    calculatorRead: 'Stampa piu rapida, con finitura meno fine.',
+    categoryId: 'layer',
     usageKey: 'guide-layer-028',
   },
   {
-    id: 'nozzle-025',
-    category: 'Ugello',
-    title: 'Ugello 0.25 mm',
-    objectExample: 'Scritta piccola o geometria sottile.',
-    bestFor: 'Dettagli molto piccoli.',
-    tradeoff: 'Tempi piu lunghi e portata ridotta.',
-    calculatorRead:
-      'Favorisce dettagli molto fini, ma con minore produttivita.',
-    usageKey: 'guide-nozzle-025',
-  },
-  {
-    id: 'nozzle-060',
-    category: 'Ugello',
-    title: 'Ugello 0.60 mm',
-    objectExample: 'Parti robuste, supporti, staffe.',
-    bestFor: 'Resistenza e velocita su pezzi funzionali.',
-    tradeoff: 'Dettaglio fine ridotto.',
-    calculatorRead:
-      'Favorisce configurazioni piu produttive e meno orientate al dettaglio fine.',
+    id: 'nozzles-040-060',
+    categoryId: 'nozzles',
     usageKey: 'guide-nozzle-060',
   },
   {
     id: 'infill-15',
-    category: 'Riempimento',
-    title: 'Infill 15% + 2/3 perimetri',
-    objectExample: 'Oggetto estetico o mockup leggero.',
-    bestFor: 'Ridurre peso e tempo.',
-    tradeoff: 'Resistenza strutturale limitata.',
-    calculatorRead: 'Riduce materiale e tende a contenere i tempi di stampa.',
+    categoryId: 'infill',
     usageKey: 'guide-infill-15',
   },
   {
     id: 'infill-40',
-    category: 'Riempimento',
-    title: 'Infill 40% + 4 perimetri',
-    objectExample: 'Componente con carico meccanico.',
-    bestFor: 'Migliore resistenza funzionale.',
-    tradeoff: 'Peso e tempo di stampa superiori.',
-    calculatorRead:
-      'Aumenta materiale e tempo di stampa, avvicinandosi a un pezzo piu pieno.',
+    categoryId: 'infill',
     usageKey: 'guide-infill-40',
   },
 ];
@@ -732,10 +706,6 @@ const SERIES_STYLES = [
   { stroke: '#8f2f5f', fill: 'rgba(143, 47, 95, 0.16)' },
   { stroke: '#3b7f1f', fill: 'rgba(59, 127, 31, 0.16)' },
 ] as const;
-
-const MATERIALS_BY_ID = new Map(
-  MATERIALS.map((material) => [material.id, material] as const),
-);
 
 const CHART_SIZE = 460;
 const CHART_CENTER = CHART_SIZE / 2;
@@ -754,13 +724,10 @@ const MAX_COMPARE_COUNT = 6;
 })
 export class MaterialsPageComponent {
   private readonly publicMediaService = inject(PublicMediaService);
+  private readonly translate = inject(TranslateService);
   readonly languageService = inject(LanguageService);
 
-  readonly materials = MATERIALS;
-  readonly radarAxes = RADAR_AXES;
   readonly maxCompareCount = MAX_COMPARE_COUNT;
-  readonly calculatorFacts = CALCULATOR_FACTS;
-  readonly calculatorParameters = CALCULATOR_PARAMETERS;
 
   readonly selectedMaterialIds = signal<string[]>([
     'pla-basic',
@@ -769,14 +736,107 @@ export class MaterialsPageComponent {
   ]);
   readonly hoveredMaterialId = signal<string | null>(null);
 
-  private readonly pageMediaRequests = QUALITY_VISUAL_GUIDES.map((guide) => ({
-    usageType: 'MATERIALS_PAGE' as const,
-    usageKey: guide.usageKey,
-  }));
+  private readonly pageMediaRequests = QUALITY_VISUAL_GUIDE_CONFIGS.map(
+    (guide) => ({
+      usageType: 'MATERIALS_PAGE' as const,
+      usageKey: guide.usageKey,
+    }),
+  );
 
   private readonly mediaByUsage = toSignal(
     this.publicMediaService.getUsageCollections(this.pageMediaRequests),
     { initialValue: EMPTY_MEDIA_COLLECTIONS },
+  );
+
+  readonly pageContent = computed<MaterialsPageTranslations>(() => {
+    this.languageService.currentLang();
+    return this.translate.instant(
+      'MATERIALS_PAGE',
+    ) as MaterialsPageTranslations;
+  });
+
+  readonly materials = computed<readonly MaterialRecord[]>(() => {
+    const page = this.pageContent();
+
+    return MATERIAL_CONFIGS.map((config) => {
+      const translated = page.MATERIALS[config.id];
+
+      return {
+        id: config.id,
+        name: translated.NAME,
+        summary: translated.SUMMARY,
+        qualityTips: translated.QUALITY_TIPS,
+        metrics: config.metrics,
+        pros: translated.PROS,
+        cons: translated.CONS,
+        idealFor: translated.IDEAL_FOR,
+        sources: config.sources.map((source) => ({
+          id: source.id,
+          label: translated.SOURCES[source.id].LABEL,
+          kind: page.SOURCES.KINDS[source.kindId],
+          url: source.url,
+        })),
+      };
+    });
+  });
+
+  readonly materialById = computed(
+    () => new Map(this.materials().map((material) => [material.id, material])),
+  );
+
+  readonly radarAxes = computed<readonly RadarAxis[]>(() => {
+    const page = this.pageContent();
+
+    return RADAR_AXIS_CONFIGS.map((config) => {
+      const translated = page.RADAR.AXES[config.id];
+
+      return {
+        ...config,
+        label: translated.LABEL,
+        labelLines: translated.LABEL_LINES ?? [translated.LABEL],
+        description: translated.DESCRIPTION,
+        unit: translated.UNIT,
+      };
+    });
+  });
+
+  readonly calculatorFacts = computed<readonly CalculatorFact[]>(() => {
+    const page = this.pageContent();
+
+    return CALCULATOR_FACT_CONFIGS.map((config) => {
+      const translated = page.CALCULATOR.FACTS[config.id];
+
+      return {
+        id: config.id,
+        eyebrow: translated.EYEBROW,
+        title: translated.TITLE,
+        description: translated.DESCRIPTION,
+        detailLabel: translated.DETAIL_LABEL,
+        detail: translated.DETAIL,
+        noteLabel: translated.NOTE_LABEL,
+        note: translated.NOTE,
+        ctaLabel: translated.CTA_LABEL,
+        path: config.path,
+      };
+    });
+  });
+
+  readonly calculatorParameters = computed<readonly CalculatorParameter[]>(
+    () => {
+      const page = this.pageContent();
+
+      return CALCULATOR_PARAMETER_CONFIGS.map((config) => {
+        const translated = page.CALCULATOR.PARAMETERS.ITEMS[config.id];
+
+        return {
+          id: config.id,
+          title: translated.TITLE,
+          availability: translated.AVAILABILITY,
+          explanation: translated.EXPLANATION,
+          calculatorEffect: translated.CALCULATOR_EFFECT,
+        };
+      });
+    },
   );
 
   readonly selectedCount = computed(() => this.selectedMaterialIds().length);
@@ -792,17 +852,32 @@ export class MaterialsPageComponent {
   });
 
   readonly selectedMaterials = computed(() => {
+    const materialById = this.materialById();
+
     return this.selectedMaterialIds()
-      .map((materialId) => MATERIALS_BY_ID.get(materialId))
+      .map((materialId) => materialById.get(materialId as MaterialId))
       .filter((material): material is MaterialRecord => Boolean(material));
   });
 
-  readonly qualityVisualCards = computed<readonly QualityVisualCard[]>(() =>
-    QUALITY_VISUAL_GUIDES.map((guide) => ({
-      ...guide,
-      image: this.resolveUsageImage(guide.usageKey),
-    })),
-  );
+  readonly qualityVisualCards = computed<readonly QualityVisualCard[]>(() => {
+    const page = this.pageContent();
+
+    return QUALITY_VISUAL_GUIDE_CONFIGS.map((guide) => {
+      const translated = page.CALCULATOR.GUIDES.ITEMS[guide.id];
+
+      return {
+        id: guide.id,
+        category: page.CALCULATOR.GUIDES.CATEGORIES[guide.categoryId],
+        title: translated.TITLE,
+        objectExample: translated.OBJECT_EXAMPLE,
+        bestFor: translated.BEST_FOR,
+        tradeoff: translated.TRADEOFF,
+        calculatorRead: translated.CALCULATOR_READ,
+        usageKey: guide.usageKey,
+        image: this.resolveUsageImage(guide.usageKey),
+      };
+    });
+  });
 
   readonly ringPolygons = computed(() => {
     const polygons: string[] = [];
@@ -813,11 +888,10 @@ export class MaterialsPageComponent {
   });
 
   readonly axisGuides = computed<readonly AxisGuide[]>(() =>
-    RADAR_AXES.map((axis, index) => {
+    this.radarAxes().map((axis, index) => {
       const inner = this.pointForRatio(index, CHART_INNER_RATIO);
       const outer = this.pointForRatio(index, 1);
       const label = this.pointForRatio(index, 1.18);
-      const labelLines = axis.chartLabelLines ?? [axis.label];
       const anchor: 'start' | 'middle' | 'end' =
         Math.abs(label.x - CHART_CENTER) < 12
           ? 'middle'
@@ -832,18 +906,20 @@ export class MaterialsPageComponent {
         x: outer.x,
         y: outer.y,
         labelX: label.x,
-        labelY: label.y - (labelLines.length - 1) * 6,
+        labelY: label.y - (axis.labelLines.length - 1) * 6,
         labelAnchor: anchor,
-        labelLines,
+        labelLines: axis.labelLines,
       };
     }),
   );
 
-  readonly radarSeries = computed<readonly RadarSeries[]>(() =>
-    this.selectedMaterials().map((material) => {
+  readonly radarSeries = computed<readonly RadarSeries[]>(() => {
+    const axes = this.radarAxes();
+
+    return this.selectedMaterials().map((material) => {
       const style =
         this.selectedMaterialStyles().get(material.id) ?? SERIES_STYLES[0];
-      const values: RadarPoint[] = RADAR_AXES.map((axis, axisIndex) => {
+      const values: RadarPoint[] = axes.map((axis, axisIndex) => {
         const { rawValue, score } = this.axisScore(material, axis);
         const point = this.pointForScore(axisIndex, score);
         return {
@@ -862,69 +938,28 @@ export class MaterialsPageComponent {
         points: values.map((value) => `${value.x},${value.y}`).join(' '),
         values,
       };
-    }),
-  );
+    });
+  });
 
   readonly comparisonRows = computed<readonly ComparisonRow[]>(() => {
+    const page = this.pageContent();
     const selected = this.selectedMaterials();
-    const format = (value: number, fractionDigits: number): string =>
-      value.toFixed(fractionDigits);
 
-    return [
-      {
-        label: 'Stampabilita [indice 0-100]',
-        values: selected.map((material) =>
-          format(material.metrics.printability, 0),
-        ),
-      },
-      {
-        label: 'Layer consigliato [mm]',
-        values: selected.map((material) => material.metrics.layerRangeMm),
-      },
-      {
-        label: 'Prezzo [CHF/kg]',
-        values: selected.map((material) =>
-          format(material.metrics.priceChfKg, 0),
-        ),
-      },
-      {
-        label: 'Densita [g/cm3]',
-        values: selected.map((material) =>
-          format(material.metrics.densityGcm3, 2),
-        ),
-      },
-      {
-        label: 'Resistenza a trazione [MPa]',
-        values: selected.map((material) =>
-          format(material.metrics.tensileMpa, 0),
-        ),
-      },
-      {
-        label: 'Modulo elastico [GPa]',
-        values: selected.map((material) =>
-          format(material.metrics.modulusGpa, 2),
-        ),
-      },
-      {
-        label: 'Allungamento a rottura [%]',
-        values: selected.map((material) =>
-          format(material.metrics.elongationPct, 1),
-        ),
-      },
-      {
-        label: 'Temperatura di deformazione [C]',
-        values: selected.map((material) => format(material.metrics.hdtC, 0)),
-      },
-      {
-        label: 'Temperatura estrusione [C]',
-        values: selected.map((material) => material.metrics.extrusionC),
-      },
-    ];
+    return COMPARISON_ROW_CONFIGS.map((config) => ({
+      id: config.id,
+      label: page.TABLE.ROWS[config.id],
+      values: selected.map((material) => {
+        const value = config.accessor(material);
+        return typeof value === 'number'
+          ? this.formatFixed(value, config.fractionDigits ?? 0)
+          : value;
+      }),
+    }));
   });
 
   readonly allSources = computed<readonly MaterialSource[]>(() => {
     const unique = new Map<string, MaterialSource>();
-    MATERIALS.forEach((material) => {
+    this.materials().forEach((material) => {
       material.sources.forEach((source) => {
         unique.set(source.url, source);
       });
@@ -977,14 +1012,18 @@ export class MaterialsPageComponent {
   }
 
   trackCalculatorFact(_index: number, fact: CalculatorFact): string {
-    return fact.title;
+    return fact.id;
   }
 
   trackCalculatorParameter(
     _index: number,
     parameter: CalculatorParameter,
   ): string {
-    return parameter.title;
+    return parameter.id;
+  }
+
+  trackComparisonRow(_index: number, row: ComparisonRow): string {
+    return row.id;
   }
 
   trackVisualGuide(_index: number, guide: QualityVisualCard): string {
@@ -1017,7 +1056,7 @@ export class MaterialsPageComponent {
     score: number;
   } {
     const rawValue = axis.accessor(material);
-    const axisValues = MATERIALS.map(axis.accessor);
+    const axisValues = this.materials().map(axis.accessor);
     const min = Math.min(...axisValues);
     const max = Math.max(...axisValues);
 
@@ -1031,7 +1070,7 @@ export class MaterialsPageComponent {
   }
 
   private polygonPoints(ratio: number): string {
-    return RADAR_AXES.map((_, index) => {
+    return RADAR_AXIS_CONFIGS.map((_, index) => {
       const point = this.pointForRatio(index, ratio);
       return `${point.x},${point.y}`;
     }).join(' ');
@@ -1054,7 +1093,8 @@ export class MaterialsPageComponent {
     x: number;
     y: number;
   } {
-    const angle = -Math.PI / 2 + (axisIndex * 2 * Math.PI) / RADAR_AXES.length;
+    const angle =
+      -Math.PI / 2 + (axisIndex * 2 * Math.PI) / RADAR_AXIS_CONFIGS.length;
     return {
       x: CHART_CENTER + Math.cos(angle) * CHART_RADIUS * ratio,
       y: CHART_CENTER + Math.sin(angle) * CHART_RADIUS * ratio,
@@ -1068,6 +1108,10 @@ export class MaterialsPageComponent {
 
   private clamp(value: number, min: number, max: number): number {
     return Math.min(Math.max(value, min), max);
+  }
+
+  private formatFixed(value: number, fractionDigits: number): string {
+    return value.toFixed(fractionDigits);
   }
 
   protected readonly chartSize = CHART_SIZE;

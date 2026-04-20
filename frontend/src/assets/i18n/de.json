@@ -106,6 +106,481 @@
       }
     }
   },
+  "MATERIALS_PAGE": {
+    "HERO": {
+      "TITLE": "Qualität & Materialien",
+      "SUBTITLE_PREFIX": "Technischer Leitfaden zu einer Auswahl von Materialien. Vergleichen Sie Druckqualitat und Eigenschaften und sehen Sie, wie Sie den",
+      "LINK_LABEL": "Rechner",
+      "SUBTITLE_SUFFIX": "nutzen."
+    },
+    "RADAR": {
+      "EYEBROW": "Vergleich",
+      "TITLE": "Radar-Diagramm",
+      "DESCRIPTION": "Wahlen Sie ein oder mehrere Materialien aus, um ihre Eigenschaften zu sehen.",
+      "ARIA_LABEL": "Radar-Diagramm fur Materialien",
+      "SELECTOR_TITLE": "Materialien im Vergleich",
+      "SELECTOR_ARIA_LABEL": "Materialauswahl",
+      "SELECTOR_HELP": "Hinweis: Auf der Achse Wirtschaftlichkeit bedeutet ein hoherer Wert niedrigere Kosten pro kg.",
+      "READING_TITLE": "So liest man den Vergleich",
+      "READING_DESCRIPTION": "Jede Achse zeigt eine technische Eigenschaft. Der hochste Wert steht fur die beste relative Leistung unter den verglichenen Materialien.",
+      "AXES": {
+        "economy": {
+          "LABEL": "Wirtschaftlichkeit",
+          "DESCRIPTION": "Index auf Basis des Preises pro kg: Ein hoherer Wert bedeutet gunstigere Kosten.",
+          "UNIT": "CHF/kg"
+        },
+        "printability": {
+          "LABEL": "Druckbarkeit",
+          "DESCRIPTION": "Kompakter Index fur Druckbarkeit, Feuchtigkeitsempfindlichkeit und Prozessstabilitat.",
+          "UNIT": "Index"
+        },
+        "tensile": {
+          "LABEL": "Festigkeit",
+          "DESCRIPTION": "Zugfestigkeit des Materials (MPa).",
+          "UNIT": "MPa"
+        },
+        "modulus": {
+          "LABEL": "Steifigkeit",
+          "DESCRIPTION": "Elastizitatsmodul (GPa).",
+          "UNIT": "GPa"
+        },
+        "elongation": {
+          "LABEL": "Flexibilitat",
+          "DESCRIPTION": "Bruchdehnung (%).",
+          "UNIT": "%"
+        },
+        "hdt": {
+          "LABEL": "Thermische Bestandigkeit",
+          "LABEL_LINES": ["Thermische", "Bestandigkeit"],
+          "DESCRIPTION": "HDT: Warmeformbestandigkeit des Materials (C).",
+          "UNIT": "C"
+        }
+      }
+    },
+    "TABLE": {
+      "EYEBROW": "Technische Daten",
+      "TITLE": "Vergleichstabelle",
+      "PARAMETER_HEADER": "Parameter",
+      "ROWS": {
+        "printability": "Druckbarkeit [Index 0-100]",
+        "layer-range": "Empfohlene Schichthohe [mm]",
+        "price": "Preis [CHF/kg]",
+        "density": "Dichte [g/cm3]",
+        "tensile": "Zugfestigkeit [MPa]",
+        "modulus": "Elastizitatsmodul [GPa]",
+        "elongation": "Bruchdehnung [%]",
+        "hdt": "Warmeformbestandigkeit [C]",
+        "extrusion": "Extrusionstemperatur [C]"
+      }
+    },
+    "CALCULATOR": {
+      "SECTION_EYEBROW": "Rechner",
+      "SECTION_TITLE": "So verwenden Sie den Rechner",
+      "SECTION_DESCRIPTION": "Dieser Abschnitt erklart, welche Parameter den Endpreis, die Lieferzeit und das Endergebnis beeinflussen und wie das Resultat richtig gelesen wird.",
+      "FACTS": {
+        "overview": {
+          "EYEBROW": "Rechner",
+          "TITLE": "Was der Rechner ausgibt",
+          "DESCRIPTION": "Der Rechner liefert den finalen Druckpreis, die Druckzeit und den Materialverbrauch.",
+          "DETAIL_LABEL": "In beiden Modi",
+          "DETAIL": "konnen Sie Material und Farbe auswahlen.",
+          "CTA_LABEL": "Rechner offnen"
+        },
+        "basic": {
+          "EYEBROW": "Basis-Modus",
+          "TITLE": "Basis-Modus",
+          "DESCRIPTION": "Im Basis-Modus wahlen Sie Material, Farbe und Qualitat.",
+          "DETAIL_LABEL": "Qualitat",
+          "DETAIL": "Draft = 0.28 mm, 15% grid. Standard = 0.20 mm, 15% grid. High Definition = 0.12 mm, 20% gyroid.",
+          "NOTE_LABEL": "Ideal wenn",
+          "NOTE": "Sie die einzelnen Druckparameter nicht im Detail kennen.",
+          "CTA_LABEL": "Basis offnen"
+        },
+        "advanced": {
+          "EYEBROW": "Erweiterter Modus",
+          "TITLE": "Erweiterter Modus",
+          "DESCRIPTION": "Im erweiterten Modus steuern Sie Material, Farbe, Duse, Schichthohe, Infill, Muster und Stutzen direkt.",
+          "DETAIL_LABEL": "Aktive Profile",
+          "DETAIL": "Die verfugbaren Kombinationen hangen von den aktiven Maschinenprofilen ab.",
+          "NOTE_LABEL": "Ideal wenn",
+          "NOTE": "Sie genau wissen, welche Einstellungen Sie auf Ihre Datei anwenden mochten.",
+          "CTA_LABEL": "Erweitert offnen"
+        }
+      },
+      "PARAMETERS": {
+        "TITLE": "Parameter des Rechners",
+        "DESCRIPTION": "Hier finden Sie die aktuell verfugbaren Steuerelemente des Rechners. Im erweiterten Modus sind dies die Parameter, die den Endpreis, die Lieferzeit und das Endergebnis beeinflussen.",
+        "EFFECT_LABEL": "Auswirkung im Rechner",
+        "ITEMS": {
+          "material": {
+            "TITLE": "Material",
+            "AVAILABILITY": "Basis und Erweitert",
+            "EXPLANATION": "Das Material kann aus den aktuell aktiven Varianten gewahlt werden. Jede Variante ist mit den bestellbaren Farben verknupft.",
+            "CALCULATOR_EFFECT": "Es beeinflusst den Materialpreis und die im Rechner verfugbaren Optionen."
+          },
+          "quality": {
+            "TITLE": "Qualitat",
+            "AVAILABILITY": "Basis",
+            "EXPLANATION": "Im Basis-Modus stellen Sie Schichthohe und Infill nicht einzeln ein, sondern wahlen ein vordefiniertes Preset.",
+            "CALCULATOR_EFFECT": "Es definiert automatisch Schichthohe, Infill-Muster und Dichte."
+          },
+          "nozzleDiameter": {
+            "TITLE": "Dusendurchmesser",
+            "AVAILABILITY": "Erweitert",
+            "EXPLANATION": "Im Rechner stehen 0.40 mm und 0.60 mm Duse zur Verfugung. Jede Duse aktiviert andere Schichthohen und kann Umrustkosten verursachen.",
+            "CALCULATOR_EFFECT": "Er beeinflusst die verfugbaren Schichthohen und kann die Rustkosten verandern."
+          },
+          "layerHeight": {
+            "TITLE": "Schichthohe",
+            "AVAILABILITY": "Erweitert",
+            "EXPLANATION": "Die verfugbaren Schichthohen hangen von der gewahlten Duse ab.",
+            "CALCULATOR_EFFECT": "Sie beeinflusst direkt Druckzeit und Detailgrad des Teils."
+          },
+          "infill": {
+            "TITLE": "Infill",
+            "AVAILABILITY": "Erweitert",
+            "EXPLANATION": "Der Infill-Prozentsatz wird manuell gesetzt, um Festigkeit, Gewicht und Zeit an das Bauteil anzupassen.",
+            "CALCULATOR_EFFECT": "Er erhoht oder reduziert Gewicht und Zeit je nach gewahlter Dichte."
+          },
+          "infillPattern": {
+            "TITLE": "Infill-Muster",
+            "AVAILABILITY": "Erweitert",
+            "EXPLANATION": "Muster wie grid, gyroid und cubic stehen zur Verfugung.",
+            "CALCULATOR_EFFECT": "Es beeinflusst die innere Struktur des Bauteils und kann Zeit, Materialverbrauch und mechanisches Verhalten verandern."
+          },
+          "supports": {
+            "TITLE": "Stutzen",
+            "AVAILABILITY": "Erweitert",
+            "EXPLANATION": "Sie konnen Stutzen je nach Geometrie der Datei direkt aktivieren oder deaktivieren.",
+            "CALCULATOR_EFFECT": "Es verandert den Druckpfad und kann Zeit und Materialverbrauch erhohen."
+          }
+        }
+      },
+      "GUIDES": {
+        "TITLE": "Praxisbeispiele zu Schichthohe, Duse und Infill",
+        "DESCRIPTION": "Diese Beispiele zeigen, wie Schichthohe, Duse und Infill das Ergebnis beeinflussen. Im Rechner sind 0.40 mm und 0.60 mm Duse verfugbar, und jede aktiviert andere Schichthohen.",
+        "FALLBACK_IMAGE": "Beispielbild wird aktualisiert.",
+        "SPEC_LABELS": {
+          "OBJECT_EXAMPLE": "Typisches Beispiel",
+          "BEST_FOR": "Am besten fur",
+          "TRADEOFF": "Einschrankung",
+          "CALCULATOR_READ": "Typischer Effekt"
+        },
+        "CATEGORIES": {
+          "layer": "Layer",
+          "nozzles": "Dusen",
+          "infill": "Infill"
+        },
+        "ITEMS": {
+          "layer-012": {
+            "TITLE": "Layer 0.12 mm",
+            "OBJECT_EXAMPLE": "Miniatur oder kleiner Text mit feinen Details.",
+            "BEST_FOR": "Maximaler Oberflachendetailgrad.",
+            "TRADEOFF": "Lange Druckzeit.",
+            "CALCULATOR_READ": "Mehr sichtbare Details, aber langere Druckzeiten."
+          },
+          "layer-020": {
+            "TITLE": "Layer 0.20 mm",
+            "OBJECT_EXAMPLE": "Standard-Funktionsteil oder technische Abdeckung.",
+            "BEST_FOR": "Guter Kompromiss zwischen Qualitat und Zeit.",
+            "TRADEOFF": "Weniger Details als bei 0.12 mm.",
+            "CALCULATOR_READ": "Ausgewogene Konfiguration fur einen Standardfall."
+          },
+          "layer-028": {
+            "TITLE": "Layer 0.28 mm",
+            "OBJECT_EXAMPLE": "Testhalterung oder schneller Prototyp.",
+            "BEST_FOR": "Kurze Zeiten und grosse Teile.",
+            "TRADEOFF": "Starker sichtbare Schichtstufen.",
+            "CALCULATOR_READ": "Schnellerer Druck mit groberer Oberflache."
+          },
+          "nozzles-040-060": {
+            "TITLE": "Dusen 0.40 mm und 0.60 mm",
+            "OBJECT_EXAMPLE": "0.40 mm fur den Allround-Einsatz, 0.60 mm fur schnellere oder robustere Teile.",
+            "BEST_FOR": "Die richtige Balance zwischen Detail und Produktivitat.",
+            "TRADEOFF": "",
+            "CALCULATOR_READ": "Im Rechner erlaubt 0.40 mm feinere Layer; 0.60 mm bevorzugt hohere Layer und schnelleren Druck."
+          },
+          "infill-15": {
+            "TITLE": "Infill 15% + 2 Perimeter",
+            "OBJECT_EXAMPLE": "Dekoratives Objekt oder leichter Mockup.",
+            "BEST_FOR": "Gewicht und Zeit reduzieren.",
+            "TRADEOFF": "Begrenzte strukturelle Festigkeit.",
+            "CALCULATOR_READ": "Reduziert Materialverbrauch und halt die Druckzeit eher niedrig."
+          },
+          "infill-40": {
+            "TITLE": "Infill 40% + 4 Perimeter",
+            "OBJECT_EXAMPLE": "Bauteil mit mechanischer Belastung.",
+            "BEST_FOR": "Hohe funktionale Festigkeit.",
+            "TRADEOFF": "Mehr Gewicht und langere Druckzeit.",
+            "CALCULATOR_READ": "Erhoht Material und Druckzeit und nahert sich einem kompakteren Teil an."
+          }
+        }
+      }
+    },
+    "SOURCES": {
+      "EYEBROW": "Quellen",
+      "TITLE": "Verwendete Quellen",
+      "DESCRIPTION": "Hier finden Sie alle Quellen fur technische Daten und Materialbeschreibungen.",
+      "KINDS": {
+        "wikipedia": "Wikipedia",
+        "tech-sheet": "Technisches Datenblatt",
+        "product-sheet": "Produktseite"
+      }
+    },
+    "MATERIALS": {
+      "tpu-95a-hf": {
+        "NAME": "TPU 95A HF",
+        "SUMMARY": "Sehr flexibles Material, wenn Stosse und Vibrationen aufgenommen werden sollen.",
+        "QUALITY_TIPS": [
+          "Geschwindigkeit und Beschleunigung fur stabilere Extrusion reduzieren.",
+          "Mittlere bis hohe Layer nutzen, um Artefakte auf weichen Oberflachen zu verringern."
+        ],
+        "PROS": [
+          "Sehr hohe Flexibilitat und Schlagzahigkeit.",
+          "Gute Layerhaftung bei weichen Geometrien."
+        ],
+        "CONS": [
+          "Empfindlich gegen Feuchtigkeit wahrend Druck und Lagerung.",
+          "Sehr geringe Steifigkeit und begrenzte Warmebestandigkeit."
+        ],
+        "IDEAL_FOR": [
+          "Dichtungen",
+          "Bumper",
+          "Griffe",
+          "Stossfeste Abdeckungen"
+        ],
+        "SOURCES": {
+          "wikipedia-tpu": {
+            "LABEL": "Wikipedia - Thermoplastisches Polyurethan"
+          },
+          "bambu-tpu-95a-hf": {
+            "LABEL": "Bambu Lab - TPU 95A HF"
+          },
+          "ultimaker-tpu-95a": {
+            "LABEL": "Ultimaker - TPU 95A"
+          }
+        }
+      },
+      "pla-basic": {
+        "NAME": "PLA Basic",
+        "SUMMARY": "Einfache Wahl fur schnelle Prototypen mit guter Oberflache und stabilem Druckverhalten.",
+        "QUALITY_TIPS": [
+          "Fur sichtbare Qualitat 0.12-0.16 mm Layer verwenden.",
+          "Fur Produktivitat 0.20-0.24 mm Layer verwenden."
+        ],
+        "PROS": [
+          "Einfach zu drucken.",
+          "Sehr gute Oberflachenqualitat bei Sichtteilen."
+        ],
+        "CONS": [
+          "Sprode bei Schlagbelastung.",
+          "Geringe Hitze- und UV-Bestandigkeit."
+        ],
+        "IDEAL_FOR": [
+          "Mockups",
+          "Schnelle Prototypen",
+          "Optische Teile fur Innenraume"
+        ],
+        "SOURCES": {
+          "wikipedia-pla": {
+            "LABEL": "Wikipedia - Polymilchsaure"
+          },
+          "bambu-pla-basic": {
+            "LABEL": "Bambu Lab - PLA Basic"
+          },
+          "ultimaker-pla": {
+            "LABEL": "Ultimaker - PLA"
+          }
+        }
+      },
+      "pla-matte": {
+        "NAME": "PLA Matte",
+        "SUMMARY": "PLA mit matter Optik fur Ausstellungsmodelle und optisch priorisierte Teile.",
+        "QUALITY_TIPS": [
+          "0.16-0.24 mm Layer halten den matten Effekt gleichmassiger.",
+          "Konstante Kuhlung hilft bei der Oberflachentextur."
+        ],
+        "PROS": [
+          "Saubere matte Optik.",
+          "Lass sich so einfach drucken wie Standard-PLA."
+        ],
+        "CONS": [
+          "Begrenzte mechanische Eigenschaften fur strukturelle Anwendungen.",
+          "Wie andere PLA-Materialien hitzeempfindlich."
+        ],
+        "IDEAL_FOR": [
+          "Ausstellungsobjekte",
+          "Produktdesign",
+          "Asthetische Mockups"
+        ],
+        "SOURCES": {
+          "wikipedia-pla": {
+            "LABEL": "Wikipedia - Polymilchsaure"
+          },
+          "bambu-pla-matte": {
+            "LABEL": "Bambu Lab - PLA Matte"
+          }
+        }
+      },
+      "pla-tough-plus": {
+        "NAME": "PLA Tough+",
+        "SUMMARY": "Kompromiss zwischen einfacher PLA-Verarbeitung und hoherer Zahigkeit fur leichte Funktionsteile.",
+        "QUALITY_TIPS": [
+          "0.20 mm Layer sind ein guter Kompromiss zwischen Tempo und Genauigkeit.",
+          "3-4 Perimeter erhohen die Robustheit bei Schlagbelastung."
+        ],
+        "PROS": [
+          "Hohere Zahigkeit als Standard-PLA.",
+          "Guter Kompromiss fur funktionale Prototypen."
+        ],
+        "CONS": [
+          "Warmebestandigkeit bleibt moderat.",
+          "Weniger steif als PLA Basic."
+        ],
+        "IDEAL_FOR": [
+          "Leichte Funktionsteile",
+          "Nichtstrukturelle Werkzeuge",
+          "Testkomponenten"
+        ],
+        "SOURCES": {
+          "wikipedia-pla": {
+            "LABEL": "Wikipedia - Polymilchsaure"
+          },
+          "bambu-pla-tough": {
+            "LABEL": "Bambu Lab - PLA Tough"
+          }
+        }
+      },
+      "asa": {
+        "NAME": "ASA",
+        "SUMMARY": "Technischer Outdoor-Kunststoff, UV-stabiler als ABS.",
+        "QUALITY_TIPS": [
+          "Geschlossene Kammer und Brim reduzieren Warping.",
+          "0.20-0.28 mm Layer balancieren Haftung und Zeit."
+        ],
+        "PROS": [
+          "Gute UV- und Wetterbestandigkeit.",
+          "Geeignet fur funktionale Outdoor-Teile."
+        ],
+        "CONS": [
+          "Benotigt thermische Kontrolle beim Drucken.",
+          "Kann ohne passendes Setup stark verziehen."
+        ],
+        "IDEAL_FOR": [
+          "Aussenabdeckungen",
+          "Outdoor-Halterungen",
+          "Sonnenexponierte Teile"
+        ],
+        "SOURCES": {
+          "wikipedia-asa": {
+            "LABEL": "Wikipedia - Acrylonitril-Styrol-Acrylat"
+          },
+          "bambu-asa": {
+            "LABEL": "Bambu Lab - ASA"
+          },
+          "ultimaker-asa": {
+            "LABEL": "Ultimaker - ASA"
+          }
+        }
+      },
+      "pc": {
+        "NAME": "PC",
+        "SUMMARY": "Technisches Material mit hoher mechanischer und thermischer Festigkeit fur robuste Teile.",
+        "QUALITY_TIPS": [
+          "Beheizte Kammer und sehr trockenes Material sind bevorzugt.",
+          "0.20-0.28 mm Layer reduzieren Restspannungen gegenuber sehr feinen Layern."
+        ],
+        "PROS": [
+          "Sehr schlag- und hitzefest.",
+          "Hohe Masshaltigkeit bei technischen Teilen."
+        ],
+        "CONS": [
+          "Anspruchsvoll bei hohen Temperaturen zu drucken.",
+          "Unsauberes Setup fuhrt leicht zu Verzug."
+        ],
+        "IDEAL_FOR": [
+          "Technische Gehause",
+          "Halterungen fur hohe Lasten",
+          "Teile in der Nahe von Warmequellen"
+        ],
+        "SOURCES": {
+          "wikipedia-pc": {
+            "LABEL": "Wikipedia - Polycarbonat"
+          },
+          "bambu-pc": {
+            "LABEL": "Bambu Lab - PC"
+          },
+          "ultimaker-pc": {
+            "LABEL": "Ultimaker - PC"
+          }
+        }
+      },
+      "pa12-cf": {
+        "NAME": "PA12-CF",
+        "SUMMARY": "Carbonverstarktes Nylon mit Fokus auf Steifigkeit und Stabilitat fur Funktionsteile.",
+        "QUALITY_TIPS": [
+          "Material und Umgebung mussen vor dem Druck trocken sein.",
+          "0.20-0.28 mm Layer mit geharteter Duse und empfohlenem Setup funktionieren am besten."
+        ],
+        "PROS": [
+          "Sehr gutes Steifigkeits-Gewichts-Verhaltnis.",
+          "Gute Masshaltigkeit fur technische Vorrichtungen."
+        ],
+        "CONS": [
+          "Hoherer Preis und komplexerer Druck als bei Basismaterialien.",
+          "Benotigt Feuchtigkeitskontrolle und passende Duse."
+        ],
+        "IDEAL_FOR": [
+          "Jigs und Vorrichtungen",
+          "Leichte Strukturteile",
+          "Technische mechanische Komponenten"
+        ],
+        "SOURCES": {
+          "wikipedia-nylon-12": {
+            "LABEL": "Wikipedia - Nylon 12"
+          },
+          "ultimaker-pa12-cf": {
+            "LABEL": "Ultimaker - Nylon 12 Carbon Fiber"
+          },
+          "product-pa12-cf": {
+            "LABEL": "Produktseite - PA12-CF"
+          }
+        }
+      },
+      "pet-cf": {
+        "NAME": "PET-CF",
+        "SUMMARY": "Steifes technisches Material mit Carbonfaser, sehr stabil fur Prazisionsteile.",
+        "QUALITY_TIPS": [
+          "Eine gehartete Duse ist wegen der abrasiven Faser Pflicht.",
+          "0.20-0.28 mm Layer balancieren Haftung und Endsteifigkeit."
+        ],
+        "PROS": [
+          "Hohe mechanische und thermische Leistung.",
+          "Geringe Verformung bei funktionalen Geometrien."
+        ],
+        "CONS": [
+          "Abrasiv: Eine gehartete Duse ist erforderlich.",
+          "Hohe Kosten, nicht ideal fur gunstige Prototypen."
+        ],
+        "IDEAL_FOR": [
+          "Technische Prazisionskomponenten",
+          "Steife Halterungen",
+          "Teile mit hoher thermischer Stabilitat"
+        ],
+        "SOURCES": {
+          "wikipedia-pet": {
+            "LABEL": "Wikipedia - Polyethylenterephthalat"
+          },
+          "wikipedia-cfrp": {
+            "LABEL": "Wikipedia - Carbonfaserverstarkter Kunststoff"
+          },
+          "bambu-pet-cf": {
+            "LABEL": "Bambu Lab - PET-CF"
+          }
+        }
+      }
+    }
+  },
   "CALC": {
     "TITLE": "3D-Angebot berechnen",
     "SUBTITLE": "Laden Sie Ihre 3D-Datei (STL, 3MF) hoch, stellen Sie Qualität und Farbe ein und berechnen Sie sofort Preis und Lieferzeit.",
@@ -429,7 +904,8 @@
       "S4": {
         "TITLE": "4. Cookies und Tracking",
         "P1": "4.1. Wir verwenden keine Profiling-, Marketing- oder Drittanbieter-Tracking-Cookies.",
-        "P2": "4.2. Wir verwenden keine Advertising-Tracking-Systeme. Etwaige temporäre technische Daten werden nur für den Betrieb der Sitzung genutzt."
+        "P2": "4.2. Wir verwenden keine Advertising-Tracking-Systeme. Etwaige temporäre technische Daten werden nur für den Betrieb der Sitzung genutzt.",
+        "P3": "4.3. Im Back-office erzeugte öffentliche QR-Links können Datum/Uhrzeit des Scans, die vom Browser geschätzte Sprache und eine technische Besucherschätzung auf Basis eines irreversiblen Hashes erfassen. Wir fragen kein GPS am Telefon ab und speichern die IP-Adresse nicht im Klartext."
       },
       "S5": {
         "TITLE": "5. Datenweitergabe",
