@@ -593,8 +593,7 @@ const CALCULATOR_FACTS: readonly CalculatorFact[] = [
     detail:
       'Le combinazioni disponibili dipendono dai profili di macchina attivi.',
     noteLabel: 'Ideale se',
-    note:
-      'conosci esattamente le impostazioni che vuoi applicare al tuo file.',
+    note: 'conosci esattamente le impostazioni che vuoi applicare al tuo file.',
     ctaLabel: 'Apri Avanzata',
     path: '/calculator/advanced#calculator-workspace',
   },
