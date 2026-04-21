@@ -352,12 +352,15 @@ export class AdminQrLinksComponent implements OnInit, OnDestroy {
 
   dailyLegendRows(): AdminQrOverviewItem[] {
     return (
-      this.overview?.qrLinks.filter((entry) => entry.rawScans > 0).slice(0, 8) ??
-      []
+      this.overview?.qrLinks
+        .filter((entry) => entry.rawScans > 0)
+        .slice(0, 8) ?? []
     );
   }
 
-  dailyBreakdownRows(row: { qrBreakdown: AdminQrDailyBreakdown[] }): AdminQrDailyBreakdown[] {
+  dailyBreakdownRows(row: {
+    qrBreakdown: AdminQrDailyBreakdown[];
+  }): AdminQrDailyBreakdown[] {
     return row.qrBreakdown ?? [];
   }
 
