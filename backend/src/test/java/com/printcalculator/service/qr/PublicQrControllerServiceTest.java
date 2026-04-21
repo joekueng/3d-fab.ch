@@ -2,15 +2,17 @@ package com.printcalculator.service.qr;
 
 import com.printcalculator.entity.QrLink;
 import com.printcalculator.entity.QrScanEvent;
+import com.printcalculator.event.QrScanRecordedEvent;
 import com.printcalculator.repository.QrLinkRepository;
 import com.printcalculator.repository.QrScanEventRepository;
 import jakarta.servlet.http.HttpServletRequest;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.OffsetDateTime;
@@ -18,6 +20,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -37,8 +40,27 @@ class PublicQrControllerServiceTest {
     @Mock
     private HttpServletRequest request;
 
-    @InjectMocks
+    private ApplicationEventPublisher eventPublisher;
+    private Object publishedEvent;
     private PublicQrControllerService service;
+
+    @BeforeEach
+    void setUp() {
+        publishedEvent = null;
+        eventPublisher = new ApplicationEventPublisher() {
+            @Override
+            public void publishEvent(Object event) {
+                publishedEvent = event;
+            }
+        };
+        service = new PublicQrControllerService(
+                qrLinkRepository,
+                qrScanEventRepository,
+                qrLinkSupportService,
+                qrTrackingRequestService,
+                eventPublisher
+        );
+    }
 
     @Test
     void resolveRedirect_shouldTrackAndReturnLocalizedPath() {
@@ -59,12 +81,14 @@ class PublicQrControllerServiceTest {
                         "203.0.113.10",
                         "abc123",
                         false,
-                        "CH",
-                        "Switzerland",
-                        "Lugano",
                         OffsetDateTime.parse("2026-04-20T09:00:00+02:00")
                 )
         );
+        when(qrScanEventRepository.save(any(QrScanEvent.class))).thenAnswer(invocation -> {
+            QrScanEvent event = invocation.getArgument(0);
+            event.setId(UUID.randomUUID());
+            return event;
+        });
 
         PublicQrControllerService.QrRedirectResult result = service.resolveRedirect("flyer", request);
 
@@ -73,7 +97,8 @@ class PublicQrControllerServiceTest {
         verify(qrScanEventRepository).save(eventCaptor.capture());
         assertEquals("de", eventCaptor.getValue().getResolvedLang());
         assertEquals("abc123", eventCaptor.getValue().getVisitorKeyHash());
-        assertEquals("CH", eventCaptor.getValue().getCountryCode());
+        assertNull(eventCaptor.getValue().getCountryCode());
+        assertEquals(QrScanRecordedEvent.class, publishedEvent.getClass());
     }
 
     @Test

@@ -15,17 +15,14 @@ import java.util.UUID;
 public class QrTrackingRequestService {
     private final String visitorHashSecret;
     private final boolean trustProxyHeaders;
-    private final boolean geoEnabled;
 
     public QrTrackingRequestService(
             @Value("${app.qr.visitor-hash-secret:${ADMIN_SESSION_SECRET:change-me-change-me-change-me-change-me}}")
             String visitorHashSecret,
-            @Value("${app.qr.trust-proxy-headers:false}") boolean trustProxyHeaders,
-            @Value("${app.qr.geo.enabled:false}") boolean geoEnabled
+            @Value("${app.qr.trust-proxy-headers:false}") boolean trustProxyHeaders
     ) {
         this.visitorHashSecret = visitorHashSecret;
         this.trustProxyHeaders = trustProxyHeaders;
-        this.geoEnabled = geoEnabled;
     }
 
     public ResolvedTrackingContext resolve(HttpServletRequest request, UUID qrLinkId) {
@@ -34,48 +31,21 @@ public class QrTrackingRequestService {
         String visitorKeyHash = hashVisitorKey(qrLinkId, clientIp, userAgent);
         boolean suspectedBot = isSuspectedBot(userAgent);
 
-        String countryCode = null;
-        String countryName = null;
-        String cityName = null;
-        if (geoEnabled && trustProxyHeaders) {
-            countryCode = firstPresentHeader(request, "X-Geo-Country-Code", "CF-IPCountry");
-            countryName = firstPresentHeader(request, "X-Geo-Country-Name");
-            cityName = firstPresentHeader(request, "X-Geo-City");
-        }
-
         return new ResolvedTrackingContext(
                 clientIp,
                 visitorKeyHash,
                 suspectedBot,
-                emptyToNull(countryCode),
-                emptyToNull(countryName),
-                emptyToNull(cityName),
                 OffsetDateTime.now()
         );
     }
 
     public String resolveClientIp(HttpServletRequest request) {
-        if (trustProxyHeaders) {
-            String forwardedFor = request.getHeader("X-Forwarded-For");
-            if (forwardedFor != null && !forwardedFor.isBlank()) {
-                String[] parts = forwardedFor.split(",");
-                if (parts.length > 0 && !parts[0].trim().isEmpty()) {
-                    return parts[0].trim();
-                }
-            }
-
-            String realIp = request.getHeader("X-Real-IP");
-            if (realIp != null && !realIp.isBlank()) {
-                return realIp.trim();
-            }
-        }
-
-        String remoteAddress = request.getRemoteAddr();
-        if (remoteAddress != null && !remoteAddress.isBlank()) {
-            return remoteAddress.trim();
-        }
-
-        return "unknown";
+        return IpAddressUtils.resolveClientIp(
+                request.getHeader("X-Forwarded-For"),
+                request.getHeader("X-Real-IP"),
+                request.getRemoteAddr(),
+                trustProxyHeaders
+        );
     }
 
     boolean isSuspectedBot(String userAgent) {
@@ -101,30 +71,10 @@ public class QrTrackingRequestService {
         return String.valueOf(value == null ? "" : value).trim();
     }
 
-    private String firstPresentHeader(HttpServletRequest request, String... headerNames) {
-        for (String headerName : headerNames) {
-            String value = request.getHeader(headerName);
-            if (value != null && !value.isBlank()) {
-                return value.trim();
-            }
-        }
-        return null;
-    }
-
-    private String emptyToNull(String value) {
-        if (value == null || value.isBlank() || "XX".equalsIgnoreCase(value) || "T1".equalsIgnoreCase(value)) {
-            return null;
-        }
-        return value;
-    }
-
     public record ResolvedTrackingContext(
             String clientIp,
             String visitorKeyHash,
             boolean suspectedBot,
-            String countryCode,
-            String countryName,
-            String cityName,
             OffsetDateTime scannedAt
     ) {
     }
