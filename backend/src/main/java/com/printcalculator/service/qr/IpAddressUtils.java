@@ -1,34 +1,26 @@
 package com.printcalculator.service.qr;
 
+import org.springframework.security.web.util.matcher.IpAddressMatcher;
+
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.List;
 
 final class IpAddressUtils {
 
     private IpAddressUtils() {
     }
 
-    static String resolveClientIp(String forwardedFor, String realIp, String remoteAddress, boolean trustProxyHeaders) {
-        if (trustProxyHeaders) {
-            String forwardedClientIp = firstPublicIpFromForwardedFor(forwardedFor);
-            if (forwardedClientIp != null) {
-                return forwardedClientIp;
-            }
-
-            String normalizedRealIp = normalizeIp(realIp);
-            if (normalizedRealIp != null && isPublicIp(normalizedRealIp)) {
-                return normalizedRealIp;
-            }
-        }
-
+    static String resolveClientIp(String forwardedFor,
+                                  String realIp,
+                                  String remoteAddress,
+                                  boolean trustProxyHeaders,
+                                  List<IpAddressMatcher> trustedProxyMatchers) {
         String normalizedRemoteAddress = normalizeIp(remoteAddress);
-        if (normalizedRemoteAddress != null && isPublicIp(normalizedRemoteAddress)) {
-            return normalizedRemoteAddress;
-        }
-
-        if (trustProxyHeaders) {
+        if (trustProxyHeaders && isTrustedProxy(normalizedRemoteAddress, trustedProxyMatchers)) {
             String forwardedClientIp = firstValidIpFromForwardedFor(forwardedFor);
             if (forwardedClientIp != null) {
                 return forwardedClientIp;
@@ -44,6 +36,14 @@ final class IpAddressUtils {
             return normalizedRemoteAddress;
         }
         return "unknown";
+    }
+
+    static List<IpAddressMatcher> parseTrustedProxyMatchers(String trustedProxyNetworks) {
+        return Arrays.stream(String.valueOf(trustedProxyNetworks == null ? "" : trustedProxyNetworks).split(","))
+                .map(String::trim)
+                .filter(value -> !value.isBlank())
+                .map(IpAddressMatcher::new)
+                .toList();
     }
 
     static String normalizeIp(String candidate) {
@@ -87,18 +87,11 @@ final class IpAddressUtils {
         }
     }
 
-    private static String firstPublicIpFromForwardedFor(String forwardedFor) {
-        if (forwardedFor == null || forwardedFor.isBlank()) {
-            return null;
+    static boolean isTrustedProxy(String remoteAddress, List<IpAddressMatcher> trustedProxyMatchers) {
+        if (remoteAddress == null || trustedProxyMatchers == null || trustedProxyMatchers.isEmpty()) {
+            return false;
         }
-
-        for (String rawPart : forwardedFor.split(",")) {
-            String candidate = normalizeIp(rawPart);
-            if (candidate != null && isPublicIp(candidate)) {
-                return candidate;
-            }
-        }
-        return null;
+        return trustedProxyMatchers.stream().anyMatch(matcher -> matcher.matches(remoteAddress));
     }
 
     private static String firstValidIpFromForwardedFor(String forwardedFor) {

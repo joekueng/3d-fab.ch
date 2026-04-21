@@ -1,28 +1,41 @@
 package com.printcalculator.service.qr;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.web.util.matcher.IpAddressMatcher;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.OffsetDateTime;
 import java.util.HexFormat;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
 @Service
 public class QrTrackingRequestService {
+    private static final Logger logger = LoggerFactory.getLogger(QrTrackingRequestService.class);
+
     private final String visitorHashSecret;
     private final boolean trustProxyHeaders;
+    private final List<IpAddressMatcher> trustedProxyMatchers;
 
     public QrTrackingRequestService(
             @Value("${app.qr.visitor-hash-secret:${ADMIN_SESSION_SECRET:change-me-change-me-change-me-change-me}}")
             String visitorHashSecret,
-            @Value("${app.qr.trust-proxy-headers:false}") boolean trustProxyHeaders
+            @Value("${app.qr.trust-proxy-headers:false}") boolean trustProxyHeaders,
+            @Value("${app.qr.trusted-proxy-networks:}") String trustedProxyNetworks
     ) {
         this.visitorHashSecret = visitorHashSecret;
         this.trustProxyHeaders = trustProxyHeaders;
+        this.trustedProxyMatchers = IpAddressUtils.parseTrustedProxyMatchers(trustedProxyNetworks);
+
+        if (trustProxyHeaders && this.trustedProxyMatchers.isEmpty()) {
+            logger.warn("QR proxy header trust is enabled, but app.qr.trusted-proxy-networks is empty. Forwarded headers will be ignored.");
+        }
     }
 
     public ResolvedTrackingContext resolve(HttpServletRequest request, UUID qrLinkId) {
@@ -44,7 +57,8 @@ public class QrTrackingRequestService {
                 request.getHeader("X-Forwarded-For"),
                 request.getHeader("X-Real-IP"),
                 request.getRemoteAddr(),
-                trustProxyHeaders
+                trustProxyHeaders,
+                trustedProxyMatchers
         );
     }
 
