@@ -27,6 +27,14 @@ export interface AdminQrDailyStat {
   date: string;
   scans: number;
   uniqueVisitors: number;
+  qrBreakdown: AdminQrDailyBreakdown[];
+}
+
+export interface AdminQrDailyBreakdown {
+  qrLinkId: string;
+  name: string;
+  slug?: string | null;
+  scans: number;
 }
 
 export interface AdminQrLanguageStat {

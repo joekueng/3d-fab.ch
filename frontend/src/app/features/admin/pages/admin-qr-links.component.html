@@ -269,10 +269,46 @@
                     class="daily-bar__value"
                     [style.height]="dailyBarHeight(row.scans)"
                     [title]="row.date + ': ' + row.scans + ' scansioni'"
-                  ></div>
+                  >
+                    <div
+                      class="daily-bar__segment"
+                      *ngFor="let segment of dailyBreakdownRows(row)"
+                      [style.flexGrow]="segment.scans"
+                      [style.background]="qrColor(segment.qrLinkId)"
+                      [title]="
+                        row.date +
+                        ' · ' +
+                        segment.name +
+                        (segment.slug ? ' (/' + segment.slug + ')' : '') +
+                        ': ' +
+                        segment.scans +
+                        ' scansioni'
+                      "
+                    ></div>
+                  </div>
+                  <span class="daily-bar__count" *ngIf="row.scans > 0">{{
+                    row.scans
+                  }}</span>
                   <span class="daily-bar__label">{{
                     row.date | slice: 5 : 10
                   }}</span>
+                </div>
+              </div>
+
+              <div
+                class="daily-chart__legend"
+                *ngIf="dailyLegendRows().length > 0"
+              >
+                <div
+                  class="daily-legend__item"
+                  *ngFor="let row of dailyLegendRows()"
+                >
+                  <span
+                    class="daily-legend__swatch"
+                    [style.background]="qrColor(row.qrLinkId)"
+                  ></span>
+                  <strong>{{ row.name }}</strong>
+                  <span>/{{ row.slug }}</span>
                 </div>
               </div>
             </div>
@@ -293,6 +329,7 @@
                   <div
                     class="rank-row__bar"
                     [style.width]="overviewBarWidth(row.rawScans)"
+                    [style.background]="qrColor(row.qrLinkId)"
                   ></div>
                 </div>
                 <div class="rank-row__value">{{ row.rawScans }}</div>

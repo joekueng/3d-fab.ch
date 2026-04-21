@@ -40,9 +40,11 @@ export interface AdminOrder {
   status: string;
   paymentStatus?: string;
   paymentMethod?: string;
+  billingCustomerType?: string;
   customerEmail: string;
   totalChf: number;
   createdAt: string;
+  paidAt?: string;
   isCadOrder?: boolean;
   sourceRequestId?: string;
   cadHours?: number;

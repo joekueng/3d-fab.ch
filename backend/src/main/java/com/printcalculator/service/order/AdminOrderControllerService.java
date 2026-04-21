@@ -221,6 +221,7 @@ public class AdminOrderControllerService {
         dto.setCadTotalChf(order.getCadTotalChf());
         dto.setTotalChf(order.getTotalChf());
         dto.setCreatedAt(order.getCreatedAt());
+        dto.setPaidAt(order.getPaidAt());
         dto.setShippingSameAsBilling(order.getShippingSameAsBilling());
         QuoteSession sourceSession = order.getSourceQuoteSession();
         if (sourceSession != null) {

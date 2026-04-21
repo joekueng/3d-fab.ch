@@ -168,6 +168,11 @@
   margin: 0;
 }
 
+.daily-chart {
+  display: grid;
+  gap: var(--space-3);
+}
+
 .daily-chart__bars {
   min-height: 220px;
   display: grid;
@@ -179,16 +184,29 @@
 .daily-bar {
   min-width: 0;
   display: grid;
-  gap: 8px;
+  gap: 6px;
   align-items: end;
   justify-items: center;
 }
 
 .daily-bar__value {
   width: 100%;
-  min-height: 8px;
-  background: #101820;
+  min-height: 0;
+  display: flex;
+  flex-direction: column-reverse;
+  background: var(--color-surface-muted);
   border-radius: 4px 4px 0 0;
+  overflow: hidden;
+}
+
+.daily-bar__segment {
+  min-height: 2px;
+}
+
+.daily-bar__count {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
 }
 
 .daily-bar__label {
@@ -196,6 +214,31 @@
   transform: rotate(180deg);
   font-size: 0.72rem;
   color: var(--color-text-muted);
+}
+
+.daily-chart__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+}
+
+.daily-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 0.85rem;
+}
+
+.daily-legend__item span:last-child {
+  color: var(--color-text-muted);
+}
+
+.daily-legend__swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  flex: 0 0 auto;
 }
 
 .rank-chart {

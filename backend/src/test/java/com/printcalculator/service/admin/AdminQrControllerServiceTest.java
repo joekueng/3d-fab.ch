@@ -107,6 +107,10 @@ class AdminQrControllerServiceTest {
         assertEquals(1, overview.getQrLinks().get(0).getUniqueVisitors());
         assertEquals("Zurich, Switzerland", overview.getQrLinks().get(0).getTopLocationLabel());
         assertEquals(2, overview.getQrLinks().get(0).getTopLocationScans());
+        assertEquals(2, overview.getDaily().get(0).getScans());
+        assertEquals("Flyer", overview.getDaily().get(0).getQrBreakdown().get(0).getName());
+        assertEquals(1, overview.getDaily().get(1).getScans());
+        assertEquals("Sticker", overview.getDaily().get(1).getQrBreakdown().get(0).getName());
         assertEquals(2, overview.getLocations().size());
         assertEquals("Zurich, Switzerland", overview.getLocations().get(0).getLabel());
         assertEquals(2, overview.getLocations().get(0).getScans());

@@ -56,6 +56,49 @@ tbody tr.no-results:hover {
   color: var(--color-text-muted);
 }
 
+.order-created-at,
+.order-table__date {
+  font-size: 0.84rem;
+  color: var(--color-text-muted);
+}
+
+.order-table__payment {
+  min-width: 140px;
+}
+
+.order-table__payment-status {
+  font-weight: 600;
+}
+
+.order-table__payment-date {
+  margin-top: 0.15rem;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.order-customer-cell {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.customer-type-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.18rem 0.55rem;
+  background: color-mix(in srgb, #12355b 10%, white);
+  color: #12355b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.order-created-at {
+  margin: 0;
+}
+
 .order-uuid code {
   font-size: 0.82rem;
 }

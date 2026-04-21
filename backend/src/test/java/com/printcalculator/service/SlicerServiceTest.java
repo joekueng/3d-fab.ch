@@ -10,6 +10,24 @@ import static org.junit.jupiter.api.Assertions.*;
 class SlicerServiceTest {
 
     @Test
+    void stripKnownModelExtension_handlesStlAnd3mf() {
+        assertEquals("part", SlicerService.stripKnownModelExtension("part.stl"));
+        assertEquals("plate-layout", SlicerService.stripKnownModelExtension("plate-layout.3mf"));
+        assertEquals("raw", SlicerService.stripKnownModelExtension("raw"));
+    }
+
+    @Test
+    void buildSliceAttempts_includesRecoveryStrategies() {
+        var attempts = SlicerService.buildSliceAttempts();
+
+        assertEquals(4, attempts.size());
+        assertEquals(new SlicerService.SliceAttempt(false, false, false), attempts.get(0));
+        assertEquals(new SlicerService.SliceAttempt(true, false, false), attempts.get(1));
+        assertEquals(new SlicerService.SliceAttempt(true, true, false), attempts.get(2));
+        assertEquals(new SlicerService.SliceAttempt(true, true, true), attempts.get(3));
+    }
+
+    @Test
     void parseModelDimensionsFromInfoOutput_validOutput_returnsDimensions() {
         String output = """
                 [file.stl]

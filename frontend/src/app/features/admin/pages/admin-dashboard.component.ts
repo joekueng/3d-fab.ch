@@ -466,6 +466,18 @@ export class AdminDashboardComponent implements OnInit {
     }
   }
 
+  customerTypeLabel(order: AdminOrder | null): string | null {
+    const normalized = (order?.billingCustomerType || '').trim().toUpperCase();
+    switch (normalized) {
+      case 'PRIVATE':
+        return 'Privato';
+      case 'BUSINESS':
+        return 'Azienda';
+      default:
+        return normalized || null;
+    }
+  }
+
   downloadItemLabel(item: AdminOrderItem): string {
     return this.isShopItem(item) ? 'Scarica modello' : 'Scarica file';
   }
