@@ -27,6 +27,14 @@ export interface AdminQrDailyStat {
   date: string;
   scans: number;
   uniqueVisitors: number;
+  qrBreakdown: AdminQrDailyBreakdown[];
+}
+
+export interface AdminQrDailyBreakdown {
+  qrLinkId: string;
+  name: string;
+  slug?: string | null;
+  scans: number;
 }
 
 export interface AdminQrLanguageStat {
@@ -37,6 +45,7 @@ export interface AdminQrLanguageStat {
 export interface AdminQrLocationStat {
   countryCode?: string | null;
   countryName?: string | null;
+  regionName?: string | null;
   cityName?: string | null;
   label: string;
   scans: number;
@@ -48,6 +57,7 @@ export interface AdminQrRecentScan {
   finalPath: string;
   countryCode?: string | null;
   countryName?: string | null;
+  regionName?: string | null;
   cityName?: string | null;
 }
 

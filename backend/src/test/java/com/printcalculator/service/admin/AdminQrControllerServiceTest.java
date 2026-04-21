@@ -63,6 +63,7 @@ class AdminQrControllerServiceTest {
         eventOne.setIsSuspectedBot(false);
         eventOne.setCountryCode("CH");
         eventOne.setCountryName("Switzerland");
+        eventOne.setRegionName("Zurich");
         eventOne.setCityName("Zurich");
 
         QrScanEvent eventTwo = new QrScanEvent();
@@ -72,6 +73,7 @@ class AdminQrControllerServiceTest {
         eventTwo.setIsSuspectedBot(false);
         eventTwo.setCountryCode("CH");
         eventTwo.setCountryName("Switzerland");
+        eventTwo.setRegionName("Zurich");
         eventTwo.setCityName("Zurich");
 
         QrScanEvent eventThree = new QrScanEvent();
@@ -81,6 +83,7 @@ class AdminQrControllerServiceTest {
         eventThree.setIsSuspectedBot(false);
         eventThree.setCountryCode("IT");
         eventThree.setCountryName("Italy");
+        eventThree.setRegionName("Lombardy");
         eventThree.setCityName("Milan");
 
         when(qrLinkRepository.findAll(any(Sort.class))).thenReturn(List.of(first, second));
@@ -104,6 +107,10 @@ class AdminQrControllerServiceTest {
         assertEquals(1, overview.getQrLinks().get(0).getUniqueVisitors());
         assertEquals("Zurich, Switzerland", overview.getQrLinks().get(0).getTopLocationLabel());
         assertEquals(2, overview.getQrLinks().get(0).getTopLocationScans());
+        assertEquals(2, overview.getDaily().get(0).getScans());
+        assertEquals("Flyer", overview.getDaily().get(0).getQrBreakdown().get(0).getName());
+        assertEquals(1, overview.getDaily().get(1).getScans());
+        assertEquals("Sticker", overview.getDaily().get(1).getQrBreakdown().get(0).getName());
         assertEquals(2, overview.getLocations().size());
         assertEquals("Zurich, Switzerland", overview.getLocations().get(0).getLabel());
         assertEquals(2, overview.getLocations().get(0).getScans());
@@ -128,6 +135,7 @@ class AdminQrControllerServiceTest {
         eventOne.setIsSuspectedBot(false);
         eventOne.setCountryCode("CH");
         eventOne.setCountryName("Switzerland");
+        eventOne.setRegionName("Zurich");
         eventOne.setCityName("Zurich");
 
         QrScanEvent eventTwo = new QrScanEvent();
@@ -138,6 +146,7 @@ class AdminQrControllerServiceTest {
         eventTwo.setIsSuspectedBot(false);
         eventTwo.setCountryCode("CH");
         eventTwo.setCountryName("Switzerland");
+        eventTwo.setRegionName("Zurich");
         eventTwo.setCityName("Zurich");
 
         when(qrLinkRepository.findById(qrLinkId)).thenReturn(Optional.of(qrLink));
@@ -153,6 +162,7 @@ class AdminQrControllerServiceTest {
         assertEquals(1, stats.getLocations().size());
         assertEquals("Zurich, Switzerland", stats.getLocations().get(0).getLabel());
         assertEquals(2, stats.getLocations().get(0).getScans());
+        assertEquals("Zurich", stats.getRecentScans().get(0).getRegionName());
         assertEquals("Zurich", stats.getRecentScans().get(0).getCityName());
     }
 

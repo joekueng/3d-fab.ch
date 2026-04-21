@@ -2,14 +2,17 @@ package com.printcalculator.service.qr;
 
 import com.printcalculator.entity.QrLink;
 import com.printcalculator.entity.QrScanEvent;
+import com.printcalculator.event.QrScanRecordedEvent;
 import com.printcalculator.repository.QrLinkRepository;
 import com.printcalculator.repository.QrScanEventRepository;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Locale;
+import java.util.UUID;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
@@ -20,15 +23,18 @@ public class PublicQrControllerService {
     private final QrScanEventRepository qrScanEventRepository;
     private final QrLinkSupportService qrLinkSupportService;
     private final QrTrackingRequestService qrTrackingRequestService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public PublicQrControllerService(QrLinkRepository qrLinkRepository,
                                      QrScanEventRepository qrScanEventRepository,
                                      QrLinkSupportService qrLinkSupportService,
-                                     QrTrackingRequestService qrTrackingRequestService) {
+                                     QrTrackingRequestService qrTrackingRequestService,
+                                     ApplicationEventPublisher eventPublisher) {
         this.qrLinkRepository = qrLinkRepository;
         this.qrScanEventRepository = qrScanEventRepository;
         this.qrLinkSupportService = qrLinkSupportService;
         this.qrTrackingRequestService = qrTrackingRequestService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -50,10 +56,9 @@ public class PublicQrControllerService {
         event.setFinalPath(finalPath);
         event.setVisitorKeyHash(trackingContext.visitorKeyHash());
         event.setIsSuspectedBot(trackingContext.suspectedBot());
-        event.setCountryCode(trackingContext.countryCode());
-        event.setCountryName(trackingContext.countryName());
-        event.setCityName(trackingContext.cityName());
-        qrScanEventRepository.save(event);
+        QrScanEvent savedEvent = qrScanEventRepository.save(event);
+        UUID qrScanEventId = savedEvent != null && savedEvent.getId() != null ? savedEvent.getId() : event.getId();
+        eventPublisher.publishEvent(new QrScanRecordedEvent(qrScanEventId, trackingContext.clientIp()));
 
         return new QrRedirectResult(finalPath, language, qrLink.getId());
     }

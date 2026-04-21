@@ -62,6 +62,7 @@
           <thead>
             <tr>
               <th>Ordine</th>
+              <th>Creato</th>
               <th>Tipo</th>
               <th>Email</th>
               <th>Pagamento</th>
@@ -75,7 +76,16 @@
               [class.selected]="isSelected(order.id)"
               (click)="openDetails(order.id)"
             >
-              <td>{{ order.orderNumber }}</td>
+              <td>
+                <strong>{{ order.orderNumber }}</strong>
+              </td>
+              <td class="order-table__date">
+                {{
+                  order.createdAt
+                    ? (order.createdAt | date: "dd.MM.yyyy HH:mm")
+                    : "-"
+                }}
+              </td>
               <td>
                 <span
                   class="order-type-badge"
@@ -84,15 +94,32 @@
                   {{ orderKindLabel(order) }}
                 </span>
               </td>
-              <td>{{ order.customerEmail }}</td>
-              <td>{{ order.paymentStatus || "PENDING" }}</td>
+              <td>
+                <div class="order-customer-cell">
+                  <span>{{ order.customerEmail }}</span>
+                  <span
+                    class="customer-type-badge"
+                    *ngIf="customerTypeLabel(order) as customerType"
+                  >
+                    {{ customerType }}
+                  </span>
+                </div>
+              </td>
+              <td class="order-table__payment">
+                <div class="order-table__payment-status">
+                  {{ order.paymentStatus || "PENDING" }}
+                </div>
+                <div class="order-table__payment-date" *ngIf="order.paidAt">
+                  Pagato {{ order.paidAt | date: "dd.MM.yyyy HH:mm" }}
+                </div>
+              </td>
               <td>{{ order.status }}</td>
               <td>
                 {{ order.totalChf | currency: "CHF" : "symbol" : "1.2-2" }}
               </td>
             </tr>
             <tr class="no-results" *ngIf="filteredOrders.length === 0">
-              <td colspan="6">
+              <td colspan="7">
                 Nessun ordine trovato per i filtri selezionati.
               </td>
             </tr>
@@ -123,16 +150,41 @@
             >{{ selectedOrder.id }}</code
           >
         </p>
+        <p class="order-created-at">
+          Creato:
+          <strong>{{
+            selectedOrder.createdAt
+              ? (selectedOrder.createdAt | date: "dd.MM.yyyy HH:mm")
+              : "-"
+          }}</strong>
+        </p>
         <p *ngIf="detailLoading">Caricamento dettaglio...</p>
       </div>
 
       <div class="meta-grid ui-meta-grid">
         <div class="ui-meta-item">
-          <strong>Cliente</strong><span>{{ selectedOrder.customerEmail }}</span>
+          <strong>Cliente</strong>
+          <div class="order-customer-cell">
+            <span>{{ selectedOrder.customerEmail }}</span>
+            <span
+              class="customer-type-badge"
+              *ngIf="customerTypeLabel(selectedOrder) as customerType"
+            >
+              {{ customerType }}
+            </span>
+          </div>
         </div>
         <div class="ui-meta-item">
           <strong>Stato pagamento</strong
           ><span>{{ selectedOrder.paymentStatus || "PENDING" }}</span>
+        </div>
+        <div class="ui-meta-item">
+          <strong>Pagato il</strong
+          ><span>{{
+            selectedOrder.paidAt
+              ? (selectedOrder.paidAt | date: "dd.MM.yyyy HH:mm")
+              : "-"
+          }}</span>
         </div>
         <div class="ui-meta-item">
           <strong>Stato ordine</strong><span>{{ selectedOrder.status }}</span>
@@ -140,6 +192,14 @@
         <div class="ui-meta-item">
           <strong>Tipo ordine</strong
           ><span>{{ orderKindLabel(selectedOrder) }}</span>
+        </div>
+        <div class="ui-meta-item">
+          <strong>Creato il</strong
+          ><span>{{
+            selectedOrder.createdAt
+              ? (selectedOrder.createdAt | date: "dd.MM.yyyy HH:mm")
+              : "-"
+          }}</span>
         </div>
         <div class="ui-meta-item">
           <strong>Totale</strong

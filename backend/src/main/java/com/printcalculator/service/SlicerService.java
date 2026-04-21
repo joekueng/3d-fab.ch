@@ -33,6 +33,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -110,89 +111,124 @@ public class SlicerService {
             mapper.writeValue(fFile, filamentProfile);
             mapper.writeValue(pFile, processProfile);
 
-            String basename = inputStl.getName();
-            if (basename.toLowerCase().endsWith(".stl")) {
-                basename = basename.substring(0, basename.length() - 4);
-            }
+            String basename = stripKnownModelExtension(inputStl.getName());
             Path slicerLogPath = tempDir.resolve("orcaslicer.log");
             String machineProfilePath = requireSafeArgument(mFile.getAbsolutePath(), "machine profile path");
             String processProfilePath = requireSafeArgument(pFile.getAbsolutePath(), "process profile path");
             String filamentProfilePath = requireSafeArgument(fFile.getAbsolutePath(), "filament profile path");
             String outputDirPath = requireSafeArgument(tempDir.toAbsolutePath().toString(), "output directory path");
             String inputModelPath = requireSafeArgument(inputStl.getAbsolutePath(), "input model path");
-            List<String> slicerInputPaths = resolveSlicerInputPaths(inputStl, inputModelPath, tempDir);
+            List<SlicerInputVariant> slicerInputVariants = resolveSlicerInputVariants(inputStl, inputModelPath, tempDir);
+            List<SliceAttempt> sliceAttempts = buildSliceAttempts();
+            ModelProcessingException lastFailure = null;
 
-            // 3. Run slicer. Retry with arrange only for out-of-volume style failures.
-            for (boolean useArrange : new boolean[]{false, true}) {
-                // Build process arguments explicitly to avoid shell interpretation and command injection.
-                ProcessBuilder pb = new ProcessBuilder();
-                List<String> command = pb.command();
-                command.add(trustedSlicerPath);
-                command.add("--load-settings");
-                command.add(machineProfilePath);
-                command.add("--load-settings");
-                command.add(processProfilePath);
-                command.add("--load-filaments");
-                command.add(filamentProfilePath);
-                command.add("--ensure-on-bed");
-                if (useArrange) {
-                    command.add("--arrange");
-                    command.add("1");
-                }
-                command.add("--slice");
-                command.add("0");
-                command.add("--outputdir");
-                command.add(outputDirPath);
-                command.addAll(slicerInputPaths);
+            // 3. Run slicer with progressively stronger recovery options.
+            for (int variantIndex = 0; variantIndex < slicerInputVariants.size(); variantIndex++) {
+                SlicerInputVariant inputVariant = slicerInputVariants.get(variantIndex);
+                boolean hasMoreInputVariants = variantIndex < slicerInputVariants.size() - 1;
 
-                logger.info("Executing Slicer" + (useArrange ? " (retry with arrange)" : "") + ": " + String.join(" ", command));
+                for (int attemptIndex = 0; attemptIndex < sliceAttempts.size(); attemptIndex++) {
+                    SliceAttempt attempt = sliceAttempts.get(attemptIndex);
 
-                Files.deleteIfExists(slicerLogPath);
-                pb.directory(tempDir.toFile());
-                pb.redirectErrorStream(true);
-                pb.redirectOutput(slicerLogPath.toFile());
-
-                Process process = pb.start();
-                boolean finished = process.waitFor(5, TimeUnit.MINUTES);
-
-                if (!finished) {
-                    process.destroyForcibly();
-                    throw new ModelProcessingException(
-                            "SLICER_TIMEOUT",
-                            "Model processing timed out. Try another format or contact us directly via Request Consultation."
-                    );
-                }
-
-                if (process.exitValue() != 0) {
-                    String error = "";
-                    if (Files.exists(slicerLogPath)) {
-                        error = Files.readString(slicerLogPath, StandardCharsets.UTF_8);
+                    // Build process arguments explicitly to avoid shell interpretation and command injection.
+                    ProcessBuilder pb = new ProcessBuilder();
+                    List<String> command = pb.command();
+                    command.add(trustedSlicerPath);
+                    command.add("--load-settings");
+                    command.add(machineProfilePath);
+                    command.add("--load-settings");
+                    command.add(processProfilePath);
+                    command.add("--load-filaments");
+                    command.add(filamentProfilePath);
+                    command.add("--ensure-on-bed");
+                    if (attempt.arrange()) {
+                        command.add("--arrange");
+                        command.add("1");
                     }
-                    if (!useArrange && isOutOfVolumeError(error)) {
-                        logger.warning("Slicer reported model out of printable area, retrying with arrange.");
-                        continue;
+                    if (attempt.allowRotations()) {
+                        command.add("--allow-rotations");
                     }
-                    logger.warning("Slicer failed with exit code " + process.exitValue() + ". Log: " + error);
-                    throw new ModelProcessingException(
-                            "SLICER_EXECUTION_FAILED",
-                            "Unable to process this model. Try another format or contact us directly via Request Consultation."
-                    );
-                }
+                    if (attempt.orient()) {
+                        command.add("--orient");
+                        command.add("1");
+                    }
+                    command.add("--slice");
+                    command.add("0");
+                    command.add("--outputdir");
+                    command.add(outputDirPath);
+                    command.addAll(inputVariant.inputPaths());
 
-                File gcodeFile = tempDir.resolve(basename + ".gcode").toFile();
-                if (!gcodeFile.exists()) {
-                    File alt = tempDir.resolve("plate_1.gcode").toFile();
-                    if (alt.exists()) {
-                        gcodeFile = alt;
-                    } else {
+                    logger.info("Executing Slicer" + attempt.logSuffix() + " using " + inputVariant.label()
+                            + ": " + String.join(" ", command));
+
+                    Files.deleteIfExists(slicerLogPath);
+                    pb.directory(tempDir.toFile());
+                    pb.redirectErrorStream(true);
+                    pb.redirectOutput(slicerLogPath.toFile());
+
+                    Process process = pb.start();
+                    boolean finished = process.waitFor(5, TimeUnit.MINUTES);
+
+                    if (!finished) {
+                        process.destroyForcibly();
                         throw new ModelProcessingException(
-                                "SLICER_OUTPUT_MISSING",
-                                "Unable to generate slicing output for this model. Try another format or contact us directly via Request Consultation."
+                                "SLICER_TIMEOUT",
+                                "Model processing timed out. Try another format or contact us directly via Request Consultation."
                         );
                     }
-                }
 
-                return gCodeParser.parse(gcodeFile);
+                    String output = Files.exists(slicerLogPath)
+                            ? Files.readString(slicerLogPath, StandardCharsets.UTF_8)
+                            : "";
+
+                    if (process.exitValue() != 0) {
+                        boolean hasMorePlacementAttempts = attemptIndex < sliceAttempts.size() - 1;
+                        if (hasMorePlacementAttempts && isOutOfVolumeError(output)) {
+                            logger.warning("Slicer reported model out of printable area for " + inputVariant.label()
+                                    + ", retrying" + sliceAttempts.get(attemptIndex + 1).logSuffix() + ".");
+                            continue;
+                        }
+
+                        lastFailure = new ModelProcessingException(
+                                "SLICER_EXECUTION_FAILED",
+                                "Unable to process this model. Try another format or contact us directly via Request Consultation."
+                        );
+
+                        if (hasMoreInputVariants) {
+                            logger.warning("Slicer failed with exit code " + process.exitValue() + " for "
+                                    + inputVariant.label() + ". Retrying with fallback geometry. Log: " + output);
+                            break;
+                        }
+
+                        logger.warning("Slicer failed with exit code " + process.exitValue() + ". Log: " + output);
+                        throw lastFailure;
+                    }
+
+                    File gcodeFile = tempDir.resolve(basename + ".gcode").toFile();
+                    if (!gcodeFile.exists()) {
+                        File alt = tempDir.resolve("plate_1.gcode").toFile();
+                        if (alt.exists()) {
+                            gcodeFile = alt;
+                        } else {
+                            lastFailure = new ModelProcessingException(
+                                    "SLICER_OUTPUT_MISSING",
+                                    "Unable to generate slicing output for this model. Try another format or contact us directly via Request Consultation."
+                            );
+                            if (hasMoreInputVariants) {
+                                logger.warning("Slicer succeeded but no G-code was generated for " + inputVariant.label()
+                                        + ". Retrying with fallback geometry.");
+                                break;
+                            }
+                            throw lastFailure;
+                        }
+                    }
+
+                    return gCodeParser.parse(gcodeFile);
+                }
+            }
+
+            if (lastFailure != null) {
+                throw lastFailure;
             }
 
             throw new ModelProcessingException(
@@ -320,15 +356,49 @@ public class SlicerService {
                 || normalized.contains("calc_exclude_triangles");
     }
 
-    private List<String> resolveSlicerInputPaths(File inputModel, String inputModelPath, Path tempDir)
-            throws IOException, InterruptedException {
-        if (!inputModel.getName().toLowerCase().endsWith(".3mf")) {
-            return List.of(inputModelPath);
+    static List<SliceAttempt> buildSliceAttempts() {
+        return List.of(
+                new SliceAttempt(false, false, false),
+                new SliceAttempt(true, false, false),
+                new SliceAttempt(true, true, false),
+                new SliceAttempt(true, true, true)
+        );
+    }
+
+    static String stripKnownModelExtension(String filename) {
+        if (filename == null || filename.isBlank()) {
+            return "model";
         }
 
-        List<String> convertedStlPaths = convert3mfToStlInputPaths(inputModel, tempDir);
-        logger.info("Converted 3MF to " + convertedStlPaths.size() + " STL file(s) for slicing.");
-        return convertedStlPaths;
+        String lower = filename.toLowerCase();
+        for (String extension : List.of(".stl", ".3mf", ".obj", ".step", ".stp")) {
+            if (lower.endsWith(extension)) {
+                return filename.substring(0, filename.length() - extension.length());
+            }
+        }
+        return filename;
+    }
+
+    private List<SlicerInputVariant> resolveSlicerInputVariants(File inputModel, String inputModelPath, Path tempDir)
+            throws IOException, InterruptedException {
+        if (!inputModel.getName().toLowerCase().endsWith(".3mf")) {
+            return List.of(new SlicerInputVariant(List.of(inputModelPath), "original model"));
+        }
+
+        List<SlicerInputVariant> variants = new ArrayList<>();
+        variants.add(new SlicerInputVariant(List.of(inputModelPath), "original 3MF project"));
+
+        try {
+            List<String> convertedStlPaths = convert3mfToStlInputPaths(inputModel, tempDir);
+            logger.info("Prepared converted 3MF fallback with " + convertedStlPaths.size() + " STL file(s) for slicing.");
+            variants.add(new SlicerInputVariant(convertedStlPaths, "converted 3MF geometry"));
+        } catch (InterruptedException e) {
+            throw e;
+        } catch (Exception e) {
+            logger.warning("Failed to prepare converted 3MF fallback for " + inputModel.getName() + ": " + e.getMessage());
+        }
+
+        return variants;
     }
 
     public Path convert3mfToPersistentStl(File input3mf, Path destinationStl) throws IOException {
@@ -935,6 +1005,29 @@ public class SlicerService {
     }
 
     private record Vec3(double x, double y, double z) {
+    }
+
+    record SliceAttempt(boolean arrange, boolean allowRotations, boolean orient) {
+        String logSuffix() {
+            if (!arrange && !allowRotations && !orient) {
+                return "";
+            }
+
+            List<String> flags = new ArrayList<>();
+            if (arrange) {
+                flags.add("arrange");
+            }
+            if (allowRotations) {
+                flags.add("allow-rotations");
+            }
+            if (orient) {
+                flags.add("orient");
+            }
+            return " (retry with " + String.join(" + ", flags) + ")";
+        }
+    }
+
+    private record SlicerInputVariant(List<String> inputPaths, String label) {
     }
 
     private record Transform(

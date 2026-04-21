@@ -25,6 +25,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -80,6 +81,8 @@ class AdminOrderControllerServiceTest {
     void updatePaymentMethod_withValidMethod_shouldDelegateAndReturnUpdatedDto() {
         UUID orderId = UUID.randomUUID();
         Order order = buildOrder(orderId, "PENDING_PAYMENT");
+        OffsetDateTime paidAt = OffsetDateTime.parse("2026-04-21T09:15:00+02:00");
+        order.setPaidAt(paidAt);
         Payment payment = new Payment();
         payment.setMethod("BANK_TRANSFER");
         payment.setStatus("PENDING");
@@ -92,6 +95,7 @@ class AdminOrderControllerServiceTest {
 
         assertEquals("BANK_TRANSFER", dto.getPaymentMethod());
         assertEquals("PENDING", dto.getPaymentStatus());
+        assertEquals(paidAt, dto.getPaidAt());
         verify(paymentService).updatePaymentMethod(orderId, "BANK_TRANSFER");
     }
 

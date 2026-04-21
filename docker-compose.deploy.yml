@@ -27,7 +27,11 @@ services:
       - APP_MAIL_ADMIN_ADDRESS=${APP_MAIL_ADMIN_ADDRESS:-info@3d-fab.ch}
       - APP_FRONTEND_BASE_URL=${APP_FRONTEND_BASE_URL:-http://localhost:4200}
       - APP_QR_TRUST_PROXY_HEADERS=${APP_QR_TRUST_PROXY_HEADERS:-false}
+      - APP_QR_TRUSTED_PROXY_NETWORKS=${APP_QR_TRUSTED_PROXY_NETWORKS:-}
+      - APP_QR_DEBUG_LOGGING=${APP_QR_DEBUG_LOGGING:-false}
       - APP_QR_GEO_ENABLED=${APP_QR_GEO_ENABLED:-false}
+      - APP_QR_GEO_DB_PATH=${APP_QR_GEO_DB_PATH:-/app/cache/geoip/GeoLite2-City.mmdb}
+      - APP_QR_GEO_LOCALES=${APP_QR_GEO_LOCALES:-it,en}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
       - ADMIN_SESSION_SECRET=${ADMIN_SESSION_SECRET}
       - ADMIN_SESSION_TTL_MINUTES=${ADMIN_SESSION_TTL_MINUTES:-480}
@@ -56,6 +60,7 @@ services:
       - /mnt/cache/appdata/print-calculator/${ENV}/storage_requests:/app/storage_requests
       - /mnt/cache/appdata/print-calculator/${ENV}/storage_media:/app/storage_media
       - /mnt/cache/appdata/print-calculator/${ENV}/storage_shop:/app/storage_shop
+      - /mnt/cache/appdata/print-calculator/geoip:/app/cache/geoip:ro
     extra_hosts:
       - "host.docker.internal:host-gateway"
 

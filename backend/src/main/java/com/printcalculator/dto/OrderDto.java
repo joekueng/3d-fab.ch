@@ -31,6 +31,7 @@ public class OrderDto {
     private BigDecimal cadTotalChf;
     private BigDecimal totalChf;
     private OffsetDateTime createdAt;
+    private OffsetDateTime paidAt;
     private String printMaterialCode;
     private BigDecimal printNozzleDiameterMm;
     private BigDecimal printLayerHeightMm;
@@ -114,6 +115,9 @@ public class OrderDto {
 
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
+
+    public OffsetDateTime getPaidAt() { return paidAt; }
+    public void setPaidAt(OffsetDateTime paidAt) { this.paidAt = paidAt; }
 
     public String getPrintMaterialCode() { return printMaterialCode; }
     public void setPrintMaterialCode(String printMaterialCode) { this.printMaterialCode = printMaterialCode; }

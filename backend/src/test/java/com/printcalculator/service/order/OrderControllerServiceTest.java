@@ -24,6 +24,7 @@ import org.springframework.mock.web.MockMultipartFile;
 
 import java.math.BigDecimal;
 import java.nio.file.Path;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -125,6 +126,8 @@ class OrderControllerServiceTest {
     void getOrder_withShippedStatus_shouldRedactPersonalData() {
         UUID orderId = UUID.randomUUID();
         Order order = buildOrder(orderId, "SHIPPED");
+        OffsetDateTime paidAt = OffsetDateTime.parse("2026-04-21T09:15:00+02:00");
+        order.setPaidAt(paidAt);
 
         when(orderRepo.findById(orderId)).thenReturn(Optional.of(order));
         when(orderItemRepo.findByOrder_Id(orderId)).thenReturn(List.of());
@@ -138,6 +141,7 @@ class OrderControllerServiceTest {
         assertNull(dto.getCustomerPhone());
         assertNull(dto.getBillingAddress());
         assertNull(dto.getShippingAddress());
+        assertEquals(paidAt, dto.getPaidAt());
     }
 
     @Test

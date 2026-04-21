@@ -17,6 +17,7 @@ import {
 } from '../../../shared/components/app-toggle-selector/app-toggle-selector.component';
 import { CopyOnClickDirective } from '../../../shared/directives/copy-on-click.directive';
 import {
+  AdminQrDailyBreakdown,
   AdminQrLink,
   AdminQrLocationStat,
   AdminQrOverviewItem,
@@ -52,6 +53,19 @@ type ViewMode = 'manage' | 'overview';
   styleUrl: './admin-qr-links.component.scss',
 })
 export class AdminQrLinksComponent implements OnInit, OnDestroy {
+  private static readonly QR_CHART_PALETTE = [
+    '#12355b',
+    '#1f7a8c',
+    '#2d6a4f',
+    '#b85c38',
+    '#6b8e23',
+    '#d17a22',
+    '#8f3b76',
+    '#6c757d',
+    '#9c6644',
+    '#3d5a80',
+  ];
+
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly adminQrService = inject(AdminQrService);
 
@@ -318,7 +332,10 @@ export class AdminQrLinksComponent implements OnInit, OnDestroy {
   }
 
   dailyBarHeight(scans: number): string {
-    return `${Math.max(8, (scans / this.maxDailyScans()) * 100)}%`;
+    if (scans <= 0) {
+      return '0%';
+    }
+    return `${Math.max(10, (scans / this.maxDailyScans()) * 100)}%`;
   }
 
   overviewBarWidth(scans: number): string {
@@ -331,6 +348,30 @@ export class AdminQrLinksComponent implements OnInit, OnDestroy {
 
   topQrRows(): AdminQrOverviewItem[] {
     return this.overview?.qrLinks.slice(0, 12) ?? [];
+  }
+
+  dailyLegendRows(): AdminQrOverviewItem[] {
+    return (
+      this.overview?.qrLinks
+        .filter((entry) => entry.rawScans > 0)
+        .slice(0, 8) ?? []
+    );
+  }
+
+  dailyBreakdownRows(row: {
+    qrBreakdown: AdminQrDailyBreakdown[];
+  }): AdminQrDailyBreakdown[] {
+    return row.qrBreakdown ?? [];
+  }
+
+  qrColor(qrLinkId: string): string {
+    const palette = AdminQrLinksComponent.QR_CHART_PALETTE;
+    const hash = Array.from(String(qrLinkId ?? '')).reduce(
+      (accumulator, character) =>
+        (accumulator * 33 + character.charCodeAt(0)) >>> 0,
+      5381,
+    );
+    return palette[hash % palette.length];
   }
 
   topLocationRows(): AdminQrLocationStat[] {

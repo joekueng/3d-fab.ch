@@ -1,31 +1,46 @@
 package com.printcalculator.service.qr;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.web.util.matcher.IpAddressMatcher;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.OffsetDateTime;
 import java.util.HexFormat;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
 @Service
 public class QrTrackingRequestService {
+    private static final Logger logger = LoggerFactory.getLogger(QrTrackingRequestService.class);
+
     private final String visitorHashSecret;
     private final boolean trustProxyHeaders;
-    private final boolean geoEnabled;
+    private final List<IpAddressMatcher> trustedProxyMatchers;
+    private final String trustedProxyNetworks;
+    private final boolean debugLogging;
 
     public QrTrackingRequestService(
             @Value("${app.qr.visitor-hash-secret:${ADMIN_SESSION_SECRET:change-me-change-me-change-me-change-me}}")
             String visitorHashSecret,
             @Value("${app.qr.trust-proxy-headers:false}") boolean trustProxyHeaders,
-            @Value("${app.qr.geo.enabled:false}") boolean geoEnabled
+            @Value("${app.qr.trusted-proxy-networks:}") String trustedProxyNetworks,
+            @Value("${app.qr.debug-logging:false}") boolean debugLogging
     ) {
         this.visitorHashSecret = visitorHashSecret;
         this.trustProxyHeaders = trustProxyHeaders;
-        this.geoEnabled = geoEnabled;
+        this.trustedProxyNetworks = String.valueOf(trustedProxyNetworks == null ? "" : trustedProxyNetworks).trim();
+        this.trustedProxyMatchers = IpAddressUtils.parseTrustedProxyMatchers(trustedProxyNetworks);
+        this.debugLogging = debugLogging;
+
+        if (trustProxyHeaders && this.trustedProxyMatchers.isEmpty()) {
+            logger.warn("QR proxy header trust is enabled, but app.qr.trusted-proxy-networks is empty. Forwarded headers will be ignored.");
+        }
     }
 
     public ResolvedTrackingContext resolve(HttpServletRequest request, UUID qrLinkId) {
@@ -34,48 +49,26 @@ public class QrTrackingRequestService {
         String visitorKeyHash = hashVisitorKey(qrLinkId, clientIp, userAgent);
         boolean suspectedBot = isSuspectedBot(userAgent);
 
-        String countryCode = null;
-        String countryName = null;
-        String cityName = null;
-        if (geoEnabled && trustProxyHeaders) {
-            countryCode = firstPresentHeader(request, "X-Geo-Country-Code", "CF-IPCountry");
-            countryName = firstPresentHeader(request, "X-Geo-Country-Name");
-            cityName = firstPresentHeader(request, "X-Geo-City");
+        if (debugLogging) {
+            logRequestDebug(qrLinkId, request, clientIp, suspectedBot);
         }
 
         return new ResolvedTrackingContext(
                 clientIp,
                 visitorKeyHash,
                 suspectedBot,
-                emptyToNull(countryCode),
-                emptyToNull(countryName),
-                emptyToNull(cityName),
                 OffsetDateTime.now()
         );
     }
 
     public String resolveClientIp(HttpServletRequest request) {
-        if (trustProxyHeaders) {
-            String forwardedFor = request.getHeader("X-Forwarded-For");
-            if (forwardedFor != null && !forwardedFor.isBlank()) {
-                String[] parts = forwardedFor.split(",");
-                if (parts.length > 0 && !parts[0].trim().isEmpty()) {
-                    return parts[0].trim();
-                }
-            }
-
-            String realIp = request.getHeader("X-Real-IP");
-            if (realIp != null && !realIp.isBlank()) {
-                return realIp.trim();
-            }
-        }
-
-        String remoteAddress = request.getRemoteAddr();
-        if (remoteAddress != null && !remoteAddress.isBlank()) {
-            return remoteAddress.trim();
-        }
-
-        return "unknown";
+        return IpAddressUtils.resolveClientIp(
+                request.getHeader("X-Forwarded-For"),
+                request.getHeader("X-Real-IP"),
+                request.getRemoteAddr(),
+                trustProxyHeaders,
+                trustedProxyMatchers
+        );
     }
 
     boolean isSuspectedBot(String userAgent) {
@@ -84,6 +77,30 @@ public class QrTrackingRequestService {
             return false;
         }
         return normalized.matches(".*(bot|crawler|spider|slurp|bingpreview|google-read-aloud|headless|preview).*");
+    }
+
+    private void logRequestDebug(UUID qrLinkId,
+                                 HttpServletRequest request,
+                                 String clientIp,
+                                 boolean suspectedBot) {
+        String remoteAddress = request.getRemoteAddr();
+        String normalizedRemoteAddress = IpAddressUtils.normalizeIp(remoteAddress);
+        boolean trustedProxy = trustProxyHeaders && IpAddressUtils.isTrustedProxy(normalizedRemoteAddress, trustedProxyMatchers);
+
+        logger.info(
+                "QR debug: qrLinkId={}, remoteAddrRaw={}, remoteAddrNormalized={}, xForwardedFor={}, xRealIp={}, trustProxyHeaders={}, trustedProxy={}, trustedProxyNetworks={}, resolvedClientIp={}, resolvedClientIpPublic={}, suspectedBot={}",
+                qrLinkId,
+                normalizeHeader(remoteAddress),
+                normalizedRemoteAddress,
+                normalizeHeader(request.getHeader("X-Forwarded-For")),
+                normalizeHeader(request.getHeader("X-Real-IP")),
+                trustProxyHeaders,
+                trustedProxy,
+                trustedProxyNetworks,
+                clientIp,
+                IpAddressUtils.isPublicIp(clientIp),
+                suspectedBot
+        );
     }
 
     private String hashVisitorKey(UUID qrLinkId, String clientIp, String userAgent) {
@@ -101,30 +118,10 @@ public class QrTrackingRequestService {
         return String.valueOf(value == null ? "" : value).trim();
     }
 
-    private String firstPresentHeader(HttpServletRequest request, String... headerNames) {
-        for (String headerName : headerNames) {
-            String value = request.getHeader(headerName);
-            if (value != null && !value.isBlank()) {
-                return value.trim();
-            }
-        }
-        return null;
-    }
-
-    private String emptyToNull(String value) {
-        if (value == null || value.isBlank() || "XX".equalsIgnoreCase(value) || "T1".equalsIgnoreCase(value)) {
-            return null;
-        }
-        return value;
-    }
-
     public record ResolvedTrackingContext(
             String clientIp,
             String visitorKeyHash,
             boolean suspectedBot,
-            String countryCode,
-            String countryName,
-            String cityName,
             OffsetDateTime scannedAt
     ) {
     }

@@ -6,6 +6,7 @@ public class AdminQrDailyStatDto {
     private LocalDate date;
     private long scans;
     private long uniqueVisitors;
+    private java.util.List<AdminQrDailyBreakdownDto> qrBreakdown;
 
     public LocalDate getDate() {
         return date;
@@ -29,5 +30,13 @@ public class AdminQrDailyStatDto {
 
     public void setUniqueVisitors(long uniqueVisitors) {
         this.uniqueVisitors = uniqueVisitors;
+    }
+
+    public java.util.List<AdminQrDailyBreakdownDto> getQrBreakdown() {
+        return qrBreakdown;
+    }
+
+    public void setQrBreakdown(java.util.List<AdminQrDailyBreakdownDto> qrBreakdown) {
+        this.qrBreakdown = qrBreakdown;
     }
 }

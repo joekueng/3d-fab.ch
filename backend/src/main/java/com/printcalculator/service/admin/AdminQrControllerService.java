@@ -1,6 +1,7 @@
 package com.printcalculator.service.admin;
 
 import com.printcalculator.dto.AdminQrDailyStatDto;
+import com.printcalculator.dto.AdminQrDailyBreakdownDto;
 import com.printcalculator.dto.AdminQrLanguageStatDto;
 import com.printcalculator.dto.AdminQrLinkDto;
 import com.printcalculator.dto.AdminQrLocationStatDto;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 
@@ -158,6 +160,8 @@ public class AdminQrControllerService {
     public AdminQrOverviewStatsDto getOverviewStats(LocalDate from, LocalDate to) {
         DateRange dateRange = resolveDateRange(from, to);
         List<QrLink> qrLinks = qrLinkRepository.findAll(Sort.by(Sort.Direction.ASC, "name"));
+        Map<UUID, QrLink> qrLinksById = qrLinks.stream()
+                .collect(java.util.stream.Collectors.toMap(QrLink::getId, qrLink -> qrLink));
         List<QrScanEvent> visibleEvents = qrScanEventRepository
                 .findByScannedAtBetweenOrderByScannedAtDesc(dateRange.fromInclusive(), dateRange.toExclusive())
                 .stream()
@@ -167,30 +171,23 @@ public class AdminQrControllerService {
         Map<UUID, List<QrScanEvent>> eventsByQrLink = new HashMap<>();
         Map<LocalDate, Set<String>> uniqueVisitorsByDay = new LinkedHashMap<>();
         Map<LocalDate, Long> scansByDay = new LinkedHashMap<>();
+        Map<LocalDate, Map<UUID, Long>> scansByDayAndQr = new LinkedHashMap<>();
         Map<LocationKey, Long> scansByLocation = new LinkedHashMap<>();
         Set<String> uniqueVisitors = new LinkedHashSet<>();
 
         for (QrScanEvent event : visibleEvents) {
             UUID qrLinkId = event.getQrLink().getId();
-            eventsByQrLink.computeIfAbsent(qrLinkId, ignored -> new java.util.ArrayList<>()).add(event);
+            eventsByQrLink.computeIfAbsent(qrLinkId, ignored -> new ArrayList<>()).add(event);
 
             LocalDate eventDate = event.getScannedAt().atZoneSameInstant(APP_ZONE).toLocalDate();
             scansByDay.merge(eventDate, 1L, Long::sum);
+            scansByDayAndQr.computeIfAbsent(eventDate, ignored -> new LinkedHashMap<>())
+                    .merge(qrLinkId, 1L, Long::sum);
             uniqueVisitorsByDay.computeIfAbsent(eventDate, ignored -> new LinkedHashSet<>())
                     .add(event.getVisitorKeyHash());
             uniqueVisitors.add(event.getVisitorKeyHash());
             mergeLocation(scansByLocation, event);
         }
-
-        List<AdminQrDailyStatDto> dailyStats = dateRange.fromDate().datesUntil(dateRange.toDate().plusDays(1))
-                .map(date -> {
-                    AdminQrDailyStatDto dto = new AdminQrDailyStatDto();
-                    dto.setDate(date);
-                    dto.setScans(scansByDay.getOrDefault(date, 0L));
-                    dto.setUniqueVisitors(uniqueVisitorsByDay.getOrDefault(date, Set.of()).size());
-                    return dto;
-                })
-                .toList();
 
         List<AdminQrOverviewItemDto> qrOverview = qrLinks.stream()
                 .map(qrLink -> {
@@ -227,6 +224,26 @@ public class AdminQrControllerService {
                         .thenComparing(AdminQrOverviewItemDto::getName, String.CASE_INSENSITIVE_ORDER))
                 .toList();
 
+        Map<UUID, Integer> qrDisplayOrder = new HashMap<>();
+        for (int index = 0; index < qrOverview.size(); index++) {
+            qrDisplayOrder.put(qrOverview.get(index).getQrLinkId(), index);
+        }
+
+        List<AdminQrDailyStatDto> dailyStats = dateRange.fromDate().datesUntil(dateRange.toDate().plusDays(1))
+                .map(date -> {
+                    AdminQrDailyStatDto dto = new AdminQrDailyStatDto();
+                    dto.setDate(date);
+                    dto.setScans(scansByDay.getOrDefault(date, 0L));
+                    dto.setUniqueVisitors(uniqueVisitorsByDay.getOrDefault(date, Set.of()).size());
+                    dto.setQrBreakdown(toDailyBreakdown(
+                            scansByDayAndQr.getOrDefault(date, Map.of()),
+                            qrLinksById,
+                            qrDisplayOrder
+                    ));
+                    return dto;
+                })
+                .toList();
+
         AdminQrOverviewStatsDto dto = new AdminQrOverviewStatsDto();
         dto.setFromDate(dateRange.fromDate());
         dto.setToDate(dateRange.toDate());
@@ -238,6 +255,29 @@ public class AdminQrControllerService {
         dto.setLocations(toLocationStats(scansByLocation));
         dto.setQrLinks(qrOverview);
         return dto;
+    }
+
+    private List<AdminQrDailyBreakdownDto> toDailyBreakdown(Map<UUID, Long> scansByQr,
+                                                            Map<UUID, QrLink> qrLinksById,
+                                                            Map<UUID, Integer> qrDisplayOrder) {
+        return scansByQr.entrySet().stream()
+                .filter(entry -> entry.getValue() != null && entry.getValue() > 0)
+                .sorted(Comparator.<Map.Entry<UUID, Long>>comparingInt(
+                                entry -> qrDisplayOrder.getOrDefault(entry.getKey(), Integer.MAX_VALUE))
+                        .thenComparing(entry -> {
+                            QrLink qrLink = qrLinksById.get(entry.getKey());
+                            return qrLink == null ? "" : qrLink.getName();
+                        }, String.CASE_INSENSITIVE_ORDER))
+                .map(entry -> {
+                    QrLink qrLink = qrLinksById.get(entry.getKey());
+                    AdminQrDailyBreakdownDto dto = new AdminQrDailyBreakdownDto();
+                    dto.setQrLinkId(entry.getKey());
+                    dto.setName(qrLink == null ? "QR sconosciuto" : qrLink.getName());
+                    dto.setSlug(qrLink == null ? null : qrLink.getSlug());
+                    dto.setScans(entry.getValue());
+                    return dto;
+                })
+                .toList();
     }
 
     public String generateQrSvg(UUID qrLinkId) {
@@ -291,6 +331,7 @@ public class AdminQrControllerService {
         dto.setFinalPath(event.getFinalPath());
         dto.setCountryCode(event.getCountryCode());
         dto.setCountryName(event.getCountryName());
+        dto.setRegionName(event.getRegionName());
         dto.setCityName(event.getCityName());
         return dto;
     }
@@ -306,11 +347,12 @@ public class AdminQrControllerService {
     private LocationKey toLocationKey(QrScanEvent event) {
         String countryCode = normalizeLocationPart(event.getCountryCode());
         String countryName = normalizeLocationPart(event.getCountryName());
+        String regionName = normalizeLocationPart(event.getRegionName());
         String cityName = normalizeLocationPart(event.getCityName());
-        if (countryCode == null && countryName == null && cityName == null) {
+        if (countryCode == null && countryName == null && regionName == null && cityName == null) {
             return null;
         }
-        return new LocationKey(countryCode, countryName, cityName);
+        return new LocationKey(countryCode, countryName, regionName, cityName);
     }
 
     private List<AdminQrLocationStatDto> toLocationStats(Map<LocationKey, Long> scansByLocation) {
@@ -322,6 +364,7 @@ public class AdminQrControllerService {
                     AdminQrLocationStatDto dto = new AdminQrLocationStatDto();
                     dto.setCountryCode(location.key().countryCode());
                     dto.setCountryName(location.key().countryName());
+                    dto.setRegionName(location.key().regionName());
                     dto.setCityName(location.key().cityName());
                     dto.setLabel(location.label());
                     dto.setScans(location.scans());
@@ -338,7 +381,7 @@ public class AdminQrControllerService {
         return normalized.isBlank() ? null : normalized;
     }
 
-    private record LocationKey(String countryCode, String countryName, String cityName) {
+    private record LocationKey(String countryCode, String countryName, String regionName, String cityName) {
     }
 
     private record LocationStat(LocationKey key, long scans) {
@@ -348,6 +391,12 @@ public class AdminQrControllerService {
             }
             if (key.cityName() != null && key.countryCode() != null) {
                 return key.cityName() + ", " + key.countryCode();
+            }
+            if (key.regionName() != null && key.countryName() != null) {
+                return key.regionName() + ", " + key.countryName();
+            }
+            if (key.regionName() != null && key.countryCode() != null) {
+                return key.regionName() + ", " + key.countryCode();
             }
             if (key.countryName() != null) {
                 return key.countryName();

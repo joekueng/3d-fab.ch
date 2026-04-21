@@ -132,13 +132,15 @@ public class QuoteSessionItemService {
             if (settings.getInfillPattern() != null) {
                 processOverrides.put("sparse_infill_pattern", settings.getInfillPattern());
             }
+            if (settings.getSupportsEnabled() != null) {
+                processOverrides.put("enable_support", Boolean.TRUE.equals(settings.getSupportsEnabled()) ? "1" : "0");
+            }
 
             Path slicerInputPath = persistentPath;
             if ("3mf".equals(ext)) {
                 String convertedFilename = UUID.randomUUID() + "-converted.stl";
                 convertedPersistentPath = quoteStorageService.resolveSessionPath(sessionStorageDir, convertedFilename);
                 slicerService.convert3mfToPersistentStl(persistentPath.toFile(), convertedPersistentPath);
-                slicerInputPath = convertedPersistentPath;
             }
 
             PrintStats stats = slicerService.slice(
@@ -151,6 +153,9 @@ public class QuoteSessionItemService {
             );
 
             Optional<ModelDimensions> modelDimensions = slicerService.inspectModelDimensions(slicerInputPath.toFile());
+            if (modelDimensions.isEmpty() && convertedPersistentPath != null) {
+                modelDimensions = slicerService.inspectModelDimensions(convertedPersistentPath.toFile());
+            }
             QuoteResult result = quoteCalculator.calculate(stats, machine.getPrinterDisplayName(), selectedVariant);
 
             QuoteLineItem item = buildLineItem(
