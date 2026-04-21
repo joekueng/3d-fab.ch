@@ -36,7 +36,7 @@ class QrScanGeoEnrichmentServiceTest {
         QrScanEvent event = new QrScanEvent();
 
         when(geoLite2CityService.lookup("8.8.8.8")).thenReturn(
-                Optional.of(new GeoLite2CityService.GeoLocation("CH", "Svizzera", "Lugano"))
+                Optional.of(new GeoLite2CityService.GeoLocation("CH", "Svizzera", "Ticino", "Lugano"))
         );
         when(qrScanEventRepository.findById(eventId)).thenReturn(Optional.of(event));
 
@@ -44,6 +44,7 @@ class QrScanGeoEnrichmentServiceTest {
 
         assertEquals("CH", event.getCountryCode());
         assertEquals("Svizzera", event.getCountryName());
+        assertEquals("Ticino", event.getRegionName());
         assertEquals("Lugano", event.getCityName());
         verify(qrScanEventRepository).save(event);
     }

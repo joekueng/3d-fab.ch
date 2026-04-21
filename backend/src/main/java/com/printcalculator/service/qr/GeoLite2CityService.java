@@ -82,10 +82,11 @@ public class GeoLite2CityService {
             if (debugLogging) {
                 if (location.isPresent()) {
                     GeoLocation value = location.get();
-                    logger.info("QR geo debug: lookup success. clientIp={}, countryCode={}, countryName={}, cityName={}",
+                    logger.info("QR geo debug: lookup success. clientIp={}, countryCode={}, countryName={}, regionName={}, cityName={}",
                             normalizedIp,
                             value.countryCode(),
                             value.countryName(),
+                            value.regionName(),
                             value.cityName());
                 } else {
                     logger.info("QR geo debug: lookup returned no location. clientIp={}", normalizedIp);
@@ -146,8 +147,13 @@ public class GeoLite2CityService {
     private GeoLocation toGeoLocation(CityResponse response) {
         String countryCode = emptyToNull(response.country().isoCode());
         String countryName = emptyToNull(response.country().name());
+        String regionName = response.subdivisions().stream()
+                .map(subdivision -> emptyToNull(subdivision.name()))
+                .filter(value -> value != null)
+                .findFirst()
+                .orElse(null);
         String cityName = emptyToNull(response.city().name());
-        return new GeoLocation(countryCode, countryName, cityName);
+        return new GeoLocation(countryCode, countryName, regionName, cityName);
     }
 
     private List<String> parseLocales(String localesCsv) {
@@ -165,6 +171,6 @@ public class GeoLite2CityService {
         return value;
     }
 
-    public record GeoLocation(String countryCode, String countryName, String cityName) {
+    public record GeoLocation(String countryCode, String countryName, String regionName, String cityName) {
     }
 }

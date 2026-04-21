@@ -8,6 +8,7 @@ public class AdminQrScanEventDto {
     private String finalPath;
     private String countryCode;
     private String countryName;
+    private String regionName;
     private String cityName;
 
     public OffsetDateTime getScannedAt() {
@@ -56,5 +57,13 @@ public class AdminQrScanEventDto {
 
     public void setCityName(String cityName) {
         this.cityName = cityName;
+    }
+
+    public String getRegionName() {
+        return regionName;
+    }
+
+    public void setRegionName(String regionName) {
+        this.regionName = regionName;
     }
 }

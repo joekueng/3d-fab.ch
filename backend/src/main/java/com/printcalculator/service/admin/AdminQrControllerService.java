@@ -291,6 +291,7 @@ public class AdminQrControllerService {
         dto.setFinalPath(event.getFinalPath());
         dto.setCountryCode(event.getCountryCode());
         dto.setCountryName(event.getCountryName());
+        dto.setRegionName(event.getRegionName());
         dto.setCityName(event.getCityName());
         return dto;
     }
@@ -306,11 +307,12 @@ public class AdminQrControllerService {
     private LocationKey toLocationKey(QrScanEvent event) {
         String countryCode = normalizeLocationPart(event.getCountryCode());
         String countryName = normalizeLocationPart(event.getCountryName());
+        String regionName = normalizeLocationPart(event.getRegionName());
         String cityName = normalizeLocationPart(event.getCityName());
-        if (countryCode == null && countryName == null && cityName == null) {
+        if (countryCode == null && countryName == null && regionName == null && cityName == null) {
             return null;
         }
-        return new LocationKey(countryCode, countryName, cityName);
+        return new LocationKey(countryCode, countryName, regionName, cityName);
     }
 
     private List<AdminQrLocationStatDto> toLocationStats(Map<LocationKey, Long> scansByLocation) {
@@ -322,6 +324,7 @@ public class AdminQrControllerService {
                     AdminQrLocationStatDto dto = new AdminQrLocationStatDto();
                     dto.setCountryCode(location.key().countryCode());
                     dto.setCountryName(location.key().countryName());
+                    dto.setRegionName(location.key().regionName());
                     dto.setCityName(location.key().cityName());
                     dto.setLabel(location.label());
                     dto.setScans(location.scans());
@@ -338,7 +341,7 @@ public class AdminQrControllerService {
         return normalized.isBlank() ? null : normalized;
     }
 
-    private record LocationKey(String countryCode, String countryName, String cityName) {
+    private record LocationKey(String countryCode, String countryName, String regionName, String cityName) {
     }
 
     private record LocationStat(LocationKey key, long scans) {
@@ -348,6 +351,12 @@ public class AdminQrControllerService {
             }
             if (key.cityName() != null && key.countryCode() != null) {
                 return key.cityName() + ", " + key.countryCode();
+            }
+            if (key.regionName() != null && key.countryName() != null) {
+                return key.regionName() + ", " + key.countryName();
+            }
+            if (key.regionName() != null && key.countryCode() != null) {
+                return key.regionName() + ", " + key.countryCode();
             }
             if (key.countryName() != null) {
                 return key.countryName();

@@ -3,6 +3,7 @@ package com.printcalculator.dto;
 public class AdminQrLocationStatDto {
     private String countryCode;
     private String countryName;
+    private String regionName;
     private String cityName;
     private String label;
     private long scans;
@@ -29,6 +30,14 @@ public class AdminQrLocationStatDto {
 
     public void setCityName(String cityName) {
         this.cityName = cityName;
+    }
+
+    public String getRegionName() {
+        return regionName;
+    }
+
+    public void setRegionName(String regionName) {
+        this.regionName = regionName;
     }
 
     public String getLabel() {

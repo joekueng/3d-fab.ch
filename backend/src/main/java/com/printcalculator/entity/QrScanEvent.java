@@ -57,6 +57,9 @@ public class QrScanEvent {
     @Column(name = "country_name", length = 128)
     private String countryName;
 
+    @Column(name = "region_name", length = 128)
+    private String regionName;
+
     @Column(name = "city_name", length = 128)
     private String cityName;
 
@@ -148,5 +151,13 @@ public class QrScanEvent {
 
     public void setCityName(String cityName) {
         this.cityName = cityName;
+    }
+
+    public String getRegionName() {
+        return regionName;
+    }
+
+    public void setRegionName(String regionName) {
+        this.regionName = regionName;
     }
 }

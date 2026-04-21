@@ -37,6 +37,7 @@ export interface AdminQrLanguageStat {
 export interface AdminQrLocationStat {
   countryCode?: string | null;
   countryName?: string | null;
+  regionName?: string | null;
   cityName?: string | null;
   label: string;
   scans: number;
@@ -48,6 +49,7 @@ export interface AdminQrRecentScan {
   finalPath: string;
   countryCode?: string | null;
   countryName?: string | null;
+  regionName?: string | null;
   cityName?: string | null;
 }
 

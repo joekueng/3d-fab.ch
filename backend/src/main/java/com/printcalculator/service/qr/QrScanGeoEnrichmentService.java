@@ -56,13 +56,15 @@ public class QrScanGeoEnrichmentService {
     private void applyLocation(QrScanEvent event, GeoLite2CityService.GeoLocation location) {
         event.setCountryCode(location.countryCode());
         event.setCountryName(location.countryName());
+        event.setRegionName(location.regionName());
         event.setCityName(location.cityName());
         qrScanEventRepository.save(event);
         if (debugLogging) {
-            logger.info("QR geo debug: saved location. qrScanEventId={}, countryCode={}, countryName={}, cityName={}",
+            logger.info("QR geo debug: saved location. qrScanEventId={}, countryCode={}, countryName={}, regionName={}, cityName={}",
                     event.getId(),
                     location.countryCode(),
                     location.countryName(),
+                    location.regionName(),
                     location.cityName());
         }
     }
