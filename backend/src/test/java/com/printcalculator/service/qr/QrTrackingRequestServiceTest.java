@@ -11,7 +11,7 @@ class QrTrackingRequestServiceTest {
 
     @Test
     void resolveClientIp_shouldUseRemoteAddress_WhenProxyHeadersAreNotTrusted() {
-        QrTrackingRequestService service = new QrTrackingRequestService("secret", false, "");
+        QrTrackingRequestService service = new QrTrackingRequestService("secret", false, "", false);
         HttpServletRequest request = mock(HttpServletRequest.class);
         when(request.getHeader("X-Forwarded-For")).thenReturn("8.8.8.8");
         when(request.getHeader("X-Real-IP")).thenReturn("1.1.1.1");
@@ -22,9 +22,10 @@ class QrTrackingRequestServiceTest {
 
     @Test
     void resolveClientIp_shouldUseFirstForwardedForValue_WhenRequestComesFromTrustedProxy() {
-        QrTrackingRequestService service = new QrTrackingRequestService("secret", true, "172.20.0.0/16");
+        QrTrackingRequestService service = new QrTrackingRequestService("secret", true, "172.20.0.0/16", false);
         HttpServletRequest request = mock(HttpServletRequest.class);
         when(request.getHeader("X-Forwarded-For")).thenReturn("203.0.113.10, 172.20.0.2");
+        when(request.getHeader("X-Real-IP")).thenReturn(null);
         when(request.getRemoteAddr()).thenReturn("172.20.0.2");
 
         assertEquals("203.0.113.10", service.resolveClientIp(request));
@@ -32,8 +33,9 @@ class QrTrackingRequestServiceTest {
 
     @Test
     void resolveClientIp_shouldFallbackToRealIp_WhenRequestComesFromTrustedProxy() {
-        QrTrackingRequestService service = new QrTrackingRequestService("secret", true, "172.20.0.0/16");
+        QrTrackingRequestService service = new QrTrackingRequestService("secret", true, "172.20.0.0/16", false);
         HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getHeader("X-Forwarded-For")).thenReturn(null);
         when(request.getHeader("X-Real-IP")).thenReturn("1.1.1.1");
         when(request.getRemoteAddr()).thenReturn("172.20.0.2");
 
@@ -42,7 +44,7 @@ class QrTrackingRequestServiceTest {
 
     @Test
     void resolveClientIp_shouldIgnoreForwardedHeaders_WhenRemoteAddressIsNotTrusted() {
-        QrTrackingRequestService service = new QrTrackingRequestService("secret", true, "172.20.0.0/16");
+        QrTrackingRequestService service = new QrTrackingRequestService("secret", true, "172.20.0.0/16", false);
         HttpServletRequest request = mock(HttpServletRequest.class);
         when(request.getHeader("X-Forwarded-For")).thenReturn("203.0.113.10");
         when(request.getHeader("X-Real-IP")).thenReturn("1.1.1.1");

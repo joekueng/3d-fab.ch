@@ -22,16 +22,21 @@ public class QrTrackingRequestService {
     private final String visitorHashSecret;
     private final boolean trustProxyHeaders;
     private final List<IpAddressMatcher> trustedProxyMatchers;
+    private final String trustedProxyNetworks;
+    private final boolean debugLogging;
 
     public QrTrackingRequestService(
             @Value("${app.qr.visitor-hash-secret:${ADMIN_SESSION_SECRET:change-me-change-me-change-me-change-me}}")
             String visitorHashSecret,
             @Value("${app.qr.trust-proxy-headers:false}") boolean trustProxyHeaders,
-            @Value("${app.qr.trusted-proxy-networks:}") String trustedProxyNetworks
+            @Value("${app.qr.trusted-proxy-networks:}") String trustedProxyNetworks,
+            @Value("${app.qr.debug-logging:false}") boolean debugLogging
     ) {
         this.visitorHashSecret = visitorHashSecret;
         this.trustProxyHeaders = trustProxyHeaders;
+        this.trustedProxyNetworks = String.valueOf(trustedProxyNetworks == null ? "" : trustedProxyNetworks).trim();
         this.trustedProxyMatchers = IpAddressUtils.parseTrustedProxyMatchers(trustedProxyNetworks);
+        this.debugLogging = debugLogging;
 
         if (trustProxyHeaders && this.trustedProxyMatchers.isEmpty()) {
             logger.warn("QR proxy header trust is enabled, but app.qr.trusted-proxy-networks is empty. Forwarded headers will be ignored.");
@@ -43,6 +48,10 @@ public class QrTrackingRequestService {
         String userAgent = normalizeHeader(request.getHeader("User-Agent"));
         String visitorKeyHash = hashVisitorKey(qrLinkId, clientIp, userAgent);
         boolean suspectedBot = isSuspectedBot(userAgent);
+
+        if (debugLogging) {
+            logRequestDebug(qrLinkId, request, clientIp, suspectedBot);
+        }
 
         return new ResolvedTrackingContext(
                 clientIp,
@@ -68,6 +77,30 @@ public class QrTrackingRequestService {
             return false;
         }
         return normalized.matches(".*(bot|crawler|spider|slurp|bingpreview|google-read-aloud|headless|preview).*");
+    }
+
+    private void logRequestDebug(UUID qrLinkId,
+                                 HttpServletRequest request,
+                                 String clientIp,
+                                 boolean suspectedBot) {
+        String remoteAddress = request.getRemoteAddr();
+        String normalizedRemoteAddress = IpAddressUtils.normalizeIp(remoteAddress);
+        boolean trustedProxy = trustProxyHeaders && IpAddressUtils.isTrustedProxy(normalizedRemoteAddress, trustedProxyMatchers);
+
+        logger.info(
+                "QR debug: qrLinkId={}, remoteAddrRaw={}, remoteAddrNormalized={}, xForwardedFor={}, xRealIp={}, trustProxyHeaders={}, trustedProxy={}, trustedProxyNetworks={}, resolvedClientIp={}, resolvedClientIpPublic={}, suspectedBot={}",
+                qrLinkId,
+                normalizeHeader(remoteAddress),
+                normalizedRemoteAddress,
+                normalizeHeader(request.getHeader("X-Forwarded-For")),
+                normalizeHeader(request.getHeader("X-Real-IP")),
+                trustProxyHeaders,
+                trustedProxy,
+                trustedProxyNetworks,
+                clientIp,
+                IpAddressUtils.isPublicIp(clientIp),
+                suspectedBot
+        );
     }
 
     private String hashVisitorKey(UUID qrLinkId, String clientIp, String userAgent) {

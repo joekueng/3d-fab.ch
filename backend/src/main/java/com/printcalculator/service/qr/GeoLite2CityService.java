@@ -27,6 +27,7 @@ public class GeoLite2CityService {
     private final boolean geoEnabled;
     private final Path databasePath;
     private final List<String> locales;
+    private final boolean debugLogging;
     private final Object readerLock = new Object();
     private final AtomicBoolean missingDatabaseLogged = new AtomicBoolean(false);
 
@@ -35,31 +36,62 @@ public class GeoLite2CityService {
     public GeoLite2CityService(
             @Value("${app.qr.geo.enabled:false}") boolean geoEnabled,
             @Value("${app.qr.geo.db-path:/app/cache/geoip/GeoLite2-City.mmdb}") String databasePath,
-            @Value("${app.qr.geo.locales:it,en}") String localesCsv
+            @Value("${app.qr.geo.locales:it,en}") String localesCsv,
+            @Value("${app.qr.debug-logging:false}") boolean debugLogging
     ) {
         this.geoEnabled = geoEnabled;
         this.databasePath = Path.of(databasePath);
         this.locales = parseLocales(localesCsv);
+        this.debugLogging = debugLogging;
     }
 
     public Optional<GeoLocation> lookup(String clientIp) {
         if (!geoEnabled) {
+            if (debugLogging) {
+                logger.info("QR geo debug: lookup skipped because geo is disabled");
+            }
             return Optional.empty();
         }
 
         String normalizedIp = IpAddressUtils.normalizeIp(clientIp);
-        if (normalizedIp == null || !IpAddressUtils.isPublicIp(normalizedIp)) {
+        if (normalizedIp == null) {
+            if (debugLogging) {
+                logger.info("QR geo debug: lookup skipped because client IP is invalid. rawClientIp={}", clientIp);
+            }
+            return Optional.empty();
+        }
+
+        if (!IpAddressUtils.isPublicIp(normalizedIp)) {
+            if (debugLogging) {
+                logger.info("QR geo debug: lookup skipped because client IP is not public. clientIp={}", normalizedIp);
+            }
             return Optional.empty();
         }
 
         DatabaseReader reader = getReader();
         if (reader == null) {
+            if (debugLogging) {
+                logger.info("QR geo debug: lookup skipped because GeoLite2 reader is unavailable. dbPath={}", databasePath);
+            }
             return Optional.empty();
         }
 
         try {
             InetAddress address = InetAddress.getByName(normalizedIp);
-            return reader.tryCity(address).map(this::toGeoLocation);
+            Optional<GeoLocation> location = reader.tryCity(address).map(this::toGeoLocation);
+            if (debugLogging) {
+                if (location.isPresent()) {
+                    GeoLocation value = location.get();
+                    logger.info("QR geo debug: lookup success. clientIp={}, countryCode={}, countryName={}, cityName={}",
+                            normalizedIp,
+                            value.countryCode(),
+                            value.countryName(),
+                            value.cityName());
+                } else {
+                    logger.info("QR geo debug: lookup returned no location. clientIp={}", normalizedIp);
+                }
+            }
+            return location;
         } catch (IOException | GeoIp2Exception ex) {
             logger.warn("GeoLite2 lookup failed for QR scan IP {}", normalizedIp, ex);
             return Optional.empty();

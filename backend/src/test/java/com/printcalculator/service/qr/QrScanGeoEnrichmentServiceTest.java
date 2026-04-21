@@ -2,9 +2,9 @@ package com.printcalculator.service.qr;
 
 import com.printcalculator.entity.QrScanEvent;
 import com.printcalculator.repository.QrScanEventRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -23,8 +23,12 @@ class QrScanGeoEnrichmentServiceTest {
     @Mock
     private GeoLite2CityService geoLite2CityService;
 
-    @InjectMocks
     private QrScanGeoEnrichmentService service;
+
+    @BeforeEach
+    void setUp() {
+        service = new QrScanGeoEnrichmentService(qrScanEventRepository, geoLite2CityService, false);
+    }
 
     @Test
     void enrich_shouldApplyGeoLiteLocationToScan() {
