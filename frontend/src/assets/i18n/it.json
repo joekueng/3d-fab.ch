@@ -615,14 +615,14 @@
       "BASIC": {
         "TOGGLE_HINT": "Per file gia pronti",
         "TITLE": "Preventivo veloce per file 3D gia pronti",
-        "SUBTITLE": "La modalita Base e pensata per chi vuole un prezzo corretto in pochi secondi senza gestire parametri tecnici avanzati.",
+        "SUBTITLE": "La modalita Base, prezzo corretto in pochi secondi senza gestire parametri tecnici avanzati.",
         "UPLOAD_HELP": "Carica un file STL o 3MF gia esportato, scegli materiale e qualita, poi ricevi subito una stima chiara di prezzo e tempo.",
         "WHEN_TO_USE": "Usa Base se il modello e pronto e ti serve soprattutto un preventivo rapido e semplice."
       },
       "ADVANCED": {
         "TOGGLE_HINT": "Piu controllo su stampa e materiale",
-        "TITLE": "Preventivo piu preciso con materiali e impostazioni",
-        "SUBTITLE": "La modalita Avanzata e pensata per chi vuole una stima piu precisa regolando parametri di stampa rilevanti.",
+        "TITLE": "Preventivo più preciso con materiali e impostazioni",
+        "SUBTITLE": "Avanzata per poter modificare tutte le impostazioni di stampa manualmente",
         "UPLOAD_HELP": "Carica il file 3D e imposta materiale, layer, supporti, riempimento e ugello per avvicinare di piu il preventivo alla configurazione finale.",
         "WHEN_TO_USE": "Usa Avanzata se devi confrontare materiali o impostazioni e vuoi piu controllo sul risultato."
       }

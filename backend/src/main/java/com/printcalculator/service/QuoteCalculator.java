@@ -58,7 +58,7 @@ public class QuoteCalculator {
         PrinterMachine machine = machineRepo.findByPrinterDisplayName(machineName).orElse(null);
         if (machine == null) {
              // Try "BambuLab A1" if code was "bambu_a1" logic or just get first active
-             machine = machineRepo.findFirstByIsActiveTrue()
+             machine = machineRepo.findFirstByIsActiveTrueOrderByIdAsc()
                  .orElseThrow(() -> new RuntimeException("No active printer found"));
         }
 
@@ -79,7 +79,7 @@ public class QuoteCalculator {
 
         PrinterMachine machine = machineRepo.findByPrinterDisplayName(machineName).orElse(null);
         if (machine == null) {
-            machine = machineRepo.findFirstByIsActiveTrue()
+            machine = machineRepo.findFirstByIsActiveTrueOrderByIdAsc()
                     .orElseThrow(() -> new RuntimeException("No active printer found"));
         }
 

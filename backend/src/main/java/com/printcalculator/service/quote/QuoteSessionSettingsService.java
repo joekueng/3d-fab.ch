@@ -4,16 +4,20 @@ import com.printcalculator.dto.PrintSettingsDto;
 import com.printcalculator.entity.FilamentMaterialType;
 import com.printcalculator.entity.FilamentVariant;
 import com.printcalculator.entity.PrinterMachine;
+import com.printcalculator.entity.PrinterMachineProfile;
 import com.printcalculator.entity.QuoteSession;
 import com.printcalculator.repository.FilamentMaterialTypeRepository;
 import com.printcalculator.repository.FilamentVariantRepository;
 import com.printcalculator.repository.PrinterMachineRepository;
 import com.printcalculator.service.NozzleLayerHeightPolicyService;
+import com.printcalculator.service.OrcaProfileResolver;
+import com.printcalculator.service.ProfileManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -23,15 +27,21 @@ public class QuoteSessionSettingsService {
     private final FilamentMaterialTypeRepository materialRepo;
     private final FilamentVariantRepository variantRepo;
     private final NozzleLayerHeightPolicyService nozzleLayerHeightPolicyService;
+    private final OrcaProfileResolver orcaProfileResolver;
+    private final ProfileManager profileManager;
 
     public QuoteSessionSettingsService(PrinterMachineRepository machineRepo,
                                        FilamentMaterialTypeRepository materialRepo,
                                        FilamentVariantRepository variantRepo,
-                                       NozzleLayerHeightPolicyService nozzleLayerHeightPolicyService) {
+                                       NozzleLayerHeightPolicyService nozzleLayerHeightPolicyService,
+                                       OrcaProfileResolver orcaProfileResolver,
+                                       ProfileManager profileManager) {
         this.machineRepo = machineRepo;
         this.materialRepo = materialRepo;
         this.variantRepo = variantRepo;
         this.nozzleLayerHeightPolicyService = nozzleLayerHeightPolicyService;
+        this.orcaProfileResolver = orcaProfileResolver;
+        this.profileManager = profileManager;
     }
 
     public void applyPrintSettings(PrintSettingsDto settings) {
@@ -115,8 +125,49 @@ public class QuoteSessionSettingsService {
             return selected;
         }
 
-        return machineRepo.findFirstByIsActiveTrue()
+        return machineRepo.findFirstByIsActiveTrueOrderByIdAsc()
                 .orElseThrow(() -> new RuntimeException("No active printer found"));
+    }
+
+    public PrinterMachine resolvePrinterMachine(Long printerMachineId,
+                                                BigDecimal nozzleDiameter,
+                                                BigDecimal layerHeight,
+                                                String qualityHint) {
+        return resolvePrinterMachineCandidates(printerMachineId, nozzleDiameter, layerHeight, qualityHint).get(0);
+    }
+
+    public List<PrinterMachine> resolvePrinterMachineCandidates(Long printerMachineId,
+                                                                BigDecimal nozzleDiameter,
+                                                                BigDecimal layerHeight,
+                                                                String qualityHint) {
+        if (printerMachineId != null) {
+            PrinterMachine selected = resolvePrinterMachine(printerMachineId);
+            if (supportsNozzleAndLayer(selected, nozzleDiameter, layerHeight, qualityHint)) {
+                return List.of(selected);
+            }
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Selected printer machine does not support nozzle "
+                            + nozzleDiameter.stripTrailingZeros().toPlainString()
+                            + " and layer height "
+                            + layerHeight.stripTrailingZeros().toPlainString()
+            );
+        }
+
+        List<PrinterMachine> matchingMachines = machineRepo.findByIsActiveTrueOrderByIdAsc().stream()
+                .filter(machine -> supportsNozzleAndLayer(machine, nozzleDiameter, layerHeight, qualityHint))
+                .toList();
+        if (!matchingMachines.isEmpty()) {
+            return matchingMachines;
+        }
+
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "No active printer supports nozzle "
+                        + nozzleDiameter.stripTrailingZeros().toPlainString()
+                        + " and layer height "
+                        + layerHeight.stripTrailingZeros().toPlainString()
+        );
     }
 
     public FilamentVariant resolveFilamentVariant(PrintSettingsDto settings) {
@@ -172,6 +223,34 @@ public class QuoteSessionSettingsService {
             return "extra_fine";
         }
         return "standard";
+    }
+
+    private boolean supportsNozzleAndLayer(PrinterMachine machine,
+                                           BigDecimal nozzleDiameter,
+                                           BigDecimal layerHeight,
+                                           String qualityHint) {
+        if (machine == null || nozzleDiameter == null || layerHeight == null) {
+            return false;
+        }
+
+        PrinterMachineProfile machineProfile = orcaProfileResolver.resolveMachineProfile(machine, nozzleDiameter)
+                .orElse(null);
+        if (machineProfile == null) {
+            return false;
+        }
+
+        BigDecimal resolvedNozzle = nozzleLayerHeightPolicyService.normalizeNozzle(machineProfile.getNozzleDiameterMm());
+        BigDecimal requestedNozzle = nozzleLayerHeightPolicyService.normalizeNozzle(nozzleDiameter);
+        if (resolvedNozzle == null || requestedNozzle == null || resolvedNozzle.compareTo(requestedNozzle) != 0) {
+            return false;
+        }
+
+        String machineProfileName = machineProfile.getOrcaMachineProfileName();
+        if (machineProfileName == null || machineProfileName.isBlank()) {
+            return false;
+        }
+
+        return profileManager.findCompatibleProcessProfileName(machineProfileName, layerHeight, qualityHint).isPresent();
     }
 
     public record NozzleLayerSettings(BigDecimal nozzleDiameter, BigDecimal layerHeight) {

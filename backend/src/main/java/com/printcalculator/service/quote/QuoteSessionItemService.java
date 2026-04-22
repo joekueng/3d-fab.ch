@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -100,9 +101,14 @@ public class QuoteSessionItemService {
             QuoteSessionSettingsService.NozzleLayerSettings nozzleAndLayer = settingsService.resolveNozzleAndLayer(settings);
             BigDecimal nozzleDiameter = nozzleAndLayer.nozzleDiameter();
             BigDecimal layerHeight = nozzleAndLayer.layerHeight();
-
-            PrinterMachine machine = settingsService.resolvePrinterMachine(settings.getPrinterMachineId());
             FilamentVariant selectedVariant = settingsService.resolveFilamentVariant(settings);
+            String qualityHint = settingsService.resolveQuality(settings, layerHeight);
+            List<PrinterMachine> candidateMachines = settingsService.resolvePrinterMachineCandidates(
+                    settings.getPrinterMachineId(),
+                    nozzleDiameter,
+                    layerHeight,
+                    qualityHint
+            );
 
             validateCadMaterialLock(session, cadSession, selectedVariant);
 
@@ -115,14 +121,6 @@ public class QuoteSessionItemService {
                 session.setSupportsEnabled(settings.getSupportsEnabled() != null ? settings.getSupportsEnabled() : false);
                 sessionRepo.save(session);
             }
-
-            OrcaProfileResolver.ResolvedProfiles profiles = orcaProfileResolver.resolve(machine, nozzleDiameter, selectedVariant);
-            String processProfile = resolveProcessProfile(
-                    settings,
-                    profiles.machineProfileName(),
-                    nozzleDiameter,
-                    layerHeight
-            );
 
             Map<String, String> processOverrides = new HashMap<>();
             processOverrides.put("layer_height", layerHeight.stripTrailingZeros().toPlainString());
@@ -143,36 +141,64 @@ public class QuoteSessionItemService {
                 slicerService.convert3mfToPersistentStl(persistentPath.toFile(), convertedPersistentPath);
             }
 
-            PrintStats stats = slicerService.slice(
-                    slicerInputPath.toFile(),
-                    profiles.machineProfileName(),
-                    profiles.filamentProfileName(),
-                    processProfile,
-                    null,
-                    processOverrides
-            );
+            Exception lastFailure = null;
+            for (PrinterMachine machine : candidateMachines) {
+                try {
+                    OrcaProfileResolver.ResolvedProfiles profiles = orcaProfileResolver.resolve(machine, nozzleDiameter, selectedVariant);
+                    String processProfile = resolveProcessProfile(
+                            settings,
+                            profiles.machineProfileName(),
+                            nozzleDiameter,
+                            layerHeight,
+                            qualityHint
+                    );
 
-            Optional<ModelDimensions> modelDimensions = slicerService.inspectModelDimensions(slicerInputPath.toFile());
-            if (modelDimensions.isEmpty() && convertedPersistentPath != null) {
-                modelDimensions = slicerService.inspectModelDimensions(convertedPersistentPath.toFile());
+                    PrintStats stats = slicerService.slice(
+                            slicerInputPath.toFile(),
+                            profiles.machineProfileName(),
+                            profiles.filamentProfileName(),
+                            processProfile,
+                            null,
+                            processOverrides
+                    );
+
+                    Optional<ModelDimensions> modelDimensions = slicerService.inspectModelDimensions(slicerInputPath.toFile());
+                    if (modelDimensions.isEmpty() && convertedPersistentPath != null) {
+                        modelDimensions = slicerService.inspectModelDimensions(convertedPersistentPath.toFile());
+                    }
+                    QuoteResult result = quoteCalculator.calculate(stats, machine.getPrinterDisplayName(), selectedVariant);
+
+                    QuoteLineItem item = buildLineItem(
+                            session,
+                            file.getOriginalFilename(),
+                            settings,
+                            selectedVariant,
+                            nozzleDiameter,
+                            layerHeight,
+                            stats,
+                            result,
+                            modelDimensions,
+                            persistentPath,
+                            convertedPersistentPath
+                    );
+
+                    return lineItemRepo.save(item);
+                } catch (Exception ex) {
+                    lastFailure = ex;
+                }
             }
-            QuoteResult result = quoteCalculator.calculate(stats, machine.getPrinterDisplayName(), selectedVariant);
 
-            QuoteLineItem item = buildLineItem(
-                    session,
-                    file.getOriginalFilename(),
-                    settings,
-                    selectedVariant,
-                    nozzleDiameter,
-                    layerHeight,
-                    stats,
-                    result,
-                    modelDimensions,
-                    persistentPath,
-                    convertedPersistentPath
-            );
+            if (lastFailure instanceof RuntimeException runtimeException) {
+                throw runtimeException;
+            }
+            if (lastFailure instanceof IOException ioException) {
+                throw ioException;
+            }
+            if (lastFailure != null) {
+                throw new RuntimeException(lastFailure);
+            }
 
-            return lineItemRepo.save(item);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No active printer could process the selected configuration");
         } catch (Exception e) {
             Files.deleteIfExists(persistentPath);
             if (convertedPersistentPath != null) {
@@ -201,12 +227,12 @@ public class QuoteSessionItemService {
     private String resolveProcessProfile(PrintSettingsDto settings,
                                          String machineProfileName,
                                          BigDecimal nozzleDiameter,
-                                         BigDecimal layerHeight) {
+                                         BigDecimal layerHeight,
+                                         String qualityHint) {
         if (machineProfileName == null || machineProfileName.isBlank() || layerHeight == null) {
             return resolveLegacyProcessProfile(settings);
         }
 
-        String qualityHint = settingsService.resolveQuality(settings, layerHeight);
         return profileManager
                 .findCompatibleProcessProfileName(machineProfileName, layerHeight, qualityHint)
                 .orElseThrow(() -> new ResponseStatusException(
