@@ -101,6 +101,32 @@ Operativamente:
 - il frontend usa `<picture>` e preferisce AVIF/WEBP con fallback JPEG, senza usare l'originale
 - nel back-office frontend la gestione operativa della home passa dalla pagina `admin/home-media`
 
+## QR tracking e geolocalizzazione
+
+Il tracking QR deduce la posizione solo dall'IP pubblico visto dal backend tramite GeoLite2 City. Non usa GPS: citta e regione sono sempre stime, mentre il paese e in genere piu affidabile.
+
+Per avere location affidabili dietro reverse proxy, Nginx deve inoltrare l'IP reale e il backend deve fidarsi solo della rete del proxy:
+
+```nginx
+location /api/ {
+    proxy_pass http://127.0.0.1:${BACKEND_PORT};
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Forwarded "";
+}
+```
+
+Configurazione runtime attesa:
+
+- `APP_QR_TRUST_PROXY_HEADERS=true`
+- `APP_QR_TRUSTED_PROXY_NETWORKS=172.16.0.0/12` se il backend riceve richieste dal bridge Docker, oppure la CIDR esatta mostrata nei log `remoteAddrNormalized`
+- `APP_QR_GEO_ENABLED=true`
+- `APP_QR_GEO_DB_PATH=/app/cache/geoip/GeoLite2-City.mmdb` con il file montato e leggibile nel container
+
+`APP_QR_DEBUG_LOGGING=true` aiuta a diagnosticare `remoteAddr`, header proxy e IP risolto, ma registra IP nei log: usarlo solo durante il debug.
+
 ## Troubleshooting
 
 ### Percorso OrcaSlicer

@@ -32,6 +32,41 @@ class QrTrackingRequestServiceTest {
     }
 
     @Test
+    void resolveClientIp_shouldUseRightMostPublicUntrustedForwardedForValue_WhenHeaderContainsSpoofedPrefix() {
+        QrTrackingRequestService service = new QrTrackingRequestService("secret", true, "172.20.0.0/16", false);
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getHeader("X-Forwarded-For")).thenReturn("198.51.100.99, 8.8.8.8");
+        when(request.getHeader("X-Real-IP")).thenReturn(null);
+        when(request.getRemoteAddr()).thenReturn("172.20.0.2");
+
+        assertEquals("8.8.8.8", service.resolveClientIp(request));
+    }
+
+    @Test
+    void resolveClientIp_shouldSupportStandardForwardedHeader_WhenRequestComesFromTrustedProxy() {
+        QrTrackingRequestService service = new QrTrackingRequestService("secret", true, "172.20.0.0/16", false);
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getHeader("Forwarded")).thenReturn("for=8.8.4.4;proto=https, for=172.20.0.2");
+        when(request.getHeader("X-Forwarded-For")).thenReturn(null);
+        when(request.getHeader("X-Real-IP")).thenReturn(null);
+        when(request.getRemoteAddr()).thenReturn("172.20.0.2");
+
+        assertEquals("8.8.4.4", service.resolveClientIp(request));
+    }
+
+    @Test
+    void resolveClientIp_shouldPreferForwardedForOverForwarded_WhenBothHeadersExist() {
+        QrTrackingRequestService service = new QrTrackingRequestService("secret", true, "172.20.0.0/16", false);
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getHeader("Forwarded")).thenReturn("for=1.1.1.1");
+        when(request.getHeader("X-Forwarded-For")).thenReturn("8.8.8.8");
+        when(request.getHeader("X-Real-IP")).thenReturn(null);
+        when(request.getRemoteAddr()).thenReturn("172.20.0.2");
+
+        assertEquals("8.8.8.8", service.resolveClientIp(request));
+    }
+
+    @Test
     void resolveClientIp_shouldFallbackToRealIp_WhenRequestComesFromTrustedProxy() {
         QrTrackingRequestService service = new QrTrackingRequestService("secret", true, "172.20.0.0/16", false);
         HttpServletRequest request = mock(HttpServletRequest.class);
