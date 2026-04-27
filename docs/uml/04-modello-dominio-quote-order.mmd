@@ -1,0 +1,164 @@
+classDiagram
+    direction LR
+
+    class QuoteSession {
+        +UUID id
+        +String status
+        +String sessionType
+        +String materialCode
+        +BigDecimal setupCostChf
+        +BigDecimal cadHours
+        +BigDecimal cadHourlyRateChf
+        +UUID convertedOrderId
+    }
+
+    class QuoteLineItem {
+        +UUID id
+        +String lineItemType
+        +String originalFilename
+        +String displayName
+        +Integer quantity
+        +String materialCode
+        +String quality
+        +BigDecimal nozzleDiameterMm
+        +BigDecimal layerHeightMm
+        +Integer printTimeSeconds
+        +BigDecimal materialGrams
+        +BigDecimal unitPriceChf
+        +String storedPath
+    }
+
+    class Customer {
+        +UUID id
+        +String customerType
+        +String email
+        +String phone
+    }
+
+    class Order {
+        +UUID id
+        +String status
+        +String sourceType
+        +String preferredLanguage
+        +BigDecimal subtotalChf
+        +BigDecimal setupCostChf
+        +BigDecimal shippingCostChf
+        +BigDecimal cadTotalChf
+        +BigDecimal totalChf
+    }
+
+    class OrderItem {
+        +UUID id
+        +String itemType
+        +String displayName
+        +Integer quantity
+        +String materialCode
+        +BigDecimal unitPriceChf
+        +BigDecimal lineTotalChf
+        +String storedRelativePath
+    }
+
+    class Payment {
+        +UUID id
+        +String method
+        +String status
+        +BigDecimal amountChf
+        +OffsetDateTime initiatedAt
+        +OffsetDateTime reportedAt
+        +OffsetDateTime receivedAt
+    }
+
+    class ShopProduct {
+        +UUID id
+        +String slug
+        +String name
+        +Boolean isFeatured
+    }
+
+    class ShopProductVariant {
+        +UUID id
+        +String sku
+        +String variantLabel
+        +String colorName
+        +String internalMaterialCode
+        +BigDecimal priceChf
+    }
+
+    class FilamentMaterialType {
+        +Long id
+        +String materialCode
+        +Boolean isFlexible
+        +Boolean isTechnical
+    }
+
+    class FilamentVariant {
+        +Long id
+        +String variantDisplayName
+        +String colorName
+        +BigDecimal costChfPerKg
+        +BigDecimal stockSpools
+    }
+
+    class PricingPolicy {
+        +Long id
+        +String policyName
+        +BigDecimal markupPercent
+        +BigDecimal fixedJobFeeChf
+        +BigDecimal cadCostChfPerHour
+    }
+
+    class PricingPolicyMachineHourTier {
+        +Long id
+        +BigDecimal tierStartHours
+        +BigDecimal tierEndHours
+        +BigDecimal machineCostChfPerHour
+    }
+
+    class PrinterMachine {
+        +Long id
+        +String printerDisplayName
+        +Integer buildVolumeXMm
+        +Integer buildVolumeYMm
+        +Integer buildVolumeZMm
+        +Integer powerWatts
+    }
+
+    class PrinterMachineProfile {
+        +Long id
+        +BigDecimal nozzleDiameterMm
+        +String orcaMachineProfileName
+        +Boolean isDefault
+    }
+
+    class MaterialOrcaProfileMap {
+        +Long id
+        +String orcaFilamentProfileName
+        +Boolean isActive
+    }
+
+    class NozzleOption {
+        +Long id
+        +BigDecimal nozzleDiameterMm
+        +BigDecimal extraNozzleChangeFeeChf
+    }
+
+    QuoteSession "1" --> "*" QuoteLineItem : contiene
+    QuoteSession "1" --> "0..1" Order : convertita in
+    Order "*" --> "1" Customer : appartiene a
+    Order "1" --> "*" OrderItem : contiene
+    Order "1" --> "0..1" Payment : pagamento
+
+    ShopProduct "1" --> "*" ShopProductVariant : offre
+    QuoteLineItem "*" --> "0..1" ShopProductVariant : origine shop opzionale
+    OrderItem "*" --> "0..1" ShopProductVariant : origine shop opzionale
+
+    QuoteLineItem "*" --> "0..1" FilamentVariant : filamento di stampa
+    OrderItem "*" --> "0..1" FilamentVariant : filamento di produzione
+    FilamentVariant "*" --> "1" FilamentMaterialType : tipizzato come
+
+    PricingPolicy "1" --> "*" PricingPolicyMachineHourTier : fasce costo macchina
+    PrinterMachine "1" --> "*" PrinterMachineProfile : profili Orca
+    MaterialOrcaProfileMap "*" --> "1" PrinterMachineProfile : per macchina/ugello
+    MaterialOrcaProfileMap "*" --> "1" FilamentMaterialType : per materiale
+
+    QuoteLineItem ..> NozzleOption : setup fee extra per mix ugelli

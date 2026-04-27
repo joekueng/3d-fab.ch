@@ -1,0 +1,57 @@
+sequenceDiagram
+    actor Customer
+    participant UI as CalculatorPage
+    participant FE as QuoteEstimatorService
+    participant QS as QuoteSessionController
+    participant IS as QuoteSessionItemService
+    participant AV as ClamAVService
+    participant CFG as QuoteSessionSettingsService
+    participant PR as OrcaProfileResolver
+    participant SL as SlicerService
+    participant PM as ProfileManager
+    participant OS as OrcaSlicer CLI
+    participant GC as GCodeParser
+    participant QC as QuoteCalculator
+    participant DB as PostgreSQL
+
+    Customer->>UI: upload STL/3MF and set material, quality, and quantity
+    UI->>FE: calculate(request)
+    FE->>QS: POST /api/quote-sessions
+    QS-->>FE: sessionId
+
+    loop for each file
+        FE->>QS: POST /api/quote-sessions/{id}/line-items
+        QS->>IS: addItemToSession(session, file, settings)
+        IS->>AV: scan(file)
+        IS->>CFG: apply defaults and validate nozzle/layer/material
+        IS->>PR: resolve(machine, nozzle, variant)
+        PR->>DB: read machine/material/profile mappings
+        PR-->>IS: resolved Orca profiles
+
+        alt 3MF file
+            IS->>SL: convert3mfToPersistentStl(...)
+        end
+
+        IS->>SL: slice(input, machineProfile, filamentProfile, processProfile)
+        SL->>PM: getMergedProfile(...)
+        PM-->>SL: machine/filament/process profiles
+        SL->>OS: headless execution
+        OS-->>SL: G-code
+        SL->>GC: parse(gcode)
+        GC-->>SL: time and material
+        SL-->>IS: PrintStats + ModelDimensions
+
+        IS->>QC: calculate(stats, machine, variant)
+        QC->>DB: pricing policy, tiers, printer, filament
+        QC-->>IS: unit price
+
+        IS->>DB: save QuoteLineItem
+        IS-->>QS: item READY
+        QS-->>FE: line item created
+    end
+
+    FE->>QS: GET /api/quote-sessions/{id}
+    QS->>DB: load session and line items
+    QS->>QS: QuoteSessionTotalsService.compute(...)
+    QS-->>FE: final breakdown
+    FE-->>UI: complete quote

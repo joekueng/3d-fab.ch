@@ -1,0 +1,37 @@
+flowchart TB
+    classDef input fill:#fff6d6,stroke:#a66c00,color:#222;
+    classDef process fill:#e8f0ff,stroke:#2f5bd1,color:#222;
+    classDef core fill:#e9f8ef,stroke:#2f8f46,color:#222;
+    classDef data fill:#f5ebff,stroke:#7c49c9,color:#222;
+
+    Customer[Customer]:::input
+    Admin[Admin]:::input
+
+    Calculator[Calculator self service]:::process
+    Shop[Shop catalog + cart]:::process
+    Request[Custom quote request]:::process
+
+    QuoteSession[QuoteSession ACTIVE<br/>sessionType = PRINT_QUOTE]:::data
+    CartSession[QuoteSession ACTIVE<br/>sessionType = SHOP_CART]:::data
+    ContactRequest[CustomQuoteRequest PENDING]:::data
+    CadSession[QuoteSession CAD_ACTIVE]:::data
+
+    Checkout[Checkout<br/>/checkout or /checkout/cad]:::process
+    OrderEngine[OrderService]:::core
+    OrderData[(Order + OrderItems + Payment)]:::data
+    Docs[Confirmation PDF + QR bill + email]:::core
+
+    Customer --> Calculator --> QuoteSession
+    Customer --> Shop --> CartSession
+    Customer --> Request --> ContactRequest
+
+    ContactRequest --> Admin
+    Admin -->|CAD total and invoice| CadSession
+
+    QuoteSession --> Checkout
+    CartSession --> Checkout
+    CadSession --> Checkout
+
+    Checkout --> OrderEngine
+    OrderEngine --> OrderData
+    OrderEngine --> Docs

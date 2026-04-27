@@ -1,0 +1,47 @@
+flowchart TB
+    classDef actor fill:#fff6d6,stroke:#a66c00,color:#222;
+    classDef app fill:#e8f0ff,stroke:#2f5bd1,color:#222;
+    classDef core fill:#e9f8ef,stroke:#2f8f46,color:#222;
+    classDef data fill:#f5ebff,stroke:#7c49c9,color:#222;
+    classDef ext fill:#fff0eb,stroke:#c45a1a,color:#222;
+    classDef note fill:#f7f7f7,stroke:#666,color:#222;
+
+    Customer[Customer]:::actor
+    Admin[Admin]:::actor
+
+    Frontend[Frontend Angular SSR:<br/>public app + admin app]:::app
+    Backend[Spring Boot backend:<br/>API, pricing, shop, orders, media, QR]:::core
+
+    subgraph DbLayer[PostgreSQL]
+        ConfigDb[Production and pricing configuration:<br/>policies, tiers, machines, materials, Orca profiles]:::data
+        WorkflowDb[Quote and order workflow:<br/>quote sessions, line items, orders, items, payments, customers]:::data
+        ContentDb[Catalog and content:<br/>shop, media, QR tracking, custom requests]:::data
+    end
+
+    subgraph FsLayer[Application filesystem]
+        QuoteFs[storage_quotes:<br/>quote STL and 3MF files]:::data
+        OrderFs[storage_orders:<br/>order files, PDFs, QR bill]:::data
+        ShopFs[storage_shop:<br/>3D models for shop products]:::data
+        MediaFs[storage_media:<br/>originals and public/private variants]:::data
+        RequestFs[storage_requests:<br/>custom request attachments]:::data
+    end
+
+    subgraph Runtime[Runtime integrations]
+        Slicer[OrcaSlicer CLI]:::ext
+        Ffmpeg[FFmpeg]:::ext
+        Clam[ClamAV]:::ext
+        Mail[SMTP]:::ext
+        Geo[GeoLite2 City]:::ext
+    end
+
+    Note1[DB = state, relationships, and metadata]:::note
+    Note2[Filesystem = heavy binary files]:::note
+
+    Customer --> Frontend
+    Admin --> Frontend
+    Frontend --> Backend
+    Backend --> DbLayer
+    Backend --> FsLayer
+    Backend --> Runtime
+    Note1 -.-> DbLayer
+    Note2 -.-> FsLayer
