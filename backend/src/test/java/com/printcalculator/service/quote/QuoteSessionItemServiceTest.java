@@ -135,9 +135,10 @@ class QuoteSessionItemServiceTest {
         BigDecimal layer = new BigDecimal("0.200");
         when(settingsService.resolveNozzleAndLayer(settings))
                 .thenReturn(new QuoteSessionSettingsService.NozzleLayerSettings(nozzle, layer));
-        when(settingsService.resolvePrinterMachine(settings.getPrinterMachineId())).thenReturn(machine);
         when(settingsService.resolveFilamentVariant(settings)).thenReturn(variant);
         when(settingsService.resolveQuality(settings, layer)).thenReturn("standard");
+        when(settingsService.resolvePrinterMachineCandidates(settings.getPrinterMachineId(), nozzle, layer, "standard"))
+                .thenReturn(java.util.List.of(machine));
         when(profileManager.findCompatibleProcessProfileName("Bambu Lab A1 0.4 nozzle", layer, "standard"))
                 .thenReturn(Optional.of("0.20mm Standard @BBL A1"));
         when(orcaProfileResolver.resolve(machine, nozzle, variant))

@@ -204,6 +204,16 @@ create table layer_height_profile
     constraint chk_layer_range check (max_layer_height_mm >= min_layer_height_mm)
 );
 
+create table if not exists nozzle_layer_height_option
+(
+    nozzle_layer_height_option_id bigserial primary key,
+    nozzle_diameter_mm            numeric(4, 2) not null,
+    layer_height_mm               numeric(5, 3) not null,
+    is_active                     boolean       not null default true,
+    constraint ux_nozzle_layer_height_option_nozzle_layer
+        unique (nozzle_diameter_mm, layer_height_mm)
+);
+
 
 begin;
 
@@ -286,6 +296,33 @@ values ('BambuLab A1',
         256,
         256,
         150, -- hai detto "150, 140": qui ho messo 150
+        1.000,
+        true)
+on conflict (printer_display_name) do update
+    set build_volume_x_mm = excluded.build_volume_x_mm,
+        build_volume_y_mm = excluded.build_volume_y_mm,
+        build_volume_z_mm = excluded.build_volume_z_mm,
+        power_watts       = excluded.power_watts,
+        fleet_weight      = excluded.fleet_weight,
+        is_active         = excluded.is_active;
+
+-- =========================================================
+-- 2b) Stampante: BambuLab P2S
+-- Dati di build dal profilo Orca locale; potenza assunta a 350W
+-- finche' non viene confermata da una scheda tecnica ufficiale.
+-- =========================================================
+insert into printer_machine (printer_display_name,
+                             build_volume_x_mm,
+                             build_volume_y_mm,
+                             build_volume_z_mm,
+                             power_watts,
+                             fleet_weight,
+                             is_active)
+values ('BambuLab P2S',
+        256,
+        256,
+        256,
+        350,
         1.000,
         true)
 on conflict (printer_display_name) do update
@@ -517,6 +554,45 @@ on conflict (nozzle_diameter_mm) do update
         is_active                   = excluded.is_active;
 
 -- =========================================================
+-- 5a) Layer heights per nozzle (policy globale)
+-- Unione conservativa dei layer emersi dai profili Bambu usati
+-- localmente, cosi' l'intersezione con i process profile non tronca
+-- opzioni valide per A1/P2S.
+-- =========================================================
+insert into nozzle_layer_height_option (nozzle_diameter_mm,
+                                        layer_height_mm,
+                                        is_active)
+values (0.20, 0.040, true),
+       (0.20, 0.060, true),
+       (0.20, 0.080, true),
+       (0.20, 0.100, true),
+       (0.20, 0.120, true),
+       (0.20, 0.140, true),
+       (0.40, 0.080, true),
+       (0.40, 0.120, true),
+       (0.40, 0.160, true),
+       (0.40, 0.200, true),
+       (0.40, 0.240, true),
+       (0.40, 0.280, true),
+       (0.60, 0.160, true),
+       (0.60, 0.180, true),
+       (0.60, 0.200, true),
+       (0.60, 0.240, true),
+       (0.60, 0.300, true),
+       (0.60, 0.360, true),
+       (0.60, 0.420, true),
+       (0.80, 0.200, true),
+       (0.80, 0.240, true),
+       (0.80, 0.280, true),
+       (0.80, 0.320, true),
+       (0.80, 0.360, true),
+       (0.80, 0.400, true),
+       (0.80, 0.480, true),
+       (0.80, 0.560, true)
+on conflict (nozzle_diameter_mm, layer_height_mm) do update
+    set is_active = excluded.is_active;
+
+-- =========================================================
 -- 5b) Orca machine/material mapping (data-driven)
 -- =========================================================
 with a1 as (select printer_machine_id
@@ -530,6 +606,23 @@ from a1
                             (0.20::numeric, 'Bambu Lab A1 0.2 nozzle', false),
                             (0.60::numeric, 'Bambu Lab A1 0.6 nozzle', false),
                             (0.80::numeric, 'Bambu Lab A1 0.8 nozzle', false))
+             as v(nozzle_diameter_mm, profile_name, is_default)
+on conflict (printer_machine_id, nozzle_diameter_mm) do update
+    set orca_machine_profile_name = excluded.orca_machine_profile_name,
+        is_default                = excluded.is_default,
+        is_active                 = excluded.is_active;
+
+with p2s as (select printer_machine_id
+             from printer_machine
+             where printer_display_name = 'BambuLab P2S')
+insert
+into printer_machine_profile (printer_machine_id, nozzle_diameter_mm, orca_machine_profile_name, is_default, is_active)
+select p2s.printer_machine_id, v.nozzle_diameter_mm, v.profile_name, v.is_default, true
+from p2s
+         cross join (values (0.40::numeric, 'Bambu Lab P2S 0.4 nozzle', true),
+                            (0.20::numeric, 'Bambu Lab P2S 0.2 nozzle', false),
+                            (0.60::numeric, 'Bambu Lab P2S 0.6 nozzle', false),
+                            (0.80::numeric, 'Bambu Lab P2S 0.8 nozzle', false))
              as v(nozzle_diameter_mm, profile_name, is_default)
 on conflict (printer_machine_id, nozzle_diameter_mm) do update
     set orca_machine_profile_name = excluded.orca_machine_profile_name,
@@ -554,6 +647,42 @@ select p.printer_machine_profile_id,
            when 'PETG' then 'Bambu PETG Basic @BBL A1'
            when 'TPU' then 'Bambu TPU 95A @BBL A1'
            when 'PC' then 'Generic PC @BBL A1'
+           end,
+       true
+from p
+         cross join m
+on conflict (printer_machine_profile_id, filament_material_type_id) do update
+    set orca_filament_profile_name = excluded.orca_filament_profile_name,
+        is_active                  = excluded.is_active;
+
+with p as (select pmp.printer_machine_profile_id,
+                  pmp.nozzle_diameter_mm
+           from printer_machine_profile pmp
+                    join printer_machine pm on pm.printer_machine_id = pmp.printer_machine_id
+           where pm.printer_display_name = 'BambuLab P2S'
+             and pmp.nozzle_diameter_mm in (0.40::numeric, 0.60::numeric, 0.80::numeric)),
+     m as (select filament_material_type_id, material_code
+           from filament_material_type
+           where material_code in ('PLA', 'PLA TOUGH', 'PETG', 'TPU', 'PC'))
+insert
+into material_orca_profile_map (printer_machine_profile_id, filament_material_type_id, orca_filament_profile_name, is_active)
+select p.printer_machine_profile_id,
+       m.filament_material_type_id,
+       case
+           when m.material_code = 'PLA' and p.nozzle_diameter_mm = 0.40::numeric
+               then 'Bambu PLA Basic @BBL P2S'
+           when m.material_code = 'PLA' and p.nozzle_diameter_mm = 0.60::numeric
+               then 'Bambu PLA Basic @BBL P2S 0.6 nozzle'
+           when m.material_code = 'PLA' and p.nozzle_diameter_mm = 0.80::numeric
+               then 'Bambu PLA Basic @BBL P2S 0.8 nozzle'
+           when m.material_code = 'PLA TOUGH'
+               then 'Bambu PLA Tough @BBL P2S'
+           when m.material_code = 'PETG'
+               then 'Generic PETG @BBL P2S'
+           when m.material_code = 'TPU'
+               then 'Bambu TPU 95A @BBL P2S'
+           when m.material_code = 'PC'
+               then 'Generic PC @BBL P2S'
            end,
        true
 from p

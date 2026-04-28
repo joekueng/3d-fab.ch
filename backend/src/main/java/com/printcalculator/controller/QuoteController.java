@@ -133,7 +133,7 @@ public class QuoteController {
         clamAVService.scan(file.getInputStream());
 
         // Fetch Default Active Machine
-        PrinterMachine machine = machineRepo.findFirstByIsActiveTrue()
+        PrinterMachine machine = machineRepo.findFirstByIsActiveTrueOrderByIdAsc()
                 .orElseThrow(() -> new IOException("No active printer found in database"));
 
         // Save uploaded file temporarily

@@ -1,4 +1,4 @@
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CalculatorPageComponent } from './calculator-page.component';
 import {
@@ -66,6 +66,7 @@ describe('CalculatorPageComponent', () => {
         'updateLineItem',
         'getQuoteSession',
         'mapSessionToQuoteResult',
+        'calculate',
         'setPendingCalculatorDraft',
         'consumePendingCalculatorDraft',
       ],
@@ -237,5 +238,54 @@ describe('CalculatorPageComponent', () => {
       sameSettingsForAll: true,
       selectedFileName: 'part-a.stl',
     });
+  });
+
+  it('shows partial quote results when some files fail', () => {
+    const { component, estimator } = createComponent();
+    const request = createDraftRequest();
+    const result = createResult('session-1');
+    result.failedItems = [
+      {
+        fileName: 'cube-256.stl',
+        code: 'MODEL_OUT_OF_PRINT_VOLUME',
+        message:
+          'This model could not be placed fully inside the printer volume for Bambu Lab A1 0.4 nozzle.',
+      },
+    ];
+
+    estimator.calculate.and.returnValue(of(result));
+    estimator.getQuoteSession.and.returnValue(
+      of({ session: { id: 'session-1' }, items: [] }),
+    );
+
+    component.onCalculate(request);
+
+    expect(component.error()).toBeFalse();
+    expect(component.result()?.sessionId).toBe('session-1');
+    expect(component.warningMessage()).toContain('cube-256.stl');
+    expect(component.warningMessage()).toContain(
+      'This model could not be placed fully inside the printer volume',
+    );
+  });
+
+  it('shows backend failure message when calculation fails completely', () => {
+    const { component, estimator } = createComponent();
+    const request = createDraftRequest();
+
+    estimator.calculate.and.returnValue(
+      throwError(() => ({
+        fileName: 'cube-257.stl',
+        code: 'MODEL_OUT_OF_PRINT_VOLUME',
+        message:
+          'This model could not be placed fully inside the printer volume for Bambu Lab A1 0.4 nozzle.',
+      })),
+    );
+
+    component.onCalculate(request);
+
+    expect(component.error()).toBeTrue();
+    expect(component.errorMessage()).toBe(
+      'This model could not be placed fully inside the printer volume for Bambu Lab A1 0.4 nozzle.',
+    );
   });
 });

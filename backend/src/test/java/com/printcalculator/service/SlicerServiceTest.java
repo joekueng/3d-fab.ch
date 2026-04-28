@@ -1,5 +1,6 @@
 package com.printcalculator.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.printcalculator.model.ModelDimensions;
 import org.junit.jupiter.api.Test;
 
@@ -75,5 +76,38 @@ class SlicerServiceTest {
         Optional<ModelDimensions> dimensions = SlicerService.parseModelDimensionsFromInfoOutput(output);
 
         assertTrue(dimensions.isEmpty());
+    }
+
+    @Test
+    void extractPrintableVolume_rectangularArea_returnsDimensions() {
+        ObjectMapper mapper = new ObjectMapper();
+        var machineProfile = mapper.createObjectNode();
+        machineProfile.putArray("printable_area")
+                .add("0x0")
+                .add("256x0")
+                .add("256x256")
+                .add("0x256");
+        machineProfile.put("printable_height", "256");
+
+        Optional<PrintableVolume> volume = SlicerService.extractPrintableVolume(machineProfile);
+
+        assertTrue(volume.isPresent());
+        assertEquals(256.0, volume.get().xMm(), 0.000001);
+        assertEquals(256.0, volume.get().yMm(), 0.000001);
+        assertEquals(256.0, volume.get().zMm(), 0.000001);
+    }
+
+    @Test
+    void buildOutOfVolumeMessage_includesModelAndPrinterLimits() {
+        String message = SlicerService.buildOutOfVolumeMessage(
+                "Bambu Lab A1 0.4 nozzle",
+                Optional.of(new ModelDimensions(256.0, 256.0, 256.0)),
+                Optional.of(new PrintableVolume(256.0, 256.0, 256.0))
+        );
+
+        assertTrue(message.contains("Bambu Lab A1 0.4 nozzle"));
+        assertTrue(message.contains("model size 256 x 256 x 256 mm"));
+        assertTrue(message.contains("printer limit 256 x 256 x 256 mm"));
+        assertTrue(message.contains("Reduce the model size or request a consultation."));
     }
 }

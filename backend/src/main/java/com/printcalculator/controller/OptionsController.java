@@ -78,7 +78,8 @@ public class OptionsController {
                         .thenComparing(v -> safeString(v.getVariantDisplayName()), String.CASE_INSENSITIVE_ORDER))
                 .toList();
 
-        Set<Long> compatibleMaterialTypeIds = resolveCompatibleMaterialTypeIds(printerMachineId, nozzleDiameter);
+        List<PrinterMachine> targetMachines = resolveMachines(printerMachineId);
+        Set<Long> compatibleMaterialTypeIds = resolveCompatibleMaterialTypeIds(targetMachines, nozzleDiameter);
 
         List<OptionsResponse.MaterialOption> materialOptions = types.stream()
                 .sorted(Comparator.comparing(t -> safeString(t.getMaterialCode()), String.CASE_INSENSITIVE_ORDER))
@@ -131,15 +132,13 @@ public class OptionsController {
                 new OptionsResponse.InfillPatternOption("cubic", "Cubic")
         );
 
-        PrinterMachine targetMachine = resolveMachine(printerMachineId);
-
-        Set<BigDecimal> supportedMachineNozzles = targetMachine != null
-                ? printerMachineProfileRepo.findByPrinterMachineAndIsActiveTrue(targetMachine).stream()
+        Set<BigDecimal> supportedMachineNozzles = targetMachines.stream()
+                .flatMap(machine -> printerMachineProfileRepo.findByPrinterMachineAndIsActiveTrue(machine).stream())
                 .map(PrinterMachineProfile::getNozzleDiameterMm)
                 .filter(v -> v != null)
                 .map(nozzleLayerHeightPolicyService::normalizeNozzle)
-                .collect(Collectors.toCollection(LinkedHashSet::new))
-                : Set.of();
+                .filter(v -> v != null)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
 
         boolean restrictNozzlesByMachineProfile = !supportedMachineNozzles.isEmpty();
 
@@ -173,10 +172,19 @@ public class OptionsController {
         Map<BigDecimal, List<BigDecimal>> effectiveRulesByNozzle = new LinkedHashMap<>();
         for (BigDecimal nozzle : visibleNozzlesFromOptions) {
             List<BigDecimal> policyLayers = rulesByNozzle.getOrDefault(nozzle, List.of());
-            List<BigDecimal> compatibleProcessLayers = resolveCompatibleProcessLayers(targetMachine, nozzle);
-            List<BigDecimal> effective = mergePolicyAndProcessLayers(policyLayers, compatibleProcessLayers);
-            if (!effective.isEmpty()) {
-                effectiveRulesByNozzle.put(nozzle, effective);
+            Set<BigDecimal> aggregate = new LinkedHashSet<>();
+            for (PrinterMachine machine : targetMachines) {
+                List<BigDecimal> compatibleProcessLayers = resolveCompatibleProcessLayers(machine, nozzle);
+                List<BigDecimal> effective = mergePolicyAndProcessLayers(policyLayers, compatibleProcessLayers);
+                effective.stream()
+                        .map(nozzleLayerHeightPolicyService::normalizeLayer)
+                        .filter(v -> v != null)
+                        .forEach(aggregate::add);
+            }
+            if (!aggregate.isEmpty()) {
+                List<BigDecimal> merged = new ArrayList<>(aggregate);
+                merged.sort(Comparator.naturalOrder());
+                effectiveRulesByNozzle.put(nozzle, merged);
             }
         }
         if (effectiveRulesByNozzle.isEmpty()) {
@@ -235,41 +243,45 @@ public class OptionsController {
         ));
     }
 
-    private Set<Long> resolveCompatibleMaterialTypeIds(Long printerMachineId, Double nozzleDiameter) {
-        PrinterMachine machine = resolveMachine(printerMachineId);
-        if (machine == null) {
+    private Set<Long> resolveCompatibleMaterialTypeIds(List<PrinterMachine> machines, Double nozzleDiameter) {
+        if (machines == null || machines.isEmpty()) {
             return Set.of();
         }
 
-        BigDecimal nozzle = nozzleLayerHeightPolicyService.resolveNozzle(
-                nozzleDiameter != null ? BigDecimal.valueOf(nozzleDiameter) : null
-        );
+        BigDecimal requestedNozzle = nozzleDiameter != null
+                ? nozzleLayerHeightPolicyService.normalizeNozzle(BigDecimal.valueOf(nozzleDiameter))
+                : null;
 
-        PrinterMachineProfile machineProfile = orcaProfileResolver
-                .resolveMachineProfile(machine, nozzle)
-                .orElse(null);
+        Set<Long> materialTypeIds = new LinkedHashSet<>();
+        for (PrinterMachine machine : machines) {
+            List<PrinterMachineProfile> profiles = printerMachineProfileRepo.findByPrinterMachineAndIsActiveTrue(machine);
+            for (PrinterMachineProfile profile : profiles) {
+                BigDecimal profileNozzle = nozzleLayerHeightPolicyService.normalizeNozzle(profile.getNozzleDiameterMm());
+                if (requestedNozzle != null && (profileNozzle == null || profileNozzle.compareTo(requestedNozzle) != 0)) {
+                    continue;
+                }
 
-        if (machineProfile == null) {
-            return Set.of();
+                List<MaterialOrcaProfileMap> maps = materialOrcaMapRepo.findByPrinterMachineProfileAndIsActiveTrue(profile);
+                maps.stream()
+                        .map(MaterialOrcaProfileMap::getFilamentMaterialType)
+                        .filter(m -> m != null && m.getId() != null)
+                        .map(FilamentMaterialType::getId)
+                        .forEach(materialTypeIds::add);
+            }
         }
 
-        List<MaterialOrcaProfileMap> maps = materialOrcaMapRepo.findByPrinterMachineProfileAndIsActiveTrue(machineProfile);
-        return maps.stream()
-                .map(MaterialOrcaProfileMap::getFilamentMaterialType)
-                .filter(m -> m != null && m.getId() != null)
-                .map(FilamentMaterialType::getId)
-                .collect(Collectors.toSet());
+        return materialTypeIds;
     }
 
-    private PrinterMachine resolveMachine(Long printerMachineId) {
-        PrinterMachine machine = null;
+    private List<PrinterMachine> resolveMachines(Long printerMachineId) {
         if (printerMachineId != null) {
-            machine = printerMachineRepo.findById(printerMachineId).orElse(null);
+            PrinterMachine machine = printerMachineRepo.findById(printerMachineId).orElse(null);
+            if (machine == null || !Boolean.TRUE.equals(machine.getIsActive())) {
+                return List.of();
+            }
+            return List.of(machine);
         }
-        if (machine == null) {
-            machine = printerMachineRepo.findFirstByIsActiveTrue().orElse(null);
-        }
-        return machine;
+        return printerMachineRepo.findByIsActiveTrueOrderByIdAsc();
     }
 
     private List<OptionsResponse.LayerHeightOptionDTO> toLayerDtos(List<BigDecimal> layers) {
