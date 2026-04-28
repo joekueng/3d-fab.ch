@@ -18,6 +18,8 @@ import java.util.UUID;
 @Service
 public class QrTrackingRequestService {
     private static final Logger logger = LoggerFactory.getLogger(QrTrackingRequestService.class);
+    private static final String BOT_USER_AGENT_PATTERN =
+            ".*(bot|crawler|spider|slurp|bingpreview|google-read-aloud|headless|skypeuripreview|facebookexternalhit|meta-externalagent|slackbot|discordbot).*";
 
     private final String visitorHashSecret;
     private final boolean trustProxyHeaders;
@@ -63,6 +65,7 @@ public class QrTrackingRequestService {
 
     public String resolveClientIp(HttpServletRequest request) {
         return IpAddressUtils.resolveClientIp(
+                request.getHeader("Forwarded"),
                 request.getHeader("X-Forwarded-For"),
                 request.getHeader("X-Real-IP"),
                 request.getRemoteAddr(),
@@ -76,7 +79,7 @@ public class QrTrackingRequestService {
         if (normalized.isBlank()) {
             return false;
         }
-        return normalized.matches(".*(bot|crawler|spider|slurp|bingpreview|google-read-aloud|headless|preview).*");
+        return normalized.matches(BOT_USER_AGENT_PATTERN);
     }
 
     private void logRequestDebug(UUID qrLinkId,
@@ -88,10 +91,11 @@ public class QrTrackingRequestService {
         boolean trustedProxy = trustProxyHeaders && IpAddressUtils.isTrustedProxy(normalizedRemoteAddress, trustedProxyMatchers);
 
         logger.info(
-                "QR debug: qrLinkId={}, remoteAddrRaw={}, remoteAddrNormalized={}, xForwardedFor={}, xRealIp={}, trustProxyHeaders={}, trustedProxy={}, trustedProxyNetworks={}, resolvedClientIp={}, resolvedClientIpPublic={}, suspectedBot={}",
+                "QR debug: qrLinkId={}, remoteAddrRaw={}, remoteAddrNormalized={}, forwarded={}, xForwardedFor={}, xRealIp={}, trustProxyHeaders={}, trustedProxy={}, trustedProxyNetworks={}, resolvedClientIp={}, resolvedClientIpPublic={}, suspectedBot={}",
                 qrLinkId,
                 normalizeHeader(remoteAddress),
                 normalizedRemoteAddress,
+                normalizeHeader(request.getHeader("Forwarded")),
                 normalizeHeader(request.getHeader("X-Forwarded-For")),
                 normalizeHeader(request.getHeader("X-Real-IP")),
                 trustProxyHeaders,

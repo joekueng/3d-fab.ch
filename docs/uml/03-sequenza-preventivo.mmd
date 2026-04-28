@@ -1,0 +1,57 @@
+sequenceDiagram
+    actor Cliente
+    participant UI as CalculatorPage
+    participant FE as QuoteEstimatorService
+    participant QS as QuoteSessionController
+    participant IS as QuoteSessionItemService
+    participant AV as ClamAVService
+    participant CFG as QuoteSessionSettingsService
+    participant PR as OrcaProfileResolver
+    participant SL as SlicerService
+    participant PM as ProfileManager
+    participant OS as OrcaSlicer CLI
+    participant GC as GCodeParser
+    participant QC as QuoteCalculator
+    participant DB as PostgreSQL
+
+    Cliente->>UI: carica STL/3MF e imposta materiale, qualita e quantita
+    UI->>FE: calculate(request)
+    FE->>QS: POST /api/quote-sessions
+    QS-->>FE: sessionId
+
+    loop per ogni file
+        FE->>QS: POST /api/quote-sessions/{id}/line-items
+        QS->>IS: addItemToSession(session, file, settings)
+        IS->>AV: scan(file)
+        IS->>CFG: applica defaults e valida nozzle/layer/materiale
+        IS->>PR: resolve(machine, nozzle, variant)
+        PR->>DB: legge mapping macchina/materiale/profili
+        PR-->>IS: profili Orca risolti
+
+        alt file 3MF
+            IS->>SL: convert3mfToPersistentStl(...)
+        end
+
+        IS->>SL: slice(input, machineProfile, filamentProfile, processProfile)
+        SL->>PM: getMergedProfile(...)
+        PM-->>SL: profili macchina/filamento/processo
+        SL->>OS: esecuzione headless
+        OS-->>SL: G-code
+        SL->>GC: parse(gcode)
+        GC-->>SL: tempo e materiale
+        SL-->>IS: PrintStats + ModelDimensions
+
+        IS->>QC: calculate(stats, machine, variant)
+        QC->>DB: pricing policy, tiers, printer, filament
+        QC-->>IS: prezzo unitario
+
+        IS->>DB: salva QuoteLineItem
+        IS-->>QS: item READY
+        QS-->>FE: line item creato
+    end
+
+    FE->>QS: GET /api/quote-sessions/{id}
+    QS->>DB: carica sessione e line item
+    QS->>QS: QuoteSessionTotalsService.compute(...)
+    QS-->>FE: breakdown finale
+    FE-->>UI: preventivo completo

@@ -20,7 +20,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -37,6 +36,8 @@ class PublicQrControllerServiceTest {
     private QrLinkSupportService qrLinkSupportService;
     @Mock
     private QrTrackingRequestService qrTrackingRequestService;
+    @Mock
+    private GeoLite2CityService geoLite2CityService;
     @Mock
     private HttpServletRequest request;
 
@@ -58,6 +59,7 @@ class PublicQrControllerServiceTest {
                 qrScanEventRepository,
                 qrLinkSupportService,
                 qrTrackingRequestService,
+                geoLite2CityService,
                 eventPublisher
         );
     }
@@ -84,6 +86,9 @@ class PublicQrControllerServiceTest {
                         OffsetDateTime.parse("2026-04-20T09:00:00+02:00")
                 )
         );
+        when(geoLite2CityService.lookup("203.0.113.10")).thenReturn(
+                Optional.of(new GeoLite2CityService.GeoLocation("CH", "Switzerland", "Zurich", "Zurich"))
+        );
         when(qrScanEventRepository.save(any(QrScanEvent.class))).thenAnswer(invocation -> {
             QrScanEvent event = invocation.getArgument(0);
             event.setId(UUID.randomUUID());
@@ -97,7 +102,8 @@ class PublicQrControllerServiceTest {
         verify(qrScanEventRepository).save(eventCaptor.capture());
         assertEquals("de", eventCaptor.getValue().getResolvedLang());
         assertEquals("abc123", eventCaptor.getValue().getVisitorKeyHash());
-        assertNull(eventCaptor.getValue().getCountryCode());
+        assertEquals("CH", eventCaptor.getValue().getCountryCode());
+        assertEquals("Switzerland", eventCaptor.getValue().getCountryName());
         assertEquals(QrScanRecordedEvent.class, publishedEvent.getClass());
     }
 

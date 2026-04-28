@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface QuoteSessionRepository extends JpaRepository<QuoteSession, UUID> {
-    List<QuoteSession> findByCreatedAtBefore(java.time.OffsetDateTime cutoff);
+    List<QuoteSession> findByExpiresAtBefore(java.time.OffsetDateTime cutoff);
 
     List<QuoteSession> findByStatusInOrderByCreatedAtDesc(List<String> statuses);
 

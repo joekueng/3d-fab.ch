@@ -6,6 +6,7 @@ import com.printcalculator.entity.QuoteSession;
 import com.printcalculator.repository.QuoteLineItemRepository;
 import com.printcalculator.repository.QuoteSessionRepository;
 import com.printcalculator.service.QuoteCalculator;
+import com.printcalculator.service.QuoteSessionExpiryPolicy;
 import com.printcalculator.service.QuoteSessionTotalsService;
 import com.printcalculator.service.quote.QuoteSessionItemService;
 import com.printcalculator.service.quote.QuoteSessionResponseAssembler;
@@ -38,6 +39,7 @@ public class QuoteSessionController {
     private final QuoteSessionItemService quoteSessionItemService;
     private final QuoteStorageService quoteStorageService;
     private final QuoteSessionResponseAssembler quoteSessionResponseAssembler;
+    private final QuoteSessionExpiryPolicy quoteSessionExpiryPolicy;
 
     public QuoteSessionController(QuoteSessionRepository sessionRepo,
                                   QuoteLineItemRepository lineItemRepo,
@@ -46,7 +48,8 @@ public class QuoteSessionController {
                                   QuoteSessionTotalsService quoteSessionTotalsService,
                                   QuoteSessionItemService quoteSessionItemService,
                                   QuoteStorageService quoteStorageService,
-                                  QuoteSessionResponseAssembler quoteSessionResponseAssembler) {
+                                  QuoteSessionResponseAssembler quoteSessionResponseAssembler,
+                                  QuoteSessionExpiryPolicy quoteSessionExpiryPolicy) {
         this.sessionRepo = sessionRepo;
         this.lineItemRepo = lineItemRepo;
         this.quoteCalculator = quoteCalculator;
@@ -55,6 +58,7 @@ public class QuoteSessionController {
         this.quoteSessionItemService = quoteSessionItemService;
         this.quoteStorageService = quoteStorageService;
         this.quoteSessionResponseAssembler = quoteSessionResponseAssembler;
+        this.quoteSessionExpiryPolicy = quoteSessionExpiryPolicy;
     }
 
     @PostMapping(value = "")
@@ -67,7 +71,7 @@ public class QuoteSessionController {
         session.setMaterialCode("PLA");
         session.setSupportsEnabled(false);
         session.setCreatedAt(OffsetDateTime.now());
-        session.setExpiresAt(OffsetDateTime.now().plusDays(30));
+        session.setExpiresAt(quoteSessionExpiryPolicy.newExpiry());
 
         var policy = pricingRepo.findFirstByIsActiveTrueOrderByValidFromDesc();
         session.setSetupCostChf(quoteCalculator.calculateSessionSetupFee(policy));

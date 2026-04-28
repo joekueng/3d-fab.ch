@@ -40,6 +40,8 @@ describe('server routing redirects', () => {
   });
 
   it('does not redirect static files and sitemap resources', () => {
+    expect(resolvePublicRedirectTarget('/go/flyer')).toBeNull();
+    expect(resolvePublicRedirectTarget('/go/flyer/')).toBeNull();
     expect(resolvePublicRedirectTarget('/assets/logo.svg')).toBeNull();
     expect(resolvePublicRedirectTarget('/robots.txt')).toBeNull();
     expect(resolvePublicRedirectTarget('/sitemap.xml')).toBeNull();

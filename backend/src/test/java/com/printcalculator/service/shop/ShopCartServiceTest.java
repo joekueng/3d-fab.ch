@@ -10,6 +10,7 @@ import com.printcalculator.repository.QuoteLineItemRepository;
 import com.printcalculator.repository.QuoteSessionRepository;
 import com.printcalculator.repository.ShopProductModelAssetRepository;
 import com.printcalculator.repository.ShopProductVariantRepository;
+import com.printcalculator.service.QuoteSessionExpiryPolicy;
 import com.printcalculator.service.QuoteSessionTotalsService;
 import com.printcalculator.service.quote.QuoteSessionResponseAssembler;
 import com.printcalculator.service.quote.QuoteStorageService;
@@ -57,6 +58,8 @@ class ShopCartServiceTest {
     private ShopStorageService shopStorageService;
     @Mock
     private ShopCartCookieService shopCartCookieService;
+    @Mock
+    private QuoteSessionExpiryPolicy quoteSessionExpiryPolicy;
 
     private ShopCartService service;
 
@@ -71,7 +74,8 @@ class ShopCartServiceTest {
                 quoteSessionResponseAssembler,
                 new QuoteStorageService(),
                 shopStorageService,
-                shopCartCookieService
+                shopCartCookieService,
+                quoteSessionExpiryPolicy
         );
     }
 
@@ -85,7 +89,7 @@ class ShopCartServiceTest {
         ShopProductVariant variant = buildVariant(variantId);
 
         when(shopCartCookieService.extractSessionId(any())).thenReturn(Optional.empty());
-        when(shopCartCookieService.getCookieTtlDays()).thenReturn(30L);
+        when(quoteSessionExpiryPolicy.newExpiry()).thenReturn(OffsetDateTime.now().plusMonths(6));
         when(shopProductVariantRepository.findById(variantId)).thenReturn(Optional.of(variant));
         when(shopProductModelAssetRepository.findByProduct_Id(variant.getProduct().getId())).thenReturn(Optional.empty());
         when(quoteSessionRepository.save(any(QuoteSession.class))).thenAnswer(invocation -> {
@@ -173,6 +177,7 @@ class ShopCartServiceTest {
         when(shopCartCookieService.hasCartCookie(any())).thenReturn(true);
         when(shopCartCookieService.extractSessionId(any())).thenReturn(Optional.of(sessionId));
         when(quoteSessionRepository.findByIdAndSessionType(sessionId, "SHOP_CART")).thenReturn(Optional.of(session));
+        when(quoteSessionExpiryPolicy.isExpired(session.getExpiresAt())).thenReturn(true);
         when(quoteSessionRepository.save(any(QuoteSession.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(quoteSessionResponseAssembler.emptyCart()).thenReturn(emptyResponse);
 

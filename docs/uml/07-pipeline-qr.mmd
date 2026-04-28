@@ -1,0 +1,39 @@
+flowchart LR
+    classDef actor fill:#fff6d6,stroke:#a66c00,color:#222;
+    classDef service fill:#e8f0ff,stroke:#2f5bd1,color:#222;
+    classDef core fill:#e9f8ef,stroke:#2f8f46,color:#222;
+    classDef data fill:#f5ebff,stroke:#7c49c9,color:#222;
+    classDef ext fill:#fff0eb,stroke:#c45a1a,color:#222;
+
+    Admin[Admin]:::actor
+    Visitor[Utente che scansiona]:::actor
+
+    AdminQrUI[Interfaccia admin QR]:::service
+    AdminQrAPI[AdminQrController]:::service
+    QrLinks[(QrLink)]:::data
+
+    PublicQrAPI[PublicQrController]:::service
+    QrCore[PublicQrControllerService]:::core
+    Tracking[QrTrackingRequestService:<br/>lingua, IP, visitor hash, bot check]:::core
+    ScanEvents[(QrScanEvent)]:::data
+    Redirect[Redirect verso path localizzato]:::service
+    Event[QrScanRecordedEvent]:::core
+    GeoListener[QrScanGeoEnrichmentListener]:::core
+    GeoService[QrScanGeoEnrichmentService]:::core
+    GeoLite[GeoLite2CityService]:::ext
+    GeoDb[(GeoLite2 database)]:::ext
+    Stats[Overview e stats admin]:::service
+
+    Admin --> AdminQrUI --> AdminQrAPI --> QrLinks
+    AdminQrUI --> Stats --> ScanEvents
+
+    Visitor --> PublicQrAPI --> QrCore
+    QrCore --> QrLinks
+    QrCore --> Tracking
+    QrCore --> ScanEvents
+    QrCore --> Redirect
+    QrCore --> Event
+
+    Event --> GeoListener --> GeoService
+    GeoService --> GeoLite --> GeoDb
+    GeoService --> ScanEvents

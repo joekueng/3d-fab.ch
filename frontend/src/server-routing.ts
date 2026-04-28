@@ -76,9 +76,14 @@ function normalizePathname(pathname: string): string {
 function shouldBypassRedirect(pathname: string): boolean {
   if (
     pathname.startsWith('/api/') ||
+    pathname.startsWith('/go/') ||
     pathname.startsWith('/assets/') ||
     pathname.startsWith('/media/')
   ) {
+    return true;
+  }
+
+  if (pathname === '/go') {
     return true;
   }
 
