@@ -43,6 +43,16 @@ type TrackedPrintSettings = {
   supportEnabled: boolean;
 };
 
+type PendingSessionRestore = {
+  session: any;
+  items: any[];
+  files: File[];
+  previewFiles: Array<{
+    index: number;
+    file: File;
+  }>;
+};
+
 @Component({
   selector: 'app-calculator-page',
   standalone: true,
@@ -138,6 +148,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     string,
     TrackedPrintSettings
   >();
+  private pendingSessionRestore: PendingSessionRestore | null = null;
 
   @ViewChild('uploadForm') uploadForm!: UploadFormComponent;
   @ViewChild('resultCol') resultCol!: ElementRef;
@@ -172,6 +183,8 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
+    this.applyPendingSessionRestoreIfNeeded();
+
     const pendingDraft = this.estimator.consumePendingCalculatorDraft();
     if (!pendingDraft || this.currentSessionId()) {
       return;
@@ -280,57 +293,27 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
             }),
         );
 
-        if (this.uploadForm) {
-          this.uploadForm.setFiles(files);
-          results.forEach((res, index) => {
-            if (!res.hasConvertedPreview || !res.previewBlob) {
-              return;
-            }
-            const previewName = res.fileName
-              .replace(/\.[^.]+$/, '')
-              .concat('.stl');
-            const previewFile = new File([res.previewBlob], previewName, {
-              type: 'model/stl',
-            });
-            this.uploadForm.setPreviewFileByIndex(index, previewFile);
-          });
-          this.uploadForm.patchSettings(session);
-
-          items.forEach((item, index) => {
-            // Preserve persisted quantities when restoring from session.
-            // Without this, setFiles() defaults every item back to 1.
-            this.uploadForm.updateItemQuantityByIndex(
-              index,
-              Number(item.quantity || 1),
-            );
-
-            const tracked = this.toTrackedSettingsFromSessionItem(
-              item,
-              this.toTrackedSettingsFromSession(session),
-            );
-            this.uploadForm.setItemPrintSettingsByIndex(index, {
-              material: tracked.material.toUpperCase(),
-              quality: tracked.quality,
-              nozzleDiameter: tracked.nozzleDiameter,
-              layerHeight: tracked.layerHeight,
-              infillDensity: tracked.infillDensity,
-              infillPattern: tracked.infillPattern,
-              supportEnabled: tracked.supportEnabled,
-            });
-
-            if (item.colorCode) {
-              this.uploadForm.updateItemColor(index, {
-                colorName: item.colorCode,
-                filamentVariantId: item.filamentVariantId,
-              });
-            }
-          });
-
-          const selected = this.uploadForm.selectedFile();
-          if (selected) {
-            this.uploadForm.selectFile(selected);
+        const previewFiles = results.flatMap((res, index) => {
+          if (!res.hasConvertedPreview || !res.previewBlob) {
+            return [];
           }
-        }
+
+          const previewName = res.fileName
+            .replace(/\.[^.]+$/, '')
+            .concat('.stl');
+          const previewFile = new File([res.previewBlob], previewName, {
+            type: 'model/stl',
+          });
+          return [{ index, file: previewFile }];
+        });
+
+        this.pendingSessionRestore = {
+          session,
+          items,
+          files,
+          previewFiles,
+        };
+        this.applyPendingSessionRestoreIfNeeded();
         this.loading.set(false);
       },
       error: (err: any) => {
@@ -744,6 +727,57 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
       selectedFileName: this.uploadForm.selectedFile()?.name ?? null,
     };
     this.estimator.setPendingCalculatorDraft(draft);
+  }
+
+  private applyPendingSessionRestoreIfNeeded(): void {
+    if (!this.uploadForm || !this.pendingSessionRestore) {
+      return;
+    }
+
+    const payload = this.pendingSessionRestore;
+    const baselineSessionSettings = this.toTrackedSettingsFromSession(
+      payload.session,
+    );
+
+    this.uploadForm.setFiles(payload.files);
+    payload.previewFiles.forEach((preview) => {
+      this.uploadForm.setPreviewFileByIndex(preview.index, preview.file);
+    });
+    this.uploadForm.patchSettings(payload.session);
+
+    payload.items.forEach((item, index) => {
+      // Preserve persisted quantities when restoring from session.
+      // Without this, setFiles() defaults every item back to 1.
+      this.uploadForm.updateItemQuantityByIndex(index, Number(item.quantity || 1));
+
+      const tracked = this.toTrackedSettingsFromSessionItem(
+        item,
+        baselineSessionSettings,
+      );
+      this.uploadForm.setItemPrintSettingsByIndex(index, {
+        material: tracked.material.toUpperCase(),
+        quality: tracked.quality,
+        nozzleDiameter: tracked.nozzleDiameter,
+        layerHeight: tracked.layerHeight,
+        infillDensity: tracked.infillDensity,
+        infillPattern: tracked.infillPattern,
+        supportEnabled: tracked.supportEnabled,
+      });
+
+      if (item.colorCode) {
+        this.uploadForm.updateItemColor(index, {
+          colorName: item.colorCode,
+          filamentVariantId: item.filamentVariantId,
+        });
+      }
+    });
+
+    const selected = this.uploadForm.selectedFile();
+    if (selected) {
+      this.uploadForm.selectFile(selected);
+    }
+
+    this.pendingSessionRestore = null;
   }
 
   private toTrackedSettingsFromRequest(
