@@ -271,7 +271,10 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
 
   private cancelPendingLoad() {
     this.loadSequence += 1;
-    if (this.activeReader && this.activeReader.readyState === FileReader.LOADING) {
+    if (
+      this.activeReader &&
+      this.activeReader.readyState === FileReader.LOADING
+    ) {
       this.activeReader.abort();
     }
     this.activeReader = null;

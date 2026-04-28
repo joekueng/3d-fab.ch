@@ -435,10 +435,9 @@ describe('CalculatorPageComponent', () => {
     component.ngAfterViewInit();
 
     expect(uploadForm.setFiles).toHaveBeenCalledTimes(1);
-    expect(uploadForm.setFiles).toHaveBeenCalledWith(
-      jasmine.any(Array),
-      { autoSelect: false },
-    );
+    expect(uploadForm.setFiles).toHaveBeenCalledWith(jasmine.any(Array), {
+      autoSelect: false,
+    });
     expect(uploadForm.setPreviewFileByIndex).toHaveBeenCalledWith(
       0,
       jasmine.any(File),
