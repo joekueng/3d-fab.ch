@@ -254,9 +254,11 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     const downloads = items.map((item) =>
       forkJoin({
         originalBlob: this.estimator.getLineItemContent(session.id, item.id),
-        previewBlob: this.estimator
-          .getLineItemContent(session.id, item.id, true)
-          .pipe(catchError(() => of(null))),
+        previewBlob: item?.convertedStoredPath
+          ? this.estimator
+              .getLineItemContent(session.id, item.id, true)
+              .pipe(catchError(() => of(null)))
+          : of(null),
       }).pipe(
         map(({ originalBlob, previewBlob }) => {
           return {

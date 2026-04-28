@@ -65,6 +65,7 @@ describe('CalculatorPageComponent', () => {
       [
         'updateLineItem',
         'getQuoteSession',
+        'getLineItemContent',
         'mapSessionToQuoteResult',
         'calculate',
         'setPendingCalculatorDraft',
@@ -98,6 +99,12 @@ describe('CalculatorPageComponent', () => {
     const uploadForm = jasmine.createSpyObj<UploadFormComponent>(
       'UploadFormComponent',
       [
+        'setFiles',
+        'setPreviewFileByIndex',
+        'patchSettings',
+        'setItemPrintSettingsByIndex',
+        'updateItemColor',
+        'selectFile',
         'updateItemQuantityByIndex',
         'updateItemQuantityByName',
         'getCurrentRequestDraft',
@@ -286,6 +293,54 @@ describe('CalculatorPageComponent', () => {
     expect(component.error()).toBeTrue();
     expect(component.errorMessage()).toBe(
       'This model could not be placed fully inside the printer volume for Bambu Lab A1 0.4 nozzle.',
+    );
+  });
+
+  it('downloads converted previews only for items that expose them', () => {
+    const { component, estimator, uploadForm } = createComponent();
+    const originalBlob = new Blob(['original']);
+    const previewBlob = new Blob(['preview']);
+
+    estimator.getLineItemContent.and.callFake(
+      (_sessionId: string, _lineItemId: string, preview = false) =>
+        of(preview ? previewBlob : originalBlob),
+    );
+    (uploadForm.selectedFile as jasmine.Spy).and.returnValue(null);
+
+    component.restoreFilesAndSettings(
+      {
+        id: 'session-1',
+        materialCode: 'PLA',
+        layerHeightMm: 0.2,
+        nozzleDiameterMm: 0.4,
+        infillPercent: 15,
+        infillPattern: 'grid',
+        supportsEnabled: true,
+      },
+      [
+        {
+          id: 'line-stl',
+          originalFilename: 'legacy.stl',
+          quantity: 1,
+        },
+        {
+          id: 'line-3mf',
+          originalFilename: 'converted.3mf',
+          quantity: 1,
+          convertedStoredPath: 'storage_quotes/session-1/converted.stl',
+        },
+      ],
+    );
+
+    expect(estimator.getLineItemContent.calls.allArgs()).toEqual([
+      ['session-1', 'line-stl'],
+      ['session-1', 'line-3mf'],
+      ['session-1', 'line-3mf', true],
+    ]);
+    expect(uploadForm.setPreviewFileByIndex).toHaveBeenCalledTimes(1);
+    expect(uploadForm.setPreviewFileByIndex).toHaveBeenCalledWith(
+      1,
+      jasmine.any(File),
     );
   });
 });
