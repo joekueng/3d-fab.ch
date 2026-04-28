@@ -727,7 +727,10 @@ export class UploadFormComponent implements OnInit {
       return;
     }
 
-    this.setFiles(request.items.map((item) => item.file), { autoSelect: false });
+    this.setFiles(
+      request.items.map((item) => item.file),
+      { autoSelect: false },
+    );
     this.patchSettings({
       materialCode: request.material,
       quality: request.quality,
