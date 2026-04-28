@@ -107,6 +107,14 @@ public class OrcaProfileResolver {
             return "Bambu Lab A1 " + nozzleForProfile + " nozzle";
         }
 
+        if (displayName.toLowerCase().contains("bambulab p2s") || displayName.toLowerCase().contains("bambu lab p2s")) {
+            String nozzleForProfile = formatNozzleForProfileName(nozzleDiameterMm);
+            if (nozzleForProfile == null) {
+                return "Bambu Lab P2S 0.4 nozzle";
+            }
+            return "Bambu Lab P2S " + nozzleForProfile + " nozzle";
+        }
+
         return displayName;
     }
 

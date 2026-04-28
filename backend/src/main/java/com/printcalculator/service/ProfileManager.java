@@ -52,6 +52,7 @@ public class ProfileManager {
     private void initializeAliases() {
         // Machine Aliases
         profileAliases.put("bambu_a1", "Bambu Lab A1 0.4 nozzle");
+        profileAliases.put("bambu_p2s", "Bambu Lab P2S 0.4 nozzle");
         
         // Material Aliases
         profileAliases.put("pla_basic", "Bambu PLA Basic @BBL A1");
