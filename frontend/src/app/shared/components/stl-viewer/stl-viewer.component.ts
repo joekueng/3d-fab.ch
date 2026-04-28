@@ -17,6 +17,10 @@ import * as THREE from 'three';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 // @ts-ignore
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import {
+  DEFAULT_MAX_STL_PREVIEW_BYTES,
+  validateStlPreviewBuffer,
+} from './stl-preview.util';
 
 @Component({
   selector: 'app-stl-viewer',
@@ -157,14 +161,30 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
   dimensions = { x: 0, y: 0, z: 0 };
 
   private loadFile(file: Blob) {
+    if (file.size > DEFAULT_MAX_STL_PREVIEW_BYTES) {
+      this.markPreviewUnavailable(
+        `STL preview skipped because the file is too large (${file.size} bytes).`,
+      );
+      return;
+    }
+
     this.loading = true;
     this.loadError = false;
     this.autoRotate = true;
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
+        const buffer = event.target?.result as ArrayBuffer;
+        const validation = validateStlPreviewBuffer(buffer);
+        if (!validation.ok) {
+          this.markPreviewUnavailable(
+            `STL preview skipped because the payload is not safe to parse (${validation.reason}).`,
+          );
+          return;
+        }
+
         const loader = new STLLoader();
-        const geometry = loader.parse(event.target?.result as ArrayBuffer);
+        const geometry = loader.parse(buffer);
 
         this.clearCurrentMesh();
 
@@ -219,19 +239,14 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
         this.camera.updateProjectionMatrix();
         this.controls.update();
       } catch (err) {
-        this.clearCurrentMesh();
-        this.dimensions = { x: 0, y: 0, z: 0 };
-        this.loadError = true;
-        console.error('Error loading STL:', err);
+        this.markPreviewUnavailable('Error loading STL preview.', err);
       } finally {
         this.loading = false;
       }
     };
     reader.onerror = () => {
-      this.clearCurrentMesh();
-      this.dimensions = { x: 0, y: 0, z: 0 };
+      this.markPreviewUnavailable('Failed to read STL preview blob.');
       this.loading = false;
-      this.loadError = true;
     };
     reader.readAsArrayBuffer(file);
   }
@@ -265,6 +280,17 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     this.currentMesh = null;
+  }
+
+  private markPreviewUnavailable(message: string, err?: unknown) {
+    this.clearCurrentMesh();
+    this.dimensions = { x: 0, y: 0, z: 0 };
+    this.loadError = true;
+    if (err !== undefined) {
+      console.warn(message, err);
+      return;
+    }
+    console.warn(message);
   }
 
   private applyColorStyle(color: string) {
