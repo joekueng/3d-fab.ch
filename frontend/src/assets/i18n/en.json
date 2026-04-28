@@ -1159,7 +1159,8 @@
     "BACK_HOME": "Back to Home"
   },
   "STL_VIEWER": {
-    "LOADING": "Loading 3D model..."
+    "LOADING": "Loading 3D model...",
+    "UNAVAILABLE": "3D preview is not available for this file."
   },
   "HOME": {
     "SHOP_GALLERY_ARIA": "Shop product gallery",

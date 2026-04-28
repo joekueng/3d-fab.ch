@@ -1,5 +1,6 @@
 package com.printcalculator.service.shop;
 
+import com.printcalculator.service.QuoteSessionExpiryPolicy;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,16 +16,16 @@ public class ShopCartCookieService {
     public static final String COOKIE_NAME = "shop_cart_session";
     private static final String COOKIE_PATH = "/api/shop";
 
-    private final long cookieTtlDays;
+    private final QuoteSessionExpiryPolicy quoteSessionExpiryPolicy;
     private final boolean secureCookie;
     private final String sameSite;
 
     public ShopCartCookieService(
-            @Value("${shop.cart.cookie.ttl-days:30}") long cookieTtlDays,
+            QuoteSessionExpiryPolicy quoteSessionExpiryPolicy,
             @Value("${shop.cart.cookie.secure:false}") boolean secureCookie,
             @Value("${shop.cart.cookie.same-site:Lax}") String sameSite
     ) {
-        this.cookieTtlDays = cookieTtlDays;
+        this.quoteSessionExpiryPolicy = quoteSessionExpiryPolicy;
         this.secureCookie = secureCookie;
         this.sameSite = sameSite;
     }
@@ -71,7 +72,7 @@ public class ShopCartCookieService {
                 .httpOnly(true)
                 .secure(secureCookie)
                 .sameSite(sameSite)
-                .maxAge(Duration.ofDays(Math.max(cookieTtlDays, 1)))
+                .maxAge(quoteSessionExpiryPolicy.cookieMaxAge())
                 .build();
     }
 
@@ -83,9 +84,5 @@ public class ShopCartCookieService {
                 .sameSite(sameSite)
                 .maxAge(Duration.ZERO)
                 .build();
-    }
-
-    public long getCookieTtlDays() {
-        return cookieTtlDays;
     }
 }

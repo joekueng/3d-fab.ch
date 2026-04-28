@@ -79,8 +79,7 @@
             <p class="editor-copy">
               URL pubblico:
               <code class="ui-code-pill">{{
-                selectedQr()?.publicUrl ||
-                  "/api/public/qr/" + (form.slug || "...")
+                selectedQr()?.publicUrl || "/go/" + (form.slug || "...")
               }}</code>
             </p>
           </div>

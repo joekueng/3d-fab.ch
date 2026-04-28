@@ -1172,7 +1172,8 @@
     "BACK_HOME": "Zur Startseite"
   },
   "STL_VIEWER": {
-    "LOADING": "3D-Modell wird geladen..."
+    "LOADING": "3D-Modell wird geladen...",
+    "UNAVAILABLE": "3D-Vorschau ist für diese Datei nicht verfügbar."
   },
   "HOME": {
     "SHOP_GALLERY_ARIA": "Produktgalerie Shop",

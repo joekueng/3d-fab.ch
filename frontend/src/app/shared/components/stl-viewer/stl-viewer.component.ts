@@ -29,7 +29,7 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
 
-  @Input() file: File | null = null;
+  @Input() file: Blob | null = null;
   @Input() color: string = '#facf0a'; // Default Brand Color
   @Input() height = 300;
   @Input() borderRadius = 'var(--radius-lg)';
@@ -47,6 +47,7 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
   private resizeObserver: ResizeObserver | null = null;
 
   loading = false;
+  loadError = false;
 
   ngOnInit() {
     if (!this.isBrowser) {
@@ -62,6 +63,11 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
 
     if (changes['file'] && this.file) {
       this.loadFile(this.file);
+    } else if (changes['file'] && !this.file) {
+      this.loading = false;
+      this.loadError = false;
+      this.dimensions = { x: 0, y: 0, z: 0 };
+      this.clearCurrentMesh();
     }
 
     if (changes['color'] && this.currentMesh && !changes['file']) {
@@ -150,8 +156,9 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
 
   dimensions = { x: 0, y: 0, z: 0 };
 
-  private loadFile(file: File) {
+  private loadFile(file: Blob) {
     this.loading = true;
+    this.loadError = false;
     this.autoRotate = true;
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -212,10 +219,19 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
         this.camera.updateProjectionMatrix();
         this.controls.update();
       } catch (err) {
+        this.clearCurrentMesh();
+        this.dimensions = { x: 0, y: 0, z: 0 };
+        this.loadError = true;
         console.error('Error loading STL:', err);
       } finally {
         this.loading = false;
       }
+    };
+    reader.onerror = () => {
+      this.clearCurrentMesh();
+      this.dimensions = { x: 0, y: 0, z: 0 };
+      this.loading = false;
+      this.loadError = true;
     };
     reader.readAsArrayBuffer(file);
   }

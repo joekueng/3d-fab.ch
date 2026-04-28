@@ -23,6 +23,7 @@ import com.printcalculator.repository.OrderRepository;
 import com.printcalculator.repository.PricingPolicyRepository;
 import com.printcalculator.repository.QuoteLineItemRepository;
 import com.printcalculator.repository.QuoteSessionRepository;
+import com.printcalculator.service.QuoteSessionExpiryPolicy;
 import com.printcalculator.service.QuoteSessionTotalsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,6 +81,7 @@ public class AdminOperationsControllerService {
     private final OrderRepository orderRepo;
     private final PricingPolicyRepository pricingRepo;
     private final QuoteSessionTotalsService quoteSessionTotalsService;
+    private final QuoteSessionExpiryPolicy quoteSessionExpiryPolicy;
 
     public AdminOperationsControllerService(FilamentVariantStockKgRepository filamentStockRepo,
                                             FilamentVariantRepository filamentVariantRepo,
@@ -89,7 +91,8 @@ public class AdminOperationsControllerService {
                                             QuoteLineItemRepository quoteLineItemRepo,
                                             OrderRepository orderRepo,
                                             PricingPolicyRepository pricingRepo,
-                                            QuoteSessionTotalsService quoteSessionTotalsService) {
+                                            QuoteSessionTotalsService quoteSessionTotalsService,
+                                            QuoteSessionExpiryPolicy quoteSessionExpiryPolicy) {
         this.filamentStockRepo = filamentStockRepo;
         this.filamentVariantRepo = filamentVariantRepo;
         this.customQuoteRequestRepo = customQuoteRequestRepo;
@@ -99,6 +102,7 @@ public class AdminOperationsControllerService {
         this.orderRepo = orderRepo;
         this.pricingRepo = pricingRepo;
         this.quoteSessionTotalsService = quoteSessionTotalsService;
+        this.quoteSessionExpiryPolicy = quoteSessionExpiryPolicy;
     }
 
     public List<AdminFilamentStockDto> getFilamentStock() {
@@ -311,7 +315,7 @@ public class AdminOperationsControllerService {
             session.setSupportsEnabled(false);
             session.setSetupCostChf(BigDecimal.ZERO);
             session.setCreatedAt(OffsetDateTime.now());
-            session.setExpiresAt(OffsetDateTime.now().plusDays(30));
+            session.setExpiresAt(quoteSessionExpiryPolicy.newExpiry());
         }
 
         if ("CONVERTED".equals(session.getStatus())) {

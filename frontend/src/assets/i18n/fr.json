@@ -1231,7 +1231,8 @@
     "BACK_HOME": "Retour à l'accueil"
   },
   "STL_VIEWER": {
-    "LOADING": "Chargement du modèle 3D..."
+    "LOADING": "Chargement du modèle 3D...",
+    "UNAVAILABLE": "L'aperçu 3D n'est pas disponible pour ce fichier."
   },
   "ORDER": {
     "ERR_ID_NOT_FOUND": "ID de commande introuvable.",

@@ -18,6 +18,8 @@ import java.util.UUID;
 @Service
 public class QrTrackingRequestService {
     private static final Logger logger = LoggerFactory.getLogger(QrTrackingRequestService.class);
+    private static final String BOT_USER_AGENT_PATTERN =
+            ".*(bot|crawler|spider|slurp|bingpreview|google-read-aloud|headless|skypeuripreview|facebookexternalhit|meta-externalagent|slackbot|discordbot).*";
 
     private final String visitorHashSecret;
     private final boolean trustProxyHeaders;
@@ -77,7 +79,7 @@ public class QrTrackingRequestService {
         if (normalized.isBlank()) {
             return false;
         }
-        return normalized.matches(".*(bot|crawler|spider|slurp|bingpreview|google-read-aloud|headless|preview).*");
+        return normalized.matches(BOT_USER_AGENT_PATTERN);
     }
 
     private void logRequestDebug(UUID qrLinkId,
