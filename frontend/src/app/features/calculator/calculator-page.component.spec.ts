@@ -351,6 +351,7 @@ describe('CalculatorPageComponent', () => {
 
     component.uploadForm = undefined as unknown as UploadFormComponent;
     component.result.set(createResult('session-1'));
+    component.error.set(true);
 
     estimator.getLineItemContent.and.callFake(
       (_sessionId: string, _lineItemId: string, preview = false) =>
@@ -422,5 +423,6 @@ describe('CalculatorPageComponent', () => {
       colorName: 'White',
       filamentVariantId: 7,
     });
+    expect(component.error()).toBeFalse();
   });
 });

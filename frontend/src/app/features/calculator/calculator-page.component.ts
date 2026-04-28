@@ -177,6 +177,9 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
         const currentRes = this.result();
         if (!currentRes || currentRes.sessionId !== sessionId) {
           this.loadSession(sessionId);
+        } else {
+          this.clearQuoteErrorState();
+          this.applyPendingSessionRestoreIfNeeded();
         }
       }
     });
@@ -221,9 +224,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
           return;
         }
 
-        this.error.set(false);
-        this.errorKey.set('CALC.ERROR_GENERIC');
-        this.errorMessage.set(null);
+        this.clearQuoteErrorState();
         this.warningMessage.set(null);
         this.result.set(result);
         this.baselinePrintSettings = this.toTrackedSettingsFromSession(
@@ -329,9 +330,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     this.currentRequest = req;
     this.loading.set(true);
     this.uploadProgress.set(0);
-    this.error.set(false);
-    this.errorKey.set('CALC.ERROR_GENERIC');
-    this.errorMessage.set(null);
+    this.clearQuoteErrorState();
     this.warningMessage.set(null);
     this.result.set(null);
     this.cadSessionLocked.set(false);
@@ -360,9 +359,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
             return;
           }
 
-          this.error.set(false);
-          this.errorKey.set('CALC.ERROR_GENERIC');
-          this.errorMessage.set(null);
+          this.clearQuoteErrorState();
           this.warningMessage.set(
             this.buildPartialFailureMessage(res.failedItems || []),
           );
@@ -460,9 +457,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
                   return;
                 }
 
-                this.error.set(false);
-                this.errorKey.set('CALC.ERROR_GENERIC');
-                this.errorMessage.set(null);
+                this.clearQuoteErrorState();
                 this.result.set(newResult);
               },
               error: (err) => {
@@ -605,6 +600,12 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
       string,
       TrackedPrintSettings
     >();
+  }
+
+  private clearQuoteErrorState(): void {
+    this.error.set(false);
+    this.errorKey.set('CALC.ERROR_GENERIC');
+    this.errorMessage.set(null);
   }
 
   private normalizeCalculationFailure(
@@ -777,6 +778,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
       this.uploadForm.selectFile(selected);
     }
 
+    this.clearQuoteErrorState();
     this.pendingSessionRestore = null;
   }
 
