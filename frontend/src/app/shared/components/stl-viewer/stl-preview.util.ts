@@ -61,7 +61,11 @@ function looksLikeBinaryStl(buffer: ArrayBuffer): boolean {
 }
 
 function looksLikeAsciiStl(buffer: ArrayBuffer): boolean {
-  const sampleBytes = new Uint8Array(buffer, 0, Math.min(buffer.byteLength, 2048));
+  const sampleBytes = new Uint8Array(
+    buffer,
+    0,
+    Math.min(buffer.byteLength, 2048),
+  );
   if (sampleBytes.length === 0) {
     return false;
   }

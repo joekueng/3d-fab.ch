@@ -36,12 +36,12 @@ describe('validateStlPreviewBuffer', () => {
       'endsolid sample',
     ].join('\n');
 
-    expect(validateStlPreviewBuffer(toArrayBuffer(new TextEncoder().encode(ascii)))).toEqual(
-      {
-        ok: true,
-        format: 'ascii',
-      },
-    );
+    expect(
+      validateStlPreviewBuffer(toArrayBuffer(new TextEncoder().encode(ascii))),
+    ).toEqual({
+      ok: true,
+      format: 'ascii',
+    });
   });
 
   it('rejects payloads that are too large before parsing', () => {
@@ -58,7 +58,9 @@ describe('validateStlPreviewBuffer', () => {
   });
 
   it('rejects non-STL payloads', () => {
-    const html = toArrayBuffer(new TextEncoder().encode('<html>not an stl</html>'));
+    const html = toArrayBuffer(
+      new TextEncoder().encode('<html>not an stl</html>'),
+    );
 
     expect(validateStlPreviewBuffer(html)).toEqual({
       ok: false,
