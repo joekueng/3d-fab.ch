@@ -43,6 +43,16 @@ type TrackedPrintSettings = {
   supportEnabled: boolean;
 };
 
+type PendingSessionRestore = {
+  session: any;
+  items: any[];
+  files: File[];
+  previewFiles: Array<{
+    index: number;
+    file: File;
+  }>;
+};
+
 @Component({
   selector: 'app-calculator-page',
   standalone: true,
@@ -138,6 +148,8 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     string,
     TrackedPrintSettings
   >();
+  private pendingSessionRestore: PendingSessionRestore | null = null;
+  private restoreDebugRun = 0;
 
   @ViewChild('uploadForm') uploadForm!: UploadFormComponent;
   @ViewChild('resultCol') resultCol!: ElementRef;
@@ -166,12 +178,17 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
         const currentRes = this.result();
         if (!currentRes || currentRes.sessionId !== sessionId) {
           this.loadSession(sessionId);
+        } else {
+          this.clearQuoteErrorState();
+          this.applyPendingSessionRestoreIfNeeded();
         }
       }
     });
   }
 
   ngAfterViewInit() {
+    this.applyPendingSessionRestoreIfNeeded();
+
     const pendingDraft = this.estimator.consumePendingCalculatorDraft();
     if (!pendingDraft || this.currentSessionId()) {
       return;
@@ -208,9 +225,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
           return;
         }
 
-        this.error.set(false);
-        this.errorKey.set('CALC.ERROR_GENERIC');
-        this.errorMessage.set(null);
+        this.clearQuoteErrorState();
         this.warningMessage.set(null);
         this.result.set(result);
         this.baselinePrintSettings = this.toTrackedSettingsFromSession(
@@ -250,6 +265,22 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
       return;
     }
 
+    // File restore is client-only: SSR can render the quote summary, but binary
+    // session content must be fetched fresh in the browser to avoid transfer
+    // cache serializing blobs into unusable objects during hydration.
+    if (!this.isBrowser) {
+      this.loading.set(false);
+      return;
+    }
+
+    const restoreRun = ++this.restoreDebugRun;
+    console.debug('[restoreFilesAndSettings:start]', {
+      restoreRun,
+      sessionId: session?.id,
+      itemIds: items.map((item) => item?.id),
+      fileNames: items.map((item) => item?.originalFilename),
+    });
+
     // Download all files
     const downloads = items.map((item) =>
       forkJoin({
@@ -273,6 +304,16 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
 
     forkJoin(downloads).subscribe({
       next: (results: any[]) => {
+        console.debug('[restoreFilesAndSettings:downloaded]', {
+          restoreRun,
+          sessionId: session?.id,
+          blobs: results.map((res) => ({
+            fileName: res.fileName,
+            originalBlobSize: res.originalBlob?.size ?? null,
+            previewBlobSize: res.previewBlob?.size ?? null,
+            hasConvertedPreview: res.hasConvertedPreview,
+          })),
+        });
         const files = results.map(
           (res) =>
             new File([res.originalBlob], res.fileName, {
@@ -280,57 +321,36 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
             }),
         );
 
-        if (this.uploadForm) {
-          this.uploadForm.setFiles(files);
-          results.forEach((res, index) => {
-            if (!res.hasConvertedPreview || !res.previewBlob) {
-              return;
-            }
-            const previewName = res.fileName
-              .replace(/\.[^.]+$/, '')
-              .concat('.stl');
-            const previewFile = new File([res.previewBlob], previewName, {
-              type: 'model/stl',
-            });
-            this.uploadForm.setPreviewFileByIndex(index, previewFile);
-          });
-          this.uploadForm.patchSettings(session);
+        console.debug('[restoreFilesAndSettings:files-built]', {
+          restoreRun,
+          sessionId: session?.id,
+          files: files.map((file) => ({
+            name: file.name,
+            size: file.size,
+          })),
+        });
 
-          items.forEach((item, index) => {
-            // Preserve persisted quantities when restoring from session.
-            // Without this, setFiles() defaults every item back to 1.
-            this.uploadForm.updateItemQuantityByIndex(
-              index,
-              Number(item.quantity || 1),
-            );
-
-            const tracked = this.toTrackedSettingsFromSessionItem(
-              item,
-              this.toTrackedSettingsFromSession(session),
-            );
-            this.uploadForm.setItemPrintSettingsByIndex(index, {
-              material: tracked.material.toUpperCase(),
-              quality: tracked.quality,
-              nozzleDiameter: tracked.nozzleDiameter,
-              layerHeight: tracked.layerHeight,
-              infillDensity: tracked.infillDensity,
-              infillPattern: tracked.infillPattern,
-              supportEnabled: tracked.supportEnabled,
-            });
-
-            if (item.colorCode) {
-              this.uploadForm.updateItemColor(index, {
-                colorName: item.colorCode,
-                filamentVariantId: item.filamentVariantId,
-              });
-            }
-          });
-
-          const selected = this.uploadForm.selectedFile();
-          if (selected) {
-            this.uploadForm.selectFile(selected);
+        const previewFiles = results.flatMap((res, index) => {
+          if (!res.hasConvertedPreview || !res.previewBlob) {
+            return [];
           }
-        }
+
+          const previewName = res.fileName
+            .replace(/\.[^.]+$/, '')
+            .concat('.stl');
+          const previewFile = new File([res.previewBlob], previewName, {
+            type: 'model/stl',
+          });
+          return [{ index, file: previewFile }];
+        });
+
+        this.pendingSessionRestore = {
+          session,
+          items,
+          files,
+          previewFiles,
+        };
+        this.applyPendingSessionRestoreIfNeeded();
         this.loading.set(false);
       },
       error: (err: any) => {
@@ -346,9 +366,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     this.currentRequest = req;
     this.loading.set(true);
     this.uploadProgress.set(0);
-    this.error.set(false);
-    this.errorKey.set('CALC.ERROR_GENERIC');
-    this.errorMessage.set(null);
+    this.clearQuoteErrorState();
     this.warningMessage.set(null);
     this.result.set(null);
     this.cadSessionLocked.set(false);
@@ -377,9 +395,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
             return;
           }
 
-          this.error.set(false);
-          this.errorKey.set('CALC.ERROR_GENERIC');
-          this.errorMessage.set(null);
+          this.clearQuoteErrorState();
           this.warningMessage.set(
             this.buildPartialFailureMessage(res.failedItems || []),
           );
@@ -477,9 +493,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
                   return;
                 }
 
-                this.error.set(false);
-                this.errorKey.set('CALC.ERROR_GENERIC');
-                this.errorMessage.set(null);
+                this.clearQuoteErrorState();
                 this.result.set(newResult);
               },
               error: (err) => {
@@ -624,6 +638,12 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     >();
   }
 
+  private clearQuoteErrorState(): void {
+    this.error.set(false);
+    this.errorKey.set('CALC.ERROR_GENERIC');
+    this.errorMessage.set(null);
+  }
+
   private normalizeCalculationFailure(
     error: unknown,
   ): QuoteCalculationFailure | null {
@@ -744,6 +764,69 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
       selectedFileName: this.uploadForm.selectedFile()?.name ?? null,
     };
     this.estimator.setPendingCalculatorDraft(draft);
+  }
+
+  private applyPendingSessionRestoreIfNeeded(): void {
+    if (!this.uploadForm || !this.pendingSessionRestore) {
+      return;
+    }
+
+    const payload = this.pendingSessionRestore;
+    console.debug('[applyPendingSessionRestoreIfNeeded]', {
+      restoreRun: this.restoreDebugRun,
+      sessionId: payload.session?.id,
+      files: payload.files.map((file) => ({
+        name: file.name,
+        size: file.size,
+      })),
+    });
+    const baselineSessionSettings = this.toTrackedSettingsFromSession(
+      payload.session,
+    );
+
+    this.uploadForm.setFiles(payload.files, { autoSelect: false });
+    payload.previewFiles.forEach((preview) => {
+      this.uploadForm.setPreviewFileByIndex(preview.index, preview.file);
+    });
+    this.uploadForm.patchSettings(payload.session);
+
+    payload.items.forEach((item, index) => {
+      // Preserve persisted quantities when restoring from session.
+      // Without this, setFiles() defaults every item back to 1.
+      this.uploadForm.updateItemQuantityByIndex(
+        index,
+        Number(item.quantity || 1),
+      );
+
+      const tracked = this.toTrackedSettingsFromSessionItem(
+        item,
+        baselineSessionSettings,
+      );
+      this.uploadForm.setItemPrintSettingsByIndex(index, {
+        material: tracked.material.toUpperCase(),
+        quality: tracked.quality,
+        nozzleDiameter: tracked.nozzleDiameter,
+        layerHeight: tracked.layerHeight,
+        infillDensity: tracked.infillDensity,
+        infillPattern: tracked.infillPattern,
+        supportEnabled: tracked.supportEnabled,
+      });
+
+      if (item.colorCode) {
+        this.uploadForm.updateItemColor(index, {
+          colorName: item.colorCode,
+          filamentVariantId: item.filamentVariantId,
+        });
+      }
+    });
+
+    const selected = payload.files[payload.files.length - 1] ?? null;
+    if (selected) {
+      this.uploadForm.selectFile(selected);
+    }
+
+    this.clearQuoteErrorState();
+    this.pendingSessionRestore = null;
   }
 
   private toTrackedSettingsFromRequest(

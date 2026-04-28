@@ -401,6 +401,7 @@ export class QuoteEstimatorService {
       {
         headers,
         responseType: 'blob',
+        transferCache: false,
       },
     );
   }
@@ -415,6 +416,7 @@ export class QuoteEstimatorService {
       {
         headers,
         responseType: 'blob',
+        transferCache: false,
       },
     );
   }

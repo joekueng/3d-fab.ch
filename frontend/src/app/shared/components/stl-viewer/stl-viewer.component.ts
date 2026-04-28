@@ -49,6 +49,8 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
   private currentMesh: THREE.Mesh | null = null;
   private autoRotate = true;
   private resizeObserver: ResizeObserver | null = null;
+  private activeReader: FileReader | null = null;
+  private loadSequence = 0;
 
   loading = false;
   loadError = false;
@@ -68,6 +70,7 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
     if (changes['file'] && this.file) {
       this.loadFile(this.file);
     } else if (changes['file'] && !this.file) {
+      this.cancelPendingLoad();
       this.loading = false;
       this.loadError = false;
       this.dimensions = { x: 0, y: 0, z: 0 };
@@ -84,6 +87,7 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
     this.resizeObserver = null;
 
     if (this.animationId) cancelAnimationFrame(this.animationId);
+    this.cancelPendingLoad();
     this.clearCurrentMesh();
     if (this.controls) this.controls.dispose();
     if (this.renderer) this.renderer.dispose();
@@ -161,6 +165,8 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
   dimensions = { x: 0, y: 0, z: 0 };
 
   private loadFile(file: Blob) {
+    this.cancelPendingLoad();
+
     if (file.size > DEFAULT_MAX_STL_PREVIEW_BYTES) {
       this.markPreviewUnavailable(
         `STL preview skipped because the file is too large (${file.size} bytes).`,
@@ -172,7 +178,12 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
     this.loadError = false;
     this.autoRotate = true;
     const reader = new FileReader();
+    const requestId = ++this.loadSequence;
+    this.activeReader = reader;
     reader.onload = (event) => {
+      if (requestId !== this.loadSequence) {
+        return;
+      }
       try {
         const buffer = event.target?.result as ArrayBuffer;
         const validation = validateStlPreviewBuffer(buffer);
@@ -241,14 +252,32 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
       } catch (err) {
         this.markPreviewUnavailable('Error loading STL preview.', err);
       } finally {
-        this.loading = false;
+        if (requestId === this.loadSequence) {
+          this.loading = false;
+          this.activeReader = null;
+        }
       }
     };
     reader.onerror = () => {
+      if (requestId !== this.loadSequence) {
+        return;
+      }
       this.markPreviewUnavailable('Failed to read STL preview blob.');
       this.loading = false;
+      this.activeReader = null;
     };
     reader.readAsArrayBuffer(file);
+  }
+
+  private cancelPendingLoad() {
+    this.loadSequence += 1;
+    if (
+      this.activeReader &&
+      this.activeReader.readyState === FileReader.LOADING
+    ) {
+      this.activeReader.abort();
+    }
+    this.activeReader = null;
   }
 
   private animate() {

@@ -14,7 +14,11 @@ import {
   Router,
 } from '@angular/router';
 import { routes } from './app.routes';
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withFetch,
+  withInterceptors,
+} from '@angular/common/http';
 import {
   TranslateLoader,
   TranslateModule,
@@ -47,6 +51,7 @@ export const appConfig: ApplicationConfig = {
       }),
     ),
     provideHttpClient(
+      withFetch(),
       withInterceptors([serverOriginInterceptor, adminAuthInterceptor]),
     ),
     importProvidersFrom(

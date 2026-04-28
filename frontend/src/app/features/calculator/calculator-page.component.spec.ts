@@ -59,7 +59,7 @@ describe('CalculatorPageComponent', () => {
     mode: 'easy',
   });
 
-  function createComponent() {
+  function createComponent(platformId?: Object) {
     const estimator = jasmine.createSpyObj<QuoteEstimatorService>(
       'QuoteEstimatorService',
       [
@@ -94,6 +94,7 @@ describe('CalculatorPageComponent', () => {
       router,
       route,
       languageService,
+      platformId,
     );
 
     const uploadForm = jasmine.createSpyObj<UploadFormComponent>(
@@ -342,5 +343,112 @@ describe('CalculatorPageComponent', () => {
       1,
       jasmine.any(File),
     );
+  });
+
+  it('skips binary session restore during SSR', () => {
+    const { component, estimator, uploadForm } = createComponent('server');
+
+    component.restoreFilesAndSettings(
+      {
+        id: 'session-1',
+      },
+      [
+        {
+          id: 'line-stl',
+          originalFilename: 'legacy.stl',
+          quantity: 1,
+        },
+      ],
+    );
+
+    expect(estimator.getLineItemContent).not.toHaveBeenCalled();
+    expect(uploadForm.setFiles).not.toHaveBeenCalled();
+    expect(component.loading()).toBeFalse();
+  });
+
+  it('applies a pending session restore after the upload form becomes available', () => {
+    const { component, estimator } = createComponent();
+    const originalBlob = new Blob(['original']);
+    const previewBlob = new Blob(['preview']);
+
+    component.uploadForm = undefined as unknown as UploadFormComponent;
+    component.result.set(createResult('session-1'));
+    component.error.set(true);
+
+    estimator.getLineItemContent.and.callFake(
+      (_sessionId: string, _lineItemId: string, preview = false) =>
+        of(preview ? previewBlob : originalBlob),
+    );
+
+    component.restoreFilesAndSettings(
+      {
+        id: 'session-1',
+        materialCode: 'PLA',
+        layerHeightMm: 0.2,
+        nozzleDiameterMm: 0.4,
+        infillPercent: 15,
+        infillPattern: 'grid',
+        supportsEnabled: true,
+      },
+      [
+        {
+          id: 'line-3mf',
+          originalFilename: 'converted.3mf',
+          quantity: 2,
+          colorCode: 'White',
+          filamentVariantId: 7,
+          materialCode: 'PLA',
+          quality: 'standard',
+          nozzleDiameterMm: 0.4,
+          layerHeightMm: 0.2,
+          infillPercent: 15,
+          infillPattern: 'grid',
+          supportsEnabled: true,
+          convertedStoredPath: 'storage_quotes/session-1/converted.stl',
+        },
+      ],
+    );
+
+    const uploadForm = jasmine.createSpyObj<UploadFormComponent>(
+      'UploadFormComponent',
+      [
+        'setFiles',
+        'setPreviewFileByIndex',
+        'patchSettings',
+        'setItemPrintSettingsByIndex',
+        'updateItemColor',
+        'selectFile',
+        'updateItemQuantityByIndex',
+        'updateItemQuantityByName',
+        'getCurrentRequestDraft',
+        'restoreRequestDraft',
+      ],
+    );
+    uploadForm.sameSettingsForAll = jasmine
+      .createSpy('sameSettingsForAll')
+      .and.returnValue(true) as any;
+    uploadForm.selectedFile = jasmine
+      .createSpy('selectedFile')
+      .and.returnValue(null) as any;
+
+    component.uploadForm = uploadForm;
+    component.ngAfterViewInit();
+
+    expect(uploadForm.setFiles).toHaveBeenCalledTimes(1);
+    expect(uploadForm.setFiles).toHaveBeenCalledWith(jasmine.any(Array), {
+      autoSelect: false,
+    });
+    expect(uploadForm.setPreviewFileByIndex).toHaveBeenCalledWith(
+      0,
+      jasmine.any(File),
+    );
+    expect(uploadForm.patchSettings).toHaveBeenCalled();
+    expect(uploadForm.updateItemQuantityByIndex).toHaveBeenCalledWith(0, 2);
+    expect(uploadForm.updateItemColor).toHaveBeenCalledWith(0, {
+      colorName: 'White',
+      filamentVariantId: 7,
+    });
+    expect(uploadForm.selectFile).toHaveBeenCalledWith(jasmine.any(File));
+    expect(component.error()).toBeFalse();
   });
 });

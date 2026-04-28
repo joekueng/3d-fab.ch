@@ -139,7 +139,7 @@ public class QuoteSessionController {
         QuoteSession session = sessionRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Session not found"));
 
-        List<QuoteLineItem> items = lineItemRepo.findByQuoteSessionId(id);
+        List<QuoteLineItem> items = lineItemRepo.findByQuoteSessionIdOrderByCreatedAtAsc(id);
         QuoteSessionTotalsService.QuoteSessionTotals totals = quoteSessionTotalsService.compute(session, items);
         return ResponseEntity.ok(quoteSessionResponseAssembler.assemble(session, items, totals));
     }
