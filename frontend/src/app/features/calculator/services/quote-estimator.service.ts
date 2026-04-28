@@ -1,5 +1,9 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient, HttpEventType } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpErrorResponse,
+  HttpEventType,
+} from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 
@@ -54,6 +58,13 @@ export interface QuoteItem {
   nozzleDiameter?: number;
 }
 
+export interface QuoteCalculationFailure {
+  fileName: string;
+  status?: number;
+  code?: string;
+  message: string;
+}
+
 export interface QuoteResult {
   sessionId?: string;
   items: QuoteItem[];
@@ -69,6 +80,7 @@ export interface QuoteResult {
   totalTimeMinutes: number;
   totalWeight: number;
   notes?: string;
+  failedItems?: QuoteCalculationFailure[];
 }
 
 export interface MaterialOption {
@@ -241,9 +253,12 @@ export class QuoteEstimatorService {
 
             const totalItems = request.items.length;
             const uploadProgress = new Array(totalItems).fill(0);
-            const uploadResults: { success: boolean }[] = new Array(totalItems)
-              .fill(null)
-              .map(() => ({ success: false }));
+            const uploadResults: {
+              success: boolean;
+              failure?: QuoteCalculationFailure;
+            }[] = new Array(totalItems).fill(null).map(() => ({
+              success: false,
+            }));
             let completed = 0;
 
             const emitProgress = () => {
@@ -260,10 +275,20 @@ export class QuoteEstimatorService {
                 return;
               }
 
-              const hasFailure = uploadResults.some((entry) => !entry.success);
-              if (hasFailure) {
+              const successfulUploads = uploadResults.filter(
+                (entry) => entry.success,
+              ).length;
+              const failures = uploadResults
+                .map((entry) => entry.failure)
+                .filter(
+                  (
+                    failure,
+                  ): failure is QuoteCalculationFailure => !!failure,
+                );
+
+              if (successfulUploads === 0) {
                 observer.error(
-                  'One or more files failed during upload/analysis',
+                  failures[0] || 'One or more files failed during upload/analysis',
                 );
                 return;
               }
@@ -273,6 +298,7 @@ export class QuoteEstimatorService {
                   observer.next(100);
                   const result = this.mapSessionToQuoteResult(sessionData);
                   result.notes = request.notes;
+                  result.failedItems = failures;
                   observer.next(result);
                   observer.complete();
                 },
@@ -322,9 +348,15 @@ export class QuoteEstimatorService {
                       finalize();
                     }
                   },
-                  error: () => {
+                  error: (error) => {
                     uploadProgress[index] = 100;
-                    uploadResults[index] = { success: false };
+                    uploadResults[index] = {
+                      success: false,
+                      failure: this.normalizeCalculationFailure(
+                        error,
+                        item.file.name,
+                      ),
+                    };
                     completed += 1;
                     finalize();
                   },
@@ -386,6 +418,51 @@ export class QuoteEstimatorService {
         responseType: 'blob',
       },
     );
+  }
+
+  private normalizeCalculationFailure(
+    error: unknown,
+    fileName: string,
+  ): QuoteCalculationFailure {
+    if (error instanceof HttpErrorResponse) {
+      const body = error.error;
+      if (body && typeof body === 'object' && !(body instanceof Blob)) {
+        const payload = body as Record<string, unknown>;
+        const message =
+          typeof payload['message'] === 'string' &&
+          payload['message'].trim().length > 0
+            ? payload['message'].trim()
+            : `Unable to process ${fileName}.`;
+
+        return {
+          fileName,
+          status: error.status || undefined,
+          code:
+            typeof payload['code'] === 'string'
+              ? payload['code']
+              : undefined,
+          message,
+        };
+      }
+
+      return {
+        fileName,
+        status: error.status || undefined,
+        message: error.message || `Unable to process ${fileName}.`,
+      };
+    }
+
+    if (typeof error === 'string' && error.trim().length > 0) {
+      return {
+        fileName,
+        message: error.trim(),
+      };
+    }
+
+    return {
+      fileName,
+      message: `Unable to process ${fileName}.`,
+    };
   }
 
   mapSessionToQuoteResult(sessionData: any): QuoteResult {

@@ -23,6 +23,7 @@ import { UploadFormComponent } from './components/upload-form/upload-form.compon
 import { QuoteResultComponent } from './components/quote-result/quote-result.component';
 import {
   PendingCalculatorDraft,
+  QuoteCalculationFailure,
   QuoteRequest,
   QuoteResult,
   QuoteEstimatorService,
@@ -70,6 +71,8 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
   cadSessionLocked = signal(false);
   error = signal<boolean>(false);
   errorKey = signal<string>('CALC.ERROR_GENERIC');
+  errorMessage = signal<string | null>(null);
+  warningMessage = signal<string | null>(null);
   isZeroQuoteError = computed(
     () => this.error() && this.errorKey() === 'CALC.ERROR_ZERO_PRICE',
   );
@@ -207,6 +210,8 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
 
         this.error.set(false);
         this.errorKey.set('CALC.ERROR_GENERIC');
+        this.errorMessage.set(null);
+        this.warningMessage.set(null);
         this.result.set(result);
         this.baselinePrintSettings = this.toTrackedSettingsFromSession(
           data.session,
@@ -341,6 +346,8 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     this.uploadProgress.set(0);
     this.error.set(false);
     this.errorKey.set('CALC.ERROR_GENERIC');
+    this.errorMessage.set(null);
+    this.warningMessage.set(null);
     this.result.set(null);
     this.cadSessionLocked.set(false);
     this.orderSuccess.set(false);
@@ -370,6 +377,10 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
 
           this.error.set(false);
           this.errorKey.set('CALC.ERROR_GENERIC');
+          this.errorMessage.set(null);
+          this.warningMessage.set(
+            this.buildPartialFailureMessage(res.failedItems || []),
+          );
           this.result.set(res);
           this.baselinePrintSettings = this.toTrackedSettingsFromRequest(req);
           this.baselineItemSettingsByFileName =
@@ -402,8 +413,9 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
           }
         }
       },
-      error: () => {
-        this.setQuoteError('CALC.ERROR_GENERIC');
+      error: (err) => {
+        const failure = this.normalizeCalculationFailure(err);
+        this.setQuoteError('CALC.ERROR_GENERIC', failure?.message || null);
         this.loading.set(false);
       },
     });
@@ -465,6 +477,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
 
                 this.error.set(false);
                 this.errorKey.set('CALC.ERROR_GENERIC');
+                this.errorMessage.set(null);
                 this.result.set(newResult);
               },
               error: (err) => {
@@ -594,8 +607,10 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     return invalidPrice || invalidWeight || invalidTime;
   }
 
-  private setQuoteError(key: string): void {
+  private setQuoteError(key: string, message: string | null = null): void {
     this.errorKey.set(key);
+    this.errorMessage.set(message);
+    this.warningMessage.set(null);
     this.error.set(true);
     this.result.set(null);
     this.requiresRecalculation.set(false);
@@ -605,6 +620,64 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
       string,
       TrackedPrintSettings
     >();
+  }
+
+  private normalizeCalculationFailure(
+    error: unknown,
+  ): QuoteCalculationFailure | null {
+    if (!error || typeof error !== 'object') {
+      return null;
+    }
+
+    const maybeFailure = error as Partial<QuoteCalculationFailure>;
+    if (
+      typeof maybeFailure.message === 'string' &&
+      maybeFailure.message.trim().length > 0
+    ) {
+      return {
+        fileName: typeof maybeFailure.fileName === 'string' ? maybeFailure.fileName : '',
+        status:
+          typeof maybeFailure.status === 'number'
+            ? maybeFailure.status
+            : undefined,
+        code: typeof maybeFailure.code === 'string' ? maybeFailure.code : undefined,
+        message: maybeFailure.message.trim(),
+      };
+    }
+
+    return null;
+  }
+
+  private buildPartialFailureMessage(
+    failures: QuoteCalculationFailure[],
+  ): string | null {
+    if (!failures.length) {
+      return null;
+    }
+
+    if (failures.length === 1) {
+      const failure = failures[0];
+      return `${failure.fileName} was not included in the quote. ${failure.message}`;
+    }
+
+    const fileNames = failures
+      .map((failure) => failure.fileName)
+      .filter((fileName) => fileName.trim().length > 0);
+    const sharedMessage = failures.every(
+      (failure) => failure.message === failures[0].message,
+    )
+      ? failures[0].message
+      : null;
+
+    let message = `${failures.length} files were not included in the quote`;
+    if (fileNames.length > 0) {
+      message += `: ${fileNames.join(', ')}`;
+    }
+    message += '.';
+    if (sharedMessage) {
+      message += ` ${sharedMessage}`;
+    }
+    return message;
   }
 
   switchMode(nextMode: 'easy' | 'advanced'): void {

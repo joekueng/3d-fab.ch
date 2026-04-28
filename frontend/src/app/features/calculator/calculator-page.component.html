@@ -7,7 +7,17 @@
   </p>
 
   @if (error()) {
-    <app-alert type="error">{{ errorKey() | translate }}</app-alert>
+    <app-alert type="error">
+      @if (errorMessage()) {
+        {{ errorMessage() }}
+      } @else {
+        {{ errorKey() | translate }}
+      }
+    </app-alert>
+  }
+
+  @if (warningMessage()) {
+    <app-alert type="warning">{{ warningMessage() }}</app-alert>
   }
 </div>
 
