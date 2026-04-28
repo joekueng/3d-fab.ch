@@ -60,6 +60,15 @@ app.get('/', (req, res) => {
   );
 });
 
+app.get('/go/:slug', (req, res) => {
+  const slug = String(req.params['slug'] ?? '').trim();
+  const target = `/api/public/qr/${encodeURIComponent(slug)}${querySuffix(req.originalUrl)}`;
+
+  res.setHeader('Vary', 'Accept-Language, User-Agent');
+  res.setHeader('Cache-Control', 'private, no-store');
+  res.type('html').send(renderPublicQrBridgePage(target));
+});
+
 app.get('**', (req, res, next) => {
   const targetPath = resolvePublicRedirectTarget(req.path);
   if (!targetPath) {
@@ -123,4 +132,33 @@ function isLikelyCrawler(userAgent: string | undefined): boolean {
   return /(bot|crawler|spider|slurp|bingpreview|google-read-aloud)/.test(
     normalized,
   );
+}
+
+function renderPublicQrBridgePage(target: string): string {
+  const escapedTarget = escapeHtml(target);
+  return `<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <title>Reindirizzamento...</title>
+    <meta name="robots" content="noindex,nofollow,noarchive" />
+    <meta http-equiv="refresh" content="0;url=${escapedTarget}" />
+    <script>
+      window.location.replace(${JSON.stringify(target)});
+    </script>
+  </head>
+  <body>
+    <p>Reindirizzamento in corso...</p>
+    <p><a href="${escapedTarget}">Continua</a></p>
+  </body>
+</html>`;
+}
+
+function escapeHtml(value: string): string {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
 }

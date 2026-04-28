@@ -10,7 +10,12 @@
       <span>{{ "STL_VIEWER.LOADING" | translate }}</span>
     </div>
   }
-  @if (file && !loading) {
+  @if (loadError && !loading) {
+    <div class="error-overlay">
+      <span>{{ "STL_VIEWER.UNAVAILABLE" | translate }}</span>
+    </div>
+  }
+  @if (file && !loading && !loadError) {
     <div class="dims-overlay">
       {{ dimensions.x }} x {{ dimensions.y }} x {{ dimensions.z }} mm
     </div>

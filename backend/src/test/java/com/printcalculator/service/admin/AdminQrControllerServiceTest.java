@@ -89,8 +89,8 @@ class AdminQrControllerServiceTest {
         when(qrLinkRepository.findAll(any(Sort.class))).thenReturn(List.of(first, second));
         when(qrScanEventRepository.findByScannedAtBetweenOrderByScannedAtDesc(any(), any()))
                 .thenReturn(List.of(eventThree, eventTwo, eventOne));
-        when(qrLinkSupportService.buildPublicUrl("flyer")).thenReturn("https://3d-fab.ch/api/public/qr/flyer");
-        when(qrLinkSupportService.buildPublicUrl("sticker")).thenReturn("https://3d-fab.ch/api/public/qr/sticker");
+        when(qrLinkSupportService.buildPublicUrl("flyer")).thenReturn("https://3d-fab.ch/go/flyer");
+        when(qrLinkSupportService.buildPublicUrl("sticker")).thenReturn("https://3d-fab.ch/go/sticker");
 
         AdminQrOverviewStatsDto overview = service.getOverviewStats(
                 LocalDate.of(2026, 4, 19),

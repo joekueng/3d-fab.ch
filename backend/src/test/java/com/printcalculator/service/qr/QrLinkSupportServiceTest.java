@@ -33,7 +33,7 @@ class QrLinkSupportServiceTest {
         assertFalse(svg.contains("<rect"));
         assertFalse(svg.contains("fill=\"#FFFFFF\""));
         assertEquals(
-                "https://3d-fab.ch/api/public/qr/flyer-fiera-2026",
+                "https://3d-fab.ch/go/flyer-fiera-2026",
                 service.buildPublicUrl("flyer-fiera-2026")
         );
     }

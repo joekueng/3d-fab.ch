@@ -32,26 +32,18 @@ public class SessionCleanupService {
     public void cleanupOldSessions() {
         logger.info("Starting session cleanup job...");
 
-        OffsetDateTime cutoff = OffsetDateTime.now().minusDays(15);
-        List<QuoteSession> oldSessions = sessionRepository.findByCreatedAtBefore(cutoff);
+        OffsetDateTime cutoff = OffsetDateTime.now();
+        List<QuoteSession> oldSessions = sessionRepository.findByExpiresAtBefore(cutoff);
 
         int deletedCount = 0;
         for (QuoteSession session : oldSessions) {
-            // We only delete sessions that are NOT ordered? 
-            // The user request was "delete old ones". 
-            // Safest is to check status if we had one. 
-            // QuoteSession entity has 'status' field.
-            // Let's assume we delete 'PENDING' or similar, but maybe we just delete all old inputs?
-            // "rimangono in memoria... cancella quelle vecchie di 7 giorni".
-            // Implementation plan said: status != 'ORDERED'.
-            
             // CAD_ACTIVE sessions are managed manually from back-office and must be preserved.
             if ("CONVERTED".equals(session.getStatus()) || "CAD_ACTIVE".equals(session.getStatus())) {
                 continue;
             }
 
             try {
-                // Delete ACTIVE or EXPIRED sessions older than 7 days
+                // Delete sessions only after their configured expiry has passed.
                 deleteSessionFiles(session.getId().toString());
                 sessionRepository.delete(session);
                 deletedCount++;

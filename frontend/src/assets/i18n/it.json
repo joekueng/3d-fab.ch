@@ -1223,7 +1223,8 @@
     "BACK_HOME": "Torna alla Home"
   },
   "STL_VIEWER": {
-    "LOADING": "Caricamento modello 3D..."
+    "LOADING": "Caricamento modello 3D...",
+    "UNAVAILABLE": "Anteprima 3D non disponibile per questo file."
   },
   "ORDER": {
     "ERR_ID_NOT_FOUND": "ID ordine non trovato.",

@@ -46,6 +46,20 @@ final class IpAddressUtils {
             }
         }
 
+        if (trustProxyHeaders
+                && normalizedRemoteAddress != null
+                && !isPublicIp(normalizedRemoteAddress)) {
+            String forwardedClientIp = publicClientIpFromProxyHeaders(
+                    forwarded,
+                    forwardedFor,
+                    realIp,
+                    trustedProxyMatchers
+            );
+            if (forwardedClientIp != null) {
+                return forwardedClientIp;
+            }
+        }
+
         if (normalizedRemoteAddress != null) {
             return normalizedRemoteAddress;
         }
@@ -140,6 +154,47 @@ final class IpAddressUtils {
         }
 
         return normalizedChain.get(0);
+    }
+
+    private static String publicClientIpFromProxyHeaders(String forwarded,
+                                                         String forwardedFor,
+                                                         String realIp,
+                                                         List<IpAddressMatcher> trustedProxyMatchers) {
+        String candidate = firstPublicUntrustedIp(parseForwardedForHeader(forwardedFor), trustedProxyMatchers);
+        if (candidate != null) {
+            return candidate;
+        }
+
+        candidate = firstPublicUntrustedIp(parseForwardedHeader(forwarded), trustedProxyMatchers);
+        if (candidate != null) {
+            return candidate;
+        }
+
+        String normalizedRealIp = normalizeIp(realIp);
+        return isPublicIp(normalizedRealIp) ? normalizedRealIp : null;
+    }
+
+    private static String firstPublicUntrustedIp(List<String> proxyChain, List<IpAddressMatcher> trustedProxyMatchers) {
+        if (proxyChain == null || proxyChain.isEmpty()) {
+            return null;
+        }
+
+        List<String> normalizedChain = proxyChain.stream()
+                .map(IpAddressUtils::normalizeIp)
+                .filter(candidate -> candidate != null)
+                .toList();
+
+        for (int i = normalizedChain.size() - 1; i >= 0; i--) {
+            String candidate = normalizedChain.get(i);
+            if (isTrustedProxy(candidate, trustedProxyMatchers)) {
+                continue;
+            }
+            if (isPublicIp(candidate)) {
+                return candidate;
+            }
+        }
+
+        return null;
     }
 
     private static List<String> parseForwardedHeader(String forwarded) {

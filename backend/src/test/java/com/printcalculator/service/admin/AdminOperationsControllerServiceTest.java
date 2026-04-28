@@ -16,6 +16,7 @@ import com.printcalculator.repository.OrderRepository;
 import com.printcalculator.repository.PricingPolicyRepository;
 import com.printcalculator.repository.QuoteLineItemRepository;
 import com.printcalculator.repository.QuoteSessionRepository;
+import com.printcalculator.service.QuoteSessionExpiryPolicy;
 import com.printcalculator.service.QuoteSessionTotalsService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -61,6 +62,8 @@ class AdminOperationsControllerServiceTest {
     private PricingPolicyRepository pricingRepo;
     @Mock
     private QuoteSessionTotalsService quoteSessionTotalsService;
+    @Mock
+    private QuoteSessionExpiryPolicy quoteSessionExpiryPolicy;
 
     @InjectMocks
     private AdminOperationsControllerService service;
@@ -155,6 +158,7 @@ class AdminOperationsControllerServiceTest {
         policy.setCadCostChfPerHour(new BigDecimal("85"));
 
         when(pricingRepo.findFirstByIsActiveTrueOrderByValidFromDesc()).thenReturn(policy);
+        when(quoteSessionExpiryPolicy.newExpiry()).thenReturn(OffsetDateTime.now().plusMonths(6));
         when(quoteSessionRepo.save(any(QuoteSession.class))).thenAnswer(invocation -> {
             QuoteSession session = invocation.getArgument(0);
             if (session.getId() == null) {

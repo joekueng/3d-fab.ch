@@ -12,6 +12,7 @@ import com.printcalculator.repository.QuoteLineItemRepository;
 import com.printcalculator.repository.QuoteSessionRepository;
 import com.printcalculator.repository.ShopProductModelAssetRepository;
 import com.printcalculator.repository.ShopProductVariantRepository;
+import com.printcalculator.service.QuoteSessionExpiryPolicy;
 import com.printcalculator.service.QuoteSessionTotalsService;
 import com.printcalculator.service.quote.QuoteSessionResponseAssembler;
 import com.printcalculator.service.quote.QuoteStorageService;
@@ -51,6 +52,7 @@ public class ShopCartService {
     private final QuoteStorageService quoteStorageService;
     private final ShopStorageService shopStorageService;
     private final ShopCartCookieService shopCartCookieService;
+    private final QuoteSessionExpiryPolicy quoteSessionExpiryPolicy;
 
     public ShopCartService(
             QuoteSessionRepository quoteSessionRepository,
@@ -61,7 +63,8 @@ public class ShopCartService {
             QuoteSessionResponseAssembler quoteSessionResponseAssembler,
             QuoteStorageService quoteStorageService,
             ShopStorageService shopStorageService,
-            ShopCartCookieService shopCartCookieService
+            ShopCartCookieService shopCartCookieService,
+            QuoteSessionExpiryPolicy quoteSessionExpiryPolicy
     ) {
         this.quoteSessionRepository = quoteSessionRepository;
         this.quoteLineItemRepository = quoteLineItemRepository;
@@ -72,6 +75,7 @@ public class ShopCartService {
         this.quoteStorageService = quoteStorageService;
         this.shopStorageService = shopStorageService;
         this.shopCartCookieService = shopCartCookieService;
+        this.quoteSessionExpiryPolicy = quoteSessionExpiryPolicy;
     }
 
     public CartResult loadCart(HttpServletRequest request) {
@@ -191,7 +195,7 @@ public class ShopCartService {
         session.setMaterialCode("SHOP");
         session.setSupportsEnabled(false);
         session.setCreatedAt(OffsetDateTime.now());
-        session.setExpiresAt(nowPlusCookieTtl());
+        session.setExpiresAt(quoteSessionExpiryPolicy.newExpiry());
         session.setSetupCostChf(BigDecimal.ZERO);
         return quoteSessionRepository.save(session);
     }
@@ -318,12 +322,8 @@ public class ShopCartService {
 
     private void touchSession(QuoteSession session) {
         session.setStatus(ACTIVE_STATUS);
-        session.setExpiresAt(nowPlusCookieTtl());
+        session.setExpiresAt(quoteSessionExpiryPolicy.newExpiry());
         quoteSessionRepository.save(session);
-    }
-
-    private OffsetDateTime nowPlusCookieTtl() {
-        return OffsetDateTime.now().plusDays(Math.max(shopCartCookieService.getCookieTtlDays(), 1));
     }
 
     private boolean isSessionUnavailable(QuoteSession session) {
@@ -339,8 +339,7 @@ public class ShopCartService {
         if (CONVERTED_STATUS.equalsIgnoreCase(session.getStatus())) {
             return true;
         }
-        OffsetDateTime expiresAt = session.getExpiresAt();
-        return expiresAt != null && expiresAt.isBefore(OffsetDateTime.now());
+        return quoteSessionExpiryPolicy.isExpired(session.getExpiresAt());
     }
 
     private int normalizeQuantity(Integer quantity) {

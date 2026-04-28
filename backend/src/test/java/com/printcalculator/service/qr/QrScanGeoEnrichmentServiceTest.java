@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -47,5 +48,18 @@ class QrScanGeoEnrichmentServiceTest {
         assertEquals("Ticino", event.getRegionName());
         assertEquals("Lugano", event.getCityName());
         verify(qrScanEventRepository).save(event);
+    }
+
+    @Test
+    void enrich_shouldSkipLookupWhenLocationAlreadyExists() {
+        UUID eventId = UUID.randomUUID();
+        QrScanEvent event = new QrScanEvent();
+        event.setCountryCode("CH");
+
+        when(qrScanEventRepository.findById(eventId)).thenReturn(Optional.of(event));
+
+        service.enrich(eventId, "8.8.8.8");
+
+        verifyNoInteractions(geoLite2CityService);
     }
 }

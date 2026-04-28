@@ -36,18 +36,29 @@ public class QrScanGeoEnrichmentService {
             logger.info("QR geo debug: starting enrichment. qrScanEventId={}, clientIp={}", qrScanEventId, clientIp);
         }
 
-        geoLite2CityService.lookup(clientIp).ifPresentOrElse(
-                location -> qrScanEventRepository.findById(qrScanEventId)
-                        .ifPresentOrElse(
-                                event -> applyLocation(event, location),
-                                () -> {
-                                    if (debugLogging) {
-                                        logger.info("QR geo debug: event not found during enrichment. qrScanEventId={}", qrScanEventId);
-                                    }
-                                }),
+        qrScanEventRepository.findById(qrScanEventId).ifPresentOrElse(
+                event -> enrichEvent(event, clientIp),
                 () -> {
                     if (debugLogging) {
-                        logger.info("QR geo debug: no location resolved. qrScanEventId={}, clientIp={}", qrScanEventId, clientIp);
+                        logger.info("QR geo debug: event not found during enrichment. qrScanEventId={}", qrScanEventId);
+                    }
+                }
+        );
+    }
+
+    private void enrichEvent(QrScanEvent event, String clientIp) {
+        if (hasLocation(event)) {
+            if (debugLogging) {
+                logger.info("QR geo debug: enrichment skipped because location is already present. qrScanEventId={}", event.getId());
+            }
+            return;
+        }
+
+        geoLite2CityService.lookup(clientIp).ifPresentOrElse(
+                location -> applyLocation(event, location),
+                () -> {
+                    if (debugLogging) {
+                        logger.info("QR geo debug: no location resolved. qrScanEventId={}, clientIp={}", event.getId(), clientIp);
                     }
                 }
         );
@@ -67,5 +78,13 @@ public class QrScanGeoEnrichmentService {
                     location.regionName(),
                     location.cityName());
         }
+    }
+
+    private boolean hasLocation(QrScanEvent event) {
+        return event != null
+                && (event.getCountryCode() != null
+                || event.getCountryName() != null
+                || event.getRegionName() != null
+                || event.getCityName() != null);
     }
 }

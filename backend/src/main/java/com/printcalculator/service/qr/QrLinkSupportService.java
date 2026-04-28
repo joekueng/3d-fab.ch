@@ -153,7 +153,7 @@ public class QrLinkSupportService {
     }
 
     public String buildPublicUrl(String slug) {
-        return frontendBaseUrl.replaceAll("/+$", "") + "/api/public/qr/" + normalizeSlug(slug);
+        return frontendBaseUrl.replaceAll("/+$", "") + "/go/" + normalizeSlug(slug);
     }
 
     public String generateSvgForPublicUrl(String slug) {
