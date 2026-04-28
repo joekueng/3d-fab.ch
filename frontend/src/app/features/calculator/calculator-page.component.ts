@@ -149,6 +149,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     TrackedPrintSettings
   >();
   private pendingSessionRestore: PendingSessionRestore | null = null;
+  private restoreDebugRun = 0;
 
   @ViewChild('uploadForm') uploadForm!: UploadFormComponent;
   @ViewChild('resultCol') resultCol!: ElementRef;
@@ -264,6 +265,22 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
       return;
     }
 
+    // File restore is client-only: SSR can render the quote summary, but binary
+    // session content must be fetched fresh in the browser to avoid transfer
+    // cache serializing blobs into unusable objects during hydration.
+    if (!this.isBrowser) {
+      this.loading.set(false);
+      return;
+    }
+
+    const restoreRun = ++this.restoreDebugRun;
+    console.debug('[restoreFilesAndSettings:start]', {
+      restoreRun,
+      sessionId: session?.id,
+      itemIds: items.map((item) => item?.id),
+      fileNames: items.map((item) => item?.originalFilename),
+    });
+
     // Download all files
     const downloads = items.map((item) =>
       forkJoin({
@@ -287,12 +304,31 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
 
     forkJoin(downloads).subscribe({
       next: (results: any[]) => {
+        console.debug('[restoreFilesAndSettings:downloaded]', {
+          restoreRun,
+          sessionId: session?.id,
+          blobs: results.map((res) => ({
+            fileName: res.fileName,
+            originalBlobSize: res.originalBlob?.size ?? null,
+            previewBlobSize: res.previewBlob?.size ?? null,
+            hasConvertedPreview: res.hasConvertedPreview,
+          })),
+        });
         const files = results.map(
           (res) =>
             new File([res.originalBlob], res.fileName, {
               type: 'application/octet-stream',
             }),
         );
+
+        console.debug('[restoreFilesAndSettings:files-built]', {
+          restoreRun,
+          sessionId: session?.id,
+          files: files.map((file) => ({
+            name: file.name,
+            size: file.size,
+          })),
+        });
 
         const previewFiles = results.flatMap((res, index) => {
           if (!res.hasConvertedPreview || !res.previewBlob) {
@@ -736,11 +772,19 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     }
 
     const payload = this.pendingSessionRestore;
+    console.debug('[applyPendingSessionRestoreIfNeeded]', {
+      restoreRun: this.restoreDebugRun,
+      sessionId: payload.session?.id,
+      files: payload.files.map((file) => ({
+        name: file.name,
+        size: file.size,
+      })),
+    });
     const baselineSessionSettings = this.toTrackedSettingsFromSession(
       payload.session,
     );
 
-    this.uploadForm.setFiles(payload.files);
+    this.uploadForm.setFiles(payload.files, { autoSelect: false });
     payload.previewFiles.forEach((preview) => {
       this.uploadForm.setPreviewFileByIndex(preview.index, preview.file);
     });
@@ -776,7 +820,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
       }
     });
 
-    const selected = this.uploadForm.selectedFile();
+    const selected = payload.files[payload.files.length - 1] ?? null;
     if (selected) {
       this.uploadForm.selectFile(selected);
     }

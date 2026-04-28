@@ -617,9 +617,10 @@ export class UploadFormComponent implements OnInit {
     this.emitItemSettingsDiffChange();
   }
 
-  setFiles(files: File[]) {
+  setFiles(files: File[], options?: { autoSelect?: boolean }) {
     const defaults = this.getCurrentGlobalItemDefaults();
     const selection = this.getDefaultVariantSelection(defaults.material);
+    const autoSelect = options?.autoSelect ?? true;
 
     const validItems: FormItem[] = files.map((file) => ({
       file,
@@ -640,7 +641,11 @@ export class UploadFormComponent implements OnInit {
 
     if (validItems.length > 0) {
       this.form.get('itemsTouched')?.setValue(true);
-      this.selectFile(validItems[validItems.length - 1].file);
+      if (autoSelect) {
+        this.selectFile(validItems[validItems.length - 1].file);
+      } else {
+        this.selectedFile.set(null);
+      }
     } else {
       this.selectedFile.set(null);
     }
@@ -722,7 +727,7 @@ export class UploadFormComponent implements OnInit {
       return;
     }
 
-    this.setFiles(request.items.map((item) => item.file));
+    this.setFiles(request.items.map((item) => item.file), { autoSelect: false });
     this.patchSettings({
       materialCode: request.material,
       quality: request.quality,

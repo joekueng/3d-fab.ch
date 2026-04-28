@@ -59,7 +59,7 @@ describe('CalculatorPageComponent', () => {
     mode: 'easy',
   });
 
-  function createComponent() {
+  function createComponent(platformId?: Object) {
     const estimator = jasmine.createSpyObj<QuoteEstimatorService>(
       'QuoteEstimatorService',
       [
@@ -94,6 +94,7 @@ describe('CalculatorPageComponent', () => {
       router,
       route,
       languageService,
+      platformId,
     );
 
     const uploadForm = jasmine.createSpyObj<UploadFormComponent>(
@@ -344,6 +345,27 @@ describe('CalculatorPageComponent', () => {
     );
   });
 
+  it('skips binary session restore during SSR', () => {
+    const { component, estimator, uploadForm } = createComponent('server');
+
+    component.restoreFilesAndSettings(
+      {
+        id: 'session-1',
+      },
+      [
+        {
+          id: 'line-stl',
+          originalFilename: 'legacy.stl',
+          quantity: 1,
+        },
+      ],
+    );
+
+    expect(estimator.getLineItemContent).not.toHaveBeenCalled();
+    expect(uploadForm.setFiles).not.toHaveBeenCalled();
+    expect(component.loading()).toBeFalse();
+  });
+
   it('applies a pending session restore after the upload form becomes available', () => {
     const { component, estimator } = createComponent();
     const originalBlob = new Blob(['original']);
@@ -413,6 +435,10 @@ describe('CalculatorPageComponent', () => {
     component.ngAfterViewInit();
 
     expect(uploadForm.setFiles).toHaveBeenCalledTimes(1);
+    expect(uploadForm.setFiles).toHaveBeenCalledWith(
+      jasmine.any(Array),
+      { autoSelect: false },
+    );
     expect(uploadForm.setPreviewFileByIndex).toHaveBeenCalledWith(
       0,
       jasmine.any(File),
@@ -423,6 +449,7 @@ describe('CalculatorPageComponent', () => {
       colorName: 'White',
       filamentVariantId: 7,
     });
+    expect(uploadForm.selectFile).toHaveBeenCalledWith(jasmine.any(File));
     expect(component.error()).toBeFalse();
   });
 });
