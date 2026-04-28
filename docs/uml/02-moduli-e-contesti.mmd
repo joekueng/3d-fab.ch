@@ -1,0 +1,71 @@
+flowchart TB
+    classDef frontend fill:#e8f0ff,stroke:#2f5bd1,color:#222;
+    classDef backend fill:#e9f8ef,stroke:#2f8f46,color:#222;
+    classDef infra fill:#fff0eb,stroke:#c45a1a,color:#222;
+    classDef data fill:#f5ebff,stroke:#7c49c9,color:#222;
+
+    subgraph FE[Frontend Angular]
+        CalcFE[Calculator pages<br/>QuoteEstimatorService]:::frontend
+        ShopFE[Shop pages<br/>ShopService]:::frontend
+        CheckoutFE[Checkout + tracking ordine]:::frontend
+        AdminFE[Admin routes + admin services]:::frontend
+        SharedFE[SEO / i18n / PublicMediaService]:::frontend
+    end
+
+    subgraph API[Controller Spring Boot]
+        QuoteAPI[QuoteSessionController<br/>OptionsController]:::backend
+        ShopAPI[PublicShopController<br/>ShopCartController]:::backend
+        OrderAPI[OrderController]:::backend
+        MediaAPI[PublicMediaController]:::backend
+        QrAPI[PublicQrController]:::backend
+        AdminAPI[Admin controllers]:::backend
+    end
+
+    subgraph Core[Servizi applicativi]
+        QuoteCore[QuoteSessionItemService<br/>QuoteSessionTotalsService<br/>QuoteCalculator]:::backend
+        ShopCore[PublicShopCatalogService<br/>ShopCartService]:::backend
+        OrderCore[OrderService<br/>PaymentService]:::backend
+        ContentCore[AdminMediaControllerService<br/>PublicMediaQueryService]:::backend
+        AnalyticsCore[PublicQrControllerService<br/>QrScanGeoEnrichmentService]:::backend
+    end
+
+    subgraph Infra[Infrastruttura]
+        Security[SecurityConfig<br/>admin session filters]:::infra
+        SlicerInfra[SlicerService<br/>ProfileManager<br/>OrcaProfileResolver]:::infra
+        StorageInfra[StorageService<br/>MediaStorageService<br/>ShopStorageService]:::infra
+        EmailInfra[Event listeners<br/>EmailNotificationService]:::infra
+        RepoInfra[(Repositories + PostgreSQL)]:::data
+    end
+
+    CalcFE --> QuoteAPI
+    ShopFE --> ShopAPI
+    CheckoutFE --> OrderAPI
+    SharedFE --> MediaAPI
+    SharedFE --> QrAPI
+    AdminFE --> AdminAPI
+
+    QuoteAPI --> QuoteCore
+    ShopAPI --> ShopCore
+    OrderAPI --> OrderCore
+    MediaAPI --> ContentCore
+    QrAPI --> AnalyticsCore
+    AdminAPI --> QuoteCore
+    AdminAPI --> ShopCore
+    AdminAPI --> OrderCore
+    AdminAPI --> ContentCore
+    AdminAPI --> AnalyticsCore
+    AdminAPI --> Security
+
+    QuoteCore --> SlicerInfra
+    QuoteCore --> StorageInfra
+    ShopCore --> StorageInfra
+    OrderCore --> StorageInfra
+    OrderCore --> EmailInfra
+    ContentCore --> StorageInfra
+    AnalyticsCore --> RepoInfra
+
+    QuoteCore --> RepoInfra
+    ShopCore --> RepoInfra
+    OrderCore --> RepoInfra
+    ContentCore --> RepoInfra
+    Security --> RepoInfra

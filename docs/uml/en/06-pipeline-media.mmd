@@ -1,0 +1,37 @@
+flowchart LR
+    classDef actor fill:#fff6d6,stroke:#a66c00,color:#222;
+    classDef service fill:#e8f0ff,stroke:#2f5bd1,color:#222;
+    classDef core fill:#e9f8ef,stroke:#2f8f46,color:#222;
+    classDef data fill:#f5ebff,stroke:#7c49c9,color:#222;
+    classDef ext fill:#fff0eb,stroke:#c45a1a,color:#222;
+
+    Admin[Admin]:::actor
+    Pages[Home / About / Shop]:::actor
+
+    AdminUI[Admin media UI]:::service
+    AdminMedia[AdminMediaControllerService]:::core
+    Scan[ClamAVService]:::ext
+    Inspect[MediaImageInspector]:::ext
+    Ffmpeg[MediaFfmpegService]:::ext
+    Storage[MediaStorageService]:::core
+    MediaDb[(MediaAsset + MediaVariant + MediaUsage)]:::data
+
+    PublicMediaController[PublicMediaController]:::service
+    PublicMediaQuery[PublicMediaQueryService]:::core
+    PublicMediaClient[Angular PublicMediaService]:::service
+
+    Admin --> AdminUI --> AdminMedia
+    AdminMedia --> Scan
+    AdminMedia --> Inspect
+    AdminMedia --> Storage
+    AdminMedia --> Ffmpeg
+    Ffmpeg -->|thumb/card/hero in JPEG WEBP AVIF| Storage
+    AdminMedia --> MediaDb
+
+    Pages --> PublicMediaClient
+    PublicMediaClient --> PublicMediaController
+    PublicMediaController --> PublicMediaQuery
+    PublicMediaQuery --> MediaDb
+    PublicMediaQuery --> Storage
+    PublicMediaQuery -->|public variant URLs| PublicMediaClient
+    PublicMediaClient --> Pages

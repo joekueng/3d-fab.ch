@@ -1,0 +1,30 @@
+flowchart LR
+    classDef domain fill:#e8f0ff,stroke:#2f5bd1,color:#222;
+    classDef db fill:#f5ebff,stroke:#7c49c9,color:#222;
+    classDef fs fill:#e9f8ef,stroke:#2f8f46,color:#222;
+    classDef note fill:#f7f7f7,stroke:#666,color:#222;
+
+    QuoteFlow[Preventivo 3D]:::domain
+    OrderFlow[Ordini e pagamenti]:::domain
+    ContentFlow[Shop, media, QR e richieste custom]:::domain
+
+    QuoteDb[(DB preventivo<br/>quote_sessions, quote_line_items)]:::db
+    OrderDb[(DB ordini<br/>orders, order_items, payments, customers)]:::db
+    ContentDb[(DB contenuti<br/>shop, media, qr, custom requests)]:::db
+
+    QuoteFs[(storage_quotes<br/>modelli caricati e preview)]:::fs
+    OrderFs[(storage_orders<br/>file finali e documenti)]:::fs
+    ContentFs[(storage_shop + storage_media + storage_requests<br/>modelli shop, asset media, allegati)]:::fs
+
+    QuoteFlow --> QuoteDb
+    QuoteFlow --> QuoteFs
+
+    OrderFlow --> OrderDb
+    OrderFlow --> OrderFs
+
+    ContentFlow --> ContentDb
+    ContentFlow --> ContentFs
+
+    Note1[Regola del progetto:<br/>il database salva metadata e stato;<br/>le cartelle storage_* salvano i file veri.]:::note
+    Note1 -.-> QuoteDb
+    Note1 -.-> QuoteFs

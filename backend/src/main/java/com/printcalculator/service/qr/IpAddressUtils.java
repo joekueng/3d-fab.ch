@@ -19,9 +19,23 @@ final class IpAddressUtils {
                                   String remoteAddress,
                                   boolean trustProxyHeaders,
                                   List<IpAddressMatcher> trustedProxyMatchers) {
+        return resolveClientIp(null, forwardedFor, realIp, remoteAddress, trustProxyHeaders, trustedProxyMatchers);
+    }
+
+    static String resolveClientIp(String forwarded,
+                                  String forwardedFor,
+                                  String realIp,
+                                  String remoteAddress,
+                                  boolean trustProxyHeaders,
+                                  List<IpAddressMatcher> trustedProxyMatchers) {
         String normalizedRemoteAddress = normalizeIp(remoteAddress);
         if (trustProxyHeaders && isTrustedProxy(normalizedRemoteAddress, trustedProxyMatchers)) {
-            String forwardedClientIp = firstValidIpFromForwardedFor(forwardedFor);
+            String forwardedClientIp = clientIpFromProxyChain(parseForwardedForHeader(forwardedFor), trustedProxyMatchers);
+            if (forwardedClientIp != null) {
+                return forwardedClientIp;
+            }
+
+            forwardedClientIp = clientIpFromProxyChain(parseForwardedHeader(forwarded), trustedProxyMatchers);
             if (forwardedClientIp != null) {
                 return forwardedClientIp;
             }
@@ -94,18 +108,80 @@ final class IpAddressUtils {
         return trustedProxyMatchers.stream().anyMatch(matcher -> matcher.matches(remoteAddress));
     }
 
-    private static String firstValidIpFromForwardedFor(String forwardedFor) {
-        if (forwardedFor == null || forwardedFor.isBlank()) {
+    private static String clientIpFromProxyChain(List<String> proxyChain, List<IpAddressMatcher> trustedProxyMatchers) {
+        if (proxyChain == null || proxyChain.isEmpty()) {
             return null;
         }
 
-        for (String rawPart : forwardedFor.split(",")) {
-            String candidate = normalizeIp(rawPart);
-            if (candidate != null) {
+        List<String> normalizedChain = proxyChain.stream()
+                .map(IpAddressUtils::normalizeIp)
+                .filter(candidate -> candidate != null)
+                .toList();
+        if (normalizedChain.isEmpty()) {
+            return null;
+        }
+
+        String fallbackUntrustedIp = null;
+        for (int i = normalizedChain.size() - 1; i >= 0; i--) {
+            String candidate = normalizedChain.get(i);
+            if (isTrustedProxy(candidate, trustedProxyMatchers)) {
+                continue;
+            }
+            if (fallbackUntrustedIp == null) {
+                fallbackUntrustedIp = candidate;
+            }
+            if (isPublicIp(candidate)) {
                 return candidate;
             }
         }
+
+        if (fallbackUntrustedIp != null) {
+            return fallbackUntrustedIp;
+        }
+
+        return normalizedChain.get(0);
+    }
+
+    private static List<String> parseForwardedHeader(String forwarded) {
+        if (forwarded == null || forwarded.isBlank()) {
+            return List.of();
+        }
+
+        return Arrays.stream(forwarded.split(","))
+                .map(String::trim)
+                .filter(value -> !value.isBlank())
+                .map(IpAddressUtils::extractForwardedForValue)
+                .filter(value -> value != null && !value.isBlank())
+                .toList();
+    }
+
+    private static String extractForwardedForValue(String forwardedElement) {
+        for (String rawPart : forwardedElement.split(";")) {
+            String part = rawPart.trim();
+            int separator = part.indexOf('=');
+            if (separator <= 0) {
+                continue;
+            }
+
+            String name = part.substring(0, separator).trim();
+            if (!"for".equalsIgnoreCase(name)) {
+                continue;
+            }
+
+            return part.substring(separator + 1).trim();
+        }
         return null;
+    }
+
+    private static List<String> parseForwardedForHeader(String forwardedFor) {
+        if (forwardedFor == null || forwardedFor.isBlank()) {
+            return List.of();
+        }
+
+        return Arrays.stream(forwardedFor.split(","))
+                .map(String::trim)
+                .filter(value -> !value.isBlank())
+                .toList();
     }
 
     private static String normalizeCandidate(String candidate) {
