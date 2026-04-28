@@ -635,12 +635,16 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
       maybeFailure.message.trim().length > 0
     ) {
       return {
-        fileName: typeof maybeFailure.fileName === 'string' ? maybeFailure.fileName : '',
+        fileName:
+          typeof maybeFailure.fileName === 'string'
+            ? maybeFailure.fileName
+            : '',
         status:
           typeof maybeFailure.status === 'number'
             ? maybeFailure.status
             : undefined,
-        code: typeof maybeFailure.code === 'string' ? maybeFailure.code : undefined,
+        code:
+          typeof maybeFailure.code === 'string' ? maybeFailure.code : undefined,
         message: maybeFailure.message.trim(),
       };
     }

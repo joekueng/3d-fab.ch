@@ -281,14 +281,13 @@ export class QuoteEstimatorService {
               const failures = uploadResults
                 .map((entry) => entry.failure)
                 .filter(
-                  (
-                    failure,
-                  ): failure is QuoteCalculationFailure => !!failure,
+                  (failure): failure is QuoteCalculationFailure => !!failure,
                 );
 
               if (successfulUploads === 0) {
                 observer.error(
-                  failures[0] || 'One or more files failed during upload/analysis',
+                  failures[0] ||
+                    'One or more files failed during upload/analysis',
                 );
                 return;
               }
@@ -438,9 +437,7 @@ export class QuoteEstimatorService {
           fileName,
           status: error.status || undefined,
           code:
-            typeof payload['code'] === 'string'
-              ? payload['code']
-              : undefined,
+            typeof payload['code'] === 'string' ? payload['code'] : undefined,
           message,
         };
       }
