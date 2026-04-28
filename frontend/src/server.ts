@@ -1,6 +1,7 @@
 import { APP_BASE_HREF } from '@angular/common';
 import { CommonEngine, isMainModule } from '@angular/ssr/node';
 import express from 'express';
+import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import bootstrap from './main.server';
@@ -14,6 +15,8 @@ import { resolvePublicRedirectTarget } from './server-routing';
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
 const indexHtml = join(serverDistFolder, 'index.server.html');
+const require = createRequire(import.meta.url);
+const escapeHtml = require('escape-html') as (value: string) => string;
 
 const app = express();
 const commonEngine = new CommonEngine();
@@ -152,13 +155,4 @@ function renderPublicQrBridgePage(target: string): string {
     <p><a href="${escapedTarget}">Continua</a></p>
   </body>
 </html>`;
-}
-
-function escapeHtml(value: string): string {
-  return String(value)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
 }
