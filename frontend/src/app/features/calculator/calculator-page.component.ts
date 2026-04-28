@@ -749,7 +749,10 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     payload.items.forEach((item, index) => {
       // Preserve persisted quantities when restoring from session.
       // Without this, setFiles() defaults every item back to 1.
-      this.uploadForm.updateItemQuantityByIndex(index, Number(item.quantity || 1));
+      this.uploadForm.updateItemQuantityByIndex(
+        index,
+        Number(item.quantity || 1),
+      );
 
       const tracked = this.toTrackedSettingsFromSessionItem(
         item,
