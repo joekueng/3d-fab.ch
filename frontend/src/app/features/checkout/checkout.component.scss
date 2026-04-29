@@ -21,6 +21,12 @@ app-toggle-selector.user-type-selector-compact {
   margin: var(--space-4) 0 var(--space-4);
 }
 
+.loading-panel,
+.summary-state {
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
 .consent-error {
   margin-top: var(--space-2);
   margin-left: 2.1rem;
@@ -225,6 +231,10 @@ app-toggle-selector.user-type-selector-compact {
   margin-bottom: var(--space-6);
   border: 1px solid #fecaca;
   font-weight: 500;
+}
+
+.loading-panel {
+  margin-bottom: var(--space-6);
 }
 
 .preview-modal-backdrop {

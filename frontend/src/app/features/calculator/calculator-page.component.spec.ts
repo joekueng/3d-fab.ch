@@ -1,5 +1,6 @@
 import { of, throwError } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
+import { TestBed } from '@angular/core/testing';
 import { CalculatorPageComponent } from './calculator-page.component';
 import {
   PendingCalculatorDraft,
@@ -59,7 +60,12 @@ describe('CalculatorPageComponent', () => {
     mode: 'easy',
   });
 
-  function createComponent(platformId?: Object) {
+  function createComponent(
+    platformId?: Object,
+    queryParams: Record<string, unknown> = {},
+  ) {
+    TestBed.resetTestingModule();
+
     const estimator = jasmine.createSpyObj<QuoteEstimatorService>(
       'QuoteEstimatorService',
       [
@@ -75,12 +81,15 @@ describe('CalculatorPageComponent', () => {
     const router = jasmine.createSpyObj<Router>('Router', ['navigate']);
     const route = {
       data: of({}),
-      queryParams: of({}),
+      queryParams: of(queryParams),
       snapshot: {
         routeConfig: { path: 'basic' },
-        queryParams: {},
+        queryParams,
         queryParamMap: {
-          get: () => null,
+          get: (key: string) => {
+            const value = queryParams[key];
+            return typeof value === 'string' ? value : null;
+          },
         },
       },
     } as unknown as ActivatedRoute;
@@ -363,6 +372,46 @@ describe('CalculatorPageComponent', () => {
 
     expect(estimator.getLineItemContent).not.toHaveBeenCalled();
     expect(uploadForm.setFiles).not.toHaveBeenCalled();
+    expect(component.loading()).toBeFalse();
+  });
+
+  it('does not restore a quote session from query params during SSR', () => {
+    const { component, estimator } = createComponent('server', {
+      session: 'session-1',
+    });
+
+    component.ngOnInit();
+
+    expect(estimator.getQuoteSession).not.toHaveBeenCalled();
+  });
+
+  it('restores a quote session from query params in the browser', () => {
+    const { component, estimator } = createComponent('browser', {
+      session: 'session-1',
+    });
+
+    estimator.getQuoteSession.and.returnValue(
+      of({
+        session: {
+          id: 'session-1',
+          status: 'ACTIVE',
+          materialCode: 'PLA',
+          quality: 'standard',
+          nozzleDiameterMm: 0.4,
+          layerHeightMm: 0.2,
+          infillPercent: 15,
+          infillPattern: 'grid',
+          supportsEnabled: true,
+        },
+        items: [],
+      }),
+    );
+    estimator.mapSessionToQuoteResult.and.returnValue(createResult('session-1'));
+
+    component.ngOnInit();
+
+    expect(estimator.getQuoteSession).toHaveBeenCalledWith('session-1');
+    expect(component.result()?.sessionId).toBe('session-1');
     expect(component.loading()).toBeFalse();
   });
 

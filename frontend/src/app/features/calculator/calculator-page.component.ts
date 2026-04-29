@@ -172,6 +172,10 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
       }
     });
 
+    if (!this.isBrowser) {
+      return;
+    }
+
     this.route.queryParams.subscribe((params) => {
       const sessionId = params['session'];
       if (sessionId) {
