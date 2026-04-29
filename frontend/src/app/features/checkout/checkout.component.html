@@ -268,7 +268,10 @@
             {{ "CHECKOUT.LOADING" | translate }}
           </div>
 
-          <div class="summary-items" *ngIf="!loading && quoteSession() as session">
+          <div
+            class="summary-items"
+            *ngIf="!loading && quoteSession() as session"
+          >
             <div class="summary-item" *ngFor="let item of session.items">
               <div class="item-details">
                 <span class="item-name">{{ itemDisplayName(item) }}</span>

@@ -406,7 +406,9 @@ describe('CalculatorPageComponent', () => {
         items: [],
       }),
     );
-    estimator.mapSessionToQuoteResult.and.returnValue(createResult('session-1'));
+    estimator.mapSessionToQuoteResult.and.returnValue(
+      createResult('session-1'),
+    );
 
     component.ngOnInit();
 
