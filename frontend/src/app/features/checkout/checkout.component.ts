@@ -1,5 +1,13 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {
+  Component,
+  inject,
+  OnInit,
+  signal,
+  Inject,
+  Optional,
+  PLATFORM_ID,
+} from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   FormBuilder,
   FormGroup,
@@ -52,10 +60,11 @@ export class CheckoutComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   readonly languageService = inject(LanguageService);
+  private readonly isBrowser: boolean;
 
   checkoutForm: FormGroup;
   sessionId: string | null = null;
-  loading = false;
+  loading = true;
   error: string | null = null;
   isSubmitting = signal(false); // Add signal for submit state
   quoteSession = signal<any>(null); // Add signal for session details
@@ -74,7 +83,8 @@ export class CheckoutComponent implements OnInit {
     { label: 'CONTACT.TYPE_COMPANY', value: 'BUSINESS' },
   ];
 
-  constructor() {
+  constructor(@Optional() @Inject(PLATFORM_ID) platformId?: Object) {
+    this.isBrowser = isPlatformBrowser(platformId ?? 'browser');
     this.checkoutForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       phone: ['', Validators.required],
@@ -141,19 +151,6 @@ export class CheckoutComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadMaterialColorPalette();
-
-    this.route.queryParams.subscribe((params) => {
-      this.sessionId = params['session'];
-      if (!this.sessionId) {
-        this.error = 'CHECKOUT.ERR_NO_SESSION_START';
-        this.router.navigate(['/', this.languageService.selectedLang()]);
-        return;
-      }
-
-      this.loadSessionDetails();
-    });
-
     // Toggle shipping validation based on checkbox
     this.checkoutForm
       .get('shippingSameAsBilling')
@@ -170,23 +167,49 @@ export class CheckoutComponent implements OnInit {
 
     // Initial state
     this.checkoutForm.get('shippingAddress')?.disable();
+
+    if (!this.isBrowser) {
+      return;
+    }
+
+    this.loadMaterialColorPalette();
+
+    this.route.queryParams.subscribe((params) => {
+      this.sessionId = params['session'];
+      if (!this.sessionId) {
+        this.error = 'CHECKOUT.ERR_NO_SESSION_START';
+        this.loading = false;
+        this.router.navigate(['/', this.languageService.selectedLang()]);
+        return;
+      }
+
+      this.loadSessionDetails();
+    });
   }
 
   loadSessionDetails() {
     if (!this.sessionId) return; // Ensure sessionId is present before fetching
+    this.loading = true;
+    this.error = null;
+    this.quoteSession.set(null);
+    this.resetPreviewState();
     this.quoteService.getQuoteSession(this.sessionId).subscribe({
       next: (session) => {
+        this.error = null;
         this.quoteSession.set(session);
         if (Array.isArray(session?.items) && session.items.length > 0) {
           this.loadStlPreviews(session);
         } else {
           this.resetPreviewState();
         }
-        console.log('Loaded session:', session);
+        this.loading = false;
       },
       error: (err) => {
         console.error('Failed to load session', err);
+        this.quoteSession.set(null);
+        this.resetPreviewState();
         this.error = 'CHECKOUT.ERR_LOAD_SESSION';
+        this.loading = false;
       },
     });
   }

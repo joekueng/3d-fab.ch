@@ -83,6 +83,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
   errorKey = signal<string>('CALC.ERROR_GENERIC');
   errorMessage = signal<string | null>(null);
   warningMessage = signal<string | null>(null);
+  showErrorAlert = computed(() => this.error() && !this.result());
   isZeroQuoteError = computed(
     () => this.error() && this.errorKey() === 'CALC.ERROR_ZERO_PRICE',
   );
@@ -170,6 +171,10 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
         this.mode.set(data['mode']);
       }
     });
+
+    if (!this.isBrowser) {
+      return;
+    }
 
     this.route.queryParams.subscribe((params) => {
       const sessionId = params['session'];

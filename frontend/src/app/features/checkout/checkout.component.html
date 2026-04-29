@@ -1,7 +1,7 @@
 <div class="checkout-page">
-  <div class="container ui-page-hero ui-page-hero--spacious checkout-hero">
-    <h1 class="ui-page-title">{{ "CHECKOUT.TITLE" | translate }}</h1>
-    <p class="ui-page-subtitle cad-subtitle" *ngIf="isCadSession()">
+  <div class="container ui-simple-hero checkout-hero">
+    <h1 class="ui-simple-hero__title">{{ "CHECKOUT.TITLE" | translate }}</h1>
+    <p class="ui-simple-hero__subtitle cad-subtitle" *ngIf="isCadSession()">
       {{ "CHECKOUT.CAD_SERVICE" | translate }}
       <ng-container *ngIf="cadRequestId()">
         {{ "CHECKOUT.CAD_REQUEST_REF" | translate: { id: cadRequestId() } }}
@@ -13,12 +13,20 @@
     <div class="checkout-layout ui-two-column-layout">
       <!-- LEFT COLUMN: Form -->
       <div class="checkout-form-section">
+        <div *ngIf="loading" class="loading-panel ui-soft-panel">
+          {{ "CHECKOUT.LOADING" | translate }}
+        </div>
+
         <!-- Error Message -->
-        <div *ngIf="error" class="error-message">
+        <div *ngIf="!loading && error" class="error-message">
           {{ error | translate }}
         </div>
 
-        <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()" *ngIf="!error">
+        <form
+          [formGroup]="checkoutForm"
+          (ngSubmit)="onSubmit()"
+          *ngIf="!loading && !error && quoteSession()"
+        >
           <!-- Contact Info Card -->
           <app-card class="mb-6">
             <div class="ui-card-header">
@@ -256,7 +264,14 @@
             </h3>
           </div>
 
-          <div class="summary-items" *ngIf="quoteSession() as session">
+          <div class="summary-state" *ngIf="loading">
+            {{ "CHECKOUT.LOADING" | translate }}
+          </div>
+
+          <div
+            class="summary-items"
+            *ngIf="!loading && quoteSession() as session"
+          >
             <div class="summary-item" *ngFor="let item of session.items">
               <div class="item-details">
                 <span class="item-name">{{ itemDisplayName(item) }}</span>
@@ -348,7 +363,7 @@
           </div>
 
           <app-price-breakdown
-            *ngIf="quoteSession() as session"
+            *ngIf="!loading && quoteSession() as session"
             [rows]="checkoutPriceBreakdownRows(session)"
             [total]="session.grandTotalChf || 0"
             [currency]="'CHF'"

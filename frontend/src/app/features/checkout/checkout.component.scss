@@ -1,9 +1,9 @@
 .checkout-hero {
-  padding-top: calc(var(--space-12) + var(--space-4));
+  padding-bottom: var(--space-4);
 }
 
 .cad-subtitle {
-  margin: 0;
+  margin-bottom: 0;
 }
 
 /* User Type Selector CSS has been extracted to app-toggle-selector component */
@@ -19,6 +19,12 @@ app-toggle-selector.user-type-selector-compact {
 
 .legal-consent {
   margin: var(--space-4) 0 var(--space-4);
+}
+
+.loading-panel,
+.summary-state {
+  color: var(--color-text-muted);
+  text-align: center;
 }
 
 .consent-error {
@@ -227,6 +233,10 @@ app-toggle-selector.user-type-selector-compact {
   font-weight: 500;
 }
 
+.loading-panel {
+  margin-bottom: var(--space-6);
+}
+
 .preview-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -276,10 +286,4 @@ app-toggle-selector.user-type-selector-compact {
 
 .mb-6 {
   margin-bottom: var(--space-6);
-}
-
-@media (max-width: 640px) {
-  .checkout-hero {
-    padding-top: calc(var(--space-8) + var(--space-4));
-  }
 }
