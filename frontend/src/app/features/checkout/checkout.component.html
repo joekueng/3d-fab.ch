@@ -1,7 +1,7 @@
 <div class="checkout-page">
-  <div class="container ui-page-hero ui-page-hero--spacious">
-    <h1 class="ui-page-title">{{ "CHECKOUT.TITLE" | translate }}</h1>
-    <p class="ui-page-subtitle cad-subtitle" *ngIf="isCadSession()">
+  <div class="container ui-simple-hero checkout-hero">
+    <h1 class="ui-simple-hero__title">{{ "CHECKOUT.TITLE" | translate }}</h1>
+    <p class="ui-simple-hero__subtitle cad-subtitle" *ngIf="isCadSession()">
       {{ "CHECKOUT.CAD_SERVICE" | translate }}
       <ng-container *ngIf="cadRequestId()">
         {{ "CHECKOUT.CAD_REQUEST_REF" | translate: { id: cadRequestId() } }}
