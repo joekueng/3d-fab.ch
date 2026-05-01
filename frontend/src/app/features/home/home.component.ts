@@ -1,11 +1,23 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import {
+  Component,
+  DestroyRef,
+  PLATFORM_ID,
+  computed,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
 import { LanguageService } from '../../core/services/language.service';
+import {
+  HomeProject,
+  HomeProjectService,
+} from '../../core/services/home-project.service';
 import {
   buildPublicMediaUsageScopeKey,
   PublicMediaDisplayImage,
@@ -69,8 +81,21 @@ const HOME_CAPABILITY_CONFIGS: readonly HomeCapabilityConfig[] = [
   styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent {
+  private readonly destroyRef = inject(DestroyRef);
   private readonly publicMediaService = inject(PublicMediaService);
+  private readonly homeProjectService = inject(HomeProjectService);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private homeProjectAutoplayId: number | null = null;
+  private shopGalleryAutoplayId: number | null = null;
   readonly languageService = inject(LanguageService);
+  readonly homeProjectAutoplayMs = 6000;
+  readonly homeProjectAutoplayDuration = `${this.homeProjectAutoplayMs}ms`;
+  readonly shopGalleryAutoplayMs = 5000;
+  readonly shopGalleryAutoplayDuration = `${this.shopGalleryAutoplayMs}ms`;
+
+  readonly homeProjects = toSignal(this.homeProjectService.getProjects(), {
+    initialValue: [] as readonly HomeProject[],
+  });
 
   private readonly mediaByUsage = toSignal(
     this.publicMediaService.getUsageCollections([
@@ -139,6 +164,14 @@ export class HomeComponent {
     HOME_CAPABILITY_CONFIGS.map((config) => this.buildCapabilityCard(config)),
   );
 
+  readonly homeProjectIndex = signal(0);
+  readonly homeProjectTrackTransform = computed(
+    () => `translateX(-${this.homeProjectIndex() * 100}%)`,
+  );
+  readonly shopGalleryIndex = signal(0);
+  readonly shopGalleryTrackTransform = computed(
+    () => `translateX(-${this.shopGalleryIndex() * 100}%)`,
+  );
   readonly founderImageIndex = signal(0);
   readonly currentFounderImage = computed<PublicMediaDisplayImage | null>(
     () => {
@@ -152,6 +185,46 @@ export class HomeComponent {
 
   constructor() {
     effect(() => {
+      const projects = this.homeProjects();
+      const currentIndex = this.homeProjectIndex();
+      if (projects.length === 0) {
+        this.stopHomeProjectAutoplay();
+        if (currentIndex !== 0) {
+          this.homeProjectIndex.set(0);
+        }
+        return;
+      }
+      if (currentIndex >= projects.length) {
+        this.homeProjectIndex.set(0);
+      }
+      if (projects.length > 1) {
+        this.startHomeProjectAutoplay();
+      } else {
+        this.stopHomeProjectAutoplay();
+      }
+    });
+
+    effect(() => {
+      const images = this.shopGalleryImages();
+      const currentIndex = this.shopGalleryIndex();
+      if (images.length === 0) {
+        this.stopShopGalleryAutoplay();
+        if (currentIndex !== 0) {
+          this.shopGalleryIndex.set(0);
+        }
+        return;
+      }
+      if (currentIndex >= images.length) {
+        this.shopGalleryIndex.set(0);
+      }
+      if (images.length > 1) {
+        this.startShopGalleryAutoplay();
+      } else {
+        this.stopShopGalleryAutoplay();
+      }
+    });
+
+    effect(() => {
       const images = this.founderImages();
       const currentIndex = this.founderImageIndex();
       if (images.length === 0) {
@@ -164,6 +237,53 @@ export class HomeComponent {
         this.founderImageIndex.set(0);
       }
     });
+
+    this.destroyRef.onDestroy(() => {
+      this.stopHomeProjectAutoplay();
+      this.stopShopGalleryAutoplay();
+    });
+  }
+
+  selectHomeProject(index: number): void {
+    const totalProjects = this.homeProjects().length;
+    if (index < 0 || index >= totalProjects) {
+      return;
+    }
+    this.homeProjectIndex.set(index);
+    this.restartHomeProjectAutoplay();
+  }
+
+  homeProjectImageFallbackUrl(project: HomeProject): string | null {
+    const image = project.image;
+    return (
+      image?.hero?.jpegUrl ??
+      image?.hero?.webpUrl ??
+      image?.hero?.avifUrl ??
+      image?.card?.jpegUrl ??
+      image?.card?.webpUrl ??
+      image?.card?.avifUrl ??
+      image?.thumb?.jpegUrl ??
+      image?.thumb?.webpUrl ??
+      image?.thumb?.avifUrl ??
+      null
+    );
+  }
+
+  homeProjectImageAvifUrl(project: HomeProject): string | null {
+    return project.image?.hero?.avifUrl ?? project.image?.card?.avifUrl ?? null;
+  }
+
+  homeProjectImageWebpUrl(project: HomeProject): string | null {
+    return project.image?.hero?.webpUrl ?? project.image?.card?.webpUrl ?? null;
+  }
+
+  selectShopGalleryImage(index: number): void {
+    const totalImages = this.shopGalleryImages().length;
+    if (index < 0 || index >= totalImages) {
+      return;
+    }
+    this.shopGalleryIndex.set(index);
+    this.restartShopGalleryAutoplay();
   }
 
   prevFounderImage(): void {
@@ -198,6 +318,10 @@ export class HomeComponent {
     return card.usageKey;
   }
 
+  trackHomeProject(_: number, project: HomeProject): string {
+    return project.id;
+  }
+
   private buildCapabilityCard(
     config: HomeCapabilityConfig,
   ): HomeCapabilityCard {
@@ -213,5 +337,89 @@ export class HomeComponent {
         ? this.publicMediaService.toDisplayImage(primaryImage, 'card')
         : null,
     };
+  }
+
+  private advanceHomeProject(): void {
+    const totalProjects = this.homeProjects().length;
+    if (totalProjects <= 1) {
+      return;
+    }
+    this.homeProjectIndex.set(
+      this.homeProjectIndex() === totalProjects - 1
+        ? 0
+        : this.homeProjectIndex() + 1,
+    );
+  }
+
+  private restartHomeProjectAutoplay(): void {
+    this.stopHomeProjectAutoplay();
+    this.startHomeProjectAutoplay();
+  }
+
+  private startHomeProjectAutoplay(): void {
+    if (
+      !this.isBrowser ||
+      this.homeProjectAutoplayId !== null ||
+      this.homeProjects().length <= 1 ||
+      this.prefersReducedMotion()
+    ) {
+      return;
+    }
+
+    this.homeProjectAutoplayId = window.setInterval(() => {
+      this.advanceHomeProject();
+    }, this.homeProjectAutoplayMs);
+  }
+
+  private stopHomeProjectAutoplay(): void {
+    if (!this.isBrowser || this.homeProjectAutoplayId === null) {
+      return;
+    }
+    window.clearInterval(this.homeProjectAutoplayId);
+    this.homeProjectAutoplayId = null;
+  }
+
+  private advanceShopGalleryImage(): void {
+    const totalImages = this.shopGalleryImages().length;
+    if (totalImages <= 1) {
+      return;
+    }
+    this.shopGalleryIndex.set(
+      this.shopGalleryIndex() === totalImages - 1
+        ? 0
+        : this.shopGalleryIndex() + 1,
+    );
+  }
+
+  private restartShopGalleryAutoplay(): void {
+    this.stopShopGalleryAutoplay();
+    this.startShopGalleryAutoplay();
+  }
+
+  private startShopGalleryAutoplay(): void {
+    if (
+      !this.isBrowser ||
+      this.shopGalleryAutoplayId !== null ||
+      this.shopGalleryImages().length <= 1 ||
+      this.prefersReducedMotion()
+    ) {
+      return;
+    }
+
+    this.shopGalleryAutoplayId = window.setInterval(() => {
+      this.advanceShopGalleryImage();
+    }, this.shopGalleryAutoplayMs);
+  }
+
+  private stopShopGalleryAutoplay(): void {
+    if (!this.isBrowser || this.shopGalleryAutoplayId === null) {
+      return;
+    }
+    window.clearInterval(this.shopGalleryAutoplayId);
+    this.shopGalleryAutoplayId = null;
+  }
+
+  private prefersReducedMotion(): boolean {
+    return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   }
 }

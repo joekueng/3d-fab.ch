@@ -60,6 +60,108 @@
     </div>
   </section>
 
+  @if (homeProjects().length) {
+    <section
+      class="section home-projects ui-section-block"
+      [style.--home-project-duration]="homeProjectAutoplayDuration"
+    >
+      <div class="container home-project-shell">
+        <div class="home-project-viewport">
+          <div
+            class="home-project-track"
+            [style.transform]="homeProjectTrackTransform()"
+          >
+            <article
+              class="home-project-slide"
+              *ngFor="
+                let project of homeProjects();
+                let i = index;
+                trackBy: trackHomeProject
+              "
+              [attr.aria-hidden]="i === homeProjectIndex() ? null : 'true'"
+            >
+              <div class="home-project-copy">
+                @if (project.eyebrow) {
+                  <p class="home-project-eyebrow ui-eyebrow">
+                    {{ project.eyebrow }}
+                  </p>
+                }
+                @if (project.title) {
+                  <h2 class="home-project-title">{{ project.title }}</h2>
+                }
+                @if (project.description) {
+                  <p class="home-project-description">
+                    {{ project.description }}
+                  </p>
+                }
+                <div class="home-project-actions ui-inline-actions">
+                  <app-button
+                    variant="primary"
+                    [routerLink]="languageService.localizedPath('/contact')"
+                    >{{ "HOME.PROJECTS_CTA_CONTACT" | translate }}</app-button
+                  >
+                  <app-button
+                    variant="outline"
+                    [routerLink]="
+                      languageService.localizedPath('/calculator/basic')
+                    "
+                    >{{
+                      "HOME.PROJECTS_CTA_CALCULATOR" | translate
+                    }}</app-button
+                  >
+                </div>
+              </div>
+
+              <div class="home-project-media">
+                @if (homeProjectImageFallbackUrl(project); as imageUrl) {
+                  <picture>
+                    @if (homeProjectImageAvifUrl(project); as avifUrl) {
+                      <source [srcset]="avifUrl" type="image/avif" />
+                    }
+                    @if (homeProjectImageWebpUrl(project); as webpUrl) {
+                      <source [srcset]="webpUrl" type="image/webp" />
+                    }
+                    <img
+                      [src]="imageUrl"
+                      [attr.alt]="project.image?.altText || project.title || ''"
+                      width="1200"
+                      height="800"
+                    />
+                  </picture>
+                } @else {
+                  <div class="home-project-media-fallback">
+                    <span>{{ project.title }}</span>
+                  </div>
+                }
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <div
+          class="home-project-indicators"
+          *ngIf="homeProjects().length > 1"
+        >
+          <button
+            type="button"
+            class="home-project-dot"
+            *ngFor="
+              let project of homeProjects();
+              let i = index;
+              trackBy: trackHomeProject
+            "
+            [class.is-active]="i === homeProjectIndex()"
+            [attr.aria-current]="i === homeProjectIndex() ? 'true' : null"
+            [attr.aria-label]="
+              ('HOME.PROJECTS_SLIDE_ARIA' | translate) + ' ' + (i + 1)
+            "
+            (click)="selectHomeProject(i)"
+          ></button>
+        </div>
+      </div>
+    </section>
+  }
+
   <section class="section capabilities ui-section-block">
     <div class="capabilities-bg"></div>
     <div class="container">
@@ -186,31 +288,65 @@
         </div>
       </div>
       <div
-        class="shop-gallery ui-gallery-strip"
-        tabindex="0"
+        class="shop-gallery shop-carousel"
+        [style.--shop-carousel-duration]="shopGalleryAutoplayDuration"
         [attr.aria-label]="'HOME.SHOP_GALLERY_ARIA' | translate"
       >
-        <figure
-          class="shop-gallery-item ui-gallery-card"
-          *ngFor="let image of shopGalleryImages(); trackBy: trackMediaAsset"
+        <div class="shop-carousel-viewport">
+          <div
+            class="shop-carousel-track"
+            [style.transform]="shopGalleryTrackTransform()"
+          >
+            <figure
+              class="shop-gallery-item shop-carousel-slide ui-gallery-card"
+              *ngFor="
+                let image of shopGalleryImages();
+                let i = index;
+                trackBy: trackMediaAsset
+              "
+              [attr.aria-hidden]="i === shopGalleryIndex() ? null : 'true'"
+            >
+              <picture>
+                <source
+                  *ngIf="image.source.avifUrl"
+                  [srcset]="image.source.avifUrl"
+                  type="image/avif"
+                />
+                <source
+                  *ngIf="image.source.webpUrl"
+                  [srcset]="image.source.webpUrl"
+                  type="image/webp"
+                />
+                <img
+                  [src]="image.source.fallbackUrl"
+                  [attr.alt]="
+                    image.altText || ('HOME.SEC_SHOP_TITLE' | translate)
+                  "
+                />
+              </picture>
+            </figure>
+          </div>
+        </div>
+        <div
+          class="shop-carousel-indicators"
+          *ngIf="shopGalleryImages().length > 1"
         >
-          <picture>
-            <source
-              *ngIf="image.source.avifUrl"
-              [srcset]="image.source.avifUrl"
-              type="image/avif"
-            />
-            <source
-              *ngIf="image.source.webpUrl"
-              [srcset]="image.source.webpUrl"
-              type="image/webp"
-            />
-            <img
-              [src]="image.source.fallbackUrl"
-              [attr.alt]="image.altText || ('HOME.SEC_SHOP_TITLE' | translate)"
-            />
-          </picture>
-        </figure>
+          <button
+            type="button"
+            class="shop-carousel-dot"
+            *ngFor="
+              let image of shopGalleryImages();
+              let i = index;
+              trackBy: trackMediaAsset
+            "
+            [class.is-active]="i === shopGalleryIndex()"
+            [attr.aria-current]="i === shopGalleryIndex() ? 'true' : null"
+            [attr.aria-label]="
+              ('HOME.SHOP_GALLERY_ARIA' | translate) + ' ' + (i + 1)
+            "
+            (click)="selectShopGalleryImage(i)"
+          ></button>
+        </div>
       </div>
       <div class="shop-cards">
         <app-card>

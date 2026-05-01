@@ -606,7 +606,10 @@
     "FOUNDER_NEXT_ARIA": "Photo suivante",
     "SHOP_IMAGE_ALT_1": "Produit technique imprimé en 3D",
     "FOUNDER_IMAGE_ALT_1": "Fondateur - photo 1",
-    "FOUNDER_IMAGE_ALT_2": "Fondateur - photo 2"
+    "FOUNDER_IMAGE_ALT_2": "Fondateur - photo 2",
+    "PROJECTS_CTA_CONTACT": "Demander un projet",
+    "PROJECTS_CTA_CALCULATOR": "Calculer depuis un fichier",
+    "PROJECTS_SLIDE_ARIA": "Projet réalisé"
   },
   "CALC": {
     "TITLE": "Calculer un devis 3D",
