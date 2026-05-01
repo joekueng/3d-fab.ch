@@ -2,11 +2,16 @@
   <header class="section-header">
     <div class="header-copy">
       <h1>Richieste di contatto</h1>
-      <span class="total-pill ui-pill">{{ requests.length }} richieste</span>
     </div>
-    <app-button type="button" (click)="loadRequests()" [disabled]="loading">
-      Aggiorna
-    </app-button>
+    <div class="header-actions ui-inline-actions">
+      <article class="ui-stat-chip">
+        <strong>{{ requests.length }}</strong>
+        <span>richieste</span>
+      </article>
+      <app-button type="button" (click)="loadRequests()" [disabled]="loading">
+        Aggiorna
+      </app-button>
+    </div>
   </header>
 
   <p class="ui-banner ui-banner--error" *ngIf="errorMessage">
