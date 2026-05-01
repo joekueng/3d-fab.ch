@@ -2,7 +2,6 @@
   <header class="dashboard-header section-header">
     <div>
       <h1>Ordini</h1>
-      <p>Seleziona un ordine a sinistra e gestiscilo nel dettaglio a destra.</p>
     </div>
     <div class="header-actions">
       <app-button type="button" (click)="loadOrders()" [disabled]="loading">
@@ -58,7 +57,7 @@
         ></app-select>
       </div>
       <div class="table-wrap ui-table-wrap">
-        <table class="ui-data-table">
+        <table class="orders-table ui-data-table">
           <thead>
             <tr>
               <th>Ordine</th>
@@ -76,17 +75,17 @@
               [class.selected]="isSelected(order.id)"
               (click)="openDetails(order.id)"
             >
-              <td>
+              <td data-label="Ordine">
                 <strong>{{ order.orderNumber }}</strong>
               </td>
-              <td class="order-table__date">
+              <td class="order-table__date" data-label="Creato">
                 {{
                   order.createdAt
                     ? (order.createdAt | date: "dd.MM.yyyy HH:mm")
                     : "-"
                 }}
               </td>
-              <td>
+              <td data-label="Tipo">
                 <span
                   class="order-type-badge"
                   [class.order-type-badge--mixed]="orderKind(order) === 'MIXED'"
@@ -94,7 +93,7 @@
                   {{ orderKindLabel(order) }}
                 </span>
               </td>
-              <td>
+              <td data-label="Email">
                 <div class="order-customer-cell">
                   <span>{{ order.customerEmail }}</span>
                   <span
@@ -105,7 +104,7 @@
                   </span>
                 </div>
               </td>
-              <td class="order-table__payment">
+              <td class="order-table__payment" data-label="Pagamento">
                 <div class="order-table__payment-status">
                   {{ order.paymentStatus || "PENDING" }}
                 </div>
@@ -113,8 +112,8 @@
                   Pagato {{ order.paidAt | date: "dd.MM.yyyy HH:mm" }}
                 </div>
               </td>
-              <td>{{ order.status }}</td>
-              <td>
+              <td data-label="Stato ordine">{{ order.status }}</td>
+              <td data-label="Totale">
                 {{ order.totalChf | currency: "CHF" : "symbol" : "1.2-2" }}
               </td>
             </tr>

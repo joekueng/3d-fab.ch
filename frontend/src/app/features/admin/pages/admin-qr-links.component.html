@@ -1,12 +1,7 @@
 <section class="section-card ui-stack ui-stack--roomy">
   <header class="section-header">
     <div class="ui-stack ui-stack--dense">
-      <p class="ui-eyebrow ui-eyebrow--compact">Back-office QR</p>
-      <h2>QR tracciati</h2>
-      <p class="section-description">
-        Crea QR con redirect lingua automatico oppure passa alla vista
-        statistiche globali con grafici aggregati.
-      </p>
+      <h1>QR tracciati</h1>
     </div>
 
     <div class="header-actions ui-inline-actions">
@@ -44,9 +39,7 @@
     <div class="qr-layout" *ngIf="viewMode === 'manage'">
       <app-feature-panel
         class="qr-sidebar"
-        eyebrow="Collezione"
         title="QR disponibili"
-        description="Seleziona un QR esistente o crea una nuova destinazione."
       >
         <div
           class="qr-list ui-admin-nav"
@@ -72,9 +65,6 @@
       <section class="ui-subpanel editor-panel">
         <header class="editor-header ui-row ui-row--between ui-row--wrap">
           <div class="ui-stack ui-stack--dense">
-            <p class="ui-eyebrow ui-eyebrow--compact">
-              {{ selectedQrId ? "QR esistente" : "Nuovo QR" }}
-            </p>
             <h3>{{ selectedQrId ? form.name || "Modifica QR" : "Crea QR" }}</h3>
             <p class="editor-copy">
               URL pubblico:
@@ -193,29 +183,31 @@
     </div>
 
     <section class="ui-subpanel overview-panel" *ngIf="viewMode === 'overview'">
-      <header class="overview-header ui-row ui-row--between ui-row--wrap">
-        <div class="ui-stack ui-stack--dense">
+      <header class="overview-header">
+        <div class="overview-header__copy ui-stack ui-stack--dense">
           <h3>Statistiche di tutti i QR</h3>
-          <p class="section-description">
-            Range {{ fromDate }} -> {{ toDate }}. I bot sospetti sono esclusi
-            dai conteggi.
-          </p>
         </div>
 
-        <div>
-          <div class="stats-filters ui-inline-actions">
-            <app-input
-              type="date"
-              label="Da"
-              name="overviewFromDate"
-              [(ngModel)]="fromDate"
-            />
-            <app-input
-              type="date"
-              label="A"
-              name="overviewToDate"
-              [(ngModel)]="toDate"
-            />
+        <div class="stats-filter-panel">
+          <div class="stats-filters" aria-label="Intervallo statistiche QR">
+            <label class="stats-date-field">
+              <span class="ui-form-label">Da</span>
+              <input
+                class="ui-form-control"
+                type="date"
+                name="overviewFromDate"
+                [(ngModel)]="fromDate"
+              />
+            </label>
+            <label class="stats-date-field">
+              <span class="ui-form-label">A</span>
+              <input
+                class="ui-form-control"
+                type="date"
+                name="overviewToDate"
+                [(ngModel)]="toDate"
+              />
+            </label>
             <app-button
               type="button"
               variant="secondary"
@@ -228,7 +220,6 @@
           </div>
         </div>
       </header>
-
       <div *ngIf="overview as currentOverview; else noOverviewTpl">
         <div class="stats-cards">
           <article class="ui-stat-chip">
@@ -257,12 +248,12 @@
 
             <div
               class="daily-chart"
-              *ngIf="currentOverview.daily.length; else noDailyTpl"
+              *ngIf="overviewDailyRows.length; else noDailyTpl"
             >
               <div class="daily-chart__bars">
                 <div
                   class="daily-bar"
-                  *ngFor="let row of currentOverview.daily"
+                  *ngFor="let row of overviewDailyRows"
                 >
                   <div
                     class="daily-bar__value"
@@ -296,11 +287,11 @@
 
               <div
                 class="daily-chart__legend"
-                *ngIf="dailyLegendRows().length > 0"
+                *ngIf="overviewLegendRows.length > 0"
               >
                 <div
                   class="daily-legend__item"
-                  *ngFor="let row of dailyLegendRows()"
+                  *ngFor="let row of overviewLegendRows"
                 >
                   <span
                     class="daily-legend__swatch"
@@ -318,8 +309,11 @@
               <h4>QR piu scansionati</h4>
             </header>
 
-            <div class="rank-chart" *ngIf="topQrRows().length; else noRankTpl">
-              <div class="rank-row" *ngFor="let row of topQrRows()">
+            <div
+              class="rank-chart"
+              *ngIf="overviewTopQrRows.length; else noRankTpl"
+            >
+              <div class="rank-row" *ngFor="let row of overviewTopQrRows">
                 <div class="rank-row__meta">
                   <strong>{{ row.name }}</strong>
                   <span>/{{ row.slug }}</span>
@@ -343,9 +337,9 @@
 
             <div
               class="rank-chart"
-              *ngIf="topLocationRows().length; else noLocationTpl"
+              *ngIf="overviewLocationRows.length; else noLocationTpl"
             >
-              <div class="rank-row" *ngFor="let row of topLocationRows()">
+              <div class="rank-row" *ngFor="let row of overviewLocationRows">
                 <div class="rank-row__meta">
                   <strong>{{ row.label }}</strong>
                   <span>{{
@@ -365,7 +359,7 @@
         </div>
 
         <div class="table-wrap ui-table-wrap">
-          <table class="ui-data-table">
+          <table class="qr-overview-table ui-data-table">
             <thead>
               <tr>
                 <th>QR</th>
@@ -380,24 +374,30 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let row of currentOverview.qrLinks">
-                <td>{{ row.name }}</td>
-                <td [title]="row.publicUrl" [appCopyOnClick]="row.publicUrl">
+              <tr *ngFor="let row of overviewTableRows">
+                <td data-label="QR">{{ row.name }}</td>
+                <td
+                  data-label="Slug"
+                  [title]="row.publicUrl"
+                  [appCopyOnClick]="row.publicUrl"
+                >
                   {{ row.slug }}
                 </td>
-                <td>{{ row.targetPath }}</td>
-                <td>{{ row.isActive ? "Attivo" : "Disattivo" }}</td>
-                <td>{{ row.rawScans }}</td>
-                <td>{{ row.uniqueVisitors }}</td>
-                <td>{{ formatTopLocation(row) }}</td>
-                <td>
+                <td data-label="Target">{{ row.targetPath }}</td>
+                <td data-label="Stato">
+                  {{ row.isActive ? "Attivo" : "Disattivo" }}
+                </td>
+                <td data-label="Scan">{{ row.rawScans }}</td>
+                <td data-label="Unici">{{ row.uniqueVisitors }}</td>
+                <td data-label="Localita">{{ formatTopLocation(row) }}</td>
+                <td data-label="Ultimo scan">
                   {{
                     row.lastScannedAt
                       ? (row.lastScannedAt | date: "short")
                       : "-"
                   }}
                 </td>
-                <td>
+                <td data-label="Azioni">
                   <app-button
                     type="button"
                     size="sm"

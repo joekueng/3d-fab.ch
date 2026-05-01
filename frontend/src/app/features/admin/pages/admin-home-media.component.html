@@ -1,12 +1,7 @@
 <section class="section-card ui-stack ui-stack--roomy">
   <header class="section-header">
     <div class="header-copy">
-      <p class="eyebrow ui-eyebrow ui-eyebrow--compact">Back-office media</p>
-      <h2>Media</h2>
-      <p class="header-description">
-        Gestisci i media della home, delle guide qualita della pagina materiali
-        e della sezione Chi siamo da un unico punto.
-      </p>
+      <h1>Media</h1>
     </div>
     <div class="header-side ui-stack ui-stack--dense">
       <div class="header-stats ui-inline-actions">
@@ -35,9 +30,7 @@
   <div class="media-layout" *ngIf="!loading; else loadingTpl">
     <app-feature-panel
       class="collection-sidebar"
-      eyebrow="Contesti"
       title="Seleziona area"
-      description="Scegli il gruppo di media da gestire nel back-office."
     >
       <div class="collection-list ui-admin-nav">
         <button
@@ -62,9 +55,7 @@
     <div class="collection-content ui-stack ui-stack--roomy">
       <section class="collection-summary ui-subpanel ui-subpanel--warm">
         <div class="collection-summary__copy ui-stack ui-stack--dense">
-          <p class="ui-eyebrow ui-eyebrow--compact">Area attiva</p>
           <h3>{{ selectedCollection.title }}</h3>
-          <p>{{ selectedCollection.description }}</p>
         </div>
 
         <div class="collection-summary__stats ui-inline-actions">
@@ -111,7 +102,6 @@
                       {{ section.items.length === 1 ? "attivo" : "attivi" }}
                     </span>
                   </div>
-                  <p class="section-description">{{ section.description }}</p>
                 </div>
                 <div class="media-panel-meta ui-row ui-row--wrap ui-row--end">
                   <span class="usage-pill ui-pill ui-pill--neutral"

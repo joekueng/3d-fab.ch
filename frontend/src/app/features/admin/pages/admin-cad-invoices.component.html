@@ -2,10 +2,6 @@
   <header class="page-header section-header">
     <div>
       <h1>Fatture CAD</h1>
-      <p>
-        Crea un checkout CAD partendo da una sessione esistente (opzionale) e
-        gestisci lo stato fino all'ordine.
-      </p>
     </div>
     <app-button type="button" (click)="loadCadInvoices()" [disabled]="loading">
       Aggiorna
@@ -72,7 +68,7 @@
   </section>
 
   <section class="table-wrap ui-table-wrap" *ngIf="!loading; else loadingTpl">
-    <table class="ui-data-table">
+    <table class="cad-invoices-table ui-data-table">
       <thead>
         <tr>
           <th>Sessione</th>
@@ -89,24 +85,33 @@
       </thead>
       <tbody>
         <tr *ngFor="let row of invoices">
-          <td [title]="row.sessionId" [appCopyOnClick]="row.sessionId">
+          <td
+            data-label="Sessione"
+            [title]="row.sessionId"
+            [appCopyOnClick]="row.sessionId"
+          >
             {{ row.sessionId | slice: 0 : 8 }}
           </td>
           <td
+            data-label="Richiesta"
             [title]="row.sourceRequestId || ''"
             [appCopyOnClick]="row.sourceRequestId"
           >
             {{ row.sourceRequestId || "-" }}
           </td>
-          <td>{{ row.cadHours }}</td>
-          <td>{{ row.cadHourlyRateChf | currency: "CHF" }}</td>
-          <td>{{ row.cadTotalChf | currency: "CHF" }}</td>
-          <td>{{ row.grandTotalChf | currency: "CHF" }}</td>
-          <td>{{ row.sessionStatus }}</td>
-          <td class="notes-cell" [title]="row.notes || ''">
+          <td data-label="Ore CAD">{{ row.cadHours }}</td>
+          <td data-label="Tariffa">
+            {{ row.cadHourlyRateChf | currency: "CHF" }}
+          </td>
+          <td data-label="Totale CAD">{{ row.cadTotalChf | currency: "CHF" }}</td>
+          <td data-label="Totale ordine">
+            {{ row.grandTotalChf | currency: "CHF" }}
+          </td>
+          <td data-label="Stato sessione">{{ row.sessionStatus }}</td>
+          <td class="notes-cell" data-label="Nota" [title]="row.notes || ''">
             {{ row.notes || "-" }}
           </td>
-          <td>
+          <td data-label="Ordine">
             <span
               *ngIf="row.convertedOrderId; else noOrder"
               [title]="row.convertedOrderId || ''"
@@ -118,7 +123,7 @@
             </span>
             <ng-template #noOrder>-</ng-template>
           </td>
-          <td class="actions">
+          <td class="actions" data-label="Azioni">
             <app-button
               type="button"
               variant="ghost"

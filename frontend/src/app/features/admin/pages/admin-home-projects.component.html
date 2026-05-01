@@ -1,11 +1,7 @@
 <section class="section-card ui-stack ui-stack--roomy">
   <header class="section-header">
     <div class="header-copy">
-      <p class="eyebrow ui-eyebrow ui-eyebrow--compact">Home</p>
-      <h2>Progetti home</h2>
-      <p class="header-description">
-        Gestisci i progetti mostrati nel carousel sotto l'hero della home.
-      </p>
+      <h1>Progetti home</h1>
     </div>
     <div class="header-side ui-inline-actions">
       <app-button type="button" variant="outline" (click)="startNewProject()">
@@ -28,7 +24,6 @@
     <aside class="project-list ui-subpanel ui-subpanel--warm">
       <div class="project-list-head ui-row ui-row--between ui-row--center">
         <div>
-          <p class="ui-eyebrow ui-eyebrow--compact">Progetti</p>
           <h3>{{ projects.length }} configurati</h3>
         </div>
       </div>
@@ -61,10 +56,13 @@
       <section class="ui-subpanel ui-subpanel--elevated">
         <header class="panel-header ui-row ui-row--between ui-row--wrap">
           <div>
-            <p class="ui-eyebrow ui-eyebrow--compact">
-              {{ form.id ? "Modifica progetto" : "Nuovo progetto" }}
-            </p>
-            <h3>{{ form.titles.it || "Progetto home" }}</h3>
+            <h3>
+              {{
+                form.id
+                  ? form.titles.it || "Progetto home"
+                  : "Nuovo progetto"
+              }}
+            </h3>
           </div>
           <span class="ui-pill ui-pill--neutral">
             {{ form.id ? "ID " + form.id : "Non salvato" }}
@@ -159,10 +157,11 @@
       >
         <header class="panel-header ui-row ui-row--between ui-row--wrap">
           <div>
-            <p class="ui-eyebrow ui-eyebrow--compact">Immagine progetto</p>
-            <h3>{{ project.mediaUsageType }} / {{ project.mediaUsageKey }}</h3>
+            <h3>Immagine progetto</h3>
           </div>
-          <span class="ui-pill ui-pill--light">Variante hero</span>
+          <span class="ui-pill ui-pill--light">
+            {{ project.mediaUsageType }} / {{ project.mediaUsageKey }}
+          </span>
         </header>
 
         <div class="image-workspace">

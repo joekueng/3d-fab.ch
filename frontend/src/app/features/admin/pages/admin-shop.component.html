@@ -1,11 +1,7 @@
 <section class="admin-shop section-card">
   <header class="shop-header section-header">
     <div>
-      <p class="ui-eyebrow ui-eyebrow--compact">Back-office shop</p>
       <h1>Catalogo prodotti</h1>
-      <p>
-        Filtra i prodotti a sinistra e modifica o crea nuove schede a destra.
-      </p>
     </div>
 
     <div class="header-side ui-stack ui-stack--dense">
@@ -435,7 +431,7 @@
       </section>
 
       <div class="table-wrap ui-table-wrap">
-        <table class="ui-data-table">
+        <table class="shop-products-table ui-data-table">
           <thead>
             <tr>
               <th>Prodotto</th>
@@ -451,17 +447,17 @@
               [class.selected]="isSelectedProduct(product.id)"
               (click)="openProduct(product.id)"
             >
-              <td>
+              <td data-label="Prodotto">
                 <div class="product-cell">
                   <strong>{{ product.name }}</strong>
                   <span>{{ product.slug }}</span>
                 </div>
               </td>
-              <td>{{ product.categoryName }}</td>
-              <td>
+              <td data-label="Categoria">{{ product.categoryName }}</td>
+              <td data-label="Varianti">
                 {{ product.activeVariantCount }} / {{ product.variantCount }}
               </td>
-              <td>
+              <td data-label="Prezzo CHF">
                 {{
                   product.priceFromChf | currency: "CHF" : "symbol" : "1.2-2"
                 }}
@@ -472,7 +468,7 @@
                   }}
                 </span>
               </td>
-              <td>
+              <td data-label="Stato">
                 <span
                   class="ui-status-chip"
                   [ngClass]="productStatusChipClass(product)"
