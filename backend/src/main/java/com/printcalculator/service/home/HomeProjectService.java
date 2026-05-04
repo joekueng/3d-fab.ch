@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 @Transactional(readOnly = true)
@@ -50,7 +51,9 @@ public class HomeProjectService {
         dto.setTitle(project.getTitleForLanguage(language));
         dto.setDescription(project.getDescriptionForLanguage(language));
         dto.setSortOrder(project.getSortOrder());
-        dto.setImage(pickImage(images));
+        PublicMediaUsageDto primaryImage = pickImage(images);
+        dto.setImage(primaryImage);
+        dto.setDetailImage(pickDetailImage(images, primaryImage));
         return dto;
     }
 
@@ -62,5 +65,16 @@ public class HomeProjectService {
                 .filter(image -> Boolean.TRUE.equals(image.getIsPrimary()))
                 .findFirst()
                 .orElse(images.get(0));
+    }
+
+    private PublicMediaUsageDto pickDetailImage(List<PublicMediaUsageDto> images, PublicMediaUsageDto primaryImage) {
+        if (images == null || images.isEmpty() || primaryImage == null) {
+            return null;
+        }
+        return images.stream()
+                .filter(image -> !Objects.equals(image.getMediaAssetId(), primaryImage.getMediaAssetId()))
+                .filter(image -> !Boolean.TRUE.equals(image.getIsPrimary()))
+                .findFirst()
+                .orElse(null);
     }
 }

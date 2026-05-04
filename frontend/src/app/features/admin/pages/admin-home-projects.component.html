@@ -157,7 +157,7 @@
       >
         <header class="panel-header ui-row ui-row--between ui-row--wrap">
           <div>
-            <h3>Immagine progetto</h3>
+            <h3>Immagini progetto</h3>
           </div>
           <span class="ui-pill ui-pill--light">
             {{ project.mediaUsageType }} / {{ project.mediaUsageKey }}
@@ -228,7 +228,7 @@
                 [compact]="true"
               />
               <app-checkbox
-                label="Primaria"
+                label="Usa come immagine grande"
                 variant="pill"
                 [(ngModel)]="imageForm.isPrimary"
               />
@@ -270,8 +270,12 @@
                       Sort {{ item.sortOrder }} | asset {{ item.mediaAssetId }}
                     </p>
                   </div>
-                  <span class="ui-pill ui-pill--accent" *ngIf="item.isPrimary">
-                    Primaria
+                  <span
+                    class="ui-pill"
+                    [class.ui-pill--accent]="item.isPrimary"
+                    [class.ui-pill--light]="!item.isPrimary"
+                  >
+                    {{ item.isPrimary ? "Grande" : "Mini/schema" }}
                   </span>
                 </div>
 
@@ -298,7 +302,7 @@
                     (click)="setPrimaryImage(item)"
                     [disabled]="isUsageBusy(item.usageId) || item.isPrimary"
                   >
-                    Rendi primaria
+                    Rendi grande
                   </app-button>
                   <app-button
                     type="button"

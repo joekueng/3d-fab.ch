@@ -10,6 +10,7 @@ public class HomeProjectDto {
     private String description;
     private Integer sortOrder;
     private PublicMediaUsageDto image;
+    private PublicMediaUsageDto detailImage;
 
     public UUID getId() {
         return id;
@@ -65,5 +66,13 @@ public class HomeProjectDto {
 
     public void setImage(PublicMediaUsageDto image) {
         this.image = image;
+    }
+
+    public PublicMediaUsageDto getDetailImage() {
+        return detailImage;
+    }
+
+    public void setDetailImage(PublicMediaUsageDto detailImage) {
+        this.detailImage = detailImage;
     }
 }

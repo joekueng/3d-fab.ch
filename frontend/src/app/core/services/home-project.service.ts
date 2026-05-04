@@ -14,6 +14,7 @@ export interface HomeProject {
   description: string | null;
   sortOrder: number;
   image: PublicMediaUsageDto | null;
+  detailImage: PublicMediaUsageDto | null;
 }
 
 @Injectable({

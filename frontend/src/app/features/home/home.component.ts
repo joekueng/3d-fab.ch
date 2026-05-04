@@ -254,27 +254,32 @@ export class HomeComponent {
   }
 
   homeProjectImageFallbackUrl(project: HomeProject): string | null {
-    const image = project.image;
-    return (
-      image?.hero?.jpegUrl ??
-      image?.hero?.webpUrl ??
-      image?.hero?.avifUrl ??
-      image?.card?.jpegUrl ??
-      image?.card?.webpUrl ??
-      image?.card?.avifUrl ??
-      image?.thumb?.jpegUrl ??
-      image?.thumb?.webpUrl ??
-      image?.thumb?.avifUrl ??
-      null
-    );
+    return this.mediaFallbackUrl(project.image);
   }
 
   homeProjectImageAvifUrl(project: HomeProject): string | null {
-    return project.image?.hero?.avifUrl ?? project.image?.card?.avifUrl ?? null;
+    return this.mediaAvifUrl(project.image);
   }
 
   homeProjectImageWebpUrl(project: HomeProject): string | null {
-    return project.image?.hero?.webpUrl ?? project.image?.card?.webpUrl ?? null;
+    return this.mediaWebpUrl(project.image);
+  }
+
+  homeProjectDetailImageFallbackUrl(project: HomeProject): string | null {
+    return this.mediaFallbackUrl(project.detailImage);
+  }
+
+  homeProjectDetailImageAvifUrl(project: HomeProject): string | null {
+    return this.mediaAvifUrl(project.detailImage);
+  }
+
+  homeProjectDetailImageWebpUrl(project: HomeProject): string | null {
+    return this.mediaWebpUrl(project.detailImage);
+  }
+
+  homeProjectBackgroundImage(project: HomeProject): string | null {
+    const imageUrl = this.homeProjectImageFallbackUrl(project);
+    return imageUrl ? this.toCssImageUrl(imageUrl) : null;
   }
 
   selectShopGalleryImage(index: number): void {
@@ -421,5 +426,36 @@ export class HomeComponent {
 
   private prefersReducedMotion(): boolean {
     return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  private mediaFallbackUrl(image: HomeProject['image']): string | null {
+    return (
+      image?.hero?.jpegUrl ??
+      image?.hero?.webpUrl ??
+      image?.hero?.avifUrl ??
+      image?.card?.jpegUrl ??
+      image?.card?.webpUrl ??
+      image?.card?.avifUrl ??
+      image?.thumb?.jpegUrl ??
+      image?.thumb?.webpUrl ??
+      image?.thumb?.avifUrl ??
+      null
+    );
+  }
+
+  private mediaAvifUrl(image: HomeProject['image']): string | null {
+    return image?.hero?.avifUrl ?? image?.card?.avifUrl ?? null;
+  }
+
+  private mediaWebpUrl(image: HomeProject['image']): string | null {
+    return image?.hero?.webpUrl ?? image?.card?.webpUrl ?? null;
+  }
+
+  private toCssImageUrl(imageUrl: string): string {
+    const escapedUrl = imageUrl
+      .replace(/\\/g, '\\\\')
+      .replace(/"/g, '\\"')
+      .replace(/[\n\r]/g, '');
+    return `url("${escapedUrl}")`;
   }
 }
