@@ -78,10 +78,7 @@ export class AdminShopRichTextEditorComponent
     this.applyExecCommand('removeFormat');
   }
 
-  private syncEditor(
-    editor: HTMLDivElement | null,
-    sanitize: boolean,
-  ): void {
+  private syncEditor(editor: HTMLDivElement | null, sanitize: boolean): void {
     if (!editor) {
       return;
     }

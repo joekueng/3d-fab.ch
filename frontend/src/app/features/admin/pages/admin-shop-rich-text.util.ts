@@ -49,10 +49,7 @@ export function hasMeaningfulRichText(
   );
 }
 
-export function serializeNodeChildren(
-  node: Node,
-  isBrowser: boolean,
-): string {
+export function serializeNodeChildren(node: Node, isBrowser: boolean): string {
   if (!isBrowser) {
     return node.textContent ?? '';
   }
@@ -99,8 +96,7 @@ function plainTextToRichTextHtml(value: string): string {
   return normalized
     .split(/\n{2,}/)
     .map(
-      (paragraph) =>
-        `<p>${escapeHtml(paragraph).replace(/\n/g, '<br>')}</p>`,
+      (paragraph) => `<p>${escapeHtml(paragraph).replace(/\n/g, '<br>')}</p>`,
     )
     .join('');
 }
@@ -171,10 +167,7 @@ function sanitizeRichTextNode(
   if (tagName === 'A' && !element.textContent?.trim()) {
     return null;
   }
-  if (
-    (tagName === 'UL' || tagName === 'OL') &&
-    !element.querySelector('li')
-  ) {
+  if ((tagName === 'UL' || tagName === 'OL') && !element.querySelector('li')) {
     return null;
   }
   if (tagName === 'LI' && !element.textContent?.trim()) {

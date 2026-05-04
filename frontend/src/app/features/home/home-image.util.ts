@@ -1,7 +1,5 @@
 import { HomeProject } from '../../core/services/home-project.service';
-import {
-  DEFAULT_HOME_PROJECT_GLOW,
-} from './home-page.config';
+import { DEFAULT_HOME_PROJECT_GLOW } from './home-page.config';
 import { HomeProjectGlow, Rgb } from './home-page.types';
 
 type HomeProjectImage = HomeProject['image'];
@@ -155,9 +153,12 @@ function pickRelevantColor(
     { count: number; color: Rgb; saturation: number; lightness: number }
   >,
 ): string | null {
-  let best:
-    | { count: number; color: Rgb; saturation: number; lightness: number }
-    | null = null;
+  let best: {
+    count: number;
+    color: Rgb;
+    saturation: number;
+    lightness: number;
+  } | null = null;
   let bestScore = -Infinity;
 
   for (const bucket of buckets.values()) {

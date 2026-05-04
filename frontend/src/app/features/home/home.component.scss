@@ -215,14 +215,12 @@
   background:
     radial-gradient(
       ellipse 34% 42% at 14% 18%,
-      color-mix(in srgb, var(--home-project-glow-top-left) 48%, transparent)
-        0%,
+      color-mix(in srgb, var(--home-project-glow-top-left) 48%, transparent) 0%,
       transparent 82%
     ),
     radial-gradient(
       ellipse 36% 46% at 82% 18%,
-      color-mix(in srgb, var(--home-project-glow-top-right) 52%, transparent)
-        0%,
+      color-mix(in srgb, var(--home-project-glow-top-right) 52%, transparent) 0%,
       transparent 84%
     ),
     radial-gradient(

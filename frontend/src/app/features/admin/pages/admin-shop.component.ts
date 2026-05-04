@@ -1430,10 +1430,22 @@ export class AdminShopComponent implements OnInit, OnDestroy {
         fr: product.excerptFr ?? '',
       },
       descriptions: {
-        it: normalizeDescriptionForEditor(product.descriptionIt, this.isBrowser),
-        en: normalizeDescriptionForEditor(product.descriptionEn, this.isBrowser),
-        de: normalizeDescriptionForEditor(product.descriptionDe, this.isBrowser),
-        fr: normalizeDescriptionForEditor(product.descriptionFr, this.isBrowser),
+        it: normalizeDescriptionForEditor(
+          product.descriptionIt,
+          this.isBrowser,
+        ),
+        en: normalizeDescriptionForEditor(
+          product.descriptionEn,
+          this.isBrowser,
+        ),
+        de: normalizeDescriptionForEditor(
+          product.descriptionDe,
+          this.isBrowser,
+        ),
+        fr: normalizeDescriptionForEditor(
+          product.descriptionFr,
+          this.isBrowser,
+        ),
       },
       seoTitles: {
         it: product.seoTitleIt ?? '',
@@ -1690,7 +1702,6 @@ export class AdminShopComponent implements OnInit, OnDestroy {
         overwriteExisting,
       );
     }
-
   }
 
   private mergeLocalizedText(
@@ -1797,7 +1808,10 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   private stockVariantsForMaterial(
     materialCode: string,
   ): AdminFilamentVariant[] {
-    return getStockVariantsForMaterial(this.stockFilamentVariants, materialCode);
+    return getStockVariantsForMaterial(
+      this.stockFilamentVariants,
+      materialCode,
+    );
   }
 
   private resolveMaterialDefaultColorKey(

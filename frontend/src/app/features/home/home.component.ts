@@ -232,8 +232,7 @@ export class HomeComponent {
 
   homeProjectGlow(project: HomeProject): HomeProjectGlow {
     return (
-      this.homeProjectGlowColors().get(project.id) ??
-      DEFAULT_HOME_PROJECT_GLOW
+      this.homeProjectGlowColors().get(project.id) ?? DEFAULT_HOME_PROJECT_GLOW
     );
   }
 
@@ -402,5 +401,4 @@ export class HomeComponent {
   private prefersReducedMotion(): boolean {
     return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   }
-
 }

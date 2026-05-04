@@ -58,9 +58,7 @@
           <div>
             <h3>
               {{
-                form.id
-                  ? form.titles.it || "Progetto home"
-                  : "Nuovo progetto"
+                form.id ? form.titles.it || "Progetto home" : "Nuovo progetto"
               }}
             </h3>
           </div>
@@ -72,7 +70,9 @@
         <div class="language-toolbar ui-language-toolbar">
           <div class="ui-language-toolbar__copy">
             <span>Testi localizzati</span>
-            <p>Se una lingua è vuota, viene usato il primo titolo disponibile.</p>
+            <p>
+              Se una lingua è vuota, viene usato il primo titolo disponibile.
+            </p>
           </div>
           <div class="ui-language-toolbar__toggle">
             <button
@@ -176,7 +176,10 @@
                   accept=".jpg,.jpeg,.png,.webp"
                   (change)="onImageFileSelected($event)"
                 />
-                <label class="file-picker ui-file-picker" for="home-project-image-file">
+                <label
+                  class="file-picker ui-file-picker"
+                  for="home-project-image-file"
+                >
                   <span class="ui-file-picker__button">Scegli file</span>
                   <span class="ui-file-picker__name">
                     {{ imageForm.file?.name || "Nessun file selezionato" }}
@@ -184,11 +187,16 @@
                 </label>
               </div>
 
-              <div class="preview-card form-field--wide" *ngIf="imageForm.previewUrl">
+              <div
+                class="preview-card form-field--wide"
+                *ngIf="imageForm.previewUrl"
+              >
                 <img [src]="imageForm.previewUrl" alt="" />
               </div>
 
-              <div class="language-toolbar form-field--wide ui-language-toolbar">
+              <div
+                class="language-toolbar form-field--wide ui-language-toolbar"
+              >
                 <div class="ui-language-toolbar__copy">
                   <span>Testi immagine</span>
                   <p>Titolo e alt text per il media.</p>
@@ -210,14 +218,18 @@
                 label="Titolo immagine ({{
                   mediaLanguageLabels[imageForm.activeLanguage]
                 }})"
-                [(ngModel)]="imageForm.translations[imageForm.activeLanguage].title"
+                [(ngModel)]="
+                  imageForm.translations[imageForm.activeLanguage].title
+                "
                 [compact]="true"
               />
               <app-input
                 label="Alt text ({{
                   mediaLanguageLabels[imageForm.activeLanguage]
                 }})"
-                [(ngModel)]="imageForm.translations[imageForm.activeLanguage].altText"
+                [(ngModel)]="
+                  imageForm.translations[imageForm.activeLanguage].altText
+                "
                 [compact]="true"
               />
               <app-input
@@ -249,10 +261,7 @@
             <h4>Immagini attive</h4>
             <article
               class="project-image-item"
-              *ngFor="
-                let item of projectImages(project);
-                trackBy: trackImage
-              "
+              *ngFor="let item of projectImages(project); trackBy: trackImage"
             >
               <div class="project-image-thumb ui-thumb">
                 <img *ngIf="item.previewUrl" [src]="item.previewUrl" alt="" />

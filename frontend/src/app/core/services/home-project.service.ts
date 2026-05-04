@@ -1,7 +1,13 @@
 import { inject, Injectable, Injector } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { catchError, distinctUntilChanged, Observable, of, switchMap } from 'rxjs';
+import {
+  catchError,
+  distinctUntilChanged,
+  Observable,
+  of,
+  switchMap,
+} from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { LanguageService } from './language.service';
 import { PublicMediaUsageDto } from './public-media.service';

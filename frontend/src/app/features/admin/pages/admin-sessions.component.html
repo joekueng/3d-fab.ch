@@ -41,7 +41,9 @@
             <td data-label="Data creazione">
               {{ session.createdAt | date: "short" }}
             </td>
-            <td data-label="Scadenza">{{ session.expiresAt | date: "short" }}</td>
+            <td data-label="Scadenza">
+              {{ session.expiresAt | date: "short" }}
+            </td>
             <td data-label="Materiale">{{ session.materialCode }}</td>
             <td data-label="Stato">{{ session.status }}</td>
             <td

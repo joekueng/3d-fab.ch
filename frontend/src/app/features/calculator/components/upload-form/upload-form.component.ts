@@ -750,9 +750,7 @@ export class UploadFormComponent implements OnInit {
       }
     });
 
-    const selectedFileName = normalizeFileName(
-      options?.selectedFileName ?? '',
-    );
+    const selectedFileName = normalizeFileName(options?.selectedFileName ?? '');
     const target =
       this.items().find(
         (item) => normalizeFileName(item.file.name) === selectedFileName,
@@ -889,14 +887,8 @@ export class UploadFormComponent implements OnInit {
         this.form.get('nozzleDiameter')?.value,
         0.4,
       ),
-      layerHeight: normalizeNumber(
-        this.form.get('layerHeight')?.value,
-        0.2,
-      ),
-      infillDensity: normalizeNumber(
-        this.form.get('infillDensity')?.value,
-        20,
-      ),
+      layerHeight: normalizeNumber(this.form.get('layerHeight')?.value, 0.2),
+      infillDensity: normalizeNumber(this.form.get('infillDensity')?.value, 20),
       infillPattern: String(this.form.get('infillPattern')?.value || 'grid'),
       supportEnabled: Boolean(this.form.get('supportEnabled')?.value),
     };
@@ -906,9 +898,7 @@ export class UploadFormComponent implements OnInit {
     item: FormItem,
     defaults: ReturnType<UploadFormComponent['getCurrentGlobalItemDefaults']>,
   ): QuoteRequestItem {
-    const quality = normalizeQualityValue(
-      item.quality || defaults.quality,
-    );
+    const quality = normalizeQualityValue(item.quality || defaults.quality);
 
     if (this.mode() === 'easy') {
       const preset = easyModePresetForQuality(quality);
@@ -1120,9 +1110,8 @@ export class UploadFormComponent implements OnInit {
     );
     const allowed = options.some(
       (option) =>
-        Math.abs(
-          normalizeNumber(option.value, currentLayer) - currentLayer,
-        ) < 0.0001,
+        Math.abs(normalizeNumber(option.value, currentLayer) - currentLayer) <
+        0.0001,
     );
 
     if (allowed) {
@@ -1165,18 +1154,12 @@ export class UploadFormComponent implements OnInit {
     this.items().forEach((item) => {
       const differences: string[] = [];
 
-      if (
-        normalizeText(item.material) !==
-        normalizeText(baseline.material)
-      ) {
+      if (normalizeText(item.material) !== normalizeText(baseline.material)) {
         differences.push(item.material.toUpperCase());
       }
 
       if (this.mode() === 'easy') {
-        if (
-          normalizeText(item.quality) !==
-          normalizeText(baseline.quality)
-        ) {
+        if (normalizeText(item.quality) !== normalizeText(baseline.quality)) {
           differences.push(`quality:${item.quality}`);
         }
       } else {

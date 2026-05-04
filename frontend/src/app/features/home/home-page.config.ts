@@ -1,8 +1,5 @@
 import { PublicMediaUsageCollectionMap } from '../../core/services/public-media.service';
-import {
-  HomeCapabilityConfig,
-  HomeProjectGlow,
-} from './home-page.types';
+import { HomeCapabilityConfig, HomeProjectGlow } from './home-page.types';
 
 export const EMPTY_MEDIA_COLLECTIONS: PublicMediaUsageCollectionMap = {};
 

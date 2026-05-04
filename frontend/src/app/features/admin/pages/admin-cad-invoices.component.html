@@ -103,7 +103,9 @@
           <td data-label="Tariffa">
             {{ row.cadHourlyRateChf | currency: "CHF" }}
           </td>
-          <td data-label="Totale CAD">{{ row.cadTotalChf | currency: "CHF" }}</td>
+          <td data-label="Totale CAD">
+            {{ row.cadTotalChf | currency: "CHF" }}
+          </td>
           <td data-label="Totale ordine">
             {{ row.grandTotalChf | currency: "CHF" }}
           </td>
