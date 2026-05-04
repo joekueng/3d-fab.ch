@@ -79,8 +79,23 @@
                 trackBy: trackHomeProject
               "
               [attr.aria-hidden]="i === homeProjectIndex() ? null : 'true'"
-              [style.--home-project-bg-image]="
-                homeProjectBackgroundImage(project)
+              [style.--home-project-glow-top]="homeProjectGlow(project).top"
+              [style.--home-project-glow-right]="homeProjectGlow(project).right"
+              [style.--home-project-glow-bottom]="
+                homeProjectGlow(project).bottom
+              "
+              [style.--home-project-glow-left]="homeProjectGlow(project).left"
+              [style.--home-project-glow-top-left]="
+                homeProjectGlow(project).topLeft
+              "
+              [style.--home-project-glow-top-right]="
+                homeProjectGlow(project).topRight
+              "
+              [style.--home-project-glow-bottom-right]="
+                homeProjectGlow(project).bottomRight
+              "
+              [style.--home-project-glow-bottom-left]="
+                homeProjectGlow(project).bottomLeft
               "
             >
               <div class="home-project-copy">
@@ -151,6 +166,7 @@
                       [attr.alt]="project.image?.altText || project.title || ''"
                       width="1200"
                       height="800"
+                      (load)="updateHomeProjectGlow(project, $event)"
                     />
                   </picture>
                 } @else {
@@ -161,27 +177,26 @@
               </div>
             </article>
           </div>
-        </div>
-
-        <div
-          class="home-project-indicators"
-          *ngIf="homeProjects().length > 1"
-        >
-          <button
-            type="button"
-            class="home-project-dot"
-            *ngFor="
-              let project of homeProjects();
-              let i = index;
-              trackBy: trackHomeProject
-            "
-            [class.is-active]="i === homeProjectIndex()"
-            [attr.aria-current]="i === homeProjectIndex() ? 'true' : null"
-            [attr.aria-label]="
-              ('HOME.PROJECTS_SLIDE_ARIA' | translate) + ' ' + (i + 1)
-            "
-            (click)="selectHomeProject(i)"
-          ></button>
+          <div
+            class="home-project-indicators"
+            *ngIf="homeProjects().length > 1"
+          >
+            <button
+              type="button"
+              class="home-project-dot"
+              *ngFor="
+                let project of homeProjects();
+                let i = index;
+                trackBy: trackHomeProject
+              "
+              [class.is-active]="i === homeProjectIndex()"
+              [attr.aria-current]="i === homeProjectIndex() ? 'true' : null"
+              [attr.aria-label]="
+                ('HOME.PROJECTS_SLIDE_ARIA' | translate) + ' ' + (i + 1)
+              "
+              (click)="selectHomeProject(i)"
+            ></button>
+          </div>
         </div>
       </div>
     </section>

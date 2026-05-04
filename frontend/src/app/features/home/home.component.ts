@@ -23,49 +23,24 @@ import {
   PublicMediaDisplayImage,
   PublicMediaImage,
   PublicMediaService,
-  PublicMediaUsageCollectionMap,
 } from '../../core/services/public-media.service';
-
-const EMPTY_MEDIA_COLLECTIONS: PublicMediaUsageCollectionMap = {};
-
-type HomeCapabilityUsageKey =
-  | 'capability-prototyping'
-  | 'capability-custom-parts'
-  | 'capability-small-series'
-  | 'capability-cad';
-
-interface HomeCapabilityConfig {
-  usageKey: HomeCapabilityUsageKey;
-  titleKey: string;
-  textKey: string;
-}
-
-interface HomeCapabilityCard extends HomeCapabilityConfig {
-  image: PublicMediaDisplayImage | null;
-}
-
-const HOME_CAPABILITY_CONFIGS: readonly HomeCapabilityConfig[] = [
-  {
-    usageKey: 'capability-prototyping',
-    titleKey: 'HOME.CAP_1_TITLE',
-    textKey: 'HOME.CAP_1_TEXT',
-  },
-  {
-    usageKey: 'capability-custom-parts',
-    titleKey: 'HOME.CAP_2_TITLE',
-    textKey: 'HOME.CAP_2_TEXT',
-  },
-  {
-    usageKey: 'capability-small-series',
-    titleKey: 'HOME.CAP_3_TITLE',
-    textKey: 'HOME.CAP_3_TEXT',
-  },
-  {
-    usageKey: 'capability-cad',
-    titleKey: 'HOME.CAP_4_TITLE',
-    textKey: 'HOME.CAP_4_TEXT',
-  },
-];
+import {
+  DEFAULT_HOME_PROJECT_GLOW,
+  EMPTY_MEDIA_COLLECTIONS,
+  HOME_CAPABILITY_CONFIGS,
+  HOME_MEDIA_REQUESTS,
+} from './home-page.config';
+import {
+  HomeCapabilityCard,
+  HomeCapabilityConfig,
+  HomeProjectGlow,
+} from './home-page.types';
+import {
+  extractHomeProjectGlow,
+  mediaAvifUrl,
+  mediaFallbackUrl,
+  mediaWebpUrl,
+} from './home-image.util';
 
 @Component({
   selector: 'app-home-page',
@@ -98,32 +73,7 @@ export class HomeComponent {
   });
 
   private readonly mediaByUsage = toSignal(
-    this.publicMediaService.getUsageCollections([
-      {
-        usageType: 'HOME_SECTION',
-        usageKey: 'shop-gallery',
-      },
-      {
-        usageType: 'HOME_SECTION',
-        usageKey: 'founders-gallery',
-      },
-      {
-        usageType: 'HOME_SECTION',
-        usageKey: 'capability-prototyping',
-      },
-      {
-        usageType: 'HOME_SECTION',
-        usageKey: 'capability-custom-parts',
-      },
-      {
-        usageType: 'HOME_SECTION',
-        usageKey: 'capability-small-series',
-      },
-      {
-        usageType: 'HOME_SECTION',
-        usageKey: 'capability-cad',
-      },
-    ]),
+    this.publicMediaService.getUsageCollections([...HOME_MEDIA_REQUESTS]),
     { initialValue: EMPTY_MEDIA_COLLECTIONS },
   );
 
@@ -165,6 +115,9 @@ export class HomeComponent {
   );
 
   readonly homeProjectIndex = signal(0);
+  readonly homeProjectGlowColors = signal<ReadonlyMap<string, HomeProjectGlow>>(
+    new Map(),
+  );
   readonly homeProjectTrackTransform = computed(
     () => `translateX(-${this.homeProjectIndex() * 100}%)`,
   );
@@ -254,32 +207,54 @@ export class HomeComponent {
   }
 
   homeProjectImageFallbackUrl(project: HomeProject): string | null {
-    return this.mediaFallbackUrl(project.image);
+    return mediaFallbackUrl(project.image);
   }
 
   homeProjectImageAvifUrl(project: HomeProject): string | null {
-    return this.mediaAvifUrl(project.image);
+    return mediaAvifUrl(project.image);
   }
 
   homeProjectImageWebpUrl(project: HomeProject): string | null {
-    return this.mediaWebpUrl(project.image);
+    return mediaWebpUrl(project.image);
   }
 
   homeProjectDetailImageFallbackUrl(project: HomeProject): string | null {
-    return this.mediaFallbackUrl(project.detailImage);
+    return mediaFallbackUrl(project.detailImage);
   }
 
   homeProjectDetailImageAvifUrl(project: HomeProject): string | null {
-    return this.mediaAvifUrl(project.detailImage);
+    return mediaAvifUrl(project.detailImage);
   }
 
   homeProjectDetailImageWebpUrl(project: HomeProject): string | null {
-    return this.mediaWebpUrl(project.detailImage);
+    return mediaWebpUrl(project.detailImage);
   }
 
-  homeProjectBackgroundImage(project: HomeProject): string | null {
-    const imageUrl = this.homeProjectImageFallbackUrl(project);
-    return imageUrl ? this.toCssImageUrl(imageUrl) : null;
+  homeProjectGlow(project: HomeProject): HomeProjectGlow {
+    return (
+      this.homeProjectGlowColors().get(project.id) ??
+      DEFAULT_HOME_PROJECT_GLOW
+    );
+  }
+
+  updateHomeProjectGlow(project: HomeProject, event: Event): void {
+    if (!this.isBrowser || !(event.target instanceof HTMLImageElement)) {
+      return;
+    }
+
+    const glow = extractHomeProjectGlow(event.target);
+    if (!glow) {
+      return;
+    }
+
+    this.homeProjectGlowColors.update((colors) => {
+      if (colors.get(project.id) === glow) {
+        return colors;
+      }
+      const nextColors = new Map(colors);
+      nextColors.set(project.id, glow);
+      return nextColors;
+    });
   }
 
   selectShopGalleryImage(index: number): void {
@@ -428,34 +403,4 @@ export class HomeComponent {
     return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   }
 
-  private mediaFallbackUrl(image: HomeProject['image']): string | null {
-    return (
-      image?.hero?.jpegUrl ??
-      image?.hero?.webpUrl ??
-      image?.hero?.avifUrl ??
-      image?.card?.jpegUrl ??
-      image?.card?.webpUrl ??
-      image?.card?.avifUrl ??
-      image?.thumb?.jpegUrl ??
-      image?.thumb?.webpUrl ??
-      image?.thumb?.avifUrl ??
-      null
-    );
-  }
-
-  private mediaAvifUrl(image: HomeProject['image']): string | null {
-    return image?.hero?.avifUrl ?? image?.card?.avifUrl ?? null;
-  }
-
-  private mediaWebpUrl(image: HomeProject['image']): string | null {
-    return image?.hero?.webpUrl ?? image?.card?.webpUrl ?? null;
-  }
-
-  private toCssImageUrl(imageUrl: string): string {
-    const escapedUrl = imageUrl
-      .replace(/\\/g, '\\\\')
-      .replace(/"/g, '\\"')
-      .replace(/[\n\r]/g, '');
-    return `url("${escapedUrl}")`;
-  }
 }

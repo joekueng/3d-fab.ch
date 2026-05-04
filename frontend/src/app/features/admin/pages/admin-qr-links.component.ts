@@ -26,6 +26,7 @@ import {
   AdminQrService,
   AdminUpsertQrLinkPayload,
 } from '../services/admin-qr.service';
+import { downloadBlobInBrowser } from '../../../core/utils/browser-download';
 
 type QrForm = {
   name: string;
@@ -284,12 +285,7 @@ export class AdminQrLinksComponent implements OnInit, OnDestroy {
 
     this.adminQrService.downloadQrSvg(selected.id).subscribe({
       next: (blob) => {
-        const url = URL.createObjectURL(blob);
-        const anchor = document.createElement('a');
-        anchor.href = url;
-        anchor.download = `${selected.slug}-qr.svg`;
-        anchor.click();
-        URL.revokeObjectURL(url);
+        downloadBlobInBrowser(blob, `${selected.slug}-qr.svg`);
         this.successMessage = 'SVG scaricato.';
       },
       error: () => {

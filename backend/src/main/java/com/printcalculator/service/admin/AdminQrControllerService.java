@@ -42,7 +42,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 @Transactional(readOnly = true)
 public class AdminQrControllerService {
     private static final ZoneId APP_ZONE = ZoneId.systemDefault();
-    private static final int LAST_DAY_QR = 12;
+    private static final int LAST_DAY_QR = 10;
 
     private final QrLinkRepository qrLinkRepository;
     private final QrScanEventRepository qrScanEventRepository;

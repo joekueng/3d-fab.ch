@@ -10,6 +10,7 @@ import { CopyOnClickDirective } from '../../../shared/directives/copy-on-click.d
 import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
 import { AppInputComponent } from '../../../shared/components/app-input/app-input.component';
 import { AppSelectComponent } from '../../../shared/components/app-select/app-select.component';
+import { downloadBlobInBrowser } from '../../../core/utils/browser-download';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -549,11 +550,6 @@ export class AdminDashboardComponent implements OnInit {
     if (!this.isBrowser) {
       return;
     }
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    window.URL.revokeObjectURL(url);
+    downloadBlobInBrowser(blob, filename);
   }
 }

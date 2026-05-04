@@ -14,6 +14,7 @@ import {
   PriceBreakdownComponent,
   PriceBreakdownRow,
 } from '../../shared/components/price-breakdown/price-breakdown.component';
+import { downloadBlobInBrowser } from '../../core/utils/browser-download';
 
 interface PublicOrderItem {
   id: string;
@@ -135,14 +136,9 @@ export class OrderComponent implements OnInit {
     if (!orderId) return;
     this.quoteService.getOrderConfirmation(orderId).subscribe({
       next: (blob) => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
         const fallbackOrderNumber = this.extractOrderNumber(orderId);
         const orderNumber = this.order()?.orderNumber ?? fallbackOrderNumber;
-        a.download = `qr-invoice-${orderNumber}.pdf`;
-        a.click();
-        window.URL.revokeObjectURL(url);
+        downloadBlobInBrowser(blob, `qr-invoice-${orderNumber}.pdf`);
       },
       error: (err) => console.error('Failed to download QR invoice', err),
     });

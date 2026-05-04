@@ -8,12 +8,14 @@ import {
 } from '@angular/router';
 import {
   getNavigatorLanguagePreferences,
+  isSupportedLangValue,
   parseAcceptLanguage,
   resolveInitialLanguage,
+  SupportedLang,
+  SUPPORTED_LANGS,
 } from '../i18n/language-resolution';
 import { RequestLike } from '../../../core/request-origin';
 
-type SupportedLang = 'it' | 'en' | 'de' | 'fr';
 type LocalizedRouteOverrides = Partial<Record<SupportedLang, string>>;
 
 @Injectable({
@@ -22,7 +24,7 @@ type LocalizedRouteOverrides = Partial<Record<SupportedLang, string>>;
 export class LanguageService {
   currentLang = signal<SupportedLang>('it');
   private readonly defaultLang: SupportedLang = 'it';
-  private readonly supportedLangs: SupportedLang[] = ['it', 'en', 'de', 'fr'];
+  private readonly supportedLangs = SUPPORTED_LANGS;
   private localizedRouteOverrides: LocalizedRouteOverrides | null = null;
 
   constructor(
@@ -30,7 +32,7 @@ export class LanguageService {
     private router: Router,
     @Optional() @Inject(REQUEST) private request: RequestLike | null = null,
   ) {
-    this.translate.addLangs(this.supportedLangs);
+    this.translate.addLangs([...this.supportedLangs]);
     this.translate.setFallbackLang('it');
     this.translate.onLangChange.subscribe((event) => {
       const lang =
@@ -194,10 +196,7 @@ export class LanguageService {
   private isSupportedLang(
     lang: string | null | undefined,
   ): lang is SupportedLang {
-    return (
-      typeof lang === 'string' &&
-      this.supportedLangs.includes(lang as SupportedLang)
-    );
+    return isSupportedLangValue(lang);
   }
 
   private looksLikeLangToken(segment: string | null | undefined): boolean {

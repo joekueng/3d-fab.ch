@@ -4,6 +4,11 @@ import { Title, Meta } from '@angular/platform-browser';
 import { ActivatedRouteSnapshot, NavigationEnd, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { filter } from 'rxjs/operators';
+import {
+  isSupportedLangValue,
+  SupportedLang,
+  SUPPORTED_LANGS,
+} from '../i18n/language-resolution';
 
 export interface PageSeoOverride {
   title?: string | null;
@@ -23,7 +28,6 @@ export interface ResolvedPageSeo extends PageSeoOverride {
   xDefault?: string | null;
 }
 
-export type SupportedLang = 'it' | 'en' | 'de' | 'fr';
 type SeoMap = Partial<Record<SupportedLang, string>>;
 type SeoTextDataKey =
   | 'seoTitle'
@@ -47,12 +51,7 @@ export class SeoService {
     de: '3D-Druckservice nach Maß, technischer Shop und CAD-Support für Prototypen, Ersatzteile und Kleinserien.',
     fr: "Service d'impression 3D sur mesure, boutique technique et support CAD pour prototypes, pièces et petites séries.",
   };
-  private readonly supportedLangs: readonly SupportedLang[] = [
-    'it',
-    'en',
-    'de',
-    'fr',
-  ];
+  private readonly supportedLangs = SUPPORTED_LANGS;
   private readonly supportedLangSet = new Set<SupportedLang>(
     this.supportedLangs,
   );
@@ -323,9 +322,9 @@ export class SeoService {
     const firstSegment = path.split('/').filter(Boolean)[0]?.toLowerCase();
     if (
       firstSegment &&
-      this.supportedLangSet.has(firstSegment as SupportedLang)
+      isSupportedLangValue(firstSegment)
     ) {
-      return firstSegment as SupportedLang;
+      return firstSegment;
     }
     return 'it';
   }

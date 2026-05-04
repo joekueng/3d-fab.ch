@@ -23,7 +23,6 @@ import {
   AdminUpsertShopCategoryPayload,
   AdminUpsertShopProductPayload,
   AdminUpsertShopProductVariantPayload,
-  AdminPublicMediaUsage,
 } from '../services/admin-shop.service';
 import {
   AdminFilamentVariant,
@@ -34,110 +33,55 @@ import {
   AdminMediaTranslation,
 } from '../services/admin-media.service';
 import { environment } from '../../../../environments/environment';
-
-type ShopLanguage = 'it' | 'en' | 'de' | 'fr';
-type ProductMode = 'create' | 'edit';
-type ProductStatusFilter = 'ALL' | 'ACTIVE' | 'INACTIVE' | 'FEATURED';
-
-interface CategoryFormState {
-  id: string | null;
-  parentCategoryId: string | null;
-  slug: string;
-  names: Record<ShopLanguage, string>;
-  descriptions: Record<ShopLanguage, string>;
-  seoTitles: Record<ShopLanguage, string>;
-  seoDescriptions: Record<ShopLanguage, string>;
-  ogTitle: string;
-  ogDescription: string;
-  indexable: boolean;
-  isActive: boolean;
-  sortOrder: number;
-}
-
-interface ProductMaterialFormState {
-  materialCode: string;
-  defaultColorKey: string;
-  priceChf: string;
-  isDefault: boolean;
-  isActive: boolean;
-  sortOrder: number;
-}
-
-interface ProductFormState {
-  categoryId: string;
-  slug: string;
-  names: Record<ShopLanguage, string>;
-  excerpts: Record<ShopLanguage, string>;
-  descriptions: Record<ShopLanguage, string>;
-  seoTitles: Record<ShopLanguage, string>;
-  seoDescriptions: Record<ShopLanguage, string>;
-  indexable: boolean;
-  isFeatured: boolean;
-  isActive: boolean;
-  sortOrder: number;
-  materials: ProductMaterialFormState[];
-}
-
-interface ProductImageItem {
-  usageId: string;
-  mediaAssetId: string;
-  previewUrl: string | null;
-  sortOrder: number;
-  draftSortOrder: number;
-  isPrimary: boolean;
-  createdAt: string;
-  translations: Record<AdminMediaLanguage, AdminMediaTranslation>;
-  title: string;
-  altText: string;
-}
-
-interface ProductImageUploadState {
-  file: File | null;
-  previewUrl: string | null;
-  activeLanguage: AdminMediaLanguage;
-  translations: Record<AdminMediaLanguage, AdminMediaTranslation>;
-  sortOrder: number;
-  isPrimary: boolean;
-  saving: boolean;
-}
-
-const SHOP_LANGUAGES: readonly ShopLanguage[] = ['it', 'en', 'de', 'fr'];
-const MEDIA_LANGUAGES: readonly AdminMediaLanguage[] = ['it', 'en', 'de', 'fr'];
-const LANGUAGE_LABELS: Readonly<Record<ShopLanguage, string>> = {
-  it: 'IT',
-  en: 'EN',
-  de: 'DE',
-  fr: 'FR',
-};
-const PRODUCT_STATUS_FILTERS: readonly ProductStatusFilter[] = [
-  'ALL',
-  'ACTIVE',
-  'INACTIVE',
-  'FEATURED',
-];
-const MAX_MODEL_FILE_SIZE_BYTES = 100 * 1024 * 1024;
-const SHOP_LIST_PANEL_WIDTH_STORAGE_KEY = 'admin-shop-list-panel-width';
-const MIN_LIST_PANEL_WIDTH_PERCENT = 32;
-const MAX_LIST_PANEL_WIDTH_PERCENT = 68;
-const RICH_TEXT_ALLOWED_TAGS = new Set([
-  'P',
-  'DIV',
-  'BR',
-  'STRONG',
-  'B',
-  'EM',
-  'I',
-  'U',
-  'UL',
-  'OL',
-  'LI',
-  'A',
-]);
-
+import {
+  hasMeaningfulRichText,
+  normalizeDescriptionForEditor,
+  normalizeRichTextStorageValue,
+} from './admin-shop-rich-text.util';
+import { AdminShopRichTextEditorComponent } from './admin-shop-rich-text-editor.component';
+import {
+  CategoryFormState,
+  ProductFormState,
+  ProductImageItem,
+  ProductImageUploadState,
+  ProductMaterialFormState,
+  ProductMode,
+  ProductStatusFilter,
+  ShopLanguage,
+} from './admin-shop.types';
+import {
+  LANGUAGE_LABELS,
+  MAX_LIST_PANEL_WIDTH_PERCENT,
+  MAX_MODEL_FILE_SIZE_BYTES,
+  MEDIA_LANGUAGES,
+  MIN_LIST_PANEL_WIDTH_PERCENT,
+  PRODUCT_STATUS_FILTERS,
+  SHOP_LANGUAGES,
+  SHOP_LIST_PANEL_WIDTH_STORAGE_KEY,
+} from './admin-shop.config';
+import {
+  filterStockedFilamentVariants,
+  getNextAvailableMaterialCode,
+  getStockMaterialCodes,
+  getStockVariantsForMaterial,
+  resolveStockMaterialDefaultColorKey,
+  stockVariantKey,
+  stockVariantLabel,
+} from './admin-shop-stock.util';
+import {
+  areAllMediaTitlesBlank,
+  buildProductImages,
+  cloneMediaTranslations,
+  createEmptyMediaTranslations,
+  deriveDefaultMediaTitle,
+  isMediaTranslationComplete,
+  normalizeMediaTranslations,
+  validateMediaTranslations,
+} from './admin-shop-image.util';
 @Component({
   selector: 'app-admin-shop',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AdminShopRichTextEditorComponent],
   templateUrl: './admin-shop.component.html',
   styleUrl: './admin-shop.component.scss',
 })
@@ -147,14 +91,8 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   private readonly documentRef = inject(DOCUMENT);
   private readonly adminShopService = inject(AdminShopService);
   private readonly adminOperationsService = inject(AdminOperationsService);
-  private descriptionEditorElement: HTMLDivElement | null = null;
   @ViewChild('workspaceRef')
   private readonly workspaceRef?: ElementRef<HTMLDivElement>;
-  @ViewChild('descriptionEditorRef')
-  set descriptionEditorRef(value: ElementRef<HTMLDivElement> | undefined) {
-    this.descriptionEditorElement = value?.nativeElement ?? null;
-    this.renderActiveDescriptionInEditor();
-  }
 
   readonly shopLanguages = SHOP_LANGUAGES;
   readonly mediaLanguages = MEDIA_LANGUAGES;
@@ -248,7 +186,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
         this.categories = categories;
         this.products = products;
         this.stockFilamentVariants =
-          this.filterStockedFilamentVariants(filamentVariants);
+          filterStockedFilamentVariants(filamentVariants);
         this.applyProductFilters();
         this.ensureCategoryFilterStillValid();
         this.loading = false;
@@ -303,7 +241,10 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     this.adminShopService.getProduct(productId).subscribe({
       next: (product) => {
         this.selectedProduct = product;
-        this.productImages = this.buildProductImages(product);
+        this.productImages = buildProductImages(
+          product,
+          this.imageUploadState.activeLanguage,
+        );
         this.loadProductIntoForm(product);
         this.resetImageUploadState(product);
         this.modelUploadFile = null;
@@ -334,8 +275,6 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     if (this.savingProduct) {
       return;
     }
-
-    this.syncDescriptionFromEditor(this.descriptionEditorElement, true);
 
     const validationError = this.validateProductForm();
     if (validationError) {
@@ -569,8 +508,6 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.syncDescriptionFromEditor(this.descriptionEditorElement, true);
-
     const sourceLanguage = this.activeContentLanguage;
     if (!this.productForm.names[sourceLanguage].trim()) {
       this.errorMessage = `Il nome prodotto ${this.languageLabels[sourceLanguage]} e obbligatorio per avviare la traduzione.`;
@@ -611,9 +548,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   }
 
   setActiveContentLanguage(language: ShopLanguage): void {
-    this.syncDescriptionFromEditor(this.descriptionEditorElement, true);
     this.activeContentLanguage = language;
-    this.renderActiveDescriptionInEditor();
   }
 
   isContentLanguageComplete(language: ShopLanguage): boolean {
@@ -624,7 +559,10 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     return (
       !!this.productForm.names[language].trim() ||
       !!this.productForm.excerpts[language].trim() ||
-      this.hasMeaningfulRichText(this.productForm.descriptions[language])
+      hasMeaningfulRichText(
+        this.productForm.descriptions[language],
+        this.isBrowser,
+      )
     );
   }
 
@@ -693,34 +631,6 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       this.isCategorySeoLanguageStarted(language) &&
       !this.isCategorySeoLanguageComplete(language)
     );
-  }
-
-  preventRichTextToolbarMouseDown(event: MouseEvent): void {
-    event.preventDefault();
-  }
-
-  onDescriptionEditorInput(event: Event): void {
-    const editor = event.target as HTMLDivElement | null;
-    this.syncDescriptionFromEditor(editor, false);
-  }
-
-  onDescriptionEditorBlur(event: Event): void {
-    const editor = event.target as HTMLDivElement | null;
-    this.syncDescriptionFromEditor(editor, true);
-  }
-
-  formatDescription(command: 'bold' | 'italic' | 'underline'): void {
-    this.applyDescriptionExecCommand(command);
-  }
-
-  formatDescriptionList(type: 'unordered' | 'ordered'): void {
-    this.applyDescriptionExecCommand(
-      type === 'unordered' ? 'insertUnorderedList' : 'insertOrderedList',
-    );
-  }
-
-  clearDescriptionFormatting(): void {
-    this.applyDescriptionExecCommand('removeFormat');
   }
 
   addMaterial(): void {
@@ -971,11 +881,11 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const nextTranslations = this.cloneTranslations(
+    const nextTranslations = cloneMediaTranslations(
       this.imageUploadState.translations,
     );
-    if (this.areAllTitlesBlank(nextTranslations)) {
-      const defaultTitle = this.deriveDefaultTitle(file.name);
+    if (areAllMediaTitlesBlank(nextTranslations, this.mediaLanguages)) {
+      const defaultTitle = deriveDefaultMediaTitle(file.name);
       for (const language of this.mediaLanguages) {
         nextTranslations[language].title = defaultTitle;
       }
@@ -1003,7 +913,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   }
 
   isImageLanguageComplete(language: AdminMediaLanguage): boolean {
-    return this.isTranslationComplete(
+    return isMediaTranslationComplete(
       this.imageUploadState.translations[language],
     );
   }
@@ -1030,8 +940,10 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const validationError = this.validateImageTranslations(
+    const validationError = validateMediaTranslations(
       this.imageUploadState.translations,
+      this.mediaLanguages,
+      this.languageLabels,
     );
     if (validationError) {
       this.errorMessage = validationError;
@@ -1039,7 +951,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const normalizedTranslations = this.normalizeTranslations(
+    const normalizedTranslations = normalizeMediaTranslations(
       this.imageUploadState.translations,
     );
     const currentProductId = this.selectedProductId;
@@ -1484,7 +1396,6 @@ export class AdminShopComponent implements OnInit, OnDestroy {
 
   private resetProductForm(): void {
     Object.assign(this.productForm, this.createEmptyProductForm());
-    this.renderActiveDescriptionInEditor();
   }
 
   private createEmptyMaterialForm(
@@ -1519,10 +1430,10 @@ export class AdminShopComponent implements OnInit, OnDestroy {
         fr: product.excerptFr ?? '',
       },
       descriptions: {
-        it: this.normalizeDescriptionForEditor(product.descriptionIt),
-        en: this.normalizeDescriptionForEditor(product.descriptionEn),
-        de: this.normalizeDescriptionForEditor(product.descriptionDe),
-        fr: this.normalizeDescriptionForEditor(product.descriptionFr),
+        it: normalizeDescriptionForEditor(product.descriptionIt, this.isBrowser),
+        en: normalizeDescriptionForEditor(product.descriptionEn, this.isBrowser),
+        de: normalizeDescriptionForEditor(product.descriptionDe, this.isBrowser),
+        fr: normalizeDescriptionForEditor(product.descriptionFr, this.isBrowser),
       },
       seoTitles: {
         it: product.seoTitleIt ?? '',
@@ -1542,7 +1453,6 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       sortOrder: product.sortOrder ?? 0,
       materials: this.toMaterialForms(product.variants),
     });
-    this.renderActiveDescriptionInEditor();
   }
 
   private toMaterialForms(
@@ -1781,7 +1691,6 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       );
     }
 
-    this.renderActiveDescriptionInEditor();
   }
 
   private mergeLocalizedText(
@@ -1800,14 +1709,14 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     }
 
     const hasCurrentValue = richText
-      ? this.hasMeaningfulRichText(target[language] ?? '')
+      ? hasMeaningfulRichText(target[language] ?? '', this.isBrowser)
       : !!target[language]?.trim();
     if (hasCurrentValue && !overwriteExisting) {
       return;
     }
 
     target[language] = richText
-      ? this.normalizeDescriptionForEditor(incoming)
+      ? normalizeDescriptionForEditor(incoming, this.isBrowser)
       : incoming.trim();
   }
 
@@ -1882,114 +1791,34 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   }
 
   stockMaterialCodes(): string[] {
-    return Array.from(
-      new Set(
-        this.stockFilamentVariants.map((variant) =>
-          variant.materialCode.trim().toUpperCase(),
-        ),
-      ),
-    ).sort((left, right) => left.localeCompare(right));
+    return getStockMaterialCodes(this.stockFilamentVariants);
   }
 
   private stockVariantsForMaterial(
     materialCode: string,
   ): AdminFilamentVariant[] {
-    const targetMaterialCode = materialCode.trim().toUpperCase();
-    const seenKeys = new Set<string>();
-
-    return this.stockFilamentVariants
-      .filter(
-        (variant) =>
-          variant.materialCode.trim().toUpperCase() === targetMaterialCode,
-      )
-      .sort((left, right) => {
-        const leftName = `${left.colorName} ${left.variantDisplayName}`.trim();
-        const rightName =
-          `${right.colorName} ${right.variantDisplayName}`.trim();
-        return leftName.localeCompare(rightName);
-      })
-      .filter((variant) => {
-        const key = this.variantKey(
-          targetMaterialCode,
-          variant.colorName,
-          variant.colorHex,
-        );
-        if (seenKeys.has(key)) {
-          return false;
-        }
-        seenKeys.add(key);
-        return true;
-      });
+    return getStockVariantsForMaterial(this.stockFilamentVariants, materialCode);
   }
 
   private resolveMaterialDefaultColorKey(
     materialCode: string,
     preferredKey?: string | null,
   ): string {
-    const normalizedMaterialCode = materialCode.trim().toUpperCase();
-    const stockVariants = this.stockVariantsForMaterial(normalizedMaterialCode);
-    if (stockVariants.length === 0) {
-      return '';
-    }
-
-    const normalizedPreferredKey = (preferredKey ?? '').trim();
-    if (
-      normalizedPreferredKey &&
-      stockVariants.some(
-        (variant) =>
-          this.variantKey(
-            normalizedMaterialCode,
-            variant.colorName,
-            variant.colorHex,
-          ) === normalizedPreferredKey,
-      )
-    ) {
-      return normalizedPreferredKey;
-    }
-
-    const firstVariant = stockVariants[0];
-    return this.variantKey(
-      normalizedMaterialCode,
-      firstVariant.colorName,
-      firstVariant.colorHex,
+    return resolveStockMaterialDefaultColorKey(
+      this.stockFilamentVariants,
+      materialCode,
+      preferredKey,
     );
   }
 
   private stockVariantLabel(variant: AdminFilamentVariant): string {
-    const colorName = (variant.colorLabelIt || variant.colorName).trim();
-    const variantDisplayName = variant.variantDisplayName.trim();
-    if (
-      variantDisplayName &&
-      variantDisplayName.toLowerCase() !== colorName.toLowerCase()
-    ) {
-      return `${colorName} (${variantDisplayName})`;
-    }
-    return colorName;
+    return stockVariantLabel(variant);
   }
 
   private nextAvailableMaterialCode(): string | null {
-    const selectedCodes = new Set(
-      this.productForm.materials
-        .map((material) => material.materialCode.trim().toUpperCase())
-        .filter(Boolean),
-    );
-
-    return (
-      this.stockMaterialCodes().find(
-        (materialCode) => !selectedCodes.has(materialCode),
-      ) ?? null
-    );
-  }
-
-  private filterStockedFilamentVariants(
-    filamentVariants: AdminFilamentVariant[],
-  ): AdminFilamentVariant[] {
-    return filamentVariants.filter(
-      (variant) =>
-        variant.isActive &&
-        Number(variant.stockFilamentGrams ?? 0) > 0 &&
-        !!variant.materialCode?.trim() &&
-        !!variant.colorName?.trim(),
+    return getNextAvailableMaterialCode(
+      this.stockFilamentVariants,
+      this.productForm.materials,
     );
   }
 
@@ -1998,64 +1827,18 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     colorName: string | null | undefined,
     colorHex: string | null | undefined,
   ): string {
-    return [
-      (materialCode ?? '').trim().toUpperCase(),
-      (colorName ?? '').trim().toLowerCase(),
-      (colorHex ?? '').trim().toUpperCase(),
-    ].join('|');
+    return stockVariantKey(materialCode, colorName, colorHex);
   }
 
   private updateSelectedProduct(product: AdminShopProduct): void {
     this.selectedProduct = product;
     this.selectedProductId = product.id;
-    this.productImages = this.buildProductImages(product);
+    this.productImages = buildProductImages(
+      product,
+      this.imageUploadState.activeLanguage,
+    );
     this.loadProductIntoForm(product);
     this.resetImageUploadState(product);
-  }
-
-  private buildProductImages(product: AdminShopProduct): ProductImageItem[] {
-    const publicByAssetId = new Map<string, AdminPublicMediaUsage>();
-    for (const image of product.images) {
-      publicByAssetId.set(image.mediaAssetId, image);
-    }
-
-    return product.mediaUsages
-      .filter((usage) => usage.isActive)
-      .map((usage) => {
-        const publicUsage = publicByAssetId.get(usage.mediaAssetId);
-        const translations = this.normalizeTranslations(usage.translations);
-        return {
-          usageId: usage.id,
-          mediaAssetId: usage.mediaAssetId,
-          previewUrl: this.resolveProductImageUrl(publicUsage),
-          sortOrder: usage.sortOrder ?? 0,
-          draftSortOrder: usage.sortOrder ?? 0,
-          isPrimary: usage.isPrimary,
-          createdAt: usage.createdAt,
-          translations,
-          title:
-            publicUsage?.title ??
-            translations[this.imageUploadState.activeLanguage].title,
-          altText:
-            publicUsage?.altText ??
-            translations[this.imageUploadState.activeLanguage].altText,
-        };
-      })
-      .sort((left, right) => {
-        if (left.sortOrder !== right.sortOrder) {
-          return left.sortOrder - right.sortOrder;
-        }
-        return left.createdAt.localeCompare(right.createdAt);
-      });
-  }
-
-  private resolveProductImageUrl(
-    image: AdminPublicMediaUsage | undefined,
-  ): string | null {
-    if (!image) {
-      return null;
-    }
-    return image.card?.url ?? image.hero?.url ?? image.thumb?.url ?? null;
   }
 
   private createEmptyImageUploadState(): ProductImageUploadState {
@@ -2063,7 +1846,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       file: null,
       previewUrl: null,
       activeLanguage: 'it',
-      translations: this.createEmptyTranslations(),
+      translations: createEmptyMediaTranslations(),
       sortOrder: 0,
       isPrimary: false,
       saving: false,
@@ -2077,7 +1860,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       file: null,
       previewUrl: null,
       activeLanguage: 'it',
-      translations: this.createEmptyTranslations(),
+      translations: createEmptyMediaTranslations(),
       sortOrder: Math.max(0, nextSortOrder),
       isPrimary: (product?.images.length ?? 0) === 0,
       saving: false,
@@ -2093,342 +1876,18 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     }
   }
 
-  private createEmptyTranslations(): Record<
-    AdminMediaLanguage,
-    AdminMediaTranslation
-  > {
-    return {
-      it: { title: '', altText: '' },
-      en: { title: '', altText: '' },
-      de: { title: '', altText: '' },
-      fr: { title: '', altText: '' },
-    };
-  }
-
-  private cloneTranslations(
-    translations: Record<AdminMediaLanguage, AdminMediaTranslation>,
-  ): Record<AdminMediaLanguage, AdminMediaTranslation> {
-    return this.normalizeTranslations(translations);
-  }
-
-  private normalizeTranslations(
-    translations: Partial<
-      Record<AdminMediaLanguage, Partial<AdminMediaTranslation>>
-    >,
-  ): Record<AdminMediaLanguage, AdminMediaTranslation> {
-    return {
-      it: {
-        title: translations['it']?.title?.trim() ?? '',
-        altText: translations['it']?.altText?.trim() ?? '',
-      },
-      en: {
-        title: translations['en']?.title?.trim() ?? '',
-        altText: translations['en']?.altText?.trim() ?? '',
-      },
-      de: {
-        title: translations['de']?.title?.trim() ?? '',
-        altText: translations['de']?.altText?.trim() ?? '',
-      },
-      fr: {
-        title: translations['fr']?.title?.trim() ?? '',
-        altText: translations['fr']?.altText?.trim() ?? '',
-      },
-    };
-  }
-
-  private isTranslationComplete(translation: AdminMediaTranslation): boolean {
-    return !!translation.title.trim() && !!translation.altText.trim();
-  }
-
-  private validateImageTranslations(
-    translations: Record<AdminMediaLanguage, AdminMediaTranslation>,
-  ): string | null {
-    for (const language of this.mediaLanguages) {
-      if (!this.isTranslationComplete(translations[language])) {
-        return `Titolo e alt text immagine ${this.languageLabels[language]} sono obbligatori.`;
-      }
-    }
-    return null;
-  }
-
-  private areAllTitlesBlank(
-    translations: Record<AdminMediaLanguage, AdminMediaTranslation>,
-  ): boolean {
-    return this.mediaLanguages.every(
-      (language) => !translations[language].title.trim(),
-    );
-  }
-
-  private deriveDefaultTitle(filename: string): string {
-    return filename
-      .replace(/\.[^.]+$/, '')
-      .replace(/[-_]+/g, ' ')
-      .trim();
-  }
-
   private optionalValue(value: string): string | undefined {
     const normalized = value.trim();
     return normalized ? normalized : undefined;
   }
 
   private optionalRichTextValue(value: string): string | undefined {
-    const normalized = this.normalizeRichTextStorageValue(value);
+    const normalized = normalizeRichTextStorageValue(value, this.isBrowser);
     return normalized ? normalized : undefined;
-  }
-
-  private syncDescriptionFromEditor(
-    editor: HTMLDivElement | null,
-    sanitize: boolean,
-  ): void {
-    if (!editor) {
-      return;
-    }
-    const currentHtml = this.serializeNodeChildren(editor);
-    const currentLanguage = this.activeContentLanguage;
-    if (sanitize) {
-      const normalized = this.normalizeRichTextStorageValue(currentHtml);
-      const safeHtml = normalized ?? '';
-      this.productForm.descriptions[currentLanguage] = safeHtml;
-      if (currentHtml !== safeHtml) {
-        this.replaceElementContentFromHtml(editor, safeHtml);
-      }
-      return;
-    }
-    this.productForm.descriptions[currentLanguage] = currentHtml;
-  }
-
-  private renderActiveDescriptionInEditor(): void {
-    const editor = this.descriptionEditorElement;
-    if (!editor) {
-      return;
-    }
-    const html =
-      this.productForm.descriptions[this.activeContentLanguage] ?? '';
-    if (this.serializeNodeChildren(editor) !== html) {
-      this.replaceElementContentFromHtml(editor, html);
-    }
-  }
-
-  private applyDescriptionExecCommand(command: string): void {
-    if (!this.isBrowser) {
-      return;
-    }
-    const editor = this.descriptionEditorElement;
-    if (!editor) {
-      return;
-    }
-    editor.focus();
-    this.documentRef.execCommand(command, false);
-    this.syncDescriptionFromEditor(editor, false);
-  }
-
-  private normalizeDescriptionForEditor(
-    value: string | null | undefined,
-  ): string {
-    return this.normalizeRichTextStorageValue(value ?? '') ?? '';
-  }
-
-  private normalizeRichTextStorageValue(value: string): string | null {
-    const normalized = value.trim();
-    if (!normalized) {
-      return null;
-    }
-    const sanitized = this.containsHtmlMarkup(normalized)
-      ? this.sanitizeRichTextHtml(normalized)
-      : this.plainTextToRichTextHtml(normalized);
-    const compact = sanitized.trim();
-    if (!compact || !this.hasMeaningfulRichText(compact)) {
-      return null;
-    }
-    return compact;
-  }
-
-  private containsHtmlMarkup(value: string): boolean {
-    return /<\/?[a-z][\s\S]*>/i.test(value);
-  }
-
-  private plainTextToRichTextHtml(value: string): string {
-    const normalized = value.replace(/\r\n?/g, '\n').trim();
-    if (!normalized) {
-      return '';
-    }
-    return normalized
-      .split(/\n{2,}/)
-      .map(
-        (paragraph) =>
-          `<p>${this.escapeHtml(paragraph).replace(/\n/g, '<br>')}</p>`,
-      )
-      .join('');
-  }
-
-  private sanitizeRichTextHtml(value: string): string {
-    if (!this.isBrowser) {
-      return this.stripPotentiallyUnsafeHtml(value);
-    }
-
-    const parser = new DOMParser();
-    const sourceDocument = parser.parseFromString(
-      `<body>${value}</body>`,
-      'text/html',
-    );
-    const outputDocument = parser.parseFromString('<body></body>', 'text/html');
-    const outputBody = outputDocument.body;
-
-    for (const child of Array.from(sourceDocument.body.childNodes)) {
-      const sanitizedNode = this.sanitizeRichTextNode(child, outputDocument);
-      if (sanitizedNode) {
-        outputBody.appendChild(sanitizedNode);
-      }
-    }
-
-    return this.serializeNodeChildren(outputBody);
-  }
-
-  private sanitizeRichTextNode(
-    node: Node,
-    outputDocument: Document,
-  ): Node | DocumentFragment | null {
-    if (node.nodeType === Node.TEXT_NODE) {
-      return outputDocument.createTextNode(node.textContent ?? '');
-    }
-    if (node.nodeType !== Node.ELEMENT_NODE) {
-      return null;
-    }
-
-    const sourceElement = node as HTMLElement;
-    const tagName = sourceElement.tagName.toUpperCase();
-    const childNodes = Array.from(sourceElement.childNodes)
-      .map((child) => this.sanitizeRichTextNode(child, outputDocument))
-      .filter((child): child is Node | DocumentFragment => child !== null);
-
-    if (!RICH_TEXT_ALLOWED_TAGS.has(tagName)) {
-      const fragment = outputDocument.createDocumentFragment();
-      for (const child of childNodes) {
-        fragment.appendChild(child);
-      }
-      return fragment;
-    }
-
-    const element = outputDocument.createElement(tagName.toLowerCase());
-    if (tagName === 'A') {
-      const href = this.sanitizeRichTextHref(
-        sourceElement.getAttribute('href'),
-      );
-      if (href) {
-        element.setAttribute('href', href);
-        if (href.startsWith('http://') || href.startsWith('https://')) {
-          element.setAttribute('target', '_blank');
-          element.setAttribute('rel', 'noopener noreferrer');
-        }
-      }
-    }
-    for (const child of childNodes) {
-      element.appendChild(child);
-    }
-
-    if (tagName === 'A' && !element.textContent?.trim()) {
-      return null;
-    }
-    if (
-      (tagName === 'UL' || tagName === 'OL') &&
-      !element.querySelector('li')
-    ) {
-      return null;
-    }
-    if (tagName === 'LI' && !element.textContent?.trim()) {
-      return null;
-    }
-
-    return element;
-  }
-
-  private sanitizeRichTextHref(rawHref: string | null): string | null {
-    const href = rawHref?.trim();
-    if (!href) {
-      return null;
-    }
-    const lowerHref = href.toLowerCase();
-    if (lowerHref.startsWith('/') || lowerHref.startsWith('#')) {
-      return href;
-    }
-    if (
-      lowerHref.startsWith('http://') ||
-      lowerHref.startsWith('https://') ||
-      lowerHref.startsWith('mailto:') ||
-      lowerHref.startsWith('tel:')
-    ) {
-      return href;
-    }
-    return null;
-  }
-
-  private hasMeaningfulRichText(value: string): boolean {
-    return (
-      this.extractTextFromHtml(value)
-        .replace(/\u00a0/g, ' ')
-        .trim().length > 0
-    );
-  }
-
-  private extractTextFromHtml(value: string): string {
-    if (!this.isBrowser) {
-      return value.replace(/<[^>]+>/g, ' ');
-    }
-    const parser = new DOMParser();
-    const parsed = parser.parseFromString(`<body>${value}</body>`, 'text/html');
-    return parsed.body.textContent ?? '';
-  }
-
-  private serializeNodeChildren(node: Node): string {
-    if (!this.isBrowser) {
-      return node.textContent ?? '';
-    }
-    const serializer = new XMLSerializer();
-    let html = '';
-    for (const child of Array.from(node.childNodes)) {
-      html += serializer.serializeToString(child);
-    }
-    return html;
-  }
-
-  private replaceElementContentFromHtml(
-    element: HTMLElement,
-    html: string,
-  ): void {
-    if (!this.isBrowser) {
-      return;
-    }
-
-    if (!html) {
-      element.replaceChildren();
-      return;
-    }
-
-    const parser = new DOMParser();
-    const parsed = parser.parseFromString(`<body>${html}</body>`, 'text/html');
-    const nodes = Array.from(parsed.body.childNodes).map((child) =>
-      this.documentRef.importNode(child, true),
-    );
-    element.replaceChildren(...nodes);
   }
 
   private confirmBrowser(message: string): boolean {
     return this.isBrowser ? window.confirm(message) : false;
-  }
-
-  private stripPotentiallyUnsafeHtml(value: string): string {
-    return value
-      .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
-      .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, '');
-  }
-
-  private escapeHtml(value: string): string {
-    return value
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
   }
 
   seoDescriptionLength(language: ShopLanguage): number {

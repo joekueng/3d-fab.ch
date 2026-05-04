@@ -10,6 +10,7 @@ import {
 import { CopyOnClickDirective } from '../../../shared/directives/copy-on-click.directive';
 import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
 import { AppSelectComponent } from '../../../shared/components/app-select/app-select.component';
+import { downloadBlobInBrowser } from '../../../core/utils/browser-download';
 
 @Component({
   selector: 'app-admin-contact-requests',
@@ -187,11 +188,6 @@ export class AdminContactRequestsComponent implements OnInit {
     if (!this.isBrowser) {
       return;
     }
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    window.URL.revokeObjectURL(url);
+    downloadBlobInBrowser(blob, filename);
   }
 }
