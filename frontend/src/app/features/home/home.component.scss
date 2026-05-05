@@ -739,10 +739,7 @@
 
 @media (max-width: 640px) {
   .hero-swiss-card {
-    align-self: start;
-    justify-self: center;
-    width: min(100%, 340px);
-    margin-top: 1rem;
+    display: none;
   }
 
   .home-project-copy {
