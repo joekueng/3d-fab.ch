@@ -1,0 +1,359 @@
+<section class="section-card ui-stack ui-stack--roomy">
+  <header class="section-header">
+    <div class="header-copy">
+      <h1>Progetti home</h1>
+    </div>
+    <div class="header-side ui-inline-actions">
+      <app-button type="button" variant="outline" (click)="startNewProject()">
+        Nuovo progetto
+      </app-button>
+      <app-button type="button" (click)="loadProjects()" [disabled]="loading">
+        Aggiorna
+      </app-button>
+    </div>
+  </header>
+
+  <p class="status-banner ui-banner ui-banner--error" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </p>
+  <p class="status-banner ui-banner ui-banner--success" *ngIf="successMessage">
+    {{ successMessage }}
+  </p>
+
+  <div class="projects-layout" *ngIf="!loading; else loadingTpl">
+    <aside class="project-list ui-subpanel ui-subpanel--warm">
+      <div class="project-list-head ui-row ui-row--between ui-row--center">
+        <div>
+          <h3>{{ projects.length }} configurati</h3>
+        </div>
+      </div>
+
+      <div class="project-list-items ui-admin-nav" *ngIf="projects.length">
+        <button
+          *ngFor="let project of projects; trackBy: trackProject"
+          type="button"
+          class="ui-admin-nav__item project-trigger"
+          [class.is-active]="project.id === form.id"
+          (click)="editProject(project, true)"
+        >
+          <span class="project-trigger__title">
+            {{ project.titleIt || project.slug }}
+          </span>
+          <span class="project-trigger__meta">
+            ordine {{ project.sortOrder }}
+            <span aria-hidden="true">•</span>
+            {{ project.isActive ? "attivo" : "non attivo" }}
+          </span>
+        </button>
+      </div>
+
+      <p class="empty-state ui-empty-state" *ngIf="!projects.length">
+        Nessun progetto creato.
+      </p>
+    </aside>
+
+    <div class="project-editor ui-stack ui-stack--roomy">
+      <section class="ui-subpanel ui-subpanel--elevated">
+        <header class="panel-header ui-row ui-row--between ui-row--wrap">
+          <div>
+            <h3>
+              {{
+                form.id ? form.titles.it || "Progetto home" : "Nuovo progetto"
+              }}
+            </h3>
+          </div>
+          <span class="ui-pill ui-pill--neutral">
+            {{ form.id ? "ID " + form.id : "Non salvato" }}
+          </span>
+        </header>
+
+        <div class="translation-actions ui-row ui-row--wrap">
+          <app-button
+            type="button"
+            variant="ghost"
+            size="sm"
+            (click)="translateProjectTexts()"
+            [disabled]="!canTranslateProjectTexts()"
+          >
+            {{ form.translating ? "Traduco..." : "Traduci" }}
+          </app-button>
+          <app-checkbox
+            label="Sovrascrivi traduzioni esistenti"
+            [(ngModel)]="form.overwriteExistingTranslations"
+          />
+        </div>
+
+        <app-admin-language-toolbar
+          class="language-toolbar"
+          title="Testi localizzati"
+          description="Eyebrow opzionale; titolo e descrizione obbligatori."
+          [languages]="mediaLanguages"
+          [labels]="mediaLanguageLabels"
+          [activeLanguage]="form.activeLanguage"
+          [states]="projectLanguageStatuses()"
+          (activeLanguageChange)="setProjectLanguage($event)"
+        />
+
+        <div class="form-grid ui-form-grid ui-form-grid--two">
+          <app-input
+            label="Slug"
+            [(ngModel)]="form.slug"
+            placeholder="automatico dal titolo se vuoto"
+            [compact]="true"
+          />
+          <app-input
+            label="Ordine"
+            type="number"
+            [(ngModel)]="form.sortOrder"
+            min="0"
+            [compact]="true"
+          />
+          <app-input
+            label="Eyebrow ({{ mediaLanguageLabels[form.activeLanguage] }})"
+            [(ngModel)]="form.eyebrows[form.activeLanguage]"
+            placeholder="es. Progetto custom"
+            [compact]="true"
+          />
+          <app-input
+            label="Titolo ({{ mediaLanguageLabels[form.activeLanguage] }})"
+            [(ngModel)]="form.titles[form.activeLanguage]"
+            placeholder="es. Modellino architettonico"
+            [compact]="true"
+          />
+          <div class="form-field--wide">
+            <app-textarea
+              label="Descrizione ({{
+                mediaLanguageLabels[form.activeLanguage]
+              }})"
+              [(ngModel)]="form.descriptions[form.activeLanguage]"
+              placeholder="Racconta cosa è stato realizzato e per quale uso."
+              [rows]="4"
+              [compact]="true"
+            />
+          </div>
+          <app-checkbox
+            label="Attivo in home"
+            variant="pill"
+            [(ngModel)]="form.isActive"
+          />
+        </div>
+
+        <div class="editor-actions ui-row ui-row--wrap">
+          <app-button
+            type="button"
+            (click)="saveProject()"
+            [disabled]="form.saving"
+          >
+            {{ form.saving ? "Salvataggio..." : "Salva progetto" }}
+          </app-button>
+          <app-button
+            type="button"
+            variant="ghost"
+            *ngIf="form.id && form.isActive"
+            (click)="deactivateSelectedProject()"
+            [disabled]="form.saving"
+          >
+            Disattiva
+          </app-button>
+        </div>
+      </section>
+
+      <section
+        class="ui-subpanel ui-subpanel--elevated"
+        *ngIf="selectedProject as project"
+      >
+        <header class="panel-header ui-row ui-row--between ui-row--wrap">
+          <div>
+            <h3>Immagini progetto</h3>
+          </div>
+          <span class="ui-pill ui-pill--light">
+            {{ project.mediaUsageType }} / {{ project.mediaUsageKey }}
+          </span>
+        </header>
+
+        <div class="image-workspace">
+          <div class="image-upload ui-subpanel ui-subpanel--soft">
+            <div class="form-grid ui-form-grid ui-form-grid--two">
+              <div class="form-field--wide">
+                <span class="ui-form-caption">File immagine</span>
+                <input
+                  id="home-project-image-file"
+                  class="sr-only"
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.webp"
+                  (change)="onImageFileSelected($event)"
+                />
+                <label
+                  class="file-picker ui-file-picker"
+                  for="home-project-image-file"
+                >
+                  <span class="ui-file-picker__button">Scegli file</span>
+                  <span class="ui-file-picker__name">
+                    {{ imageForm.file?.name || "Nessun file selezionato" }}
+                  </span>
+                </label>
+              </div>
+
+              <div
+                class="preview-card form-field--wide"
+                *ngIf="imageForm.previewUrl"
+              >
+                <img [src]="imageForm.previewUrl" alt="" />
+              </div>
+
+              <div
+                class="translation-actions form-field--wide ui-row ui-row--wrap"
+              >
+                <app-button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  (click)="translateProjectImageTexts()"
+                  [disabled]="!canTranslateProjectImageTexts()"
+                >
+                  {{ imageForm.translating ? "Traduco..." : "Traduci" }}
+                </app-button>
+                <app-checkbox
+                  label="Sovrascrivi traduzioni esistenti"
+                  [(ngModel)]="imageForm.overwriteExistingTranslations"
+                />
+              </div>
+
+              <app-admin-language-toolbar
+                class="language-toolbar form-field--wide"
+                title="Testi immagine"
+                description="Titolo e alt text per il media."
+                [languages]="mediaLanguages"
+                [labels]="mediaLanguageLabels"
+                [activeLanguage]="imageForm.activeLanguage"
+                [states]="imageLanguageStatuses()"
+                (activeLanguageChange)="setImageLanguage($event)"
+              />
+
+              <app-input
+                label="Titolo immagine ({{
+                  mediaLanguageLabels[imageForm.activeLanguage]
+                }})"
+                [(ngModel)]="
+                  imageForm.translations[imageForm.activeLanguage].title
+                "
+                [compact]="true"
+              />
+              <app-input
+                label="Alt text ({{
+                  mediaLanguageLabels[imageForm.activeLanguage]
+                }})"
+                [(ngModel)]="
+                  imageForm.translations[imageForm.activeLanguage].altText
+                "
+                [compact]="true"
+              />
+              <app-input
+                label="Ordine"
+                type="number"
+                [(ngModel)]="imageForm.sortOrder"
+                min="0"
+                [compact]="true"
+              />
+              <app-checkbox
+                label="Usa come immagine grande"
+                variant="pill"
+                [(ngModel)]="imageForm.isPrimary"
+              />
+            </div>
+
+            <div class="editor-actions ui-row ui-row--wrap">
+              <app-button
+                type="button"
+                (click)="uploadProjectImage()"
+                [disabled]="imageForm.saving || !imageForm.file"
+              >
+                {{ imageForm.saving ? "Caricamento..." : "Carica immagine" }}
+              </app-button>
+            </div>
+          </div>
+
+          <div class="image-list ui-subpanel ui-subpanel--soft">
+            <h4>Immagini attive</h4>
+            <article
+              class="project-image-item"
+              *ngFor="let item of projectImages(project); trackBy: trackImage"
+            >
+              <div class="project-image-thumb ui-thumb">
+                <img *ngIf="item.previewUrl" [src]="item.previewUrl" alt="" />
+              </div>
+              <div class="project-image-copy">
+                <div class="ui-row ui-row--between ui-row--center ui-row--wrap">
+                  <div>
+                    <h5>
+                      {{
+                        item.translations[imageForm.activeLanguage].title ||
+                          "Immagine progetto"
+                      }}
+                    </h5>
+                    <p>
+                      Sort {{ item.sortOrder }} | asset {{ item.mediaAssetId }}
+                    </p>
+                  </div>
+                  <span
+                    class="ui-pill"
+                    [class.ui-pill--accent]="item.isPrimary"
+                    [class.ui-pill--light]="!item.isPrimary"
+                  >
+                    {{ item.isPrimary ? "Grande" : "Mini/schema" }}
+                  </span>
+                </div>
+
+                <div class="image-actions ui-row ui-row--wrap">
+                  <app-input
+                    label="Ordine"
+                    type="number"
+                    [ngModel]="imageSortOrderDraft(item)"
+                    (ngModelChange)="setImageSortOrderDraft(item, $event)"
+                    min="0"
+                    [compact]="true"
+                  />
+                  <app-button
+                    type="button"
+                    variant="ghost"
+                    (click)="saveImageSortOrder(item)"
+                    [disabled]="isUsageBusy(item.usageId)"
+                  >
+                    Salva ordine
+                  </app-button>
+                  <app-button
+                    type="button"
+                    variant="ghost"
+                    (click)="setPrimaryImage(item)"
+                    [disabled]="isUsageBusy(item.usageId) || item.isPrimary"
+                  >
+                    Rendi grande
+                  </app-button>
+                  <app-button
+                    type="button"
+                    variant="ghost-danger"
+                    (click)="deactivateImage(item)"
+                    [disabled]="isUsageBusy(item.usageId)"
+                  >
+                    Disattiva
+                  </app-button>
+                </div>
+              </div>
+            </article>
+
+            <p
+              class="empty-state ui-empty-state"
+              *ngIf="projectImages(project).length === 0"
+            >
+              Nessuna immagine attiva per questo progetto.
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <ng-template #loadingTpl>
+    <p class="empty-state ui-empty-state">Caricamento progetti...</p>
+  </ng-template>
+</section>

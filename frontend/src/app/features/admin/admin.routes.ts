@@ -77,6 +77,13 @@ export const ADMIN_ROUTES: Routes = [
           ),
       },
       {
+        path: 'home-projects',
+        loadComponent: () =>
+          import('./pages/admin-home-projects.component').then(
+            (m) => m.AdminHomeProjectsComponent,
+          ),
+      },
+      {
         path: 'shop',
         loadComponent: () =>
           import('./pages/admin-shop.component').then(

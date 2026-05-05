@@ -88,6 +88,7 @@ Usage key iniziali previste per frontend:
 - `HOME_SECTION / capability-custom-parts`
 - `HOME_SECTION / capability-small-series`
 - `HOME_SECTION / capability-cad`
+- `HOME_PROJECT / <home-project-slug>`
 - `ABOUT_MEMBER / joe`
 - `ABOUT_MEMBER / matteo`
 - riservati per estensioni future: `SHOP_PRODUCT`, `SHOP_CATEGORY`, `SHOP_GALLERY`

@@ -34,14 +34,37 @@ export interface AdminOrderItem {
   lineTotalChf: number;
 }
 
+export interface AdminOrderAddress {
+  firstName?: string | null;
+  lastName?: string | null;
+  companyName?: string | null;
+  contactPerson?: string | null;
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  zip?: string | null;
+  city?: string | null;
+  countryCode?: string | null;
+}
+
 export interface AdminOrder {
   id: string;
   orderNumber: string;
+  sourceType?: string | null;
   status: string;
-  paymentStatus?: string;
-  paymentMethod?: string;
-  billingCustomerType?: string;
+  paymentStatus?: string | null;
+  paymentMethod?: string | null;
+  billingCustomerType?: string | null;
   customerEmail: string;
+  customerPhone?: string | null;
+  preferredLanguage?: string | null;
+  billingAddress?: AdminOrderAddress | null;
+  shippingAddress?: AdminOrderAddress | null;
+  shippingSameAsBilling?: boolean | null;
+  currency?: string | null;
+  setupCostChf?: number;
+  shippingCostChf?: number;
+  discountChf?: number;
+  subtotalChf?: number;
   totalChf: number;
   createdAt: string;
   paidAt?: string;

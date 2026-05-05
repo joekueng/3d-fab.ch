@@ -378,6 +378,77 @@
   object-fit: cover;
 }
 
+.ui-carousel-indicators {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.72rem;
+  min-height: 1.3rem;
+}
+
+.ui-swipe-carousel {
+  touch-action: pan-y;
+  user-select: none;
+  cursor: grab;
+}
+
+.ui-swipe-carousel.is-swipe-dragging {
+  cursor: grabbing;
+}
+
+.ui-swipe-carousel img {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.ui-carousel-dot {
+  --ui-carousel-dot-size: 0.72rem;
+  --ui-carousel-dot-active-width: 4.8rem;
+  --ui-carousel-dot-idle: rgba(14, 24, 38, 0.34);
+  --ui-carousel-dot-active-track: rgba(14, 24, 38, 0.2);
+  --ui-carousel-dot-active-fill: rgba(14, 24, 38, 0.72);
+  flex: 0 0 auto;
+  position: relative;
+  width: var(--ui-carousel-dot-size);
+  height: var(--ui-carousel-dot-size);
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ui-carousel-dot-idle);
+  cursor: pointer;
+  transition:
+    width 0.22s ease,
+    background-color 0.22s ease,
+    opacity 0.22s ease;
+}
+
+.ui-carousel-dot:hover {
+  opacity: 0.76;
+}
+
+.ui-carousel-dot:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 3px;
+}
+
+.ui-carousel-dot.is-active {
+  width: var(--ui-carousel-dot-active-width);
+  background: var(--ui-carousel-dot-active-track);
+}
+
+.ui-carousel-dot.is-active::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--ui-carousel-dot-active-fill);
+  transform: scaleX(0);
+  transform-origin: left center;
+  animation: uiCarouselProgress var(--ui-carousel-duration, 5000ms) linear
+    forwards;
+}
+
 .ui-media-frame {
   position: relative;
   overflow: hidden;
@@ -827,7 +898,7 @@ select.ui-form-control {
 }
 
 .ui-button--outline {
-  background: transparent;
+  background: var(--color-bg);
   border: 2px solid var(--color-brand);
   color: var(--color-neutral-900);
   padding: calc(var(--space-2) - 1px) calc(var(--space-4) - 1px);
@@ -919,7 +990,7 @@ select.ui-form-control {
   padding: 0.75rem 0.9rem;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: linear-gradient(180deg, #fffdf5 0%, #ffffff 100%);
+  background: var(--color-bg-card);
   display: grid;
   gap: 0.15rem;
 }
@@ -1154,83 +1225,17 @@ select.ui-form-control {
   color: var(--color-text-muted);
 }
 
-.admin-shell .content .section-card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
+@keyframes uiCarouselProgress {
+  to {
+    transform: scaleX(1);
+  }
 }
 
-.admin-shell .content .section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--space-4);
-}
-
-.admin-shell .content .section-header h1,
-.admin-shell .content .section-header h2,
-.admin-shell .content .section-header h3 {
-  margin: 0;
-}
-
-.admin-shell .content .section-header p {
-  margin: var(--space-2) 0 0;
-  color: var(--color-text-muted);
-}
-
-.admin-shell .content .alerts {
-  display: grid;
-  gap: var(--space-2);
-}
-
-.admin-shell .content .error {
-  margin: 0;
-  color: var(--color-danger-500);
-}
-
-.admin-shell .content .success {
-  margin: 0;
-  color: var(--color-success-500);
-}
-
-.admin-shell .content .form-field > span,
-.admin-shell .content .toolbar-field > span,
-.admin-shell .content .form-grid label > span,
-.admin-shell .content .status-editor label,
-.admin-shell .content .status-editor-field label {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--color-text-muted);
-}
-
-.admin-shell .content .ui-checkbox {
-  gap: 0.85rem;
-  font-size: 1rem;
-}
-
-.admin-shell .content .ui-checkbox__mark {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-.admin-shell .content .ui-file-picker__button,
-.admin-shell .content .ui-file-picker__name {
-  font-size: 1rem;
-}
-
-.admin-shell .content .ui-language-toolbar {
-  padding: var(--space-2);
-}
-
-.admin-shell .content .ui-language-toolbar__copy span,
-.admin-shell .content .ui-language-toolbar__copy p,
-.admin-shell .content .ui-language-toolbar__button {
-  font-size: 0.9rem;
-}
-
-.admin-shell .content .ui-language-toolbar__button {
-  min-width: 2.8rem;
-  padding: 0.4rem 0.6rem;
+@media (prefers-reduced-motion: reduce) {
+  .ui-carousel-dot.is-active::after {
+    animation: none;
+    transform: scaleX(1);
+  }
 }
 
 @media (min-width: 768px) {

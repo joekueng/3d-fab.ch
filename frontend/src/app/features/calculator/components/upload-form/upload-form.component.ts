@@ -31,38 +31,22 @@ import {
 } from '../../services/quote-estimator.service';
 import { getColorHex } from '../../../../core/constants/colors.const';
 import { LanguageService } from '../../../../core/services/language.service';
-
-interface FormItem {
-  file: File;
-  previewFile?: File;
-  quantity: number;
-  material: string;
-  quality: string;
-  color: string;
-  filamentVariantId?: number;
-  supportEnabled: boolean;
-  infillDensity: number;
-  infillPattern: string;
-  layerHeight: number;
-  nozzleDiameter: number;
-}
-
-interface ItemSettingsDiffInfo {
-  differences: string[];
-}
-
-type ItemPrintSettingsUpdate = Partial<
-  Pick<
-    FormItem,
-    | 'material'
-    | 'quality'
-    | 'nozzleDiameter'
-    | 'layerHeight'
-    | 'infillDensity'
-    | 'infillPattern'
-    | 'supportEnabled'
-  >
->;
+import {
+  FormItem,
+  ItemPrintSettingsUpdate,
+  ItemSettingsDiffInfo,
+  PrintSettingsSnapshot,
+} from './upload-form.types';
+import {
+  easyModePresetForQuality,
+  normalizeFileName,
+  normalizeNumber,
+  normalizeQualityValue,
+  normalizeQuantity,
+  normalizeText,
+  sameItemSettings,
+  toNozzleKey,
+} from './upload-form-settings.util';
 
 @Component({
   selector: 'app-upload-form',
@@ -244,7 +228,7 @@ export class UploadFormComponent implements OnInit {
 
         this.layerHeightsByNozzle = {};
         (options.layerHeightsByNozzle || []).forEach((entry) => {
-          this.layerHeightsByNozzle[this.toNozzleKey(entry.nozzleDiameter)] = (
+          this.layerHeightsByNozzle[toNozzleKey(entry.nozzleDiameter)] = (
             entry.layerHeights || []
           ).map((layer) => ({
             label: layer.label,
@@ -273,7 +257,7 @@ export class UploadFormComponent implements OnInit {
 
         this.allLayerHeights = [{ label: '0.20 mm', value: 0.2 }];
         this.layerHeightsByNozzle = {
-          [this.toNozzleKey(0.4)]: this.allLayerHeights,
+          [toNozzleKey(0.4)]: this.allLayerHeights,
         };
 
         this.setDefaults();
@@ -335,7 +319,7 @@ export class UploadFormComponent implements OnInit {
   }
 
   getLayerHeightOptionsForNozzle(nozzleRaw: unknown): SimpleOption[] {
-    const key = this.toNozzleKey(nozzleRaw);
+    const key = toNozzleKey(nozzleRaw);
     const perNozzle = this.layerHeightsByNozzle[key];
     if (perNozzle && perNozzle.length > 0) {
       return perNozzle;
@@ -424,7 +408,7 @@ export class UploadFormComponent implements OnInit {
       return;
     }
 
-    const normalizedQty = this.normalizeQuantity(quantity);
+    const normalizedQty = normalizeQuantity(quantity);
     this.updateItemQuantityByIndex(index, quantity);
 
     this.itemQuantityChange.emit({
@@ -436,7 +420,7 @@ export class UploadFormComponent implements OnInit {
 
   updateItemQuantityByIndex(index: number, quantity: number) {
     if (!Number.isInteger(index) || index < 0) return;
-    const normalizedQty = this.normalizeQuantity(quantity);
+    const normalizedQty = normalizeQuantity(quantity);
 
     this.items.update((current) => {
       if (index >= current.length) return current;
@@ -448,14 +432,14 @@ export class UploadFormComponent implements OnInit {
   }
 
   updateItemQuantityByName(fileName: string, quantity: number) {
-    const targetName = this.normalizeFileName(fileName);
-    const normalizedQty = this.normalizeQuantity(quantity);
+    const targetName = normalizeFileName(fileName);
+    const normalizedQty = normalizeQuantity(quantity);
 
     this.items.update((current) => {
       let matched = false;
 
       return current.map((item) => {
-        if (!matched && this.normalizeFileName(item.file.name) === targetName) {
+        if (!matched && normalizeFileName(item.file.name) === targetName) {
           matched = true;
           return { ...item, quantity: normalizedQty };
         }
@@ -574,7 +558,7 @@ export class UploadFormComponent implements OnInit {
     const patch: any = {};
     if (settings.materialCode) patch.material = settings.materialCode;
     if (settings.quality) {
-      patch.quality = this.normalizeQualityValue(settings.quality);
+      patch.quality = normalizeQualityValue(settings.quality);
     }
 
     const layer = Number(settings.layerHeightMm);
@@ -681,7 +665,7 @@ export class UploadFormComponent implements OnInit {
         };
 
         if (update.quality !== undefined) {
-          next.quality = this.normalizeQualityValue(update.quality);
+          next.quality = normalizeQualityValue(update.quality);
         }
 
         if (update.material !== undefined) {
@@ -766,12 +750,10 @@ export class UploadFormComponent implements OnInit {
       }
     });
 
-    const selectedFileName = this.normalizeFileName(
-      options?.selectedFileName ?? '',
-    );
+    const selectedFileName = normalizeFileName(options?.selectedFileName ?? '');
     const target =
       this.items().find(
-        (item) => this.normalizeFileName(item.file.name) === selectedFileName,
+        (item) => normalizeFileName(item.file.name) === selectedFileName,
       ) ?? this.items()[this.items().length - 1];
 
     if (target) {
@@ -863,7 +845,7 @@ export class UploadFormComponent implements OnInit {
   }
 
   private applyEasyPresetFromQuality(qualityRaw: string) {
-    const preset = this.easyModePresetForQuality(qualityRaw);
+    const preset = easyModePresetForQuality(qualityRaw);
 
     this.isPatchingSettings = true;
     this.form.patchValue(
@@ -881,58 +863,12 @@ export class UploadFormComponent implements OnInit {
     this.updateLayerHeightOptionsForNozzle(preset.nozzleDiameter, true);
   }
 
-  private easyModePresetForQuality(qualityRaw: string): {
-    quality: string;
-    nozzleDiameter: number;
-    layerHeight: number;
-    infillDensity: number;
-    infillPattern: string;
-  } {
-    const quality = this.normalizeQualityValue(qualityRaw);
-
-    if (quality === 'draft') {
-      return {
-        quality: 'draft',
-        nozzleDiameter: 0.4,
-        layerHeight: 0.28,
-        infillDensity: 15,
-        infillPattern: 'grid',
-      };
-    }
-
-    if (quality === 'extra_fine') {
-      return {
-        quality: 'extra_fine',
-        nozzleDiameter: 0.4,
-        layerHeight: 0.12,
-        infillDensity: 20,
-        infillPattern: 'gyroid',
-      };
-    }
-
-    return {
-      quality: 'standard',
-      nozzleDiameter: 0.4,
-      layerHeight: 0.2,
-      infillDensity: 15,
-      infillPattern: 'grid',
-    };
-  }
-
-  private getCurrentGlobalItemDefaults(): {
-    material: string;
-    quality: string;
-    nozzleDiameter: number;
-    layerHeight: number;
-    infillDensity: number;
-    infillPattern: string;
-    supportEnabled: boolean;
-  } {
+  private getCurrentGlobalItemDefaults(): PrintSettingsSnapshot {
     const material = String(this.form.get('material')?.value || 'PLA');
-    const quality = this.normalizeQualityValue(this.form.get('quality')?.value);
+    const quality = normalizeQualityValue(this.form.get('quality')?.value);
 
     if (this.mode() === 'easy') {
-      const preset = this.easyModePresetForQuality(quality);
+      const preset = easyModePresetForQuality(quality);
       return {
         material,
         quality: preset.quality,
@@ -947,18 +883,12 @@ export class UploadFormComponent implements OnInit {
     return {
       material,
       quality,
-      nozzleDiameter: this.normalizeNumber(
+      nozzleDiameter: normalizeNumber(
         this.form.get('nozzleDiameter')?.value,
         0.4,
       ),
-      layerHeight: this.normalizeNumber(
-        this.form.get('layerHeight')?.value,
-        0.2,
-      ),
-      infillDensity: this.normalizeNumber(
-        this.form.get('infillDensity')?.value,
-        20,
-      ),
+      layerHeight: normalizeNumber(this.form.get('layerHeight')?.value, 0.2),
+      infillDensity: normalizeNumber(this.form.get('infillDensity')?.value, 20),
       infillPattern: String(this.form.get('infillPattern')?.value || 'grid'),
       supportEnabled: Boolean(this.form.get('supportEnabled')?.value),
     };
@@ -968,15 +898,13 @@ export class UploadFormComponent implements OnInit {
     item: FormItem,
     defaults: ReturnType<UploadFormComponent['getCurrentGlobalItemDefaults']>,
   ): QuoteRequestItem {
-    const quality = this.normalizeQualityValue(
-      item.quality || defaults.quality,
-    );
+    const quality = normalizeQualityValue(item.quality || defaults.quality);
 
     if (this.mode() === 'easy') {
-      const preset = this.easyModePresetForQuality(quality);
+      const preset = easyModePresetForQuality(quality);
       return {
         file: item.file,
-        quantity: this.normalizeQuantity(item.quantity),
+        quantity: normalizeQuantity(item.quantity),
         material: item.material || defaults.material,
         quality: preset.quality,
         color: item.color,
@@ -991,19 +919,19 @@ export class UploadFormComponent implements OnInit {
 
     return {
       file: item.file,
-      quantity: this.normalizeQuantity(item.quantity),
+      quantity: normalizeQuantity(item.quantity),
       material: item.material || defaults.material,
       quality,
       color: item.color,
       filamentVariantId: item.filamentVariantId,
       supportEnabled: item.supportEnabled,
-      infillDensity: this.normalizeNumber(
+      infillDensity: normalizeNumber(
         item.infillDensity,
         defaults.infillDensity,
       ),
       infillPattern: item.infillPattern || defaults.infillPattern,
-      layerHeight: this.normalizeNumber(item.layerHeight, defaults.layerHeight),
-      nozzleDiameter: this.normalizeNumber(
+      layerHeight: normalizeNumber(item.layerHeight, defaults.layerHeight),
+      nozzleDiameter: normalizeNumber(
         item.nozzleDiameter,
         defaults.nozzleDiameter,
       ),
@@ -1103,7 +1031,7 @@ export class UploadFormComponent implements OnInit {
     this.form.patchValue(
       {
         material: selected.material,
-        quality: this.normalizeQualityValue(selected.quality),
+        quality: normalizeQualityValue(selected.quality),
         nozzleDiameter: selected.nozzleDiameter,
         layerHeight: selected.layerHeight,
         infillDensity: selected.infillDensity,
@@ -1176,15 +1104,14 @@ export class UploadFormComponent implements OnInit {
       return;
     }
 
-    const currentLayer = this.normalizeNumber(
+    const currentLayer = normalizeNumber(
       this.form.get('layerHeight')?.value,
       options[0].value as number,
     );
     const allowed = options.some(
       (option) =>
-        Math.abs(
-          this.normalizeNumber(option.value, currentLayer) - currentLayer,
-        ) < 0.0001,
+        Math.abs(normalizeNumber(option.value, currentLayer) - currentLayer) <
+        0.0001,
     );
 
     if (allowed) {
@@ -1227,24 +1154,18 @@ export class UploadFormComponent implements OnInit {
     this.items().forEach((item) => {
       const differences: string[] = [];
 
-      if (
-        this.normalizeText(item.material) !==
-        this.normalizeText(baseline.material)
-      ) {
+      if (normalizeText(item.material) !== normalizeText(baseline.material)) {
         differences.push(item.material.toUpperCase());
       }
 
       if (this.mode() === 'easy') {
-        if (
-          this.normalizeText(item.quality) !==
-          this.normalizeText(baseline.quality)
-        ) {
+        if (normalizeText(item.quality) !== normalizeText(baseline.quality)) {
           differences.push(`quality:${item.quality}`);
         }
       } else {
         if (
           Math.abs(
-            this.normalizeNumber(item.nozzleDiameter, baseline.nozzleDiameter) -
+            normalizeNumber(item.nozzleDiameter, baseline.nozzleDiameter) -
               baseline.nozzleDiameter,
           ) > 0.0001
         ) {
@@ -1253,7 +1174,7 @@ export class UploadFormComponent implements OnInit {
 
         if (
           Math.abs(
-            this.normalizeNumber(item.layerHeight, baseline.layerHeight) -
+            normalizeNumber(item.layerHeight, baseline.layerHeight) -
               baseline.layerHeight,
           ) > 0.0001
         ) {
@@ -1262,7 +1183,7 @@ export class UploadFormComponent implements OnInit {
 
         if (
           Math.abs(
-            this.normalizeNumber(item.infillDensity, baseline.infillDensity) -
+            normalizeNumber(item.infillDensity, baseline.infillDensity) -
               baseline.infillDensity,
           ) > 0.0001
         ) {
@@ -1270,8 +1191,8 @@ export class UploadFormComponent implements OnInit {
         }
 
         if (
-          this.normalizeText(item.infillPattern) !==
-          this.normalizeText(baseline.infillPattern)
+          normalizeText(item.infillPattern) !==
+          normalizeText(baseline.infillPattern)
         ) {
           differences.push(`pattern:${item.infillPattern}`);
         }
@@ -1314,76 +1235,12 @@ export class UploadFormComponent implements OnInit {
     }
 
     const first = current[0];
-    const allEqual = current.every((item) =>
-      this.sameItemSettings(first, item),
-    );
+    const allEqual = current.every((item) => sameItemSettings(first, item));
 
     if (!allEqual) {
       this.sameSettingsForAll.set(false);
       this.form.get('syncAllItems')?.setValue(false, { emitEvent: false });
     }
-  }
-
-  private sameItemSettings(a: FormItem, b: FormItem): boolean {
-    return (
-      this.normalizeText(a.material) === this.normalizeText(b.material) &&
-      this.normalizeText(a.quality) === this.normalizeText(b.quality) &&
-      Math.abs(
-        this.normalizeNumber(a.nozzleDiameter, 0.4) -
-          this.normalizeNumber(b.nozzleDiameter, 0.4),
-      ) < 0.0001 &&
-      Math.abs(
-        this.normalizeNumber(a.layerHeight, 0.2) -
-          this.normalizeNumber(b.layerHeight, 0.2),
-      ) < 0.0001 &&
-      Math.abs(
-        this.normalizeNumber(a.infillDensity, 20) -
-          this.normalizeNumber(b.infillDensity, 20),
-      ) < 0.0001 &&
-      this.normalizeText(a.infillPattern) ===
-        this.normalizeText(b.infillPattern) &&
-      Boolean(a.supportEnabled) === Boolean(b.supportEnabled)
-    );
-  }
-
-  private normalizeQualityValue(value: any): string {
-    const normalized = String(value || 'standard')
-      .trim()
-      .toLowerCase();
-    if (normalized === 'high' || normalized === 'high_definition') {
-      return 'extra_fine';
-    }
-    return normalized || 'standard';
-  }
-
-  private normalizeQuantity(quantity: number): number {
-    if (!Number.isFinite(quantity) || quantity < 1) {
-      return 1;
-    }
-    return Math.floor(quantity);
-  }
-
-  private normalizeNumber(value: any, fallback: number): number {
-    const numeric = Number(value);
-    return Number.isFinite(numeric) ? numeric : fallback;
-  }
-
-  private normalizeText(value: any): string {
-    return String(value || '')
-      .trim()
-      .toLowerCase();
-  }
-
-  private normalizeFileName(fileName: string): string {
-    return (fileName || '').split(/[\\/]/).pop()?.trim().toLowerCase() ?? '';
-  }
-
-  private toNozzleKey(value: unknown): string {
-    const numeric = Number(value);
-    if (!Number.isFinite(numeric)) {
-      return '0.40';
-    }
-    return numeric.toFixed(2);
   }
 
   private applySettingsLock(locked: boolean): void {

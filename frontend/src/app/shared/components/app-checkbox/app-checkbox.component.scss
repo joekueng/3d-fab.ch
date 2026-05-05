@@ -1,4 +1,10 @@
 :host {
   display: inline-flex;
+  align-self: start;
+  justify-self: start;
   max-width: 100%;
+}
+
+.ui-checkbox {
+  flex: 0 0 auto;
 }

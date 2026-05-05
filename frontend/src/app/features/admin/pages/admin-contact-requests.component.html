@@ -1,13 +1,17 @@
 <section class="section-card">
   <header class="section-header">
     <div class="header-copy">
-      <h2>Richieste di contatto</h2>
-      <p>Richieste preventivo personalizzato ricevute dal sito.</p>
-      <span class="total-pill ui-pill">{{ requests.length }} richieste</span>
+      <h1>Richieste di contatto</h1>
     </div>
-    <app-button type="button" (click)="loadRequests()" [disabled]="loading">
-      Aggiorna
-    </app-button>
+    <div class="header-actions ui-inline-actions">
+      <article class="ui-stat-chip">
+        <strong>{{ requests.length }}</strong>
+        <span>richieste</span>
+      </article>
+      <app-button type="button" (click)="loadRequests()" [disabled]="loading">
+        Aggiorna
+      </app-button>
+    </div>
   </header>
 
   <p class="ui-banner ui-banner--error" *ngIf="errorMessage">
@@ -38,10 +42,10 @@
               [class.selected]="isSelected(request.id)"
               (click)="openDetails(request.id)"
             >
-              <td class="created-at">
+              <td class="created-at" data-label="Data">
                 {{ request.createdAt | date: "short" }}
               </td>
-              <td class="name-cell">
+              <td class="name-cell" data-label="Nome / Azienda">
                 <p class="primary">
                   {{ request.name || request.companyName || "-" }}
                 </p>
@@ -52,18 +56,18 @@
                   {{ request.companyName }}
                 </p>
               </td>
-              <td class="email-cell">{{ request.email }}</td>
-              <td>
+              <td class="email-cell" data-label="Email">{{ request.email }}</td>
+              <td data-label="Tipo richiesta">
                 <span class="ui-status-chip ui-status-chip--neutral">{{
                   request.requestType
                 }}</span>
               </td>
-              <td>
+              <td data-label="Tipo cliente">
                 <span class="ui-status-chip ui-status-chip--neutral">{{
                   request.customerType
                 }}</span>
               </td>
-              <td>
+              <td data-label="Stato">
                 <span
                   class="ui-status-chip"
                   [ngClass]="getStatusChipClass(request.status)"

@@ -8,8 +8,7 @@ import {
 } from '@angular/core';
 import { TranslateLoader, TranslationObject } from '@ngx-translate/core';
 import { from, Observable } from 'rxjs';
-
-type SupportedLang = 'it' | 'en' | 'de' | 'fr';
+import { isSupportedLangValue, SupportedLang } from './language-resolution';
 
 const FALLBACK_LANG: SupportedLang = 'it';
 const translationCache = new Map<SupportedLang, Promise<TranslationObject>>();
@@ -48,9 +47,7 @@ export class StaticTranslateLoader implements TranslateLoader {
 
   private normalizeLanguage(lang: string): SupportedLang {
     const normalized = String(lang || FALLBACK_LANG).toLowerCase();
-    return normalized in translationLoaders
-      ? (normalized as SupportedLang)
-      : FALLBACK_LANG;
+    return isSupportedLangValue(normalized) ? normalized : FALLBACK_LANG;
   }
 
   private loadTranslation(lang: SupportedLang): Promise<TranslationObject> {

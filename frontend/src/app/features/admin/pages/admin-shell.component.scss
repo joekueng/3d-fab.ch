@@ -1,13 +1,14 @@
 .admin-container {
   margin-top: var(--space-8);
-  max-width: min(1720px, 96vw);
-  padding: 0 clamp(12px, 2.2vw, 24px);
+  width: 100%;
+  max-width: none;
+  padding: 0 clamp(10px, 1.2vw, 24px);
 }
 
 .admin-shell {
   display: grid;
-  grid-template-columns: 260px minmax(0, 1fr);
-  min-height: calc(100vh - 220px);
+  grid-template-columns: minmax(14rem, 16.25rem) minmax(0, 1fr);
+  min-height: calc(100dvh - 180px);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   overflow: hidden;
@@ -55,11 +56,12 @@
   background: var(--color-bg);
   padding: var(--space-6);
   min-width: 0;
+  overflow-x: clip;
 }
 
 @media (max-width: 1240px) {
   .admin-shell {
-    grid-template-columns: 220px minmax(0, 1fr);
+    grid-template-columns: minmax(13rem, 14rem) minmax(0, 1fr);
   }
 
   .sidebar {
@@ -70,7 +72,7 @@
 @media (max-width: 1360px) {
   .admin-container {
     margin-top: var(--space-6);
-    padding: 0 var(--space-3);
+    padding: 0 clamp(8px, 1.6vw, 16px);
   }
 
   .admin-shell {
@@ -86,9 +88,11 @@
 
   .menu-scroll {
     overflow-x: auto;
+    overscroll-behavior-inline: contain;
     padding-bottom: 2px;
     margin: 0 calc(-1 * var(--space-1));
     padding-inline: var(--space-1);
+    scrollbar-width: thin;
   }
 
   .menu {
@@ -108,6 +112,20 @@
 }
 
 @media (max-width: 520px) {
+  .admin-container {
+    margin-top: var(--space-3);
+    padding: 0 var(--space-2);
+  }
+
+  .admin-shell {
+    border-radius: var(--radius-md);
+  }
+
+  .sidebar {
+    padding: var(--space-3);
+    gap: var(--space-3);
+  }
+
   .brand h1 {
     font-size: 1.02rem;
   }
@@ -117,6 +135,6 @@
   }
 
   .content {
-    padding: var(--space-3);
+    padding: var(--space-2);
   }
 }

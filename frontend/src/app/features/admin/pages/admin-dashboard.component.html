@@ -2,7 +2,6 @@
   <header class="dashboard-header section-header">
     <div>
       <h1>Ordini</h1>
-      <p>Seleziona un ordine a sinistra e gestiscilo nel dettaglio a destra.</p>
     </div>
     <div class="header-actions">
       <app-button type="button" (click)="loadOrders()" [disabled]="loading">
@@ -58,7 +57,7 @@
         ></app-select>
       </div>
       <div class="table-wrap ui-table-wrap">
-        <table class="ui-data-table">
+        <table class="orders-table ui-data-table">
           <thead>
             <tr>
               <th>Ordine</th>
@@ -76,17 +75,17 @@
               [class.selected]="isSelected(order.id)"
               (click)="openDetails(order.id)"
             >
-              <td>
+              <td data-label="Ordine">
                 <strong>{{ order.orderNumber }}</strong>
               </td>
-              <td class="order-table__date">
+              <td class="order-table__date" data-label="Creato">
                 {{
                   order.createdAt
                     ? (order.createdAt | date: "dd.MM.yyyy HH:mm")
                     : "-"
                 }}
               </td>
-              <td>
+              <td data-label="Tipo">
                 <span
                   class="order-type-badge"
                   [class.order-type-badge--mixed]="orderKind(order) === 'MIXED'"
@@ -94,7 +93,7 @@
                   {{ orderKindLabel(order) }}
                 </span>
               </td>
-              <td>
+              <td data-label="Email">
                 <div class="order-customer-cell">
                   <span>{{ order.customerEmail }}</span>
                   <span
@@ -105,7 +104,7 @@
                   </span>
                 </div>
               </td>
-              <td class="order-table__payment">
+              <td class="order-table__payment" data-label="Pagamento">
                 <div class="order-table__payment-status">
                   {{ order.paymentStatus || "PENDING" }}
                 </div>
@@ -113,8 +112,8 @@
                   Pagato {{ order.paidAt | date: "dd.MM.yyyy HH:mm" }}
                 </div>
               </td>
-              <td>{{ order.status }}</td>
-              <td>
+              <td data-label="Stato ordine">{{ order.status }}</td>
+              <td data-label="Totale">
                 {{ order.totalChf | currency: "CHF" : "symbol" : "1.2-2" }}
               </td>
             </tr>
@@ -207,6 +206,124 @@
             selectedOrder.totalChf | currency: "CHF" : "symbol" : "1.2-2"
           }}</span>
         </div>
+      </div>
+
+      <section class="order-info-section ui-subpanel ui-subpanel--soft">
+        <header class="order-info-section__header">
+          <h3>Dati cliente e contatto</h3>
+        </header>
+        <dl class="customer-info-grid ui-meta-grid">
+          <div class="ui-meta-item">
+            <dt>Nome cliente</dt>
+            <dd>{{ customerDisplayName(selectedOrder) }}</dd>
+          </div>
+          <div class="ui-meta-item">
+            <dt>Tipo cliente</dt>
+            <dd>{{ customerTypeLabel(selectedOrder) || "-" }}</dd>
+          </div>
+          <div class="ui-meta-item">
+            <dt>Email</dt>
+            <dd>{{ selectedOrder.customerEmail || "-" }}</dd>
+          </div>
+          <div class="ui-meta-item">
+            <dt>Telefono</dt>
+            <dd>{{ selectedOrder.customerPhone || "-" }}</dd>
+          </div>
+          <div class="ui-meta-item">
+            <dt>Lingua preferita</dt>
+            <dd>{{ preferredLanguageLabel(selectedOrder) }}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <div class="address-grid">
+        <section class="order-info-section ui-subpanel">
+          <header class="order-info-section__header">
+            <h3>Indirizzo di fatturazione</h3>
+          </header>
+          <dl class="address-meta-list">
+            <div>
+              <dt>Nominativo</dt>
+              <dd>{{ addressDisplayName(selectedOrder.billingAddress) }}</dd>
+            </div>
+            <div>
+              <dt>Azienda</dt>
+              <dd>
+                {{
+                  addressOptionalValue(
+                    selectedOrder.billingAddress?.companyName
+                  )
+                }}
+              </dd>
+            </div>
+            <div>
+              <dt>Referente</dt>
+              <dd>
+                {{
+                  addressOptionalValue(
+                    selectedOrder.billingAddress?.contactPerson
+                  )
+                }}
+              </dd>
+            </div>
+            <div>
+              <dt>Indirizzo</dt>
+              <dd>{{ addressStreetLine(selectedOrder.billingAddress) }}</dd>
+            </div>
+            <div>
+              <dt>Località</dt>
+              <dd>{{ addressCityLine(selectedOrder.billingAddress) }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="order-info-section ui-subpanel">
+          <header class="order-info-section__header">
+            <h3>Indirizzo di spedizione</h3>
+            <span
+              class="same-address-badge"
+              *ngIf="selectedOrder.shippingSameAsBilling"
+            >
+              Uguale alla fatturazione
+            </span>
+          </header>
+          <ng-container
+            *ngIf="
+              effectiveShippingAddress(selectedOrder) as shippingAddress;
+              else missingShippingAddress
+            "
+          >
+            <dl class="address-meta-list">
+              <div>
+                <dt>Nominativo</dt>
+                <dd>{{ addressDisplayName(shippingAddress) }}</dd>
+              </div>
+              <div>
+                <dt>Azienda</dt>
+                <dd>{{ addressOptionalValue(shippingAddress.companyName) }}</dd>
+              </div>
+              <div>
+                <dt>Referente</dt>
+                <dd>
+                  {{ addressOptionalValue(shippingAddress.contactPerson) }}
+                </dd>
+              </div>
+              <div>
+                <dt>Indirizzo</dt>
+                <dd>{{ addressStreetLine(shippingAddress) }}</dd>
+              </div>
+              <div>
+                <dt>Località</dt>
+                <dd>{{ addressCityLine(shippingAddress) }}</dd>
+              </div>
+            </dl>
+          </ng-container>
+          <ng-template #missingShippingAddress>
+            <p class="missing-address">
+              Nessun indirizzo di spedizione salvato.
+            </p>
+          </ng-template>
+        </section>
       </div>
 
       <div class="actions-block">

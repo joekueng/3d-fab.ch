@@ -16,6 +16,7 @@ import org.springframework.data.domain.Sort;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -178,5 +179,17 @@ class AdminQrControllerServiceTest {
                 );
 
         assertEquals(404, ex.getStatusCode().value());
+    }
+
+    @Test
+    void getOverviewStats_shouldDefaultToLastTenDays() {
+        when(qrLinkRepository.findAll(any(Sort.class))).thenReturn(List.of());
+        when(qrScanEventRepository.findByScannedAtBetweenOrderByScannedAtDesc(any(), any()))
+                .thenReturn(List.of());
+
+        AdminQrOverviewStatsDto overview = service.getOverviewStats(null, null);
+
+        assertEquals(9, ChronoUnit.DAYS.between(overview.getFromDate(), overview.getToDate()));
+        assertEquals(10, overview.getDaily().size());
     }
 }

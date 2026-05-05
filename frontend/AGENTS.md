@@ -20,6 +20,7 @@ Use these first:
 - Global UI primitives in `src/styles/_ui.scss`
   - `ui-form-group`, `ui-form-label`, `ui-form-control`, `ui-form-error`
   - `ui-button` and its variants
+  - `ui-carousel-indicators`, `ui-carousel-dot`
   - `ui-checkbox`
   - `ui-banner`
   - `ui-subpanel`
@@ -34,6 +35,33 @@ For admin pages, the shared page shell is already established:
 - shared `ui-*` primitives above
 
 Component SCSS in admin pages should handle page-specific layout only, not redefine generic input/button/select/textarea styles.
+
+## Public UI Reuse
+
+Marketing/public pages must reuse the same visual primitives as the shop and calculator. Before adding a local class for a repeated pattern, search the frontend:
+
+```bash
+rg -n "ui-carousel|ui-section-display|ui-eyebrow|ui-button|app-button|ui-gallery" src
+```
+
+Carousel indicators are shared. Use:
+
+- `ui-carousel-indicators` on the indicator container
+- `ui-carousel-dot` on each indicator button
+- `--ui-carousel-duration` for autoplay progress timing
+
+Do not create page-local carousel dot/progress variants such as `shop-carousel-dot`, `home-project-dot`, or separate progress keyframes. If a carousel needs unique placement, keep only the positioning class local and reuse the shared indicator/dot classes for visuals.
+
+Hero and section text should use the existing typography primitives unless a deliberate redesign is requested:
+
+- `ui-eyebrow`
+- `ui-hero-display`
+- `ui-section-display-title`
+- `ui-section-display-subtitle`
+- `ui-copy-lead`
+- `ui-copy-subtitle`
+
+Avoid hardcoded one-off colors and font sizes in public page SCSS when a semantic token or `ui-*` text class exists.
 
 ## Reuse Rules
 
@@ -99,6 +127,7 @@ After UI changes, run:
 
 ```bash
 npx tsc -p tsconfig.app.json --noEmit
+npm run check:ui-reuse
 ```
 
 When touching styles or admin pages, also check:

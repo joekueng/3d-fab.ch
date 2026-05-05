@@ -18,6 +18,7 @@ import {
 import { CopyOnClickDirective } from '../../../shared/directives/copy-on-click.directive';
 import {
   AdminQrDailyBreakdown,
+  AdminQrDailyStat,
   AdminQrLink,
   AdminQrLocationStat,
   AdminQrOverviewItem,
@@ -25,6 +26,7 @@ import {
   AdminQrService,
   AdminUpsertQrLinkPayload,
 } from '../services/admin-qr.service';
+import { downloadBlobInBrowser } from '../../../core/utils/browser-download';
 
 type QrForm = {
   name: string;
@@ -70,11 +72,11 @@ export class AdminQrLinksComponent implements OnInit, OnDestroy {
   private readonly adminQrService = inject(AdminQrService);
 
   readonly viewModeOptions: ToggleOption[] = [
-    { label: 'Gestione QR', value: 'manage' },
     { label: 'Statistiche QR', value: 'overview' },
+    { label: 'Gestione QR', value: 'manage' },
   ];
 
-  viewMode: ViewMode = 'manage';
+  viewMode: ViewMode = 'overview';
   qrLinks: AdminQrLink[] = [];
   selectedQrId: string | null = null;
   form: QrForm = this.createEmptyForm();
@@ -85,13 +87,23 @@ export class AdminQrLinksComponent implements OnInit, OnDestroy {
   previewLoading = false;
   errorMessage: string | null = null;
   successMessage: string | null = null;
-  overview: AdminQrOverviewStats | null = null;
-  fromDate = this.formatDate(this.daysAgo(29));
+  fromDate = this.formatDate(this.daysAgo(9));
   toDate = this.formatDate(new Date());
+  overview: AdminQrOverviewStats | null = null;
+  overviewDailyRows: AdminQrDailyStat[] = [];
+  overviewLegendRows: AdminQrOverviewItem[] = [];
+  overviewTopQrRows: AdminQrOverviewItem[] = [];
+  overviewTableRows: AdminQrOverviewItem[] = [];
+  overviewLocationRows: AdminQrLocationStat[] = [];
+  maxDailyScanCount = 1;
+  maxOverviewScanCount = 1;
+  maxLocationScanCount = 1;
   previewUrl: string | null = null;
+  private overviewRequestSequence = 0;
 
   ngOnInit(): void {
     this.loadQrLinks();
+    this.loadOverviewStats();
   }
 
   ngOnDestroy(): void {
@@ -220,6 +232,7 @@ export class AdminQrLinksComponent implements OnInit, OnDestroy {
   }
 
   loadOverviewStats(resetMessages = true): void {
+    const requestSequence = ++this.overviewRequestSequence;
     this.overviewLoading = true;
     if (resetMessages) {
       this.errorMessage = null;
@@ -227,10 +240,16 @@ export class AdminQrLinksComponent implements OnInit, OnDestroy {
     }
     this.adminQrService.getOverviewStats(this.fromDate, this.toDate).subscribe({
       next: (overview) => {
-        this.overview = overview;
+        if (requestSequence !== this.overviewRequestSequence) {
+          return;
+        }
+        this.applyOverviewStats(overview);
         this.overviewLoading = false;
       },
       error: () => {
+        if (requestSequence !== this.overviewRequestSequence) {
+          return;
+        }
         this.overviewLoading = false;
         this.errorMessage =
           'Impossibile caricare le statistiche aggregate dei QR.';
@@ -266,12 +285,7 @@ export class AdminQrLinksComponent implements OnInit, OnDestroy {
 
     this.adminQrService.downloadQrSvg(selected.id).subscribe({
       next: (blob) => {
-        const url = URL.createObjectURL(blob);
-        const anchor = document.createElement('a');
-        anchor.href = url;
-        anchor.download = `${selected.slug}-qr.svg`;
-        anchor.click();
-        URL.revokeObjectURL(url);
+        downloadBlobInBrowser(blob, `${selected.slug}-qr.svg`);
         this.successMessage = 'SVG scaricato.';
       },
       error: () => {
@@ -310,58 +324,38 @@ export class AdminQrLinksComponent implements OnInit, OnDestroy {
     return this.qrLinks.filter((link) => link.isActive).length;
   }
 
-  maxDailyScans(): number {
-    return Math.max(
-      1,
-      ...(this.overview?.daily.map((entry) => entry.scans) ?? [0]),
-    );
-  }
-
-  maxOverviewScans(): number {
-    return Math.max(
-      1,
-      ...(this.overview?.qrLinks.map((entry) => entry.rawScans) ?? [0]),
-    );
-  }
-
-  maxLocationScans(): number {
-    return Math.max(
-      1,
-      ...(this.overview?.locations.map((entry) => entry.scans) ?? [0]),
-    );
-  }
-
   dailyBarHeight(scans: number): string {
     if (scans <= 0) {
       return '0%';
     }
-    return `${Math.max(10, (scans / this.maxDailyScans()) * 100)}%`;
+    return `${(scans / this.maxDailyScanCount) * 100}%`;
   }
 
   overviewBarWidth(scans: number): string {
-    return `${(scans / this.maxOverviewScans()) * 100}%`;
+    return `${(scans / this.maxOverviewScanCount) * 100}%`;
   }
 
   locationBarWidth(scans: number): string {
-    return `${(scans / this.maxLocationScans()) * 100}%`;
-  }
-
-  topQrRows(): AdminQrOverviewItem[] {
-    return this.overview?.qrLinks.slice(0, 12) ?? [];
-  }
-
-  dailyLegendRows(): AdminQrOverviewItem[] {
-    return (
-      this.overview?.qrLinks
-        .filter((entry) => entry.rawScans > 0)
-        .slice(0, 8) ?? []
-    );
+    return `${(scans / this.maxLocationScanCount) * 100}%`;
   }
 
   dailyBreakdownRows(row: {
+    scans: number;
     qrBreakdown: AdminQrDailyBreakdown[];
   }): AdminQrDailyBreakdown[] {
-    return row.qrBreakdown ?? [];
+    if (row.qrBreakdown?.length) {
+      return row.qrBreakdown;
+    }
+    if (row.scans <= 0) {
+      return [];
+    }
+    return [
+      {
+        qrLinkId: 'aggregate',
+        name: 'Totale',
+        scans: row.scans,
+      },
+    ];
   }
 
   qrColor(qrLinkId: string): string {
@@ -372,10 +366,6 @@ export class AdminQrLinksComponent implements OnInit, OnDestroy {
       5381,
     );
     return palette[hash % palette.length];
-  }
-
-  topLocationRows(): AdminQrLocationStat[] {
-    return this.overview?.locations.slice(0, 12) ?? [];
   }
 
   formatTopLocation(row: AdminQrOverviewItem): string {
@@ -415,6 +405,33 @@ export class AdminQrLinksComponent implements OnInit, OnDestroy {
       isActive: true,
       notes: '',
     };
+  }
+
+  private applyOverviewStats(overview: AdminQrOverviewStats): void {
+    const daily = overview.daily ?? [];
+    const qrLinks = overview.qrLinks ?? [];
+    const locations = overview.locations ?? [];
+
+    this.overview = overview;
+    this.overviewDailyRows = [...daily];
+    this.overviewTableRows = [...qrLinks];
+    this.overviewTopQrRows = qrLinks.slice(0, 12);
+    this.overviewLegendRows = qrLinks
+      .filter((entry) => entry.rawScans > 0)
+      .slice(0, 8);
+    this.overviewLocationRows = locations.slice(0, 12);
+    this.maxDailyScanCount = Math.max(
+      1,
+      ...this.overviewDailyRows.map((entry) => entry.scans),
+    );
+    this.maxOverviewScanCount = Math.max(
+      1,
+      ...qrLinks.map((entry) => entry.rawScans),
+    );
+    this.maxLocationScanCount = Math.max(
+      1,
+      ...locations.map((entry) => entry.scans),
+    );
   }
 
   private revokePreviewUrl(): void {

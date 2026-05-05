@@ -1,8 +1,14 @@
-import { CommonModule, NgOptimizedImage } from '@angular/common';
+import {
+  CommonModule,
+  DOCUMENT,
+  NgOptimizedImage,
+  isPlatformBrowser,
+} from '@angular/common';
 import {
   afterNextRender,
   Component,
   DestroyRef,
+  PLATFORM_ID,
   computed,
   inject,
   signal,
@@ -27,6 +33,14 @@ import {
   resolveLocalizedColorLabel,
 } from '../constants/colors.const';
 
+interface PageScrollLockState {
+  readonly scrollX: number;
+  readonly scrollY: number;
+  readonly bodyOverflow: string;
+  readonly bodyPaddingRight: string;
+  readonly documentOverflow: string;
+}
+
 @Component({
   selector: 'app-navbar',
   standalone: true,
@@ -43,7 +57,10 @@ import {
 export class NavbarComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
+  private readonly documentRef = inject(DOCUMENT);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   readonly shopService = inject(ShopService);
+  private pageScrollLockState: PageScrollLockState | null = null;
 
   isMenuOpen = false;
   readonly isCartOpen = signal(false);
@@ -83,6 +100,10 @@ export class NavbarComponent {
           this.closeCart();
         }
       });
+
+    this.destroyRef.onDestroy(() => {
+      this.unlockPageScroll();
+    });
   }
 
   onLanguageChange(event: Event): void {
@@ -101,14 +122,19 @@ export class NavbarComponent {
 
   toggleCart(): void {
     this.closeMenu();
-    this.isCartOpen.update((open) => !open);
     if (this.isCartOpen()) {
-      this.loadCartIfNeeded();
+      this.closeCart();
+      return;
     }
+
+    this.isCartOpen.set(true);
+    this.lockPageScroll();
+    this.loadCartIfNeeded();
   }
 
   closeCart(): void {
     this.isCartOpen.set(false);
+    this.unlockPageScroll();
   }
 
   increaseQuantity(item: ShopCartItem): void {
@@ -238,6 +264,56 @@ export class NavbarComponent {
           this.shopService.cart.set(null);
         },
       });
+  }
+
+  private lockPageScroll(): void {
+    if (!this.isBrowser || this.pageScrollLockState) {
+      return;
+    }
+
+    const body = this.documentRef.body;
+    const documentElement = this.documentRef.documentElement;
+    const scrollbarWidth = Math.max(
+      0,
+      window.innerWidth - documentElement.clientWidth,
+    );
+
+    this.pageScrollLockState = {
+      scrollX: window.scrollX,
+      scrollY: window.scrollY,
+      bodyOverflow: body.style.overflow,
+      bodyPaddingRight: body.style.paddingRight,
+      documentOverflow: documentElement.style.overflow,
+    };
+
+    documentElement.style.overflow = 'hidden';
+    body.style.overflow = 'hidden';
+
+    if (scrollbarWidth > 0) {
+      const currentPaddingRight = Number.parseFloat(
+        window.getComputedStyle(body).paddingRight,
+      );
+      const nextPaddingRight =
+        (Number.isFinite(currentPaddingRight) ? currentPaddingRight : 0) +
+        scrollbarWidth;
+      body.style.paddingRight = `${nextPaddingRight}px`;
+    }
+  }
+
+  private unlockPageScroll(): void {
+    if (!this.isBrowser || !this.pageScrollLockState) {
+      return;
+    }
+
+    const body = this.documentRef.body;
+    const documentElement = this.documentRef.documentElement;
+    const lockState = this.pageScrollLockState;
+    this.pageScrollLockState = null;
+
+    documentElement.style.overflow = lockState.documentOverflow;
+    body.style.overflow = lockState.bodyOverflow;
+    body.style.paddingRight = lockState.bodyPaddingRight;
+    window.scrollTo(lockState.scrollX, lockState.scrollY);
   }
 
   protected readonly routes = routes;

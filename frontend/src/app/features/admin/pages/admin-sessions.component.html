@@ -1,8 +1,7 @@
 <section class="section-card">
   <header class="section-header">
     <div>
-      <h2>Sessioni quote</h2>
-      <p>Sessioni create dal configuratore con stato e conversione ordine.</p>
+      <h1>Sessioni quote</h1>
     </div>
     <app-button type="button" (click)="loadSessions()" [disabled]="loading">
       Aggiorna
@@ -17,7 +16,7 @@
   </p>
 
   <div class="table-wrap ui-table-wrap" *ngIf="!loading; else loadingTpl">
-    <table class="ui-data-table">
+    <table class="sessions-table ui-data-table">
       <thead>
         <tr>
           <th>Sessione</th>
@@ -32,14 +31,23 @@
       <tbody>
         <ng-container *ngFor="let session of sessions">
           <tr>
-            <td [title]="session.id" [appCopyOnClick]="session.id">
+            <td
+              data-label="Sessione"
+              [title]="session.id"
+              [appCopyOnClick]="session.id"
+            >
               {{ session.id | slice: 0 : 8 }}
             </td>
-            <td>{{ session.createdAt | date: "short" }}</td>
-            <td>{{ session.expiresAt | date: "short" }}</td>
-            <td>{{ session.materialCode }}</td>
-            <td>{{ session.status }}</td>
+            <td data-label="Data creazione">
+              {{ session.createdAt | date: "short" }}
+            </td>
+            <td data-label="Scadenza">
+              {{ session.expiresAt | date: "short" }}
+            </td>
+            <td data-label="Materiale">{{ session.materialCode }}</td>
+            <td data-label="Stato">{{ session.status }}</td>
             <td
+              data-label="Ordine convertito"
               [title]="session.convertedOrderId || ''"
               [appCopyOnClick]="session.convertedOrderId"
             >
@@ -49,7 +57,7 @@
                   : "-"
               }}
             </td>
-            <td class="actions">
+            <td class="actions" data-label="Azioni">
               <app-button
                 type="button"
                 variant="ghost"
@@ -133,17 +141,19 @@
                   </thead>
                   <tbody>
                     <tr *ngFor="let item of detail.items">
-                      <td>{{ item.originalFilename }}</td>
-                      <td>{{ item.quantity }}</td>
-                      <td>{{ formatPrintTime(item.printTimeSeconds) }}</td>
-                      <td>
+                      <td data-label="File">{{ item.originalFilename }}</td>
+                      <td data-label="Qta">{{ item.quantity }}</td>
+                      <td data-label="Tempo">
+                        {{ formatPrintTime(item.printTimeSeconds) }}
+                      </td>
+                      <td data-label="Materiale">
                         {{
                           item.materialGrams
                             ? (item.materialGrams | number: "1.0-2") + " g"
                             : "-"
                         }}
                       </td>
-                      <td>
+                      <td data-label="Scelte utente">
                         {{ item.materialCode || "-" }} |
                         {{ item.nozzleDiameterMm ?? "-" }} mm |
                         {{ item.layerHeightMm ?? "-" }} mm |
@@ -153,8 +163,10 @@
                           item.supportsEnabled ? "Supporti ON" : "Supporti OFF"
                         }}
                       </td>
-                      <td>{{ item.status }}</td>
-                      <td>{{ item.unitPriceChf | currency: "CHF" }}</td>
+                      <td data-label="Stato">{{ item.status }}</td>
+                      <td data-label="Prezzo unit.">
+                        {{ item.unitPriceChf | currency: "CHF" }}
+                      </td>
                     </tr>
                   </tbody>
                 </table>

@@ -3,6 +3,7 @@ import { Component, PLATFORM_ID, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   AdminOrder,
+  AdminOrderAddress,
   AdminOrderItem,
   AdminOrdersService,
 } from '../services/admin-orders.service';
@@ -10,6 +11,7 @@ import { CopyOnClickDirective } from '../../../shared/directives/copy-on-click.d
 import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
 import { AppInputComponent } from '../../../shared/components/app-input/app-input.component';
 import { AppSelectComponent } from '../../../shared/components/app-select/app-select.component';
+import { downloadBlobInBrowser } from '../../../core/utils/browser-download';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -478,6 +480,90 @@ export class AdminDashboardComponent implements OnInit {
     }
   }
 
+  customerDisplayName(order: AdminOrder | null): string {
+    if (!order) {
+      return '-';
+    }
+
+    const address = order.billingAddress;
+    if ((order.billingCustomerType || '').trim().toUpperCase() === 'BUSINESS') {
+      return (
+        this.cleanValue(address?.companyName) ||
+        this.cleanValue(address?.contactPerson) ||
+        this.addressDisplayName(address)
+      );
+    }
+
+    return this.addressDisplayName(address);
+  }
+
+  addressDisplayName(address?: AdminOrderAddress | null): string {
+    const firstName = this.cleanValue(address?.firstName);
+    const lastName = this.cleanValue(address?.lastName);
+    const fullName = [firstName, lastName].filter(Boolean).join(' ');
+    return (
+      fullName ||
+      this.cleanValue(address?.companyName) ||
+      this.cleanValue(address?.contactPerson) ||
+      '-'
+    );
+  }
+
+  addressStreetLine(address?: AdminOrderAddress | null): string {
+    const addressLine = [
+      this.cleanValue(address?.addressLine1),
+      this.cleanValue(address?.addressLine2),
+    ]
+      .filter(Boolean)
+      .join(', ');
+    return addressLine || '-';
+  }
+
+  addressCityLine(address?: AdminOrderAddress | null): string {
+    const zipCity = [
+      this.cleanValue(address?.zip),
+      this.cleanValue(address?.city),
+    ]
+      .filter(Boolean)
+      .join(' ');
+    const countryCode = this.cleanValue(address?.countryCode);
+
+    if (zipCity && countryCode) {
+      return `${zipCity}, ${countryCode}`;
+    }
+    return zipCity || countryCode || '-';
+  }
+
+  addressOptionalValue(value?: string | null): string {
+    return this.cleanValue(value) || '-';
+  }
+
+  effectiveShippingAddress(order: AdminOrder | null): AdminOrderAddress | null {
+    if (!order) {
+      return null;
+    }
+    if (order.shippingAddress) {
+      return order.shippingAddress;
+    }
+    return order.shippingSameAsBilling ? (order.billingAddress ?? null) : null;
+  }
+
+  preferredLanguageLabel(order: AdminOrder | null): string {
+    const normalized = (order?.preferredLanguage || '').trim().toLowerCase();
+    switch (normalized) {
+      case 'it':
+        return 'Italiano';
+      case 'en':
+        return 'Inglese';
+      case 'de':
+        return 'Tedesco';
+      case 'fr':
+        return 'Francese';
+      default:
+        return normalized || '-';
+    }
+  }
+
   downloadItemLabel(item: AdminOrderItem): string {
     return this.isShopItem(item) ? 'Scarica modello' : 'Scarica file';
   }
@@ -549,11 +635,10 @@ export class AdminDashboardComponent implements OnInit {
     if (!this.isBrowser) {
       return;
     }
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    window.URL.revokeObjectURL(url);
+    downloadBlobInBrowser(blob, filename);
+  }
+
+  private cleanValue(value?: string | null): string {
+    return (value || '').trim();
   }
 }
