@@ -218,10 +218,22 @@ export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
         fr: project.titleFr ?? '',
       },
       descriptions: {
-        it: normalizeDescriptionForEditor(project.descriptionIt, this.isBrowser),
-        en: normalizeDescriptionForEditor(project.descriptionEn, this.isBrowser),
-        de: normalizeDescriptionForEditor(project.descriptionDe, this.isBrowser),
-        fr: normalizeDescriptionForEditor(project.descriptionFr, this.isBrowser),
+        it: normalizeDescriptionForEditor(
+          project.descriptionIt,
+          this.isBrowser,
+        ),
+        en: normalizeDescriptionForEditor(
+          project.descriptionEn,
+          this.isBrowser,
+        ),
+        de: normalizeDescriptionForEditor(
+          project.descriptionDe,
+          this.isBrowser,
+        ),
+        fr: normalizeDescriptionForEditor(
+          project.descriptionFr,
+          this.isBrowser,
+        ),
       },
       isActive: project.isActive,
       sortOrder: project.sortOrder ?? 0,
@@ -741,7 +753,8 @@ export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
     targetLanguages?: readonly AdminMediaLanguage[],
   ): void {
     const languages =
-      targetLanguages ?? (Object.keys(translated ?? {}) as AdminMediaLanguage[]);
+      targetLanguages ??
+      (Object.keys(translated ?? {}) as AdminMediaLanguage[]);
     for (const language of languages) {
       const incoming = translated?.[language];
       if (incoming === undefined) {
