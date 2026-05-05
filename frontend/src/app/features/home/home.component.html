@@ -63,7 +63,7 @@
   @if (homeProjects().length) {
     <section
       class="section home-projects ui-section-block"
-      [style.--home-project-duration]="homeProjectAutoplayDuration"
+      [style.--ui-carousel-duration]="homeProjectAutoplayDuration"
     >
       <div class="home-project-shell">
         <div class="home-project-viewport">
@@ -105,10 +105,16 @@
                   </p>
                 }
                 @if (project.title) {
-                  <h2 class="home-project-title">{{ project.title }}</h2>
+                  <h2
+                    class="home-project-title section-title ui-section-display-title"
+                  >
+                    {{ project.title }}
+                  </h2>
                 }
                 @if (project.description) {
-                  <p class="home-project-description">
+                  <p
+                    class="home-project-description ui-section-display-subtitle"
+                  >
                     {{ project.description }}
                   </p>
                 }
@@ -178,12 +184,12 @@
             </article>
           </div>
           <div
-            class="home-project-indicators"
+            class="home-project-indicators ui-carousel-indicators"
             *ngIf="homeProjects().length > 1"
           >
             <button
               type="button"
-              class="home-project-dot"
+              class="ui-carousel-dot"
               *ngFor="
                 let project of homeProjects();
                 let i = index;
@@ -329,7 +335,7 @@
       </div>
       <div
         class="shop-gallery shop-carousel"
-        [style.--shop-carousel-duration]="shopGalleryAutoplayDuration"
+        [style.--ui-carousel-duration]="shopGalleryAutoplayDuration"
         [attr.aria-label]="'HOME.SHOP_GALLERY_ARIA' | translate"
       >
         <div class="shop-carousel-viewport">
@@ -368,12 +374,12 @@
           </div>
         </div>
         <div
-          class="shop-carousel-indicators"
+          class="ui-carousel-indicators"
           *ngIf="shopGalleryImages().length > 1"
         >
           <button
             type="button"
-            class="shop-carousel-dot"
+            class="ui-carousel-dot"
             *ngFor="
               let image of shopGalleryImages();
               let i = index;

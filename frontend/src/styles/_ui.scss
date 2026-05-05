@@ -378,6 +378,62 @@
   object-fit: cover;
 }
 
+.ui-carousel-indicators {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.72rem;
+  min-height: 1.3rem;
+}
+
+.ui-carousel-dot {
+  --ui-carousel-dot-size: 0.72rem;
+  --ui-carousel-dot-active-width: 4.8rem;
+  --ui-carousel-dot-idle: rgba(14, 24, 38, 0.34);
+  --ui-carousel-dot-active-track: rgba(14, 24, 38, 0.2);
+  --ui-carousel-dot-active-fill: rgba(14, 24, 38, 0.72);
+  flex: 0 0 auto;
+  position: relative;
+  width: var(--ui-carousel-dot-size);
+  height: var(--ui-carousel-dot-size);
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ui-carousel-dot-idle);
+  cursor: pointer;
+  transition:
+    width 0.22s ease,
+    background-color 0.22s ease,
+    opacity 0.22s ease;
+}
+
+.ui-carousel-dot:hover {
+  opacity: 0.76;
+}
+
+.ui-carousel-dot:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 3px;
+}
+
+.ui-carousel-dot.is-active {
+  width: var(--ui-carousel-dot-active-width);
+  background: var(--ui-carousel-dot-active-track);
+}
+
+.ui-carousel-dot.is-active::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--ui-carousel-dot-active-fill);
+  transform: scaleX(0);
+  transform-origin: left center;
+  animation: uiCarouselProgress var(--ui-carousel-duration, 5000ms) linear
+    forwards;
+}
+
 .ui-media-frame {
   position: relative;
   overflow: hidden;
@@ -827,7 +883,7 @@ select.ui-form-control {
 }
 
 .ui-button--outline {
-  background: transparent;
+  background: var(--color-bg);
   border: 2px solid var(--color-brand);
   color: var(--color-neutral-900);
   padding: calc(var(--space-2) - 1px) calc(var(--space-4) - 1px);
@@ -1152,6 +1208,19 @@ select.ui-form-control {
 .ui-empty-state {
   margin: 0;
   color: var(--color-text-muted);
+}
+
+@keyframes uiCarouselProgress {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-carousel-dot.is-active::after {
+    animation: none;
+    transform: scaleX(1);
+  }
 }
 
 @media (min-width: 768px) {
