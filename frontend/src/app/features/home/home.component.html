@@ -129,7 +129,10 @@
                       [innerHTML]="homeProjectDescriptionHtml(project)"
                     ></div>
                   }
-                  @if (homeProjectDetailImageFallbackUrl(project); as detailUrl) {
+                  @if (
+                    homeProjectDetailImageFallbackUrl(project);
+                    as detailUrl
+                  ) {
                     <div class="home-project-detail-media">
                       <img
                         [src]="detailUrl"
