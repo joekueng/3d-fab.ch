@@ -229,8 +229,7 @@
     ),
     radial-gradient(
       ellipse 44% 52% at 66% 18%,
-      color-mix(in srgb, var(--home-project-glow-top-right) 52%, transparent)
-        0%,
+      color-mix(in srgb, var(--home-project-glow-top-right) 52%, transparent) 0%,
       transparent 76%
     ),
     radial-gradient(
@@ -256,8 +255,7 @@
     ),
     radial-gradient(
       ellipse 36% 40% at 16% 18%,
-      color-mix(in srgb, var(--home-project-glow-top-left) 28%, transparent)
-        0%,
+      color-mix(in srgb, var(--home-project-glow-top-left) 28%, transparent) 0%,
       transparent 82%
     ),
     radial-gradient(
@@ -649,8 +647,7 @@
       ),
       radial-gradient(
         ellipse 62% 48% at 50% 45%,
-        color-mix(in srgb, var(--home-project-glow-bottom) 28%, transparent)
-          0%,
+        color-mix(in srgb, var(--home-project-glow-bottom) 28%, transparent) 0%,
         transparent 78%
       );
   }

@@ -58,9 +58,7 @@
           <div>
             <h3>
               {{
-                form.id
-                  ? form.titles.it || "Progetto home"
-                  : "Nuovo progetto"
+                form.id ? form.titles.it || "Progetto home" : "Nuovo progetto"
               }}
             </h3>
           </div>
@@ -185,7 +183,10 @@
                   accept=".jpg,.jpeg,.png,.webp"
                   (change)="onImageFileSelected($event)"
                 />
-                <label class="file-picker ui-file-picker" for="home-project-image-file">
+                <label
+                  class="file-picker ui-file-picker"
+                  for="home-project-image-file"
+                >
                   <span class="ui-file-picker__button">Scegli file</span>
                   <span class="ui-file-picker__name">
                     {{ imageForm.file?.name || "Nessun file selezionato" }}
@@ -193,11 +194,16 @@
                 </label>
               </div>
 
-              <div class="preview-card form-field--wide" *ngIf="imageForm.previewUrl">
+              <div
+                class="preview-card form-field--wide"
+                *ngIf="imageForm.previewUrl"
+              >
                 <img [src]="imageForm.previewUrl" alt="" />
               </div>
 
-              <div class="translation-actions form-field--wide ui-row ui-row--wrap">
+              <div
+                class="translation-actions form-field--wide ui-row ui-row--wrap"
+              >
                 <app-button
                   type="button"
                   variant="ghost"
@@ -228,14 +234,18 @@
                 label="Titolo immagine ({{
                   mediaLanguageLabels[imageForm.activeLanguage]
                 }})"
-                [(ngModel)]="imageForm.translations[imageForm.activeLanguage].title"
+                [(ngModel)]="
+                  imageForm.translations[imageForm.activeLanguage].title
+                "
                 [compact]="true"
               />
               <app-input
                 label="Alt text ({{
                   mediaLanguageLabels[imageForm.activeLanguage]
                 }})"
-                [(ngModel)]="imageForm.translations[imageForm.activeLanguage].altText"
+                [(ngModel)]="
+                  imageForm.translations[imageForm.activeLanguage].altText
+                "
                 [compact]="true"
               />
               <app-input
@@ -267,10 +277,7 @@
             <h4>Immagini attive</h4>
             <article
               class="project-image-item"
-              *ngFor="
-                let item of projectImages(project);
-                trackBy: trackImage
-              "
+              *ngFor="let item of projectImages(project); trackBy: trackImage"
             >
               <div class="project-image-thumb ui-thumb">
                 <img *ngIf="item.previewUrl" [src]="item.previewUrl" alt="" />

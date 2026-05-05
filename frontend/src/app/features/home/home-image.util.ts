@@ -1,7 +1,5 @@
 import { HomeProject } from '../../core/services/home-project.service';
-import {
-  DEFAULT_HOME_PROJECT_GLOW,
-} from './home-page.config';
+import { DEFAULT_HOME_PROJECT_GLOW } from './home-page.config';
 import { HomeProjectGlow, Rgb } from './home-page.types';
 
 type HomeProjectImage = HomeProject['image'];
@@ -76,8 +74,7 @@ export function extractHomeProjectGlow(
           0.88,
           0.38,
           globalBuckets,
-        ) ??
-        DEFAULT_HOME_PROJECT_GLOW.top,
+        ) ?? DEFAULT_HOME_PROJECT_GLOW.top,
       right:
         pickRegionColor(
           imageData,
@@ -87,8 +84,7 @@ export function extractHomeProjectGlow(
           0.98,
           0.84,
           globalBuckets,
-        ) ??
-        DEFAULT_HOME_PROJECT_GLOW.right,
+        ) ?? DEFAULT_HOME_PROJECT_GLOW.right,
       bottom:
         pickRegionColor(
           imageData,
@@ -98,8 +94,7 @@ export function extractHomeProjectGlow(
           0.88,
           0.98,
           globalBuckets,
-        ) ??
-        DEFAULT_HOME_PROJECT_GLOW.bottom,
+        ) ?? DEFAULT_HOME_PROJECT_GLOW.bottom,
       left:
         pickRegionColor(
           imageData,
@@ -109,8 +104,7 @@ export function extractHomeProjectGlow(
           0.42,
           0.84,
           globalBuckets,
-        ) ??
-        DEFAULT_HOME_PROJECT_GLOW.left,
+        ) ?? DEFAULT_HOME_PROJECT_GLOW.left,
       topLeft:
         pickRegionColor(
           imageData,
@@ -120,8 +114,7 @@ export function extractHomeProjectGlow(
           0.42,
           0.42,
           globalBuckets,
-        ) ??
-        DEFAULT_HOME_PROJECT_GLOW.topLeft,
+        ) ?? DEFAULT_HOME_PROJECT_GLOW.topLeft,
       topRight:
         pickRegionColor(
           imageData,
@@ -131,8 +124,7 @@ export function extractHomeProjectGlow(
           0.98,
           0.42,
           globalBuckets,
-        ) ??
-        DEFAULT_HOME_PROJECT_GLOW.topRight,
+        ) ?? DEFAULT_HOME_PROJECT_GLOW.topRight,
       bottomRight:
         pickRegionColor(
           imageData,
@@ -142,8 +134,7 @@ export function extractHomeProjectGlow(
           0.98,
           0.98,
           globalBuckets,
-        ) ??
-        DEFAULT_HOME_PROJECT_GLOW.bottomRight,
+        ) ?? DEFAULT_HOME_PROJECT_GLOW.bottomRight,
       bottomLeft:
         pickRegionColor(
           imageData,
@@ -153,8 +144,7 @@ export function extractHomeProjectGlow(
           0.42,
           0.98,
           globalBuckets,
-        ) ??
-        DEFAULT_HOME_PROJECT_GLOW.bottomLeft,
+        ) ?? DEFAULT_HOME_PROJECT_GLOW.bottomLeft,
     };
   } catch {
     return null;
@@ -258,7 +248,9 @@ function addDominantColorBucket(
   });
 }
 
-function pickRelevantBucket(buckets: Map<string, ColorBucket>): ColorBucket | null {
+function pickRelevantBucket(
+  buckets: Map<string, ColorBucket>,
+): ColorBucket | null {
   let best: ColorBucket | null = null;
   let bestScore = -Infinity;
 
@@ -269,10 +261,7 @@ function pickRelevantBucket(buckets: Map<string, ColorBucket>): ColorBucket | nu
     const lightnessWeight = 1 - lightnessDistance * 0.34;
     const colorfulnessWeight = bucket.saturation < 0.1 ? 0.42 : 1;
     const score =
-      frequencyWeight *
-      saturationWeight *
-      lightnessWeight *
-      colorfulnessWeight;
+      frequencyWeight * saturationWeight * lightnessWeight * colorfulnessWeight;
     if (score > bestScore) {
       best = bucket;
       bestScore = score;

@@ -639,10 +639,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     );
   }
 
-  categoryContentLanguageStatuses(): Record<
-    ShopLanguage,
-    AdminLanguageStatus
-  > {
+  categoryContentLanguageStatuses(): Record<ShopLanguage, AdminLanguageStatus> {
     return buildAdminLanguageStatusMap(
       this.shopLanguages,
       (language) => this.isCategoryContentLanguageComplete(language),

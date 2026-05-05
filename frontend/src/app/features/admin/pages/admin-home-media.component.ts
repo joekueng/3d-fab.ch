@@ -94,8 +94,9 @@ interface MediaSectionView extends MediaSectionConfig {
 const SUPPORTED_MEDIA_LANGUAGES =
   ADMIN_LOCALIZED_LANGUAGES satisfies readonly AdminMediaLanguage[];
 
-const MEDIA_LANGUAGE_LABELS =
-  ADMIN_LANGUAGE_LABELS satisfies Readonly<Record<AdminMediaLanguage, string>>;
+const MEDIA_LANGUAGE_LABELS = ADMIN_LANGUAGE_LABELS satisfies Readonly<
+  Record<AdminMediaLanguage, string>
+>;
 
 @Component({
   selector: 'app-admin-home-media',

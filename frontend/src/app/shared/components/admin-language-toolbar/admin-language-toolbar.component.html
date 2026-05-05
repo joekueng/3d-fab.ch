@@ -16,7 +16,9 @@
       [attr.aria-pressed]="activeLanguage() === language"
       (click)="selectLanguage(language)"
     >
-      <span class="admin-language-toolbar__label">{{ labelFor(language) }}</span>
+      <span class="admin-language-toolbar__label">{{
+        labelFor(language)
+      }}</span>
       <span class="admin-language-toolbar__state">
         {{ statusLabel(language) }}
       </span>
