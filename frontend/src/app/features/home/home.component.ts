@@ -12,6 +12,7 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
+import { of } from 'rxjs';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
 import { SwipeCarouselDirective } from '../../shared/directives/swipe-carousel.directive';
@@ -67,17 +68,26 @@ export class HomeComponent {
   private homeProjectAutoplayId: number | null = null;
   private shopGalleryAutoplayId: number | null = null;
   readonly languageService = inject(LanguageService);
-  readonly homeProjectAutoplayMs = 6000;
+  readonly homeProjectAutoplayMs = 12000;
   readonly homeProjectAutoplayDuration = `${this.homeProjectAutoplayMs}ms`;
   readonly shopGalleryAutoplayMs = 5000;
   readonly shopGalleryAutoplayDuration = `${this.shopGalleryAutoplayMs}ms`;
+  readonly homeProjectAutoplayPaused = signal(false);
+  readonly shopGalleryAutoplayPaused = signal(false);
 
-  readonly homeProjects = toSignal(this.homeProjectService.getProjects(), {
-    initialValue: [] as readonly HomeProject[],
-  });
+  readonly homeProjects = toSignal(
+    this.isBrowser
+      ? this.homeProjectService.getProjects()
+      : of([] as readonly HomeProject[]),
+    {
+      initialValue: [] as readonly HomeProject[],
+    },
+  );
 
   private readonly mediaByUsage = toSignal(
-    this.publicMediaService.getUsageCollections([...HOME_MEDIA_REQUESTS]),
+    this.isBrowser
+      ? this.publicMediaService.getUsageCollections([...HOME_MEDIA_REQUESTS])
+      : of(EMPTY_MEDIA_COLLECTIONS),
     { initialValue: EMPTY_MEDIA_COLLECTIONS },
   );
 
@@ -144,6 +154,7 @@ export class HomeComponent {
     effect(() => {
       const projects = this.homeProjects();
       const currentIndex = this.homeProjectIndex();
+      const isAutoplayPaused = this.homeProjectAutoplayPaused();
       if (projects.length === 0) {
         this.stopHomeProjectAutoplay();
         if (currentIndex !== 0) {
@@ -154,7 +165,7 @@ export class HomeComponent {
       if (currentIndex >= projects.length) {
         this.homeProjectIndex.set(0);
       }
-      if (projects.length > 1) {
+      if (projects.length > 1 && !isAutoplayPaused) {
         this.startHomeProjectAutoplay();
       } else {
         this.stopHomeProjectAutoplay();
@@ -164,6 +175,7 @@ export class HomeComponent {
     effect(() => {
       const images = this.shopGalleryImages();
       const currentIndex = this.shopGalleryIndex();
+      const isAutoplayPaused = this.shopGalleryAutoplayPaused();
       if (images.length === 0) {
         this.stopShopGalleryAutoplay();
         if (currentIndex !== 0) {
@@ -174,7 +186,7 @@ export class HomeComponent {
       if (currentIndex >= images.length) {
         this.shopGalleryIndex.set(0);
       }
-      if (images.length > 1) {
+      if (images.length > 1 && !isAutoplayPaused) {
         this.startShopGalleryAutoplay();
       } else {
         this.stopShopGalleryAutoplay();
@@ -226,6 +238,18 @@ export class HomeComponent {
   showNextHomeProject(): void {
     this.advanceHomeProject();
     this.restartHomeProjectAutoplay();
+  }
+
+  toggleHomeProjectAutoplay(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    const shouldPause = !this.homeProjectAutoplayPaused();
+    this.homeProjectAutoplayPaused.set(shouldPause);
+    if (shouldPause) {
+      this.stopHomeProjectAutoplay();
+    } else {
+      this.startHomeProjectAutoplay();
+    }
   }
 
   homeProjectImageFallbackUrl(project: HomeProject): string | null {
@@ -310,6 +334,18 @@ export class HomeComponent {
   showNextShopGalleryImage(): void {
     this.advanceShopGalleryImage();
     this.restartShopGalleryAutoplay();
+  }
+
+  toggleShopGalleryAutoplay(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    const shouldPause = !this.shopGalleryAutoplayPaused();
+    this.shopGalleryAutoplayPaused.set(shouldPause);
+    if (shouldPause) {
+      this.stopShopGalleryAutoplay();
+    } else {
+      this.startShopGalleryAutoplay();
+    }
   }
 
   prevFounderImage(): void {
@@ -410,6 +446,7 @@ export class HomeComponent {
     if (
       !this.isBrowser ||
       this.homeProjectAutoplayId !== null ||
+      this.homeProjectAutoplayPaused() ||
       this.homeProjects().length <= 1 ||
       this.prefersReducedMotion()
     ) {
@@ -419,6 +456,10 @@ export class HomeComponent {
     this.ngZone.runOutsideAngular(() => {
       this.homeProjectAutoplayId = window.setInterval(() => {
         this.ngZone.run(() => {
+          if (this.homeProjectAutoplayPaused()) {
+            this.stopHomeProjectAutoplay();
+            return;
+          }
           this.advanceHomeProject();
         });
       }, this.homeProjectAutoplayMs);
@@ -454,6 +495,7 @@ export class HomeComponent {
     if (
       !this.isBrowser ||
       this.shopGalleryAutoplayId !== null ||
+      this.shopGalleryAutoplayPaused() ||
       this.shopGalleryImages().length <= 1 ||
       this.prefersReducedMotion()
     ) {
@@ -463,6 +505,10 @@ export class HomeComponent {
     this.ngZone.runOutsideAngular(() => {
       this.shopGalleryAutoplayId = window.setInterval(() => {
         this.ngZone.run(() => {
+          if (this.shopGalleryAutoplayPaused()) {
+            this.stopShopGalleryAutoplay();
+            return;
+          }
           this.advanceShopGalleryImage();
         });
       }, this.shopGalleryAutoplayMs);

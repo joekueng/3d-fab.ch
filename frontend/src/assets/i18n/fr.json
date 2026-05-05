@@ -609,7 +609,11 @@
     "FOUNDER_IMAGE_ALT_2": "Fondateur - photo 2",
     "PROJECTS_CTA_CONTACT": "Demander un projet",
     "PROJECTS_CTA_CALCULATOR": "Calculer depuis un fichier",
-    "PROJECTS_SLIDE_ARIA": "Projet réalisé"
+    "PROJECTS_SLIDE_ARIA": "Projet réalisé",
+    "PROJECTS_AUTOPLAY_PAUSE_ARIA": "Mettre en pause le défilement des projets",
+    "PROJECTS_AUTOPLAY_RESUME_ARIA": "Reprendre le défilement des projets",
+    "SHOP_GALLERY_AUTOPLAY_PAUSE_ARIA": "Mettre en pause le défilement de la galerie boutique",
+    "SHOP_GALLERY_AUTOPLAY_RESUME_ARIA": "Reprendre le défilement de la galerie boutique"
   },
   "CALC": {
     "TITLE": "Calculer un devis 3D",

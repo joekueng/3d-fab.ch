@@ -139,6 +139,8 @@
   display: flex;
   justify-content: flex-end;
   z-index: 120;
+  overflow: hidden;
+  overscroll-behavior: contain;
 }
 
 .cart-panel {
@@ -152,6 +154,7 @@
   background: #fbfaf6;
   box-shadow: -18px 0 40px rgba(16, 24, 32, 0.08);
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .cart-panel-head {

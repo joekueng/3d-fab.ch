@@ -69,6 +69,7 @@ export class SwipeCarouselDirective implements OnDestroy {
       !this.enabled ||
       !this.isBrowser ||
       !event.isPrimary ||
+      this.isInteractiveTarget(event.target) ||
       (event.pointerType === 'mouse' && event.button !== 0)
     ) {
       return;
@@ -202,5 +203,14 @@ export class SwipeCarouselDirective implements OnDestroy {
     this.horizontalDrag = false;
     this.verticalScroll = false;
     this.dragging = false;
+  }
+
+  private isInteractiveTarget(target: EventTarget | null): boolean {
+    return (
+      target instanceof Element &&
+      target.closest(
+        'a,button,input,select,textarea,label,[role="button"],[role="link"]',
+      ) !== null
+    );
   }
 }
