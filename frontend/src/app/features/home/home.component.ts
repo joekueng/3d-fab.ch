@@ -1,59 +1,50 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import {
+  Component,
+  DestroyRef,
+  NgZone,
+  PLATFORM_ID,
+  computed,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
+import { of } from 'rxjs';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
+import { SwipeCarouselDirective } from '../../shared/directives/swipe-carousel.directive';
 import { LanguageService } from '../../core/services/language.service';
+import {
+  HomeProject,
+  HomeProjectService,
+} from '../../core/services/home-project.service';
 import {
   buildPublicMediaUsageScopeKey,
   PublicMediaDisplayImage,
   PublicMediaImage,
   PublicMediaService,
-  PublicMediaUsageCollectionMap,
 } from '../../core/services/public-media.service';
-
-const EMPTY_MEDIA_COLLECTIONS: PublicMediaUsageCollectionMap = {};
-
-type HomeCapabilityUsageKey =
-  | 'capability-prototyping'
-  | 'capability-custom-parts'
-  | 'capability-small-series'
-  | 'capability-cad';
-
-interface HomeCapabilityConfig {
-  usageKey: HomeCapabilityUsageKey;
-  titleKey: string;
-  textKey: string;
-}
-
-interface HomeCapabilityCard extends HomeCapabilityConfig {
-  image: PublicMediaDisplayImage | null;
-}
-
-const HOME_CAPABILITY_CONFIGS: readonly HomeCapabilityConfig[] = [
-  {
-    usageKey: 'capability-prototyping',
-    titleKey: 'HOME.CAP_1_TITLE',
-    textKey: 'HOME.CAP_1_TEXT',
-  },
-  {
-    usageKey: 'capability-custom-parts',
-    titleKey: 'HOME.CAP_2_TITLE',
-    textKey: 'HOME.CAP_2_TEXT',
-  },
-  {
-    usageKey: 'capability-small-series',
-    titleKey: 'HOME.CAP_3_TITLE',
-    textKey: 'HOME.CAP_3_TEXT',
-  },
-  {
-    usageKey: 'capability-cad',
-    titleKey: 'HOME.CAP_4_TITLE',
-    textKey: 'HOME.CAP_4_TEXT',
-  },
-];
+import {
+  DEFAULT_HOME_PROJECT_GLOW,
+  EMPTY_MEDIA_COLLECTIONS,
+  HOME_CAPABILITY_CONFIGS,
+  HOME_MEDIA_REQUESTS,
+} from './home-page.config';
+import {
+  HomeCapabilityCard,
+  HomeCapabilityConfig,
+  HomeProjectGlow,
+} from './home-page.types';
+import {
+  extractHomeProjectGlow,
+  mediaAvifUrl,
+  mediaFallbackUrl,
+  mediaTransparentFallbackUrl,
+  mediaWebpUrl,
+} from './home-image.util';
 
 @Component({
   selector: 'app-home-page',
@@ -64,41 +55,40 @@ const HOME_CAPABILITY_CONFIGS: readonly HomeCapabilityConfig[] = [
     TranslateModule,
     AppButtonComponent,
     AppCardComponent,
+    SwipeCarouselDirective,
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent {
+  private readonly destroyRef = inject(DestroyRef);
   private readonly publicMediaService = inject(PublicMediaService);
+  private readonly homeProjectService = inject(HomeProjectService);
+  private readonly ngZone = inject(NgZone);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private homeProjectAutoplayId: number | null = null;
+  private shopGalleryAutoplayId: number | null = null;
   readonly languageService = inject(LanguageService);
+  readonly homeProjectAutoplayMs = 12000;
+  readonly homeProjectAutoplayDuration = `${this.homeProjectAutoplayMs}ms`;
+  readonly shopGalleryAutoplayMs = 5000;
+  readonly shopGalleryAutoplayDuration = `${this.shopGalleryAutoplayMs}ms`;
+  readonly homeProjectAutoplayPaused = signal(false);
+  readonly shopGalleryAutoplayPaused = signal(false);
+
+  readonly homeProjects = toSignal(
+    this.isBrowser
+      ? this.homeProjectService.getProjects()
+      : of([] as readonly HomeProject[]),
+    {
+      initialValue: [] as readonly HomeProject[],
+    },
+  );
 
   private readonly mediaByUsage = toSignal(
-    this.publicMediaService.getUsageCollections([
-      {
-        usageType: 'HOME_SECTION',
-        usageKey: 'shop-gallery',
-      },
-      {
-        usageType: 'HOME_SECTION',
-        usageKey: 'founders-gallery',
-      },
-      {
-        usageType: 'HOME_SECTION',
-        usageKey: 'capability-prototyping',
-      },
-      {
-        usageType: 'HOME_SECTION',
-        usageKey: 'capability-custom-parts',
-      },
-      {
-        usageType: 'HOME_SECTION',
-        usageKey: 'capability-small-series',
-      },
-      {
-        usageType: 'HOME_SECTION',
-        usageKey: 'capability-cad',
-      },
-    ]),
+    this.isBrowser
+      ? this.publicMediaService.getUsageCollections([...HOME_MEDIA_REQUESTS])
+      : of(EMPTY_MEDIA_COLLECTIONS),
     { initialValue: EMPTY_MEDIA_COLLECTIONS },
   );
 
@@ -139,6 +129,17 @@ export class HomeComponent {
     HOME_CAPABILITY_CONFIGS.map((config) => this.buildCapabilityCard(config)),
   );
 
+  readonly homeProjectIndex = signal(0);
+  readonly homeProjectGlowColors = signal<ReadonlyMap<string, HomeProjectGlow>>(
+    new Map(),
+  );
+  readonly homeProjectTrackTransform = computed(
+    () => `translateX(-${this.homeProjectIndex() * 100}%)`,
+  );
+  readonly shopGalleryIndex = signal(0);
+  readonly shopGalleryTrackTransform = computed(
+    () => `translateX(-${this.shopGalleryIndex() * 100}%)`,
+  );
   readonly founderImageIndex = signal(0);
   readonly currentFounderImage = computed<PublicMediaDisplayImage | null>(
     () => {
@@ -152,6 +153,48 @@ export class HomeComponent {
 
   constructor() {
     effect(() => {
+      const projects = this.homeProjects();
+      const currentIndex = this.homeProjectIndex();
+      const isAutoplayPaused = this.homeProjectAutoplayPaused();
+      if (projects.length === 0) {
+        this.stopHomeProjectAutoplay();
+        if (currentIndex !== 0) {
+          this.homeProjectIndex.set(0);
+        }
+        return;
+      }
+      if (currentIndex >= projects.length) {
+        this.homeProjectIndex.set(0);
+      }
+      if (projects.length > 1 && !isAutoplayPaused) {
+        this.startHomeProjectAutoplay();
+      } else {
+        this.stopHomeProjectAutoplay();
+      }
+    });
+
+    effect(() => {
+      const images = this.shopGalleryImages();
+      const currentIndex = this.shopGalleryIndex();
+      const isAutoplayPaused = this.shopGalleryAutoplayPaused();
+      if (images.length === 0) {
+        this.stopShopGalleryAutoplay();
+        if (currentIndex !== 0) {
+          this.shopGalleryIndex.set(0);
+        }
+        return;
+      }
+      if (currentIndex >= images.length) {
+        this.shopGalleryIndex.set(0);
+      }
+      if (images.length > 1 && !isAutoplayPaused) {
+        this.startShopGalleryAutoplay();
+      } else {
+        this.stopShopGalleryAutoplay();
+      }
+    });
+
+    effect(() => {
       const images = this.founderImages();
       const currentIndex = this.founderImageIndex();
       if (images.length === 0) {
@@ -164,6 +207,164 @@ export class HomeComponent {
         this.founderImageIndex.set(0);
       }
     });
+
+    this.destroyRef.onDestroy(() => {
+      this.stopHomeProjectAutoplay();
+      this.stopShopGalleryAutoplay();
+    });
+  }
+
+  selectHomeProject(index: number): void {
+    const totalProjects = this.homeProjects().length;
+    if (index < 0 || index >= totalProjects) {
+      return;
+    }
+    this.homeProjectIndex.set(index);
+    this.restartHomeProjectAutoplay();
+  }
+
+  showPreviousHomeProject(): void {
+    const totalProjects = this.homeProjects().length;
+    if (totalProjects <= 1) {
+      return;
+    }
+    this.homeProjectIndex.set(
+      this.homeProjectIndex() === 0
+        ? totalProjects - 1
+        : this.homeProjectIndex() - 1,
+    );
+    this.restartHomeProjectAutoplay();
+  }
+
+  showNextHomeProject(): void {
+    this.advanceHomeProject();
+    this.restartHomeProjectAutoplay();
+  }
+
+  toggleHomeProjectAutoplay(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    const shouldPause = !this.homeProjectAutoplayPaused();
+    this.homeProjectAutoplayPaused.set(shouldPause);
+    if (shouldPause) {
+      this.stopHomeProjectAutoplay();
+    } else {
+      this.startHomeProjectAutoplay();
+    }
+  }
+
+  homeProjectImageFallbackUrl(project: HomeProject): string | null {
+    return mediaFallbackUrl(project.image);
+  }
+
+  homeProjectImageAvifUrl(project: HomeProject): string | null {
+    return mediaAvifUrl(project.image);
+  }
+
+  homeProjectImageWebpUrl(project: HomeProject): string | null {
+    return mediaWebpUrl(project.image);
+  }
+
+  homeProjectAmbilightImage(project: HomeProject): string | null {
+    const imageUrl = this.homeProjectImageFallbackUrl(project);
+    return imageUrl ? `url("${this.escapeCssUrl(imageUrl)}")` : null;
+  }
+
+  homeProjectDescriptionHtml(project: HomeProject): string {
+    const description = String(project.description ?? '').trim();
+    if (!description) {
+      return '';
+    }
+    if (this.containsHtmlMarkup(description)) {
+      return description;
+    }
+    return description
+      .replace(/\r\n?/g, '\n')
+      .split(/\n{2,}/)
+      .map(
+        (paragraph) =>
+          `<p>${this.escapeHtml(paragraph).replace(/\n/g, '<br>')}</p>`,
+      )
+      .join('');
+  }
+
+  homeProjectDetailImageFallbackUrl(project: HomeProject): string | null {
+    return mediaTransparentFallbackUrl(project.detailImage);
+  }
+
+  homeProjectDetailImageAvifUrl(project: HomeProject): string | null {
+    return mediaAvifUrl(project.detailImage);
+  }
+
+  homeProjectDetailImageWebpUrl(project: HomeProject): string | null {
+    return mediaWebpUrl(project.detailImage);
+  }
+
+  homeProjectGlow(project: HomeProject): HomeProjectGlow {
+    return (
+      this.homeProjectGlowColors().get(this.homeProjectGlowKey(project)) ??
+      DEFAULT_HOME_PROJECT_GLOW
+    );
+  }
+
+  updateHomeProjectGlow(project: HomeProject, event: Event): void {
+    if (!this.isBrowser || !(event.target instanceof HTMLImageElement)) {
+      return;
+    }
+
+    const glow = extractHomeProjectGlow(event.target);
+    if (!glow) {
+      return;
+    }
+
+    const projectKey = this.homeProjectGlowKey(project);
+    this.homeProjectGlowColors.update((colors) => {
+      if (colors.get(projectKey) === glow) {
+        return colors;
+      }
+      const nextColors = new Map(colors);
+      nextColors.set(projectKey, glow);
+      return nextColors;
+    });
+  }
+
+  selectShopGalleryImage(index: number): void {
+    const totalImages = this.shopGalleryImages().length;
+    if (index < 0 || index >= totalImages) {
+      return;
+    }
+    this.shopGalleryIndex.set(index);
+    this.restartShopGalleryAutoplay();
+  }
+
+  showPreviousShopGalleryImage(): void {
+    const totalImages = this.shopGalleryImages().length;
+    if (totalImages <= 1) {
+      return;
+    }
+    this.shopGalleryIndex.set(
+      this.shopGalleryIndex() === 0
+        ? totalImages - 1
+        : this.shopGalleryIndex() - 1,
+    );
+    this.restartShopGalleryAutoplay();
+  }
+
+  showNextShopGalleryImage(): void {
+    this.advanceShopGalleryImage();
+    this.restartShopGalleryAutoplay();
+  }
+
+  toggleShopGalleryAutoplay(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    const shouldPause = !this.shopGalleryAutoplayPaused();
+    this.shopGalleryAutoplayPaused.set(shouldPause);
+    if (shouldPause) {
+      this.stopShopGalleryAutoplay();
+    } else {
+      this.startShopGalleryAutoplay();
+    }
   }
 
   prevFounderImage(): void {
@@ -198,6 +399,47 @@ export class HomeComponent {
     return card.usageKey;
   }
 
+  readonly trackHomeProject = (_: number, project: HomeProject): string => {
+    return this.homeProjectGlowKey(project);
+  };
+
+  private homeProjectGlowKey(project: HomeProject): string {
+    return [
+      project.id,
+      project.slug,
+      project.image?.mediaAssetId,
+      this.homeProjectImageFallbackUrl(project),
+    ]
+      .filter(Boolean)
+      .join('::');
+  }
+
+  private escapeCssUrl(url: string): string {
+    return url.replace(/["\\\n\r\f]/g, (match) => {
+      switch (match) {
+        case '"':
+          return '\\"';
+        case '\\':
+          return '\\\\';
+        default:
+          return '';
+      }
+    });
+  }
+
+  private containsHtmlMarkup(value: string): boolean {
+    return /<\/?[a-z][\s\S]*>/i.test(value);
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   private buildCapabilityCard(
     config: HomeCapabilityConfig,
   ): HomeCapabilityCard {
@@ -213,5 +455,107 @@ export class HomeComponent {
         ? this.publicMediaService.toDisplayImage(primaryImage, 'card')
         : null,
     };
+  }
+
+  private advanceHomeProject(): void {
+    const totalProjects = this.homeProjects().length;
+    if (totalProjects <= 1) {
+      return;
+    }
+    this.homeProjectIndex.set(
+      this.homeProjectIndex() === totalProjects - 1
+        ? 0
+        : this.homeProjectIndex() + 1,
+    );
+  }
+
+  private restartHomeProjectAutoplay(): void {
+    this.stopHomeProjectAutoplay();
+    this.startHomeProjectAutoplay();
+  }
+
+  private startHomeProjectAutoplay(): void {
+    if (
+      !this.isBrowser ||
+      this.homeProjectAutoplayId !== null ||
+      this.homeProjectAutoplayPaused() ||
+      this.homeProjects().length <= 1 ||
+      this.prefersReducedMotion()
+    ) {
+      return;
+    }
+
+    this.ngZone.runOutsideAngular(() => {
+      this.homeProjectAutoplayId = window.setInterval(() => {
+        this.ngZone.run(() => {
+          if (this.homeProjectAutoplayPaused()) {
+            this.stopHomeProjectAutoplay();
+            return;
+          }
+          this.advanceHomeProject();
+        });
+      }, this.homeProjectAutoplayMs);
+    });
+  }
+
+  private stopHomeProjectAutoplay(): void {
+    if (!this.isBrowser || this.homeProjectAutoplayId === null) {
+      return;
+    }
+    window.clearInterval(this.homeProjectAutoplayId);
+    this.homeProjectAutoplayId = null;
+  }
+
+  private advanceShopGalleryImage(): void {
+    const totalImages = this.shopGalleryImages().length;
+    if (totalImages <= 1) {
+      return;
+    }
+    this.shopGalleryIndex.set(
+      this.shopGalleryIndex() === totalImages - 1
+        ? 0
+        : this.shopGalleryIndex() + 1,
+    );
+  }
+
+  private restartShopGalleryAutoplay(): void {
+    this.stopShopGalleryAutoplay();
+    this.startShopGalleryAutoplay();
+  }
+
+  private startShopGalleryAutoplay(): void {
+    if (
+      !this.isBrowser ||
+      this.shopGalleryAutoplayId !== null ||
+      this.shopGalleryAutoplayPaused() ||
+      this.shopGalleryImages().length <= 1 ||
+      this.prefersReducedMotion()
+    ) {
+      return;
+    }
+
+    this.ngZone.runOutsideAngular(() => {
+      this.shopGalleryAutoplayId = window.setInterval(() => {
+        this.ngZone.run(() => {
+          if (this.shopGalleryAutoplayPaused()) {
+            this.stopShopGalleryAutoplay();
+            return;
+          }
+          this.advanceShopGalleryImage();
+        });
+      }, this.shopGalleryAutoplayMs);
+    });
+  }
+
+  private stopShopGalleryAutoplay(): void {
+    if (!this.isBrowser || this.shopGalleryAutoplayId === null) {
+      return;
+    }
+    window.clearInterval(this.shopGalleryAutoplayId);
+    this.shopGalleryAutoplayId = null;
+  }
+
+  private prefersReducedMotion(): boolean {
+    return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   }
 }

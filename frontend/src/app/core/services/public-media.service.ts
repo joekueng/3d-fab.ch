@@ -20,6 +20,7 @@ export interface PublicMediaVariantDto {
   avifUrl: string | null;
   webpUrl: string | null;
   jpegUrl: string | null;
+  pngUrl: string | null;
 }
 
 export interface PublicMediaUsageDto {
@@ -40,6 +41,7 @@ export interface PublicMediaSourceSet {
   avifUrl: string | null;
   webpUrl: string | null;
   jpegUrl: string | null;
+  pngUrl: string | null;
   fallbackUrl: string | null;
 }
 
@@ -207,13 +209,15 @@ export class PublicMediaService {
     const avifUrl = this.normalizeUrl(preset?.avifUrl);
     const webpUrl = this.normalizeUrl(preset?.webpUrl);
     const jpegUrl = this.normalizeUrl(preset?.jpegUrl);
+    const pngUrl = this.normalizeUrl(preset?.pngUrl);
 
     return {
       preset: presetName,
       avifUrl,
       webpUrl,
       jpegUrl,
-      fallbackUrl: jpegUrl ?? webpUrl ?? avifUrl,
+      pngUrl,
+      fallbackUrl: jpegUrl ?? webpUrl ?? avifUrl ?? pngUrl,
     };
   }
 
@@ -235,6 +239,7 @@ export class PublicMediaService {
       avifUrl: source.avifUrl,
       webpUrl: source.webpUrl,
       jpegUrl: source.jpegUrl,
+      pngUrl: source.pngUrl,
       fallbackUrl: source.fallbackUrl,
     };
   }

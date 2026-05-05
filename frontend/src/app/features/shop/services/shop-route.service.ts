@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { LanguageService } from '../../../core/services/language.service';
-
-type SupportedLang = 'it' | 'en' | 'de' | 'fr';
+import { SupportedLang } from '../../../core/i18n/language-resolution';
 
 export interface ShopProductRouteRef {
   id: string | null | undefined;

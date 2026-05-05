@@ -60,6 +60,178 @@
     </div>
   </section>
 
+  @if (homeProjects().length) {
+    <section
+      class="section home-projects ui-section-block"
+      [class.is-carousel-autoplay-paused]="homeProjectAutoplayPaused()"
+      [style.--ui-carousel-duration]="homeProjectAutoplayDuration"
+    >
+      <div class="home-project-shell">
+        <div
+          class="home-project-viewport"
+          [appSwipeCarousel]="homeProjects().length > 1"
+          (swipeCarouselPrevious)="showPreviousHomeProject()"
+          (swipeCarouselNext)="showNextHomeProject()"
+        >
+          <div
+            class="home-project-track"
+            [style.transform]="homeProjectTrackTransform()"
+          >
+            <article
+              class="home-project-slide"
+              *ngFor="
+                let project of homeProjects();
+                let i = index;
+                trackBy: trackHomeProject
+              "
+              [attr.aria-hidden]="i === homeProjectIndex() ? null : 'true'"
+              [style.--home-project-glow-top]="homeProjectGlow(project).top"
+              [style.--home-project-glow-right]="homeProjectGlow(project).right"
+              [style.--home-project-glow-bottom]="
+                homeProjectGlow(project).bottom
+              "
+              [style.--home-project-glow-left]="homeProjectGlow(project).left"
+              [style.--home-project-glow-top-left]="
+                homeProjectGlow(project).topLeft
+              "
+              [style.--home-project-glow-top-right]="
+                homeProjectGlow(project).topRight
+              "
+              [style.--home-project-glow-bottom-right]="
+                homeProjectGlow(project).bottomRight
+              "
+              [style.--home-project-glow-bottom-left]="
+                homeProjectGlow(project).bottomLeft
+              "
+            >
+              <div
+                class="home-project-ambilight"
+                aria-hidden="true"
+                [style.background-image]="homeProjectAmbilightImage(project)"
+              ></div>
+              <div class="home-project-content">
+                <div class="home-project-copy">
+                  @if (project.eyebrow) {
+                    <p class="home-project-eyebrow ui-eyebrow">
+                      {{ project.eyebrow }}
+                    </p>
+                  }
+                  @if (project.title) {
+                    <h2
+                      class="home-project-title section-title ui-section-display-title"
+                    >
+                      {{ project.title }}
+                    </h2>
+                  }
+                  @if (project.description) {
+                    <div
+                      class="home-project-description ui-section-display-subtitle ui-rich-text-content"
+                      [innerHTML]="homeProjectDescriptionHtml(project)"
+                    ></div>
+                  }
+                  @if (
+                    homeProjectDetailImageFallbackUrl(project);
+                    as detailUrl
+                  ) {
+                    <div class="home-project-detail-media">
+                      <img
+                        [src]="detailUrl"
+                        [attr.alt]="
+                          project.detailImage?.altText ||
+                          project.detailImage?.title ||
+                          ''
+                        "
+                        width="560"
+                        height="220"
+                      />
+                    </div>
+                  }
+                  <div class="home-project-actions ui-inline-actions">
+                    <app-button
+                      variant="primary"
+                      [routerLink]="languageService.localizedPath('/contact')"
+                      >{{ "HOME.PROJECTS_CTA_CONTACT" | translate }}</app-button
+                    >
+                  </div>
+                </div>
+
+                <div class="home-project-media">
+                  @if (homeProjectImageFallbackUrl(project); as imageUrl) {
+                    <picture>
+                      @if (homeProjectImageAvifUrl(project); as avifUrl) {
+                        <source [srcset]="avifUrl" type="image/avif" />
+                      }
+                      @if (homeProjectImageWebpUrl(project); as webpUrl) {
+                        <source [srcset]="webpUrl" type="image/webp" />
+                      }
+                      <img
+                        [src]="imageUrl"
+                        [attr.alt]="
+                          project.image?.altText || project.title || ''
+                        "
+                        width="1200"
+                        height="800"
+                        (load)="updateHomeProjectGlow(project, $event)"
+                      />
+                    </picture>
+                  } @else {
+                    <div class="home-project-media-fallback">
+                      <span>{{ project.title }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            </article>
+          </div>
+          <div
+            class="home-project-indicators ui-carousel-indicators"
+            *ngIf="homeProjects().length > 1"
+          >
+            <button
+              type="button"
+              class="ui-carousel-dot"
+              *ngFor="
+                let project of homeProjects();
+                let i = index;
+                trackBy: trackHomeProject
+              "
+              [class.is-active]="i === homeProjectIndex()"
+              [attr.aria-current]="i === homeProjectIndex() ? 'true' : null"
+              [attr.aria-label]="
+                ('HOME.PROJECTS_SLIDE_ARIA' | translate) + ' ' + (i + 1)
+              "
+              (click)="selectHomeProject(i)"
+            ></button>
+            <button
+              type="button"
+              class="ui-carousel-dot home-carousel-autoplay-toggle"
+              [class.is-paused]="homeProjectAutoplayPaused()"
+              [attr.aria-pressed]="homeProjectAutoplayPaused()"
+              [attr.aria-label]="
+                (homeProjectAutoplayPaused()
+                  ? 'HOME.PROJECTS_AUTOPLAY_RESUME_ARIA'
+                  : 'HOME.PROJECTS_AUTOPLAY_PAUSE_ARIA'
+                ) | translate
+              "
+              [attr.title]="
+                (homeProjectAutoplayPaused()
+                  ? 'HOME.PROJECTS_AUTOPLAY_RESUME_ARIA'
+                  : 'HOME.PROJECTS_AUTOPLAY_PAUSE_ARIA'
+                ) | translate
+              "
+              (click)="toggleHomeProjectAutoplay($event)"
+            >
+              <span
+                class="home-carousel-autoplay-icon"
+                aria-hidden="true"
+              ></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  }
+
   <section class="section capabilities ui-section-block">
     <div class="capabilities-bg"></div>
     <div class="container">
@@ -186,31 +358,90 @@
         </div>
       </div>
       <div
-        class="shop-gallery ui-gallery-strip"
-        tabindex="0"
+        class="shop-gallery shop-carousel"
+        [class.is-carousel-autoplay-paused]="shopGalleryAutoplayPaused()"
+        [appSwipeCarousel]="shopGalleryImages().length > 1"
+        [style.--ui-carousel-duration]="shopGalleryAutoplayDuration"
         [attr.aria-label]="'HOME.SHOP_GALLERY_ARIA' | translate"
+        (swipeCarouselPrevious)="showPreviousShopGalleryImage()"
+        (swipeCarouselNext)="showNextShopGalleryImage()"
       >
-        <figure
-          class="shop-gallery-item ui-gallery-card"
-          *ngFor="let image of shopGalleryImages(); trackBy: trackMediaAsset"
+        <div class="shop-carousel-viewport">
+          <div
+            class="shop-carousel-track"
+            [style.transform]="shopGalleryTrackTransform()"
+          >
+            <figure
+              class="shop-gallery-item shop-carousel-slide ui-gallery-card"
+              *ngFor="
+                let image of shopGalleryImages();
+                let i = index;
+                trackBy: trackMediaAsset
+              "
+              [attr.aria-hidden]="i === shopGalleryIndex() ? null : 'true'"
+            >
+              <picture>
+                <source
+                  *ngIf="image.source.avifUrl"
+                  [srcset]="image.source.avifUrl"
+                  type="image/avif"
+                />
+                <source
+                  *ngIf="image.source.webpUrl"
+                  [srcset]="image.source.webpUrl"
+                  type="image/webp"
+                />
+                <img
+                  [src]="image.source.fallbackUrl"
+                  [attr.alt]="
+                    image.altText || ('HOME.SEC_SHOP_TITLE' | translate)
+                  "
+                />
+              </picture>
+            </figure>
+          </div>
+        </div>
+        <div
+          class="ui-carousel-indicators"
+          *ngIf="shopGalleryImages().length > 1"
         >
-          <picture>
-            <source
-              *ngIf="image.source.avifUrl"
-              [srcset]="image.source.avifUrl"
-              type="image/avif"
-            />
-            <source
-              *ngIf="image.source.webpUrl"
-              [srcset]="image.source.webpUrl"
-              type="image/webp"
-            />
-            <img
-              [src]="image.source.fallbackUrl"
-              [attr.alt]="image.altText || ('HOME.SEC_SHOP_TITLE' | translate)"
-            />
-          </picture>
-        </figure>
+          <button
+            type="button"
+            class="ui-carousel-dot"
+            *ngFor="
+              let image of shopGalleryImages();
+              let i = index;
+              trackBy: trackMediaAsset
+            "
+            [class.is-active]="i === shopGalleryIndex()"
+            [attr.aria-current]="i === shopGalleryIndex() ? 'true' : null"
+            [attr.aria-label]="
+              ('HOME.SHOP_GALLERY_ARIA' | translate) + ' ' + (i + 1)
+            "
+            (click)="selectShopGalleryImage(i)"
+          ></button>
+          <button
+            type="button"
+            class="ui-carousel-dot home-carousel-autoplay-toggle"
+            [class.is-paused]="shopGalleryAutoplayPaused()"
+            [attr.aria-pressed]="shopGalleryAutoplayPaused()"
+            [attr.aria-label]="
+              (shopGalleryAutoplayPaused()
+                ? 'HOME.SHOP_GALLERY_AUTOPLAY_RESUME_ARIA'
+                : 'HOME.SHOP_GALLERY_AUTOPLAY_PAUSE_ARIA'
+              ) | translate
+            "
+            [attr.title]="
+              (shopGalleryAutoplayPaused()
+                ? 'HOME.SHOP_GALLERY_AUTOPLAY_RESUME_ARIA'
+                : 'HOME.SHOP_GALLERY_AUTOPLAY_PAUSE_ARIA'
+              ) | translate
+            "
+            (click)="toggleShopGalleryAutoplay($event)"
+          >
+            <span class="home-carousel-autoplay-icon" aria-hidden="true"></span>
+          </button>
+        </div>
       </div>
       <div class="shop-cards">
         <app-card>

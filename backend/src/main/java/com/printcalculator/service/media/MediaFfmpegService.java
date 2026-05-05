@@ -26,6 +26,7 @@ public class MediaFfmpegService {
 
     private static final Map<String, List<String>> ENCODER_CANDIDATES = Map.of(
             "JPEG", List.of("mjpeg"),
+            "PNG", List.of("png"),
             "WEBP", List.of("libwebp", "webp"),
             "AVIF", List.of("libaom-av1", "librav1e", "libsvtav1")
     );
@@ -70,7 +71,7 @@ public class MediaFfmpegService {
         command.add("-i");
         command.add(sourcePath.toString());
         command.add("-vf");
-        command.add("scale=" + widthPx + ":" + heightPx + ":flags=lanczos,setsar=1");
+        command.add(buildVideoFilter(widthPx, heightPx, normalizedFormat));
         command.add("-frames:v");
         command.add("1");
         command.add("-an");
@@ -81,6 +82,12 @@ public class MediaFfmpegService {
                 command.add(encoder);
                 command.add("-q:v");
                 command.add("2");
+            }
+            case "PNG" -> {
+                command.add("-c:v");
+                command.add(encoder);
+                command.add("-compression_level");
+                command.add("9");
             }
             case "WEBP" -> {
                 command.add("-c:v");
@@ -120,6 +127,14 @@ public class MediaFfmpegService {
         if (exitCode != 0 || !Files.exists(targetPath) || Files.size(targetPath) == 0) {
             throw new IOException("FFmpeg failed to generate media variant. " + truncate(output));
         }
+    }
+
+    private String buildVideoFilter(int widthPx, int heightPx, String format) {
+        String filter = "scale=" + widthPx + ":" + heightPx + ":flags=lanczos";
+        if ("PNG".equals(format) || "WEBP".equals(format) || "AVIF".equals(format)) {
+            filter += ",format=rgba";
+        }
+        return filter + ",setsar=1";
     }
 
     public boolean canEncode(String format) {

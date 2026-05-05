@@ -508,29 +508,12 @@ h1 {
 }
 
 .description-block__content {
+  --ui-rich-text-block-gap: 0.7rem;
+  --ui-rich-text-list-indent: 1.3rem;
+  --ui-rich-text-item-gap: 0.22rem;
   color: var(--color-text-muted);
   font-size: 1.06rem;
   line-height: 1.75;
-}
-
-.description-block__content p,
-.description-block__content div {
-  margin: 0 0 0.7rem;
-}
-
-.description-block__content p:last-child,
-.description-block__content div:last-child {
-  margin-bottom: 0;
-}
-
-.description-block__content ul,
-.description-block__content ol {
-  margin: 0 0 0.7rem 1.3rem;
-  padding: 0;
-}
-
-.description-block__content li + li {
-  margin-top: 0.22rem;
 }
 
 app-card.purchase-shell {

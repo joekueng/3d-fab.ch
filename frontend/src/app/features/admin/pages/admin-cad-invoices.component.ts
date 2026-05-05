@@ -10,6 +10,7 @@ import { CopyOnClickDirective } from '../../../shared/directives/copy-on-click.d
 import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
 import { AppInputComponent } from '../../../shared/components/app-input/app-input.component';
 import { AppTextareaComponent } from '../../../shared/components/app-textarea/app-textarea.component';
+import { downloadBlobInBrowser } from '../../../core/utils/browser-download';
 
 @Component({
   selector: 'app-admin-cad-invoices',
@@ -146,12 +147,7 @@ export class AdminCadInvoicesComponent implements OnInit {
         if (!this.isBrowser) {
           return;
         }
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `fattura-cad-${orderId}.pdf`;
-        a.click();
-        window.URL.revokeObjectURL(url);
+        downloadBlobInBrowser(blob, `fattura-cad-${orderId}.pdf`);
       },
       error: () => {
         this.errorMessage = 'Download fattura non riuscito.';

@@ -42,6 +42,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 @Transactional(readOnly = true)
 public class AdminQrControllerService {
     private static final ZoneId APP_ZONE = ZoneId.systemDefault();
+    private static final int LAST_DAY_QR = 10;
 
     private final QrLinkRepository qrLinkRepository;
     private final QrScanEventRepository qrScanEventRepository;
@@ -407,7 +408,7 @@ public class AdminQrControllerService {
 
     private DateRange resolveDateRange(LocalDate from, LocalDate to) {
         LocalDate toDate = to != null ? to : LocalDate.now(APP_ZONE);
-        LocalDate fromDate = from != null ? from : toDate.minusDays(29);
+        LocalDate fromDate = from != null ? from : toDate.minusDays(LAST_DAY_QR-1);
         if (fromDate.isAfter(toDate)) {
             throw new ResponseStatusException(BAD_REQUEST, "from must be <= to");
         }

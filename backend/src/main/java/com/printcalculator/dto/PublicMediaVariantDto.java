@@ -4,6 +4,7 @@ public class PublicMediaVariantDto {
     private String avifUrl;
     private String webpUrl;
     private String jpegUrl;
+    private String pngUrl;
 
     public String getAvifUrl() {
         return avifUrl;
@@ -27,5 +28,13 @@ public class PublicMediaVariantDto {
 
     public void setJpegUrl(String jpegUrl) {
         this.jpegUrl = jpegUrl;
+    }
+
+    public String getPngUrl() {
+        return pngUrl;
+    }
+
+    public void setPngUrl(String pngUrl) {
+        this.pngUrl = pngUrl;
     }
 }

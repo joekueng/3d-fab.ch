@@ -7,6 +7,14 @@ export const SUPPORTED_LANGS: readonly SupportedLang[] = [
   'fr',
 ];
 
+export function isSupportedLangValue(
+  lang: string | null | undefined,
+): lang is SupportedLang {
+  return (
+    typeof lang === 'string' && SUPPORTED_LANGS.includes(lang as SupportedLang)
+  );
+}
+
 type InitialLanguageOptions = {
   url?: string | null;
   preferredLanguages?: readonly string[] | null;
@@ -129,7 +137,7 @@ function normalizeSupportedLanguage(
   }
 
   const [baseLanguage] = normalized.split('-', 1);
-  return SUPPORTED_LANGS.includes(baseLanguage as SupportedLang)
+  return isSupportedLangValue(baseLanguage)
     ? (baseLanguage as SupportedLang)
     : null;
 }

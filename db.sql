@@ -1156,6 +1156,67 @@ ALTER TABLE media_usage
 ALTER TABLE media_usage
     ADD COLUMN IF NOT EXISTS alt_text_fr text;
 
+CREATE TABLE IF NOT EXISTS home_project
+(
+    home_project_id uuid PRIMARY KEY     DEFAULT gen_random_uuid(),
+    slug            text        NOT NULL UNIQUE,
+    eyebrow_it      text,
+    eyebrow_en      text,
+    eyebrow_de      text,
+    eyebrow_fr      text,
+    title_it        text,
+    title_en        text,
+    title_de        text,
+    title_fr        text,
+    description_it  text,
+    description_en  text,
+    description_de  text,
+    description_fr  text,
+    is_active       boolean     NOT NULL DEFAULT true,
+    sort_order      integer     NOT NULL DEFAULT 0,
+    created_at      timestamptz NOT NULL DEFAULT now(),
+    updated_at      timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS ix_home_project_active_sort
+    ON home_project (is_active, sort_order);
+
+ALTER TABLE home_project
+    ADD COLUMN IF NOT EXISTS eyebrow_it text;
+
+ALTER TABLE home_project
+    ADD COLUMN IF NOT EXISTS eyebrow_en text;
+
+ALTER TABLE home_project
+    ADD COLUMN IF NOT EXISTS eyebrow_de text;
+
+ALTER TABLE home_project
+    ADD COLUMN IF NOT EXISTS eyebrow_fr text;
+
+ALTER TABLE home_project
+    ADD COLUMN IF NOT EXISTS title_it text;
+
+ALTER TABLE home_project
+    ADD COLUMN IF NOT EXISTS title_en text;
+
+ALTER TABLE home_project
+    ADD COLUMN IF NOT EXISTS title_de text;
+
+ALTER TABLE home_project
+    ADD COLUMN IF NOT EXISTS title_fr text;
+
+ALTER TABLE home_project
+    ADD COLUMN IF NOT EXISTS description_it text;
+
+ALTER TABLE home_project
+    ADD COLUMN IF NOT EXISTS description_en text;
+
+ALTER TABLE home_project
+    ADD COLUMN IF NOT EXISTS description_de text;
+
+ALTER TABLE home_project
+    ADD COLUMN IF NOT EXISTS description_fr text;
+
 CREATE TABLE IF NOT EXISTS shop_category
 (
     shop_category_id    uuid PRIMARY KEY     DEFAULT gen_random_uuid(),

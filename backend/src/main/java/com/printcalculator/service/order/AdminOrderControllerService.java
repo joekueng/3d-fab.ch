@@ -233,31 +233,10 @@ public class AdminOrderControllerService {
             dto.setPrintSupportsEnabled(sourceSession.getSupportsEnabled());
         }
 
-        AddressDto billing = new AddressDto();
-        billing.setFirstName(order.getBillingFirstName());
-        billing.setLastName(order.getBillingLastName());
-        billing.setCompanyName(order.getBillingCompanyName());
-        billing.setContactPerson(order.getBillingContactPerson());
-        billing.setAddressLine1(order.getBillingAddressLine1());
-        billing.setAddressLine2(order.getBillingAddressLine2());
-        billing.setZip(order.getBillingZip());
-        billing.setCity(order.getBillingCity());
-        billing.setCountryCode(order.getBillingCountryCode());
+        AddressDto billing = toBillingAddressDto(order);
         dto.setBillingAddress(billing);
 
-        if (!Boolean.TRUE.equals(order.getShippingSameAsBilling())) {
-            AddressDto shipping = new AddressDto();
-            shipping.setFirstName(order.getShippingFirstName());
-            shipping.setLastName(order.getShippingLastName());
-            shipping.setCompanyName(order.getShippingCompanyName());
-            shipping.setContactPerson(order.getShippingContactPerson());
-            shipping.setAddressLine1(order.getShippingAddressLine1());
-            shipping.setAddressLine2(order.getShippingAddressLine2());
-            shipping.setZip(order.getShippingZip());
-            shipping.setCity(order.getShippingCity());
-            shipping.setCountryCode(order.getShippingCountryCode());
-            dto.setShippingAddress(shipping);
-        }
+        dto.setShippingAddress(toShippingAddressDto(order, billing));
 
         List<OrderItemDto> itemDtos = items.stream().map(item -> {
             OrderItemDto itemDto = new OrderItemDto();
@@ -312,6 +291,46 @@ public class AdminOrderControllerService {
         dto.setItems(itemDtos);
 
         return dto;
+    }
+
+    private AddressDto toBillingAddressDto(Order order) {
+        AddressDto billing = new AddressDto();
+        billing.setFirstName(order.getBillingFirstName());
+        billing.setLastName(order.getBillingLastName());
+        billing.setCompanyName(order.getBillingCompanyName());
+        billing.setContactPerson(order.getBillingContactPerson());
+        billing.setAddressLine1(order.getBillingAddressLine1());
+        billing.setAddressLine2(order.getBillingAddressLine2());
+        billing.setZip(order.getBillingZip());
+        billing.setCity(order.getBillingCity());
+        billing.setCountryCode(order.getBillingCountryCode());
+        return billing;
+    }
+
+    private AddressDto toShippingAddressDto(Order order, AddressDto billingFallback) {
+        boolean useBillingFallback = Boolean.TRUE.equals(order.getShippingSameAsBilling())
+                && isBlank(order.getShippingAddressLine1())
+                && isBlank(order.getShippingZip())
+                && isBlank(order.getShippingCity());
+        if (useBillingFallback) {
+            return billingFallback;
+        }
+
+        AddressDto shipping = new AddressDto();
+        shipping.setFirstName(order.getShippingFirstName());
+        shipping.setLastName(order.getShippingLastName());
+        shipping.setCompanyName(order.getShippingCompanyName());
+        shipping.setContactPerson(order.getShippingContactPerson());
+        shipping.setAddressLine1(order.getShippingAddressLine1());
+        shipping.setAddressLine2(order.getShippingAddressLine2());
+        shipping.setZip(order.getShippingZip());
+        shipping.setCity(order.getShippingCity());
+        shipping.setCountryCode(order.getShippingCountryCode());
+        return shipping;
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 
     private String getDisplayOrderNumber(Order order) {

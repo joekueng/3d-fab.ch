@@ -199,12 +199,12 @@ class AdminMediaControllerServiceTest {
         assertEquals(900, dto.getHeightPx());
         assertEquals(file.getSize(), dto.getFileSizeBytes());
         assertEquals(64, dto.getSha256Hex().length());
-        assertEquals(10, dto.getVariants().size());
+        assertEquals(13, dto.getVariants().size());
 
         long publicVariants = dto.getVariants().stream()
                 .filter(variant -> !"ORIGINAL".equals(variant.getFormat()))
                 .count();
-        assertEquals(9, publicVariants);
+        assertEquals(12, publicVariants);
         assertTrue(dto.getVariants().stream()
                 .filter(variant -> "WEBP".equals(variant.getFormat()) && "hero".equals(variant.getVariantName()))
                 .allMatch(variant -> variant.getPublicUrl().startsWith("https://cdn.example/media/")));
@@ -295,9 +295,10 @@ class AdminMediaControllerServiceTest {
         AdminMediaAssetDto dto = service.uploadAsset(file, " Landing hero ", " Main headline ", null);
 
         assertEquals("READY", dto.getStatus());
-        assertEquals(7, dto.getVariants().size());
+        assertEquals(10, dto.getVariants().size());
         assertTrue(dto.getVariants().stream().noneMatch(variant -> "AVIF".equals(variant.getFormat())));
         assertEquals(3, dto.getVariants().stream().filter(variant -> "JPEG".equals(variant.getFormat())).count());
+        assertEquals(3, dto.getVariants().stream().filter(variant -> "PNG".equals(variant.getFormat())).count());
         assertEquals(3, dto.getVariants().stream().filter(variant -> "WEBP".equals(variant.getFormat())).count());
     }
 

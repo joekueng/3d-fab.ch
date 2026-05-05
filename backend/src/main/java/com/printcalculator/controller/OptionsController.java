@@ -113,7 +113,7 @@ public class OptionsController {
 
                     return new OptionsResponse.MaterialOption(
                             type.getMaterialCode(),
-                            type.getMaterialCode() + (Boolean.TRUE.equals(type.getIsFlexible()) ? " (Flexible)" : " (Standard)"),
+                            buildMaterialLabel(type),
                             variants
                     );
                 })
@@ -355,6 +355,19 @@ public class OptionsController {
                 .multiply(variant.getSpoolNetKg())
                 .multiply(BigDecimal.valueOf(1000))
                 .doubleValue();
+    }
+
+    private String buildMaterialLabel(FilamentMaterialType type) {
+        String materialCode = safeMaterialCode(type);
+        String technicalLabel = type != null && type.getTechnicalTypeLabel() != null
+                ? type.getTechnicalTypeLabel().trim()
+                : "";
+        String fallbackLabel = Boolean.TRUE.equals(type != null ? type.getIsFlexible() : null)
+                ? "Flexible"
+                : "Standard";
+        String suffix = !technicalLabel.isBlank() ? technicalLabel : fallbackLabel;
+
+        return materialCode + " (" + suffix + ")";
     }
 
     private String safeMaterialCode(FilamentMaterialType type) {

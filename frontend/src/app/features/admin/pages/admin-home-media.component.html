@@ -1,22 +1,17 @@
 <section class="section-card ui-stack ui-stack--roomy">
   <header class="section-header">
     <div class="header-copy">
-      <p class="eyebrow ui-eyebrow ui-eyebrow--compact">Back-office media</p>
-      <h2>Media</h2>
-      <p class="header-description">
-        Gestisci i media della home, delle guide qualita della pagina materiali
-        e della sezione Chi siamo da un unico punto.
-      </p>
+      <h1>Media</h1>
     </div>
     <div class="header-side ui-stack ui-stack--dense">
       <div class="header-stats ui-inline-actions">
         <article class="stat-chip ui-stat-chip">
           <strong>{{ configuredSectionCount }}</strong>
-          <span>sezioni configurate</span>
+          <span>sezioni</span>
         </article>
         <article class="stat-chip ui-stat-chip">
           <strong>{{ activeImageCount }}</strong>
-          <span>media attivi</span>
+          <span>attivi</span>
         </article>
       </div>
       <app-button type="button" (click)="loadMedia()" [disabled]="loading">
@@ -33,12 +28,7 @@
   </p>
 
   <div class="media-layout" *ngIf="!loading; else loadingTpl">
-    <app-feature-panel
-      class="collection-sidebar"
-      eyebrow="Contesti"
-      title="Seleziona area"
-      description="Scegli il gruppo di media da gestire nel back-office."
-    >
+    <app-feature-panel class="collection-sidebar" title="Seleziona area">
       <div class="collection-list ui-admin-nav">
         <button
           *ngFor="let collection of collections; trackBy: trackCollection"
@@ -62,9 +52,7 @@
     <div class="collection-content ui-stack ui-stack--roomy">
       <section class="collection-summary ui-subpanel ui-subpanel--warm">
         <div class="collection-summary__copy ui-stack ui-stack--dense">
-          <p class="ui-eyebrow ui-eyebrow--compact">Area attiva</p>
           <h3>{{ selectedCollection.title }}</h3>
-          <p>{{ selectedCollection.description }}</p>
         </div>
 
         <div class="collection-summary__stats ui-inline-actions">
@@ -111,7 +99,6 @@
                       {{ section.items.length === 1 ? "attivo" : "attivi" }}
                     </span>
                   </div>
-                  <p class="section-description">{{ section.description }}</p>
                 </div>
                 <div class="media-panel-meta ui-row ui-row--wrap ui-row--end">
                   <span class="usage-pill ui-pill ui-pill--neutral"
@@ -133,6 +120,21 @@
                           : "Carica media"
                       }}
                     </h5>
+                    <div class="ui-row ui-row--wrap">
+                      <app-button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        (click)="translateForSection(section.id)"
+                        [disabled]="!canTranslateSection(section.id)"
+                      >
+                        {{
+                          getFormState(section.id).translating
+                            ? "Traduco..."
+                            : "Traduci"
+                        }}
+                      </app-button>
+                    </div>
                   </div>
 
                   <div class="form-grid ui-form-grid ui-form-grid--two">
@@ -168,50 +170,26 @@
                       <img [src]="previewUrl" alt="" />
                     </div>
 
-                    <div
-                      class="language-toolbar form-field--wide ui-language-toolbar"
-                    >
-                      <div class="language-copy ui-language-toolbar__copy">
-                        <span>Testi localizzati</span>
-                        <p>IT / EN / DE / FR obbligatorie</p>
-                      </div>
-                      <div class="language-toggle ui-language-toolbar__toggle">
-                        <button
-                          *ngFor="let language of mediaLanguages"
-                          type="button"
-                          class="ui-language-toolbar__button image-language-button"
-                          [class.active]="
-                            getFormState(section.id).activeLanguage === language
-                          "
-                          [class.complete]="
-                            isLanguageComplete(section.id, language)
-                          "
-                          [class.incomplete]="
-                            isLanguageIncomplete(section.id, language)
-                          "
-                          [class.empty]="
-                            !isLanguageStarted(section.id, language)
-                          "
-                          (click)="setActiveLanguage(section.id, language)"
-                        >
-                          <span class="image-language-button__label">
-                            {{ mediaLanguageLabels[language] }}
-                          </span>
-                          <span
-                            class="image-language-button__state"
-                            *ngIf="isLanguageComplete(section.id, language)"
-                          >
-                            OK
-                          </span>
-                          <span
-                            class="image-language-button__state"
-                            *ngIf="isLanguageIncomplete(section.id, language)"
-                          >
-                            ...
-                          </span>
-                        </button>
-                      </div>
-                    </div>
+                    <app-admin-language-toolbar
+                      class="form-field--wide"
+                      title="Testi localizzati"
+                      description="IT / EN / DE / FR obbligatorie"
+                      [languages]="mediaLanguages"
+                      [labels]="mediaLanguageLabels"
+                      [activeLanguage]="getFormState(section.id).activeLanguage"
+                      [states]="languageStatuses(section.id)"
+                      (activeLanguageChange)="
+                        setActiveLanguage(section.id, $event)
+                      "
+                    />
+
+                    <app-checkbox
+                      class="form-field--wide"
+                      label="Sovrascrivi traduzioni esistenti"
+                      [(ngModel)]="
+                        getFormState(section.id).overwriteExistingTranslations
+                      "
+                    />
 
                     <app-input
                       label="Titolo ({{

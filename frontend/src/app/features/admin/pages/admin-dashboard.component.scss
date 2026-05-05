@@ -114,6 +114,75 @@ tbody tr.no-results:hover {
   gap: var(--space-2);
 }
 
+.order-info-section {
+  display: grid;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.order-info-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.order-info-section__header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.customer-info-grid {
+  margin: 0;
+}
+
+.address-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.address-meta-list {
+  margin: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.address-meta-list div {
+  display: grid;
+  gap: 2px;
+}
+
+.address-meta-list dt {
+  margin: 0;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.address-meta-list dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.same-address-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.18rem 0.55rem;
+  background: color-mix(in srgb, var(--color-brand) 22%, white);
+  color: var(--color-neutral-900);
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.missing-address {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
 .actions-block {
   display: flex;
   flex-wrap: wrap;
@@ -352,6 +421,10 @@ h4 {
 
   .status-editor {
     width: 100%;
+  }
+
+  .address-grid {
+    grid-template-columns: 1fr;
   }
 
   .status-editor select {

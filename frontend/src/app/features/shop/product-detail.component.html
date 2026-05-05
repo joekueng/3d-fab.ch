@@ -30,7 +30,12 @@
 
           <div class="detail-grid">
             <section class="visual-column">
-              <div class="hero-media">
+              <div
+                class="hero-media"
+                [appSwipeCarousel]="galleryImages().length > 1"
+                (swipeCarouselPrevious)="showPreviousImage()"
+                (swipeCarouselNext)="showNextImage()"
+              >
                 @if (galleryImages().length > 1) {
                   <button
                     type="button"
@@ -67,6 +72,7 @@
                 <div class="thumb-strip">
                   @for (image of galleryImages(); track image.mediaAssetId) {
                     <button
+                      #thumbButton
                       type="button"
                       class="thumb"
                       [class.active]="
@@ -374,7 +380,7 @@
               <div class="description-block">
                 <h2>{{ "SHOP.DESCRIPTION_TITLE" | translate }}</h2>
                 <div
-                  class="description-block__content"
+                  class="description-block__content ui-rich-text-content"
                   [innerHTML]="descriptionRichHtml(p.description)"
                 ></div>
               </div>

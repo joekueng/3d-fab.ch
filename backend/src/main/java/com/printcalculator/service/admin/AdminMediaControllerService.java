@@ -69,6 +69,7 @@ public class AdminMediaControllerService {
 
     private static final String FORMAT_ORIGINAL = "ORIGINAL";
     private static final String FORMAT_JPEG = "JPEG";
+    private static final String FORMAT_PNG = "PNG";
     private static final String FORMAT_WEBP = "WEBP";
     private static final String FORMAT_AVIF = "AVIF";
 
@@ -82,11 +83,13 @@ public class AdminMediaControllerService {
     private static final List<String> SUPPORTED_MEDIA_LANGUAGES = List.of("it", "en", "de", "fr");
     private static final Map<String, String> GENERATED_FORMAT_MIME_TYPES = Map.of(
             FORMAT_JPEG, "image/jpeg",
+            FORMAT_PNG, "image/png",
             FORMAT_WEBP, "image/webp",
             FORMAT_AVIF, "image/avif"
     );
     private static final Map<String, String> GENERATED_FORMAT_EXTENSIONS = Map.of(
             FORMAT_JPEG, "jpg",
+            FORMAT_PNG, "png",
             FORMAT_WEBP, "webp",
             FORMAT_AVIF, "avif"
     );
@@ -355,7 +358,7 @@ public class AdminMediaControllerService {
                     preset.maxDimension()
             );
 
-            for (String format : List.of(FORMAT_JPEG, FORMAT_WEBP, FORMAT_AVIF)) {
+            for (String format : formatsForAsset(asset)) {
                 if (!mediaFfmpegService.canEncode(format)) {
                     skippedFormats.add(format);
                     continue;
@@ -371,10 +374,11 @@ public class AdminMediaControllerService {
                             format
                     );
                 } catch (IOException e) {
-                    if (FORMAT_AVIF.equals(format)) {
+                    if (isOptionalGeneratedFormat(format)) {
                         skippedFormats.add(format);
                         logger.warn(
-                                "Skipping AVIF variant generation for asset {} preset '{}' because FFmpeg AVIF generation failed: {}",
+                                "Skipping {} variant generation for asset {} preset '{}' because FFmpeg generation failed: {}",
+                                format,
                                 asset.getId(),
                                 preset.name(),
                                 e.getMessage()
@@ -422,6 +426,21 @@ public class AdminMediaControllerService {
         return pendingVariants.stream()
                 .map(PendingGeneratedVariant::variant)
                 .toList();
+    }
+
+    private List<String> formatsForAsset(MediaAsset asset) {
+        List<String> formats = new ArrayList<>(List.of(FORMAT_JPEG));
+        String mimeType = asset.getMimeType() != null ? asset.getMimeType().trim().toLowerCase(Locale.ROOT) : "";
+        if ("image/png".equals(mimeType) || "image/webp".equals(mimeType)) {
+            formats.add(FORMAT_PNG);
+        }
+        formats.add(FORMAT_WEBP);
+        formats.add(FORMAT_AVIF);
+        return formats;
+    }
+
+    private boolean isOptionalGeneratedFormat(String format) {
+        return FORMAT_PNG.equals(format) || FORMAT_AVIF.equals(format);
     }
 
     private void storeGeneratedVariant(String visibility, PendingGeneratedVariant pendingVariant) throws IOException {
@@ -597,8 +616,9 @@ public class AdminMediaControllerService {
         return switch (format) {
             case FORMAT_ORIGINAL -> 0;
             case FORMAT_JPEG -> 10;
-            case FORMAT_WEBP -> 20;
-            case FORMAT_AVIF -> 30;
+            case FORMAT_PNG -> 20;
+            case FORMAT_WEBP -> 30;
+            case FORMAT_AVIF -> 40;
             default -> 100;
         };
     }

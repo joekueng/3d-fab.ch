@@ -7,8 +7,8 @@ import {
   PublicMediaVariantDto,
 } from '../../../core/services/public-media.service';
 import { LanguageService } from '../../../core/services/language.service';
+import { SupportedLang } from '../../../core/i18n/language-resolution';
 
-type SupportedLang = 'it' | 'en' | 'de' | 'fr';
 type LocalizedPathMap = Partial<Record<SupportedLang, string>>;
 
 export interface ShopCategoryRef {
@@ -442,7 +442,13 @@ export class ShopService {
     if (!variant) {
       return null;
     }
-    return variant.jpegUrl ?? variant.webpUrl ?? variant.avifUrl ?? null;
+    return (
+      variant.jpegUrl ??
+      variant.webpUrl ??
+      variant.avifUrl ??
+      variant.pngUrl ??
+      null
+    );
   }
 
   resolveApiUrl(urlOrPath: string | null | undefined): string {
