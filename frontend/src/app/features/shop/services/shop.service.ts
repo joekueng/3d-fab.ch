@@ -442,7 +442,13 @@ export class ShopService {
     if (!variant) {
       return null;
     }
-    return variant.jpegUrl ?? variant.webpUrl ?? variant.avifUrl ?? null;
+    return (
+      variant.jpegUrl ??
+      variant.webpUrl ??
+      variant.avifUrl ??
+      variant.pngUrl ??
+      null
+    );
   }
 
   resolveApiUrl(urlOrPath: string | null | undefined): string {

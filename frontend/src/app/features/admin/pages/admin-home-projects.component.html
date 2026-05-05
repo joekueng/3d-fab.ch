@@ -121,14 +121,14 @@
             [compact]="true"
           />
           <div class="form-field--wide">
-            <app-textarea
-              label="Descrizione ({{
-                mediaLanguageLabels[form.activeLanguage]
-              }})"
-              [(ngModel)]="form.descriptions[form.activeLanguage]"
+            <span class="ui-form-caption">
+              Descrizione {{ mediaLanguageLabels[form.activeLanguage] }}
+            </span>
+            <app-admin-shop-rich-text-editor
+              [html]="form.descriptions[form.activeLanguage]"
+              [languageLabel]="mediaLanguageLabels[form.activeLanguage]"
               placeholder="Racconta cosa è stato realizzato e per quale uso."
-              [rows]="4"
-              [compact]="true"
+              (htmlChange)="form.descriptions[form.activeLanguage] = $event"
             />
           </div>
           <app-checkbox

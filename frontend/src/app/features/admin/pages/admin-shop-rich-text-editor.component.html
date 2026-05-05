@@ -68,6 +68,7 @@
     role="textbox"
     aria-multiline="true"
     [attr.aria-label]="'Descrizione ' + languageLabel"
+    [attr.data-placeholder]="placeholder"
     (input)="onEditorInput($event)"
     (blur)="onEditorBlur($event)"
   ></div>

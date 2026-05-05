@@ -28,7 +28,6 @@ import {
 import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
 import { AppCheckboxComponent } from '../../../shared/components/app-checkbox/app-checkbox.component';
 import { AppInputComponent } from '../../../shared/components/app-input/app-input.component';
-import { AppTextareaComponent } from '../../../shared/components/app-textarea/app-textarea.component';
 import { AdminLanguageToolbarComponent } from '../../../shared/components/admin-language-toolbar/admin-language-toolbar.component';
 import {
   ADMIN_LANGUAGE_LABELS,
@@ -38,6 +37,11 @@ import {
   createEmptyLocalizedTextMap,
   mergeLocalizedTextMap,
 } from '../../../shared/utils/admin-localization.util';
+import { AdminShopRichTextEditorComponent } from './admin-shop-rich-text-editor.component';
+import {
+  hasMeaningfulRichText,
+  normalizeDescriptionForEditor,
+} from './admin-shop-rich-text.util';
 
 type LocalizedTextMap = Record<AdminMediaLanguage, string>;
 
@@ -94,8 +98,8 @@ const MEDIA_LANGUAGE_LABELS = ADMIN_LANGUAGE_LABELS satisfies Readonly<
     AppButtonComponent,
     AppCheckboxComponent,
     AppInputComponent,
-    AppTextareaComponent,
     AdminLanguageToolbarComponent,
+    AdminShopRichTextEditorComponent,
   ],
   templateUrl: './admin-home-projects.component.html',
   styleUrl: './admin-home-projects.component.scss',
@@ -214,10 +218,10 @@ export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
         fr: project.titleFr ?? '',
       },
       descriptions: {
-        it: project.descriptionIt ?? '',
-        en: project.descriptionEn ?? '',
-        de: project.descriptionDe ?? '',
-        fr: project.descriptionFr ?? '',
+        it: normalizeDescriptionForEditor(project.descriptionIt, this.isBrowser),
+        en: normalizeDescriptionForEditor(project.descriptionEn, this.isBrowser),
+        de: normalizeDescriptionForEditor(project.descriptionDe, this.isBrowser),
+        fr: normalizeDescriptionForEditor(project.descriptionFr, this.isBrowser),
       },
       isActive: project.isActive,
       sortOrder: project.sortOrder ?? 0,
@@ -263,7 +267,10 @@ export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
     const sourceLanguage = this.form.activeLanguage;
     if (
       !this.form.titles[sourceLanguage].trim() ||
-      !this.form.descriptions[sourceLanguage].trim()
+      !hasMeaningfulRichText(
+        this.form.descriptions[sourceLanguage],
+        this.isBrowser,
+      )
     ) {
       this.errorMessage = `Titolo e descrizione ${this.mediaLanguageLabels[sourceLanguage]} sono obbligatori per tradurre.`;
       this.successMessage = '';
@@ -296,7 +303,7 @@ export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
     return (
       !this.form.translating &&
       !!this.form.titles[language].trim() &&
-      !!this.form.descriptions[language].trim()
+      hasMeaningfulRichText(this.form.descriptions[language], this.isBrowser)
     );
   }
 
@@ -555,7 +562,7 @@ export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
   private isProjectLanguageComplete(language: AdminMediaLanguage): boolean {
     return (
       !!this.form.titles[language].trim() &&
-      !!this.form.descriptions[language].trim()
+      hasMeaningfulRichText(this.form.descriptions[language], this.isBrowser)
     );
   }
 
@@ -563,7 +570,7 @@ export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
     return (
       !!this.form.eyebrows[language].trim() ||
       !!this.form.titles[language].trim() ||
-      !!this.form.descriptions[language].trim()
+      hasMeaningfulRichText(this.form.descriptions[language], this.isBrowser)
     );
   }
 
@@ -647,13 +654,11 @@ export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
       overwriteExisting,
       targetLanguages: response.targetLanguages,
     });
-    mergeLocalizedTextMap(
+    this.mergeRichTextTranslations(
       this.form.descriptions,
       response.fields['description'],
-      {
-        overwriteExisting,
-        targetLanguages: response.targetLanguages,
-      },
+      overwriteExisting,
+      response.targetLanguages,
     );
   }
 
@@ -702,6 +707,13 @@ export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
       this.errorMessage = 'Inserisci almeno un titolo progetto.';
       return null;
     }
+    const descriptions = this.normalizeProjectDescriptions();
+    const fallbackDescription = this.firstNonBlank(
+      descriptions.it,
+      descriptions.en,
+      descriptions.de,
+      descriptions.fr,
+    );
 
     return {
       slug: this.optionalValue(this.form.slug),
@@ -713,17 +725,59 @@ export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
       titleEn: this.firstNonBlank(this.form.titles.en, fallbackTitle),
       titleDe: this.firstNonBlank(this.form.titles.de, fallbackTitle),
       titleFr: this.firstNonBlank(this.form.titles.fr, fallbackTitle),
-      descriptionIt: this.firstNonBlank(
-        this.form.descriptions.it,
-        this.form.descriptions.en,
-        this.form.descriptions.de,
-        this.form.descriptions.fr,
-      ),
-      descriptionEn: this.optionalValue(this.form.descriptions.en),
-      descriptionDe: this.optionalValue(this.form.descriptions.de),
-      descriptionFr: this.optionalValue(this.form.descriptions.fr),
+      descriptionIt: this.firstNonBlank(descriptions.it, fallbackDescription),
+      descriptionEn: this.optionalValue(descriptions.en),
+      descriptionDe: this.optionalValue(descriptions.de),
+      descriptionFr: this.optionalValue(descriptions.fr),
       isActive: this.form.isActive,
       sortOrder: Number(this.form.sortOrder) || 0,
+    };
+  }
+
+  private mergeRichTextTranslations(
+    target: LocalizedTextMap,
+    translated: Partial<Record<AdminMediaLanguage, string>> | undefined,
+    overwriteExisting: boolean,
+    targetLanguages?: readonly AdminMediaLanguage[],
+  ): void {
+    const languages =
+      targetLanguages ?? (Object.keys(translated ?? {}) as AdminMediaLanguage[]);
+    for (const language of languages) {
+      const incoming = translated?.[language];
+      if (incoming === undefined) {
+        continue;
+      }
+      if (
+        hasMeaningfulRichText(target[language], this.isBrowser) &&
+        !overwriteExisting
+      ) {
+        continue;
+      }
+      target[language] = normalizeDescriptionForEditor(
+        incoming,
+        this.isBrowser,
+      );
+    }
+  }
+
+  private normalizeProjectDescriptions(): LocalizedTextMap {
+    return {
+      it: normalizeDescriptionForEditor(
+        this.form.descriptions.it,
+        this.isBrowser,
+      ),
+      en: normalizeDescriptionForEditor(
+        this.form.descriptions.en,
+        this.isBrowser,
+      ),
+      de: normalizeDescriptionForEditor(
+        this.form.descriptions.de,
+        this.isBrowser,
+      ),
+      fr: normalizeDescriptionForEditor(
+        this.form.descriptions.fr,
+        this.isBrowser,
+      ),
     };
   }
 
@@ -735,10 +789,13 @@ export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
       (candidate) => candidate.mediaAssetId === usage.mediaAssetId,
     );
     return (
+      image?.thumb?.pngUrl ??
       image?.thumb?.jpegUrl ??
       image?.thumb?.webpUrl ??
+      image?.card?.pngUrl ??
       image?.card?.jpegUrl ??
       image?.card?.webpUrl ??
+      image?.hero?.pngUrl ??
       image?.hero?.jpegUrl ??
       image?.hero?.webpUrl ??
       null

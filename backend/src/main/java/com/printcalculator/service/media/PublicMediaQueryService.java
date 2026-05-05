@@ -30,6 +30,7 @@ public class PublicMediaQueryService {
     private static final String STATUS_READY = "READY";
     private static final String VISIBILITY_PUBLIC = "PUBLIC";
     private static final String FORMAT_JPEG = "JPEG";
+    private static final String FORMAT_PNG = "PNG";
     private static final String FORMAT_WEBP = "WEBP";
     private static final String FORMAT_AVIF = "AVIF";
     private static final List<String> SUPPORTED_MEDIA_LANGUAGES = List.of("it", "en", "de", "fr");
@@ -147,6 +148,7 @@ public class PublicMediaQueryService {
         dto.setAvifUrl(buildVariantUrl(variantsByFormat.get(FORMAT_AVIF)));
         dto.setWebpUrl(buildVariantUrl(variantsByFormat.get(FORMAT_WEBP)));
         dto.setJpegUrl(buildVariantUrl(variantsByFormat.get(FORMAT_JPEG)));
+        dto.setPngUrl(buildVariantUrl(variantsByFormat.get(FORMAT_PNG)));
         return dto;
     }
 

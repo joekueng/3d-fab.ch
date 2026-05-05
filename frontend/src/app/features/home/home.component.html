@@ -109,35 +109,28 @@
                 aria-hidden="true"
                 [style.background-image]="homeProjectAmbilightImage(project)"
               ></div>
-              <div class="home-project-copy">
-                @if (project.eyebrow) {
-                  <p class="home-project-eyebrow ui-eyebrow">
-                    {{ project.eyebrow }}
-                  </p>
-                }
-                @if (project.title) {
-                  <h2
-                    class="home-project-title section-title ui-section-display-title"
-                  >
-                    {{ project.title }}
-                  </h2>
-                }
-                @if (project.description) {
-                  <p
-                    class="home-project-description ui-section-display-subtitle"
-                  >
-                    {{ project.description }}
-                  </p>
-                }
-                @if (homeProjectDetailImageFallbackUrl(project); as detailUrl) {
-                  <div class="home-project-detail-media">
-                    <picture>
-                      @if (homeProjectDetailImageAvifUrl(project); as avifUrl) {
-                        <source [srcset]="avifUrl" type="image/avif" />
-                      }
-                      @if (homeProjectDetailImageWebpUrl(project); as webpUrl) {
-                        <source [srcset]="webpUrl" type="image/webp" />
-                      }
+              <div class="home-project-content">
+                <div class="home-project-copy">
+                  @if (project.eyebrow) {
+                    <p class="home-project-eyebrow ui-eyebrow">
+                      {{ project.eyebrow }}
+                    </p>
+                  }
+                  @if (project.title) {
+                    <h2
+                      class="home-project-title section-title ui-section-display-title"
+                    >
+                      {{ project.title }}
+                    </h2>
+                  }
+                  @if (project.description) {
+                    <div
+                      class="home-project-description ui-section-display-subtitle ui-rich-text-content"
+                      [innerHTML]="homeProjectDescriptionHtml(project)"
+                    ></div>
+                  }
+                  @if (homeProjectDetailImageFallbackUrl(project); as detailUrl) {
+                    <div class="home-project-detail-media">
                       <img
                         [src]="detailUrl"
                         [attr.alt]="
@@ -148,49 +141,42 @@
                         width="560"
                         height="220"
                       />
-                    </picture>
+                    </div>
+                  }
+                  <div class="home-project-actions ui-inline-actions">
+                    <app-button
+                      variant="primary"
+                      [routerLink]="languageService.localizedPath('/contact')"
+                      >{{ "HOME.PROJECTS_CTA_CONTACT" | translate }}</app-button
+                    >
                   </div>
-                }
-                <div class="home-project-actions ui-inline-actions">
-                  <app-button
-                    variant="primary"
-                    [routerLink]="languageService.localizedPath('/contact')"
-                    >{{ "HOME.PROJECTS_CTA_CONTACT" | translate }}</app-button
-                  >
-                  <app-button
-                    variant="outline"
-                    [routerLink]="
-                      languageService.localizedPath('/calculator/basic')
-                    "
-                    >{{
-                      "HOME.PROJECTS_CTA_CALCULATOR" | translate
-                    }}</app-button
-                  >
                 </div>
-              </div>
 
-              <div class="home-project-media">
-                @if (homeProjectImageFallbackUrl(project); as imageUrl) {
-                  <picture>
-                    @if (homeProjectImageAvifUrl(project); as avifUrl) {
-                      <source [srcset]="avifUrl" type="image/avif" />
-                    }
-                    @if (homeProjectImageWebpUrl(project); as webpUrl) {
-                      <source [srcset]="webpUrl" type="image/webp" />
-                    }
-                    <img
-                      [src]="imageUrl"
-                      [attr.alt]="project.image?.altText || project.title || ''"
-                      width="1200"
-                      height="800"
-                      (load)="updateHomeProjectGlow(project, $event)"
-                    />
-                  </picture>
-                } @else {
-                  <div class="home-project-media-fallback">
-                    <span>{{ project.title }}</span>
-                  </div>
-                }
+                <div class="home-project-media">
+                  @if (homeProjectImageFallbackUrl(project); as imageUrl) {
+                    <picture>
+                      @if (homeProjectImageAvifUrl(project); as avifUrl) {
+                        <source [srcset]="avifUrl" type="image/avif" />
+                      }
+                      @if (homeProjectImageWebpUrl(project); as webpUrl) {
+                        <source [srcset]="webpUrl" type="image/webp" />
+                      }
+                      <img
+                        [src]="imageUrl"
+                        [attr.alt]="
+                          project.image?.altText || project.title || ''
+                        "
+                        width="1200"
+                        height="800"
+                        (load)="updateHomeProjectGlow(project, $event)"
+                      />
+                    </picture>
+                  } @else {
+                    <div class="home-project-media-fallback">
+                      <span>{{ project.title }}</span>
+                    </div>
+                  }
+                </div>
               </div>
             </article>
           </div>

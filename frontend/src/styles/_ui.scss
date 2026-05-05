@@ -252,6 +252,33 @@
   color: var(--color-text-muted);
 }
 
+.ui-rich-text-content {
+  --ui-rich-text-block-gap: 0.7rem;
+  --ui-rich-text-list-indent: 1.3rem;
+  --ui-rich-text-item-gap: 0.22rem;
+  overflow-wrap: anywhere;
+}
+
+.ui-rich-text-content p,
+.ui-rich-text-content div {
+  margin: 0 0 var(--ui-rich-text-block-gap);
+}
+
+.ui-rich-text-content p:last-child,
+.ui-rich-text-content div:last-child {
+  margin-bottom: 0;
+}
+
+.ui-rich-text-content ul,
+.ui-rich-text-content ol {
+  margin: 0 0 var(--ui-rich-text-block-gap) var(--ui-rich-text-list-indent);
+  padding: 0;
+}
+
+.ui-rich-text-content li + li {
+  margin-top: var(--ui-rich-text-item-gap);
+}
+
 .ui-text-muted {
   color: var(--color-text-muted);
 }

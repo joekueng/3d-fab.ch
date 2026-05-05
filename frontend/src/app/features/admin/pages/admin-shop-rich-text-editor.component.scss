@@ -43,7 +43,7 @@
 }
 
 .rich-text-editor:empty::before {
-  content: "Scrivi la descrizione del prodotto...";
+  content: attr(data-placeholder);
   color: var(--color-text-muted);
 }
 

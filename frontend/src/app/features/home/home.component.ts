@@ -42,6 +42,7 @@ import {
   extractHomeProjectGlow,
   mediaAvifUrl,
   mediaFallbackUrl,
+  mediaTransparentFallbackUrl,
   mediaWebpUrl,
 } from './home-image.util';
 
@@ -269,8 +270,26 @@ export class HomeComponent {
     return imageUrl ? `url("${this.escapeCssUrl(imageUrl)}")` : null;
   }
 
+  homeProjectDescriptionHtml(project: HomeProject): string {
+    const description = String(project.description ?? '').trim();
+    if (!description) {
+      return '';
+    }
+    if (this.containsHtmlMarkup(description)) {
+      return description;
+    }
+    return description
+      .replace(/\r\n?/g, '\n')
+      .split(/\n{2,}/)
+      .map(
+        (paragraph) =>
+          `<p>${this.escapeHtml(paragraph).replace(/\n/g, '<br>')}</p>`,
+      )
+      .join('');
+  }
+
   homeProjectDetailImageFallbackUrl(project: HomeProject): string | null {
-    return mediaFallbackUrl(project.detailImage);
+    return mediaTransparentFallbackUrl(project.detailImage);
   }
 
   homeProjectDetailImageAvifUrl(project: HomeProject): string | null {
@@ -406,6 +425,19 @@ export class HomeComponent {
           return '';
       }
     });
+  }
+
+  private containsHtmlMarkup(value: string): boolean {
+    return /<\/?[a-z][\s\S]*>/i.test(value);
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   private buildCapabilityCard(

@@ -34,6 +34,7 @@ export class AdminShopRichTextEditorComponent
 
   @Input() html = '';
   @Input() languageLabel = '';
+  @Input() placeholder = 'Scrivi la descrizione del prodotto...';
   @Output() htmlChange = new EventEmitter<string>();
 
   @ViewChild('editorRef')

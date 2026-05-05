@@ -25,6 +25,26 @@ export function mediaFallbackUrl(image: HomeProjectImage): string | null {
   );
 }
 
+export function mediaTransparentFallbackUrl(
+  image: HomeProjectImage,
+): string | null {
+  return (
+    image?.hero?.pngUrl ??
+    image?.card?.pngUrl ??
+    image?.thumb?.pngUrl ??
+    image?.hero?.webpUrl ??
+    image?.card?.webpUrl ??
+    image?.thumb?.webpUrl ??
+    image?.hero?.avifUrl ??
+    image?.card?.avifUrl ??
+    image?.thumb?.avifUrl ??
+    image?.hero?.jpegUrl ??
+    image?.card?.jpegUrl ??
+    image?.thumb?.jpegUrl ??
+    null
+  );
+}
+
 export function mediaAvifUrl(image: HomeProjectImage): string | null {
   return image?.hero?.avifUrl ?? image?.card?.avifUrl ?? null;
 }

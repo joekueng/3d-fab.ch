@@ -9,6 +9,9 @@ import com.printcalculator.repository.HomeProjectRepository;
 import com.printcalculator.repository.MediaUsageRepository;
 import com.printcalculator.service.home.HomeProjectService;
 import com.printcalculator.service.media.PublicMediaQueryService;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.safety.Safelist;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +32,10 @@ public class AdminHomeProjectService {
     private static final Pattern DIACRITICS_PATTERN = Pattern.compile("\\p{M}+");
     private static final Pattern NON_ALPHANUMERIC_PATTERN = Pattern.compile("[^a-z0-9]+");
     private static final Pattern EDGE_DASH_PATTERN = Pattern.compile("(^-+|-+$)");
+    private static final Safelist HOME_PROJECT_DESCRIPTION_SAFELIST = Safelist.none()
+            .addTags("p", "div", "br", "strong", "b", "em", "i", "u", "ul", "ol", "li", "a")
+            .addAttributes("a", "href")
+            .addProtocols("a", "href", "http", "https", "mailto", "tel");
 
     private final HomeProjectRepository homeProjectRepository;
     private final MediaUsageRepository mediaUsageRepository;
@@ -187,16 +194,16 @@ public class AdminHomeProjectService {
         titles.put("fr", normalizeRequired(firstNonBlank(normalizeOptional(payload.getTitleFr()), fallbackTitle), "French project title is required"));
 
         String fallbackDescription = firstNonBlank(
-                normalizeOptional(payload.getDescriptionIt()),
-                normalizeOptional(payload.getDescriptionEn()),
-                normalizeOptional(payload.getDescriptionDe()),
-                normalizeOptional(payload.getDescriptionFr())
+                normalizeRichTextOptional(payload.getDescriptionIt()),
+                normalizeRichTextOptional(payload.getDescriptionEn()),
+                normalizeRichTextOptional(payload.getDescriptionDe()),
+                normalizeRichTextOptional(payload.getDescriptionFr())
         );
         Map<String, String> descriptions = new LinkedHashMap<>();
-        descriptions.put("it", firstNonBlank(normalizeOptional(payload.getDescriptionIt()), fallbackDescription));
-        descriptions.put("en", firstNonBlank(normalizeOptional(payload.getDescriptionEn()), fallbackDescription));
-        descriptions.put("de", firstNonBlank(normalizeOptional(payload.getDescriptionDe()), fallbackDescription));
-        descriptions.put("fr", firstNonBlank(normalizeOptional(payload.getDescriptionFr()), fallbackDescription));
+        descriptions.put("it", firstNonBlank(normalizeRichTextOptional(payload.getDescriptionIt()), fallbackDescription));
+        descriptions.put("en", firstNonBlank(normalizeRichTextOptional(payload.getDescriptionEn()), fallbackDescription));
+        descriptions.put("de", firstNonBlank(normalizeRichTextOptional(payload.getDescriptionDe()), fallbackDescription));
+        descriptions.put("fr", firstNonBlank(normalizeRichTextOptional(payload.getDescriptionFr()), fallbackDescription));
 
         return new LocalizedHomeProjectContent(fallbackTitle, eyebrows, titles, descriptions);
     }
@@ -241,6 +248,27 @@ public class AdminHomeProjectService {
         }
         String normalized = value.trim();
         return normalized.isBlank() ? null : normalized;
+    }
+
+    private String normalizeRichTextOptional(String value) {
+        String normalized = normalizeOptional(value);
+        if (normalized == null) {
+            return null;
+        }
+
+        String sanitized = Jsoup.clean(
+                normalized,
+                "",
+                HOME_PROJECT_DESCRIPTION_SAFELIST,
+                new Document.OutputSettings().prettyPrint(false)
+        ).trim();
+
+        if (sanitized.isBlank()) {
+            return null;
+        }
+
+        String plainText = Jsoup.parse(sanitized).text();
+        return plainText != null && !plainText.trim().isEmpty() ? sanitized : null;
     }
 
     private String firstNonBlank(String... values) {
