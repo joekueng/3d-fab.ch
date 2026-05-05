@@ -10,10 +10,7 @@ export type MaterialId =
   | 'pa12-cf'
   | 'pet-cf';
 
-export type MaterialSourceKindId =
-  | 'wikipedia'
-  | 'tech-sheet'
-  | 'product-sheet';
+export type MaterialSourceKindId = 'wikipedia' | 'tech-sheet' | 'product-sheet';
 
 export interface MaterialSourceConfig {
   id: string;

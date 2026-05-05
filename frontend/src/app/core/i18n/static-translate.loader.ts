@@ -8,10 +8,7 @@ import {
 } from '@angular/core';
 import { TranslateLoader, TranslationObject } from '@ngx-translate/core';
 import { from, Observable } from 'rxjs';
-import {
-  isSupportedLangValue,
-  SupportedLang,
-} from './language-resolution';
+import { isSupportedLangValue, SupportedLang } from './language-resolution';
 
 const FALLBACK_LANG: SupportedLang = 'it';
 const translationCache = new Map<SupportedLang, Promise<TranslationObject>>();

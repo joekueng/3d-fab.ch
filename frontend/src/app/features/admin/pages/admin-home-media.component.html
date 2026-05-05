@@ -28,10 +28,7 @@
   </p>
 
   <div class="media-layout" *ngIf="!loading; else loadingTpl">
-    <app-feature-panel
-      class="collection-sidebar"
-      title="Seleziona area"
-    >
+    <app-feature-panel class="collection-sidebar" title="Seleziona area">
       <div class="collection-list ui-admin-nav">
         <button
           *ngFor="let collection of collections; trackBy: trackCollection"

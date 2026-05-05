@@ -320,10 +320,7 @@ export class SeoService {
 
   private resolveLangFromPath(path: string): SupportedLang {
     const firstSegment = path.split('/').filter(Boolean)[0]?.toLowerCase();
-    if (
-      firstSegment &&
-      isSupportedLangValue(firstSegment)
-    ) {
+    if (firstSegment && isSupportedLangValue(firstSegment)) {
       return firstSegment;
     }
     return 'it';

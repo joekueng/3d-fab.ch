@@ -37,10 +37,7 @@
 
   <div *ngIf="!loading; else loadingTpl">
     <div class="qr-layout" *ngIf="viewMode === 'manage'">
-      <app-feature-panel
-        class="qr-sidebar"
-        title="QR disponibili"
-      >
+      <app-feature-panel class="qr-sidebar" title="QR disponibili">
         <div
           class="qr-list ui-admin-nav"
           *ngIf="qrLinks.length; else emptyListTpl"
@@ -251,10 +248,7 @@
               *ngIf="overviewDailyRows.length; else noDailyTpl"
             >
               <div class="daily-chart__bars">
-                <div
-                  class="daily-bar"
-                  *ngFor="let row of overviewDailyRows"
-                >
+                <div class="daily-bar" *ngFor="let row of overviewDailyRows">
                   <div
                     class="daily-bar__value"
                     [style.height]="dailyBarHeight(row.scans)"

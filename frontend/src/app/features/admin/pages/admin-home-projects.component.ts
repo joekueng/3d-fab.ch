@@ -781,19 +781,23 @@ export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
     return {
       it: {
         title: this.firstNonBlank(translations.it?.title, fallbackTitle) ?? '',
-        altText: this.firstNonBlank(translations.it?.altText, fallbackAlt) ?? '',
+        altText:
+          this.firstNonBlank(translations.it?.altText, fallbackAlt) ?? '',
       },
       en: {
         title: this.firstNonBlank(translations.en?.title, fallbackTitle) ?? '',
-        altText: this.firstNonBlank(translations.en?.altText, fallbackAlt) ?? '',
+        altText:
+          this.firstNonBlank(translations.en?.altText, fallbackAlt) ?? '',
       },
       de: {
         title: this.firstNonBlank(translations.de?.title, fallbackTitle) ?? '',
-        altText: this.firstNonBlank(translations.de?.altText, fallbackAlt) ?? '',
+        altText:
+          this.firstNonBlank(translations.de?.altText, fallbackAlt) ?? '',
       },
       fr: {
         title: this.firstNonBlank(translations.fr?.title, fallbackTitle) ?? '',
-        altText: this.firstNonBlank(translations.fr?.altText, fallbackAlt) ?? '',
+        altText:
+          this.firstNonBlank(translations.fr?.altText, fallbackAlt) ?? '',
       },
     };
   }

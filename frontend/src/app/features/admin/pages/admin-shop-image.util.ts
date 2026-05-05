@@ -118,7 +118,9 @@ export function areAllMediaTitlesBlank(
   translations: Record<AdminMediaLanguage, AdminMediaTranslation>,
   mediaLanguages: readonly AdminMediaLanguage[],
 ): boolean {
-  return mediaLanguages.every((language) => !translations[language].title.trim());
+  return mediaLanguages.every(
+    (language) => !translations[language].title.trim(),
+  );
 }
 
 export function deriveDefaultMediaTitle(filename: string): string {

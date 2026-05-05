@@ -41,8 +41,7 @@ export function sameItemSettings(a: FormItem, b: FormItem): boolean {
         normalizeNumber(b.nozzleDiameter, 0.4),
     ) < 0.0001 &&
     Math.abs(
-      normalizeNumber(a.layerHeight, 0.2) -
-        normalizeNumber(b.layerHeight, 0.2),
+      normalizeNumber(a.layerHeight, 0.2) - normalizeNumber(b.layerHeight, 0.2),
     ) < 0.0001 &&
     Math.abs(
       normalizeNumber(a.infillDensity, 20) -
