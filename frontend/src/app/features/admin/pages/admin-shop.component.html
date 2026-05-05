@@ -243,42 +243,15 @@
               </label>
             </div>
 
-            <div class="ui-language-toolbar">
-              <div class="ui-language-toolbar__copy">
-                <span>Lingua contenuti categoria</span>
-                <p>IT / EN / DE / FR</p>
-              </div>
-              <div class="ui-language-toolbar__toggle">
-                <button
-                  *ngFor="let language of shopLanguages"
-                  type="button"
-                  class="ui-language-toolbar__button image-language-button"
-                  [class.active]="activeContentLanguage === language"
-                  [class.complete]="isCategoryContentLanguageComplete(language)"
-                  [class.incomplete]="
-                    isCategoryContentLanguageIncomplete(language)
-                  "
-                  [class.empty]="!isCategoryContentLanguageStarted(language)"
-                  (click)="setActiveContentLanguage(language)"
-                >
-                  <span class="image-language-button__label">
-                    {{ languageLabels[language] }}
-                  </span>
-                  <span
-                    class="image-language-button__state"
-                    *ngIf="isCategoryContentLanguageComplete(language)"
-                  >
-                    OK
-                  </span>
-                  <span
-                    class="image-language-button__state"
-                    *ngIf="isCategoryContentLanguageIncomplete(language)"
-                  >
-                    ...
-                  </span>
-                </button>
-              </div>
-            </div>
+            <app-admin-language-toolbar
+              title="Lingua contenuti categoria"
+              description="IT / EN / DE / FR"
+              [languages]="shopLanguages"
+              [labels]="languageLabels"
+              [activeLanguage]="activeContentLanguage"
+              [states]="categoryContentLanguageStatuses()"
+              (activeLanguageChange)="setActiveContentLanguage($event)"
+            />
 
             <div class="ui-form-grid ui-form-grid--two">
               <label class="ui-form-field">
@@ -307,40 +280,15 @@
               </label>
             </div>
 
-            <div class="ui-language-toolbar">
-              <div class="ui-language-toolbar__copy">
-                <span>Lingua SEO categoria</span>
-                <p>Stessa lingua attiva dell'editor</p>
-              </div>
-              <div class="ui-language-toolbar__toggle">
-                <button
-                  *ngFor="let language of shopLanguages"
-                  type="button"
-                  class="ui-language-toolbar__button image-language-button"
-                  [class.active]="activeContentLanguage === language"
-                  [class.complete]="isCategorySeoLanguageComplete(language)"
-                  [class.incomplete]="isCategorySeoLanguageIncomplete(language)"
-                  [class.empty]="!isCategorySeoLanguageStarted(language)"
-                  (click)="setActiveContentLanguage(language)"
-                >
-                  <span class="image-language-button__label">
-                    {{ languageLabels[language] }}
-                  </span>
-                  <span
-                    class="image-language-button__state"
-                    *ngIf="isCategorySeoLanguageComplete(language)"
-                  >
-                    OK
-                  </span>
-                  <span
-                    class="image-language-button__state"
-                    *ngIf="isCategorySeoLanguageIncomplete(language)"
-                  >
-                    ...
-                  </span>
-                </button>
-              </div>
-            </div>
+            <app-admin-language-toolbar
+              title="Lingua SEO categoria"
+              description="Stessa lingua attiva dell'editor"
+              [languages]="shopLanguages"
+              [labels]="languageLabels"
+              [activeLanguage]="activeContentLanguage"
+              [states]="categorySeoLanguageStatuses()"
+              (activeLanguageChange)="setActiveContentLanguage($event)"
+            />
 
             <div class="ui-form-grid ui-form-grid--two">
               <label class="ui-form-field">
@@ -571,7 +519,6 @@
           <div class="panel-heading">
             <div>
               <h3>Dati base</h3>
-              <p>Slug, categoria, ordinamento e visibilità del prodotto.</p>
             </div>
           </div>
 
@@ -663,11 +610,7 @@
           <div class="panel-heading">
             <div>
               <h3>Contenuti localizzati</h3>
-              <p>
-                Nome obbligatorio in tutte le lingue. Descrizioni opzionali. La
-                traduzione usa la lingua editor come sorgente e compila il form
-                senza salvare.
-              </p>
+
             </div>
             <button
               type="button"
@@ -691,40 +634,15 @@
             </label>
           </div>
 
-          <div class="ui-language-toolbar">
-            <div class="ui-language-toolbar__copy">
-              <span>Lingua editor</span>
-              <p>IT / EN / DE / FR</p>
-            </div>
-            <div class="ui-language-toolbar__toggle">
-              <button
-                *ngFor="let language of shopLanguages"
-                type="button"
-                class="ui-language-toolbar__button image-language-button"
-                [class.active]="activeContentLanguage === language"
-                [class.complete]="isContentLanguageComplete(language)"
-                [class.incomplete]="isContentLanguageIncomplete(language)"
-                [class.empty]="!isContentLanguageStarted(language)"
-                (click)="setActiveContentLanguage(language)"
-              >
-                <span class="image-language-button__label">
-                  {{ languageLabels[language] }}
-                </span>
-                <span
-                  class="image-language-button__state"
-                  *ngIf="isContentLanguageComplete(language)"
-                >
-                  OK
-                </span>
-                <span
-                  class="image-language-button__state"
-                  *ngIf="isContentLanguageIncomplete(language)"
-                >
-                  ...
-                </span>
-              </button>
-            </div>
-          </div>
+          <app-admin-language-toolbar
+            title="Lingua editor"
+            description="IT / EN / DE / FR"
+            [languages]="shopLanguages"
+            [labels]="languageLabels"
+            [activeLanguage]="activeContentLanguage"
+            [states]="contentLanguageStatuses()"
+            (activeLanguageChange)="setActiveContentLanguage($event)"
+          />
 
           <div class="ui-form-grid ui-form-grid--two">
             <label class="ui-form-field">
@@ -770,47 +688,18 @@
           <div class="panel-heading">
             <div>
               <h3>SEO localizzata</h3>
-              <p>
-                I campi seguono la lingua attiva. Open Graph usa gli stessi
-                valori della SEO.
-              </p>
             </div>
           </div>
 
-          <div class="ui-language-toolbar">
-            <div class="ui-language-toolbar__copy">
-              <span>Lingua SEO</span>
-              <p>Stessa lingua attiva dell'editor contenuti</p>
-            </div>
-            <div class="ui-language-toolbar__toggle">
-              <button
-                *ngFor="let language of shopLanguages"
-                type="button"
-                class="ui-language-toolbar__button image-language-button"
-                [class.active]="activeContentLanguage === language"
-                [class.complete]="isSeoLanguageComplete(language)"
-                [class.incomplete]="isSeoLanguageIncomplete(language)"
-                [class.empty]="!isSeoLanguageStarted(language)"
-                (click)="setActiveContentLanguage(language)"
-              >
-                <span class="image-language-button__label">
-                  {{ languageLabels[language] }}
-                </span>
-                <span
-                  class="image-language-button__state"
-                  *ngIf="isSeoLanguageComplete(language)"
-                >
-                  OK
-                </span>
-                <span
-                  class="image-language-button__state"
-                  *ngIf="isSeoLanguageIncomplete(language)"
-                >
-                  ...
-                </span>
-              </button>
-            </div>
-          </div>
+          <app-admin-language-toolbar
+            title="Lingua SEO"
+            description="Stessa lingua attiva dell'editor contenuti"
+            [languages]="shopLanguages"
+            [labels]="languageLabels"
+            [activeLanguage]="activeContentLanguage"
+            [states]="seoLanguageStatuses()"
+            (activeLanguageChange)="setActiveContentLanguage($event)"
+          />
 
           <div class="ui-form-grid ui-form-grid--two">
             <label class="ui-form-field">
@@ -851,10 +740,6 @@
           <div class="panel-heading">
             <div>
               <h3>Materiali e prezzi</h3>
-              <p>
-                Scegli i materiali disponibili a stock. I colori vengono presi
-                automaticamente dai filamenti attivi a magazzino.
-              </p>
             </div>
             <button
               type="button"
@@ -1026,10 +911,6 @@
           <div class="panel-heading">
             <div>
               <h3>Immagini e modello 3D</h3>
-              <p>
-                Upload protetto con whitelist tipi file; il modello 3D è
-                disponibile solo dopo il primo salvataggio del prodotto.
-              </p>
             </div>
           </div>
 
@@ -1078,42 +959,16 @@
                   <img [src]="imageUploadState.previewUrl" alt="" />
                 </div>
 
-                <div class="ui-language-toolbar form-field--wide">
-                  <div class="ui-language-toolbar__copy">
-                    <span>Testi localizzati immagine</span>
-                    <p>Titolo e alt text obbligatori</p>
-                  </div>
-                  <div class="ui-language-toolbar__toggle">
-                    <button
-                      *ngFor="let language of mediaLanguages"
-                      type="button"
-                      class="ui-language-toolbar__button image-language-button"
-                      [class.active]="
-                        imageUploadState.activeLanguage === language
-                      "
-                      [class.complete]="isImageLanguageComplete(language)"
-                      [class.incomplete]="isImageLanguageIncomplete(language)"
-                      [class.empty]="!isImageLanguageStarted(language)"
-                      (click)="setActiveImageLanguage(language)"
-                    >
-                      <span class="image-language-button__label">
-                        {{ languageLabels[language] }}
-                      </span>
-                      <span
-                        class="image-language-button__state"
-                        *ngIf="isImageLanguageComplete(language)"
-                      >
-                        OK
-                      </span>
-                      <span
-                        class="image-language-button__state"
-                        *ngIf="isImageLanguageIncomplete(language)"
-                      >
-                        ...
-                      </span>
-                    </button>
-                  </div>
-                </div>
+                <app-admin-language-toolbar
+                  class="form-field--wide"
+                  title="Testi localizzati immagine"
+                  description="Titolo e alt text obbligatori"
+                  [languages]="mediaLanguages"
+                  [labels]="languageLabels"
+                  [activeLanguage]="imageUploadState.activeLanguage"
+                  [states]="imageLanguageStatuses()"
+                  (activeLanguageChange)="setActiveImageLanguage($event)"
+                />
 
                 <label class="ui-form-field">
                   <span class="ui-form-caption">

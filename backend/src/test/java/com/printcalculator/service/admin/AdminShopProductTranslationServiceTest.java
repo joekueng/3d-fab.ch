@@ -71,14 +71,18 @@ class AdminShopProductTranslationServiceTest {
         when(shopCategoryRepository.findById(UUID.fromString("00000000-0000-0000-0000-000000000001")))
                 .thenReturn(Optional.empty());
 
-        AdminShopProductTranslationService service = new AdminShopProductTranslationService(
-                shopCategoryRepository,
+        AdminOpenAiTranslationClient translationClient = new AdminOpenAiTranslationClient(
                 objectMapper,
                 "test-key",
                 "http://127.0.0.1:" + server.getAddress().getPort() + "/v1",
                 "gpt-5.4",
                 20,
-                "test-cache-key",
+                "test-cache-key"
+        );
+        AdminShopProductTranslationService service = new AdminShopProductTranslationService(
+                shopCategoryRepository,
+                objectMapper,
+                translationClient,
                 "Use concise ecommerce wording."
         );
 
@@ -132,14 +136,18 @@ class AdminShopProductTranslationServiceTest {
     @Test
     void translateProduct_shouldSkipOpenAiWhenNoTargetLanguageNeedsUpdates() {
         ObjectMapper objectMapper = new ObjectMapper();
-        AdminShopProductTranslationService service = new AdminShopProductTranslationService(
-                shopCategoryRepository,
+        AdminOpenAiTranslationClient translationClient = new AdminOpenAiTranslationClient(
                 objectMapper,
                 "test-key",
                 "http://127.0.0.1:65535/v1",
                 "gpt-5.4",
                 20,
-                "test-cache-key",
+                "test-cache-key"
+        );
+        AdminShopProductTranslationService service = new AdminShopProductTranslationService(
+                shopCategoryRepository,
+                objectMapper,
+                translationClient,
                 ""
         );
 

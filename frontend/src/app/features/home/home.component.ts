@@ -2,6 +2,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   Component,
   DestroyRef,
+  NgZone,
   PLATFORM_ID,
   computed,
   effect,
@@ -13,6 +14,7 @@ import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
+import { SwipeCarouselDirective } from '../../shared/directives/swipe-carousel.directive';
 import { LanguageService } from '../../core/services/language.service';
 import {
   HomeProject,
@@ -51,6 +53,7 @@ import {
     TranslateModule,
     AppButtonComponent,
     AppCardComponent,
+    SwipeCarouselDirective,
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
@@ -59,6 +62,7 @@ export class HomeComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly publicMediaService = inject(PublicMediaService);
   private readonly homeProjectService = inject(HomeProjectService);
+  private readonly ngZone = inject(NgZone);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private homeProjectAutoplayId: number | null = null;
   private shopGalleryAutoplayId: number | null = null;
@@ -206,6 +210,24 @@ export class HomeComponent {
     this.restartHomeProjectAutoplay();
   }
 
+  showPreviousHomeProject(): void {
+    const totalProjects = this.homeProjects().length;
+    if (totalProjects <= 1) {
+      return;
+    }
+    this.homeProjectIndex.set(
+      this.homeProjectIndex() === 0
+        ? totalProjects - 1
+        : this.homeProjectIndex() - 1,
+    );
+    this.restartHomeProjectAutoplay();
+  }
+
+  showNextHomeProject(): void {
+    this.advanceHomeProject();
+    this.restartHomeProjectAutoplay();
+  }
+
   homeProjectImageFallbackUrl(project: HomeProject): string | null {
     return mediaFallbackUrl(project.image);
   }
@@ -216,6 +238,11 @@ export class HomeComponent {
 
   homeProjectImageWebpUrl(project: HomeProject): string | null {
     return mediaWebpUrl(project.image);
+  }
+
+  homeProjectAmbilightImage(project: HomeProject): string | null {
+    const imageUrl = this.homeProjectImageFallbackUrl(project);
+    return imageUrl ? `url("${this.escapeCssUrl(imageUrl)}")` : null;
   }
 
   homeProjectDetailImageFallbackUrl(project: HomeProject): string | null {
@@ -232,7 +259,7 @@ export class HomeComponent {
 
   homeProjectGlow(project: HomeProject): HomeProjectGlow {
     return (
-      this.homeProjectGlowColors().get(project.id) ??
+      this.homeProjectGlowColors().get(this.homeProjectGlowKey(project)) ??
       DEFAULT_HOME_PROJECT_GLOW
     );
   }
@@ -247,12 +274,13 @@ export class HomeComponent {
       return;
     }
 
+    const projectKey = this.homeProjectGlowKey(project);
     this.homeProjectGlowColors.update((colors) => {
-      if (colors.get(project.id) === glow) {
+      if (colors.get(projectKey) === glow) {
         return colors;
       }
       const nextColors = new Map(colors);
-      nextColors.set(project.id, glow);
+      nextColors.set(projectKey, glow);
       return nextColors;
     });
   }
@@ -263,6 +291,24 @@ export class HomeComponent {
       return;
     }
     this.shopGalleryIndex.set(index);
+    this.restartShopGalleryAutoplay();
+  }
+
+  showPreviousShopGalleryImage(): void {
+    const totalImages = this.shopGalleryImages().length;
+    if (totalImages <= 1) {
+      return;
+    }
+    this.shopGalleryIndex.set(
+      this.shopGalleryIndex() === 0
+        ? totalImages - 1
+        : this.shopGalleryIndex() - 1,
+    );
+    this.restartShopGalleryAutoplay();
+  }
+
+  showNextShopGalleryImage(): void {
+    this.advanceShopGalleryImage();
     this.restartShopGalleryAutoplay();
   }
 
@@ -298,8 +344,32 @@ export class HomeComponent {
     return card.usageKey;
   }
 
-  trackHomeProject(_: number, project: HomeProject): string {
-    return project.id;
+  readonly trackHomeProject = (_: number, project: HomeProject): string => {
+    return this.homeProjectGlowKey(project);
+  };
+
+  private homeProjectGlowKey(project: HomeProject): string {
+    return [
+      project.id,
+      project.slug,
+      project.image?.mediaAssetId,
+      this.homeProjectImageFallbackUrl(project),
+    ]
+      .filter(Boolean)
+      .join('::');
+  }
+
+  private escapeCssUrl(url: string): string {
+    return url.replace(/["\\\n\r\f]/g, (match) => {
+      switch (match) {
+        case '"':
+          return '\\"';
+        case '\\':
+          return '\\\\';
+        default:
+          return '';
+      }
+    });
   }
 
   private buildCapabilityCard(
@@ -346,9 +416,13 @@ export class HomeComponent {
       return;
     }
 
-    this.homeProjectAutoplayId = window.setInterval(() => {
-      this.advanceHomeProject();
-    }, this.homeProjectAutoplayMs);
+    this.ngZone.runOutsideAngular(() => {
+      this.homeProjectAutoplayId = window.setInterval(() => {
+        this.ngZone.run(() => {
+          this.advanceHomeProject();
+        });
+      }, this.homeProjectAutoplayMs);
+    });
   }
 
   private stopHomeProjectAutoplay(): void {
@@ -386,9 +460,13 @@ export class HomeComponent {
       return;
     }
 
-    this.shopGalleryAutoplayId = window.setInterval(() => {
-      this.advanceShopGalleryImage();
-    }, this.shopGalleryAutoplayMs);
+    this.ngZone.runOutsideAngular(() => {
+      this.shopGalleryAutoplayId = window.setInterval(() => {
+        this.ngZone.run(() => {
+          this.advanceShopGalleryImage();
+        });
+      }, this.shopGalleryAutoplayMs);
+    });
   }
 
   private stopShopGalleryAutoplay(): void {
@@ -402,5 +480,4 @@ export class HomeComponent {
   private prefersReducedMotion(): boolean {
     return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   }
-
 }

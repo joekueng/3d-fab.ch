@@ -78,10 +78,21 @@ import {
   normalizeMediaTranslations,
   validateMediaTranslations,
 } from './admin-shop-image.util';
+import { AdminLanguageToolbarComponent } from '../../../shared/components/admin-language-toolbar/admin-language-toolbar.component';
+import {
+  AdminLanguageStatus,
+  buildAdminLanguageStatusMap,
+  mergeLocalizedTextMap,
+} from '../../../shared/utils/admin-localization.util';
 @Component({
   selector: 'app-admin-shop',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdminShopRichTextEditorComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    AdminShopRichTextEditorComponent,
+    AdminLanguageToolbarComponent,
+  ],
   templateUrl: './admin-shop.component.html',
   styleUrl: './admin-shop.component.scss',
 })
@@ -573,6 +584,14 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     );
   }
 
+  contentLanguageStatuses(): Record<ShopLanguage, AdminLanguageStatus> {
+    return buildAdminLanguageStatusMap(
+      this.shopLanguages,
+      (language) => this.isContentLanguageComplete(language),
+      (language) => this.isContentLanguageStarted(language),
+    );
+  }
+
   isSeoLanguageComplete(language: ShopLanguage): boolean {
     return (
       !!this.productForm.seoTitles[language].trim() &&
@@ -594,6 +613,14 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     );
   }
 
+  seoLanguageStatuses(): Record<ShopLanguage, AdminLanguageStatus> {
+    return buildAdminLanguageStatusMap(
+      this.shopLanguages,
+      (language) => this.isSeoLanguageComplete(language),
+      (language) => this.isSeoLanguageStarted(language),
+    );
+  }
+
   isCategoryContentLanguageComplete(language: ShopLanguage): boolean {
     return !!this.categoryForm.names[language].trim();
   }
@@ -609,6 +636,17 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     return (
       this.isCategoryContentLanguageStarted(language) &&
       !this.isCategoryContentLanguageComplete(language)
+    );
+  }
+
+  categoryContentLanguageStatuses(): Record<
+    ShopLanguage,
+    AdminLanguageStatus
+  > {
+    return buildAdminLanguageStatusMap(
+      this.shopLanguages,
+      (language) => this.isCategoryContentLanguageComplete(language),
+      (language) => this.isCategoryContentLanguageStarted(language),
     );
   }
 
@@ -630,6 +668,14 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     return (
       this.isCategorySeoLanguageStarted(language) &&
       !this.isCategorySeoLanguageComplete(language)
+    );
+  }
+
+  categorySeoLanguageStatuses(): Record<ShopLanguage, AdminLanguageStatus> {
+    return buildAdminLanguageStatusMap(
+      this.shopLanguages,
+      (language) => this.isCategorySeoLanguageComplete(language),
+      (language) => this.isCategorySeoLanguageStarted(language),
     );
   }
 
@@ -927,6 +973,14 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     return (
       this.isImageLanguageStarted(language) &&
       !this.isImageLanguageComplete(language)
+    );
+  }
+
+  imageLanguageStatuses(): Record<AdminMediaLanguage, AdminLanguageStatus> {
+    return buildAdminLanguageStatusMap(
+      this.mediaLanguages,
+      (language) => this.isImageLanguageComplete(language),
+      (language) => this.isImageLanguageStarted(language),
     );
   }
 
@@ -1657,37 +1711,34 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     response: AdminTranslateShopProductResponse,
     overwriteExisting: boolean,
   ): void {
+    mergeLocalizedTextMap(this.productForm.names, response.names, {
+      overwriteExisting,
+      targetLanguages: response.targetLanguages,
+    });
+    mergeLocalizedTextMap(this.productForm.excerpts, response.excerpts, {
+      overwriteExisting,
+      targetLanguages: response.targetLanguages,
+    });
+    mergeLocalizedTextMap(this.productForm.seoTitles, response.seoTitles, {
+      overwriteExisting,
+      targetLanguages: response.targetLanguages,
+    });
+    mergeLocalizedTextMap(
+      this.productForm.seoDescriptions,
+      response.seoDescriptions,
+      {
+        overwriteExisting,
+        targetLanguages: response.targetLanguages,
+      },
+    );
+
     for (const language of response.targetLanguages) {
-      this.mergeLocalizedText(
-        this.productForm.names,
-        response.names,
-        language,
-        overwriteExisting,
-      );
-      this.mergeLocalizedText(
-        this.productForm.excerpts,
-        response.excerpts,
-        language,
-        overwriteExisting,
-      );
       this.mergeLocalizedText(
         this.productForm.descriptions,
         response.descriptions,
         language,
         overwriteExisting,
         true,
-      );
-      this.mergeLocalizedText(
-        this.productForm.seoTitles,
-        response.seoTitles,
-        language,
-        overwriteExisting,
-      );
-      this.mergeLocalizedText(
-        this.productForm.seoDescriptions,
-        response.seoDescriptions,
-        language,
-        overwriteExisting,
       );
     }
 

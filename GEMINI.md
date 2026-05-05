@@ -30,6 +30,9 @@ L'applicazione è strutturata in diversi moduli funzionali:
 #### 4. Media Management (`service/media`)
 - Gestione di asset multimediali (immagini e video) con ispezione tecnica, elaborazione tramite FFmpeg e varianti ottimizzate.
 
+#### 4b. Admin Localization (`service/admin`)
+- Traduzioni admin tramite OpenAI centralizzate: prodotti shop mantengono il flusso dedicato con review, mentre testi localizzati generici (media e progetti home) usano `/api/admin/translations/localized-text`.
+
 #### 5. Payments & Invoicing (`service/payment`)
 - Supporto per pagamenti tramite **TWINT** e generazione di fatture PDF con standard **Swiss QR-Bill**.
 

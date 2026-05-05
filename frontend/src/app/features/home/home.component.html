@@ -66,7 +66,12 @@
       [style.--ui-carousel-duration]="homeProjectAutoplayDuration"
     >
       <div class="home-project-shell">
-        <div class="home-project-viewport">
+        <div
+          class="home-project-viewport"
+          [appSwipeCarousel]="homeProjects().length > 1"
+          (swipeCarouselPrevious)="showPreviousHomeProject()"
+          (swipeCarouselNext)="showNextHomeProject()"
+        >
           <div
             class="home-project-track"
             [style.transform]="homeProjectTrackTransform()"
@@ -98,6 +103,11 @@
                 homeProjectGlow(project).bottomLeft
               "
             >
+              <div
+                class="home-project-ambilight"
+                aria-hidden="true"
+                [style.background-image]="homeProjectAmbilightImage(project)"
+              ></div>
               <div class="home-project-copy">
                 @if (project.eyebrow) {
                   <p class="home-project-eyebrow ui-eyebrow">
@@ -335,8 +345,11 @@
       </div>
       <div
         class="shop-gallery shop-carousel"
+        [appSwipeCarousel]="shopGalleryImages().length > 1"
         [style.--ui-carousel-duration]="shopGalleryAutoplayDuration"
         [attr.aria-label]="'HOME.SHOP_GALLERY_ARIA' | translate"
+        (swipeCarouselPrevious)="showPreviousShopGalleryImage()"
+        (swipeCarouselNext)="showNextShopGalleryImage()"
       >
         <div class="shop-carousel-viewport">
           <div

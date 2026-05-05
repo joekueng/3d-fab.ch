@@ -16,10 +16,23 @@ import {
   AdminMediaTranslation,
   AdminMediaUsage,
 } from '../services/admin-media.service';
+import {
+  AdminTranslateLocalizedTextPayload,
+  AdminTranslateLocalizedTextResponse,
+  AdminTranslationService,
+} from '../services/admin-translation.service';
 import { FeaturePanelComponent } from '../../../shared/components/feature-panel/feature-panel.component';
 import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
 import { AppCheckboxComponent } from '../../../shared/components/app-checkbox/app-checkbox.component';
 import { AppInputComponent } from '../../../shared/components/app-input/app-input.component';
+import { AdminLanguageToolbarComponent } from '../../../shared/components/admin-language-toolbar/admin-language-toolbar.component';
+import {
+  ADMIN_LANGUAGE_LABELS,
+  ADMIN_LOCALIZED_LANGUAGES,
+  AdminLanguageStatus,
+  buildAdminLanguageStatusMap,
+  mergeLocalizedTextMap,
+} from '../../../shared/utils/admin-localization.util';
 
 type MediaCollectionId = 'home' | 'materials' | 'about';
 type MediaUsageType = 'HOME_SECTION' | 'ABOUT_MEMBER' | 'MATERIALS_PAGE';
@@ -58,6 +71,8 @@ interface MediaFormState {
   isPrimary: boolean;
   replacingUsageId: string | null;
   saving: boolean;
+  translating: boolean;
+  overwriteExistingTranslations: boolean;
 }
 
 interface MediaItem {
@@ -76,19 +91,11 @@ interface MediaSectionView extends MediaSectionConfig {
   items: MediaItem[];
 }
 
-const SUPPORTED_MEDIA_LANGUAGES: readonly AdminMediaLanguage[] = [
-  'it',
-  'en',
-  'de',
-  'fr',
-];
+const SUPPORTED_MEDIA_LANGUAGES =
+  ADMIN_LOCALIZED_LANGUAGES satisfies readonly AdminMediaLanguage[];
 
-const MEDIA_LANGUAGE_LABELS: Readonly<Record<AdminMediaLanguage, string>> = {
-  it: 'IT',
-  en: 'EN',
-  de: 'DE',
-  fr: 'FR',
-};
+const MEDIA_LANGUAGE_LABELS =
+  ADMIN_LANGUAGE_LABELS satisfies Readonly<Record<AdminMediaLanguage, string>>;
 
 @Component({
   selector: 'app-admin-home-media',
@@ -100,6 +107,7 @@ const MEDIA_LANGUAGE_LABELS: Readonly<Record<AdminMediaLanguage, string>> = {
     AppButtonComponent,
     AppCheckboxComponent,
     AppInputComponent,
+    AdminLanguageToolbarComponent,
   ],
   templateUrl: './admin-home-media.component.html',
   styleUrl: './admin-home-media.component.scss',
@@ -107,6 +115,7 @@ const MEDIA_LANGUAGE_LABELS: Readonly<Record<AdminMediaLanguage, string>> = {
 export class AdminHomeMediaComponent implements OnInit, OnDestroy {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly adminMediaService = inject(AdminMediaService);
+  private readonly adminTranslationService = inject(AdminTranslationService);
 
   readonly mediaLanguages = SUPPORTED_MEDIA_LANGUAGES;
   readonly mediaLanguageLabels = MEDIA_LANGUAGE_LABELS;
@@ -538,6 +547,60 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
       });
   }
 
+  translateForSection(sectionId: string): void {
+    const section = this.sections.find((item) => item.id === sectionId);
+    const formState = this.getFormState(sectionId);
+    if (!section || formState.translating) {
+      return;
+    }
+
+    const sourceLanguage = formState.activeLanguage;
+    const sourceTranslation = formState.translations[sourceLanguage];
+    if (!sourceTranslation.title.trim() || !sourceTranslation.altText.trim()) {
+      this.errorMessage = `Titolo e alt text ${this.mediaLanguageLabels[sourceLanguage]} sono obbligatori per tradurre.`;
+      this.successMessage = null;
+      return;
+    }
+
+    const payload = this.buildMediaTranslationPayload(section, formState);
+    formState.translating = true;
+    this.errorMessage = null;
+    this.successMessage = null;
+
+    this.adminTranslationService.translateLocalizedText(payload).subscribe({
+      next: (response) => {
+        formState.translating = false;
+        this.applyMediaTranslation(
+          formState,
+          response,
+          payload.overwriteExisting,
+        );
+        this.successMessage = response.targetLanguages.length
+          ? `Traduzioni ${response.targetLanguages
+              .map((language) => this.mediaLanguageLabels[language])
+              .join(' / ')} aggiornate nel form.`
+          : 'Nessun campo da tradurre.';
+      },
+      error: (error) => {
+        formState.translating = false;
+        this.errorMessage = this.extractErrorMessage(
+          error,
+          'Traduzione media non riuscita.',
+        );
+      },
+    });
+  }
+
+  canTranslateSection(sectionId: string): boolean {
+    const formState = this.getFormState(sectionId);
+    const translation = formState.translations[formState.activeLanguage];
+    return (
+      !formState.translating &&
+      !!translation.title.trim() &&
+      !!translation.altText.trim()
+    );
+  }
+
   setPrimary(item: MediaItem): void {
     if (item.isPrimary || this.actingUsageIds.has(item.usageId)) {
       return;
@@ -657,6 +720,16 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
     );
   }
 
+  languageStatuses(
+    sectionId: string,
+  ): Record<AdminMediaLanguage, AdminLanguageStatus> {
+    return buildAdminLanguageStatusMap(
+      this.mediaLanguages,
+      (language) => this.isLanguageComplete(sectionId, language),
+      (language) => this.isLanguageStarted(sectionId, language),
+    );
+  }
+
   getItemTranslation(
     item: MediaItem,
     language: AdminMediaLanguage,
@@ -767,6 +840,8 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
       isPrimary: (section?.items.length ?? 0) === 0,
       replacingUsageId: null,
       saving: false,
+      translating: false,
+      overwriteExistingTranslations: false,
     });
   }
 
@@ -795,7 +870,77 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
       isPrimary: false,
       replacingUsageId: null,
       saving: false,
+      translating: false,
+      overwriteExistingTranslations: false,
     };
+  }
+
+  private buildMediaTranslationPayload(
+    section: MediaSectionView,
+    formState: MediaFormState,
+  ): AdminTranslateLocalizedTextPayload {
+    return {
+      context: `Media ${section.title} (${section.usageType} / ${section.usageKey})`,
+      sourceLanguage: formState.activeLanguage,
+      overwriteExisting: formState.overwriteExistingTranslations,
+      fields: {
+        title: {
+          required: true,
+          values: this.mediaLanguages.reduce(
+            (values, language) => ({
+              ...values,
+              [language]: formState.translations[language].title,
+            }),
+            {} as Record<AdminMediaLanguage, string>,
+          ),
+        },
+        altText: {
+          required: true,
+          values: this.mediaLanguages.reduce(
+            (values, language) => ({
+              ...values,
+              [language]: formState.translations[language].altText,
+            }),
+            {} as Record<AdminMediaLanguage, string>,
+          ),
+        },
+      },
+    };
+  }
+
+  private applyMediaTranslation(
+    formState: MediaFormState,
+    response: AdminTranslateLocalizedTextResponse,
+    overwriteExisting: boolean,
+  ): void {
+    const titles = this.mediaLanguages.reduce(
+      (values, language) => ({
+        ...values,
+        [language]: formState.translations[language].title,
+      }),
+      {} as Record<AdminMediaLanguage, string>,
+    );
+    const altTexts = this.mediaLanguages.reduce(
+      (values, language) => ({
+        ...values,
+        [language]: formState.translations[language].altText,
+      }),
+      {} as Record<AdminMediaLanguage, string>,
+    );
+
+    mergeLocalizedTextMap(titles, response.fields['title'], {
+      overwriteExisting,
+      targetLanguages: response.targetLanguages,
+    });
+    mergeLocalizedTextMap(altTexts, response.fields['altText'], {
+      overwriteExisting,
+      targetLanguages: response.targetLanguages,
+    });
+
+    for (const language of this.mediaLanguages) {
+      formState.translations[language].title = titles[language];
+      formState.translations[language].altText = altTexts[language];
+    }
   }
 
   private createEmptyTranslations(): Record<

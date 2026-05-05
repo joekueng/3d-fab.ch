@@ -69,23 +69,32 @@
           </span>
         </header>
 
-        <div class="language-toolbar ui-language-toolbar">
-          <div class="ui-language-toolbar__copy">
-            <span>Testi localizzati</span>
-            <p>Se una lingua è vuota, viene usato il primo titolo disponibile.</p>
-          </div>
-          <div class="ui-language-toolbar__toggle">
-            <button
-              *ngFor="let language of mediaLanguages"
-              type="button"
-              class="ui-language-toolbar__button"
-              [class.active]="form.activeLanguage === language"
-              (click)="setProjectLanguage(language)"
-            >
-              {{ mediaLanguageLabels[language] }}
-            </button>
-          </div>
+        <div class="translation-actions ui-row ui-row--wrap">
+          <app-button
+            type="button"
+            variant="ghost"
+            size="sm"
+            (click)="translateProjectTexts()"
+            [disabled]="!canTranslateProjectTexts()"
+          >
+            {{ form.translating ? "Traduco..." : "Traduci" }}
+          </app-button>
+          <app-checkbox
+            label="Sovrascrivi traduzioni esistenti"
+            [(ngModel)]="form.overwriteExistingTranslations"
+          />
         </div>
+
+        <app-admin-language-toolbar
+          class="language-toolbar"
+          title="Testi localizzati"
+          description="Eyebrow opzionale; titolo e descrizione obbligatori."
+          [languages]="mediaLanguages"
+          [labels]="mediaLanguageLabels"
+          [activeLanguage]="form.activeLanguage"
+          [states]="projectLanguageStatuses()"
+          (activeLanguageChange)="setProjectLanguage($event)"
+        />
 
         <div class="form-grid ui-form-grid ui-form-grid--two">
           <app-input
@@ -188,23 +197,32 @@
                 <img [src]="imageForm.previewUrl" alt="" />
               </div>
 
-              <div class="language-toolbar form-field--wide ui-language-toolbar">
-                <div class="ui-language-toolbar__copy">
-                  <span>Testi immagine</span>
-                  <p>Titolo e alt text per il media.</p>
-                </div>
-                <div class="ui-language-toolbar__toggle">
-                  <button
-                    *ngFor="let language of mediaLanguages"
-                    type="button"
-                    class="ui-language-toolbar__button"
-                    [class.active]="imageForm.activeLanguage === language"
-                    (click)="setImageLanguage(language)"
-                  >
-                    {{ mediaLanguageLabels[language] }}
-                  </button>
-                </div>
+              <div class="translation-actions form-field--wide ui-row ui-row--wrap">
+                <app-button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  (click)="translateProjectImageTexts()"
+                  [disabled]="!canTranslateProjectImageTexts()"
+                >
+                  {{ imageForm.translating ? "Traduco..." : "Traduci" }}
+                </app-button>
+                <app-checkbox
+                  label="Sovrascrivi traduzioni esistenti"
+                  [(ngModel)]="imageForm.overwriteExistingTranslations"
+                />
               </div>
+
+              <app-admin-language-toolbar
+                class="language-toolbar form-field--wide"
+                title="Testi immagine"
+                description="Titolo e alt text per il media."
+                [languages]="mediaLanguages"
+                [labels]="mediaLanguageLabels"
+                [activeLanguage]="imageForm.activeLanguage"
+                [states]="imageLanguageStatuses()"
+                (activeLanguageChange)="setImageLanguage($event)"
+              />
 
               <app-input
                 label="Titolo immagine ({{

@@ -186,6 +186,8 @@
 }
 
 .home-project-track {
+  position: relative;
+  z-index: 1;
   display: flex;
   height: 100%;
   transition: transform 0.62s cubic-bezier(0.22, 0.72, 0.24, 1);
@@ -196,9 +198,7 @@
   flex: 0 0 100%;
   position: relative;
   isolation: isolate;
-  min-height: 0;
   height: 100%;
-  padding: 0;
   overflow: hidden;
   display: grid;
   grid-template-columns:
@@ -208,78 +208,90 @@
     minmax(var(--space-4), 1fr);
   align-items: center;
   column-gap: clamp(var(--space-5), 3vw, var(--space-10));
+  background: var(--color-bg);
 }
 
 .home-project-slide::before,
 .home-project-slide::after {
   content: "";
   position: absolute;
+  inset: 0;
   pointer-events: none;
+  z-index: 0;
 }
 
 .home-project-slide::before {
-  inset: 0;
-  z-index: 0;
   background:
     radial-gradient(
-      ellipse 34% 42% at 14% 18%,
-      color-mix(in srgb, var(--home-project-glow-top-left) 48%, transparent)
-        0%,
-      transparent 82%
+      ellipse 46% 64% at 76% 50%,
+      color-mix(in srgb, var(--home-project-glow-right) 48%, transparent) 0%,
+      transparent 72%
     ),
     radial-gradient(
-      ellipse 36% 46% at 82% 18%,
+      ellipse 44% 52% at 66% 18%,
       color-mix(in srgb, var(--home-project-glow-top-right) 52%, transparent)
         0%,
-      transparent 84%
+      transparent 76%
     ),
     radial-gradient(
-      ellipse 38% 48% at 86% 78%,
-      color-mix(in srgb, var(--home-project-glow-bottom-right) 48%, transparent)
+      ellipse 48% 56% at 72% 82%,
+      color-mix(in srgb, var(--home-project-glow-bottom-right) 50%, transparent)
         0%,
-      transparent 82%
+      transparent 76%
     ),
     radial-gradient(
-      ellipse 34% 44% at 18% 78%,
-      color-mix(in srgb, var(--home-project-glow-bottom-left) 42%, transparent)
-        0%,
-      transparent 82%
-    ),
-    radial-gradient(
-      ellipse 58% 30% at 58% 10%,
-      color-mix(in srgb, var(--home-project-glow-top) 46%, transparent) 0%,
-      transparent 80%
-    ),
-    radial-gradient(
-      ellipse 60% 32% at 62% 90%,
-      color-mix(in srgb, var(--home-project-glow-bottom) 38%, transparent) 0%,
+      ellipse 34% 62% at 42% 52%,
+      color-mix(in srgb, var(--home-project-glow-left) 34%, transparent) 0%,
       transparent 78%
     ),
     radial-gradient(
-      ellipse 26% 72% at 6% 50%,
-      color-mix(in srgb, var(--home-project-glow-left) 34%, transparent) 0%,
-      transparent 80%
+      ellipse 52% 32% at 58% 8%,
+      color-mix(in srgb, var(--home-project-glow-top) 38%, transparent) 0%,
+      transparent 78%
     ),
     radial-gradient(
-      ellipse 30% 74% at 94% 50%,
-      color-mix(in srgb, var(--home-project-glow-right) 42%, transparent) 0%,
-      transparent 80%
+      ellipse 58% 34% at 62% 94%,
+      color-mix(in srgb, var(--home-project-glow-bottom) 34%, transparent) 0%,
+      transparent 76%
+    ),
+    radial-gradient(
+      ellipse 36% 40% at 16% 18%,
+      color-mix(in srgb, var(--home-project-glow-top-left) 28%, transparent)
+        0%,
+      transparent 82%
+    ),
+    radial-gradient(
+      ellipse 36% 42% at 18% 82%,
+      color-mix(in srgb, var(--home-project-glow-bottom-left) 26%, transparent)
+        0%,
+      transparent 82%
     );
-  filter: saturate(1.08);
+  filter: saturate(1.12);
   opacity: 1;
 }
 
-.home-project-slide::after {
-  inset: 0;
+.home-project-ambilight {
+  position: absolute;
+  inset: -8%;
   z-index: 0;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  filter: blur(58px) saturate(1.2) contrast(1.04);
+  opacity: 0.64;
+  transform: scale(1.08);
+  pointer-events: none;
+}
+
+.home-project-slide::after {
   background: linear-gradient(
     90deg,
     var(--color-bg) 0%,
-    color-mix(in srgb, var(--color-bg) 94%, transparent) 12%,
-    color-mix(in srgb, var(--color-bg) 52%, transparent) 28%,
-    transparent 46%,
+    color-mix(in srgb, var(--color-bg) 92%, transparent) 10%,
+    color-mix(in srgb, var(--color-bg) 34%, transparent) 24%,
+    transparent 38%,
     transparent 72%,
-    color-mix(in srgb, var(--color-bg) 42%, transparent) 88%,
+    color-mix(in srgb, var(--color-bg) 42%, transparent) 86%,
     var(--color-bg) 100%
   );
   opacity: 1;
@@ -336,7 +348,6 @@
   min-height: 0;
   width: min(100%, 900px);
   aspect-ratio: 16 / 9;
-  height: auto;
   align-self: center;
   display: grid;
   align-items: stretch;
@@ -545,17 +556,59 @@
     grid-template-rows: auto auto;
     gap: var(--space-4);
     align-items: start;
-    padding: var(--space-5) var(--space-4) var(--space-4);
+    padding: var(--space-5) var(--space-4) var(--space-10);
+  }
+
+  .home-project-slide::before {
+    background:
+      radial-gradient(
+        ellipse 76% 42% at 50% 22%,
+        color-mix(in srgb, var(--home-project-glow-top) 46%, transparent) 0%,
+        transparent 74%
+      ),
+      radial-gradient(
+        ellipse 52% 44% at 22% 18%,
+        color-mix(in srgb, var(--home-project-glow-top-left) 42%, transparent)
+          0%,
+        transparent 76%
+      ),
+      radial-gradient(
+        ellipse 52% 44% at 78% 18%,
+        color-mix(in srgb, var(--home-project-glow-top-right) 46%, transparent)
+          0%,
+        transparent 76%
+      ),
+      radial-gradient(
+        ellipse 62% 48% at 50% 45%,
+        color-mix(in srgb, var(--home-project-glow-bottom) 28%, transparent)
+          0%,
+        transparent 78%
+      );
+  }
+
+  .home-project-ambilight {
+    inset: -6% -10% -4%;
+    filter: blur(46px) saturate(1.18) contrast(1.02);
+    opacity: 0.58;
+    transform: scale(1.06);
   }
 
   .home-project-slide::after {
-    opacity: 0.68;
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      transparent 48%,
+      color-mix(in srgb, var(--color-bg) 18%, transparent) 66%,
+      color-mix(in srgb, var(--color-bg) 72%, transparent) 84%,
+      var(--color-bg) 100%
+    );
+    opacity: 1;
   }
 
   .home-project-copy {
     grid-column: 1;
     grid-row: 2;
-    max-width: 40rem;
+    width: min(100%, 720px);
     padding: 0;
     justify-self: center;
   }
@@ -565,13 +618,14 @@
     line-height: 1.04;
   }
 
-  .home-project-description {
-    font-size: 1rem;
-    line-height: 1.5;
+  .home-project-detail-media {
+    width: min(100%, 280px);
+    margin-top: var(--space-2);
+    padding: 0.42rem;
   }
 
-  .home-project-detail-media {
-    width: min(100%, 320px);
+  .home-project-detail-media img {
+    max-height: 112px;
   }
 
   .home-project-actions app-button {
@@ -588,10 +642,8 @@
   }
 
   .home-project-indicators {
-    position: static;
-    transform: none;
+    bottom: var(--space-4);
     max-width: calc(100% - var(--space-8));
-    margin: 0 auto var(--space-5);
     overflow-x: auto;
   }
 }
@@ -613,12 +665,12 @@
   }
 
   .home-project-actions {
-    align-items: stretch;
+    align-items: flex-start;
     gap: var(--space-2);
   }
 
   .home-project-actions app-button {
-    flex: 1 1 100%;
+    flex: 0 0 auto;
   }
 
   .shop-gallery {

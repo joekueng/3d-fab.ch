@@ -386,6 +386,21 @@
   min-height: 1.3rem;
 }
 
+.ui-swipe-carousel {
+  touch-action: pan-y;
+  user-select: none;
+  cursor: grab;
+}
+
+.ui-swipe-carousel.is-swipe-dragging {
+  cursor: grabbing;
+}
+
+.ui-swipe-carousel img {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
 .ui-carousel-dot {
   --ui-carousel-dot-size: 0.72rem;
   --ui-carousel-dot-active-width: 4.8rem;

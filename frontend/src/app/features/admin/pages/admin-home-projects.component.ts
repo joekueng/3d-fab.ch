@@ -20,10 +20,24 @@ import {
   AdminHomeProjectService,
   AdminUpsertHomeProjectPayload,
 } from '../services/admin-home-project.service';
+import {
+  AdminTranslateLocalizedTextPayload,
+  AdminTranslateLocalizedTextResponse,
+  AdminTranslationService,
+} from '../services/admin-translation.service';
 import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
 import { AppCheckboxComponent } from '../../../shared/components/app-checkbox/app-checkbox.component';
 import { AppInputComponent } from '../../../shared/components/app-input/app-input.component';
 import { AppTextareaComponent } from '../../../shared/components/app-textarea/app-textarea.component';
+import { AdminLanguageToolbarComponent } from '../../../shared/components/admin-language-toolbar/admin-language-toolbar.component';
+import {
+  ADMIN_LANGUAGE_LABELS,
+  ADMIN_LOCALIZED_LANGUAGES,
+  AdminLanguageStatus,
+  buildAdminLanguageStatusMap,
+  createEmptyLocalizedTextMap,
+  mergeLocalizedTextMap,
+} from '../../../shared/utils/admin-localization.util';
 
 type LocalizedTextMap = Record<AdminMediaLanguage, string>;
 
@@ -37,6 +51,8 @@ interface HomeProjectForm {
   isActive: boolean;
   sortOrder: number;
   saving: boolean;
+  translating: boolean;
+  overwriteExistingTranslations: boolean;
 }
 
 interface ProjectImageForm {
@@ -47,6 +63,8 @@ interface ProjectImageForm {
   sortOrder: number;
   isPrimary: boolean;
   saving: boolean;
+  translating: boolean;
+  overwriteExistingTranslations: boolean;
 }
 
 interface ProjectImageItem {
@@ -60,19 +78,11 @@ interface ProjectImageItem {
   createdAt: string;
 }
 
-const SUPPORTED_MEDIA_LANGUAGES: readonly AdminMediaLanguage[] = [
-  'it',
-  'en',
-  'de',
-  'fr',
-];
+const SUPPORTED_MEDIA_LANGUAGES =
+  ADMIN_LOCALIZED_LANGUAGES satisfies readonly AdminMediaLanguage[];
 
-const MEDIA_LANGUAGE_LABELS: Readonly<Record<AdminMediaLanguage, string>> = {
-  it: 'IT',
-  en: 'EN',
-  de: 'DE',
-  fr: 'FR',
-};
+const MEDIA_LANGUAGE_LABELS =
+  ADMIN_LANGUAGE_LABELS satisfies Readonly<Record<AdminMediaLanguage, string>>;
 
 @Component({
   selector: 'app-admin-home-projects',
@@ -84,6 +94,7 @@ const MEDIA_LANGUAGE_LABELS: Readonly<Record<AdminMediaLanguage, string>> = {
     AppCheckboxComponent,
     AppInputComponent,
     AppTextareaComponent,
+    AdminLanguageToolbarComponent,
   ],
   templateUrl: './admin-home-projects.component.html',
   styleUrl: './admin-home-projects.component.scss',
@@ -92,6 +103,7 @@ export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly projectService = inject(AdminHomeProjectService);
   private readonly mediaService = inject(AdminMediaService);
+  private readonly translationService = inject(AdminTranslationService);
 
   readonly mediaLanguages = SUPPORTED_MEDIA_LANGUAGES;
   readonly mediaLanguageLabels = MEDIA_LANGUAGE_LABELS;
@@ -209,6 +221,8 @@ export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
       isActive: project.isActive,
       sortOrder: project.sortOrder ?? 0,
       saving: false,
+      translating: false,
+      overwriteExistingTranslations: this.form.overwriteExistingTranslations,
     };
     this.resetImageForm();
     if (showMessage) {
@@ -222,6 +236,112 @@ export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
 
   setImageLanguage(language: AdminMediaLanguage): void {
     this.imageForm.activeLanguage = language;
+  }
+
+  projectLanguageStatuses(): Record<AdminMediaLanguage, AdminLanguageStatus> {
+    return buildAdminLanguageStatusMap(
+      this.mediaLanguages,
+      (language) => this.isProjectLanguageComplete(language),
+      (language) => this.isProjectLanguageStarted(language),
+    );
+  }
+
+  imageLanguageStatuses(): Record<AdminMediaLanguage, AdminLanguageStatus> {
+    return buildAdminLanguageStatusMap(
+      this.mediaLanguages,
+      (language) => this.isImageLanguageComplete(language),
+      (language) => this.isImageLanguageStarted(language),
+    );
+  }
+
+  translateProjectTexts(): void {
+    if (this.form.translating) {
+      return;
+    }
+
+    const sourceLanguage = this.form.activeLanguage;
+    if (
+      !this.form.titles[sourceLanguage].trim() ||
+      !this.form.descriptions[sourceLanguage].trim()
+    ) {
+      this.errorMessage = `Titolo e descrizione ${this.mediaLanguageLabels[sourceLanguage]} sono obbligatori per tradurre.`;
+      this.successMessage = '';
+      return;
+    }
+
+    const payload = this.buildProjectTranslationPayload();
+    this.form.translating = true;
+    this.clearMessages();
+
+    this.translationService.translateLocalizedText(payload).subscribe({
+      next: (response) => {
+        this.form.translating = false;
+        this.applyProjectTranslation(response, payload.overwriteExisting);
+        this.successMessage = response.targetLanguages.length
+          ? `Traduzioni ${response.targetLanguages
+              .map((language) => this.mediaLanguageLabels[language])
+              .join(' / ')} aggiornate nel form.`
+          : 'Nessun campo da tradurre.';
+      },
+      error: () => {
+        this.form.translating = false;
+        this.errorMessage = 'Traduzione progetto non riuscita.';
+      },
+    });
+  }
+
+  canTranslateProjectTexts(): boolean {
+    const language = this.form.activeLanguage;
+    return (
+      !this.form.translating &&
+      !!this.form.titles[language].trim() &&
+      !!this.form.descriptions[language].trim()
+    );
+  }
+
+  translateProjectImageTexts(): void {
+    if (this.imageForm.translating) {
+      return;
+    }
+
+    const sourceLanguage = this.imageForm.activeLanguage;
+    const sourceTranslation = this.imageForm.translations[sourceLanguage];
+    if (!sourceTranslation.title.trim() || !sourceTranslation.altText.trim()) {
+      this.errorMessage = `Titolo e alt text ${this.mediaLanguageLabels[sourceLanguage]} sono obbligatori per tradurre.`;
+      this.successMessage = '';
+      return;
+    }
+
+    const project = this.selectedProject;
+    const payload = this.buildProjectImageTranslationPayload(project);
+    this.imageForm.translating = true;
+    this.clearMessages();
+
+    this.translationService.translateLocalizedText(payload).subscribe({
+      next: (response) => {
+        this.imageForm.translating = false;
+        this.applyProjectImageTranslation(response, payload.overwriteExisting);
+        this.successMessage = response.targetLanguages.length
+          ? `Traduzioni immagine ${response.targetLanguages
+              .map((language) => this.mediaLanguageLabels[language])
+              .join(' / ')} aggiornate nel form.`
+          : 'Nessun campo immagine da tradurre.';
+      },
+      error: () => {
+        this.imageForm.translating = false;
+        this.errorMessage = 'Traduzione immagine progetto non riuscita.';
+      },
+    });
+  }
+
+  canTranslateProjectImageTexts(): boolean {
+    const language = this.imageForm.activeLanguage;
+    const translation = this.imageForm.translations[language];
+    return (
+      !this.imageForm.translating &&
+      !!translation.title.trim() &&
+      !!translation.altText.trim()
+    );
   }
 
   saveProject(): void {
@@ -431,6 +551,145 @@ export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
     return item.usageId;
   }
 
+  private isProjectLanguageComplete(language: AdminMediaLanguage): boolean {
+    return (
+      !!this.form.titles[language].trim() &&
+      !!this.form.descriptions[language].trim()
+    );
+  }
+
+  private isProjectLanguageStarted(language: AdminMediaLanguage): boolean {
+    return (
+      !!this.form.eyebrows[language].trim() ||
+      !!this.form.titles[language].trim() ||
+      !!this.form.descriptions[language].trim()
+    );
+  }
+
+  private isImageLanguageComplete(language: AdminMediaLanguage): boolean {
+    return (
+      !!this.imageForm.translations[language].title.trim() &&
+      !!this.imageForm.translations[language].altText.trim()
+    );
+  }
+
+  private isImageLanguageStarted(language: AdminMediaLanguage): boolean {
+    return (
+      !!this.imageForm.translations[language].title.trim() ||
+      !!this.imageForm.translations[language].altText.trim()
+    );
+  }
+
+  private buildProjectTranslationPayload(): AdminTranslateLocalizedTextPayload {
+    return {
+      context: `Home project ${this.form.slug || this.form.titles.it || 'draft project'}`,
+      sourceLanguage: this.form.activeLanguage,
+      overwriteExisting: this.form.overwriteExistingTranslations,
+      fields: {
+        eyebrow: {
+          required: false,
+          values: { ...this.form.eyebrows },
+        },
+        title: {
+          required: true,
+          values: { ...this.form.titles },
+        },
+        description: {
+          required: true,
+          values: { ...this.form.descriptions },
+        },
+      },
+    };
+  }
+
+  private buildProjectImageTranslationPayload(
+    project: AdminHomeProject | null,
+  ): AdminTranslateLocalizedTextPayload {
+    return {
+      context: `Home project image ${project?.slug ?? this.form.slug ?? 'draft project'}`,
+      sourceLanguage: this.imageForm.activeLanguage,
+      overwriteExisting: this.imageForm.overwriteExistingTranslations,
+      fields: {
+        title: {
+          required: true,
+          values: this.mediaLanguages.reduce(
+            (values, language) => ({
+              ...values,
+              [language]: this.imageForm.translations[language].title,
+            }),
+            {} as Record<AdminMediaLanguage, string>,
+          ),
+        },
+        altText: {
+          required: true,
+          values: this.mediaLanguages.reduce(
+            (values, language) => ({
+              ...values,
+              [language]: this.imageForm.translations[language].altText,
+            }),
+            {} as Record<AdminMediaLanguage, string>,
+          ),
+        },
+      },
+    };
+  }
+
+  private applyProjectTranslation(
+    response: AdminTranslateLocalizedTextResponse,
+    overwriteExisting: boolean,
+  ): void {
+    mergeLocalizedTextMap(this.form.eyebrows, response.fields['eyebrow'], {
+      overwriteExisting,
+      targetLanguages: response.targetLanguages,
+    });
+    mergeLocalizedTextMap(this.form.titles, response.fields['title'], {
+      overwriteExisting,
+      targetLanguages: response.targetLanguages,
+    });
+    mergeLocalizedTextMap(
+      this.form.descriptions,
+      response.fields['description'],
+      {
+        overwriteExisting,
+        targetLanguages: response.targetLanguages,
+      },
+    );
+  }
+
+  private applyProjectImageTranslation(
+    response: AdminTranslateLocalizedTextResponse,
+    overwriteExisting: boolean,
+  ): void {
+    const titles = this.mediaLanguages.reduce(
+      (values, language) => ({
+        ...values,
+        [language]: this.imageForm.translations[language].title,
+      }),
+      {} as Record<AdminMediaLanguage, string>,
+    );
+    const altTexts = this.mediaLanguages.reduce(
+      (values, language) => ({
+        ...values,
+        [language]: this.imageForm.translations[language].altText,
+      }),
+      {} as Record<AdminMediaLanguage, string>,
+    );
+
+    mergeLocalizedTextMap(titles, response.fields['title'], {
+      overwriteExisting,
+      targetLanguages: response.targetLanguages,
+    });
+    mergeLocalizedTextMap(altTexts, response.fields['altText'], {
+      overwriteExisting,
+      targetLanguages: response.targetLanguages,
+    });
+
+    for (const language of this.mediaLanguages) {
+      this.imageForm.translations[language].title = titles[language];
+      this.imageForm.translations[language].altText = altTexts[language];
+    }
+  }
+
   private buildProjectPayload(): AdminUpsertHomeProjectPayload | null {
     const fallbackTitle = this.firstNonBlank(
       this.form.titles.it,
@@ -550,6 +809,8 @@ export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
       isActive: true,
       sortOrder: 0,
       saving: false,
+      translating: false,
+      overwriteExistingTranslations: false,
     };
   }
 
@@ -562,16 +823,13 @@ export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
       sortOrder: 0,
       isPrimary: true,
       saving: false,
+      translating: false,
+      overwriteExistingTranslations: false,
     };
   }
 
   private createEmptyLocalizedTextMap(): LocalizedTextMap {
-    return {
-      it: '',
-      en: '',
-      de: '',
-      fr: '',
-    };
+    return createEmptyLocalizedTextMap(this.mediaLanguages);
   }
 
   private createEmptyTranslations(): Record<

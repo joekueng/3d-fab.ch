@@ -1,0 +1,25 @@
+<div class="admin-language-toolbar ui-language-toolbar">
+  <div class="ui-language-toolbar__copy">
+    <span>{{ title() }}</span>
+    <p *ngIf="description()">{{ description() }}</p>
+  </div>
+
+  <div class="ui-language-toolbar__toggle">
+    <button
+      *ngFor="let language of languages()"
+      type="button"
+      class="admin-language-toolbar__button ui-language-toolbar__button"
+      [class.active]="activeLanguage() === language"
+      [class.complete]="stateFor(language) === 'complete'"
+      [class.incomplete]="stateFor(language) === 'incomplete'"
+      [class.empty]="stateFor(language) === 'empty'"
+      [attr.aria-pressed]="activeLanguage() === language"
+      (click)="selectLanguage(language)"
+    >
+      <span class="admin-language-toolbar__label">{{ labelFor(language) }}</span>
+      <span class="admin-language-toolbar__state">
+        {{ statusLabel(language) }}
+      </span>
+    </button>
+  </div>
+</div>

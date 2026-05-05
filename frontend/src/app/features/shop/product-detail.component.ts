@@ -4,8 +4,11 @@ import {
   afterNextRender,
   Component,
   DestroyRef,
+  ElementRef,
   Injector,
   PLATFORM_ID,
+  QueryList,
+  ViewChildren,
   computed,
   inject,
   signal,
@@ -30,6 +33,7 @@ import { AppButtonComponent } from '../../shared/components/app-button/app-butto
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
 import { QuickRequestPanelComponent } from '../../shared/components/quick-request-panel/quick-request-panel.component';
 import { StlViewerComponent } from '../../shared/components/stl-viewer/stl-viewer.component';
+import { SwipeCarouselDirective } from '../../shared/directives/swipe-carousel.directive';
 import {
   ShopProductDetail,
   ShopProductVariantOption,
@@ -62,6 +66,7 @@ interface ShopMaterialProperty {
     AppCardComponent,
     QuickRequestPanelComponent,
     StlViewerComponent,
+    SwipeCarouselDirective,
   ],
   templateUrl: './product-detail.component.html',
   styleUrl: './product-detail.component.scss',
@@ -80,7 +85,10 @@ export class ProductDetailComponent {
   private readonly shopRouteService = inject(ShopRouteService);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly responseInit = inject(RESPONSE_INIT, { optional: true });
+  @ViewChildren('thumbButton')
+  private thumbButtons?: QueryList<ElementRef<HTMLButtonElement>>;
   readonly shopService = inject(ShopService);
+  private thumbScrollFrame: number | null = null;
 
   readonly routeCategorySlug = signal<string | null>(
     this.readRouteParam('categorySlug'),
@@ -215,6 +223,9 @@ export class ProductDetailComponent {
       this.scheduleCartWarmup();
     });
     this.destroyRef.onDestroy(() => {
+      if (this.isBrowser && this.thumbScrollFrame !== null) {
+        window.cancelAnimationFrame(this.thumbScrollFrame);
+      }
       this.languageService.clearLocalizedRouteOverrides();
     });
 
@@ -578,6 +589,27 @@ export class ProductDetailComponent {
 
   private setSelectedImageAssetId(mediaAssetId: string | null): void {
     this.selectedImageAssetId.set(mediaAssetId);
+    this.scheduleSelectedThumbScroll();
+  }
+
+  private scheduleSelectedThumbScroll(): void {
+    if (!this.isBrowser) {
+      return;
+    }
+    if (this.thumbScrollFrame !== null) {
+      window.cancelAnimationFrame(this.thumbScrollFrame);
+    }
+    this.thumbScrollFrame = window.requestAnimationFrame(() => {
+      this.thumbScrollFrame = null;
+      const activeThumb = this.thumbButtons?.get(
+        this.selectedImageIndex(),
+      )?.nativeElement;
+      activeThumb?.scrollIntoView({
+        block: 'nearest',
+        inline: 'center',
+        behavior: 'smooth',
+      });
+    });
   }
 
   private normalizeHexColor(value: string | null | undefined): string | null {

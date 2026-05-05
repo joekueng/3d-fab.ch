@@ -1,26 +1,18 @@
 import { AdminMediaLanguage } from '../services/admin-media.service';
 import { ProductStatusFilter, ShopLanguage } from './admin-shop.types';
+import {
+  ADMIN_LANGUAGE_LABELS,
+  ADMIN_LOCALIZED_LANGUAGES,
+} from '../../../shared/utils/admin-localization.util';
 
-export const SHOP_LANGUAGES: readonly ShopLanguage[] = [
-  'it',
-  'en',
-  'de',
-  'fr',
-];
+export const SHOP_LANGUAGES =
+  ADMIN_LOCALIZED_LANGUAGES satisfies readonly ShopLanguage[];
 
-export const MEDIA_LANGUAGES: readonly AdminMediaLanguage[] = [
-  'it',
-  'en',
-  'de',
-  'fr',
-];
+export const MEDIA_LANGUAGES =
+  ADMIN_LOCALIZED_LANGUAGES satisfies readonly AdminMediaLanguage[];
 
-export const LANGUAGE_LABELS: Readonly<Record<ShopLanguage, string>> = {
-  it: 'IT',
-  en: 'EN',
-  de: 'DE',
-  fr: 'FR',
-};
+export const LANGUAGE_LABELS =
+  ADMIN_LANGUAGE_LABELS satisfies Readonly<Record<ShopLanguage, string>>;
 
 export const PRODUCT_STATUS_FILTERS: readonly ProductStatusFilter[] = [
   'ALL',
