@@ -29,6 +29,9 @@ public class OrderDto {
     private BigDecimal cadHours;
     private BigDecimal cadHourlyRateChf;
     private BigDecimal cadTotalChf;
+    private Integer cadFileCount;
+    private Boolean cadFileDownloadAvailable;
+    private List<OrderDeliverableFileDto> cadFiles;
     private BigDecimal totalChf;
     private OffsetDateTime createdAt;
     private OffsetDateTime paidAt;
@@ -109,6 +112,15 @@ public class OrderDto {
 
     public BigDecimal getCadTotalChf() { return cadTotalChf; }
     public void setCadTotalChf(BigDecimal cadTotalChf) { this.cadTotalChf = cadTotalChf; }
+
+    public Integer getCadFileCount() { return cadFileCount; }
+    public void setCadFileCount(Integer cadFileCount) { this.cadFileCount = cadFileCount; }
+
+    public Boolean getCadFileDownloadAvailable() { return cadFileDownloadAvailable; }
+    public void setCadFileDownloadAvailable(Boolean cadFileDownloadAvailable) { this.cadFileDownloadAvailable = cadFileDownloadAvailable; }
+
+    public List<OrderDeliverableFileDto> getCadFiles() { return cadFiles; }
+    public void setCadFiles(List<OrderDeliverableFileDto> cadFiles) { this.cadFiles = cadFiles; }
 
     public BigDecimal getTotalChf() { return totalChf; }
     public void setTotalChf(BigDecimal totalChf) { this.totalChf = totalChf; }

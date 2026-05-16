@@ -3,6 +3,7 @@ import {
   HttpClient,
   HttpErrorResponse,
   HttpEventType,
+  HttpResponse,
 } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { environment } from '../../../../environments/environment';
@@ -222,6 +223,18 @@ export class QuoteEstimatorService {
       {
         headers,
         responseType: 'blob',
+      },
+    );
+  }
+
+  getOrderCadFiles(orderId: string): Observable<HttpResponse<Blob>> {
+    const headers: any = {};
+    return this.http.get(
+      `${environment.apiUrl}/api/orders/${orderId}/cad-files/download`,
+      {
+        headers,
+        responseType: 'blob',
+        observe: 'response',
       },
     );
   }

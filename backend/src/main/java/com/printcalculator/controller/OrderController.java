@@ -4,7 +4,7 @@ import com.printcalculator.dto.CreateOrderRequest;
 import com.printcalculator.dto.OrderDto;
 import com.printcalculator.service.order.OrderControllerService;
 import jakarta.validation.Valid;
-import org.springframework.http.MediaType;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,9 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 
@@ -37,20 +35,6 @@ public class OrderController {
             @Valid @RequestBody CreateOrderRequest request
     ) {
         return ResponseEntity.ok(orderControllerService.createOrderFromQuote(quoteSessionId, request));
-    }
-
-    @PostMapping(value = "/{orderId}/items/{orderItemId}/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Transactional
-    public ResponseEntity<Void> uploadOrderItemFile(
-            @PathVariable UUID orderId,
-            @PathVariable UUID orderItemId,
-            @RequestParam("file") MultipartFile file
-    ) throws IOException {
-        boolean uploaded = orderControllerService.uploadOrderItemFile(orderId, orderItemId, file);
-        if (!uploaded) {
-            return ResponseEntity.badRequest().build();
-        }
-        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{orderId}")
@@ -74,6 +58,11 @@ public class OrderController {
     @GetMapping("/{orderId}/confirmation")
     public ResponseEntity<byte[]> getConfirmation(@PathVariable UUID orderId) {
         return orderControllerService.getConfirmation(orderId);
+    }
+
+    @GetMapping("/{orderId}/cad-files/download")
+    public ResponseEntity<Resource> downloadCadFiles(@PathVariable UUID orderId) {
+        return orderControllerService.downloadCadFiles(orderId);
     }
 
     @GetMapping("/{orderId}/invoice")

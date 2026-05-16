@@ -16,6 +16,7 @@ import com.printcalculator.service.payment.PaymentService;
 import com.printcalculator.service.payment.QrBillService;
 import com.printcalculator.service.payment.TwintPaymentService;
 import com.printcalculator.service.storage.StorageService;
+import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -57,6 +58,7 @@ public class OrderControllerService {
     private final TwintPaymentService twintPaymentService;
     private final PaymentService paymentService;
     private final PaymentRepository paymentRepo;
+    private final OrderCadFileService orderCadFileService;
 
     public OrderControllerService(OrderService orderService,
                                   OrderRepository orderRepo,
@@ -66,7 +68,8 @@ public class OrderControllerService {
                                   QrBillService qrBillService,
                                   TwintPaymentService twintPaymentService,
                                   PaymentService paymentService,
-                                  PaymentRepository paymentRepo) {
+                                  PaymentRepository paymentRepo,
+                                  OrderCadFileService orderCadFileService) {
         this.orderService = orderService;
         this.orderRepo = orderRepo;
         this.orderItemRepo = orderItemRepo;
@@ -76,6 +79,7 @@ public class OrderControllerService {
         this.twintPaymentService = twintPaymentService;
         this.paymentService = paymentService;
         this.paymentRepo = paymentRepo;
+        this.orderCadFileService = orderCadFileService;
     }
 
     @Transactional
@@ -133,6 +137,10 @@ public class OrderControllerService {
 
     public ResponseEntity<byte[]> getConfirmation(UUID orderId) {
         return generateDocument(orderId, true);
+    }
+
+    public ResponseEntity<Resource> downloadCadFiles(UUID orderId) {
+        return orderCadFileService.downloadCustomerCadFiles(orderId);
     }
 
     public ResponseEntity<Map<String, String>> getTwintPayment(UUID orderId) {
@@ -280,6 +288,9 @@ public class OrderControllerService {
         dto.setCadHours(order.getCadHours());
         dto.setCadHourlyRateChf(order.getCadHourlyRateChf());
         dto.setCadTotalChf(order.getCadTotalChf());
+        OrderCadFileService.CadFileSummary cadFileSummary = orderCadFileService.summarize(order);
+        dto.setCadFileCount(cadFileSummary != null ? cadFileSummary.fileCount() : 0);
+        dto.setCadFileDownloadAvailable(cadFileSummary != null && cadFileSummary.downloadAvailable());
         dto.setTotalChf(order.getTotalChf());
         dto.setCreatedAt(order.getCreatedAt());
         dto.setPaidAt(order.getPaidAt());

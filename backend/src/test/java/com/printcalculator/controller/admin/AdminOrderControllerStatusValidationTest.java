@@ -7,6 +7,7 @@ import com.printcalculator.repository.OrderItemRepository;
 import com.printcalculator.repository.OrderRepository;
 import com.printcalculator.repository.PaymentRepository;
 import com.printcalculator.repository.QuoteLineItemRepository;
+import com.printcalculator.service.order.OrderCadFileService;
 import com.printcalculator.service.order.AdminOrderControllerService;
 import com.printcalculator.service.payment.InvoicePdfRenderingService;
 import com.printcalculator.service.payment.PaymentService;
@@ -54,6 +55,8 @@ class AdminOrderControllerStatusValidationTest {
     private QrBillService qrBillService;
     @Mock
     private ApplicationEventPublisher eventPublisher;
+    @Mock
+    private OrderCadFileService orderCadFileService;
 
     private AdminOrderController controller;
 
@@ -68,7 +71,8 @@ class AdminOrderControllerStatusValidationTest {
                 storageService,
                 invoicePdfRenderingService,
                 qrBillService,
-                eventPublisher
+                eventPublisher,
+                orderCadFileService
         );
         controller = new AdminOrderController(adminOrderControllerService);
     }

@@ -357,10 +357,16 @@
           <app-button
             type="button"
             (click)="updatePaymentMethod()"
-            [disabled]="confirmingPayment"
+            [disabled]="
+              confirmingPayment || selectedOrder.paymentStatus === 'COMPLETED'
+            "
           >
             {{
-              confirmingPayment ? "Salvataggio..." : "Cambia metodo pagamento"
+              selectedOrder.paymentStatus === "COMPLETED"
+                ? "Pagamento confermato"
+                : confirmingPayment
+                  ? "Conferma..."
+                  : "Conferma pagamento"
             }}
           </app-button>
         </div>
@@ -386,6 +392,60 @@
           Dettagli stampa
         </app-button>
       </div>
+
+      <section
+        class="order-info-section ui-subpanel cad-files-panel"
+        *ngIf="isCadOrder(selectedOrder)"
+      >
+        <header class="order-info-section__header">
+          <h3>File CAD cliente</h3>
+          <span class="same-address-badge">
+            {{ selectedOrder.cadFileCount || 0 }} file totali
+          </span>
+        </header>
+
+        <div class="cad-file-upload">
+          <input
+            id="cad-deliverable-files"
+            class="sr-only"
+            type="file"
+            multiple
+            (change)="onCadFilesSelected($event)"
+          />
+          <label class="ui-file-picker" for="cad-deliverable-files">
+            <span class="ui-file-picker__button">Scegli file</span>
+            <span class="ui-file-picker__name">
+              {{ cadUploadFileLabel() }}
+            </span>
+          </label>
+          <app-button
+            type="button"
+            variant="secondary"
+            (click)="uploadCadFiles()"
+            [disabled]="uploadingCadFiles || cadUploadFiles.length === 0"
+          >
+            {{ uploadingCadFiles ? "Upload..." : "Aggiungi file" }}
+          </app-button>
+        </div>
+
+        <div class="cad-file-list" *ngIf="selectedOrder.cadFiles?.length">
+          <div class="cad-file-row" *ngFor="let file of selectedOrder.cadFiles">
+            <div>
+              <strong>{{ file.originalFilename }}</strong>
+              <span>{{ formatFileSize(file.fileSizeBytes) }}</span>
+            </div>
+            <app-button
+              type="button"
+              variant="ghost-danger"
+              size="sm"
+              (click)="deleteCadFile(file.id)"
+              [disabled]="isDeletingCadFile(file.id)"
+            >
+              {{ isDeletingCadFile(file.id) ? "Elimino..." : "Elimina" }}
+            </app-button>
+          </div>
+        </div>
+      </section>
 
       <div class="items">
         <div class="item" *ngFor="let item of selectedOrder.items">

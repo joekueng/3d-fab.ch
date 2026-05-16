@@ -34,6 +34,14 @@ export interface AdminOrderItem {
   lineTotalChf: number;
 }
 
+export interface AdminOrderCadFile {
+  id: string;
+  originalFilename: string;
+  fileSizeBytes?: number;
+  mimeType?: string;
+  createdAt: string;
+}
+
 export interface AdminOrderAddress {
   firstName?: string | null;
   lastName?: string | null;
@@ -73,6 +81,9 @@ export interface AdminOrder {
   cadHours?: number;
   cadHourlyRateChf?: number;
   cadTotalChf?: number;
+  cadFileCount?: number;
+  cadFileDownloadAvailable?: boolean;
+  cadFiles?: AdminOrderCadFile[];
   printMaterialCode?: string;
   printNozzleDiameterMm?: number;
   printLayerHeightMm?: number;
@@ -147,5 +158,25 @@ export class AdminOrdersService {
       withCredentials: true,
       responseType: 'blob',
     });
+  }
+
+  uploadCadFiles(orderId: string, files: File[]): Observable<AdminOrder> {
+    const formData = new FormData();
+    for (const file of files) {
+      formData.append('files', file);
+    }
+
+    return this.http.post<AdminOrder>(
+      `${this.baseUrl}/${orderId}/cad-files`,
+      formData,
+      { withCredentials: true },
+    );
+  }
+
+  deleteCadFile(orderId: string, fileId: string): Observable<AdminOrder> {
+    return this.http.delete<AdminOrder>(
+      `${this.baseUrl}/${orderId}/cad-files/${fileId}`,
+      { withCredentials: true },
+    );
   }
 }

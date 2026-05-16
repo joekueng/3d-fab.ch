@@ -59,6 +59,8 @@ class AdminOrderControllerServiceTest {
     private QrBillService qrBillService;
     @Mock
     private ApplicationEventPublisher eventPublisher;
+    @Mock
+    private OrderCadFileService orderCadFileService;
 
     @InjectMocks
     private AdminOrderControllerService service;
@@ -96,7 +98,7 @@ class AdminOrderControllerServiceTest {
         assertEquals("BANK_TRANSFER", dto.getPaymentMethod());
         assertEquals("PENDING", dto.getPaymentStatus());
         assertEquals(paidAt, dto.getPaidAt());
-        verify(paymentService).updatePaymentMethod(orderId, "BANK_TRANSFER");
+        verify(paymentService).confirmPayment(orderId, "BANK_TRANSFER");
     }
 
     @Test

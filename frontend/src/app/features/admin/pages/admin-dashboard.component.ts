@@ -45,7 +45,10 @@ export class AdminDashboardComponent implements OnInit {
   detailLoading = false;
   confirmingPayment = false;
   updatingStatus = false;
+  uploadingCadFiles = false;
   errorMessage: string | null = null;
+  cadUploadFiles: File[] = [];
+  deletingCadFileIds = new Set<string>();
   readonly orderStatusOptions = [
     'PENDING_PAYMENT',
     'PAID',
@@ -166,6 +169,7 @@ export class AdminDashboardComponent implements OnInit {
 
   openDetails(orderId: string): void {
     this.detailLoading = true;
+    this.cadUploadFiles = [];
     this.adminOrdersService.getOrder(orderId).subscribe({
       next: (order) => {
         this.selectedOrder = order;
@@ -200,6 +204,54 @@ export class AdminDashboardComponent implements OnInit {
           this.errorMessage = 'Aggiornamento metodo pagamento non riuscito.';
         },
       });
+  }
+
+  onCadFilesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    this.cadUploadFiles = Array.from(input?.files ?? []);
+  }
+
+  uploadCadFiles(): void {
+    if (
+      !this.selectedOrder ||
+      this.uploadingCadFiles ||
+      this.cadUploadFiles.length === 0
+    ) {
+      return;
+    }
+
+    this.uploadingCadFiles = true;
+    this.adminOrdersService
+      .uploadCadFiles(this.selectedOrder.id, this.cadUploadFiles)
+      .subscribe({
+        next: (updatedOrder) => {
+          this.uploadingCadFiles = false;
+          this.cadUploadFiles = [];
+          this.applyOrderUpdate(updatedOrder);
+        },
+        error: () => {
+          this.uploadingCadFiles = false;
+          this.errorMessage = 'Upload file CAD non riuscito.';
+        },
+      });
+  }
+
+  deleteCadFile(fileId: string): void {
+    if (!this.selectedOrder || this.deletingCadFileIds.has(fileId)) {
+      return;
+    }
+
+    this.deletingCadFileIds.add(fileId);
+    this.adminOrdersService.deleteCadFile(this.selectedOrder.id, fileId).subscribe({
+      next: (updatedOrder) => {
+        this.deletingCadFileIds.delete(fileId);
+        this.applyOrderUpdate(updatedOrder);
+      },
+      error: () => {
+        this.deletingCadFileIds.delete(fileId);
+        this.errorMessage = 'Eliminazione file CAD non riuscita.';
+      },
+    });
   }
 
   updateStatus(): void {
@@ -438,6 +490,37 @@ export class AdminDashboardComponent implements OnInit {
 
   hasPrintItems(order: AdminOrder | null): boolean {
     return (order?.items || []).some((item) => !this.isShopItem(item));
+  }
+
+  isCadOrder(order: AdminOrder | null): boolean {
+    return !!order?.isCadOrder;
+  }
+
+  cadUploadFileLabel(): string {
+    if (this.cadUploadFiles.length === 0) {
+      return 'Nessun file selezionato';
+    }
+    if (this.cadUploadFiles.length === 1) {
+      return this.cadUploadFiles[0].name;
+    }
+    return `${this.cadUploadFiles.length} file selezionati`;
+  }
+
+  formatFileSize(bytes?: number): string {
+    if (!bytes || bytes <= 0) {
+      return '-';
+    }
+    if (bytes < 1024) {
+      return `${bytes} B`;
+    }
+    if (bytes < 1024 * 1024) {
+      return `${(bytes / 1024).toFixed(1)} KB`;
+    }
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  isDeletingCadFile(fileId: string): boolean {
+    return this.deletingCadFileIds.has(fileId);
   }
 
   printItems(order: AdminOrder | null): AdminOrderItem[] {

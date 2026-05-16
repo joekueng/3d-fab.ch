@@ -27,6 +27,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.charset.StandardCharsets;
@@ -65,6 +66,7 @@ public class AdminOrderControllerService {
     private final InvoicePdfRenderingService invoiceService;
     private final QrBillService qrBillService;
     private final ApplicationEventPublisher eventPublisher;
+    private final OrderCadFileService orderCadFileService;
 
     public AdminOrderControllerService(OrderRepository orderRepo,
                                        OrderItemRepository orderItemRepo,
@@ -74,7 +76,8 @@ public class AdminOrderControllerService {
                                        StorageService storageService,
                                        InvoicePdfRenderingService invoiceService,
                                        QrBillService qrBillService,
-                                       ApplicationEventPublisher eventPublisher) {
+                                       ApplicationEventPublisher eventPublisher,
+                                       OrderCadFileService orderCadFileService) {
         this.orderRepo = orderRepo;
         this.orderItemRepo = orderItemRepo;
         this.paymentRepo = paymentRepo;
@@ -84,6 +87,7 @@ public class AdminOrderControllerService {
         this.invoiceService = invoiceService;
         this.qrBillService = qrBillService;
         this.eventPublisher = eventPublisher;
+        this.orderCadFileService = orderCadFileService;
     }
 
     public List<OrderDto> listOrders() {
@@ -104,7 +108,7 @@ public class AdminOrderControllerService {
         if (method == null || method.isBlank()) {
             throw new ResponseStatusException(BAD_REQUEST, "Payment method is required");
         }
-        paymentService.updatePaymentMethod(orderId, method);
+        paymentService.confirmPayment(orderId, method);
         return toOrderDto(getOrderOrThrow(orderId));
     }
 
@@ -187,6 +191,20 @@ public class AdminOrderControllerService {
         return generateDocument(getOrderOrThrow(orderId), false);
     }
 
+    @Transactional
+    public OrderDto uploadCadFiles(UUID orderId, List<MultipartFile> files) {
+        getOrderOrThrow(orderId);
+        orderCadFileService.uploadAdminCadFiles(orderId, files);
+        return toOrderDto(getOrderOrThrow(orderId));
+    }
+
+    @Transactional
+    public OrderDto deleteCadFile(UUID orderId, UUID fileId) {
+        getOrderOrThrow(orderId);
+        orderCadFileService.deleteAdminCadFile(orderId, fileId);
+        return toOrderDto(getOrderOrThrow(orderId));
+    }
+
     private Order getOrderOrThrow(UUID orderId) {
         return orderRepo.findById(orderId)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Order not found"));
@@ -219,6 +237,10 @@ public class AdminOrderControllerService {
         dto.setCadHours(order.getCadHours());
         dto.setCadHourlyRateChf(order.getCadHourlyRateChf());
         dto.setCadTotalChf(order.getCadTotalChf());
+        OrderCadFileService.CadFileSummary cadFileSummary = orderCadFileService.summarize(order);
+        dto.setCadFileCount(cadFileSummary != null ? cadFileSummary.fileCount() : 0);
+        dto.setCadFileDownloadAvailable(cadFileSummary != null && cadFileSummary.downloadAvailable());
+        dto.setCadFiles(orderCadFileService.listDeliverableDtos(order.getId()));
         dto.setTotalChf(order.getTotalChf());
         dto.setCreatedAt(order.getCreatedAt());
         dto.setPaidAt(order.getPaidAt());
