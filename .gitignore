@@ -24,6 +24,7 @@ hs_err_pid*
 replay_pid*
 /frontend/.vscode/
 /backend/venv/
+backend/src/main/resources/application-local.properties
 
 # IDEs and editors
 .idea/

@@ -128,6 +128,14 @@ Configurazione runtime attesa:
 
 `APP_QR_DEBUG_LOGGING=true` aiuta a diagnosticare `remoteAddr`, header proxy e IP risolto, ma registra IP nei log: usarlo solo durante il debug.
 
+## License
+
+This project is proprietary software. All rights reserved.
+
+No commercial use, modification, redistribution, sublicensing, hosting, or
+derivative works are permitted without prior written permission.
+See [LICENSE](./LICENSE).
+
 ## Troubleshooting
 
 ### Percorso OrcaSlicer
