@@ -242,16 +242,18 @@ export class AdminDashboardComponent implements OnInit {
     }
 
     this.deletingCadFileIds.add(fileId);
-    this.adminOrdersService.deleteCadFile(this.selectedOrder.id, fileId).subscribe({
-      next: (updatedOrder) => {
-        this.deletingCadFileIds.delete(fileId);
-        this.applyOrderUpdate(updatedOrder);
-      },
-      error: () => {
-        this.deletingCadFileIds.delete(fileId);
-        this.errorMessage = 'Eliminazione file CAD non riuscita.';
-      },
-    });
+    this.adminOrdersService
+      .deleteCadFile(this.selectedOrder.id, fileId)
+      .subscribe({
+        next: (updatedOrder) => {
+          this.deletingCadFileIds.delete(fileId);
+          this.applyOrderUpdate(updatedOrder);
+        },
+        error: () => {
+          this.deletingCadFileIds.delete(fileId);
+          this.errorMessage = 'Eliminazione file CAD non riuscita.';
+        },
+      });
   }
 
   updateStatus(): void {
