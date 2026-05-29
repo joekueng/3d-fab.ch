@@ -1,4 +1,4 @@
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 import { CalculatorPageComponent } from './calculator-page.component';
@@ -310,6 +310,7 @@ describe('CalculatorPageComponent', () => {
     const { component, estimator, uploadForm } = createComponent();
     const originalBlob = new Blob(['original']);
     const previewBlob = new Blob(['preview']);
+    component.result.set(createResult('session-1'));
 
     estimator.getLineItemContent.and.callFake(
       (_sessionId: string, _lineItemId: string, preview = false) =>
@@ -579,5 +580,48 @@ describe('CalculatorPageComponent', () => {
     );
 
     expect(component.requiresRecalculation()).toBeFalse();
+  });
+
+  it('ignores stale file restores after the active quote session changes', () => {
+    const { component, estimator, uploadForm } = createComponent();
+    const staleDownload = new Subject<Blob>();
+    component.result.set(createResult('session-old'));
+    component.loading.set(true);
+
+    estimator.getLineItemContent.and.returnValue(staleDownload.asObservable());
+
+    component.restoreFilesAndSettings(
+      {
+        id: 'session-old',
+        materialCode: 'PLA',
+        quality: 'standard',
+        nozzleDiameterMm: 0.4,
+        layerHeightMm: 0.2,
+        infillPercent: 15,
+        infillPattern: 'grid',
+        supportsEnabled: true,
+      },
+      [
+        {
+          id: 'line-old',
+          originalFilename: 'old-part.stl',
+          quantity: 1,
+          materialCode: 'PLA',
+          quality: 'standard',
+          nozzleDiameterMm: 0.4,
+          layerHeightMm: 0.2,
+          infillPercent: 15,
+          infillPattern: 'grid',
+          supportsEnabled: true,
+        },
+      ],
+    );
+
+    component.result.set(createResult('session-new'));
+    staleDownload.next(new Blob(['old']));
+    staleDownload.complete();
+
+    expect(uploadForm.setFiles).not.toHaveBeenCalled();
+    expect(component.loading()).toBeTrue();
   });
 });

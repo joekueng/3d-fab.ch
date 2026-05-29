@@ -151,6 +151,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
   >();
   private pendingSessionRestore: PendingSessionRestore | null = null;
   private isRestoringQuoteState = false;
+  private quoteStateVersion = 0;
   private restoreDebugRun = 0;
 
   @ViewChild('uploadForm') uploadForm!: UploadFormComponent;
@@ -220,6 +221,8 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
   }
 
   loadSession(sessionId: string) {
+    this.quoteStateVersion += 1;
+    this.pendingSessionRestore = null;
     this.loading.set(true);
     this.estimator.getQuoteSession(sessionId).subscribe({
       next: (data) => {
@@ -266,6 +269,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
   }
 
   restoreFilesAndSettings(session: any, items: any[]) {
+    const restoreStateVersion = this.quoteStateVersion;
     if (!items || items.length === 0) {
       this.loading.set(false);
       return;
@@ -310,6 +314,13 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
 
     forkJoin(downloads).subscribe({
       next: (results: any[]) => {
+        if (
+          restoreStateVersion !== this.quoteStateVersion ||
+          !this.isCurrentSessionRestore(session)
+        ) {
+          return;
+        }
+
         console.debug('[restoreFilesAndSettings:downloaded]', {
           restoreRun,
           sessionId: session?.id,
@@ -360,6 +371,9 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
         this.loading.set(false);
       },
       error: (err: any) => {
+        if (restoreStateVersion !== this.quoteStateVersion) {
+          return;
+        }
         console.error('Failed to download files', err);
         this.loading.set(false);
         // Still show result? Yes.
@@ -369,6 +383,8 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
 
   onCalculate(req: QuoteRequest) {
     // ... (logic remains the same, simplified for diff)
+    this.quoteStateVersion += 1;
+    this.pendingSessionRestore = null;
     this.currentRequest = req;
     this.loading.set(true);
     this.uploadProgress.set(0);
@@ -548,6 +564,8 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
   }
 
   onNewQuote() {
+    this.quoteStateVersion += 1;
+    this.pendingSessionRestore = null;
     this.step.set('upload');
     this.result.set(null);
     this.requiresRecalculation.set(false);
@@ -631,6 +649,8 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
   }
 
   private setQuoteError(key: string, message: string | null = null): void {
+    this.quoteStateVersion += 1;
+    this.pendingSessionRestore = null;
     this.errorKey.set(key);
     this.errorMessage.set(message);
     this.warningMessage.set(null);
@@ -779,6 +799,11 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     }
 
     const payload = this.pendingSessionRestore;
+    if (!this.isCurrentSessionRestore(payload.session)) {
+      this.pendingSessionRestore = null;
+      return;
+    }
+
     console.debug('[applyPendingSessionRestoreIfNeeded]', {
       restoreRun: this.restoreDebugRun,
       sessionId: payload.session?.id,
@@ -1047,5 +1072,15 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     const resolved = Number.isFinite(numeric) ? numeric : fallback;
     const factor = 10 ** decimals;
     return Math.round(resolved * factor) / factor;
+  }
+
+  private isCurrentSessionRestore(session: any): boolean {
+    const restoreSessionId = String(session?.id || '');
+    const currentResultSessionId = String(this.result()?.sessionId || '');
+    return (
+      restoreSessionId.length > 0 &&
+      currentResultSessionId.length > 0 &&
+      restoreSessionId === currentResultSessionId
+    );
   }
 }
