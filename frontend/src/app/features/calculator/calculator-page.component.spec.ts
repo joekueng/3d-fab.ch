@@ -624,4 +624,76 @@ describe('CalculatorPageComponent', () => {
     expect(uploadForm.setFiles).not.toHaveBeenCalled();
     expect(component.loading()).toBeTrue();
   });
+
+  it('ignores in-flight restores after the user changes print settings', () => {
+    const { component, estimator, uploadForm } = createComponent();
+    const staleDownload = new Subject<Blob>();
+    const baselineSettings = {
+      mode: 'advanced',
+      material: 'pla',
+      quality: 'standard',
+      nozzleDiameter: 0.4,
+      layerHeight: 0.2,
+      infillDensity: 15,
+      infillPattern: 'grid',
+      supportEnabled: true,
+    } as const;
+    component.mode.set('advanced');
+    component.result.set(createResult('session-1'));
+    component.loading.set(true);
+    component['baselinePrintSettings'] = baselineSettings;
+    component['baselineItemSettingsByFileName'] = new Map([
+      ['part-a.stl', baselineSettings],
+    ]);
+
+    estimator.getLineItemContent.and.returnValue(staleDownload.asObservable());
+    uploadForm.getCurrentRequestDraft.and.returnValue({
+      ...createDraftRequest(),
+      mode: 'advanced',
+      layerHeight: 0.1,
+      items: createDraftRequest().items.map((item) => ({
+        ...item,
+        layerHeight: 0.1,
+      })),
+    });
+
+    component.restoreFilesAndSettings(
+      {
+        id: 'session-1',
+        materialCode: 'PLA',
+        quality: 'standard',
+        nozzleDiameterMm: 0.4,
+        layerHeightMm: 0.2,
+        infillPercent: 15,
+        infillPattern: 'grid',
+        supportsEnabled: true,
+      },
+      [
+        {
+          id: 'line-1',
+          originalFilename: 'part-a.stl',
+          quantity: 1,
+          materialCode: 'PLA',
+          quality: 'standard',
+          nozzleDiameterMm: 0.4,
+          layerHeightMm: 0.2,
+          infillPercent: 15,
+          infillPattern: 'grid',
+          supportsEnabled: true,
+        },
+      ],
+    );
+
+    component.onUploadPrintSettingsChange({
+      ...baselineSettings,
+      material: 'PLA',
+      layerHeight: 0.1,
+    });
+    staleDownload.next(new Blob(['old']));
+    staleDownload.complete();
+
+    expect(component.requiresRecalculation()).toBeTrue();
+    expect(uploadForm.setFiles).not.toHaveBeenCalled();
+    expect(component.loading()).toBeFalse();
+  });
 });

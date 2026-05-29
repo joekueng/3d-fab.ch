@@ -318,6 +318,12 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
           restoreStateVersion !== this.quoteStateVersion ||
           !this.isCurrentSessionRestore(session)
         ) {
+          if (
+            restoreStateVersion !== this.quoteStateVersion &&
+            this.isCurrentSessionRestore(session)
+          ) {
+            this.loading.set(false);
+          }
           return;
         }
 
@@ -372,6 +378,9 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
       },
       error: (err: any) => {
         if (restoreStateVersion !== this.quoteStateVersion) {
+          if (this.isCurrentSessionRestore(session)) {
+            this.loading.set(false);
+          }
           return;
         }
         console.error('Failed to download files', err);
@@ -586,6 +595,8 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     void _;
     if (this.isRestoringQuoteState) return;
     if (!this.result()) return;
+    this.quoteStateVersion += 1;
+    this.pendingSessionRestore = null;
     this.refreshRecalculationRequirement();
   }
 
