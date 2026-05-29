@@ -29,7 +29,7 @@
 
     @if (items().length > 0) {
       <div class="items-grid">
-        @for (item of items(); track item.file.name; let i = $index) {
+        @for (item of items(); track item.clientKey; let i = $index) {
           <div
             class="file-card"
             [class.active]="item.file === selectedFile()"

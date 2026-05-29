@@ -521,9 +521,9 @@ describe('CalculatorPageComponent', () => {
       supportEnabled: true,
     } as const;
     component['baselinePrintSettings'] = trackedLayer01;
-    component['baselineItemSettingsByFileName'] = new Map([
-      ['part-a.stl', trackedLayer01],
-    ]);
+    component['baselineItemStates'] = [
+      { fileName: 'part-a.stl', settings: trackedLayer01 },
+    ];
 
     const requestWithLayer = (layerHeight: number): QuoteRequest => {
       const request = createDraftRequest();
@@ -580,6 +580,100 @@ describe('CalculatorPageComponent', () => {
     );
 
     expect(component.requiresRecalculation()).toBeFalse();
+  });
+
+  it('does not require recalculation for duplicate file names with different materials', () => {
+    const { component, uploadForm } = createComponent();
+    component.mode.set('advanced');
+    component.result.set(createResult('session-1'));
+
+    const globalSettings = {
+      mode: 'advanced',
+      material: 'pla',
+      quality: 'extra_fine',
+      nozzleDiameter: 0.2,
+      layerHeight: 0.08,
+      infillDensity: 100,
+      infillPattern: 'grid',
+      supportEnabled: false,
+    } as const;
+    const asaSettings = {
+      ...globalSettings,
+      material: 'asa',
+      nozzleDiameter: 0.4,
+      layerHeight: 0.2,
+    };
+    const plaSettings = {
+      ...globalSettings,
+      material: 'pla',
+      nozzleDiameter: 0.2,
+      layerHeight: 0.08,
+    };
+
+    component['baselinePrintSettings'] = globalSettings;
+    component['baselineItemStates'] = [
+      { fileName: 'duplicate.stl', settings: asaSettings },
+      { fileName: 'duplicate.stl', settings: plaSettings },
+    ];
+
+    const duplicateAsa = new File(['asa'], 'duplicate.stl', {
+      type: 'model/stl',
+    });
+    const duplicatePla = new File(['pla'], 'duplicate.stl', {
+      type: 'model/stl',
+    });
+
+    const calculatedDraft: QuoteRequest = {
+      items: [
+        {
+          file: duplicatePla,
+          quantity: 1,
+          material: 'PLA',
+          quality: 'extra_fine',
+          supportEnabled: false,
+          infillDensity: 100,
+          infillPattern: 'grid',
+          layerHeight: 0.08,
+          nozzleDiameter: 0.2,
+        },
+        {
+          file: duplicateAsa,
+          quantity: 1,
+          material: 'ASA',
+          quality: 'extra_fine',
+          supportEnabled: false,
+          infillDensity: 100,
+          infillPattern: 'grid',
+          layerHeight: 0.2,
+          nozzleDiameter: 0.4,
+        },
+      ],
+      material: 'PLA',
+      quality: 'extra_fine',
+      infillDensity: 100,
+      infillPattern: 'grid',
+      supportEnabled: false,
+      layerHeight: 0.08,
+      nozzleDiameter: 0.2,
+      mode: 'advanced',
+    };
+
+    uploadForm.getCurrentRequestDraft.and.returnValue(calculatedDraft);
+
+    component.onUploadPrintSettingsChange(globalSettings);
+
+    expect(component.requiresRecalculation()).toBeFalse();
+
+    uploadForm.getCurrentRequestDraft.and.returnValue({
+      ...calculatedDraft,
+      items: calculatedDraft.items.map((item, index) =>
+        index === 1 ? { ...item, material: 'PLA' } : item,
+      ),
+    });
+
+    component.onUploadPrintSettingsChange(globalSettings);
+
+    expect(component.requiresRecalculation()).toBeTrue();
   });
 
   it('ignores stale file restores after the active quote session changes', () => {
@@ -642,9 +736,9 @@ describe('CalculatorPageComponent', () => {
     component.result.set(createResult('session-1'));
     component.loading.set(true);
     component['baselinePrintSettings'] = baselineSettings;
-    component['baselineItemSettingsByFileName'] = new Map([
-      ['part-a.stl', baselineSettings],
-    ]);
+    component['baselineItemStates'] = [
+      { fileName: 'part-a.stl', settings: baselineSettings },
+    ];
 
     estimator.getLineItemContent.and.returnValue(staleDownload.asObservable());
     uploadForm.getCurrentRequestDraft.and.returnValue({

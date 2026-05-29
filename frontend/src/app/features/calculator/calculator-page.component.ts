@@ -43,6 +43,11 @@ type TrackedPrintSettings = {
   supportEnabled: boolean;
 };
 
+type TrackedPrintItemState = {
+  fileName: string;
+  settings: TrackedPrintSettings;
+};
+
 type PendingSessionRestore = {
   session: any;
   items: any[];
@@ -145,14 +150,10 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     Record<string, { differences: string[] }>
   >({});
   private baselinePrintSettings: TrackedPrintSettings | null = null;
-  private baselineItemSettingsByFileName = new Map<
-    string,
-    TrackedPrintSettings
-  >();
+  private baselineItemStates: TrackedPrintItemState[] = [];
   private pendingSessionRestore: PendingSessionRestore | null = null;
   private isRestoringQuoteState = false;
   private quoteStateVersion = 0;
-  private restoreDebugRun = 0;
 
   @ViewChild('uploadForm') uploadForm!: UploadFormComponent;
   @ViewChild('resultCol') resultCol!: ElementRef;
@@ -240,7 +241,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
         this.baselinePrintSettings = this.toTrackedSettingsFromSession(
           data.session,
         );
-        this.baselineItemSettingsByFileName = this.buildBaselineMapFromSession(
+        this.baselineItemStates = this.buildBaselineItemStatesFromSession(
           data.items || [],
           this.baselinePrintSettings,
         );
@@ -283,14 +284,6 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    const restoreRun = ++this.restoreDebugRun;
-    console.debug('[restoreFilesAndSettings:start]', {
-      restoreRun,
-      sessionId: session?.id,
-      itemIds: items.map((item) => item?.id),
-      fileNames: items.map((item) => item?.originalFilename),
-    });
-
     // Download all files
     const downloads = items.map((item) =>
       forkJoin({
@@ -327,31 +320,12 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
           return;
         }
 
-        console.debug('[restoreFilesAndSettings:downloaded]', {
-          restoreRun,
-          sessionId: session?.id,
-          blobs: results.map((res) => ({
-            fileName: res.fileName,
-            originalBlobSize: res.originalBlob?.size ?? null,
-            previewBlobSize: res.previewBlob?.size ?? null,
-            hasConvertedPreview: res.hasConvertedPreview,
-          })),
-        });
         const files = results.map(
           (res) =>
             new File([res.originalBlob], res.fileName, {
               type: 'application/octet-stream',
             }),
         );
-
-        console.debug('[restoreFilesAndSettings:files-built]', {
-          restoreRun,
-          sessionId: session?.id,
-          files: files.map((file) => ({
-            name: file.name,
-            size: file.size,
-          })),
-        });
 
         const previewFiles = results.flatMap((res, index) => {
           if (!res.hasConvertedPreview || !res.previewBlob) {
@@ -432,8 +406,8 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
           );
           this.result.set(res);
           this.baselinePrintSettings = this.toTrackedSettingsFromRequest(req);
-          this.baselineItemSettingsByFileName =
-            this.buildBaselineMapFromRequest(req);
+          this.baselineItemStates =
+            this.buildBaselineItemStatesFromRequest(req);
           this.requiresRecalculation.set(false);
           this.itemSettingsDiffByFileName.set({});
           this.loading.set(false);
@@ -580,10 +554,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     this.requiresRecalculation.set(false);
     this.itemSettingsDiffByFileName.set({});
     this.baselinePrintSettings = null;
-    this.baselineItemSettingsByFileName = new Map<
-      string,
-      TrackedPrintSettings
-    >();
+    this.baselineItemStates = [];
     this.cadSessionLocked.set(false);
     this.orderSuccess.set(false);
     this.switchMode('easy'); // Reset to default and sync URL
@@ -670,10 +641,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     this.requiresRecalculation.set(false);
     this.itemSettingsDiffByFileName.set({});
     this.baselinePrintSettings = null;
-    this.baselineItemSettingsByFileName = new Map<
-      string,
-      TrackedPrintSettings
-    >();
+    this.baselineItemStates = [];
   }
 
   private clearQuoteErrorState(): void {
@@ -815,14 +783,6 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    console.debug('[applyPendingSessionRestoreIfNeeded]', {
-      restoreRun: this.restoreDebugRun,
-      sessionId: payload.session?.id,
-      files: payload.files.map((file) => ({
-        name: file.name,
-        size: file.size,
-      })),
-    });
     const baselineSessionSettings = this.toTrackedSettingsFromSession(
       payload.session,
     );
@@ -874,7 +834,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     }
 
     this.baselinePrintSettings = baselineSessionSettings;
-    this.baselineItemSettingsByFileName = this.buildBaselineMapFromSession(
+    this.baselineItemStates = this.buildBaselineItemStatesFromSession(
       payload.items || [],
       baselineSessionSettings,
     );
@@ -978,32 +938,24 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     };
   }
 
-  private buildBaselineMapFromRequest(
+  private buildBaselineItemStatesFromRequest(
     req: QuoteRequest,
-  ): Map<string, TrackedPrintSettings> {
-    const map = new Map<string, TrackedPrintSettings>();
-    req.items.forEach((item) => {
-      map.set(
-        this.normalizeFileName(item.file?.name || ''),
-        this.toTrackedSettingsFromItem(req, item),
-      );
-    });
-    return map;
+  ): TrackedPrintItemState[] {
+    return req.items.map((item) => ({
+      fileName: this.normalizeFileName(item.file?.name || ''),
+      settings: this.toTrackedSettingsFromItem(req, item),
+    }));
   }
 
-  private buildBaselineMapFromSession(
+  private buildBaselineItemStatesFromSession(
     items: any[],
     defaultSettings: TrackedPrintSettings | null,
-  ): Map<string, TrackedPrintSettings> {
-    const map = new Map<string, TrackedPrintSettings>();
+  ): TrackedPrintItemState[] {
     const fallback = defaultSettings ?? this.defaultTrackedSettings();
-    items.forEach((item) => {
-      map.set(
-        this.normalizeFileName(item?.originalFilename || ''),
-        this.toTrackedSettingsFromSessionItem(item, fallback),
-      );
-    });
-    return map;
+    return items.map((item) => ({
+      fileName: this.normalizeFileName(item?.originalFilename || ''),
+      settings: this.toTrackedSettingsFromSessionItem(item, fallback),
+    }));
   }
 
   private defaultTrackedSettings(): TrackedPrintSettings {
@@ -1034,34 +986,68 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    const changed = draft.items.some((item) => {
-      const key = this.normalizeFileName(item.file?.name || '');
-      const baseline = this.baselineItemSettingsByFileName.get(key) || fallback;
-      const current = this.toTrackedSettingsFromItem(draft, item);
-      return !this.sameTrackedSettings(baseline, current);
-    });
+    if (this.baselineItemStates.length === 0) {
+      this.requiresRecalculation.set(false);
+      return;
+    }
+
+    const currentItemStates = draft.items.map((item) => ({
+      fileName: this.normalizeFileName(item.file?.name || ''),
+      settings: this.toTrackedSettingsFromItem(draft, item),
+    }));
+
+    const changed = !this.sameTrackedItemStates(
+      this.baselineItemStates,
+      currentItemStates,
+    );
 
     this.requiresRecalculation.set(changed);
   }
 
-  private sameTrackedSettings(
-    a: TrackedPrintSettings,
-    b: TrackedPrintSettings,
+  private sameTrackedItemStates(
+    baseline: TrackedPrintItemState[],
+    current: TrackedPrintItemState[],
   ): boolean {
-    return (
-      a.mode === b.mode &&
-      a.material === this.normalizeString(b.material) &&
-      a.quality === this.normalizeString(b.quality) &&
-      Math.abs(
-        a.nozzleDiameter - this.normalizeNumber(b.nozzleDiameter, 0.4, 2),
-      ) < 0.0001 &&
-      Math.abs(a.layerHeight - this.normalizeNumber(b.layerHeight, 0.2, 3)) <
-        0.0001 &&
-      Math.abs(a.infillDensity - this.normalizeNumber(b.infillDensity, 20, 2)) <
-        0.0001 &&
-      a.infillPattern === this.normalizeString(b.infillPattern) &&
-      a.supportEnabled === Boolean(b.supportEnabled)
-    );
+    if (baseline.length !== current.length) {
+      return false;
+    }
+
+    const counts = new Map<string, number>();
+    baseline.forEach((item) => {
+      const signature = this.trackedItemSignature(item);
+      counts.set(signature, (counts.get(signature) || 0) + 1);
+    });
+
+    for (const item of current) {
+      const signature = this.trackedItemSignature(item);
+      const count = counts.get(signature) || 0;
+      if (count <= 0) {
+        return false;
+      }
+
+      if (count === 1) {
+        counts.delete(signature);
+      } else {
+        counts.set(signature, count - 1);
+      }
+    }
+
+    return counts.size === 0;
+  }
+
+  private trackedItemSignature(item: TrackedPrintItemState): string {
+    const settings = item.settings;
+    return [
+      item.fileName,
+      settings.mode,
+      settings.material,
+      settings.quality,
+      settings.nozzleDiameter.toFixed(4),
+      settings.layerHeight.toFixed(4),
+      settings.infillDensity.toFixed(4),
+      settings.infillPattern,
+      settings.supportEnabled ? '1' : '0',
+    ].join('\u0001');
   }
 
   private normalizeFileName(fileName: string): string {
