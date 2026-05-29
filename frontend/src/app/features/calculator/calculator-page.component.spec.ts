@@ -518,9 +518,9 @@ describe('CalculatorPageComponent', () => {
       infillDensity: 15,
       infillPattern: 'grid',
       supportEnabled: true,
-    };
-    (component as any).baselinePrintSettings = trackedLayer01;
-    (component as any).baselineItemSettingsByFileName = new Map([
+    } as const;
+    component['baselinePrintSettings'] = trackedLayer01;
+    component['baselineItemSettingsByFileName'] = new Map([
       ['part-a.stl', trackedLayer01],
     ]);
 
