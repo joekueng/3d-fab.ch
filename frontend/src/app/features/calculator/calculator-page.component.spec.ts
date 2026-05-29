@@ -502,4 +502,82 @@ describe('CalculatorPageComponent', () => {
     expect(uploadForm.selectFile).toHaveBeenCalledWith(jasmine.any(File));
     expect(component.error()).toBeFalse();
   });
+
+  it('does not keep recalculation required after restoring the recalculated session', () => {
+    const { component, estimator, uploadForm } = createComponent();
+    const originalBlob = new Blob(['original']);
+    component.mode.set('advanced');
+    component.result.set(createResult('session-1'));
+
+    const trackedLayer01 = {
+      mode: 'advanced',
+      material: 'pla',
+      quality: 'standard',
+      nozzleDiameter: 0.4,
+      layerHeight: 0.1,
+      infillDensity: 15,
+      infillPattern: 'grid',
+      supportEnabled: true,
+    } as const;
+    component['baselinePrintSettings'] = trackedLayer01;
+    component['baselineItemSettingsByFileName'] = new Map([
+      ['part-a.stl', trackedLayer01],
+    ]);
+
+    const requestWithLayer = (layerHeight: number): QuoteRequest => {
+      const request = createDraftRequest();
+      return {
+        ...request,
+        mode: 'advanced',
+        layerHeight,
+        items: request.items.map((item) => ({ ...item, layerHeight })),
+      };
+    };
+    let currentDraft = requestWithLayer(0.2);
+
+    estimator.getLineItemContent.and.returnValue(of(originalBlob));
+    uploadForm.getCurrentRequestDraft.and.callFake(() => currentDraft);
+    uploadForm.patchSettings.and.callFake(() => {
+      component.onUploadPrintSettingsChange({
+        mode: 'advanced',
+        material: 'PLA',
+        quality: 'standard',
+        nozzleDiameter: 0.4,
+        layerHeight: 0.2,
+        infillDensity: 15,
+        infillPattern: 'grid',
+        supportEnabled: true,
+      });
+      currentDraft = requestWithLayer(0.1);
+    });
+
+    component.restoreFilesAndSettings(
+      {
+        id: 'session-1',
+        materialCode: 'PLA',
+        quality: 'standard',
+        nozzleDiameterMm: 0.4,
+        layerHeightMm: 0.1,
+        infillPercent: 15,
+        infillPattern: 'grid',
+        supportsEnabled: true,
+      },
+      [
+        {
+          id: 'line-1',
+          originalFilename: 'part-a.stl',
+          quantity: 1,
+          materialCode: 'PLA',
+          quality: 'standard',
+          nozzleDiameterMm: 0.4,
+          layerHeightMm: 0.1,
+          infillPercent: 15,
+          infillPattern: 'grid',
+          supportsEnabled: true,
+        },
+      ],
+    );
+
+    expect(component.requiresRecalculation()).toBeFalse();
+  });
 });

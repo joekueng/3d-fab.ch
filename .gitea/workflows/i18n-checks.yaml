@@ -1,0 +1,29 @@
+name: I18n Checks
+
+on:
+  pull_request:
+    branches: [main, int, dev]
+  push:
+    branches: [main, int, dev]
+
+concurrency:
+  group: print-calculator-i18n-${{ gitea.ref }}
+  cancel-in-progress: true
+
+jobs:
+  i18n-parity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Check translation parity
+        shell: bash
+        run: |
+          cd frontend
+          npm run check:i18n

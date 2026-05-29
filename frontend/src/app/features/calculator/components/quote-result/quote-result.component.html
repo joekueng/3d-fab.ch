@@ -33,8 +33,7 @@
   }
   @if (recalculationRequired()) {
     <div class="recalc-banner">
-      Hai modificato i parametri di stampa. Ricalcola il preventivo prima di
-      procedere con l'ordine.
+      {{ "QUOTE.RECALC_REQUIRED" | translate }}
     </div>
   }
 
@@ -117,7 +116,7 @@
       }
       @if (recalculationRequired()) {
         <small class="limit-note">
-          Ricalcola il preventivo per riattivare il checkout.
+          {{ "QUOTE.RECALC_CHECKOUT_DISABLED" | translate }}
         </small>
       }
     </div>

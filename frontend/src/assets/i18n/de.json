@@ -12,7 +12,9 @@
     "CONSULT": "Beratung anfragen",
     "PROCEED_ORDER": "Zur Bestellung",
     "TOTAL": "Gesamt",
-    "MAX_QTY_NOTICE": "Für Mengen über {{max}} Stück bitte Beratung anfragen."
+    "MAX_QTY_NOTICE": "Für Mengen über {{max}} Stück bitte Beratung anfragen.",
+    "RECALC_REQUIRED": "Sie haben die Druckeinstellungen geändert. Berechnen Sie das Angebot neu, bevor Sie mit der Bestellung fortfahren.",
+    "RECALC_CHECKOUT_DISABLED": "Berechnen Sie das Angebot neu, um den Checkout wieder zu aktivieren."
   },
   "USER_DETAILS": {
     "TITLE": "Ihre Daten",
@@ -1104,6 +1106,7 @@
     "ITEMS_BASE_SUBTOTAL": "Artikelbasis-Zwischensumme",
     "MACHINE_COST": "Maschinenkosten",
     "SETUP_FEE": "Einrichtungskosten",
+    "NOZZLE_CHANGE": "Düsenwechsel",
     "TOTAL": "Gesamt",
     "QTY": "Menge",
     "MATERIAL": "Material",
