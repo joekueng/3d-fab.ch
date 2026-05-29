@@ -164,7 +164,7 @@ export class QuoteResultComponent {
         amount: breakdown.baseSetup,
       },
       {
-        label: 'Cambio Ugello',
+        labelKey: 'CHECKOUT.NOZZLE_CHANGE',
         amount: breakdown.nozzleChange,
         visible: breakdown.nozzleChange > 0,
       },

@@ -242,7 +242,7 @@ export class CheckoutComponent implements OnInit {
           session?.baseSetupCostChf ?? session?.session?.setupCostChf ?? 0,
       },
       {
-        label: 'Cambio Ugello',
+        labelKey: 'CHECKOUT.NOZZLE_CHANGE',
         amount: session?.nozzleChangeCostChf ?? 0,
         visible: (session?.nozzleChangeCostChf ?? 0) > 0,
       },

@@ -743,7 +743,9 @@
     "PROCEED_ORDER": "Procedi con l'ordine",
     "CONSULT": "Richiedi Consulenza",
     "TOTAL": "Totale",
-    "MAX_QTY_NOTICE": "Per quantità oltre {{max}} pezzi, richiedi consulenza."
+    "MAX_QTY_NOTICE": "Per quantità oltre {{max}} pezzi, richiedi consulenza.",
+    "RECALC_REQUIRED": "Hai modificato i parametri di stampa. Ricalcola il preventivo prima di procedere con l'ordine.",
+    "RECALC_CHECKOUT_DISABLED": "Ricalcola il preventivo per riattivare il checkout."
   },
   "USER_DETAILS": {
     "TITLE": "I tuoi dati",
@@ -1162,6 +1164,7 @@
     "ITEMS_BASE_SUBTOTAL": "Costo Base Articoli",
     "MACHINE_COST": "Costo Macchina",
     "SETUP_FEE": "Costo di Avvio",
+    "NOZZLE_CHANGE": "Cambio ugello",
     "TOTAL": "Totale",
     "QTY": "Qtà",
     "MATERIAL": "Materiale",

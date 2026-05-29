@@ -150,6 +150,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     TrackedPrintSettings
   >();
   private pendingSessionRestore: PendingSessionRestore | null = null;
+  private isRestoringQuoteState = false;
   private restoreDebugRun = 0;
 
   @ViewChild('uploadForm') uploadForm!: UploadFormComponent;
@@ -565,6 +566,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
 
   onUploadPrintSettingsChange(_: TrackedPrintSettings) {
     void _;
+    if (this.isRestoringQuoteState) return;
     if (!this.result()) return;
     this.refreshRecalculationRequirement();
   }
@@ -789,47 +791,59 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
       payload.session,
     );
 
-    this.uploadForm.setFiles(payload.files, { autoSelect: false });
-    payload.previewFiles.forEach((preview) => {
-      this.uploadForm.setPreviewFileByIndex(preview.index, preview.file);
-    });
-    this.uploadForm.patchSettings(payload.session);
+    this.isRestoringQuoteState = true;
+    try {
+      this.uploadForm.setFiles(payload.files, { autoSelect: false });
+      payload.previewFiles.forEach((preview) => {
+        this.uploadForm.setPreviewFileByIndex(preview.index, preview.file);
+      });
+      this.uploadForm.patchSettings(payload.session);
 
-    payload.items.forEach((item, index) => {
-      // Preserve persisted quantities when restoring from session.
-      // Without this, setFiles() defaults every item back to 1.
-      this.uploadForm.updateItemQuantityByIndex(
-        index,
-        Number(item.quantity || 1),
-      );
+      payload.items.forEach((item, index) => {
+        // Preserve persisted quantities when restoring from session.
+        // Without this, setFiles() defaults every item back to 1.
+        this.uploadForm.updateItemQuantityByIndex(
+          index,
+          Number(item.quantity || 1),
+        );
 
-      const tracked = this.toTrackedSettingsFromSessionItem(
-        item,
-        baselineSessionSettings,
-      );
-      this.uploadForm.setItemPrintSettingsByIndex(index, {
-        material: tracked.material.toUpperCase(),
-        quality: tracked.quality,
-        nozzleDiameter: tracked.nozzleDiameter,
-        layerHeight: tracked.layerHeight,
-        infillDensity: tracked.infillDensity,
-        infillPattern: tracked.infillPattern,
-        supportEnabled: tracked.supportEnabled,
+        const tracked = this.toTrackedSettingsFromSessionItem(
+          item,
+          baselineSessionSettings,
+        );
+        this.uploadForm.setItemPrintSettingsByIndex(index, {
+          material: tracked.material.toUpperCase(),
+          quality: tracked.quality,
+          nozzleDiameter: tracked.nozzleDiameter,
+          layerHeight: tracked.layerHeight,
+          infillDensity: tracked.infillDensity,
+          infillPattern: tracked.infillPattern,
+          supportEnabled: tracked.supportEnabled,
+        });
+
+        if (item.colorCode) {
+          this.uploadForm.updateItemColor(index, {
+            colorName: item.colorCode,
+            filamentVariantId: item.filamentVariantId,
+          });
+        }
       });
 
-      if (item.colorCode) {
-        this.uploadForm.updateItemColor(index, {
-          colorName: item.colorCode,
-          filamentVariantId: item.filamentVariantId,
-        });
+      const selected = payload.files[payload.files.length - 1] ?? null;
+      if (selected) {
+        this.uploadForm.selectFile(selected);
       }
-    });
-
-    const selected = payload.files[payload.files.length - 1] ?? null;
-    if (selected) {
-      this.uploadForm.selectFile(selected);
+    } finally {
+      this.isRestoringQuoteState = false;
     }
 
+    this.baselinePrintSettings = baselineSessionSettings;
+    this.baselineItemSettingsByFileName = this.buildBaselineMapFromSession(
+      payload.items || [],
+      baselineSessionSettings,
+    );
+    this.requiresRecalculation.set(false);
+    this.refreshRecalculationRequirement();
     this.clearQuoteErrorState();
     this.pendingSessionRestore = null;
   }
