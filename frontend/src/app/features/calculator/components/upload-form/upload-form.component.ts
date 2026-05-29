@@ -18,6 +18,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AppInputComponent } from '../../../../shared/components/app-input/app-input.component';
 import { AppDropzoneComponent } from '../../../../shared/components/app-dropzone/app-dropzone.component';
 import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
+import { AppCheckboxComponent } from '../../../../shared/components/app-checkbox/app-checkbox.component';
 import { StlViewerComponent } from '../../../../shared/components/stl-viewer/stl-viewer.component';
 import { ColorSelectorComponent } from '../../../../shared/components/color-selector/color-selector.component';
 import {
@@ -58,6 +59,7 @@ import {
     AppInputComponent,
     AppDropzoneComponent,
     AppButtonComponent,
+    AppCheckboxComponent,
     StlViewerComponent,
     ColorSelectorComponent,
   ],
@@ -69,6 +71,7 @@ export class UploadFormComponent implements OnInit {
   lockedSettings = input<boolean>(false);
   loading = input<boolean>(false);
   uploadProgress = input<number>(0);
+  showSplitPrintingOption = input<boolean>(false);
 
   submitRequest = output<QuoteRequest>();
   itemQuantityChange = output<{
@@ -121,6 +124,7 @@ export class UploadFormComponent implements OnInit {
       material: ['', Validators.required],
       quality: ['standard', Validators.required],
       notes: [''],
+      acceptSplitPrinting: [false],
       infillDensity: [15, [Validators.min(0), Validators.max(100)]],
       layerHeight: [0.2, [Validators.min(0.05), Validators.max(1.0)]],
       nozzleDiameter: [0.4, Validators.required],
@@ -725,6 +729,9 @@ export class UploadFormComponent implements OnInit {
       supportsEnabled: request.supportEnabled,
       notes: request.notes,
     });
+    this.form
+      .get('acceptSplitPrinting')
+      ?.setValue(Boolean(request.acceptSplitPrinting), { emitEvent: false });
 
     const sameSettingsForAll =
       this.mode() === 'advanced' ? (options?.sameSettingsForAll ?? true) : true;
@@ -776,6 +783,9 @@ export class UploadFormComponent implements OnInit {
       material: defaults.material,
       quality: defaults.quality,
       notes: this.form.get('notes')?.value || '',
+      acceptSplitPrinting:
+        this.showSplitPrintingOption() &&
+        Boolean(this.form.get('acceptSplitPrinting')?.value),
       infillDensity: defaults.infillDensity,
       infillPattern: defaults.infillPattern,
       supportEnabled: defaults.supportEnabled,

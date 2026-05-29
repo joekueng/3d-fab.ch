@@ -142,6 +142,7 @@ export interface AdminQuoteSessionDetailItem {
   infillPercent?: number;
   infillPattern?: string;
   supportsEnabled?: boolean;
+  requiresSplitPrinting?: boolean;
   colorCode?: string;
   filamentVariantId?: number;
   status: string;

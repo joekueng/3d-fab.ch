@@ -207,6 +207,7 @@ public class OrderService {
             oItem.setInfillPercent(qItem.getInfillPercent());
             oItem.setInfillPattern(qItem.getInfillPattern());
             oItem.setSupportsEnabled(qItem.getSupportsEnabled());
+            oItem.setRequiresSplitPrinting(Boolean.TRUE.equals(qItem.getRequiresSplitPrinting()));
 
             BigDecimal distributedUnitPrice = qItem.getUnitPriceChf() != null ? qItem.getUnitPriceChf() : BigDecimal.ZERO;
             if (totals.totalPrintSeconds().compareTo(BigDecimal.ZERO) > 0 && qItem.getPrintTimeSeconds() != null) {

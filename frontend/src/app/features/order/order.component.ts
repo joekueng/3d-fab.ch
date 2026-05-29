@@ -48,6 +48,7 @@ interface PublicOrderItem {
   infillPercent?: number;
   infillPattern?: string;
   supportsEnabled?: boolean;
+  requiresSplitPrinting?: boolean;
   quantity: number;
   printTimeSeconds?: number;
   materialGrams?: number;

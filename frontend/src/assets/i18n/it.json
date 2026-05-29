@@ -703,6 +703,8 @@
     "NOZZLE": "Diametro Ugello",
     "SUPPORT": "Supporti",
     "SUPPORT_DESC": "Abilita supporti per sporgenze",
+    "SPLIT_ACCEPT_LABEL": "Accetto che i modelli troppo grandi vengano suddivisi per la stampa",
+    "SPLIT_RESULT_NOTE": "Il preventivo include il setup per preparare la suddivisione dei modelli troppo grandi. Il file originale resta associato all'ordine.",
     "CALCULATE": "Calcola Preventivo",
     "RESULT": "Preventivo Stimato",
     "TIME": "Tempo Stampa",
@@ -737,7 +739,9 @@
     "ERR_INVALID_FILE_TYPE": "Puoi caricare solo file .stl o .3mf.",
     "ERROR_ZERO_PRICE": "Qualcosa è andato storto nel calcolo. Prova un altro formato o contattaci direttamente con Richiedi Consulenza.",
     "ZERO_RESULT_TITLE": "Risultato non valido",
-    "ZERO_RESULT_HELP": "Il calcolo ha restituito valori non validi (0). Prova con un altro formato file oppure contattaci direttamente con Richiedi Consulenza."
+    "ZERO_RESULT_HELP": "Il calcolo ha restituito valori non validi (0). Prova con un altro formato file oppure contattaci direttamente con Richiedi Consulenza.",
+    "CUSTOM_QUOTE_TITLE": "Serve un preventivo personalizzato",
+    "CUSTOM_QUOTE_HELP": "Questo modello è troppo grande per la stima automatica, anche accettando la suddivisione. Invia una richiesta custom quote con il file allegato."
   },
   "QUOTE": {
     "PROCEED_ORDER": "Procedi con l'ordine",

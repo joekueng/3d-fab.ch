@@ -266,7 +266,7 @@ describe('CalculatorPageComponent', () => {
         fileName: 'cube-256.stl',
         code: 'MODEL_OUT_OF_PRINT_VOLUME',
         message:
-          'This model could not be placed fully inside the printer volume for Bambu Lab A1 0.4 nozzle.',
+          'This model could not be placed fully inside the printer volume.',
       },
     ];
 
@@ -283,6 +283,7 @@ describe('CalculatorPageComponent', () => {
     expect(component.warningMessage()).toContain(
       'This model could not be placed fully inside the printer volume',
     );
+    expect(component.showSplitPrintingOption()).toBeTrue();
   });
 
   it('shows backend failure message when calculation fails completely', () => {
@@ -294,7 +295,7 @@ describe('CalculatorPageComponent', () => {
         fileName: 'cube-257.stl',
         code: 'MODEL_OUT_OF_PRINT_VOLUME',
         message:
-          'This model could not be placed fully inside the printer volume for Bambu Lab A1 0.4 nozzle.',
+          'This model could not be placed fully inside the printer volume.',
       })),
     );
 
@@ -302,8 +303,29 @@ describe('CalculatorPageComponent', () => {
 
     expect(component.error()).toBeTrue();
     expect(component.errorMessage()).toBe(
-      'This model could not be placed fully inside the printer volume for Bambu Lab A1 0.4 nozzle.',
+      'This model could not be placed fully inside the printer volume.',
     );
+    expect(component.showSplitPrintingOption()).toBeTrue();
+  });
+
+  it('marks custom quote failures for the custom quote CTA state', () => {
+    const { component, estimator } = createComponent();
+    const request = createDraftRequest();
+
+    estimator.calculate.and.returnValue(
+      throwError(() => ({
+        fileName: 'large-part.stl',
+        code: 'MODEL_REQUIRES_CUSTOM_QUOTE',
+        message:
+          'This model is too large for the automatic split-printing estimate. Please request a custom quote.',
+      })),
+    );
+
+    component.onCalculate(request);
+
+    expect(component.error()).toBeTrue();
+    expect(component.isCustomQuoteError()).toBeTrue();
+    expect(component.errorCode()).toBe('MODEL_REQUIRES_CUSTOM_QUOTE');
   });
 
   it('downloads converted previews only for items that expose them', () => {

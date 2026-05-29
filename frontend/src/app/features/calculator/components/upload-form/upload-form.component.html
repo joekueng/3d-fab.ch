@@ -109,6 +109,16 @@
         >.
       </p>
 
+      @if (showSplitPrintingOption()) {
+        <div class="split-printing-option">
+          <app-checkbox
+            formControlName="acceptSplitPrinting"
+            [label]="'CALC.SPLIT_ACCEPT_LABEL' | translate"
+            [disabled]="loading()"
+          ></app-checkbox>
+        </div>
+      }
+
       @if (mode() === "easy") {
         <div class="easy-global-controls">
           <label class="easy-global-field">

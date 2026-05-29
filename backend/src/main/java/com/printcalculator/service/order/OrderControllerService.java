@@ -367,6 +367,7 @@ public class OrderControllerService {
             itemDto.setInfillPercent(item.getInfillPercent());
             itemDto.setInfillPattern(item.getInfillPattern());
             itemDto.setSupportsEnabled(item.getSupportsEnabled());
+            itemDto.setRequiresSplitPrinting(Boolean.TRUE.equals(item.getRequiresSplitPrinting()));
             itemDto.setQuantity(item.getQuantity());
             itemDto.setPrintTimeSeconds(item.getPrintTimeSeconds());
             itemDto.setMaterialGrams(item.getMaterialGrams());

@@ -126,6 +126,10 @@ export class QuoteResultComponent {
     this.items().some((item) => item.quantity > this.directOrderLimit),
   );
 
+  hasSplitPrintingItems = computed(() =>
+    this.items().some((item) => item.requiresSplitPrinting === true),
+  );
+
   costBreakdown = computed(() => {
     const currentItems = this.items();
     const cad = this.result().cadTotal || 0;

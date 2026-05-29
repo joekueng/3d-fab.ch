@@ -674,6 +674,8 @@
     "LAYER_HEIGHT": "Schichthöhe",
     "SUPPORT": "Stützstrukturen",
     "SUPPORT_DESC": "Stützen für Überhänge aktivieren",
+    "SPLIT_ACCEPT_LABEL": "Ich akzeptiere, dass zu große Modelle für den Druck geteilt werden",
+    "SPLIT_RESULT_NOTE": "Dieses Angebot enthält den Setup-Aufwand, um zu große Modelle für den Druck vorzubereiten und zu teilen. Die Originaldatei bleibt der Bestellung zugeordnet.",
     "CALCULATE": "Angebot berechnen",
     "RESULT": "Geschätztes Angebot",
     "TIME": "Druckzeit",
@@ -710,7 +712,9 @@
     "SHIPPING_NOTE": "* Versandkosten ausgeschlossen, werden im nächsten Schritt berechnet",
     "ERROR_ZERO_PRICE": "Bei der Berechnung ist etwas schiefgelaufen. Versuche ein anderes Format oder kontaktiere uns direkt über \"Beratung anfragen\".",
     "ZERO_RESULT_TITLE": "Ungültiges Ergebnis",
-    "ZERO_RESULT_HELP": "Die Berechnung hat ungültige Werte (0) geliefert. Versuche ein anderes Dateiformat oder kontaktiere uns direkt über \"Beratung anfragen\"."
+    "ZERO_RESULT_HELP": "Die Berechnung hat ungültige Werte (0) geliefert. Versuche ein anderes Dateiformat oder kontaktiere uns direkt über \"Beratung anfragen\".",
+    "CUSTOM_QUOTE_TITLE": "Individuelles Angebot erforderlich",
+    "CUSTOM_QUOTE_HELP": "Dieses Modell ist zu groß für die automatische Schätzung, auch wenn die Teilung akzeptiert wurde. Senden Sie eine individuelle Anfrage mit der Datei im Anhang."
   },
   "SHOP": {
     "TITLE": "Technische Lösungen",

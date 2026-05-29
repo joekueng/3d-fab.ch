@@ -710,6 +710,8 @@
     "NOZZLE": "Diamètre de buse",
     "SUPPORT": "Supports",
     "SUPPORT_DESC": "Activer les supports pour les surplombs",
+    "SPLIT_ACCEPT_LABEL": "J'accepte que les modèles trop grands soient divisés pour l'impression",
+    "SPLIT_RESULT_NOTE": "Ce devis inclut le setup pour préparer la division des modèles trop grands. Le fichier original reste associé à la commande.",
     "CALCULATE": "Calculer le devis",
     "RESULT": "Devis estimé",
     "TIME": "Temps d'impression",
@@ -744,7 +746,9 @@
     "ERR_INVALID_FILE_TYPE": "Vous pouvez téléverser uniquement des fichiers .stl ou .3mf.",
     "ERROR_ZERO_PRICE": "Un problème est survenu pendant le calcul. Essayez un autre format ou contactez-nous directement via Demander une consultation.",
     "ZERO_RESULT_TITLE": "Résultat invalide",
-    "ZERO_RESULT_HELP": "Le calcul a renvoyé des valeurs nulles invalides. Essayez un autre format de fichier ou contactez-nous directement via Demander une consultation."
+    "ZERO_RESULT_HELP": "Le calcul a renvoyé des valeurs nulles invalides. Essayez un autre format de fichier ou contactez-nous directement via Demander une consultation.",
+    "CUSTOM_QUOTE_TITLE": "Devis personnalisé nécessaire",
+    "CUSTOM_QUOTE_HELP": "Ce modèle est trop grand pour l'estimation automatique, même avec la division acceptée. Envoyez une demande personnalisée avec le fichier joint."
   },
   "QUOTE": {
     "PROCEED_ORDER": "Procéder à la commande",

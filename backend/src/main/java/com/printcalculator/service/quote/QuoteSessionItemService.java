@@ -5,6 +5,7 @@ import com.printcalculator.entity.FilamentVariant;
 import com.printcalculator.entity.PrinterMachine;
 import com.printcalculator.entity.QuoteLineItem;
 import com.printcalculator.entity.QuoteSession;
+import com.printcalculator.exception.ModelProcessingException;
 import com.printcalculator.model.ModelDimensions;
 import com.printcalculator.model.PrintStats;
 import com.printcalculator.model.QuoteResult;
@@ -153,19 +154,43 @@ public class QuoteSessionItemService {
                             qualityHint
                     );
 
-                    PrintStats stats = slicerService.slice(
-                            slicerInputPath.toFile(),
-                            profiles.machineProfileName(),
-                            profiles.filamentProfileName(),
-                            processProfile,
-                            null,
-                            processOverrides
-                    );
-
                     Optional<ModelDimensions> modelDimensions = slicerService.inspectModelDimensions(slicerInputPath.toFile());
                     if (modelDimensions.isEmpty() && convertedPersistentPath != null) {
                         modelDimensions = slicerService.inspectModelDimensions(convertedPersistentPath.toFile());
                     }
+                    boolean requiresSplitPrinting = false;
+                    PrintStats stats;
+                    try {
+                        stats = slicerService.slice(
+                                slicerInputPath.toFile(),
+                                profiles.machineProfileName(),
+                                profiles.filamentProfileName(),
+                                processProfile,
+                                null,
+                                processOverrides
+                        );
+                    } catch (ModelProcessingException ex) {
+                        if (!shouldEstimateOversizedSplit(settings, ex)) {
+                            throw ex;
+                        }
+                        if (modelDimensions.isEmpty()) {
+                            throw buildSplitCustomQuoteFailure(ex);
+                        }
+                        try {
+                            stats = slicerService.sliceForOversizedEstimate(
+                                    slicerInputPath.toFile(),
+                                    profiles.machineProfileName(),
+                                    profiles.filamentProfileName(),
+                                    processProfile,
+                                    modelDimensions,
+                                    processOverrides
+                            );
+                            requiresSplitPrinting = true;
+                        } catch (Exception estimateFailure) {
+                            throw buildSplitCustomQuoteFailure(estimateFailure);
+                        }
+                    }
+
                     QuoteResult result = quoteCalculator.calculate(stats, machine.getPrinterDisplayName(), selectedVariant);
 
                     QuoteLineItem item = buildLineItem(
@@ -179,7 +204,8 @@ public class QuoteSessionItemService {
                             result,
                             modelDimensions,
                             persistentPath,
-                            convertedPersistentPath
+                            convertedPersistentPath,
+                            requiresSplitPrinting
                     );
 
                     return lineItemRepo.save(item);
@@ -259,6 +285,19 @@ public class QuoteSessionItemService {
         return "standard";
     }
 
+    private boolean shouldEstimateOversizedSplit(PrintSettingsDto settings, ModelProcessingException exception) {
+        return Boolean.TRUE.equals(settings.getAllowSplitForOversized())
+                && "MODEL_OUT_OF_PRINT_VOLUME".equals(exception.getCode());
+    }
+
+    private ModelProcessingException buildSplitCustomQuoteFailure(Throwable cause) {
+        return new ModelProcessingException(
+                "MODEL_REQUIRES_CUSTOM_QUOTE",
+                "This model is too large for the automatic split-printing estimate. Please request a custom quote.",
+                cause
+        );
+    }
+
     private QuoteLineItem buildLineItem(QuoteSession session,
                                         String originalFilename,
                                         PrintSettingsDto settings,
@@ -269,7 +308,8 @@ public class QuoteSessionItemService {
                                         QuoteResult result,
                                         Optional<ModelDimensions> modelDimensions,
                                         Path persistentPath,
-                                        Path convertedPersistentPath) {
+                                        Path convertedPersistentPath,
+                                        boolean requiresSplitPrinting) {
         QuoteLineItem item = new QuoteLineItem();
         item.setQuoteSession(session);
         item.setLineItemType("PRINT_FILE");
@@ -288,6 +328,7 @@ public class QuoteSessionItemService {
         item.setInfillPercent(settings.getInfillDensity() != null ? settings.getInfillDensity().intValue() : 20);
         item.setInfillPattern(settings.getInfillPattern());
         item.setSupportsEnabled(settings.getSupportsEnabled() != null ? settings.getSupportsEnabled() : false);
+        item.setRequiresSplitPrinting(requiresSplitPrinting);
         item.setStatus("READY");
 
         item.setPrintTimeSeconds((int) stats.printTimeSeconds());
@@ -297,6 +338,7 @@ public class QuoteSessionItemService {
         Map<String, Object> breakdown = new HashMap<>();
         breakdown.put("machine_cost", result.getTotalPrice());
         breakdown.put("setup_fee", 0);
+        breakdown.put("requiresSplitPrinting", requiresSplitPrinting);
         if (convertedPersistentPath != null) {
             breakdown.put("convertedStoredPath", quoteStorageService.toStoredPath(convertedPersistentPath));
         }
