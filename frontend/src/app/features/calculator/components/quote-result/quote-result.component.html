@@ -41,7 +41,7 @@
 
   <!-- Detailed Items List (NOW ON BOTTOM) -->
   <div class="items-list">
-    @for (item of items(); track item.fileName; let i = $index) {
+    @for (item of items(); track item.id ?? $index; let i = $index) {
       <div class="item-row">
         <div class="item-info">
           <span class="file-name">{{ item.fileName }}</span>

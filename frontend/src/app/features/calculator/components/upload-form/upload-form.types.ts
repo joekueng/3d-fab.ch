@@ -1,4 +1,5 @@
 export interface FormItem {
+  clientKey: string;
   file: File;
   previewFile?: File;
   quantity: number;
