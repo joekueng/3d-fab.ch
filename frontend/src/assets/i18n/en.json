@@ -12,7 +12,9 @@
     "CONSULT": "Request Consultation",
     "PROCEED_ORDER": "Proceed to Order",
     "TOTAL": "Total Estimate",
-    "MAX_QTY_NOTICE": "For quantities above {{max}} pieces, request consultation."
+    "MAX_QTY_NOTICE": "For quantities above {{max}} pieces, request consultation.",
+    "RECALC_REQUIRED": "You changed the print settings. Recalculate the quote before proceeding with the order.",
+    "RECALC_CHECKOUT_DISABLED": "Recalculate the quote to re-enable checkout."
   },
   "USER_DETAILS": {
     "TITLE": "Shipping Details",
@@ -1091,6 +1093,7 @@
     "ITEMS_BASE_SUBTOTAL": "Items Subtotal",
     "MACHINE_COST": "Machine Cost",
     "SETUP_FEE": "Setup Fee",
+    "NOZZLE_CHANGE": "Nozzle change",
     "TOTAL": "Total",
     "QTY": "Qty",
     "MATERIAL": "Material",

@@ -33,8 +33,7 @@
   }
   @if (recalculationRequired()) {
     <div class="recalc-banner">
-      Hai modificato i parametri di stampa. Ricalcola il preventivo prima di
-      procedere con l'ordine.
+      {{ "QUOTE.RECALC_REQUIRED" | translate }}
     </div>
   }
 
@@ -42,7 +41,7 @@
 
   <!-- Detailed Items List (NOW ON BOTTOM) -->
   <div class="items-list">
-    @for (item of items(); track item.fileName; let i = $index) {
+    @for (item of items(); track item.id ?? $index; let i = $index) {
       <div class="item-row">
         <div class="item-info">
           <span class="file-name">{{ item.fileName }}</span>
@@ -117,7 +116,7 @@
       }
       @if (recalculationRequired()) {
         <small class="limit-note">
-          Ricalcola il preventivo per riattivare il checkout.
+          {{ "QUOTE.RECALC_CHECKOUT_DISABLED" | translate }}
         </small>
       }
     </div>

@@ -110,6 +110,7 @@ export class UploadFormComponent implements OnInit {
   private allLayerHeights: SimpleOption[] = [];
   private layerHeightsByNozzle: Record<string, SimpleOption[]> = {};
   private isPatchingSettings = false;
+  private nextItemKey = 0;
 
   acceptedFormats = '.stl,.3mf';
   private readonly allowedExtensions = ['stl', '3mf'] as const;
@@ -350,6 +351,7 @@ export class UploadFormComponent implements OnInit {
 
       const selection = this.getDefaultVariantSelection(defaults.material);
       validItems.push({
+        clientKey: this.createItemClientKey(),
         file,
         previewFile: this.isStlFile(file) ? file : undefined,
         quantity: 1,
@@ -607,6 +609,7 @@ export class UploadFormComponent implements OnInit {
     const autoSelect = options?.autoSelect ?? true;
 
     const validItems: FormItem[] = files.map((file) => ({
+      clientKey: this.createItemClientKey(),
       file,
       previewFile: this.isStlFile(file) ? file : undefined,
       quantity: 1,
@@ -1140,6 +1143,11 @@ export class UploadFormComponent implements OnInit {
       infillPattern: defaults.infillPattern,
       supportEnabled: defaults.supportEnabled,
     });
+  }
+
+  private createItemClientKey(): string {
+    this.nextItemKey += 1;
+    return `upload-item-${this.nextItemKey}`;
   }
 
   private emitItemSettingsDiffChange() {

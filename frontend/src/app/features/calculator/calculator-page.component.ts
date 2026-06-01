@@ -43,6 +43,11 @@ type TrackedPrintSettings = {
   supportEnabled: boolean;
 };
 
+type TrackedPrintItemState = {
+  fileName: string;
+  settings: TrackedPrintSettings;
+};
+
 type PendingSessionRestore = {
   session: any;
   items: any[];
@@ -145,12 +150,10 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     Record<string, { differences: string[] }>
   >({});
   private baselinePrintSettings: TrackedPrintSettings | null = null;
-  private baselineItemSettingsByFileName = new Map<
-    string,
-    TrackedPrintSettings
-  >();
+  private baselineItemStates: TrackedPrintItemState[] = [];
   private pendingSessionRestore: PendingSessionRestore | null = null;
-  private restoreDebugRun = 0;
+  private isRestoringQuoteState = false;
+  private quoteStateVersion = 0;
 
   @ViewChild('uploadForm') uploadForm!: UploadFormComponent;
   @ViewChild('resultCol') resultCol!: ElementRef;
@@ -219,6 +222,8 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
   }
 
   loadSession(sessionId: string) {
+    this.quoteStateVersion += 1;
+    this.pendingSessionRestore = null;
     this.loading.set(true);
     this.estimator.getQuoteSession(sessionId).subscribe({
       next: (data) => {
@@ -236,7 +241,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
         this.baselinePrintSettings = this.toTrackedSettingsFromSession(
           data.session,
         );
-        this.baselineItemSettingsByFileName = this.buildBaselineMapFromSession(
+        this.baselineItemStates = this.buildBaselineItemStatesFromSession(
           data.items || [],
           this.baselinePrintSettings,
         );
@@ -265,6 +270,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
   }
 
   restoreFilesAndSettings(session: any, items: any[]) {
+    const restoreStateVersion = this.quoteStateVersion;
     if (!items || items.length === 0) {
       this.loading.set(false);
       return;
@@ -277,14 +283,6 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
       this.loading.set(false);
       return;
     }
-
-    const restoreRun = ++this.restoreDebugRun;
-    console.debug('[restoreFilesAndSettings:start]', {
-      restoreRun,
-      sessionId: session?.id,
-      itemIds: items.map((item) => item?.id),
-      fileNames: items.map((item) => item?.originalFilename),
-    });
 
     // Download all files
     const downloads = items.map((item) =>
@@ -309,31 +307,25 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
 
     forkJoin(downloads).subscribe({
       next: (results: any[]) => {
-        console.debug('[restoreFilesAndSettings:downloaded]', {
-          restoreRun,
-          sessionId: session?.id,
-          blobs: results.map((res) => ({
-            fileName: res.fileName,
-            originalBlobSize: res.originalBlob?.size ?? null,
-            previewBlobSize: res.previewBlob?.size ?? null,
-            hasConvertedPreview: res.hasConvertedPreview,
-          })),
-        });
+        if (
+          restoreStateVersion !== this.quoteStateVersion ||
+          !this.isCurrentSessionRestore(session)
+        ) {
+          if (
+            restoreStateVersion !== this.quoteStateVersion &&
+            this.isCurrentSessionRestore(session)
+          ) {
+            this.loading.set(false);
+          }
+          return;
+        }
+
         const files = results.map(
           (res) =>
             new File([res.originalBlob], res.fileName, {
               type: 'application/octet-stream',
             }),
         );
-
-        console.debug('[restoreFilesAndSettings:files-built]', {
-          restoreRun,
-          sessionId: session?.id,
-          files: files.map((file) => ({
-            name: file.name,
-            size: file.size,
-          })),
-        });
 
         const previewFiles = results.flatMap((res, index) => {
           if (!res.hasConvertedPreview || !res.previewBlob) {
@@ -359,6 +351,12 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
         this.loading.set(false);
       },
       error: (err: any) => {
+        if (restoreStateVersion !== this.quoteStateVersion) {
+          if (this.isCurrentSessionRestore(session)) {
+            this.loading.set(false);
+          }
+          return;
+        }
         console.error('Failed to download files', err);
         this.loading.set(false);
         // Still show result? Yes.
@@ -368,6 +366,8 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
 
   onCalculate(req: QuoteRequest) {
     // ... (logic remains the same, simplified for diff)
+    this.quoteStateVersion += 1;
+    this.pendingSessionRestore = null;
     this.currentRequest = req;
     this.loading.set(true);
     this.uploadProgress.set(0);
@@ -406,8 +406,8 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
           );
           this.result.set(res);
           this.baselinePrintSettings = this.toTrackedSettingsFromRequest(req);
-          this.baselineItemSettingsByFileName =
-            this.buildBaselineMapFromRequest(req);
+          this.baselineItemStates =
+            this.buildBaselineItemStatesFromRequest(req);
           this.requiresRecalculation.set(false);
           this.itemSettingsDiffByFileName.set({});
           this.loading.set(false);
@@ -547,15 +547,14 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
   }
 
   onNewQuote() {
+    this.quoteStateVersion += 1;
+    this.pendingSessionRestore = null;
     this.step.set('upload');
     this.result.set(null);
     this.requiresRecalculation.set(false);
     this.itemSettingsDiffByFileName.set({});
     this.baselinePrintSettings = null;
-    this.baselineItemSettingsByFileName = new Map<
-      string,
-      TrackedPrintSettings
-    >();
+    this.baselineItemStates = [];
     this.cadSessionLocked.set(false);
     this.orderSuccess.set(false);
     this.switchMode('easy'); // Reset to default and sync URL
@@ -565,7 +564,10 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
 
   onUploadPrintSettingsChange(_: TrackedPrintSettings) {
     void _;
+    if (this.isRestoringQuoteState) return;
     if (!this.result()) return;
+    this.quoteStateVersion += 1;
+    this.pendingSessionRestore = null;
     this.refreshRecalculationRequirement();
   }
 
@@ -629,6 +631,8 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
   }
 
   private setQuoteError(key: string, message: string | null = null): void {
+    this.quoteStateVersion += 1;
+    this.pendingSessionRestore = null;
     this.errorKey.set(key);
     this.errorMessage.set(message);
     this.warningMessage.set(null);
@@ -637,10 +641,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     this.requiresRecalculation.set(false);
     this.itemSettingsDiffByFileName.set({});
     this.baselinePrintSettings = null;
-    this.baselineItemSettingsByFileName = new Map<
-      string,
-      TrackedPrintSettings
-    >();
+    this.baselineItemStates = [];
   }
 
   private clearQuoteErrorState(): void {
@@ -777,59 +778,68 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     }
 
     const payload = this.pendingSessionRestore;
-    console.debug('[applyPendingSessionRestoreIfNeeded]', {
-      restoreRun: this.restoreDebugRun,
-      sessionId: payload.session?.id,
-      files: payload.files.map((file) => ({
-        name: file.name,
-        size: file.size,
-      })),
-    });
+    if (!this.isCurrentSessionRestore(payload.session)) {
+      this.pendingSessionRestore = null;
+      return;
+    }
+
     const baselineSessionSettings = this.toTrackedSettingsFromSession(
       payload.session,
     );
 
-    this.uploadForm.setFiles(payload.files, { autoSelect: false });
-    payload.previewFiles.forEach((preview) => {
-      this.uploadForm.setPreviewFileByIndex(preview.index, preview.file);
-    });
-    this.uploadForm.patchSettings(payload.session);
+    this.isRestoringQuoteState = true;
+    try {
+      this.uploadForm.setFiles(payload.files, { autoSelect: false });
+      payload.previewFiles.forEach((preview) => {
+        this.uploadForm.setPreviewFileByIndex(preview.index, preview.file);
+      });
+      this.uploadForm.patchSettings(payload.session);
 
-    payload.items.forEach((item, index) => {
-      // Preserve persisted quantities when restoring from session.
-      // Without this, setFiles() defaults every item back to 1.
-      this.uploadForm.updateItemQuantityByIndex(
-        index,
-        Number(item.quantity || 1),
-      );
+      payload.items.forEach((item, index) => {
+        // Preserve persisted quantities when restoring from session.
+        // Without this, setFiles() defaults every item back to 1.
+        this.uploadForm.updateItemQuantityByIndex(
+          index,
+          Number(item.quantity || 1),
+        );
 
-      const tracked = this.toTrackedSettingsFromSessionItem(
-        item,
-        baselineSessionSettings,
-      );
-      this.uploadForm.setItemPrintSettingsByIndex(index, {
-        material: tracked.material.toUpperCase(),
-        quality: tracked.quality,
-        nozzleDiameter: tracked.nozzleDiameter,
-        layerHeight: tracked.layerHeight,
-        infillDensity: tracked.infillDensity,
-        infillPattern: tracked.infillPattern,
-        supportEnabled: tracked.supportEnabled,
+        const tracked = this.toTrackedSettingsFromSessionItem(
+          item,
+          baselineSessionSettings,
+        );
+        this.uploadForm.setItemPrintSettingsByIndex(index, {
+          material: tracked.material.toUpperCase(),
+          quality: tracked.quality,
+          nozzleDiameter: tracked.nozzleDiameter,
+          layerHeight: tracked.layerHeight,
+          infillDensity: tracked.infillDensity,
+          infillPattern: tracked.infillPattern,
+          supportEnabled: tracked.supportEnabled,
+        });
+
+        if (item.colorCode) {
+          this.uploadForm.updateItemColor(index, {
+            colorName: item.colorCode,
+            filamentVariantId: item.filamentVariantId,
+          });
+        }
       });
 
-      if (item.colorCode) {
-        this.uploadForm.updateItemColor(index, {
-          colorName: item.colorCode,
-          filamentVariantId: item.filamentVariantId,
-        });
+      const selected = payload.files[payload.files.length - 1] ?? null;
+      if (selected) {
+        this.uploadForm.selectFile(selected);
       }
-    });
-
-    const selected = payload.files[payload.files.length - 1] ?? null;
-    if (selected) {
-      this.uploadForm.selectFile(selected);
+    } finally {
+      this.isRestoringQuoteState = false;
     }
 
+    this.baselinePrintSettings = baselineSessionSettings;
+    this.baselineItemStates = this.buildBaselineItemStatesFromSession(
+      payload.items || [],
+      baselineSessionSettings,
+    );
+    this.requiresRecalculation.set(false);
+    this.refreshRecalculationRequirement();
     this.clearQuoteErrorState();
     this.pendingSessionRestore = null;
   }
@@ -928,32 +938,24 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     };
   }
 
-  private buildBaselineMapFromRequest(
+  private buildBaselineItemStatesFromRequest(
     req: QuoteRequest,
-  ): Map<string, TrackedPrintSettings> {
-    const map = new Map<string, TrackedPrintSettings>();
-    req.items.forEach((item) => {
-      map.set(
-        this.normalizeFileName(item.file?.name || ''),
-        this.toTrackedSettingsFromItem(req, item),
-      );
-    });
-    return map;
+  ): TrackedPrintItemState[] {
+    return req.items.map((item) => ({
+      fileName: this.normalizeFileName(item.file?.name || ''),
+      settings: this.toTrackedSettingsFromItem(req, item),
+    }));
   }
 
-  private buildBaselineMapFromSession(
+  private buildBaselineItemStatesFromSession(
     items: any[],
     defaultSettings: TrackedPrintSettings | null,
-  ): Map<string, TrackedPrintSettings> {
-    const map = new Map<string, TrackedPrintSettings>();
+  ): TrackedPrintItemState[] {
     const fallback = defaultSettings ?? this.defaultTrackedSettings();
-    items.forEach((item) => {
-      map.set(
-        this.normalizeFileName(item?.originalFilename || ''),
-        this.toTrackedSettingsFromSessionItem(item, fallback),
-      );
-    });
-    return map;
+    return items.map((item) => ({
+      fileName: this.normalizeFileName(item?.originalFilename || ''),
+      settings: this.toTrackedSettingsFromSessionItem(item, fallback),
+    }));
   }
 
   private defaultTrackedSettings(): TrackedPrintSettings {
@@ -984,34 +986,68 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    const changed = draft.items.some((item) => {
-      const key = this.normalizeFileName(item.file?.name || '');
-      const baseline = this.baselineItemSettingsByFileName.get(key) || fallback;
-      const current = this.toTrackedSettingsFromItem(draft, item);
-      return !this.sameTrackedSettings(baseline, current);
-    });
+    if (this.baselineItemStates.length === 0) {
+      this.requiresRecalculation.set(false);
+      return;
+    }
+
+    const currentItemStates = draft.items.map((item) => ({
+      fileName: this.normalizeFileName(item.file?.name || ''),
+      settings: this.toTrackedSettingsFromItem(draft, item),
+    }));
+
+    const changed = !this.sameTrackedItemStates(
+      this.baselineItemStates,
+      currentItemStates,
+    );
 
     this.requiresRecalculation.set(changed);
   }
 
-  private sameTrackedSettings(
-    a: TrackedPrintSettings,
-    b: TrackedPrintSettings,
+  private sameTrackedItemStates(
+    baseline: TrackedPrintItemState[],
+    current: TrackedPrintItemState[],
   ): boolean {
-    return (
-      a.mode === b.mode &&
-      a.material === this.normalizeString(b.material) &&
-      a.quality === this.normalizeString(b.quality) &&
-      Math.abs(
-        a.nozzleDiameter - this.normalizeNumber(b.nozzleDiameter, 0.4, 2),
-      ) < 0.0001 &&
-      Math.abs(a.layerHeight - this.normalizeNumber(b.layerHeight, 0.2, 3)) <
-        0.0001 &&
-      Math.abs(a.infillDensity - this.normalizeNumber(b.infillDensity, 20, 2)) <
-        0.0001 &&
-      a.infillPattern === this.normalizeString(b.infillPattern) &&
-      a.supportEnabled === Boolean(b.supportEnabled)
-    );
+    if (baseline.length !== current.length) {
+      return false;
+    }
+
+    const counts = new Map<string, number>();
+    baseline.forEach((item) => {
+      const signature = this.trackedItemSignature(item);
+      counts.set(signature, (counts.get(signature) || 0) + 1);
+    });
+
+    for (const item of current) {
+      const signature = this.trackedItemSignature(item);
+      const count = counts.get(signature) || 0;
+      if (count <= 0) {
+        return false;
+      }
+
+      if (count === 1) {
+        counts.delete(signature);
+      } else {
+        counts.set(signature, count - 1);
+      }
+    }
+
+    return counts.size === 0;
+  }
+
+  private trackedItemSignature(item: TrackedPrintItemState): string {
+    const settings = item.settings;
+    return [
+      item.fileName,
+      settings.mode,
+      settings.material,
+      settings.quality,
+      settings.nozzleDiameter.toFixed(4),
+      settings.layerHeight.toFixed(4),
+      settings.infillDensity.toFixed(4),
+      settings.infillPattern,
+      settings.supportEnabled ? '1' : '0',
+    ].join('\u0001');
   }
 
   private normalizeFileName(fileName: string): string {
@@ -1033,5 +1069,15 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     const resolved = Number.isFinite(numeric) ? numeric : fallback;
     const factor = 10 ** decimals;
     return Math.round(resolved * factor) / factor;
+  }
+
+  private isCurrentSessionRestore(session: any): boolean {
+    const restoreSessionId = String(session?.id || '');
+    const currentResultSessionId = String(this.result()?.sessionId || '');
+    return (
+      restoreSessionId.length > 0 &&
+      currentResultSessionId.length > 0 &&
+      restoreSessionId === currentResultSessionId
+    );
   }
 }
