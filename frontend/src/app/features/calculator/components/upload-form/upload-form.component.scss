@@ -349,12 +349,14 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-bg-card);
+  min-width: 0;
 }
 
 .item-settings-title {
   margin: 0 0 var(--space-4);
   font-size: 1.05rem;
   color: var(--color-text);
+  overflow-wrap: anywhere;
 }
 
 .item-settings-grid {
@@ -376,10 +378,15 @@
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--color-text);
+  min-width: 0;
 }
 
 .item-settings-grid input,
 .item-settings-grid select {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: 0.5rem 0.75rem;
