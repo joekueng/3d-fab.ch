@@ -747,7 +747,9 @@
     "PROCEED_ORDER": "Procedi con l'ordine",
     "CONSULT": "Richiedi Consulenza",
     "TOTAL": "Totale",
-    "MAX_QTY_NOTICE": "Per quantità oltre {{max}} pezzi, richiedi consulenza."
+    "MAX_QTY_NOTICE": "Per quantità oltre {{max}} pezzi, richiedi consulenza.",
+    "RECALC_REQUIRED": "Hai modificato i parametri di stampa. Ricalcola il preventivo prima di procedere con l'ordine.",
+    "RECALC_CHECKOUT_DISABLED": "Ricalcola il preventivo per riattivare il checkout."
   },
   "USER_DETAILS": {
     "TITLE": "I tuoi dati",
@@ -787,6 +789,7 @@
     "WIP_NOTE": "Ci teniamo a fare le cose fatte bene: nel frattempo puoi calcolare subito prezzo e tempi di un file 3D con il nostro calcolatore.",
     "CUSTOM_PART_FOOTER_TITLE": "Non trovi quello che cerchi?",
     "CUSTOM_PART_FOOTER_TEXT": "Contattaci per pezzi personalizzati.",
+    "QUICK_REQUEST_HELP": "Lascia la tua email, descrivi il prodotto o il pezzo che ti serve e allega una foto se può essere utile.",
     "QUICK_REQUEST_MESSAGE_LABEL": "Cosa ti serve? *",
     "QUICK_REQUEST_MESSAGE_PLACEHOLDER": "Descrivi il prodotto, il pezzo o la modifica che desideri...",
     "QUICK_REQUEST_IMAGE_LABEL": "Foto (opzionale)",
@@ -1166,6 +1169,7 @@
     "ITEMS_BASE_SUBTOTAL": "Costo Base Articoli",
     "MACHINE_COST": "Costo Macchina",
     "SETUP_FEE": "Costo di Avvio",
+    "NOZZLE_CHANGE": "Cambio ugello",
     "TOTAL": "Totale",
     "QTY": "Qtà",
     "MATERIAL": "Materiale",

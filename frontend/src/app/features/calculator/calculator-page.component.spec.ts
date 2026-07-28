@@ -1,4 +1,4 @@
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 import { CalculatorPageComponent } from './calculator-page.component';
@@ -332,6 +332,7 @@ describe('CalculatorPageComponent', () => {
     const { component, estimator, uploadForm } = createComponent();
     const originalBlob = new Blob(['original']);
     const previewBlob = new Blob(['preview']);
+    component.result.set(createResult('session-1'));
 
     estimator.getLineItemContent.and.callFake(
       (_sessionId: string, _lineItemId: string, preview = false) =>
@@ -523,5 +524,292 @@ describe('CalculatorPageComponent', () => {
     });
     expect(uploadForm.selectFile).toHaveBeenCalledWith(jasmine.any(File));
     expect(component.error()).toBeFalse();
+  });
+
+  it('does not keep recalculation required after restoring the recalculated session', () => {
+    const { component, estimator, uploadForm } = createComponent();
+    const originalBlob = new Blob(['original']);
+    component.mode.set('advanced');
+    component.result.set(createResult('session-1'));
+
+    const trackedLayer01 = {
+      mode: 'advanced',
+      material: 'pla',
+      quality: 'standard',
+      nozzleDiameter: 0.4,
+      layerHeight: 0.1,
+      infillDensity: 15,
+      infillPattern: 'grid',
+      supportEnabled: true,
+    } as const;
+    component['baselinePrintSettings'] = trackedLayer01;
+    component['baselineItemStates'] = [
+      { fileName: 'part-a.stl', settings: trackedLayer01 },
+    ];
+
+    const requestWithLayer = (layerHeight: number): QuoteRequest => {
+      const request = createDraftRequest();
+      return {
+        ...request,
+        mode: 'advanced',
+        layerHeight,
+        items: request.items.map((item) => ({ ...item, layerHeight })),
+      };
+    };
+    let currentDraft = requestWithLayer(0.2);
+
+    estimator.getLineItemContent.and.returnValue(of(originalBlob));
+    uploadForm.getCurrentRequestDraft.and.callFake(() => currentDraft);
+    uploadForm.patchSettings.and.callFake(() => {
+      component.onUploadPrintSettingsChange({
+        mode: 'advanced',
+        material: 'PLA',
+        quality: 'standard',
+        nozzleDiameter: 0.4,
+        layerHeight: 0.2,
+        infillDensity: 15,
+        infillPattern: 'grid',
+        supportEnabled: true,
+      });
+      currentDraft = requestWithLayer(0.1);
+    });
+
+    component.restoreFilesAndSettings(
+      {
+        id: 'session-1',
+        materialCode: 'PLA',
+        quality: 'standard',
+        nozzleDiameterMm: 0.4,
+        layerHeightMm: 0.1,
+        infillPercent: 15,
+        infillPattern: 'grid',
+        supportsEnabled: true,
+      },
+      [
+        {
+          id: 'line-1',
+          originalFilename: 'part-a.stl',
+          quantity: 1,
+          materialCode: 'PLA',
+          quality: 'standard',
+          nozzleDiameterMm: 0.4,
+          layerHeightMm: 0.1,
+          infillPercent: 15,
+          infillPattern: 'grid',
+          supportsEnabled: true,
+        },
+      ],
+    );
+
+    expect(component.requiresRecalculation()).toBeFalse();
+  });
+
+  it('does not require recalculation for duplicate file names with different materials', () => {
+    const { component, uploadForm } = createComponent();
+    component.mode.set('advanced');
+    component.result.set(createResult('session-1'));
+
+    const globalSettings = {
+      mode: 'advanced',
+      material: 'pla',
+      quality: 'extra_fine',
+      nozzleDiameter: 0.2,
+      layerHeight: 0.08,
+      infillDensity: 100,
+      infillPattern: 'grid',
+      supportEnabled: false,
+    } as const;
+    const asaSettings = {
+      ...globalSettings,
+      material: 'asa',
+      nozzleDiameter: 0.4,
+      layerHeight: 0.2,
+    };
+    const plaSettings = {
+      ...globalSettings,
+      material: 'pla',
+      nozzleDiameter: 0.2,
+      layerHeight: 0.08,
+    };
+
+    component['baselinePrintSettings'] = globalSettings;
+    component['baselineItemStates'] = [
+      { fileName: 'duplicate.stl', settings: asaSettings },
+      { fileName: 'duplicate.stl', settings: plaSettings },
+    ];
+
+    const duplicateAsa = new File(['asa'], 'duplicate.stl', {
+      type: 'model/stl',
+    });
+    const duplicatePla = new File(['pla'], 'duplicate.stl', {
+      type: 'model/stl',
+    });
+
+    const calculatedDraft: QuoteRequest = {
+      items: [
+        {
+          file: duplicatePla,
+          quantity: 1,
+          material: 'PLA',
+          quality: 'extra_fine',
+          supportEnabled: false,
+          infillDensity: 100,
+          infillPattern: 'grid',
+          layerHeight: 0.08,
+          nozzleDiameter: 0.2,
+        },
+        {
+          file: duplicateAsa,
+          quantity: 1,
+          material: 'ASA',
+          quality: 'extra_fine',
+          supportEnabled: false,
+          infillDensity: 100,
+          infillPattern: 'grid',
+          layerHeight: 0.2,
+          nozzleDiameter: 0.4,
+        },
+      ],
+      material: 'PLA',
+      quality: 'extra_fine',
+      infillDensity: 100,
+      infillPattern: 'grid',
+      supportEnabled: false,
+      layerHeight: 0.08,
+      nozzleDiameter: 0.2,
+      mode: 'advanced',
+    };
+
+    uploadForm.getCurrentRequestDraft.and.returnValue(calculatedDraft);
+
+    component.onUploadPrintSettingsChange(globalSettings);
+
+    expect(component.requiresRecalculation()).toBeFalse();
+
+    uploadForm.getCurrentRequestDraft.and.returnValue({
+      ...calculatedDraft,
+      items: calculatedDraft.items.map((item, index) =>
+        index === 1 ? { ...item, material: 'PLA' } : item,
+      ),
+    });
+
+    component.onUploadPrintSettingsChange(globalSettings);
+
+    expect(component.requiresRecalculation()).toBeTrue();
+  });
+
+  it('ignores stale file restores after the active quote session changes', () => {
+    const { component, estimator, uploadForm } = createComponent();
+    const staleDownload = new Subject<Blob>();
+    component.result.set(createResult('session-old'));
+    component.loading.set(true);
+
+    estimator.getLineItemContent.and.returnValue(staleDownload.asObservable());
+
+    component.restoreFilesAndSettings(
+      {
+        id: 'session-old',
+        materialCode: 'PLA',
+        quality: 'standard',
+        nozzleDiameterMm: 0.4,
+        layerHeightMm: 0.2,
+        infillPercent: 15,
+        infillPattern: 'grid',
+        supportsEnabled: true,
+      },
+      [
+        {
+          id: 'line-old',
+          originalFilename: 'old-part.stl',
+          quantity: 1,
+          materialCode: 'PLA',
+          quality: 'standard',
+          nozzleDiameterMm: 0.4,
+          layerHeightMm: 0.2,
+          infillPercent: 15,
+          infillPattern: 'grid',
+          supportsEnabled: true,
+        },
+      ],
+    );
+
+    component.result.set(createResult('session-new'));
+    staleDownload.next(new Blob(['old']));
+    staleDownload.complete();
+
+    expect(uploadForm.setFiles).not.toHaveBeenCalled();
+    expect(component.loading()).toBeTrue();
+  });
+
+  it('ignores in-flight restores after the user changes print settings', () => {
+    const { component, estimator, uploadForm } = createComponent();
+    const staleDownload = new Subject<Blob>();
+    const baselineSettings = {
+      mode: 'advanced',
+      material: 'pla',
+      quality: 'standard',
+      nozzleDiameter: 0.4,
+      layerHeight: 0.2,
+      infillDensity: 15,
+      infillPattern: 'grid',
+      supportEnabled: true,
+    } as const;
+    component.mode.set('advanced');
+    component.result.set(createResult('session-1'));
+    component.loading.set(true);
+    component['baselinePrintSettings'] = baselineSettings;
+    component['baselineItemStates'] = [
+      { fileName: 'part-a.stl', settings: baselineSettings },
+    ];
+
+    estimator.getLineItemContent.and.returnValue(staleDownload.asObservable());
+    uploadForm.getCurrentRequestDraft.and.returnValue({
+      ...createDraftRequest(),
+      mode: 'advanced',
+      layerHeight: 0.1,
+      items: createDraftRequest().items.map((item) => ({
+        ...item,
+        layerHeight: 0.1,
+      })),
+    });
+
+    component.restoreFilesAndSettings(
+      {
+        id: 'session-1',
+        materialCode: 'PLA',
+        quality: 'standard',
+        nozzleDiameterMm: 0.4,
+        layerHeightMm: 0.2,
+        infillPercent: 15,
+        infillPattern: 'grid',
+        supportsEnabled: true,
+      },
+      [
+        {
+          id: 'line-1',
+          originalFilename: 'part-a.stl',
+          quantity: 1,
+          materialCode: 'PLA',
+          quality: 'standard',
+          nozzleDiameterMm: 0.4,
+          layerHeightMm: 0.2,
+          infillPercent: 15,
+          infillPattern: 'grid',
+          supportsEnabled: true,
+        },
+      ],
+    );
+
+    component.onUploadPrintSettingsChange({
+      ...baselineSettings,
+      material: 'PLA',
+      layerHeight: 0.1,
+    });
+    staleDownload.next(new Blob(['old']));
+    staleDownload.complete();
+
+    expect(component.requiresRecalculation()).toBeTrue();
+    expect(uploadForm.setFiles).not.toHaveBeenCalled();
+    expect(component.loading()).toBeFalse();
   });
 });

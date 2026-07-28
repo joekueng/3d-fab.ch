@@ -754,7 +754,9 @@
     "PROCEED_ORDER": "Procéder à la commande",
     "CONSULT": "Demander une consultation",
     "TOTAL": "Total",
-    "MAX_QTY_NOTICE": "Pour des quantités supérieures à {{max}} pièces, demandez une consultation."
+    "MAX_QTY_NOTICE": "Pour des quantités supérieures à {{max}} pièces, demandez une consultation.",
+    "RECALC_REQUIRED": "Vous avez modifié les paramètres d'impression. Recalculez le devis avant de poursuivre la commande.",
+    "RECALC_CHECKOUT_DISABLED": "Recalculez le devis pour réactiver le checkout."
   },
   "USER_DETAILS": {
     "TITLE": "Vos données",
@@ -1174,6 +1176,7 @@
     "ITEMS_BASE_SUBTOTAL": "Sous-total de base des articles",
     "MACHINE_COST": "Coût machine",
     "SETUP_FEE": "Coût de setup",
+    "NOZZLE_CHANGE": "Changement de buse",
     "TOTAL": "Total",
     "QTY": "Qté",
     "MATERIAL": "Matériau",

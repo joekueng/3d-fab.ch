@@ -70,8 +70,8 @@ export class QuoteResultComponent {
         this.items.set(nextItems);
 
         this.lastSentQuantities.clear();
-        nextItems.forEach((item) => {
-          const key = item.id ?? item.fileName;
+        nextItems.forEach((item, index) => {
+          const key = this.quantityKey(item, index);
           this.lastSentQuantities.set(key, item.quantity);
         });
       },
@@ -104,7 +104,7 @@ export class QuoteResultComponent {
     const item = this.items()[index];
     if (!item) return;
 
-    const key = item.id ?? item.fileName;
+    const key = this.quantityKey(item, index);
 
     const normalizedQty = this.normalizeQuantity(item.quantity);
     if (normalizedQty === null) return;
@@ -120,6 +120,10 @@ export class QuoteResultComponent {
       quantity: normalizedQty,
     });
     this.lastSentQuantities.set(key, normalizedQty);
+  }
+
+  private quantityKey(item: QuoteItem, index: number): string {
+    return item.id ? `id:${item.id}` : `index:${index}:${item.fileName}`;
   }
 
   hasQuantityOverLimit = computed(() =>
@@ -168,7 +172,7 @@ export class QuoteResultComponent {
         amount: breakdown.baseSetup,
       },
       {
-        label: 'Cambio Ugello',
+        labelKey: 'CHECKOUT.NOZZLE_CHANGE',
         amount: breakdown.nozzleChange,
         visible: breakdown.nozzleChange > 0,
       },
