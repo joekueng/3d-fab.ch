@@ -9,7 +9,7 @@ This file provides Gemini and other coding agents with concise context about the
 
 **Stack:**
 
-- **Backend:** Java 21, Spring Boot 3.4, PostgreSQL, JPA/Hibernate.
+- **Backend:** Java 21, Spring Boot 3.4, PostgreSQL, JPA/Hibernate, and Flyway.
 - **Frontend:** Angular 19 (TypeScript), Angular Material, and Three.js for 3D visualisation.
 
 ## Architecture
@@ -63,7 +63,7 @@ The Angular standalone application is organised as:
 ## Development notes
 
 - **Backend:** Requires JDK 21. `./gradlew bootRun` starts with the `local` profile by default.
-- **Database:** PostgreSQL. The current persistence configuration uses Hibernate `ddl-auto=update`; assess production compatibility and data-migration needs for schema changes.
+- **Database:** PostgreSQL. Flyway applies immutable versioned migrations, and Hibernate validates the resulting schema with `ddl-auto=validate`.
 - **Frontend:** Requires Node.js 22. Run `npm start`.
 - **External dependencies:** OrcaSlicer must be on `PATH` or configured in `application.properties`; FFmpeg processes media; ClamAV is required for production upload safety.
 

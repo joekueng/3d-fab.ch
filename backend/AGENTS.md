@@ -11,14 +11,14 @@ The backend is a Java 21 / Spring Boot 3.4 REST application. The entry point is 
 - `event/` and `event/listener/` — domain-event-driven side effects such as email and QR geo-enrichment.
 - `exception/` — central error mapping and domain exceptions.
 
-Application configuration is under `src/main/resources/`; the current persistence policy is Hibernate `ddl-auto=update` in `application.properties`, and `db.sql` is repository-level database support material. OrcaSlicer profiles are under `backend/profiles/`. Local runtime storage directories are operational data, not source code.
+Application configuration is under `src/main/resources/`. Flyway migrations in `src/main/resources/db/migration/` own the schema, while Hibernate uses `ddl-auto=validate`. The root `db.sql` is legacy database support material, not an additional migration mechanism. OrcaSlicer profiles are under `backend/profiles/`. Local runtime storage directories are operational data, not source code.
 
 ## Implementation conventions
 
 - Keep controllers thin: validate (`@Valid`), delegate to a service, and return DTOs. Do not expose JPA entities directly.
 - Put business decisions, transaction boundaries, state transitions, and integration orchestration in services.
 - Add a repository only for persistence queries that cannot be expressed through an existing one. Use clear method names and avoid leaking HTTP concerns into repositories.
-- When adding or changing persistent data, assess compatibility with the current Hibernate schema-update deployment policy and any required data migration. Update the entity, DTOs, mapping, service behavior, and tests in the same change.
+- When adding or changing persistent data, add an immutable Flyway migration and update the entity, DTOs, mapping, service behavior, and tests in the same change.
 - Use constructor injection and existing project patterns. Do not introduce a second dependency-injection style.
 - Return safe, minimal public data. Keep administrative and public contracts separate, and never treat an identifier alone as authorization.
 
@@ -40,6 +40,9 @@ Use the Gradle wrapper from `backend/`:
 ```
 
 Add or update focused unit tests for service logic and controller tests for API validation, authorization, and response contracts. Prefer test fixtures and H2-compatible persistence tests already used by the project. Run a relevant integration flow when changing slicing, uploads, payment state, or the persistent schema.
+
+For schema changes, validate both paths against PostgreSQL: migration of a clean
+database from V1 and migration of a copy of an existing environment schema.
 
 ## Configuration safety
 

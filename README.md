@@ -26,7 +26,9 @@ Un'applicazione Full Stack (Angular + Spring Boot) per calcolare preventivi di s
 ## Avvio Rapido
 
 ### 1. Database
-Crea un database PostgreSQL chiamato `printcalc`. Lo schema viene gestito dal progetto tramite configurazione JPA/SQL del repository.
+Crea un database PostgreSQL chiamato `printcalc`. Flyway applica automaticamente
+le migrazioni in `backend/src/main/resources/db/migration`, mentre Hibernate
+valida che lo schema risultante corrisponda alle entità JPA.
 
 ### 2. Backend
 Configura il percorso di OrcaSlicer in `backend/src/main/resources/application.properties` o tramite la variabile d'ambiente `SLICER_PATH`. Per il media service pubblico puoi configurare anche:
