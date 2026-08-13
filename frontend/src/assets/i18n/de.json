@@ -1007,6 +1007,14 @@
         "P1": "13.1. Der Anbieter kann Bestellungen zu illegalen Objekten, Waffen oder regulierten Teilen sowie sicherheitskritischen oder medizinischen Anwendungen ohne spezielle Vereinbarungen und Validierungen ablehnen.",
         "P2": "13.2. Der Kunde bleibt für den Endgebrauch und die regulatorische Konformität des Produkts verantwortlich."
       },
+      "S13A": {
+        "TITLE": "13A. Anwendungen mit Lebensmittelkontakt",
+        "P1": "13A.1. Sofern in der Produktbeschreibung oder in einer schriftlichen Vereinbarung nicht ausdrücklich etwas anderes angegeben ist, sind Produkte, die von 3D-Fab.ch mittels additiver FDM/FFF-Fertigung hergestellt werden, weder zertifiziert noch geprüft oder als für den Kontakt mit Lebensmitteln geeignet garantiert.",
+        "P2": "13A.2. Die Beschreibung eines Materials durch den Hersteller oder Lieferanten als für Anwendungen mit Lebensmittelkontakt geeignet, konform oder zugelassen stellt für sich genommen keine Konformitätserklärung des endgültigen 3D-gedruckten Produkts mit den anwendbaren Vorschriften für Lebensmittelkontakt dar. Der Herstellungsprozess, die Druckausrüstung, Zusatzstoffe, Pigmente, Oberflächeneigenschaften, Nachbearbeitungen, die Art des Lebensmittels, die Kontaktdauer, die Temperatur und die Nutzungsbedingungen können die Eignung des Endprodukts beeinflussen.",
+        "P3": "13A.3. Produkte für Anwendungen mit Lebensmittelkontakt dürfen nur dann als für diesen Zweck geeignet betrachtet werden, wenn dies von 3D-Fab.ch ausdrücklich schriftlich bestätigt oder auf der betreffenden Produktseite ausdrücklich angegeben wird, zusammen mit den gegebenenfalls geltenden Nutzungsbedingungen und Einschränkungen.",
+        "P4": "13A.4. Beauftragt ein Kunde ein kundenspezifisches Produkt für den Lebensmittelkontakt, ohne diese schriftliche Bestätigung anzufordern und zu erhalten, wird das Produkt als technisches 3D-gedrucktes Bauteil ohne Zertifizierung für Lebensmittelkontakt geliefert. Der Kunde bleibt dafür verantwortlich, die Eignung und Konformität des Produkts für den vorgesehenen Verwendungszweck zu prüfen.",
+        "P5": "13A.5. Allfällige Anweisungen zu zulässigen Lebensmitteln, Kontaktdauer, Temperatur, Reinigung, Wiederverwendung oder anderen Nutzungsbedingungen, die einem ausdrücklich für den Lebensmittelkontakt bestimmten Produkt beigefügt sind, müssen beachtet werden."
+      },
       "S14": {
         "TITLE": "14. Geistiges Eigentum und Lizenzen",
         "P1": "14.1. Rechte an Kundendateien bleiben beim Kunden bzw. den jeweiligen Rechteinhabern. Der Kunde gewährt dem Anbieter eine auf technische Bewertung und Produktion beschränkte Lizenz.",

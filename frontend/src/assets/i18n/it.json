@@ -1068,6 +1068,14 @@
         "P1": "13.1. Il fornitore può rifiutare ordini relativi a oggetti illegali, armi o parti regolamentate, applicazioni safety-critical o medicali senza accordi e validazioni dedicate.",
         "P2": "13.2. Il cliente resta responsabile dell'uso finale e della conformità normativa del prodotto."
       },
+      "S13A": {
+        "TITLE": "13A. Applicazioni a contatto con alimenti",
+        "P1": "13A.1. Salvo diversa indicazione espressa nella descrizione del prodotto o in un accordo scritto, i prodotti realizzati da 3D-Fab.ch mediante produzione additiva FDM/FFF non sono certificati, testati o garantiti come idonei al contatto con alimenti.",
+        "P2": "13A.2. Il fatto che un materiale sia descritto dal produttore o dal fornitore come idoneo, conforme o approvato per applicazioni a contatto con alimenti non costituisce, di per sé, una dichiarazione di conformità del prodotto finale stampato in 3D alle normative applicabili in materia di contatto alimentare. Il processo produttivo, le attrezzature di stampa, gli additivi, i pigmenti, le caratteristiche superficiali, le lavorazioni successive, il tipo di alimento, la durata del contatto, la temperatura e le condizioni d’uso possono influire sull’idoneità del prodotto finale.",
+        "P3": "13A.3. I prodotti destinati ad applicazioni a contatto con alimenti devono essere considerati idonei a tale uso esclusivamente quando ciò viene espressamente confermato per iscritto da 3D-Fab.ch oppure specificamente indicato nella relativa pagina prodotto, unitamente alle eventuali condizioni e limitazioni d’uso applicabili.",
+        "P4": "13A.4. Qualora un cliente commissioni un prodotto personalizzato destinato al contatto con alimenti senza richiedere e ottenere tale conferma scritta, il prodotto viene fornito come componente tecnico stampato in 3D, privo di certificazione per il contatto alimentare. Il cliente rimane responsabile della verifica dell’idoneità e della conformità del prodotto rispetto all’impiego previsto.",
+        "P5": "13A.5. Eventuali istruzioni relative agli alimenti consentiti, alla durata del contatto, alla temperatura, alla pulizia, al riutilizzo o ad altre condizioni d’uso fornite insieme a un prodotto espressamente destinato al contatto alimentare devono essere rispettate."
+      },
       "S14": {
         "TITLE": "14. Proprietà intellettuale e licenze",
         "P1": "14.1. I diritti sui file del cliente restano al cliente o ai relativi titolari. Il cliente concede al fornitore una licenza limitata all'uso per valutazione tecnica e produzione.",

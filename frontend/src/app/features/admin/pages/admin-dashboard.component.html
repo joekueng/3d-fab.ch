@@ -357,17 +357,9 @@
           <app-button
             type="button"
             (click)="updatePaymentMethod()"
-            [disabled]="
-              confirmingPayment || selectedOrder.paymentStatus === 'COMPLETED'
-            "
+            [disabled]="confirmingPayment"
           >
-            {{
-              selectedOrder.paymentStatus === "COMPLETED"
-                ? "Pagamento confermato"
-                : confirmingPayment
-                  ? "Conferma..."
-                  : "Conferma pagamento"
-            }}
+            {{ confirmingPayment ? "Salvataggio..." : "Salva metodo" }}
           </app-button>
         </div>
       </div>

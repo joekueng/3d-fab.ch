@@ -108,7 +108,7 @@ class AdminOrderControllerServiceTest {
         assertEquals("BANK_TRANSFER", dto.getPaymentMethod());
         assertEquals("PENDING", dto.getPaymentStatus());
         assertEquals(paidAt, dto.getPaidAt());
-        verify(paymentService).confirmPayment(orderId, "BANK_TRANSFER");
+        verify(paymentService).updatePaymentMethod(orderId, "BANK_TRANSFER");
     }
 
     @Test
@@ -128,6 +128,27 @@ class AdminOrderControllerServiceTest {
 
         assertEquals("SHIPPED", dto.getStatus());
         verify(eventPublisher).publishEvent(any(OrderShippedEvent.class));
+    }
+
+    @Test
+    void updateOrderStatus_toPaid_shouldConfirmPayment() {
+        UUID orderId = UUID.randomUUID();
+        Order order = buildOrder(orderId, "PENDING_PAYMENT");
+        Payment payment = new Payment();
+        payment.setMethod("TWINT");
+        payment.setStatus("PENDING");
+
+        when(orderRepo.findById(orderId)).thenReturn(Optional.of(order));
+        when(orderItemRepo.findByOrder_Id(orderId)).thenReturn(List.of());
+        when(paymentRepo.findByOrder_Id(orderId)).thenReturn(Optional.of(payment));
+
+        AdminOrderStatusUpdateRequest payload = new AdminOrderStatusUpdateRequest();
+        payload.setStatus("PAID");
+
+        service.updateOrderStatus(orderId, payload);
+
+        verify(paymentService).confirmPayment(orderId, "TWINT");
+        verify(orderRepo, never()).save(order);
     }
 
     @Test

@@ -121,7 +121,7 @@ public class AdminOrderControllerService {
         if (method == null || method.isBlank()) {
             throw new ResponseStatusException(BAD_REQUEST, "Payment method is required");
         }
-        paymentService.confirmPayment(orderId, method);
+        paymentService.updatePaymentMethod(orderId, method);
         return toOrderDto(getOrderOrThrow(orderId), true);
     }
 
@@ -140,8 +140,17 @@ public class AdminOrderControllerService {
             );
         }
         String previousStatus = order.getStatus();
-        order.setStatus(normalizedStatus);
-        Order savedOrder = orderRepo.save(order);
+        Order savedOrder;
+        if (!"PAID".equals(previousStatus) && "PAID".equals(normalizedStatus)) {
+            String paymentMethod = paymentRepo.findByOrder_Id(orderId)
+                    .map(Payment::getMethod)
+                    .orElse("OTHER");
+            paymentService.confirmPayment(orderId, paymentMethod);
+            savedOrder = getOrderOrThrow(orderId);
+        } else {
+            order.setStatus(normalizedStatus);
+            savedOrder = orderRepo.save(order);
+        }
 
         if (!"SHIPPED".equals(previousStatus) && "SHIPPED".equals(normalizedStatus)) {
             eventPublisher.publishEvent(new OrderShippedEvent(this, savedOrder));

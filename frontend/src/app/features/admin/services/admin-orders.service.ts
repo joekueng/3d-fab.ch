@@ -118,8 +118,8 @@ export class AdminOrdersService {
   }
 
   updatePaymentMethod(orderId: string, method: string): Observable<AdminOrder> {
-    return this.http.post<AdminOrder>(
-      `${this.baseUrl}/${orderId}/payments/confirm`,
+    return this.http.patch<AdminOrder>(
+      `${this.baseUrl}/${orderId}/payments/method`,
       { method },
       { withCredentials: true },
     );
