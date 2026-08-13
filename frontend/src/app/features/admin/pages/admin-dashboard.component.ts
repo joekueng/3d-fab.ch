@@ -7,6 +7,7 @@ import {
   AdminOrderItem,
   AdminOrdersService,
 } from '../services/admin-orders.service';
+import { AdminEmailLog } from '../services/admin-email-log.model';
 import { CopyOnClickDirective } from '../../../shared/directives/copy-on-click.directive';
 import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
 import { AppInputComponent } from '../../../shared/components/app-input/app-input.component';
@@ -49,6 +50,7 @@ export class AdminDashboardComponent implements OnInit {
   errorMessage: string | null = null;
   cadUploadFiles: File[] = [];
   deletingCadFileIds = new Set<string>();
+  resendingEmailLogIds = new Set<string>();
   readonly orderStatusOptions = [
     'PENDING_PAYMENT',
     'PAID',
@@ -280,6 +282,25 @@ export class AdminDashboardComponent implements OnInit {
           this.errorMessage = 'Aggiornamento stato ordine non riuscito.';
         },
       });
+  }
+
+  resendEmail(log: AdminEmailLog): void {
+    if (!this.selectedOrder || this.resendingEmailLogIds.has(log.id)) {
+      return;
+    }
+
+    this.errorMessage = null;
+    this.resendingEmailLogIds.add(log.id);
+    this.adminOrdersService.resendEmail(this.selectedOrder.id, log.id).subscribe({
+      next: (updatedOrder) => {
+        this.resendingEmailLogIds.delete(log.id);
+        this.applyOrderUpdate(updatedOrder);
+      },
+      error: () => {
+        this.resendingEmailLogIds.delete(log.id);
+        this.errorMessage = 'Reinvio email non riuscito.';
+      },
+    });
   }
 
   downloadItemFile(itemId: string, filename: string): void {
@@ -647,6 +668,57 @@ export class AdminDashboardComponent implements OnInit {
       default:
         return normalized || '-';
     }
+  }
+
+  emailLogs(order: AdminOrder | null): AdminEmailLog[] {
+    return order?.emailLogs ?? [];
+  }
+
+  emailEventLabel(eventType?: string): string {
+    switch ((eventType || '').trim().toUpperCase()) {
+      case 'ORDER_CONFIRMATION_CUSTOMER':
+        return 'Conferma ordine cliente';
+      case 'ORDER_NOTIFICATION_ADMIN':
+        return 'Notifica nuovo ordine admin';
+      case 'PAYMENT_REPORTED_CUSTOMER':
+        return 'Pagamento segnalato';
+      case 'PAYMENT_CONFIRMED_CUSTOMER':
+        return 'Pagamento confermato / fattura';
+      case 'ORDER_SHIPPED_CUSTOMER':
+        return 'Ordine spedito';
+      default:
+        return eventType || '-';
+    }
+  }
+
+  emailStatusLabel(status?: string): string {
+    switch ((status || '').trim().toUpperCase()) {
+      case 'SENT':
+        return 'Inviata';
+      case 'FAILED':
+        return 'Fallita';
+      case 'SKIPPED':
+        return 'Saltata';
+      default:
+        return status || '-';
+    }
+  }
+
+  emailStatusClass(status?: string): string {
+    switch ((status || '').trim().toUpperCase()) {
+      case 'SENT':
+        return 'email-status--sent';
+      case 'FAILED':
+        return 'email-status--failed';
+      case 'SKIPPED':
+        return 'email-status--skipped';
+      default:
+        return 'email-status--neutral';
+    }
+  }
+
+  isResendingEmailLog(emailLogId: string): boolean {
+    return this.resendingEmailLogIds.has(emailLogId);
   }
 
   downloadItemLabel(item: AdminOrderItem): string {

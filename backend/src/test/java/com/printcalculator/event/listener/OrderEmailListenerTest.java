@@ -4,6 +4,9 @@ import com.printcalculator.entity.Customer;
 import com.printcalculator.entity.Order;
 import com.printcalculator.event.OrderCreatedEvent;
 import com.printcalculator.repository.OrderItemRepository;
+import com.printcalculator.repository.PaymentRepository;
+import com.printcalculator.service.email.EmailAuditService;
+import com.printcalculator.service.email.EmailSendResult;
 import com.printcalculator.service.payment.InvoicePdfRenderingService;
 import com.printcalculator.service.payment.QrBillService;
 import com.printcalculator.service.storage.StorageService;
@@ -34,6 +37,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -49,10 +53,16 @@ class OrderEmailListenerTest {
     private OrderItemRepository orderItemRepository;
 
     @Mock
+    private PaymentRepository paymentRepository;
+
+    @Mock
     private QrBillService qrBillService;
 
     @Mock
     private StorageService storageService;
+
+    @Mock
+    private EmailAuditService emailAuditService;
 
     @InjectMocks
     private OrderEmailListener orderEmailListener;
@@ -122,6 +132,29 @@ class OrderEmailListenerTest {
 
         Map<String, Object> adminData = adminTemplateCaptor.getValue();
         assertEquals("John Doe", adminData.get("customerName"));
+
+        verify(emailAuditService).recordOrderEmail(
+                eq(order),
+                eq(EmailAuditService.EVENT_ORDER_CONFIRMATION_CUSTOMER),
+                eq(EmailAuditService.ORIGIN_SYSTEM),
+                eq("john.doe@test.com"),
+                eq("Conferma Ordine #" + order.getOrderNumber() + " - 3D-Fab"),
+                eq("order-confirmation"),
+                eq("Conferma-Ordine-" + order.getOrderNumber() + ".pdf"),
+                nullable(EmailSendResult.class),
+                isNull()
+        );
+        verify(emailAuditService).recordOrderEmail(
+                eq(order),
+                eq(EmailAuditService.EVENT_ORDER_NOTIFICATION_ADMIN),
+                eq(EmailAuditService.ORIGIN_SYSTEM),
+                eq("admin@printcalculator.local"),
+                eq("Nuovo Ordine Ricevuto #" + order.getOrderNumber() + " - John Doe"),
+                eq("order-confirmation"),
+                isNull(),
+                nullable(EmailSendResult.class),
+                isNull()
+        );
     }
 
     @Test

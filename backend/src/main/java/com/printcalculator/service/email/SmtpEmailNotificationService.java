@@ -12,6 +12,7 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.springframework.core.io.ByteArrayResource;
 
+import java.time.OffsetDateTime;
 import java.util.Map;
 
 @Slf4j
@@ -29,15 +30,16 @@ public class SmtpEmailNotificationService implements EmailNotificationService {
     private boolean mailEnabled;
 
     @Override
-    public void sendEmail(String to, String subject, String templateName, Map<String, Object> contextData) {
-        sendEmailWithAttachment(to, subject, templateName, contextData, null, null);
+    public EmailSendResult sendEmail(String to, String subject, String templateName, Map<String, Object> contextData) {
+        return sendEmailWithAttachment(to, subject, templateName, contextData, null, null);
     }
 
     @Override
-    public void sendEmailWithAttachment(String to, String subject, String templateName, Map<String, Object> contextData, String attachmentName, byte[] attachmentData) {
+    public EmailSendResult sendEmailWithAttachment(String to, String subject, String templateName, Map<String, Object> contextData, String attachmentName, byte[] attachmentData) {
+        OffsetDateTime attemptedAt = OffsetDateTime.now();
         if (!mailEnabled) {
             log.info("Email sending disabled (app.mail.enabled=false). Skipping email to {}", to);
-            return;
+            return EmailSendResult.skipped(attemptedAt, "Email sending disabled (app.mail.enabled=false).");
         }
 
         log.info("Preparing to send email to {} with template {}", to, templateName);
@@ -61,12 +63,23 @@ public class SmtpEmailNotificationService implements EmailNotificationService {
 
             emailSender.send(mimeMessage);
             log.info("Email successfully sent to {}", to);
+            return EmailSendResult.sent(attemptedAt, OffsetDateTime.now());
 
         } catch (MessagingException e) {
             log.error("Failed to send email to {}", to, e);
             // Non blocco l'ordine se l'email fallisce, ma loggo l'errore adeguatamente.
+            return EmailSendResult.failed(attemptedAt, errorMessage(e));
         } catch (Exception e) {
             log.error("Unexpected error while sending email to {}", to, e);
+            return EmailSendResult.failed(attemptedAt, errorMessage(e));
         }
+    }
+
+    private String errorMessage(Exception e) {
+        String message = e.getMessage();
+        if (message == null || message.isBlank()) {
+            return e.getClass().getSimpleName();
+        }
+        return message;
     }
 }

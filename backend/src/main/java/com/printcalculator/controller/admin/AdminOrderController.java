@@ -60,6 +60,15 @@ public class AdminOrderController {
         return ResponseEntity.ok(adminOrderControllerService.updateOrderStatus(orderId, payload));
     }
 
+    @PostMapping("/{orderId}/email-logs/{emailLogId}/resend")
+    @Transactional
+    public ResponseEntity<OrderDto> resendEmail(
+            @PathVariable UUID orderId,
+            @PathVariable UUID emailLogId
+    ) {
+        return ResponseEntity.ok(adminOrderControllerService.resendEmail(orderId, emailLogId));
+    }
+
     @GetMapping("/{orderId}/items/{orderItemId}/file")
     public ResponseEntity<Resource> downloadOrderItemFile(
             @PathVariable UUID orderId,

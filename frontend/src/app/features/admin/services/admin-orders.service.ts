@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { AdminEmailLog } from './admin-email-log.model';
 
 export interface AdminOrderItem {
   id: string;
@@ -91,6 +92,7 @@ export interface AdminOrder {
   printInfillPattern?: string;
   printInfillPercent?: number;
   printSupportsEnabled?: boolean;
+  emailLogs: AdminEmailLog[];
   items: AdminOrderItem[];
 }
 
@@ -130,6 +132,14 @@ export class AdminOrdersService {
     return this.http.post<AdminOrder>(
       `${this.baseUrl}/${orderId}/status`,
       payload,
+      { withCredentials: true },
+    );
+  }
+
+  resendEmail(orderId: string, emailLogId: string): Observable<AdminOrder> {
+    return this.http.post<AdminOrder>(
+      `${this.baseUrl}/${orderId}/email-logs/${emailLogId}/resend`,
+      {},
       { withCredentials: true },
     );
   }

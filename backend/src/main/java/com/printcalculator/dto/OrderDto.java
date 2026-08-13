@@ -41,6 +41,7 @@ public class OrderDto {
     private String printInfillPattern;
     private Integer printInfillPercent;
     private Boolean printSupportsEnabled;
+    private List<AdminEmailLogDto> emailLogs;
     private List<OrderItemDto> items;
 
     // Getters and Setters
@@ -148,6 +149,9 @@ public class OrderDto {
 
     public Boolean getPrintSupportsEnabled() { return printSupportsEnabled; }
     public void setPrintSupportsEnabled(Boolean printSupportsEnabled) { this.printSupportsEnabled = printSupportsEnabled; }
+
+    public List<AdminEmailLogDto> getEmailLogs() { return emailLogs; }
+    public void setEmailLogs(List<AdminEmailLogDto> emailLogs) { this.emailLogs = emailLogs; }
 
     public List<OrderItemDto> getItems() { return items; }
     public void setItems(List<OrderItemDto> items) { this.items = items; }

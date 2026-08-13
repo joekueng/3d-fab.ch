@@ -2,11 +2,14 @@ package com.printcalculator.service.order;
 
 import com.printcalculator.dto.AdminOrderStatusUpdateRequest;
 import com.printcalculator.dto.OrderDto;
+import com.printcalculator.entity.EmailLog;
 import com.printcalculator.entity.FilamentVariant;
 import com.printcalculator.entity.Order;
 import com.printcalculator.entity.OrderItem;
 import com.printcalculator.entity.Payment;
 import com.printcalculator.event.OrderShippedEvent;
+import com.printcalculator.event.listener.OrderEmailListener;
+import com.printcalculator.repository.EmailLogRepository;
 import com.printcalculator.repository.OrderItemRepository;
 import com.printcalculator.repository.OrderRepository;
 import com.printcalculator.repository.PaymentRepository;
@@ -14,6 +17,7 @@ import com.printcalculator.repository.QuoteLineItemRepository;
 import com.printcalculator.service.payment.InvoicePdfRenderingService;
 import com.printcalculator.service.payment.PaymentService;
 import com.printcalculator.service.payment.QrBillService;
+import com.printcalculator.service.email.EmailAuditService;
 import com.printcalculator.service.storage.StorageService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,6 +52,8 @@ class AdminOrderControllerServiceTest {
     @Mock
     private PaymentRepository paymentRepo;
     @Mock
+    private EmailLogRepository emailLogRepo;
+    @Mock
     private QuoteLineItemRepository quoteLineItemRepo;
     @Mock
     private PaymentService paymentService;
@@ -61,6 +67,10 @@ class AdminOrderControllerServiceTest {
     private ApplicationEventPublisher eventPublisher;
     @Mock
     private OrderCadFileService orderCadFileService;
+    @Mock
+    private EmailAuditService emailAuditService;
+    @Mock
+    private OrderEmailListener orderEmailListener;
 
     @InjectMocks
     private AdminOrderControllerService service;
@@ -136,6 +146,27 @@ class AdminOrderControllerServiceTest {
         service.updateOrderStatus(orderId, payload);
 
         verify(eventPublisher, never()).publishEvent(any(OrderShippedEvent.class));
+    }
+
+    @Test
+    void resendEmail_withOrderEmailLog_shouldDelegateAndReturnUpdatedDto() {
+        UUID orderId = UUID.randomUUID();
+        UUID emailLogId = UUID.randomUUID();
+        Order order = buildOrder(orderId, "PAID");
+        EmailLog emailLog = new EmailLog();
+        emailLog.setId(emailLogId);
+        emailLog.setOrder(order);
+        emailLog.setEventType("ORDER_CONFIRMATION_CUSTOMER");
+
+        when(orderRepo.findById(orderId)).thenReturn(Optional.of(order));
+        when(emailLogRepo.findById(emailLogId)).thenReturn(Optional.of(emailLog));
+        when(orderItemRepo.findByOrder_Id(orderId)).thenReturn(List.of());
+        when(paymentRepo.findByOrder_Id(orderId)).thenReturn(Optional.empty());
+
+        OrderDto dto = service.resendEmail(orderId, emailLogId);
+
+        assertEquals(orderId, dto.getId());
+        verify(orderEmailListener).resendOrderEmail(order, emailLog);
     }
 
     @Test

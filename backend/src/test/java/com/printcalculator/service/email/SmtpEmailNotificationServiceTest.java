@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -55,9 +56,10 @@ class SmtpEmailNotificationServiceTest {
         when(emailSender.createMimeMessage()).thenReturn(mimeMessage);
 
         // Act
-        emailNotificationService.sendEmail(to, subject, templateName, contextData);
+        EmailSendResult result = emailNotificationService.sendEmail(to, subject, templateName, contextData);
 
         // Assert
+        assertEquals(EmailSendResult.STATUS_SENT, result.status());
         verify(templateEngine, times(1)).process(eq("email/" + templateName), any(Context.class));
         verify(emailSender, times(1)).createMimeMessage();
         verify(emailSender, times(1)).send(mimeMessage);
@@ -75,7 +77,8 @@ class SmtpEmailNotificationServiceTest {
 
         // Act & Assert
         // We expect the exception to be caught and logged, not propagated
-        assertDoesNotThrow(() -> emailNotificationService.sendEmail(to, subject, templateName, contextData));
+        EmailSendResult result = assertDoesNotThrow(() -> emailNotificationService.sendEmail(to, subject, templateName, contextData));
+        assertEquals(EmailSendResult.STATUS_FAILED, result.status());
         
         verify(emailSender, never()).createMimeMessage();
         verify(emailSender, never()).send(any(MimeMessage.class));

@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { AdminEmailLog } from './admin-email-log.model';
 
 export interface AdminFilamentStockRow {
   filamentVariantId: number;
@@ -110,6 +111,7 @@ export interface AdminContactRequestDetail {
   createdAt: string;
   updatedAt: string;
   attachments: AdminContactRequestAttachment[];
+  emailLogs: AdminEmailLog[];
 }
 
 export interface AdminUpdateContactRequestStatusPayload {
@@ -296,6 +298,17 @@ export class AdminOperationsService {
     return this.http.patch<AdminContactRequestDetail>(
       `${this.baseUrl}/contact-requests/${requestId}/status`,
       payload,
+      { withCredentials: true },
+    );
+  }
+
+  resendContactRequestEmail(
+    requestId: string,
+    emailLogId: string,
+  ): Observable<AdminContactRequestDetail> {
+    return this.http.post<AdminContactRequestDetail>(
+      `${this.baseUrl}/contact-requests/${requestId}/email-logs/${emailLogId}/resend`,
+      {},
       { withCredentials: true },
     );
   }

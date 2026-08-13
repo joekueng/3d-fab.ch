@@ -58,6 +58,15 @@ public class AdminOperationsController {
         return ResponseEntity.ok(adminOperationsControllerService.updateContactRequestStatus(requestId, payload));
     }
 
+    @PostMapping("/contact-requests/{requestId}/email-logs/{emailLogId}/resend")
+    @Transactional
+    public ResponseEntity<AdminContactRequestDetailDto> resendContactRequestEmail(
+            @PathVariable UUID requestId,
+            @PathVariable UUID emailLogId
+    ) {
+        return ResponseEntity.ok(adminOperationsControllerService.resendContactRequestEmail(requestId, emailLogId));
+    }
+
     @GetMapping("/contact-requests/{requestId}/attachments/{attachmentId}/file")
     public ResponseEntity<Resource> downloadContactRequestAttachment(
             @PathVariable UUID requestId,
