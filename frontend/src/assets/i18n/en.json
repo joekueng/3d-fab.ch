@@ -663,6 +663,8 @@
     "LAYER_HEIGHT": "Layer Height",
     "SUPPORT": "Supports",
     "SUPPORT_DESC": "Enable supports for overhangs",
+    "SPLIT_ACCEPT_LABEL": "I accept that oversized models may be split for printing",
+    "SPLIT_RESULT_NOTE": "This quote includes setup for preparing oversized models to be split for printing. The original file remains attached to the order.",
     "CALCULATE": "Calculate Quote",
     "RESULT": "Estimated Quote",
     "TIME": "Print Time",
@@ -699,7 +701,9 @@
     "SHIPPING_NOTE": "* Shipping costs excluded, calculated at the next step",
     "ERROR_ZERO_PRICE": "Something went wrong during the calculation. Try another format or contact us directly via Request Consultation.",
     "ZERO_RESULT_TITLE": "Invalid Result",
-    "ZERO_RESULT_HELP": "The calculation returned invalid zero values. Try another file format or contact us directly via Request Consultation."
+    "ZERO_RESULT_HELP": "The calculation returned invalid zero values. Try another file format or contact us directly via Request Consultation.",
+    "CUSTOM_QUOTE_TITLE": "Custom quote required",
+    "CUSTOM_QUOTE_HELP": "This model is too large for the automatic estimate, even with split printing accepted. Send a custom quote request with the file attached."
   },
   "SHOP": {
     "TITLE": "Technical solutions",
@@ -1234,7 +1238,12 @@
     "ERR_ID_NOT_FOUND": "Order ID not found.",
     "ERR_LOAD_ORDER": "Failed to load order details.",
     "ERR_REPORT_PAYMENT": "Failed to report payment. Please try again.",
+    "ERR_DOWNLOAD_CAD_FILES": "Failed to download CAD files. Please try again.",
     "CAD_SERVICE": "CAD service ({{hours}}h)",
+    "CAD_FILES_TITLE": "CAD files",
+    "CAD_FILES_READY": "{{count}} files available for download.",
+    "CAD_FILES_LOCKED": "Available after payment confirmation.",
+    "DOWNLOAD_CAD_FILES": "Download CAD files",
     "ITEMS_TITLE": "Order items",
     "ORDER_TYPE_LABEL": "Order type",
     "ITEM_COUNT": "Lines",

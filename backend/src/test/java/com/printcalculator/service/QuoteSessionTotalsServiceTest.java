@@ -106,6 +106,29 @@ class QuoteSessionTotalsServiceTest {
         assertAmountEquals("50.00", totals.grandTotalChf());
     }
 
+    @Test
+    void compute_WithSplitPrintingItem_ShouldUseSplitSetupFee() {
+        QuoteSession session = new QuoteSession();
+        session.setSetupCostChf(new BigDecimal("2.00"));
+
+        QuoteLineItem item = createItem(new BigDecimal("12.00"), 1, 1800, "0.40");
+        item.setRequiresSplitPrinting(true);
+
+        PricingPolicy policy = new PricingPolicy();
+        policy.setSplitModelSetupFeeChf(new BigDecimal("10.00"));
+        when(pricingRepo.findFirstByIsActiveTrueOrderByValidFromDesc()).thenReturn(policy);
+        when(quoteCalculator.calculateSessionMachineCost(eq(policy), any(BigDecimal.class))).thenReturn(BigDecimal.ZERO);
+        when(quoteCalculator.calculateSplitModelSetupFee(policy)).thenReturn(new BigDecimal("10.00"));
+        when(nozzleOptionRepo.findFirstByNozzleDiameterMmAndIsActiveTrue(new BigDecimal("0.40")))
+                .thenReturn(java.util.Optional.empty());
+
+        QuoteSessionTotalsService.QuoteSessionTotals totals = service.compute(session, List.of(item));
+
+        assertAmountEquals("10.00", totals.baseSetupCostChf());
+        assertAmountEquals("10.00", totals.setupCostChf());
+        assertAmountEquals("24.00", totals.grandTotalChf());
+    }
+
     private QuoteLineItem createItem(BigDecimal unitPrice, int quantity, int printSeconds, String nozzleMm) {
         QuoteLineItem item = new QuoteLineItem();
         item.setQuantity(quantity);

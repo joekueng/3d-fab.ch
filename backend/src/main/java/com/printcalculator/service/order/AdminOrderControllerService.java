@@ -4,12 +4,15 @@ import com.printcalculator.dto.AddressDto;
 import com.printcalculator.dto.AdminOrderStatusUpdateRequest;
 import com.printcalculator.dto.OrderDto;
 import com.printcalculator.dto.OrderItemDto;
+import com.printcalculator.entity.EmailLog;
 import com.printcalculator.entity.Order;
 import com.printcalculator.entity.OrderItem;
 import com.printcalculator.entity.Payment;
 import com.printcalculator.entity.QuoteLineItem;
 import com.printcalculator.entity.QuoteSession;
 import com.printcalculator.event.OrderShippedEvent;
+import com.printcalculator.event.listener.OrderEmailListener;
+import com.printcalculator.repository.EmailLogRepository;
 import com.printcalculator.repository.OrderItemRepository;
 import com.printcalculator.repository.OrderRepository;
 import com.printcalculator.repository.PaymentRepository;
@@ -17,6 +20,7 @@ import com.printcalculator.repository.QuoteLineItemRepository;
 import com.printcalculator.service.payment.InvoicePdfRenderingService;
 import com.printcalculator.service.payment.PaymentService;
 import com.printcalculator.service.payment.QrBillService;
+import com.printcalculator.service.email.EmailAuditService;
 import com.printcalculator.service.storage.StorageService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.Resource;
@@ -27,6 +31,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.charset.StandardCharsets;
@@ -59,42 +64,54 @@ public class AdminOrderControllerService {
     private final OrderRepository orderRepo;
     private final OrderItemRepository orderItemRepo;
     private final PaymentRepository paymentRepo;
+    private final EmailLogRepository emailLogRepo;
     private final QuoteLineItemRepository quoteLineItemRepo;
     private final PaymentService paymentService;
     private final StorageService storageService;
     private final InvoicePdfRenderingService invoiceService;
     private final QrBillService qrBillService;
     private final ApplicationEventPublisher eventPublisher;
+    private final OrderCadFileService orderCadFileService;
+    private final EmailAuditService emailAuditService;
+    private final OrderEmailListener orderEmailListener;
 
     public AdminOrderControllerService(OrderRepository orderRepo,
                                        OrderItemRepository orderItemRepo,
                                        PaymentRepository paymentRepo,
+                                       EmailLogRepository emailLogRepo,
                                        QuoteLineItemRepository quoteLineItemRepo,
                                        PaymentService paymentService,
                                        StorageService storageService,
                                        InvoicePdfRenderingService invoiceService,
                                        QrBillService qrBillService,
-                                       ApplicationEventPublisher eventPublisher) {
+                                       ApplicationEventPublisher eventPublisher,
+                                       OrderCadFileService orderCadFileService,
+                                       EmailAuditService emailAuditService,
+                                       OrderEmailListener orderEmailListener) {
         this.orderRepo = orderRepo;
         this.orderItemRepo = orderItemRepo;
         this.paymentRepo = paymentRepo;
+        this.emailLogRepo = emailLogRepo;
         this.quoteLineItemRepo = quoteLineItemRepo;
         this.paymentService = paymentService;
         this.storageService = storageService;
         this.invoiceService = invoiceService;
         this.qrBillService = qrBillService;
         this.eventPublisher = eventPublisher;
+        this.orderCadFileService = orderCadFileService;
+        this.emailAuditService = emailAuditService;
+        this.orderEmailListener = orderEmailListener;
     }
 
     public List<OrderDto> listOrders() {
         return orderRepo.findAllByOrderByCreatedAtDesc()
                 .stream()
-                .map(this::toOrderDto)
+                .map(order -> toOrderDto(order, false))
                 .toList();
     }
 
     public OrderDto getOrder(UUID orderId) {
-        return toOrderDto(getOrderOrThrow(orderId));
+        return toOrderDto(getOrderOrThrow(orderId), true);
     }
 
     @Transactional
@@ -104,8 +121,8 @@ public class AdminOrderControllerService {
         if (method == null || method.isBlank()) {
             throw new ResponseStatusException(BAD_REQUEST, "Payment method is required");
         }
-        paymentService.updatePaymentMethod(orderId, method);
-        return toOrderDto(getOrderOrThrow(orderId));
+        paymentService.confirmPayment(orderId, method);
+        return toOrderDto(getOrderOrThrow(orderId), true);
     }
 
     @Transactional
@@ -130,7 +147,20 @@ public class AdminOrderControllerService {
             eventPublisher.publishEvent(new OrderShippedEvent(this, savedOrder));
         }
 
-        return toOrderDto(savedOrder);
+        return toOrderDto(savedOrder, true);
+    }
+
+    @Transactional
+    public OrderDto resendEmail(UUID orderId, UUID emailLogId) {
+        Order order = getOrderOrThrow(orderId);
+        EmailLog emailLog = emailLogRepo.findById(emailLogId)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Email log not found"));
+        if (emailLog.getOrder() == null || !emailLog.getOrder().getId().equals(orderId)) {
+            throw new ResponseStatusException(NOT_FOUND, "Email log not found for order");
+        }
+
+        orderEmailListener.resendOrderEmail(order, emailLog);
+        return toOrderDto(getOrderOrThrow(orderId), true);
     }
 
     public ResponseEntity<Resource> downloadOrderItemFile(UUID orderId, UUID orderItemId) {
@@ -187,12 +217,26 @@ public class AdminOrderControllerService {
         return generateDocument(getOrderOrThrow(orderId), false);
     }
 
+    @Transactional
+    public OrderDto uploadCadFiles(UUID orderId, List<MultipartFile> files) {
+        getOrderOrThrow(orderId);
+        orderCadFileService.uploadAdminCadFiles(orderId, files);
+        return toOrderDto(getOrderOrThrow(orderId), true);
+    }
+
+    @Transactional
+    public OrderDto deleteCadFile(UUID orderId, UUID fileId) {
+        getOrderOrThrow(orderId);
+        orderCadFileService.deleteAdminCadFile(orderId, fileId);
+        return toOrderDto(getOrderOrThrow(orderId), true);
+    }
+
     private Order getOrderOrThrow(UUID orderId) {
         return orderRepo.findById(orderId)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Order not found"));
     }
 
-    private OrderDto toOrderDto(Order order) {
+    private OrderDto toOrderDto(Order order, boolean includeEmailLogs) {
         List<OrderItem> items = orderItemRepo.findByOrder_Id(order.getId());
         OrderDto dto = new OrderDto();
         dto.setId(order.getId());
@@ -219,6 +263,10 @@ public class AdminOrderControllerService {
         dto.setCadHours(order.getCadHours());
         dto.setCadHourlyRateChf(order.getCadHourlyRateChf());
         dto.setCadTotalChf(order.getCadTotalChf());
+        OrderCadFileService.CadFileSummary cadFileSummary = orderCadFileService.summarize(order);
+        dto.setCadFileCount(cadFileSummary != null ? cadFileSummary.fileCount() : 0);
+        dto.setCadFileDownloadAvailable(cadFileSummary != null && cadFileSummary.downloadAvailable());
+        dto.setCadFiles(orderCadFileService.listDeliverableDtos(order.getId()));
         dto.setTotalChf(order.getTotalChf());
         dto.setCreatedAt(order.getCreatedAt());
         dto.setPaidAt(order.getPaidAt());
@@ -281,6 +329,7 @@ public class AdminOrderControllerService {
             itemDto.setInfillPercent(item.getInfillPercent());
             itemDto.setInfillPattern(item.getInfillPattern());
             itemDto.setSupportsEnabled(item.getSupportsEnabled());
+            itemDto.setRequiresSplitPrinting(Boolean.TRUE.equals(item.getRequiresSplitPrinting()));
             itemDto.setQuantity(item.getQuantity());
             itemDto.setPrintTimeSeconds(item.getPrintTimeSeconds());
             itemDto.setMaterialGrams(item.getMaterialGrams());
@@ -289,6 +338,11 @@ public class AdminOrderControllerService {
             return itemDto;
         }).toList();
         dto.setItems(itemDtos);
+        if (includeEmailLogs) {
+            dto.setEmailLogs(emailAuditService.getOrderEmailLogDtos(order.getId()));
+        } else {
+            dto.setEmailLogs(List.of());
+        }
 
         return dto;
     }

@@ -3,11 +3,15 @@ package com.printcalculator.controller.admin;
 import com.printcalculator.dto.AdminOrderStatusUpdateRequest;
 import com.printcalculator.dto.OrderDto;
 import com.printcalculator.entity.Order;
+import com.printcalculator.event.listener.OrderEmailListener;
+import com.printcalculator.repository.EmailLogRepository;
 import com.printcalculator.repository.OrderItemRepository;
 import com.printcalculator.repository.OrderRepository;
 import com.printcalculator.repository.PaymentRepository;
 import com.printcalculator.repository.QuoteLineItemRepository;
+import com.printcalculator.service.order.OrderCadFileService;
 import com.printcalculator.service.order.AdminOrderControllerService;
+import com.printcalculator.service.email.EmailAuditService;
 import com.printcalculator.service.payment.InvoicePdfRenderingService;
 import com.printcalculator.service.payment.PaymentService;
 import com.printcalculator.service.payment.QrBillService;
@@ -43,6 +47,8 @@ class AdminOrderControllerStatusValidationTest {
     @Mock
     private PaymentRepository paymentRepository;
     @Mock
+    private EmailLogRepository emailLogRepository;
+    @Mock
     private QuoteLineItemRepository quoteLineItemRepository;
     @Mock
     private PaymentService paymentService;
@@ -54,6 +60,12 @@ class AdminOrderControllerStatusValidationTest {
     private QrBillService qrBillService;
     @Mock
     private ApplicationEventPublisher eventPublisher;
+    @Mock
+    private OrderCadFileService orderCadFileService;
+    @Mock
+    private EmailAuditService emailAuditService;
+    @Mock
+    private OrderEmailListener orderEmailListener;
 
     private AdminOrderController controller;
 
@@ -63,12 +75,16 @@ class AdminOrderControllerStatusValidationTest {
                 orderRepository,
                 orderItemRepository,
                 paymentRepository,
+                emailLogRepository,
                 quoteLineItemRepository,
                 paymentService,
                 storageService,
                 invoicePdfRenderingService,
                 qrBillService,
-                eventPublisher
+                eventPublisher,
+                orderCadFileService,
+                emailAuditService,
+                orderEmailListener
         );
         controller = new AdminOrderController(adminOrderControllerService);
     }

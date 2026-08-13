@@ -676,6 +676,8 @@
     "LAYER_HEIGHT": "Schichthöhe",
     "SUPPORT": "Stützstrukturen",
     "SUPPORT_DESC": "Stützen für Überhänge aktivieren",
+    "SPLIT_ACCEPT_LABEL": "Ich akzeptiere, dass zu große Modelle für den Druck geteilt werden",
+    "SPLIT_RESULT_NOTE": "Dieses Angebot enthält den Setup-Aufwand, um zu große Modelle für den Druck vorzubereiten und zu teilen. Die Originaldatei bleibt der Bestellung zugeordnet.",
     "CALCULATE": "Angebot berechnen",
     "RESULT": "Geschätztes Angebot",
     "TIME": "Druckzeit",
@@ -712,7 +714,9 @@
     "SHIPPING_NOTE": "* Versandkosten ausgeschlossen, werden im nächsten Schritt berechnet",
     "ERROR_ZERO_PRICE": "Bei der Berechnung ist etwas schiefgelaufen. Versuche ein anderes Format oder kontaktiere uns direkt über \"Beratung anfragen\".",
     "ZERO_RESULT_TITLE": "Ungültiges Ergebnis",
-    "ZERO_RESULT_HELP": "Die Berechnung hat ungültige Werte (0) geliefert. Versuche ein anderes Dateiformat oder kontaktiere uns direkt über \"Beratung anfragen\"."
+    "ZERO_RESULT_HELP": "Die Berechnung hat ungültige Werte (0) geliefert. Versuche ein anderes Dateiformat oder kontaktiere uns direkt über \"Beratung anfragen\".",
+    "CUSTOM_QUOTE_TITLE": "Individuelles Angebot erforderlich",
+    "CUSTOM_QUOTE_HELP": "Dieses Modell ist zu groß für die automatische Schätzung, auch wenn die Teilung akzeptiert wurde. Senden Sie eine individuelle Anfrage mit der Datei im Anhang."
   },
   "SHOP": {
     "TITLE": "Technische Lösungen",
@@ -1247,7 +1251,12 @@
     "ERR_ID_NOT_FOUND": "Bestell-ID nicht gefunden.",
     "ERR_LOAD_ORDER": "Bestelldetails konnten nicht geladen werden.",
     "ERR_REPORT_PAYMENT": "Zahlung konnte nicht gemeldet werden. Bitte erneut versuchen.",
+    "ERR_DOWNLOAD_CAD_FILES": "CAD-Dateien konnten nicht heruntergeladen werden. Bitte erneut versuchen.",
     "CAD_SERVICE": "CAD-Service ({{hours}}h)",
+    "CAD_FILES_TITLE": "CAD-Dateien",
+    "CAD_FILES_READY": "{{count}} Dateien stehen zum Download bereit.",
+    "CAD_FILES_LOCKED": "Verfügbar nach Zahlungsbestätigung.",
+    "DOWNLOAD_CAD_FILES": "CAD-Dateien herunterladen",
     "ITEMS_TITLE": "Bestellartikel",
     "ORDER_TYPE_LABEL": "Bestelltyp",
     "ITEM_COUNT": "Positionen",

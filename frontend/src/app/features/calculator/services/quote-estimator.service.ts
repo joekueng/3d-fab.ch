@@ -3,6 +3,7 @@ import {
   HttpClient,
   HttpErrorResponse,
   HttpEventType,
+  HttpResponse,
 } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { environment } from '../../../../environments/environment';
@@ -26,6 +27,7 @@ export interface QuoteRequest {
   material: string;
   quality: string;
   notes?: string;
+  acceptSplitPrinting?: boolean;
   infillDensity?: number;
   infillPattern?: string;
   supportEnabled?: boolean;
@@ -56,6 +58,7 @@ export interface QuoteItem {
   infillPattern?: string;
   layerHeight?: number;
   nozzleDiameter?: number;
+  requiresSplitPrinting?: boolean;
 }
 
 export interface QuoteCalculationFailure {
@@ -222,6 +225,18 @@ export class QuoteEstimatorService {
       {
         headers,
         responseType: 'blob',
+      },
+    );
+  }
+
+  getOrderCadFiles(orderId: string): Observable<HttpResponse<Blob>> {
+    const headers: any = {};
+    return this.http.get(
+      `${environment.apiUrl}/api/orders/${orderId}/cad-files/download`,
+      {
+        headers,
+        responseType: 'blob',
+        observe: 'response',
       },
     );
   }
@@ -512,6 +527,7 @@ export class QuoteEstimatorService {
           item?.nozzleDiameterMm != null
             ? Number(item.nozzleDiameterMm)
             : undefined,
+        requiresSplitPrinting: Boolean(item?.requiresSplitPrinting),
       })),
       baseSetupCost: Number(
         sessionData?.baseSetupCostChf ?? session?.setupCostChf ?? 0,
@@ -570,6 +586,7 @@ export class QuoteEstimatorService {
         item.nozzleDiameter ??
         request.nozzleDiameter ??
         0.4,
+      allowSplitForOversized: request.acceptSplitPrinting === true,
     };
   }
 

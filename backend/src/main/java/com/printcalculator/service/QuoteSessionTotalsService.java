@@ -50,7 +50,9 @@ public class QuoteSessionTotalsService {
         BigDecimal cadTotal = calculateCadTotal(session);
         BigDecimal itemsTotal = printItemsTotal.add(cadTotal);
 
-        BigDecimal baseSetupFee = session.getSetupCostChf() != null ? session.getSetupCostChf() : BigDecimal.ZERO;
+        BigDecimal baseSetupFee = hasSplitPrintingItems(items)
+                ? quoteCalculator.calculateSplitModelSetupFee(policy)
+                : session.getSetupCostChf() != null ? session.getSetupCostChf() : BigDecimal.ZERO;
         BigDecimal nozzleChangeCost = calculateNozzleChangeCost(items);
         BigDecimal setupFee = baseSetupFee.add(nozzleChangeCost).setScale(2, RoundingMode.HALF_UP);
         BigDecimal shippingCost = calculateShippingCost(items);
@@ -143,6 +145,13 @@ public class QuoteSessionTotalsService {
         }
 
         return totalFee.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private boolean hasSplitPrintingItems(List<QuoteLineItem> items) {
+        if (items == null || items.isEmpty()) {
+            return false;
+        }
+        return items.stream().anyMatch(item -> item != null && Boolean.TRUE.equals(item.getRequiresSplitPrinting()));
     }
 
     private int normalizeQuantity(Integer quantity) {

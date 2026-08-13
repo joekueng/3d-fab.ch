@@ -7,6 +7,7 @@ import {
   AdminOrderItem,
   AdminOrdersService,
 } from '../services/admin-orders.service';
+import { AdminEmailLog } from '../services/admin-email-log.model';
 import { CopyOnClickDirective } from '../../../shared/directives/copy-on-click.directive';
 import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
 import { AppInputComponent } from '../../../shared/components/app-input/app-input.component';
@@ -45,7 +46,11 @@ export class AdminDashboardComponent implements OnInit {
   detailLoading = false;
   confirmingPayment = false;
   updatingStatus = false;
+  uploadingCadFiles = false;
   errorMessage: string | null = null;
+  cadUploadFiles: File[] = [];
+  deletingCadFileIds = new Set<string>();
+  resendingEmailLogIds = new Set<string>();
   readonly orderStatusOptions = [
     'PENDING_PAYMENT',
     'PAID',
@@ -166,6 +171,7 @@ export class AdminDashboardComponent implements OnInit {
 
   openDetails(orderId: string): void {
     this.detailLoading = true;
+    this.cadUploadFiles = [];
     this.adminOrdersService.getOrder(orderId).subscribe({
       next: (order) => {
         this.selectedOrder = order;
@@ -202,6 +208,56 @@ export class AdminDashboardComponent implements OnInit {
       });
   }
 
+  onCadFilesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    this.cadUploadFiles = Array.from(input?.files ?? []);
+  }
+
+  uploadCadFiles(): void {
+    if (
+      !this.selectedOrder ||
+      this.uploadingCadFiles ||
+      this.cadUploadFiles.length === 0
+    ) {
+      return;
+    }
+
+    this.uploadingCadFiles = true;
+    this.adminOrdersService
+      .uploadCadFiles(this.selectedOrder.id, this.cadUploadFiles)
+      .subscribe({
+        next: (updatedOrder) => {
+          this.uploadingCadFiles = false;
+          this.cadUploadFiles = [];
+          this.applyOrderUpdate(updatedOrder);
+        },
+        error: () => {
+          this.uploadingCadFiles = false;
+          this.errorMessage = 'Upload file CAD non riuscito.';
+        },
+      });
+  }
+
+  deleteCadFile(fileId: string): void {
+    if (!this.selectedOrder || this.deletingCadFileIds.has(fileId)) {
+      return;
+    }
+
+    this.deletingCadFileIds.add(fileId);
+    this.adminOrdersService
+      .deleteCadFile(this.selectedOrder.id, fileId)
+      .subscribe({
+        next: (updatedOrder) => {
+          this.deletingCadFileIds.delete(fileId);
+          this.applyOrderUpdate(updatedOrder);
+        },
+        error: () => {
+          this.deletingCadFileIds.delete(fileId);
+          this.errorMessage = 'Eliminazione file CAD non riuscita.';
+        },
+      });
+  }
+
   updateStatus(): void {
     if (
       !this.selectedOrder ||
@@ -224,6 +280,27 @@ export class AdminDashboardComponent implements OnInit {
         error: () => {
           this.updatingStatus = false;
           this.errorMessage = 'Aggiornamento stato ordine non riuscito.';
+        },
+      });
+  }
+
+  resendEmail(log: AdminEmailLog): void {
+    if (!this.selectedOrder || this.resendingEmailLogIds.has(log.id)) {
+      return;
+    }
+
+    this.errorMessage = null;
+    this.resendingEmailLogIds.add(log.id);
+    this.adminOrdersService
+      .resendEmail(this.selectedOrder.id, log.id)
+      .subscribe({
+        next: (updatedOrder) => {
+          this.resendingEmailLogIds.delete(log.id);
+          this.applyOrderUpdate(updatedOrder);
+        },
+        error: () => {
+          this.resendingEmailLogIds.delete(log.id);
+          this.errorMessage = 'Reinvio email non riuscito.';
         },
       });
   }
@@ -440,6 +517,37 @@ export class AdminDashboardComponent implements OnInit {
     return (order?.items || []).some((item) => !this.isShopItem(item));
   }
 
+  isCadOrder(order: AdminOrder | null): boolean {
+    return !!order?.isCadOrder;
+  }
+
+  cadUploadFileLabel(): string {
+    if (this.cadUploadFiles.length === 0) {
+      return 'Nessun file selezionato';
+    }
+    if (this.cadUploadFiles.length === 1) {
+      return this.cadUploadFiles[0].name;
+    }
+    return `${this.cadUploadFiles.length} file selezionati`;
+  }
+
+  formatFileSize(bytes?: number): string {
+    if (!bytes || bytes <= 0) {
+      return '-';
+    }
+    if (bytes < 1024) {
+      return `${bytes} B`;
+    }
+    if (bytes < 1024 * 1024) {
+      return `${(bytes / 1024).toFixed(1)} KB`;
+    }
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  isDeletingCadFile(fileId: string): boolean {
+    return this.deletingCadFileIds.has(fileId);
+  }
+
   printItems(order: AdminOrder | null): AdminOrderItem[] {
     return (order?.items || []).filter((item) => !this.isShopItem(item));
   }
@@ -562,6 +670,57 @@ export class AdminDashboardComponent implements OnInit {
       default:
         return normalized || '-';
     }
+  }
+
+  emailLogs(order: AdminOrder | null): AdminEmailLog[] {
+    return order?.emailLogs ?? [];
+  }
+
+  emailEventLabel(eventType?: string): string {
+    switch ((eventType || '').trim().toUpperCase()) {
+      case 'ORDER_CONFIRMATION_CUSTOMER':
+        return 'Conferma ordine cliente';
+      case 'ORDER_NOTIFICATION_ADMIN':
+        return 'Notifica nuovo ordine admin';
+      case 'PAYMENT_REPORTED_CUSTOMER':
+        return 'Pagamento segnalato';
+      case 'PAYMENT_CONFIRMED_CUSTOMER':
+        return 'Pagamento confermato / fattura';
+      case 'ORDER_SHIPPED_CUSTOMER':
+        return 'Ordine spedito';
+      default:
+        return eventType || '-';
+    }
+  }
+
+  emailStatusLabel(status?: string): string {
+    switch ((status || '').trim().toUpperCase()) {
+      case 'SENT':
+        return 'Inviata';
+      case 'FAILED':
+        return 'Fallita';
+      case 'SKIPPED':
+        return 'Saltata';
+      default:
+        return status || '-';
+    }
+  }
+
+  emailStatusClass(status?: string): string {
+    switch ((status || '').trim().toUpperCase()) {
+      case 'SENT':
+        return 'email-status--sent';
+      case 'FAILED':
+        return 'email-status--failed';
+      case 'SKIPPED':
+        return 'email-status--skipped';
+      default:
+        return 'email-status--neutral';
+    }
+  }
+
+  isResendingEmailLog(emailLogId: string): boolean {
+    return this.resendingEmailLogIds.has(emailLogId);
   }
 
   downloadItemLabel(item: AdminOrderItem): string {

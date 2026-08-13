@@ -87,11 +87,26 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
   error = signal<boolean>(false);
   errorKey = signal<string>('CALC.ERROR_GENERIC');
   errorMessage = signal<string | null>(null);
+  errorCode = signal<string | null>(null);
   warningMessage = signal<string | null>(null);
   showErrorAlert = computed(() => this.error() && !this.result());
   isZeroQuoteError = computed(
     () => this.error() && this.errorKey() === 'CALC.ERROR_ZERO_PRICE',
   );
+  isCustomQuoteError = computed(
+    () => this.error() && this.errorCode() === 'MODEL_REQUIRES_CUSTOM_QUOTE',
+  );
+  showSplitPrintingOption = computed(() => {
+    const result = this.result();
+
+    return (
+      this.errorCode() === 'MODEL_OUT_OF_PRINT_VOLUME' ||
+      (result?.failedItems || []).some(
+        (failure) => failure.code === 'MODEL_OUT_OF_PRINT_VOLUME',
+      ) ||
+      (result?.items || []).some((item) => item.requiresSplitPrinting)
+    );
+  });
   readonly faqIds = [
     'FILES',
     'MODE',
@@ -438,7 +453,11 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
       },
       error: (err) => {
         const failure = this.normalizeCalculationFailure(err);
-        this.setQuoteError('CALC.ERROR_GENERIC', failure?.message || null);
+        this.setQuoteError(
+          'CALC.ERROR_GENERIC',
+          failure?.message || null,
+          failure?.code || null,
+        );
         this.loading.set(false);
       },
     });
@@ -606,6 +625,9 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     if (req.mode === 'advanced') {
       if (req.infillDensity) details += `- Infill: ${req.infillDensity}%\n`;
     }
+    if (req.acceptSplitPrinting) {
+      details += `- Suddivisione per stampa: accettata\n`;
+    }
 
     if (req.notes) details += `\nNote: ${req.notes}`;
 
@@ -630,11 +652,16 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     return invalidPrice || invalidWeight || invalidTime;
   }
 
-  private setQuoteError(key: string, message: string | null = null): void {
+  private setQuoteError(
+    key: string,
+    message: string | null = null,
+    code: string | null = null,
+  ): void {
     this.quoteStateVersion += 1;
     this.pendingSessionRestore = null;
     this.errorKey.set(key);
     this.errorMessage.set(message);
+    this.errorCode.set(code);
     this.warningMessage.set(null);
     this.error.set(true);
     this.result.set(null);
@@ -648,6 +675,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     this.error.set(false);
     this.errorKey.set('CALC.ERROR_GENERIC');
     this.errorMessage.set(null);
+    this.errorCode.set(null);
   }
 
   private normalizeCalculationFailure(

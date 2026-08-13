@@ -7,6 +7,7 @@ import com.printcalculator.repository.OrderRepository;
 import com.printcalculator.repository.PaymentRepository;
 import com.printcalculator.service.payment.InvoicePdfRenderingService;
 import com.printcalculator.service.OrderService;
+import com.printcalculator.service.order.OrderCadFileService;
 import com.printcalculator.service.order.OrderControllerService;
 import com.printcalculator.service.payment.PaymentService;
 import com.printcalculator.service.payment.QrBillService;
@@ -50,6 +51,8 @@ class OrderControllerPrivacyTest {
     private PaymentService paymentService;
     @Mock
     private PaymentRepository paymentRepo;
+    @Mock
+    private OrderCadFileService orderCadFileService;
 
     private OrderController controller;
 
@@ -64,7 +67,8 @@ class OrderControllerPrivacyTest {
                 qrBillService,
                 twintPaymentService,
                 paymentService,
-                paymentRepo
+                paymentRepo,
+                orderCadFileService
         );
         controller = new OrderController(orderControllerService);
     }

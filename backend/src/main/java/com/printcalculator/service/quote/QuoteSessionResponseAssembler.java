@@ -97,6 +97,7 @@ public class QuoteSessionResponseAssembler {
         dto.put("infillPercent", item.getInfillPercent());
         dto.put("infillPattern", item.getInfillPattern());
         dto.put("supportsEnabled", item.getSupportsEnabled());
+        dto.put("requiresSplitPrinting", Boolean.TRUE.equals(item.getRequiresSplitPrinting()));
         dto.put("status", item.getStatus());
         dto.put("convertedStoredPath", quoteStorageService.extractConvertedStoredPath(item));
         dto.put("unitPriceChf", resolveDistributedUnitPrice(item, totals));

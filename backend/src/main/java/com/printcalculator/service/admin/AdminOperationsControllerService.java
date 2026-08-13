@@ -10,6 +10,7 @@ import com.printcalculator.dto.AdminQuoteSessionDto;
 import com.printcalculator.dto.AdminUpdateContactRequestStatusRequest;
 import com.printcalculator.entity.CustomQuoteRequest;
 import com.printcalculator.entity.CustomQuoteRequestAttachment;
+import com.printcalculator.entity.EmailLog;
 import com.printcalculator.entity.FilamentVariant;
 import com.printcalculator.entity.FilamentVariantStockKg;
 import com.printcalculator.entity.Order;
@@ -17,6 +18,7 @@ import com.printcalculator.entity.QuoteLineItem;
 import com.printcalculator.entity.QuoteSession;
 import com.printcalculator.repository.CustomQuoteRequestAttachmentRepository;
 import com.printcalculator.repository.CustomQuoteRequestRepository;
+import com.printcalculator.repository.EmailLogRepository;
 import com.printcalculator.repository.FilamentVariantRepository;
 import com.printcalculator.repository.FilamentVariantStockKgRepository;
 import com.printcalculator.repository.OrderRepository;
@@ -25,6 +27,8 @@ import com.printcalculator.repository.QuoteLineItemRepository;
 import com.printcalculator.repository.QuoteSessionRepository;
 import com.printcalculator.service.QuoteSessionExpiryPolicy;
 import com.printcalculator.service.QuoteSessionTotalsService;
+import com.printcalculator.service.email.EmailAuditService;
+import com.printcalculator.service.request.CustomQuoteRequestNotificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -76,33 +80,42 @@ public class AdminOperationsControllerService {
     private final FilamentVariantRepository filamentVariantRepo;
     private final CustomQuoteRequestRepository customQuoteRequestRepo;
     private final CustomQuoteRequestAttachmentRepository customQuoteRequestAttachmentRepo;
+    private final EmailLogRepository emailLogRepo;
     private final QuoteSessionRepository quoteSessionRepo;
     private final QuoteLineItemRepository quoteLineItemRepo;
     private final OrderRepository orderRepo;
     private final PricingPolicyRepository pricingRepo;
     private final QuoteSessionTotalsService quoteSessionTotalsService;
     private final QuoteSessionExpiryPolicy quoteSessionExpiryPolicy;
+    private final EmailAuditService emailAuditService;
+    private final CustomQuoteRequestNotificationService contactRequestNotificationService;
 
     public AdminOperationsControllerService(FilamentVariantStockKgRepository filamentStockRepo,
                                             FilamentVariantRepository filamentVariantRepo,
                                             CustomQuoteRequestRepository customQuoteRequestRepo,
                                             CustomQuoteRequestAttachmentRepository customQuoteRequestAttachmentRepo,
+                                            EmailLogRepository emailLogRepo,
                                             QuoteSessionRepository quoteSessionRepo,
                                             QuoteLineItemRepository quoteLineItemRepo,
                                             OrderRepository orderRepo,
                                             PricingPolicyRepository pricingRepo,
                                             QuoteSessionTotalsService quoteSessionTotalsService,
-                                            QuoteSessionExpiryPolicy quoteSessionExpiryPolicy) {
+                                            QuoteSessionExpiryPolicy quoteSessionExpiryPolicy,
+                                            EmailAuditService emailAuditService,
+                                            CustomQuoteRequestNotificationService contactRequestNotificationService) {
         this.filamentStockRepo = filamentStockRepo;
         this.filamentVariantRepo = filamentVariantRepo;
         this.customQuoteRequestRepo = customQuoteRequestRepo;
         this.customQuoteRequestAttachmentRepo = customQuoteRequestAttachmentRepo;
+        this.emailLogRepo = emailLogRepo;
         this.quoteSessionRepo = quoteSessionRepo;
         this.quoteLineItemRepo = quoteLineItemRepo;
         this.orderRepo = orderRepo;
         this.pricingRepo = pricingRepo;
         this.quoteSessionTotalsService = quoteSessionTotalsService;
         this.quoteSessionExpiryPolicy = quoteSessionExpiryPolicy;
+        this.emailAuditService = emailAuditService;
+        this.contactRequestNotificationService = contactRequestNotificationService;
     }
 
     public List<AdminFilamentStockDto> getFilamentStock() {
@@ -199,6 +212,21 @@ public class AdminOperationsControllerService {
                 .toList();
 
         return toContactRequestDetailDto(saved, attachments);
+    }
+
+    @Transactional
+    public AdminContactRequestDetailDto resendContactRequestEmail(UUID requestId, UUID emailLogId) {
+        CustomQuoteRequest request = customQuoteRequestRepo.findById(requestId)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Contact request not found"));
+        EmailLog emailLog = emailLogRepo.findById(emailLogId)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Email log not found"));
+        if (emailLog.getContactRequest() == null || !emailLog.getContactRequest().getId().equals(requestId)) {
+            throw new ResponseStatusException(NOT_FOUND, "Email log not found for contact request");
+        }
+
+        int attachmentsCount = customQuoteRequestAttachmentRepo.findByRequest_IdOrderByCreatedAtAsc(requestId).size();
+        contactRequestNotificationService.resendNotification(request, attachmentsCount, emailLog);
+        return getContactRequestDetail(requestId);
     }
 
     public ResponseEntity<Resource> downloadContactRequestAttachment(UUID requestId, UUID attachmentId) {
@@ -396,6 +424,7 @@ public class AdminOperationsControllerService {
         dto.setCreatedAt(request.getCreatedAt());
         dto.setUpdatedAt(request.getUpdatedAt());
         dto.setAttachments(attachments);
+        dto.setEmailLogs(emailAuditService.getContactRequestEmailLogDtos(request.getId()));
         return dto;
     }
 

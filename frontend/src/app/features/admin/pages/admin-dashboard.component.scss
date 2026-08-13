@@ -203,6 +203,144 @@ tbody tr.no-results:hover {
   margin-bottom: var(--space-3);
 }
 
+.email-log-panel {
+  margin-bottom: var(--space-3);
+}
+
+.email-log-list {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.email-log-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-card);
+}
+
+.email-log-row__main {
+  min-width: 0;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.email-log-row__heading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.email-log-row__meta,
+.email-log-row__subject,
+.email-log-row__error,
+.muted {
+  margin: 0;
+  font-size: 0.84rem;
+}
+
+.email-log-row__meta,
+.email-log-row__subject,
+.muted {
+  color: var(--color-text-muted);
+}
+
+.email-log-row__subject,
+.email-log-row__error {
+  overflow-wrap: anywhere;
+}
+
+.email-log-row__error {
+  color: #b42318;
+}
+
+.email-status,
+.email-origin {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.18rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.email-status--sent {
+  background: color-mix(in srgb, #16a34a 14%, white);
+  color: #166534;
+}
+
+.email-status--failed {
+  background: color-mix(in srgb, #dc2626 12%, white);
+  color: #991b1b;
+}
+
+.email-status--skipped,
+.email-status--neutral,
+.email-origin {
+  background: var(--color-neutral-100);
+  color: var(--color-text-muted);
+}
+
+.cad-files-panel {
+  margin-bottom: var(--space-3);
+}
+
+.cad-file-upload {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.cad-file-list {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.cad-file-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-card);
+}
+
+.cad-file-row div {
+  min-width: 0;
+  display: grid;
+  gap: 0.15rem;
+}
+
+.cad-file-row strong {
+  overflow-wrap: anywhere;
+}
+
+.cad-file-row span {
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .items {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -435,6 +573,11 @@ h4 {
   .doc-actions button {
     width: 100%;
     justify-content: center;
+  }
+
+  .email-log-row {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .items {

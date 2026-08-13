@@ -25,6 +25,12 @@
     }}</small>
   </div>
 
+  @if (hasSplitPrintingItems()) {
+    <div class="split-printing-note">
+      {{ "CALC.SPLIT_RESULT_NOTE" | translate }}
+    </div>
+  }
+
   @if (result().notes) {
     <div class="notes-section">
       <label>{{ "CALC.NOTES" | translate }}:</label>

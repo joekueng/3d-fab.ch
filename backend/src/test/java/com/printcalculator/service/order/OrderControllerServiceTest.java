@@ -61,6 +61,8 @@ class OrderControllerServiceTest {
     private PaymentService paymentService;
     @Mock
     private PaymentRepository paymentRepo;
+    @Mock
+    private OrderCadFileService orderCadFileService;
 
     @InjectMocks
     private OrderControllerService service;

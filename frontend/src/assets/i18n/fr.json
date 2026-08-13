@@ -710,6 +710,8 @@
     "NOZZLE": "Diamètre de buse",
     "SUPPORT": "Supports",
     "SUPPORT_DESC": "Activer les supports pour les surplombs",
+    "SPLIT_ACCEPT_LABEL": "J'accepte que les modèles trop grands soient divisés pour l'impression",
+    "SPLIT_RESULT_NOTE": "Ce devis inclut le setup pour préparer la division des modèles trop grands. Le fichier original reste associé à la commande.",
     "CALCULATE": "Calculer le devis",
     "RESULT": "Devis estimé",
     "TIME": "Temps d'impression",
@@ -744,7 +746,9 @@
     "ERR_INVALID_FILE_TYPE": "Vous pouvez téléverser uniquement des fichiers .stl ou .3mf.",
     "ERROR_ZERO_PRICE": "Un problème est survenu pendant le calcul. Essayez un autre format ou contactez-nous directement via Demander une consultation.",
     "ZERO_RESULT_TITLE": "Résultat invalide",
-    "ZERO_RESULT_HELP": "Le calcul a renvoyé des valeurs nulles invalides. Essayez un autre format de fichier ou contactez-nous directement via Demander une consultation."
+    "ZERO_RESULT_HELP": "Le calcul a renvoyé des valeurs nulles invalides. Essayez un autre format de fichier ou contactez-nous directement via Demander une consultation.",
+    "CUSTOM_QUOTE_TITLE": "Devis personnalisé nécessaire",
+    "CUSTOM_QUOTE_HELP": "Ce modèle est trop grand pour l'estimation automatique, même avec la division acceptée. Envoyez une demande personnalisée avec le fichier joint."
   },
   "QUOTE": {
     "PROCEED_ORDER": "Procéder à la commande",
@@ -1248,7 +1252,12 @@
     "ERR_ID_NOT_FOUND": "ID de commande introuvable.",
     "ERR_LOAD_ORDER": "Impossible de charger les détails de la commande.",
     "ERR_REPORT_PAYMENT": "Impossible de signaler le paiement. Réessayez.",
+    "ERR_DOWNLOAD_CAD_FILES": "Impossible de télécharger les fichiers CAD. Réessayez.",
     "CAD_SERVICE": "Service CAD ({{hours}}h)",
+    "CAD_FILES_TITLE": "Fichiers CAD",
+    "CAD_FILES_READY": "{{count}} fichiers disponibles au téléchargement.",
+    "CAD_FILES_LOCKED": "Disponible après confirmation du paiement.",
+    "DOWNLOAD_CAD_FILES": "Télécharger les fichiers CAD",
     "ITEMS_TITLE": "Articles de la commande",
     "ORDER_TYPE_LABEL": "Type de commande",
     "ITEM_COUNT": "Lignes",

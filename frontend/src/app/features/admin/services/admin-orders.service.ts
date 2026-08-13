@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { AdminEmailLog } from './admin-email-log.model';
 
 export interface AdminOrderItem {
   id: string;
@@ -27,11 +28,20 @@ export interface AdminOrderItem {
   infillPercent?: number;
   infillPattern?: string;
   supportsEnabled?: boolean;
+  requiresSplitPrinting?: boolean;
   quantity: number;
   printTimeSeconds: number;
   materialGrams: number;
   unitPriceChf: number;
   lineTotalChf: number;
+}
+
+export interface AdminOrderCadFile {
+  id: string;
+  originalFilename: string;
+  fileSizeBytes?: number;
+  mimeType?: string;
+  createdAt: string;
 }
 
 export interface AdminOrderAddress {
@@ -73,12 +83,16 @@ export interface AdminOrder {
   cadHours?: number;
   cadHourlyRateChf?: number;
   cadTotalChf?: number;
+  cadFileCount?: number;
+  cadFileDownloadAvailable?: boolean;
+  cadFiles?: AdminOrderCadFile[];
   printMaterialCode?: string;
   printNozzleDiameterMm?: number;
   printLayerHeightMm?: number;
   printInfillPattern?: string;
   printInfillPercent?: number;
   printSupportsEnabled?: boolean;
+  emailLogs: AdminEmailLog[];
   items: AdminOrderItem[];
 }
 
@@ -122,6 +136,14 @@ export class AdminOrdersService {
     );
   }
 
+  resendEmail(orderId: string, emailLogId: string): Observable<AdminOrder> {
+    return this.http.post<AdminOrder>(
+      `${this.baseUrl}/${orderId}/email-logs/${emailLogId}/resend`,
+      {},
+      { withCredentials: true },
+    );
+  }
+
   downloadOrderItemFile(
     orderId: string,
     orderItemId: string,
@@ -147,5 +169,25 @@ export class AdminOrdersService {
       withCredentials: true,
       responseType: 'blob',
     });
+  }
+
+  uploadCadFiles(orderId: string, files: File[]): Observable<AdminOrder> {
+    const formData = new FormData();
+    for (const file of files) {
+      formData.append('files', file);
+    }
+
+    return this.http.post<AdminOrder>(
+      `${this.baseUrl}/${orderId}/cad-files`,
+      formData,
+      { withCredentials: true },
+    );
+  }
+
+  deleteCadFile(orderId: string, fileId: string): Observable<AdminOrder> {
+    return this.http.delete<AdminOrder>(
+      `${this.baseUrl}/${orderId}/cad-files/${fileId}`,
+      { withCredentials: true },
+    );
   }
 }

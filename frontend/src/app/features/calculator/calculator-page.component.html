@@ -58,6 +58,7 @@
           [lockedSettings]="cadSessionLocked()"
           [loading]="loading()"
           [uploadProgress]="uploadProgress()"
+          [showSplitPrintingOption]="showSplitPrintingOption()"
           (submitRequest)="onCalculate($event)"
           (itemQuantityChange)="onUploadItemQuantityChange($event)"
           (printSettingsChange)="onUploadPrintSettingsChange($event)"
@@ -95,6 +96,16 @@
         <app-card class="zero-result-card">
           <h3>{{ "CALC.ZERO_RESULT_TITLE" | translate }}</h3>
           <p>{{ "CALC.ZERO_RESULT_HELP" | translate }}</p>
+          <div class="zero-result-action">
+            <app-button variant="outline" (click)="onConsult()">
+              {{ "QUOTE.CONSULT" | translate }}
+            </app-button>
+          </div>
+        </app-card>
+      } @else if (isCustomQuoteError()) {
+        <app-card class="zero-result-card">
+          <h3>{{ "CALC.CUSTOM_QUOTE_TITLE" | translate }}</h3>
+          <p>{{ "CALC.CUSTOM_QUOTE_HELP" | translate }}</p>
           <div class="zero-result-action">
             <app-button variant="outline" (click)="onConsult()">
               {{ "QUOTE.CONSULT" | translate }}
