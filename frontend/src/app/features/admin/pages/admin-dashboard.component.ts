@@ -291,16 +291,18 @@ export class AdminDashboardComponent implements OnInit {
 
     this.errorMessage = null;
     this.resendingEmailLogIds.add(log.id);
-    this.adminOrdersService.resendEmail(this.selectedOrder.id, log.id).subscribe({
-      next: (updatedOrder) => {
-        this.resendingEmailLogIds.delete(log.id);
-        this.applyOrderUpdate(updatedOrder);
-      },
-      error: () => {
-        this.resendingEmailLogIds.delete(log.id);
-        this.errorMessage = 'Reinvio email non riuscito.';
-      },
-    });
+    this.adminOrdersService
+      .resendEmail(this.selectedOrder.id, log.id)
+      .subscribe({
+        next: (updatedOrder) => {
+          this.resendingEmailLogIds.delete(log.id);
+          this.applyOrderUpdate(updatedOrder);
+        },
+        error: () => {
+          this.resendingEmailLogIds.delete(log.id);
+          this.errorMessage = 'Reinvio email non riuscito.';
+        },
+      });
   }
 
   downloadItemFile(itemId: string, filename: string): void {
