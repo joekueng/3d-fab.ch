@@ -33,6 +33,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -111,16 +112,19 @@ class AdminOrderControllerStatusValidationTest {
     }
 
     @Test
-    void updateOrderStatus_withValidStatus_shouldReturn200() {
+    void updateOrderStatus_withPaymentConfirmation_shouldReturn200() {
         UUID orderId = UUID.randomUUID();
         Order order = new Order();
         order.setId(orderId);
         order.setStatus("PENDING_PAYMENT");
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
-        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(orderItemRepository.findByOrder_Id(orderId)).thenReturn(List.of());
         when(paymentRepository.findByOrder_Id(orderId)).thenReturn(Optional.empty());
+        doAnswer(invocation -> {
+            order.setStatus("PAID");
+            return null;
+        }).when(paymentService).confirmPayment(orderId, "OTHER");
 
         AdminOrderStatusUpdateRequest payload = new AdminOrderStatusUpdateRequest();
         payload.setStatus("PAID");
@@ -129,6 +133,7 @@ class AdminOrderControllerStatusValidationTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("PAID", response.getBody().getStatus());
-        verify(orderRepository).save(order);
+        verify(paymentService).confirmPayment(orderId, "OTHER");
+        verify(orderRepository, never()).save(any(Order.class));
     }
 }
