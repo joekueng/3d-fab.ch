@@ -1,6 +1,7 @@
 package com.printcalculator.controller.admin;
 
 import com.printcalculator.dto.AdminOrderStatusUpdateRequest;
+import com.printcalculator.dto.AdminOrderStatisticsDto;
 import com.printcalculator.dto.OrderDto;
 import com.printcalculator.service.order.AdminOrderControllerService;
 import org.springframework.core.io.Resource;
@@ -36,6 +37,11 @@ public class AdminOrderController {
     @GetMapping
     public ResponseEntity<List<OrderDto>> listOrders() {
         return ResponseEntity.ok(adminOrderControllerService.listOrders());
+    }
+
+    @GetMapping("/statistics")
+    public ResponseEntity<AdminOrderStatisticsDto> getStatistics() {
+        return ResponseEntity.ok(adminOrderControllerService.getStatistics());
     }
 
     @GetMapping("/{orderId}")

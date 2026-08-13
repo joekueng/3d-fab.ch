@@ -229,7 +229,6 @@
             </div>
             <app-button
               type="button"
-              variant="outline"
               size="sm"
               (click)="downloadCadFiles()"
               [disabled]="!o.cadFileDownloadAvailable"
@@ -292,7 +291,7 @@
                     class="order-item-tech"
                     *ngIf="showItemPrintMetrics(item)"
                   >
-                    {{ item.printTimeSeconds || 0 | number: "1.0-0" }}s |
+                    {{ (item.printTimeSeconds || 0) / 3600 | number: "1.1-1" }}h |
                     {{ item.materialGrams || 0 | number: "1.0-0" }}g
                   </div>
                 </div>

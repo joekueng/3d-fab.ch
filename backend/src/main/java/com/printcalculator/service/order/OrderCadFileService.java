@@ -277,7 +277,7 @@ public class OrderCadFileService {
     }
 
     private boolean isPaymentConfirmed(Order order) {
-        if (order.getPaidAt() != null) {
+        if (order.getPaidAt() != null || "PAID".equalsIgnoreCase(order.getStatus())) {
             return true;
         }
         return paymentRepo.findByOrder_Id(order.getId())

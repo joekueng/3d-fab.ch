@@ -7,6 +7,7 @@ import com.printcalculator.dto.AdminContactRequestDetailDto;
 import com.printcalculator.dto.AdminContactRequestDto;
 import com.printcalculator.dto.AdminFilamentStockDto;
 import com.printcalculator.dto.AdminQuoteSessionDto;
+import com.printcalculator.dto.AdminSessionStatisticsDto;
 import com.printcalculator.dto.AdminUpdateContactRequestStatusRequest;
 import com.printcalculator.entity.CustomQuoteRequest;
 import com.printcalculator.entity.CustomQuoteRequestAttachment;
@@ -298,6 +299,27 @@ public class AdminOperationsControllerService {
                 .toList();
     }
 
+    public AdminSessionStatisticsDto getSessionStatistics() {
+        long totalSessions = quoteSessionRepo.countAllForStatistics();
+        long sessionsWithItems = quoteSessionRepo.countWithItemsForStatistics();
+        long totalLineItems = quoteSessionRepo.countLineItemsForStatistics();
+        long paidConvertedSessions = quoteSessionRepo.countPaidConvertedForStatistics();
+
+        AdminSessionStatisticsDto dto = new AdminSessionStatisticsDto();
+        dto.setTotalSessionCount(totalSessions);
+        dto.setSessionsWithItemsCount(sessionsWithItems);
+        dto.setEmptySessionCount(Math.max(0, totalSessions - sessionsWithItems));
+        dto.setConvertedSessionCount(quoteSessionRepo.countConvertedForStatistics());
+        dto.setPaidConvertedSessionCount(paidConvertedSessions);
+        dto.setModifiedSessionCount(quoteSessionRepo.countModifiedForStatistics());
+        dto.setExpiredAbandonedSessionCount(
+                quoteSessionRepo.countExpiredWithoutPaidConversionForStatistics(OffsetDateTime.now())
+        );
+        dto.setAverageItemsPerActiveSession(divide(totalLineItems, sessionsWithItems));
+        dto.setPaidConversionRatePercent(divideAsPercent(paidConvertedSessions, sessionsWithItems));
+        return dto;
+    }
+
     public List<AdminCadInvoiceDto> getCadInvoices() {
         return quoteSessionRepo.findByStatusInOrderByCreatedAtDesc(List.of("CAD_ACTIVE", "CONVERTED"))
                 .stream()
@@ -396,6 +418,23 @@ public class AdminOperationsControllerService {
         dto.setStatus(request.getStatus());
         dto.setCreatedAt(request.getCreatedAt());
         return dto;
+    }
+
+    private BigDecimal divideAsPercent(long dividend, long divisor) {
+        if (divisor == 0) {
+            return BigDecimal.ZERO;
+        }
+        return BigDecimal.valueOf(dividend)
+                .multiply(BigDecimal.valueOf(100))
+                .divide(BigDecimal.valueOf(divisor), 2, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal divide(long dividend, long divisor) {
+        if (divisor == 0) {
+            return BigDecimal.ZERO;
+        }
+        return BigDecimal.valueOf(dividend)
+                .divide(BigDecimal.valueOf(divisor), 2, RoundingMode.HALF_UP);
     }
 
     private AdminContactRequestAttachmentDto toContactRequestAttachmentDto(CustomQuoteRequestAttachment attachment) {

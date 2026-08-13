@@ -96,6 +96,13 @@ export interface AdminOrder {
   items: AdminOrderItem[];
 }
 
+export interface AdminOrderStatistics {
+  paidOrderCount: number;
+  revenueChf: number;
+  averageOrderValueChf: number;
+  uniqueCustomerCount: number;
+}
+
 export interface AdminUpdateOrderStatusPayload {
   status: string;
 }
@@ -109,6 +116,12 @@ export class AdminOrdersService {
 
   listOrders(): Observable<AdminOrder[]> {
     return this.http.get<AdminOrder[]>(this.baseUrl, { withCredentials: true });
+  }
+
+  getStatistics(): Observable<AdminOrderStatistics> {
+    return this.http.get<AdminOrderStatistics>(`${this.baseUrl}/statistics`, {
+      withCredentials: true,
+    });
   }
 
   getOrder(orderId: string): Observable<AdminOrder> {

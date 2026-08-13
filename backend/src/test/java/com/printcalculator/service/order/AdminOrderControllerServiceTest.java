@@ -1,6 +1,7 @@
 package com.printcalculator.service.order;
 
 import com.printcalculator.dto.AdminOrderStatusUpdateRequest;
+import com.printcalculator.dto.AdminOrderStatisticsDto;
 import com.printcalculator.dto.OrderDto;
 import com.printcalculator.entity.EmailLog;
 import com.printcalculator.entity.FilamentVariant;
@@ -74,6 +75,21 @@ class AdminOrderControllerServiceTest {
 
     @InjectMocks
     private AdminOrderControllerService service;
+
+    @Test
+    void getStatistics_shouldReturnOnlyRepositoryAggregatesForPaidNonCancelledOrders() {
+        when(orderRepo.countPaidNonCancelledForStatistics()).thenReturn(2L);
+        when(orderRepo.sumPaidNonCancelledTotalsForStatistics()).thenReturn(new BigDecimal("240.00"));
+        when(orderRepo.averagePaidNonCancelledTotalsForStatistics()).thenReturn(120.0);
+        when(orderRepo.countUniquePaidNonCancelledCustomersForStatistics()).thenReturn(1L);
+
+        AdminOrderStatisticsDto dto = service.getStatistics();
+
+        assertEquals(2L, dto.getPaidOrderCount());
+        assertEquals(new BigDecimal("240.00"), dto.getRevenueChf());
+        assertEquals(new BigDecimal("120.00"), dto.getAverageOrderValueChf());
+        assertEquals(1L, dto.getUniqueCustomerCount());
+    }
 
     @Test
     void updatePaymentMethod_withBlankMethod_shouldReturnBadRequest() {

@@ -82,7 +82,7 @@ class OrderCadFileServiceTest {
         UUID orderId = UUID.randomUUID();
         UUID itemId = UUID.randomUUID();
         Order order = buildCadOrder(orderId);
-        order.setPaidAt(java.time.OffsetDateTime.now());
+        order.setStatus("PAID");
 
         OrderItem item = buildBaseItem(order, itemId, "part.stl");
         byte[] content = "solid mesh".getBytes();
