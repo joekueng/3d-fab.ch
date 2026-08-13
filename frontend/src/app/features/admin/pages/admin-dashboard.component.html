@@ -14,6 +14,36 @@
     {{ errorMessage }}
   </p>
 
+  <div
+    class="statistics-cards"
+    *ngIf="statistics as currentStatistics; else statisticsLoadingTpl"
+  >
+    <article class="ui-stat-chip">
+      <strong>{{ currentStatistics.paidOrderCount }}</strong>
+      <span>ordini pagati</span>
+    </article>
+    <article class="ui-stat-chip">
+      <strong>{{ currentStatistics.revenueChf | currency: "CHF" }}</strong>
+      <span>fatturato valido</span>
+    </article>
+    <article class="ui-stat-chip">
+      <strong>{{
+        currentStatistics.averageOrderValueChf | currency: "CHF"
+      }}</strong>
+      <span>valore medio ordine</span>
+    </article>
+    <article class="ui-stat-chip">
+      <strong>{{ currentStatistics.uniqueCustomerCount }}</strong>
+      <span>clienti unici</span>
+    </article>
+  </div>
+
+  <ng-template #statisticsLoadingTpl>
+    <p class="statistics-loading" *ngIf="statisticsLoading">
+      Caricamento statistiche...
+    </p>
+  </ng-template>
+
   <div class="workspace ui-split-workspace" *ngIf="!loading; else loadingTpl">
     <section class="list-panel">
       <h2>Lista ordini</h2>
@@ -357,17 +387,9 @@
           <app-button
             type="button"
             (click)="updatePaymentMethod()"
-            [disabled]="
-              confirmingPayment || selectedOrder.paymentStatus === 'COMPLETED'
-            "
+            [disabled]="confirmingPayment"
           >
-            {{
-              selectedOrder.paymentStatus === "COMPLETED"
-                ? "Pagamento confermato"
-                : confirmingPayment
-                  ? "Conferma..."
-                  : "Conferma pagamento"
-            }}
+            {{ confirmingPayment ? "Salvataggio..." : "Salva metodo" }}
           </app-button>
         </div>
       </div>

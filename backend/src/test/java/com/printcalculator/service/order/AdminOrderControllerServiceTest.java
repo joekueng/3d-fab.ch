@@ -1,6 +1,7 @@
 package com.printcalculator.service.order;
 
 import com.printcalculator.dto.AdminOrderStatusUpdateRequest;
+import com.printcalculator.dto.AdminOrderStatisticsDto;
 import com.printcalculator.dto.OrderDto;
 import com.printcalculator.entity.EmailLog;
 import com.printcalculator.entity.FilamentVariant;
@@ -76,6 +77,21 @@ class AdminOrderControllerServiceTest {
     private AdminOrderControllerService service;
 
     @Test
+    void getStatistics_shouldReturnOnlyRepositoryAggregatesForPaidNonCancelledOrders() {
+        when(orderRepo.countPaidNonCancelledForStatistics()).thenReturn(2L);
+        when(orderRepo.sumPaidNonCancelledTotalsForStatistics()).thenReturn(new BigDecimal("240.00"));
+        when(orderRepo.averagePaidNonCancelledTotalsForStatistics()).thenReturn(120.0);
+        when(orderRepo.countUniquePaidNonCancelledCustomersForStatistics()).thenReturn(1L);
+
+        AdminOrderStatisticsDto dto = service.getStatistics();
+
+        assertEquals(2L, dto.getPaidOrderCount());
+        assertEquals(new BigDecimal("240.00"), dto.getRevenueChf());
+        assertEquals(new BigDecimal("120.00"), dto.getAverageOrderValueChf());
+        assertEquals(1L, dto.getUniqueCustomerCount());
+    }
+
+    @Test
     void updatePaymentMethod_withBlankMethod_shouldReturnBadRequest() {
         UUID orderId = UUID.randomUUID();
         when(orderRepo.findById(orderId)).thenReturn(Optional.of(buildOrder(orderId, "PENDING_PAYMENT")));
@@ -108,7 +124,7 @@ class AdminOrderControllerServiceTest {
         assertEquals("BANK_TRANSFER", dto.getPaymentMethod());
         assertEquals("PENDING", dto.getPaymentStatus());
         assertEquals(paidAt, dto.getPaidAt());
-        verify(paymentService).confirmPayment(orderId, "BANK_TRANSFER");
+        verify(paymentService).updatePaymentMethod(orderId, "BANK_TRANSFER");
     }
 
     @Test
@@ -128,6 +144,27 @@ class AdminOrderControllerServiceTest {
 
         assertEquals("SHIPPED", dto.getStatus());
         verify(eventPublisher).publishEvent(any(OrderShippedEvent.class));
+    }
+
+    @Test
+    void updateOrderStatus_toPaid_shouldConfirmPayment() {
+        UUID orderId = UUID.randomUUID();
+        Order order = buildOrder(orderId, "PENDING_PAYMENT");
+        Payment payment = new Payment();
+        payment.setMethod("TWINT");
+        payment.setStatus("PENDING");
+
+        when(orderRepo.findById(orderId)).thenReturn(Optional.of(order));
+        when(orderItemRepo.findByOrder_Id(orderId)).thenReturn(List.of());
+        when(paymentRepo.findByOrder_Id(orderId)).thenReturn(Optional.of(payment));
+
+        AdminOrderStatusUpdateRequest payload = new AdminOrderStatusUpdateRequest();
+        payload.setStatus("PAID");
+
+        service.updateOrderStatus(orderId, payload);
+
+        verify(paymentService).confirmPayment(orderId, "TWINT");
+        verify(orderRepo, never()).save(order);
     }
 
     @Test

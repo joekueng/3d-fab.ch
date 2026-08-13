@@ -96,6 +96,13 @@ export interface AdminOrder {
   items: AdminOrderItem[];
 }
 
+export interface AdminOrderStatistics {
+  paidOrderCount: number;
+  revenueChf: number;
+  averageOrderValueChf: number;
+  uniqueCustomerCount: number;
+}
+
 export interface AdminUpdateOrderStatusPayload {
   status: string;
 }
@@ -111,6 +118,12 @@ export class AdminOrdersService {
     return this.http.get<AdminOrder[]>(this.baseUrl, { withCredentials: true });
   }
 
+  getStatistics(): Observable<AdminOrderStatistics> {
+    return this.http.get<AdminOrderStatistics>(`${this.baseUrl}/statistics`, {
+      withCredentials: true,
+    });
+  }
+
   getOrder(orderId: string): Observable<AdminOrder> {
     return this.http.get<AdminOrder>(`${this.baseUrl}/${orderId}`, {
       withCredentials: true,
@@ -118,8 +131,8 @@ export class AdminOrdersService {
   }
 
   updatePaymentMethod(orderId: string, method: string): Observable<AdminOrder> {
-    return this.http.post<AdminOrder>(
-      `${this.baseUrl}/${orderId}/payments/confirm`,
+    return this.http.patch<AdminOrder>(
+      `${this.baseUrl}/${orderId}/payments/method`,
       { method },
       { withCredentials: true },
     );

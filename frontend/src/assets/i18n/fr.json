@@ -1075,6 +1075,14 @@
         "P1": "13.1. Le fournisseur peut refuser des commandes relatives à des objets illégaux, armes ou pièces réglementées, applications critiques pour la sécurité ou médicales sans accords et validations dédiés.",
         "P2": "13.2. Le client reste responsable de l'usage final et de la conformité réglementaire du produit."
       },
+      "S13A": {
+        "TITLE": "13A. Applications en contact avec des denrées alimentaires",
+        "P1": "13A.1. Sauf indication expresse contraire dans la description du produit ou dans un accord écrit, les produits fabriqués par 3D-Fab.ch par fabrication additive FDM/FFF ne sont ni certifiés, ni testés, ni garantis comme étant aptes au contact avec des denrées alimentaires.",
+        "P2": "13A.2. Le fait qu'un matériau soit décrit par son fabricant ou son fournisseur comme apte, conforme ou approuvé pour des applications en contact avec des denrées alimentaires ne constitue pas, en soi, une déclaration de conformité du produit final imprimé en 3D aux réglementations applicables en matière de contact alimentaire. Le processus de fabrication, les équipements d'impression, les additifs, les pigments, les caractéristiques de surface, les traitements ultérieurs, le type d'aliment, la durée du contact, la température et les conditions d'utilisation peuvent influer sur l'aptitude du produit final.",
+        "P3": "13A.3. Les produits destinés à des applications en contact avec des denrées alimentaires ne peuvent être considérés comme aptes à cet usage que lorsque cela est expressément confirmé par écrit par 3D-Fab.ch ou spécifiquement indiqué sur la page du produit concerné, avec les éventuelles conditions et limitations d'utilisation applicables.",
+        "P4": "13A.4. Lorsqu'un client commande un produit personnalisé destiné au contact avec des denrées alimentaires sans demander et obtenir cette confirmation écrite, le produit est fourni comme composant technique imprimé en 3D, sans certification pour le contact alimentaire. Le client reste responsable de vérifier l'aptitude et la conformité du produit par rapport à l'utilisation prévue.",
+        "P5": "13A.5. Toute instruction relative aux aliments autorisés, à la durée du contact, à la température, au nettoyage, à la réutilisation ou à d'autres conditions d'utilisation fournie avec un produit expressément destiné au contact alimentaire doit être respectée."
+      },
       "S14": {
         "TITLE": "14. Propriété intellectuelle et licences",
         "P1": "14.1. Les droits sur les fichiers du client restent au client ou aux titulaires concernés. Le client concède au fournisseur une licence limitée à l'usage pour l'évaluation technique et la production.",

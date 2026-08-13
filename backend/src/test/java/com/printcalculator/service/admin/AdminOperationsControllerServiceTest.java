@@ -3,6 +3,7 @@ package com.printcalculator.service.admin;
 import com.printcalculator.dto.AdminCadInvoiceCreateRequest;
 import com.printcalculator.dto.AdminCadInvoiceDto;
 import com.printcalculator.dto.AdminContactRequestDetailDto;
+import com.printcalculator.dto.AdminSessionStatisticsDto;
 import com.printcalculator.dto.AdminUpdateContactRequestStatusRequest;
 import com.printcalculator.entity.CustomQuoteRequest;
 import com.printcalculator.entity.CustomQuoteRequestAttachment;
@@ -77,6 +78,30 @@ class AdminOperationsControllerServiceTest {
 
     @InjectMocks
     private AdminOperationsControllerService service;
+
+    @Test
+    void getSessionStatistics_shouldCalculateRatiosFromReadOnlyAggregates() {
+        when(quoteSessionRepo.countAllForStatistics()).thenReturn(6L);
+        when(quoteSessionRepo.countWithItemsForStatistics()).thenReturn(4L);
+        when(quoteSessionRepo.countLineItemsForStatistics()).thenReturn(7L);
+        when(quoteSessionRepo.countConvertedForStatistics()).thenReturn(3L);
+        when(quoteSessionRepo.countPaidConvertedForStatistics()).thenReturn(2L);
+        when(quoteSessionRepo.countModifiedForStatistics()).thenReturn(1L);
+        when(quoteSessionRepo.countExpiredWithoutPaidConversionForStatistics(any(OffsetDateTime.class)))
+                .thenReturn(2L);
+
+        AdminSessionStatisticsDto dto = service.getSessionStatistics();
+
+        assertEquals(6L, dto.getTotalSessionCount());
+        assertEquals(4L, dto.getSessionsWithItemsCount());
+        assertEquals(2L, dto.getEmptySessionCount());
+        assertEquals(3L, dto.getConvertedSessionCount());
+        assertEquals(2L, dto.getPaidConvertedSessionCount());
+        assertEquals(new BigDecimal("1.75"), dto.getAverageItemsPerActiveSession());
+        assertEquals(new BigDecimal("50.00"), dto.getPaidConversionRatePercent());
+        assertEquals(1L, dto.getModifiedSessionCount());
+        assertEquals(2L, dto.getExpiredAbandonedSessionCount());
+    }
 
     @Test
     void updateContactRequestStatus_withInvalidStatus_shouldReturnBadRequest() {

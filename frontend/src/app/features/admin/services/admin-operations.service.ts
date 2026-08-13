@@ -131,6 +131,18 @@ export interface AdminQuoteSession {
   cadTotalChf?: number;
 }
 
+export interface AdminSessionStatistics {
+  totalSessionCount: number;
+  sessionsWithItemsCount: number;
+  emptySessionCount: number;
+  convertedSessionCount: number;
+  paidConvertedSessionCount: number;
+  modifiedSessionCount: number;
+  expiredAbandonedSessionCount: number;
+  averageItemsPerActiveSession: number;
+  paidConversionRatePercent: number;
+}
+
 export interface AdminQuoteSessionDetailItem {
   id: string;
   originalFilename: string;
@@ -330,6 +342,13 @@ export class AdminOperationsService {
     return this.http.get<AdminQuoteSession[]>(`${this.baseUrl}/sessions`, {
       withCredentials: true,
     });
+  }
+
+  getSessionStatistics(): Observable<AdminSessionStatistics> {
+    return this.http.get<AdminSessionStatistics>(
+      `${this.baseUrl}/sessions/statistics`,
+      { withCredentials: true },
+    );
   }
 
   deleteSession(sessionId: string): Observable<void> {

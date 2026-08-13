@@ -6,6 +6,7 @@ import {
   AdminOrderAddress,
   AdminOrderItem,
   AdminOrdersService,
+  AdminOrderStatistics,
 } from '../services/admin-orders.service';
 import { AdminEmailLog } from '../services/admin-email-log.model';
 import { CopyOnClickDirective } from '../../../shared/directives/copy-on-click.directive';
@@ -33,6 +34,7 @@ export class AdminDashboardComponent implements OnInit {
   private readonly adminOrdersService = inject(AdminOrdersService);
 
   orders: AdminOrder[] = [];
+  statistics: AdminOrderStatistics | null = null;
   filteredOrders: AdminOrder[] = [];
   selectedOrder: AdminOrder | null = null;
   selectedStatus = '';
@@ -43,6 +45,7 @@ export class AdminDashboardComponent implements OnInit {
   orderTypeFilter = 'ALL';
   showPrintDetails = false;
   loading = false;
+  statisticsLoading = false;
   detailLoading = false;
   confirmingPayment = false;
   updatingStatus = false;
@@ -117,6 +120,7 @@ export class AdminDashboardComponent implements OnInit {
   loadOrders(): void {
     this.loading = true;
     this.errorMessage = null;
+    this.loadStatistics();
     this.adminOrdersService.listOrders().subscribe({
       next: (orders) => {
         this.orders = orders;
@@ -145,6 +149,20 @@ export class AdminDashboardComponent implements OnInit {
       error: () => {
         this.loading = false;
         this.errorMessage = 'Impossibile caricare gli ordini.';
+      },
+    });
+  }
+
+  private loadStatistics(): void {
+    this.statisticsLoading = true;
+    this.adminOrdersService.getStatistics().subscribe({
+      next: (statistics) => {
+        this.statistics = statistics;
+        this.statisticsLoading = false;
+      },
+      error: () => {
+        this.statistics = null;
+        this.statisticsLoading = false;
       },
     });
   }
@@ -742,6 +760,7 @@ export class AdminDashboardComponent implements OnInit {
       updatedOrder.paymentMethod || this.selectedPaymentMethod;
     this.showPrintDetails =
       this.showPrintDetails && this.hasPrintItems(updatedOrder);
+    this.loadStatistics();
   }
 
   private applyListFiltersAndSelection(): void {

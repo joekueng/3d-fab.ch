@@ -1,6 +1,7 @@
 package com.printcalculator.service.order;
 
 import com.printcalculator.dto.AddressDto;
+import com.printcalculator.dto.AdminOrderStatisticsDto;
 import com.printcalculator.dto.AdminOrderStatusUpdateRequest;
 import com.printcalculator.dto.OrderDto;
 import com.printcalculator.dto.OrderItemDto;
@@ -35,6 +36,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.charset.StandardCharsets;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -110,8 +113,25 @@ public class AdminOrderControllerService {
                 .toList();
     }
 
+    public AdminOrderStatisticsDto getStatistics() {
+        AdminOrderStatisticsDto dto = new AdminOrderStatisticsDto();
+        dto.setPaidOrderCount(orderRepo.countPaidNonCancelledForStatistics());
+        dto.setRevenueChf(zeroIfNull(orderRepo.sumPaidNonCancelledTotalsForStatistics()));
+
+        Double average = orderRepo.averagePaidNonCancelledTotalsForStatistics();
+        dto.setAverageOrderValueChf(average == null
+                ? BigDecimal.ZERO
+                : BigDecimal.valueOf(average).setScale(2, RoundingMode.HALF_UP));
+        dto.setUniqueCustomerCount(orderRepo.countUniquePaidNonCancelledCustomersForStatistics());
+        return dto;
+    }
+
     public OrderDto getOrder(UUID orderId) {
         return toOrderDto(getOrderOrThrow(orderId), true);
+    }
+
+    private BigDecimal zeroIfNull(BigDecimal value) {
+        return value != null ? value : BigDecimal.ZERO;
     }
 
     @Transactional
@@ -121,7 +141,7 @@ public class AdminOrderControllerService {
         if (method == null || method.isBlank()) {
             throw new ResponseStatusException(BAD_REQUEST, "Payment method is required");
         }
-        paymentService.confirmPayment(orderId, method);
+        paymentService.updatePaymentMethod(orderId, method);
         return toOrderDto(getOrderOrThrow(orderId), true);
     }
 
@@ -140,8 +160,17 @@ public class AdminOrderControllerService {
             );
         }
         String previousStatus = order.getStatus();
-        order.setStatus(normalizedStatus);
-        Order savedOrder = orderRepo.save(order);
+        Order savedOrder;
+        if (!"PAID".equals(previousStatus) && "PAID".equals(normalizedStatus)) {
+            String paymentMethod = paymentRepo.findByOrder_Id(orderId)
+                    .map(Payment::getMethod)
+                    .orElse("OTHER");
+            paymentService.confirmPayment(orderId, paymentMethod);
+            savedOrder = getOrderOrThrow(orderId);
+        } else {
+            order.setStatus(normalizedStatus);
+            savedOrder = orderRepo.save(order);
+        }
 
         if (!"SHIPPED".equals(previousStatus) && "SHIPPED".equals(normalizedStatus)) {
             eventPublisher.publishEvent(new OrderShippedEvent(this, savedOrder));

@@ -994,6 +994,14 @@
         "P1": "13.1. The provider may refuse orders related to illegal objects, weapons or regulated parts, safety-critical or medical applications without dedicated agreements and validations.",
         "P2": "13.2. The customer remains responsible for end use and regulatory compliance of the product."
       },
+      "S13A": {
+        "TITLE": "13A. Food-contact applications",
+        "P1": "13A.1. Unless expressly stated otherwise in the product description or in a written agreement, products made by 3D-Fab.ch using FDM/FFF additive manufacturing are not certified, tested or warranted as suitable for food contact.",
+        "P2": "13A.2. The fact that a material is described by its manufacturer or supplier as suitable, compliant or approved for food-contact applications does not, in itself, constitute a declaration that the final 3D-printed product complies with applicable food-contact regulations. The manufacturing process, printing equipment, additives, pigments, surface characteristics, post-processing, type of food, duration of contact, temperature and conditions of use may affect the suitability of the final product.",
+        "P3": "13A.3. Products intended for food-contact applications may be considered suitable for that use only when this is expressly confirmed in writing by 3D-Fab.ch or specifically stated on the relevant product page, together with any applicable conditions and limitations of use.",
+        "P4": "13A.4. Where a customer orders a custom product intended for food contact without requesting and obtaining that written confirmation, the product is supplied as a technical 3D-printed component without food-contact certification. The customer remains responsible for verifying the product's suitability and compliance for the intended use.",
+        "P5": "13A.5. Any instructions concerning permitted foods, duration of contact, temperature, cleaning, reuse or other conditions of use supplied with a product expressly intended for food contact must be followed."
+      },
       "S14": {
         "TITLE": "14. Intellectual property and licenses",
         "P1": "14.1. Rights to customer files remain with the customer or respective rights holders. The customer grants the provider a limited license for use for technical evaluation and production.",

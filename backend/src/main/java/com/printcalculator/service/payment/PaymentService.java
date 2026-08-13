@@ -83,6 +83,15 @@ public class PaymentService {
         Payment payment = paymentRepo.findByOrder_Id(orderId)
                 .orElseGet(() -> getOrCreatePaymentForOrder(order, method != null ? method : "OTHER"));
 
+        if ("COMPLETED".equals(payment.getStatus())) {
+            order.setStatus("PAID");
+            if (order.getPaidAt() == null) {
+                order.setPaidAt(OffsetDateTime.now());
+            }
+            orderRepo.save(order);
+            return payment;
+        }
+
         payment.setStatus("COMPLETED");
         if (method != null && !method.isBlank()) {
             payment.setMethod(method.toUpperCase());
@@ -90,7 +99,7 @@ public class PaymentService {
         payment.setReceivedAt(OffsetDateTime.now());
         payment = paymentRepo.save(payment);
 
-        order.setStatus("IN_PRODUCTION");
+        order.setStatus("PAID");
         order.setPaidAt(OffsetDateTime.now());
         orderRepo.save(order);
 
