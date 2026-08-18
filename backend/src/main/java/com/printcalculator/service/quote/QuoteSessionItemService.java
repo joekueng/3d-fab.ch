@@ -143,6 +143,7 @@ public class QuoteSessionItemService {
             }
 
             Exception lastFailure = null;
+            boolean oversizedEstimateAttempted = false;
             for (PrinterMachine machine : candidateMachines) {
                 try {
                     OrcaProfileResolver.ResolvedProfiles profiles = orcaProfileResolver.resolve(machine, nozzleDiameter, selectedVariant);
@@ -176,6 +177,10 @@ public class QuoteSessionItemService {
                         if (modelDimensions.isEmpty()) {
                             throw buildSplitCustomQuoteFailure(ex);
                         }
+                        if (oversizedEstimateAttempted) {
+                            throw buildSplitCustomQuoteFailure(ex);
+                        }
+                        oversizedEstimateAttempted = true;
                         try {
                             stats = slicerService.sliceForOversizedEstimate(
                                     slicerInputPath.toFile(),

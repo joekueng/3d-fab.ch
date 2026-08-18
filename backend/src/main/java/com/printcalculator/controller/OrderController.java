@@ -4,7 +4,6 @@ import com.printcalculator.dto.CreateOrderRequest;
 import com.printcalculator.dto.OrderDto;
 import com.printcalculator.service.order.OrderControllerService;
 import jakarta.validation.Valid;
-import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -61,7 +60,7 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}/cad-files/download")
-    public ResponseEntity<Resource> downloadCadFiles(@PathVariable UUID orderId) {
+    public ResponseEntity<?> downloadCadFiles(@PathVariable UUID orderId) {
         return orderControllerService.downloadCadFiles(orderId);
     }
 

@@ -12,7 +12,7 @@ import com.printcalculator.repository.OrderRepository;
 import com.printcalculator.repository.PaymentRepository;
 import com.printcalculator.repository.QuoteLineItemRepository;
 import com.printcalculator.service.storage.StorageService;
-import org.springframework.core.io.ByteArrayResource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.ContentDisposition;
@@ -24,8 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -49,6 +49,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.PAYLOAD_TOO_LARGE;
 
 @Service
 @Transactional(readOnly = true)
@@ -63,6 +64,12 @@ public class OrderCadFileService {
     private final PaymentRepository paymentRepo;
     private final QuoteLineItemRepository quoteLineItemRepo;
     private final StorageService storageService;
+
+    @Value("${app.cad.upload.max-file-size-bytes:104857600}")
+    private long maxCadUploadSizeBytes;
+
+    @Value("${app.cad.upload.max-files-per-request:20}")
+    private int maxCadFilesPerRequest;
 
     public OrderCadFileService(OrderRepository orderRepo,
                                OrderItemRepository orderItemRepo,
@@ -93,7 +100,7 @@ public class OrderCadFileService {
                 .toList();
     }
 
-    public ResponseEntity<Resource> downloadCustomerCadFiles(UUID orderId) {
+    public ResponseEntity<?> downloadCustomerCadFiles(UUID orderId) {
         Order order = getOrderOrThrow(orderId);
         if (!Boolean.TRUE.equals(order.getIsCadOrder())) {
             throw new ResponseStatusException(NOT_FOUND, "CAD files not available");
@@ -118,15 +125,27 @@ public class OrderCadFileService {
                     .body(file.resource());
         }
 
-        byte[] zipBytes = buildZip(files);
         String orderNumber = getDisplayOrderNumber(order);
+        StreamingResponseBody stream = outputStream -> {
+            try (ZipOutputStream zip = new ZipOutputStream(outputStream, StandardCharsets.UTF_8)) {
+                Map<String, Integer> usedNames = new HashMap<>();
+                for (DownloadableCadFile file : files) {
+                    String entryName = uniqueZipEntryName(safeZipEntryName(file.filename()), usedNames);
+                    zip.putNextEntry(new ZipEntry(entryName));
+                    try (InputStream input = file.resource().getInputStream()) {
+                        input.transferTo(zip);
+                    }
+                    zip.closeEntry();
+                }
+            }
+        };
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType("application/zip"))
                 .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
                         .filename("cad-files-" + orderNumber + ".zip", StandardCharsets.UTF_8)
                         .build()
                         .toString())
-                .body(new ByteArrayResource(zipBytes));
+                .body(stream);
     }
 
     @Transactional
@@ -138,11 +157,24 @@ public class OrderCadFileService {
         if (files == null || files.isEmpty()) {
             throw new ResponseStatusException(BAD_REQUEST, "At least one file is required");
         }
+        if (files.size() > maxCadFilesPerRequest) {
+            throw new ResponseStatusException(
+                    PAYLOAD_TOO_LARGE,
+                    "Too many files. Maximum " + maxCadFilesPerRequest + " files per request"
+            );
+        }
 
         List<OrderDeliverableFileDto> savedFiles = new ArrayList<>();
         for (MultipartFile file : files) {
             if (file == null || file.isEmpty()) {
                 continue;
+            }
+            if (maxCadUploadSizeBytes > 0 && file.getSize() > maxCadUploadSizeBytes) {
+                throw new ResponseStatusException(
+                        PAYLOAD_TOO_LARGE,
+                        "File \"" + safeOriginalFilename(file.getOriginalFilename())
+                                + "\" exceeds the maximum allowed size of " + maxCadUploadSizeBytes + " bytes"
+                );
             }
             savedFiles.add(toDto(storeDeliverableFile(order, file)));
         }
@@ -399,26 +431,6 @@ public class OrderCadFileService {
             return candidate;
         } catch (InvalidPathException e) {
             return null;
-        }
-    }
-
-    private byte[] buildZip(List<DownloadableCadFile> files) {
-        try {
-            ByteArrayOutputStream output = new ByteArrayOutputStream();
-            Map<String, Integer> usedNames = new HashMap<>();
-            try (ZipOutputStream zip = new ZipOutputStream(output, StandardCharsets.UTF_8)) {
-                for (DownloadableCadFile file : files) {
-                    String entryName = uniqueZipEntryName(safeZipEntryName(file.filename()), usedNames);
-                    zip.putNextEntry(new ZipEntry(entryName));
-                    try (InputStream input = file.resource().getInputStream()) {
-                        input.transferTo(zip);
-                    }
-                    zip.closeEntry();
-                }
-            }
-            return output.toByteArray();
-        } catch (IOException e) {
-            throw new ResponseStatusException(INTERNAL_SERVER_ERROR, "Failed to create CAD files archive", e);
         }
     }
 

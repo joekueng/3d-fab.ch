@@ -18,12 +18,16 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +37,7 @@ import java.util.zip.ZipInputStream;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -93,12 +98,12 @@ class OrderCadFileServiceTest {
         when(storageService.loadAsResource(Path.of("orders", orderId.toString(), "3d-files", itemId.toString(), "part.stl")))
                 .thenReturn(new ByteArrayResource(content));
 
-        ResponseEntity<Resource> response = service.downloadCustomerCadFiles(orderId);
+        ResponseEntity<?> response = service.downloadCustomerCadFiles(orderId);
 
         assertEquals(200, response.getStatusCode().value());
         assertEquals(MediaType.parseMediaType("model/stl"), response.getHeaders().getContentType());
         assertNotNull(response.getBody());
-        assertArrayEquals(content, response.getBody().getInputStream().readAllBytes());
+        assertArrayEquals(content, ((Resource) response.getBody()).getInputStream().readAllBytes());
         assertTrue(response.getHeaders().getFirst("Content-Disposition").contains("part.stl"));
     }
 
@@ -132,11 +137,14 @@ class OrderCadFileServiceTest {
         when(storageService.loadAsResource(Path.of("orders", orderId.toString(), "cad-deliverables", deliverableId.toString(), "modified.step")))
                 .thenReturn(new ByteArrayResource("step".getBytes()));
 
-        ResponseEntity<Resource> response = service.downloadCustomerCadFiles(orderId);
+        ResponseEntity<?> response = service.downloadCustomerCadFiles(orderId);
 
         assertEquals("application/zip", response.getHeaders().getContentType().toString());
         assertNotNull(response.getBody());
-        try (ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(response.getBody().getInputStream().readAllBytes()))) {
+        assertInstanceOf(StreamingResponseBody.class, response.getBody());
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        ((StreamingResponseBody) response.getBody()).writeTo(output);
+        try (ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(output.toByteArray()))) {
             ZipEntry first = zip.getNextEntry();
             assertNotNull(first);
             assertEquals("part.stl", first.getName());
@@ -152,6 +160,8 @@ class OrderCadFileServiceTest {
         UUID deliverableId = UUID.randomUUID();
         Order order = buildCadOrder(orderId);
         MockMultipartFile file = new MockMultipartFile("files", "model.step", "application/step", "step".getBytes());
+
+        setUploadLimits(10_000, 20);
 
         when(orderRepo.findById(orderId)).thenReturn(Optional.of(order));
         when(deliverableFileRepo.save(any(OrderDeliverableFile.class))).thenAnswer(invocation -> {
@@ -172,6 +182,74 @@ class OrderCadFileServiceTest {
                 "cad-deliverables",
                 deliverableId.toString()
         )));
+    }
+
+    @Test
+    void uploadAdminCadFiles_withFileExceedingMaxSize_shouldReject413() {
+        UUID orderId = UUID.randomUUID();
+        Order order = buildCadOrder(orderId);
+        MockMultipartFile file = new MockMultipartFile("files", "large.step", "application/step", new byte[2048]);
+
+        setUploadLimits(1024, 20);
+
+        when(orderRepo.findById(orderId)).thenReturn(Optional.of(order));
+
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> service.uploadAdminCadFiles(orderId, List.of(file))
+        );
+
+        assertEquals(HttpStatus.PAYLOAD_TOO_LARGE, ex.getStatusCode());
+    }
+
+    @Test
+    void uploadAdminCadFiles_withFileAtExactMaxSize_shouldSucceed() {
+        UUID orderId = UUID.randomUUID();
+        UUID deliverableId = UUID.randomUUID();
+        Order order = buildCadOrder(orderId);
+        MockMultipartFile file = new MockMultipartFile("files", "ok.step", "application/step", new byte[1024]);
+
+        setUploadLimits(1024, 20);
+
+        when(orderRepo.findById(orderId)).thenReturn(Optional.of(order));
+        when(deliverableFileRepo.save(any(OrderDeliverableFile.class))).thenAnswer(invocation -> {
+            OrderDeliverableFile deliverable = invocation.getArgument(0);
+            if (deliverable.getId() == null) {
+                deliverable.setId(deliverableId);
+            }
+            return deliverable;
+        });
+
+        List<com.printcalculator.dto.OrderDeliverableFileDto> result =
+                service.uploadAdminCadFiles(orderId, List.of(file));
+
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    void uploadAdminCadFiles_withTooManyFiles_shouldReject413() {
+        UUID orderId = UUID.randomUUID();
+        Order order = buildCadOrder(orderId);
+        List<org.springframework.web.multipart.MultipartFile> files = List.of(
+                new MockMultipartFile("files", "a.step", "application/step", "a".getBytes()),
+                new MockMultipartFile("files", "b.step", "application/step", "b".getBytes())
+        );
+
+        setUploadLimits(10_000, 1);
+
+        when(orderRepo.findById(orderId)).thenReturn(Optional.of(order));
+
+        ResponseStatusException ex = assertThrows(
+                ResponseStatusException.class,
+                () -> service.uploadAdminCadFiles(orderId, files)
+        );
+
+        assertEquals(HttpStatus.PAYLOAD_TOO_LARGE, ex.getStatusCode());
+    }
+
+    private void setUploadLimits(long maxFileSizeBytes, int maxFilesPerRequest) {
+        ReflectionTestUtils.setField(service, "maxCadUploadSizeBytes", maxFileSizeBytes);
+        ReflectionTestUtils.setField(service, "maxCadFilesPerRequest", maxFilesPerRequest);
     }
 
     private Order buildCadOrder(UUID orderId) {

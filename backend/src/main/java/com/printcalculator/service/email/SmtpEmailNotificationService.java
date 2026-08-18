@@ -14,11 +14,17 @@ import org.springframework.core.io.ByteArrayResource;
 
 import java.time.OffsetDateTime;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class SmtpEmailNotificationService implements EmailNotificationService {
+
+    private static final int MAX_ERROR_MESSAGE_LENGTH = 500;
+    private static final Pattern SENSITIVE_VALUE_PATTERN = Pattern.compile(
+            "(?i)(password|passwd|pwd|secret|api[_-]?key|token|authorization|basic)\\s*[=:]\\s*\\S+"
+    );
 
     private final JavaMailSender emailSender;
     private final TemplateEngine templateEngine;
@@ -80,6 +86,12 @@ public class SmtpEmailNotificationService implements EmailNotificationService {
         if (message == null || message.isBlank()) {
             return e.getClass().getSimpleName();
         }
-        return message;
+
+        String sanitized = SENSITIVE_VALUE_PATTERN.matcher(message).replaceAll("$1=***");
+        sanitized = sanitized.replaceAll("[\\p{Cntrl}]", " ").trim();
+        if (sanitized.length() > MAX_ERROR_MESSAGE_LENGTH) {
+            sanitized = sanitized.substring(0, MAX_ERROR_MESSAGE_LENGTH).trim() + "...";
+        }
+        return sanitized;
     }
 }

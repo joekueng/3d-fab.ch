@@ -16,17 +16,12 @@ import com.printcalculator.service.payment.PaymentService;
 import com.printcalculator.service.payment.QrBillService;
 import com.printcalculator.service.payment.TwintPaymentService;
 import com.printcalculator.service.storage.StorageService;
-import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.net.URI;
-import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.Base64;
 import java.util.HashMap;
@@ -36,13 +31,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
 public class OrderControllerService {
-    private static final Pattern SAFE_EXTENSION_PATTERN = Pattern.compile("^[a-z0-9]{1,10}$");
     private static final Set<String> PERSONAL_DATA_REDACTED_STATUSES = Set.of(
             "IN_PRODUCTION",
             "SHIPPED",
@@ -89,38 +82,6 @@ public class OrderControllerService {
         return convertToDto(order, items);
     }
 
-    @Transactional
-    public boolean uploadOrderItemFile(UUID orderId, UUID orderItemId, MultipartFile file) throws IOException {
-        OrderItem item = orderItemRepo.findById(orderItemId)
-                .orElseThrow(() -> new RuntimeException("OrderItem not found"));
-
-        if (!item.getOrder().getId().equals(orderId)) {
-            return false;
-        }
-
-        String relativePath = item.getStoredRelativePath();
-        Path destinationRelativePath;
-        if (relativePath == null || relativePath.equals("PENDING")) {
-            String ext = getExtension(file.getOriginalFilename());
-            String storedFilename = UUID.randomUUID() + "." + ext;
-            destinationRelativePath = Path.of("orders", orderId.toString(), "3d-files", orderItemId.toString(), storedFilename);
-            item.setStoredRelativePath(destinationRelativePath.toString());
-            item.setStoredFilename(storedFilename);
-        } else {
-            destinationRelativePath = resolveOrderItemRelativePath(relativePath, orderId, orderItemId);
-            if (destinationRelativePath == null) {
-                return false;
-            }
-        }
-
-        storageService.store(file, destinationRelativePath);
-        item.setFileSizeBytes(file.getSize());
-        item.setMimeType(file.getContentType());
-        orderItemRepo.save(item);
-
-        return true;
-    }
-
     public Optional<OrderDto> getOrder(UUID orderId) {
         return orderRepo.findById(orderId)
                 .map(order -> {
@@ -139,7 +100,7 @@ public class OrderControllerService {
         return generateDocument(orderId, true);
     }
 
-    public ResponseEntity<Resource> downloadCadFiles(UUID orderId) {
+    public ResponseEntity<?> downloadCadFiles(UUID orderId) {
         return orderCadFileService.downloadCustomerCadFiles(orderId);
     }
 
@@ -221,42 +182,6 @@ public class OrderControllerService {
                 "documents",
                 "confirmation-" + getDisplayOrderNumber(order) + ".pdf"
         );
-    }
-
-    private String getExtension(String filename) {
-        if (filename == null) {
-            return "stl";
-        }
-        String cleaned = StringUtils.cleanPath(filename);
-        if (cleaned.contains("..")) {
-            return "stl";
-        }
-        int i = cleaned.lastIndexOf('.');
-        if (i > 0 && i < cleaned.length() - 1) {
-            String ext = cleaned.substring(i + 1).toLowerCase(Locale.ROOT);
-            if (SAFE_EXTENSION_PATTERN.matcher(ext).matches()) {
-                return ext;
-            }
-        }
-        return "stl";
-    }
-
-    private Path resolveOrderItemRelativePath(String storedRelativePath, UUID orderId, UUID orderItemId) {
-        try {
-            Path candidate = Path.of(storedRelativePath).normalize();
-            if (candidate.isAbsolute()) {
-                return null;
-            }
-
-            Path expectedPrefix = Path.of("orders", orderId.toString(), "3d-files", orderItemId.toString());
-            if (!candidate.startsWith(expectedPrefix)) {
-                return null;
-            }
-
-            return candidate;
-        } catch (InvalidPathException e) {
-            return null;
-        }
     }
 
     private OrderDto convertToDto(Order order, List<OrderItem> items) {
