@@ -110,10 +110,13 @@ export class UploadFormComponent implements OnInit {
   currentMaterialVariants = signal<VariantOption[]>([]);
 
   private fullMaterialOptions: MaterialOption[] = [];
+  private allNozzleDiameters: SimpleOption[] = [];
   private allLayerHeights: SimpleOption[] = [];
   private layerHeightsByNozzle: Record<string, SimpleOption[]> = {};
   private isPatchingSettings = false;
   private nextItemKey = 0;
+  private readonly technicalMaterialMinLayerHeight = 0.12;
+  private readonly technicalMaterialBlockedNozzles = [0.2, 0.8];
 
   acceptedFormats = '.stl,.3mf';
   private readonly allowedExtensions = ['stl', '3mf'] as const;
@@ -134,7 +137,9 @@ export class UploadFormComponent implements OnInit {
     });
 
     this.form.get('material')?.valueChanges.subscribe((value) => {
-      this.updateVariants(String(value || ''));
+      const materialCode = String(value || '');
+      this.updateVariants(materialCode);
+      this.updatePrintOptionsForMaterial(materialCode);
     });
 
     this.form.get('quality')?.valueChanges.subscribe((quality) => {
@@ -219,12 +224,11 @@ export class UploadFormComponent implements OnInit {
             value: p.id,
           })),
         );
-        this.nozzleDiameters.set(
-          (options.nozzleDiameters || []).map((n) => ({
-            label: n.label,
-            value: n.value,
-          })),
-        );
+        this.allNozzleDiameters = (options.nozzleDiameters || []).map((n) => ({
+          label: n.label,
+          value: n.value,
+        }));
+        this.nozzleDiameters.set(this.allNozzleDiameters);
 
         this.allLayerHeights = (options.layerHeights || []).map((l) => ({
           label: l.label,
@@ -258,7 +262,8 @@ export class UploadFormComponent implements OnInit {
           },
         ]);
         this.infillPatterns.set([{ label: 'Grid', value: 'grid' }]);
-        this.nozzleDiameters.set([{ label: '0.4 mm', value: 0.4 }]);
+        this.allNozzleDiameters = [{ label: '0.4 mm', value: 0.4 }];
+        this.nozzleDiameters.set(this.allNozzleDiameters);
 
         this.allLayerHeights = [{ label: '0.20 mm', value: 0.2 }];
         this.layerHeightsByNozzle = {
@@ -326,12 +331,21 @@ export class UploadFormComponent implements OnInit {
   getLayerHeightOptionsForNozzle(nozzleRaw: unknown): SimpleOption[] {
     const key = toNozzleKey(nozzleRaw);
     const perNozzle = this.layerHeightsByNozzle[key];
-    if (perNozzle && perNozzle.length > 0) {
-      return perNozzle;
-    }
-    return this.allLayerHeights.length > 0
+    const available = perNozzle && perNozzle.length > 0
+      ? perNozzle
+      : this.allLayerHeights.length > 0
       ? this.allLayerHeights
       : [{ label: '0.20 mm', value: 0.2 }];
+
+    if (!this.isTechnicalMaterial(this.form.get('material')?.value)) {
+      return available;
+    }
+
+    return available.filter(
+      (option) =>
+        normalizeNumber(option.value, 0) >=
+        this.technicalMaterialMinLayerHeight,
+    );
   }
 
   onFilesDropped(newFiles: File[]) {
@@ -591,11 +605,9 @@ export class UploadFormComponent implements OnInit {
     this.form.patchValue(patch, { emitEvent: false });
     this.isPatchingSettings = false;
 
-    this.updateVariants(String(this.form.get('material')?.value || ''));
-    this.updateLayerHeightOptionsForNozzle(
-      this.form.get('nozzleDiameter')?.value,
-      true,
-    );
+    const materialCode = String(this.form.get('material')?.value || '');
+    this.updateVariants(materialCode);
+    this.updatePrintOptionsForMaterial(materialCode);
 
     if (this.sameSettingsForAll()) {
       this.applyGlobalSettingsToAllItems();
@@ -693,7 +705,7 @@ export class UploadFormComponent implements OnInit {
           }
         }
 
-        return next;
+        return this.clampItemPrintSettings(next);
       });
     });
 
@@ -842,11 +854,9 @@ export class UploadFormComponent implements OnInit {
         ?.setValue(this.infillPatterns()[0].value, { emitEvent: false });
     }
 
-    this.updateVariants(String(this.form.get('material')?.value || ''));
-    this.updateLayerHeightOptionsForNozzle(
-      this.form.get('nozzleDiameter')?.value,
-      true,
-    );
+    const materialCode = String(this.form.get('material')?.value || '');
+    this.updateVariants(materialCode);
+    this.updatePrintOptionsForMaterial(materialCode);
 
     if (this.mode() === 'easy') {
       this.applyEasyPresetFromQuality(
@@ -1056,7 +1066,7 @@ export class UploadFormComponent implements OnInit {
     this.isPatchingSettings = false;
 
     this.updateVariants(selected.material);
-    this.updateLayerHeightOptionsForNozzle(selected.nozzleDiameter, true);
+    this.updatePrintOptionsForMaterial(selected.material);
   }
 
   private updateVariants(materialCode: string) {
@@ -1139,6 +1149,116 @@ export class UploadFormComponent implements OnInit {
       { emitEvent: false },
     );
     this.isPatchingSettings = false;
+  }
+
+  private updatePrintOptionsForMaterial(materialCode: string) {
+    const nozzles = this.isTechnicalMaterial(materialCode)
+      ? this.allNozzleDiameters.filter(
+          (option) =>
+            !this.isTechnicalBlockedNozzle(
+              normalizeNumber(option.value, Number.NaN),
+            ),
+        )
+      : this.allNozzleDiameters;
+    this.nozzleDiameters.set(nozzles);
+
+    const currentNozzle = normalizeNumber(
+      this.form.get('nozzleDiameter')?.value,
+      0.4,
+    );
+    const nozzleAllowed = nozzles.some(
+      (option) =>
+        Math.abs(normalizeNumber(option.value, currentNozzle) - currentNozzle) <
+        0.0001,
+    );
+
+    let effectiveNozzle = currentNozzle;
+    if (!nozzleAllowed && nozzles.length > 0) {
+      const standardNozzle = nozzles.find(
+        (option) => Math.abs(normalizeNumber(option.value, 0) - 0.4) < 0.0001,
+      );
+      effectiveNozzle = Number((standardNozzle || nozzles[0]).value);
+      this.isPatchingSettings = true;
+      this.form
+        .get('nozzleDiameter')
+        ?.setValue(effectiveNozzle, { emitEvent: false });
+      this.isPatchingSettings = false;
+    }
+
+    this.updateLayerHeightOptionsForNozzle(effectiveNozzle, true);
+  }
+
+  private isTechnicalMaterial(materialCode: unknown): boolean {
+    const normalized = normalizeText(materialCode);
+    return this.fullMaterialOptions.some(
+      (material) =>
+        normalizeText(material.code) === normalized && material.isTechnical,
+    );
+  }
+
+  private isTechnicalBlockedNozzle(nozzle: number): boolean {
+    return this.technicalMaterialBlockedNozzles.some(
+      (blocked) => Math.abs(nozzle - blocked) < 0.0001,
+    );
+  }
+
+  private clampItemPrintSettings(item: FormItem): FormItem {
+    if (!this.isTechnicalMaterial(item.material)) {
+      return item;
+    }
+
+    const allowedNozzles = this.allNozzleDiameters.filter(
+      (option) =>
+        !this.isTechnicalBlockedNozzle(
+          normalizeNumber(option.value, Number.NaN),
+        ),
+    );
+    const fallbackNozzle =
+      allowedNozzles.find(
+        (option) => Math.abs(normalizeNumber(option.value, 0) - 0.4) < 0.0001,
+      ) || allowedNozzles[0];
+    const nozzleDiameter = this.isTechnicalBlockedNozzle(item.nozzleDiameter)
+      ? normalizeNumber(fallbackNozzle?.value, 0.4)
+      : item.nozzleDiameter;
+    const allowedLayers = this.getLayerHeightOptionsForItem(
+      nozzleDiameter,
+      item.material,
+    );
+    const layerAllowed = allowedLayers.some(
+      (option) =>
+        Math.abs(
+          normalizeNumber(option.value, item.layerHeight) - item.layerHeight,
+        ) <
+        0.0001,
+    );
+
+    return {
+      ...item,
+      nozzleDiameter,
+      layerHeight: layerAllowed
+        ? item.layerHeight
+        : normalizeNumber(
+            allowedLayers[0]?.value,
+            this.technicalMaterialMinLayerHeight,
+          ),
+    };
+  }
+
+  private getLayerHeightOptionsForItem(
+    nozzleRaw: unknown,
+    materialCode: string,
+  ): SimpleOption[] {
+    const perNozzle = this.layerHeightsByNozzle[toNozzleKey(nozzleRaw)];
+    const available =
+      perNozzle && perNozzle.length > 0 ? perNozzle : this.allLayerHeights;
+    if (!this.isTechnicalMaterial(materialCode)) {
+      return available;
+    }
+    return available.filter(
+      (option) =>
+        normalizeNumber(option.value, 0) >=
+        this.technicalMaterialMinLayerHeight,
+    );
   }
 
   private emitPrintSettingsChange() {

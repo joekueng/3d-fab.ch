@@ -11,6 +11,7 @@ import com.printcalculator.model.PrintStats;
 import com.printcalculator.model.QuoteResult;
 import com.printcalculator.repository.QuoteLineItemRepository;
 import com.printcalculator.repository.QuoteSessionRepository;
+import com.printcalculator.service.MaterialPrintCompatibilityService;
 import com.printcalculator.service.OrcaProfileResolver;
 import com.printcalculator.service.ProfileManager;
 import com.printcalculator.service.QuoteCalculator;
@@ -45,6 +46,7 @@ public class QuoteSessionItemService {
     private final QuoteStorageService quoteStorageService;
     private final QuoteSessionSettingsService settingsService;
     private final ProfileManager profileManager;
+    private final MaterialPrintCompatibilityService materialPrintCompatibilityService;
 
     public QuoteSessionItemService(QuoteLineItemRepository lineItemRepo,
                                    QuoteSessionRepository sessionRepo,
@@ -54,7 +56,8 @@ public class QuoteSessionItemService {
                                    ClamAVService clamAVService,
                                    QuoteStorageService quoteStorageService,
                                    QuoteSessionSettingsService settingsService,
-                                   ProfileManager profileManager) {
+                                   ProfileManager profileManager,
+                                   MaterialPrintCompatibilityService materialPrintCompatibilityService) {
         this.lineItemRepo = lineItemRepo;
         this.sessionRepo = sessionRepo;
         this.slicerService = slicerService;
@@ -64,6 +67,7 @@ public class QuoteSessionItemService {
         this.quoteStorageService = quoteStorageService;
         this.settingsService = settingsService;
         this.profileManager = profileManager;
+        this.materialPrintCompatibilityService = materialPrintCompatibilityService;
     }
 
     public QuoteLineItem addItemToSession(QuoteSession session, MultipartFile file, PrintSettingsDto settings) throws IOException {
@@ -103,6 +107,7 @@ public class QuoteSessionItemService {
             BigDecimal nozzleDiameter = nozzleAndLayer.nozzleDiameter();
             BigDecimal layerHeight = nozzleAndLayer.layerHeight();
             FilamentVariant selectedVariant = settingsService.resolveFilamentVariant(settings);
+            materialPrintCompatibilityService.validate(selectedVariant, nozzleDiameter, layerHeight);
             String qualityHint = settingsService.resolveQuality(settings, layerHeight);
             List<PrinterMachine> candidateMachines = settingsService.resolvePrinterMachineCandidates(
                     settings.getPrinterMachineId(),
