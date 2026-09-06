@@ -331,11 +331,12 @@ export class UploadFormComponent implements OnInit {
   getLayerHeightOptionsForNozzle(nozzleRaw: unknown): SimpleOption[] {
     const key = toNozzleKey(nozzleRaw);
     const perNozzle = this.layerHeightsByNozzle[key];
-    const available = perNozzle && perNozzle.length > 0
-      ? perNozzle
-      : this.allLayerHeights.length > 0
-      ? this.allLayerHeights
-      : [{ label: '0.20 mm', value: 0.2 }];
+    const available =
+      perNozzle && perNozzle.length > 0
+        ? perNozzle
+        : this.allLayerHeights.length > 0
+          ? this.allLayerHeights
+          : [{ label: '0.20 mm', value: 0.2 }];
 
     if (!this.isTechnicalMaterial(this.form.get('material')?.value)) {
       return available;
@@ -1228,8 +1229,7 @@ export class UploadFormComponent implements OnInit {
       (option) =>
         Math.abs(
           normalizeNumber(option.value, item.layerHeight) - item.layerHeight,
-        ) <
-        0.0001,
+        ) < 0.0001,
     );
 
     return {
