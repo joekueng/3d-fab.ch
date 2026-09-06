@@ -30,7 +30,8 @@ class QuoteSessionTotalsServiceTest {
         pricingRepo = mock(PricingPolicyRepository.class);
         quoteCalculator = mock(QuoteCalculator.class);
         nozzleOptionRepo = mock(NozzleOptionRepository.class);
-        service = new QuoteSessionTotalsService(pricingRepo, quoteCalculator, nozzleOptionRepo);
+        service = new QuoteSessionTotalsService(pricingRepo, quoteCalculator, nozzleOptionRepo,
+                new ShippingQuoteService(3, ShippingQuoteService.DEFAULT_PROFILES));
     }
 
     @Test
@@ -53,6 +54,21 @@ class QuoteSessionTotalsServiceTest {
     }
 
     @Test
+    void compute_ShopRetainsLegacyShippingWithoutWeight() {
+        QuoteSession session = new QuoteSession();
+        session.setSessionType("SHOP_CART");
+        session.setSetupCostChf(BigDecimal.ZERO);
+        QuoteLineItem item = createItem(BigDecimal.TEN, 2, 0, "0.4");
+        item.setLineItemType("SHOP_PRODUCT");
+        item.setMaterialGrams(null);
+        item.setBoundingBoxXMm(BigDecimal.valueOf(300));
+        when(quoteCalculator.calculateSessionMachineCost(any(), any())).thenReturn(BigDecimal.ZERO);
+        var totals = service.compute(session, List.of(item));
+        assertAmountEquals("4.00", totals.shippingCostChf());
+        org.junit.jupiter.api.Assertions.assertNull(totals.shippingQuote());
+    }
+
+    @Test
     void compute_WithPrintItemAndCad_ShouldSumEverything() {
         QuoteSession session = new QuoteSession();
         session.setSetupCostChf(new BigDecimal("5.00"));
@@ -61,6 +77,7 @@ class QuoteSessionTotalsServiceTest {
 
         QuoteLineItem item = new QuoteLineItem();
         item.setQuantity(2);
+        item.setMaterialGrams(BigDecimal.TEN);
         item.setUnitPriceChf(new BigDecimal("10.00"));
         item.setPrintTimeSeconds(3600);
         item.setBoundingBoxXMm(new BigDecimal("10"));
@@ -132,6 +149,7 @@ class QuoteSessionTotalsServiceTest {
     private QuoteLineItem createItem(BigDecimal unitPrice, int quantity, int printSeconds, String nozzleMm) {
         QuoteLineItem item = new QuoteLineItem();
         item.setQuantity(quantity);
+        item.setMaterialGrams(BigDecimal.TEN);
         item.setUnitPriceChf(unitPrice);
         item.setPrintTimeSeconds(printSeconds);
         item.setNozzleDiameterMm(new BigDecimal(nozzleMm));
