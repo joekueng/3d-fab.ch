@@ -70,7 +70,9 @@ export interface QuoteCalculationFailure {
 
 export interface QuoteResult {
   shippingCost?: number;
-  shippingQuote?: { status: 'QUOTED' | 'NOT_REQUIRED' | 'PENDING' | 'MANUAL_QUOTE' };
+  shippingQuote?: {
+    status: 'QUOTED' | 'NOT_REQUIRED' | 'PENDING' | 'MANUAL_QUOTE';
+  };
   sessionId?: string;
   items: QuoteItem[];
   baseSetupCost?: number;

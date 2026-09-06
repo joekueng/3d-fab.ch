@@ -38,8 +38,11 @@ export class QuoteResultComponent {
   readonly directOrderLimit = 100;
 
   result = input.required<QuoteResult>();
-  quantitiesPending = computed(() => this.items().some((item, index) =>
-    item.quantity !== this.result().items[index]?.quantity));
+  quantitiesPending = computed(() =>
+    this.items().some(
+      (item, index) => item.quantity !== this.result().items[index]?.quantity,
+    ),
+  );
   shippingUnavailable = computed(() => {
     const status = this.result().shippingQuote?.status;
     return status === 'PENDING' || status === 'MANUAL_QUOTE';
@@ -155,7 +158,8 @@ export class QuoteResultComponent {
         ? this.result().baseSetupCost
         : this.result().setupCost - nozzleChange;
     const baseSetup = Math.max(0, baseSetupRaw || 0);
-    const total = subtotal + baseSetup + nozzleChange + (this.result().shippingCost || 0);
+    const total =
+      subtotal + baseSetup + nozzleChange + (this.result().shippingCost || 0);
 
     return {
       subtotal: Math.round(subtotal * 100) / 100,
@@ -183,7 +187,9 @@ export class QuoteResultComponent {
         visible: breakdown.nozzleChange > 0,
       },
       {
-        labelKey: this.shippingUnavailable() ? 'CALC.SHIPPING_UNAVAILABLE' : 'CHECKOUT.SHIPPING',
+        labelKey: this.shippingUnavailable()
+          ? 'CALC.SHIPPING_UNAVAILABLE'
+          : 'CHECKOUT.SHIPPING',
         amount: this.result().shippingCost || 0,
         visible: !this.shippingUnavailable(),
       },

@@ -476,7 +476,8 @@ export class CheckoutComponent implements OnInit {
   }
 
   shippingUnavailable(): boolean {
-    const status: string | undefined = this.quoteSession()?.shippingQuote?.status;
+    const status: string | undefined =
+      this.quoteSession()?.shippingQuote?.status;
     return status === 'PENDING' || status === 'MANUAL_QUOTE';
   }
 

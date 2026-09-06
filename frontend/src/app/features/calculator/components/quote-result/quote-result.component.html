@@ -113,7 +113,11 @@
     <div class="actions-right">
       @if (!hasQuantityOverLimit()) {
         <app-button
-          [disabled]="recalculationRequired() || shippingUnavailable() || quantitiesPending()"
+          [disabled]="
+            recalculationRequired() ||
+            shippingUnavailable() ||
+            quantitiesPending()
+          "
           (click)="proceed.emit()"
         >
           {{ "QUOTE.PROCEED_ORDER" | translate }}
