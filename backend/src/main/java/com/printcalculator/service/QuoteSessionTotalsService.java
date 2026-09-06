@@ -119,9 +119,9 @@ public class QuoteSessionTotalsService {
         }
 
         if (exceedsBaseSize) {
-            return totalQuantity > 5 ? BigDecimal.valueOf(9.00) : BigDecimal.valueOf(4.00);
+            return totalQuantity > 5 ? BigDecimal.valueOf(12.00) : BigDecimal.valueOf(9.00);
         }
-        return BigDecimal.valueOf(2.00);
+        return BigDecimal.valueOf(4.00);
     }
 
     private BigDecimal calculateNozzleChangeCost(List<QuoteLineItem> items) {

@@ -54,18 +54,30 @@ class QuoteSessionTotalsServiceTest {
     }
 
     @Test
-    void compute_ShopRetainsLegacyShippingWithoutWeight() {
+    void compute_ShopUsesOnlyFourNineAndTwelveFrancShippingTiers() {
         QuoteSession session = new QuoteSession();
         session.setSessionType("SHOP_CART");
         session.setSetupCostChf(BigDecimal.ZERO);
-        QuoteLineItem item = createItem(BigDecimal.TEN, 2, 0, "0.4");
-        item.setLineItemType("SHOP_PRODUCT");
-        item.setMaterialGrams(null);
-        item.setBoundingBoxXMm(BigDecimal.valueOf(300));
         when(quoteCalculator.calculateSessionMachineCost(any(), any())).thenReturn(BigDecimal.ZERO);
-        var totals = service.compute(session, List.of(item));
-        assertAmountEquals("4.00", totals.shippingCostChf());
-        org.junit.jupiter.api.Assertions.assertNull(totals.shippingQuote());
+
+        QuoteLineItem compact = createItem(BigDecimal.TEN, 1, 0, "0.4");
+        compact.setLineItemType("SHOP_PRODUCT");
+        compact.setMaterialGrams(null);
+        var compactTotals = service.compute(session, List.of(compact));
+        assertAmountEquals("4.00", compactTotals.shippingCostChf());
+        org.junit.jupiter.api.Assertions.assertNull(compactTotals.shippingQuote());
+
+        QuoteLineItem standard = createItem(BigDecimal.TEN, 5, 0, "0.4");
+        standard.setLineItemType("SHOP_PRODUCT");
+        standard.setMaterialGrams(null);
+        standard.setBoundingBoxXMm(BigDecimal.valueOf(300));
+        assertAmountEquals("9.00", service.compute(session, List.of(standard)).shippingCostChf());
+
+        QuoteLineItem largeOrder = createItem(BigDecimal.TEN, 6, 0, "0.4");
+        largeOrder.setLineItemType("SHOP_PRODUCT");
+        largeOrder.setMaterialGrams(null);
+        largeOrder.setBoundingBoxXMm(BigDecimal.valueOf(300));
+        assertAmountEquals("12.00", service.compute(session, List.of(largeOrder)).shippingCostChf());
     }
 
     @Test
