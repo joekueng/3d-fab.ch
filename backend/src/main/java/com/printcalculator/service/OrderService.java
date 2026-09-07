@@ -42,6 +42,7 @@ public class OrderService {
     private final ApplicationEventPublisher eventPublisher;
     private final PaymentService paymentService;
     private final QuoteSessionTotalsService quoteSessionTotalsService;
+    private final MaterialPrintCompatibilityService materialPrintCompatibilityService;
 
     public OrderService(OrderRepository orderRepo,
                         OrderItemRepository orderItemRepo,
@@ -53,7 +54,8 @@ public class OrderService {
                         QrBillService qrBillService,
                         ApplicationEventPublisher eventPublisher,
                         PaymentService paymentService,
-                        QuoteSessionTotalsService quoteSessionTotalsService) {
+                        QuoteSessionTotalsService quoteSessionTotalsService,
+                        MaterialPrintCompatibilityService materialPrintCompatibilityService) {
         this.orderRepo = orderRepo;
         this.orderItemRepo = orderItemRepo;
         this.quoteSessionRepo = quoteSessionRepo;
@@ -65,6 +67,7 @@ public class OrderService {
         this.eventPublisher = eventPublisher;
         this.paymentService = paymentService;
         this.quoteSessionTotalsService = quoteSessionTotalsService;
+        this.materialPrintCompatibilityService = materialPrintCompatibilityService;
     }
 
     @Transactional
@@ -79,6 +82,15 @@ public class OrderService {
         if (session.getConvertedOrderId() != null) {
             throw new IllegalStateException("Quote session already converted to order");
         }
+
+        List<QuoteLineItem> quoteItems = quoteLineItemRepo.findByQuoteSessionId(quoteSessionId);
+        quoteItems.stream()
+                .filter(item -> !SHOP_LINE_ITEM_TYPE.equals(item.getLineItemType()))
+                .forEach(item -> materialPrintCompatibilityService.validate(
+                        item.getFilamentVariant(),
+                        item.getNozzleDiameterMm(),
+                        item.getLayerHeightMm()
+                ));
 
         Customer customer = customerRepo.findByEmail(request.getCustomer().getEmail())
                 .orElseGet(() -> {
@@ -151,7 +163,6 @@ public class OrderService {
             order.setShippingCountryCode(order.getBillingCountryCode());
         }
 
-        List<QuoteLineItem> quoteItems = quoteLineItemRepo.findByQuoteSessionId(quoteSessionId);
         QuoteSessionTotalsService.QuoteSessionTotals totals = quoteSessionTotalsService.compute(session, quoteItems);
         if (totals.shippingQuote() != null) {
             if (!totals.shippingQuote().available()) {
