@@ -45,6 +45,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -207,7 +208,7 @@ class QuoteSessionItemServiceTest {
     }
 
     @Test
-    void addItemToSession_withAcceptedSplitPrintFallback_marksLineItemAsSplitPrinting() throws Exception {
+    void addItemToSession_withOversizedModel_preservesFileForManualReview() throws Exception {
         QuoteSession session = new QuoteSession();
         session.setId(UUID.randomUUID());
         session.setStatus("ACTIVE");
@@ -240,9 +241,6 @@ class QuoteSessionItemServiceTest {
         BigDecimal nozzle = new BigDecimal("0.40");
         BigDecimal layer = new BigDecimal("0.200");
         ModelDimensions dimensions = new ModelDimensions(188.0, 385.0, 117.0);
-        PrintStats stats = new PrintStats(7200, "2h", 84.0, 1000.0);
-        QuoteResult result = new QuoteResult(25.0, "CHF", stats);
-
         when(quoteStorageService.getSafeExtension(file.getOriginalFilename(), "")).thenReturn("stl");
         when(quoteStorageService.sessionStorageDir(session.getId())).thenReturn(tempDir);
         when(quoteStorageService.resolveSessionPath(eq(tempDir), anyString()))
@@ -274,29 +272,16 @@ class QuoteSessionItemServiceTest {
                 isNull(),
                 anyMap()
         )).thenThrow(new ModelProcessingException("MODEL_OUT_OF_PRINT_VOLUME", "too large"));
-        when(slicerService.sliceForOversizedEstimate(
-                any(File.class),
-                eq("Bambu Lab A1 0.4 nozzle"),
-                eq("Bambu PLA Basic @BBL A1"),
-                eq("0.20mm Standard @BBL A1"),
-                eq(Optional.of(dimensions)),
-                anyMap()
-        )).thenReturn(stats);
-        when(quoteCalculator.calculate(stats, "BambuLab A1", variant)).thenReturn(result);
         when(sessionRepo.save(any(QuoteSession.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(lineItemRepo.save(any(QuoteLineItem.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         QuoteLineItem saved = service.addItemToSession(session, file, settings);
 
-        assertTrue(Boolean.TRUE.equals(saved.getRequiresSplitPrinting()));
-        assertEquals(0, BigDecimal.valueOf(188.0).compareTo(saved.getBoundingBoxXMm()));
-        verify(slicerService).sliceForOversizedEstimate(
-                any(File.class),
-                eq("Bambu Lab A1 0.4 nozzle"),
-                eq("Bambu PLA Basic @BBL A1"),
-                eq("0.20mm Standard @BBL A1"),
-                eq(Optional.of(dimensions)),
-                anyMap()
-        );
+        assertFalse(Boolean.TRUE.equals(saved.getRequiresSplitPrinting()));
+        assertEquals("REVIEW_REQUIRED", saved.getStatus());
+        assertEquals("too large", saved.getErrorMessage());
+        assertEquals("MODEL_OUT_OF_PRINT_VOLUME", saved.getPricingBreakdown().get("errorCode"));
+        verify(slicerService, never()).sliceForOversizedEstimate(
+                any(File.class), anyString(), anyString(), anyString(), any(), anyMap());
     }
 }

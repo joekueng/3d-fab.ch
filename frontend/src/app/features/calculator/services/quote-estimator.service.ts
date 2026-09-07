@@ -63,6 +63,7 @@ export interface QuoteItem {
 
 export interface QuoteCalculationFailure {
   fileName: string;
+  sessionId?: string;
   status?: number;
   code?: string;
   message: string;
@@ -358,7 +359,22 @@ export class QuoteEstimatorService {
 
                     if (event.type === HttpEventType.Response) {
                       uploadProgress[index] = 100;
-                      uploadResults[index] = { success: true };
+                      const responseItem = event.body;
+                      const success = responseItem?.status === 'READY';
+                      uploadResults[index] = success
+                        ? { success: true }
+                        : {
+                            success: false,
+                            failure: {
+                              fileName:
+                                responseItem?.originalFilename || item.file.name,
+                              sessionId,
+                              code: responseItem?.pricingBreakdown?.errorCode,
+                              message:
+                                responseItem?.errorMessage ||
+                                `Unable to process ${item.file.name}.`,
+                            },
+                          };
                       completed += 1;
                       finalize();
                     }
@@ -367,10 +383,13 @@ export class QuoteEstimatorService {
                     uploadProgress[index] = 100;
                     uploadResults[index] = {
                       success: false,
-                      failure: this.normalizeCalculationFailure(
-                        error,
-                        item.file.name,
-                      ),
+                      failure: {
+                        ...this.normalizeCalculationFailure(
+                          error,
+                          item.file.name,
+                        ),
+                        sessionId,
+                      },
                     };
                     completed += 1;
                     finalize();
@@ -482,7 +501,18 @@ export class QuoteEstimatorService {
 
   mapSessionToQuoteResult(sessionData: any): QuoteResult {
     const session = sessionData?.session || {};
-    const items = Array.isArray(sessionData?.items) ? sessionData.items : [];
+    const allItems = Array.isArray(sessionData?.items) ? sessionData.items : [];
+    const items = allItems.filter(
+      (item: any) => item?.status !== 'REVIEW_REQUIRED',
+    );
+    const failedItems: QuoteCalculationFailure[] = allItems
+      .filter((item: any) => item?.status === 'REVIEW_REQUIRED')
+      .map((item: any) => ({
+        fileName: item?.originalFilename || '',
+        sessionId: session?.id,
+        code: item?.errorCode,
+        message: item?.errorMessage || 'This file requires manual review.',
+      }));
 
     const totalTime = items.reduce(
       (acc: number, item: any) =>
@@ -544,6 +574,7 @@ export class QuoteEstimatorService {
       totalTimeMinutes: Math.ceil((totalTime % 3600) / 60),
       totalWeight: Math.ceil(totalWeight),
       notes: session?.notes,
+      failedItems,
     };
   }
 

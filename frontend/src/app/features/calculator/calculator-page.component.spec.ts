@@ -10,6 +10,7 @@ import {
 } from './services/quote-estimator.service';
 import { LanguageService } from '../../core/services/language.service';
 import { UploadFormComponent } from './components/upload-form/upload-form.component';
+import { TranslateService } from '@ngx-translate/core';
 
 describe('CalculatorPageComponent', () => {
   const createResult = (sessionId: string, notes?: string): QuoteResult => ({
@@ -97,12 +98,25 @@ describe('CalculatorPageComponent', () => {
       'LanguageService',
       ['selectedLang'],
     );
+    const translate = jasmine.createSpyObj<TranslateService>('TranslateService', [
+      'instant',
+    ]);
+    translate.instant.and.callFake((key: string, params?: Record<string, unknown>) => {
+      if (key === 'CALC.REVIEW_PARTIAL_SINGLE') {
+        return `${params?.['fileName']} was not included in the quote. ${params?.['reason']}`;
+      }
+      if (key === 'CALC.REVIEW_OUT_OF_VOLUME') {
+        return 'This model could not be placed fully inside the printer volume.';
+      }
+      return key;
+    });
 
     const component = new CalculatorPageComponent(
       estimator,
       router,
       route,
       languageService,
+      translate,
       platformId,
     );
 
@@ -283,7 +297,6 @@ describe('CalculatorPageComponent', () => {
     expect(component.warningMessage()).toContain(
       'This model could not be placed fully inside the printer volume',
     );
-    expect(component.showSplitPrintingOption()).toBeTrue();
   });
 
   it('shows backend failure message when calculation fails completely', () => {
@@ -305,7 +318,7 @@ describe('CalculatorPageComponent', () => {
     expect(component.errorMessage()).toBe(
       'This model could not be placed fully inside the printer volume.',
     );
-    expect(component.showSplitPrintingOption()).toBeTrue();
+    expect(component.isCustomQuoteError()).toBeTrue();
   });
 
   it('marks custom quote failures for the custom quote CTA state', () => {

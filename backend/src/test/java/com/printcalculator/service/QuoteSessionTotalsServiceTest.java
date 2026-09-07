@@ -129,6 +129,32 @@ class QuoteSessionTotalsServiceTest {
         assertAmountEquals("24.00", totals.grandTotalChf());
     }
 
+    @Test
+    void compute_WithReviewRequiredItem_ShouldExcludeItFromTotalsAndShipping() {
+        QuoteSession session = new QuoteSession();
+        session.setSetupCostChf(new BigDecimal("2.00"));
+
+        QuoteLineItem ready = createItem(new BigDecimal("8.00"), 1, 1800, "0.40");
+        ready.setStatus("READY");
+        QuoteLineItem reviewRequired = createItem(new BigDecimal("99.00"), 4, 7200, "0.80");
+        reviewRequired.setStatus("REVIEW_REQUIRED");
+
+        PricingPolicy policy = new PricingPolicy();
+        when(pricingRepo.findFirstByIsActiveTrueOrderByValidFromDesc()).thenReturn(policy);
+        when(quoteCalculator.calculateSessionMachineCost(eq(policy), any(BigDecimal.class))).thenReturn(BigDecimal.ZERO);
+        when(nozzleOptionRepo.findFirstByNozzleDiameterMmAndIsActiveTrue(new BigDecimal("0.40")))
+                .thenReturn(java.util.Optional.empty());
+
+        QuoteSessionTotalsService.QuoteSessionTotals totals = service.compute(
+                session,
+                List.of(ready, reviewRequired)
+        );
+
+        assertAmountEquals("8.00", totals.itemsTotalChf());
+        assertAmountEquals("2.00", totals.shippingCostChf());
+        assertAmountEquals("12.00", totals.grandTotalChf());
+    }
+
     private QuoteLineItem createItem(BigDecimal unitPrice, int quantity, int printSeconds, String nozzleMm) {
         QuoteLineItem item = new QuoteLineItem();
         item.setQuantity(quantity);

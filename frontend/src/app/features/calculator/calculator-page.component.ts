@@ -11,7 +11,7 @@ import {
   PLATFORM_ID,
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
@@ -52,6 +52,7 @@ type PendingSessionRestore = {
   session: any;
   items: any[];
   files: File[];
+  preserveError: boolean;
   previewFiles: Array<{
     index: number;
     file: File;
@@ -94,19 +95,12 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     () => this.error() && this.errorKey() === 'CALC.ERROR_ZERO_PRICE',
   );
   isCustomQuoteError = computed(
-    () => this.error() && this.errorCode() === 'MODEL_REQUIRES_CUSTOM_QUOTE',
+    () =>
+      this.error() &&
+      (this.errorCode() === 'MODEL_REQUIRES_CUSTOM_QUOTE' ||
+        this.errorCode() === 'MODEL_OUT_OF_PRINT_VOLUME' ||
+        this.errorCode() === 'MODEL_PROCESSING_FAILED'),
   );
-  showSplitPrintingOption = computed(() => {
-    const result = this.result();
-
-    return (
-      this.errorCode() === 'MODEL_OUT_OF_PRINT_VOLUME' ||
-      (result?.failedItems || []).some(
-        (failure) => failure.code === 'MODEL_OUT_OF_PRINT_VOLUME',
-      ) ||
-      (result?.items || []).some((item) => item.requiresSplitPrinting)
-    );
-  });
   readonly faqIds = [
     'FILES',
     'MODE',
@@ -178,6 +172,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     private router: Router,
     private route: ActivatedRoute,
     private languageService: LanguageService,
+    private translate: TranslateService,
     @Optional() @Inject(PLATFORM_ID) platformId?: Object,
   ) {
     this.isBrowser = isPlatformBrowser(platformId ?? 'browser');
@@ -212,10 +207,11 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
   ngAfterViewInit() {
     this.applyPendingSessionRestoreIfNeeded();
 
-    const pendingDraft = this.estimator.consumePendingCalculatorDraft();
-    if (!pendingDraft || this.currentSessionId()) {
+    if (this.currentSessionId()) {
       return;
     }
+    const pendingDraft = this.estimator.consumePendingCalculatorDraft();
+    if (!pendingDraft) return;
 
     this.uploadForm?.restoreRequestDraft(pendingDraft.request, {
       sameSettingsForAll: pendingDraft.sameSettingsForAll,
@@ -245,13 +241,20 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
         // 1. Map to Result
         const result = this.estimator.mapSessionToQuoteResult(data);
         if (this.isInvalidQuote(result)) {
-          this.setQuoteError('CALC.ERROR_ZERO_PRICE');
-          this.loading.set(false);
+          const failure = result.failedItems?.[0];
+          this.setQuoteError(
+            failure ? 'CALC.ERROR_GENERIC' : 'CALC.ERROR_ZERO_PRICE',
+            failure ? this.failureDisplayMessage(failure) : null,
+            failure?.code || null,
+          );
+          this.restoreFilesAndSettings(data.session, data.items || []);
           return;
         }
 
         this.clearQuoteErrorState();
-        this.warningMessage.set(null);
+        this.warningMessage.set(
+          this.buildPartialFailureMessage(result.failedItems || []),
+        );
         this.result.set(result);
         this.baselinePrintSettings = this.toTrackedSettingsFromSession(
           data.session,
@@ -361,6 +364,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
           items,
           files,
           previewFiles,
+          preserveError: this.error() && !this.result(),
         };
         this.applyPendingSessionRestoreIfNeeded();
         this.loading.set(false);
@@ -373,6 +377,13 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
           return;
         }
         console.error('Failed to download files', err);
+        const pendingDraft = this.estimator.consumePendingCalculatorDraft();
+        if (pendingDraft) {
+          this.uploadForm.restoreRequestDraft(pendingDraft.request, {
+            sameSettingsForAll: pendingDraft.sameSettingsForAll,
+            selectedFileName: pendingDraft.selectedFileName,
+          });
+        }
         this.loading.set(false);
         // Still show result? Yes.
       },
@@ -453,9 +464,17 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
       },
       error: (err) => {
         const failure = this.normalizeCalculationFailure(err);
+        if (failure?.sessionId) {
+          this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { session: failure.sessionId },
+            queryParamsHandling: 'merge',
+            replaceUrl: true,
+          });
+        }
         this.setQuoteError(
           'CALC.ERROR_GENERIC',
-          failure?.message || null,
+          failure ? this.failureDisplayMessage(failure) : null,
           failure?.code || null,
         );
         this.loading.set(false);
@@ -466,6 +485,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
   onProceed() {
     const res = this.result();
     if (res && res.sessionId) {
+      this.persistPendingDraft();
       const segments = this.cadSessionLocked()
         ? ['/', this.languageService.selectedLang(), 'checkout', 'cad']
         : ['/', this.languageService.selectedLang(), 'checkout'];
@@ -625,8 +645,18 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     if (req.mode === 'advanced') {
       if (req.infillDensity) details += `- Infill: ${req.infillDensity}%\n`;
     }
-    if (req.acceptSplitPrinting) {
-      details += `- Suddivisione per stampa: accettata\n`;
+    const requiresManualReview =
+      this.errorCode() === 'MODEL_OUT_OF_PRINT_VOLUME' ||
+      this.errorCode() === 'MODEL_PROCESSING_FAILED' ||
+      (this.result()?.failedItems || []).some(
+        (failure) =>
+          failure.code === 'MODEL_OUT_OF_PRINT_VOLUME' ||
+          failure.code === 'MODEL_PROCESSING_FAILED',
+      );
+    if (requiresManualReview) {
+      details +=
+        `- Il modello richiede una valutazione manuale. ` +
+        `Eventuale suddivisione, prezzo definitivo e approvazione saranno concordati via email.\n`;
     }
 
     if (req.notes) details += `\nNote: ${req.notes}`;
@@ -695,6 +725,10 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
           typeof maybeFailure.fileName === 'string'
             ? maybeFailure.fileName
             : '',
+        sessionId:
+          typeof maybeFailure.sessionId === 'string'
+            ? maybeFailure.sessionId
+            : undefined,
         status:
           typeof maybeFailure.status === 'number'
             ? maybeFailure.status
@@ -717,7 +751,10 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
 
     if (failures.length === 1) {
       const failure = failures[0];
-      return `${failure.fileName} was not included in the quote. ${failure.message}`;
+      return this.translate.instant('CALC.REVIEW_PARTIAL_SINGLE', {
+        fileName: failure.fileName,
+        reason: this.failureDisplayMessage(failure),
+      });
     }
 
     const fileNames = failures
@@ -729,15 +766,23 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
       ? failures[0].message
       : null;
 
-    let message = `${failures.length} files were not included in the quote`;
-    if (fileNames.length > 0) {
-      message += `: ${fileNames.join(', ')}`;
+    return this.translate.instant('CALC.REVIEW_PARTIAL_MULTIPLE', {
+      count: failures.length,
+      fileNames: fileNames.join(', '),
+      reason: sharedMessage
+        ? this.failureDisplayMessage({ ...failures[0], message: sharedMessage })
+        : '',
+    });
+  }
+
+  private failureDisplayMessage(failure: QuoteCalculationFailure): string {
+    if (failure.code === 'MODEL_OUT_OF_PRINT_VOLUME') {
+      return this.translate.instant('CALC.REVIEW_OUT_OF_VOLUME');
     }
-    message += '.';
-    if (sharedMessage) {
-      message += ` ${sharedMessage}`;
+    if (failure.code === 'MODEL_PROCESSING_FAILED') {
+      return this.translate.instant('CALC.REVIEW_PROCESSING_FAILED');
     }
-    return message;
+    return failure.message;
   }
 
   switchMode(nextMode: 'easy' | 'advanced'): void {
@@ -753,7 +798,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     }
 
     if (!this.currentSessionId()) {
-      this.persistPendingDraftForModeSwitch();
+      this.persistPendingDraft();
     }
 
     this.router.navigate(['..', targetPath], {
@@ -780,7 +825,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
       : null;
   }
 
-  private persistPendingDraftForModeSwitch(): void {
+  private persistPendingDraft(): void {
     if (!this.uploadForm) {
       this.estimator.setPendingCalculatorDraft(null);
       return;
@@ -868,7 +913,10 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     );
     this.requiresRecalculation.set(false);
     this.refreshRecalculationRequirement();
-    this.clearQuoteErrorState();
+    if (!payload.preserveError) {
+      this.clearQuoteErrorState();
+    }
+    this.estimator.setPendingCalculatorDraft(null);
     this.pendingSessionRestore = null;
   }
 
@@ -1101,7 +1149,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
 
   private isCurrentSessionRestore(session: any): boolean {
     const restoreSessionId = String(session?.id || '');
-    const currentResultSessionId = String(this.result()?.sessionId || '');
+    const currentResultSessionId = String(this.currentSessionId() || '');
     return (
       restoreSessionId.length > 0 &&
       currentResultSessionId.length > 0 &&

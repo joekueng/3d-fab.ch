@@ -549,6 +549,32 @@
           }
         }
       },
+      "petg-extrudr": {
+        "NAME": "Extrudr PETG",
+        "SUMMARY": "Vielseitiges, widerstandsfähiges PETG, das auch für Projekte mit begrenztem Lebensmittelkontakt verwendet wird. Das Filament wird vom Lieferanten als geeignet angegeben, das fertige FDM-Teil ist jedoch nicht als lebensmittelecht zertifiziert.",
+        "QUALITY_TIPS": [
+          "Ein beheiztes Druckbett und eine saubere Oberfläche für zuverlässige Haftung verwenden.",
+          "Bei Anfragen mit Lebensmittelkontakt prüfen wir Lebensmittel, Temperatur, Kontaktdauer und Reinigung schriftlich."
+        ],
+        "PROS": [
+          "Gute mechanische Festigkeit, Layerhaftung und Wärmebeständigkeit bis etwa 90 °C.",
+          "Für Funktionsteile geeignet und laut Produktseite zu 100% recycelbar."
+        ],
+        "CONS": [
+          "FDM-Layerlinien und Mikrospalten erschweren Reinigung und Desinfektion.",
+          "Das Druckteil ist nicht für dauerhafte oder längere professionelle Lebensmittelanwendung zertifiziert."
+        ],
+        "IDEAL_FOR": [
+          "Funktionsteile",
+          "Kurzer, gelegentlicher Kontakt mit kalten oder zimmerwarmen Lebensmitteln nach Prüfung",
+          "Nicht professionelle Küchenutensilien und Zubehör"
+        ],
+        "SOURCES": {
+          "extrudr-petg-white": {
+            "LABEL": "3DJake - Extrudr PETG White"
+          }
+        }
+      },
       "pet-cf": {
         "NAME": "PET-CF",
         "SUMMARY": "Steifes technisches Material mit Carbonfaser, sehr stabil fur Prazisionsteile.",
@@ -716,7 +742,11 @@
     "ZERO_RESULT_TITLE": "Ungültiges Ergebnis",
     "ZERO_RESULT_HELP": "Die Berechnung hat ungültige Werte (0) geliefert. Versuche ein anderes Dateiformat oder kontaktiere uns direkt über \"Beratung anfragen\".",
     "CUSTOM_QUOTE_TITLE": "Individuelles Angebot erforderlich",
-    "CUSTOM_QUOTE_HELP": "Dieses Modell ist zu groß für die automatische Schätzung, auch wenn die Teilung akzeptiert wurde. Senden Sie eine individuelle Anfrage mit der Datei im Anhang."
+    "CUSTOM_QUOTE_HELP": "Die Datei bleibt gespeichert und muss manuell geprüft werden. Kontaktieren Sie uns: Teilung, Endpreis und Ihre Freigabe vereinbaren wir vorab per E-Mail.",
+    "REVIEW_OUT_OF_VOLUME": "Das Modell überschreitet den verfügbaren Druckraum. Die Datei bleibt gespeichert, damit wir eine mögliche Teilung per E-Mail abstimmen können.",
+    "REVIEW_PROCESSING_FAILED": "Die Datei konnte nicht automatisch analysiert werden. Sie bleibt für eine manuelle Prüfung gespeichert.",
+    "REVIEW_PARTIAL_SINGLE": "{{fileName}} muss manuell geprüft werden und ist nicht in der Summe enthalten. {{reason}}",
+    "REVIEW_PARTIAL_MULTIPLE": "{{count}} Dateien müssen manuell geprüft werden und sind nicht in der Summe enthalten: {{fileNames}}. {{reason}}"
   },
   "SHOP": {
     "TITLE": "Technische Lösungen",
