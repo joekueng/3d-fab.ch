@@ -89,6 +89,7 @@ export interface QuoteResult {
 export interface MaterialOption {
   code: string;
   label: string;
+  isTechnical: boolean;
   variants: VariantOption[];
 }
 

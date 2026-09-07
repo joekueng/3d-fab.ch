@@ -12,6 +12,7 @@ import com.printcalculator.model.PrintStats;
 import com.printcalculator.model.QuoteResult;
 import com.printcalculator.repository.QuoteLineItemRepository;
 import com.printcalculator.repository.QuoteSessionRepository;
+import com.printcalculator.service.MaterialPrintCompatibilityService;
 import com.printcalculator.service.OrcaProfileResolver;
 import com.printcalculator.service.ProfileManager;
 import com.printcalculator.service.QuoteCalculator;
@@ -69,6 +70,8 @@ class QuoteSessionItemServiceTest {
     private QuoteSessionSettingsService settingsService;
     @Mock
     private ProfileManager profileManager;
+    @Mock
+    private MaterialPrintCompatibilityService materialPrintCompatibilityService;
 
     @TempDir
     Path tempDir;
@@ -86,7 +89,8 @@ class QuoteSessionItemServiceTest {
                 clamAVService,
                 quoteStorageService,
                 settingsService,
-                profileManager
+                profileManager,
+                materialPrintCompatibilityService
         );
     }
 
@@ -173,6 +177,8 @@ class QuoteSessionItemServiceTest {
         when(lineItemRepo.save(any(QuoteLineItem.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         QuoteLineItem saved = service.addItemToSession(session, file, settings);
+
+        verify(materialPrintCompatibilityService).validate(variant, nozzle, layer);
 
         ArgumentCaptor<File> sliceInputCaptor = ArgumentCaptor.forClass(File.class);
         @SuppressWarnings("unchecked")

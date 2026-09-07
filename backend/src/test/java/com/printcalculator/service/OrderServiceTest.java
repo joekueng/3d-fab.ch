@@ -46,6 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -76,9 +77,39 @@ class OrderServiceTest {
     private PaymentService paymentService;
     @Mock
     private QuoteSessionTotalsService quoteSessionTotalsService;
+    @Mock
+    private MaterialPrintCompatibilityService materialPrintCompatibilityService;
 
     @InjectMocks
     private OrderService service;
+
+    @Test
+    void createOrderFromQuote_validatesCalculatorMaterialSettingsBeforeCreatingCustomer() {
+        UUID sessionId = UUID.randomUUID();
+        QuoteSession session = new QuoteSession();
+        session.setId(sessionId);
+        session.setStatus("ACTIVE");
+
+        QuoteLineItem qItem = new QuoteLineItem();
+        qItem.setLineItemType("PRINT_FILE");
+        qItem.setNozzleDiameterMm(new BigDecimal("0.20"));
+        qItem.setLayerHeightMm(new BigDecimal("0.120"));
+
+        when(quoteSessionRepo.findById(sessionId)).thenReturn(Optional.of(session));
+        when(quoteLineItemRepo.findByQuoteSessionId(sessionId)).thenReturn(List.of(qItem));
+        doThrow(new IllegalArgumentException("invalid technical material settings"))
+                .when(materialPrintCompatibilityService)
+                .validate(qItem.getFilamentVariant(), qItem.getNozzleDiameterMm(), qItem.getLayerHeightMm());
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> service.createOrderFromQuote(sessionId, buildRequest())
+        );
+
+        assertEquals("invalid technical material settings", exception.getMessage());
+        verify(customerRepo, never()).findByEmail(any());
+        verify(orderRepo, never()).save(any());
+    }
 
     @Test
     void createOrderFromQuote_withShopCart_shouldPreserveShopSnapshotAndMaterialCode() throws Exception {
