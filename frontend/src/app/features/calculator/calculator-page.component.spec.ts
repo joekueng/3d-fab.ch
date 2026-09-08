@@ -125,6 +125,9 @@ describe('CalculatorPageComponent', () => {
       [
         'setFiles',
         'setPreviewFileByIndex',
+        'setItemReviewStateByIndex',
+        'setItemReviewStateByName',
+        'setAcceptSplitPrinting',
         'patchSettings',
         'setItemPrintSettingsByIndex',
         'updateItemColor',
@@ -300,7 +303,7 @@ describe('CalculatorPageComponent', () => {
   });
 
   it('shows backend failure message when calculation fails completely', () => {
-    const { component, estimator } = createComponent();
+    const { component, estimator, uploadForm } = createComponent();
     const request = createDraftRequest();
 
     estimator.calculate.and.returnValue(
@@ -319,6 +322,30 @@ describe('CalculatorPageComponent', () => {
       'This model could not be placed fully inside the printer volume.',
     );
     expect(component.isCustomQuoteError()).toBeTrue();
+    expect(uploadForm.setItemReviewStateByName).toHaveBeenCalledWith(
+      'cube-257.stl',
+      'warning',
+      'This model could not be placed fully inside the printer volume.',
+    );
+  });
+
+  it('restores the local draft when a session has no downloadable items', () => {
+    const { component, estimator, uploadForm } = createComponent(undefined, {
+      session: 'session-1',
+    });
+    const request = createDraftRequest();
+    estimator.consumePendingCalculatorDraft.and.returnValue({
+      request,
+      sameSettingsForAll: true,
+      selectedFileName: 'part-a.stl',
+    });
+
+    component.restoreFilesAndSettings({ id: 'session-1' }, []);
+
+    expect(uploadForm.restoreRequestDraft).toHaveBeenCalledWith(request, {
+      sameSettingsForAll: true,
+      selectedFileName: 'part-a.stl',
+    });
   });
 
   it('marks custom quote failures for the custom quote CTA state', () => {
@@ -501,6 +528,9 @@ describe('CalculatorPageComponent', () => {
       [
         'setFiles',
         'setPreviewFileByIndex',
+        'setItemReviewStateByIndex',
+        'setItemReviewStateByName',
+        'setAcceptSplitPrinting',
         'patchSettings',
         'setItemPrintSettingsByIndex',
         'updateItemColor',

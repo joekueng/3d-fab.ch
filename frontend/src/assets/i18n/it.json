@@ -730,7 +730,7 @@
     "SUPPORT": "Supporti",
     "SUPPORT_DESC": "Abilita supporti per sporgenze",
     "SPLIT_ACCEPT_LABEL": "Accetto che i modelli troppo grandi vengano suddivisi per la stampa",
-    "SPLIT_RESULT_NOTE": "Il preventivo include il setup per preparare la suddivisione dei modelli troppo grandi. Il file originale resta associato all'ordine.",
+    "SPLIT_RESULT_NOTE": "Il preventivo include il supplemento di CHF 10 per suddividere i modelli troppo grandi. Il file originale resta associato all'ordine.",
     "CALCULATE": "Calcola Preventivo",
     "RESULT": "Preventivo Stimato",
     "TIME": "Tempo Stampa",
@@ -768,10 +768,14 @@
     "ZERO_RESULT_HELP": "Il calcolo ha restituito valori non validi (0). Prova con un altro formato file oppure contattaci direttamente con Richiedi Consulenza.",
     "CUSTOM_QUOTE_TITLE": "Serve un preventivo personalizzato",
     "CUSTOM_QUOTE_HELP": "Il file resta salvato e richiede una valutazione manuale. Contattaci: concorderemo via email l'eventuale suddivisione, il prezzo definitivo e la tua approvazione prima di procedere.",
-    "REVIEW_OUT_OF_VOLUME": "Il modello supera il volume di stampa disponibile. Il file resta salvato: valuteremo con te via email l'eventuale suddivisione.",
+    "SPLIT_REVIEW_TITLE": "Il modello richiede una suddivisione",
+    "SPLIT_REVIEW_HELP": "Il modello è più grande del volume di stampa disponibile. Il file resta salvato: richiedi una consulenza e concorderemo con te via email come suddividerlo, il prezzo definitivo e la tua approvazione.",
+    "SPLIT_REQUEST_ACTION": "Richiedi la suddivisione",
+    "REVIEW_OUT_OF_VOLUME": "Il modello supera il volume di stampa disponibile.",
     "REVIEW_PROCESSING_FAILED": "Non è stato possibile analizzare automaticamente il file. Il file resta salvato per una valutazione manuale.",
     "REVIEW_PARTIAL_SINGLE": "{{fileName}} richiede una valutazione manuale e non è incluso nel totale. {{reason}}",
-    "REVIEW_PARTIAL_MULTIPLE": "{{count}} file richiedono una valutazione manuale e non sono inclusi nel totale: {{fileNames}}. {{reason}}"
+    "REVIEW_PARTIAL_MULTIPLE": "{{count}} file richiedono una valutazione manuale e non sono inclusi nel totale: {{fileNames}}. {{reason}}",
+    "FILE_REVIEW_REQUIRED": "Richiede valutazione"
   },
   "QUOTE": {
     "PROCEED_ORDER": "Procedi con l'ordine",

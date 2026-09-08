@@ -690,7 +690,7 @@
     "SUPPORT": "Supports",
     "SUPPORT_DESC": "Enable supports for overhangs",
     "SPLIT_ACCEPT_LABEL": "I accept that oversized models may be split for printing",
-    "SPLIT_RESULT_NOTE": "This quote includes setup for preparing oversized models to be split for printing. The original file remains attached to the order.",
+    "SPLIT_RESULT_NOTE": "This quote includes the CHF 10 supplement for splitting oversized models. The original file remains attached to the order.",
     "CALCULATE": "Calculate Quote",
     "RESULT": "Estimated Quote",
     "TIME": "Print Time",
@@ -730,10 +730,14 @@
     "ZERO_RESULT_HELP": "The calculation returned invalid zero values. Try another file format or contact us directly via Request Consultation.",
     "CUSTOM_QUOTE_TITLE": "Custom quote required",
     "CUSTOM_QUOTE_HELP": "The file remains saved and requires manual review. Contact us: we will agree any splitting, final price and your approval by email before proceeding.",
-    "REVIEW_OUT_OF_VOLUME": "The model exceeds the available print volume. The file remains saved so we can agree any splitting with you by email.",
+    "SPLIT_REVIEW_TITLE": "This model needs to be split",
+    "SPLIT_REVIEW_HELP": "The model is larger than the available print volume. The file remains saved: request a consultation and we will agree by email how to split it, the final price and your approval.",
+    "SPLIT_REQUEST_ACTION": "Request model splitting",
+    "REVIEW_OUT_OF_VOLUME": "The model exceeds the available print volume.",
     "REVIEW_PROCESSING_FAILED": "The file could not be analysed automatically. It remains saved for manual review.",
     "REVIEW_PARTIAL_SINGLE": "{{fileName}} requires manual review and is not included in the total. {{reason}}",
-    "REVIEW_PARTIAL_MULTIPLE": "{{count}} files require manual review and are not included in the total: {{fileNames}}. {{reason}}"
+    "REVIEW_PARTIAL_MULTIPLE": "{{count}} files require manual review and are not included in the total: {{fileNames}}. {{reason}}",
+    "FILE_REVIEW_REQUIRED": "Review required"
   },
   "SHOP": {
     "TITLE": "Technical solutions",

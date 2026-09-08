@@ -668,6 +668,36 @@ export class UploadFormComponent implements OnInit {
     });
   }
 
+  setItemReviewStateByIndex(
+    index: number,
+    level: 'warning' | 'error',
+    message: string,
+  ): void {
+    if (!Number.isInteger(index) || index < 0) return;
+    this.items.update((current) =>
+      current.map((item, itemIndex) =>
+        itemIndex === index
+          ? { ...item, reviewLevel: level, reviewMessage: message }
+          : item,
+      ),
+    );
+  }
+
+  setItemReviewStateByName(
+    fileName: string,
+    level: 'warning' | 'error',
+    message: string,
+  ): void {
+    const normalizedName = normalizeFileName(fileName);
+    this.items.update((current) =>
+      current.map((item) =>
+        normalizeFileName(item.file.name) === normalizedName
+          ? { ...item, reviewLevel: level, reviewMessage: message }
+          : item,
+      ),
+    );
+  }
+
   setItemPrintSettingsByIndex(index: number, update: ItemPrintSettingsUpdate) {
     if (!Number.isInteger(index) || index < 0) return;
 
@@ -785,6 +815,12 @@ export class UploadFormComponent implements OnInit {
 
     this.emitPrintSettingsChange();
     this.emitItemSettingsDiffChange();
+  }
+
+  setAcceptSplitPrinting(accepted: boolean): void {
+    this.form
+      .get('acceptSplitPrinting')
+      ?.setValue(accepted, { emitEvent: false });
   }
 
   getCurrentRequestDraft(): QuoteRequest {

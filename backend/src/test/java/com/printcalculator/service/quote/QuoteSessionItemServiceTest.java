@@ -219,7 +219,7 @@ class QuoteSessionItemServiceTest {
         settings.setSupportsEnabled(false);
         settings.setInfillDensity(15.0);
         settings.setInfillPattern("grid");
-        settings.setAllowSplitForOversized(true);
+        settings.setAllowSplitForOversized(false);
 
         MockMultipartFile file = new MockMultipartFile(
                 "file",
@@ -283,5 +283,91 @@ class QuoteSessionItemServiceTest {
         assertEquals("MODEL_OUT_OF_PRINT_VOLUME", saved.getPricingBreakdown().get("errorCode"));
         verify(slicerService, never()).sliceForOversizedEstimate(
                 any(File.class), anyString(), anyString(), anyString(), any(), anyMap());
+    }
+
+    @Test
+    void addItemToSession_withAcceptedSplitPrinting_createsOrderableEstimate() throws Exception {
+        QuoteSession session = new QuoteSession();
+        session.setId(UUID.randomUUID());
+        session.setStatus("ACTIVE");
+
+        PrintSettingsDto settings = new PrintSettingsDto();
+        settings.setComplexityMode("ADVANCED");
+        settings.setQuantity(1);
+        settings.setSupportsEnabled(false);
+        settings.setInfillDensity(15.0);
+        settings.setInfillPattern("grid");
+        settings.setAllowSplitForOversized(true);
+
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "large.stl", "model/stl", "solid large".getBytes(StandardCharsets.UTF_8));
+
+        FilamentMaterialType materialType = new FilamentMaterialType();
+        materialType.setMaterialCode("PLA");
+        FilamentVariant variant = new FilamentVariant();
+        variant.setFilamentMaterialType(materialType);
+        variant.setColorName("White");
+        PrinterMachine machine = new PrinterMachine();
+        machine.setPrinterDisplayName("BambuLab A1");
+
+        BigDecimal nozzle = new BigDecimal("0.40");
+        BigDecimal layer = new BigDecimal("0.200");
+        ModelDimensions dimensions = new ModelDimensions(188.0, 385.0, 117.0);
+        PrintStats stats = new PrintStats(7200, "2h", 84.0, 1000.0);
+        QuoteResult result = new QuoteResult(25.0, "CHF", stats);
+
+        when(quoteStorageService.getSafeExtension(file.getOriginalFilename(), "")).thenReturn("stl");
+        when(quoteStorageService.sessionStorageDir(session.getId())).thenReturn(tempDir);
+        when(quoteStorageService.resolveSessionPath(eq(tempDir), anyString()))
+                .thenAnswer(invocation -> tempDir.resolve(invocation.getArgument(1, String.class)));
+        when(quoteStorageService.toStoredPath(any(Path.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0, Path.class).toString());
+        when(clamAVService.scan(any(InputStream.class))).thenReturn(true);
+        doNothing().when(settingsService).applyPrintSettings(settings);
+        when(settingsService.resolveNozzleAndLayer(settings))
+                .thenReturn(new QuoteSessionSettingsService.NozzleLayerSettings(nozzle, layer));
+        when(settingsService.resolveFilamentVariant(settings)).thenReturn(variant);
+        when(settingsService.resolveQuality(settings, layer)).thenReturn("standard");
+        when(settingsService.resolvePrinterMachineCandidates(settings.getPrinterMachineId(), nozzle, layer, "standard"))
+                .thenReturn(java.util.List.of(machine));
+        when(profileManager.findCompatibleProcessProfileName("Bambu Lab A1 0.4 nozzle", layer, "standard"))
+                .thenReturn(Optional.of("0.20mm Standard @BBL A1"));
+        when(orcaProfileResolver.resolve(machine, nozzle, variant))
+                .thenReturn(new OrcaProfileResolver.ResolvedProfiles(
+                        "Bambu Lab A1 0.4 nozzle", "Bambu PLA Basic @BBL A1", null));
+        when(slicerService.inspectModelDimensions(any(File.class))).thenReturn(Optional.of(dimensions));
+        when(slicerService.slice(
+                any(File.class),
+                eq("Bambu Lab A1 0.4 nozzle"),
+                eq("Bambu PLA Basic @BBL A1"),
+                eq("0.20mm Standard @BBL A1"),
+                isNull(),
+                anyMap()
+        )).thenThrow(new ModelProcessingException("MODEL_OUT_OF_PRINT_VOLUME", "too large"));
+        when(slicerService.sliceForOversizedEstimate(
+                any(File.class),
+                eq("Bambu Lab A1 0.4 nozzle"),
+                eq("Bambu PLA Basic @BBL A1"),
+                eq("0.20mm Standard @BBL A1"),
+                eq(Optional.of(dimensions)),
+                anyMap()
+        )).thenReturn(stats);
+        when(quoteCalculator.calculate(stats, "BambuLab A1", variant)).thenReturn(result);
+        when(sessionRepo.save(any(QuoteSession.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(lineItemRepo.save(any(QuoteLineItem.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        QuoteLineItem saved = service.addItemToSession(session, file, settings);
+
+        assertEquals("READY", saved.getStatus());
+        assertTrue(Boolean.TRUE.equals(saved.getRequiresSplitPrinting()));
+        assertEquals(0, BigDecimal.valueOf(188.0).compareTo(saved.getBoundingBoxXMm()));
+        verify(slicerService).sliceForOversizedEstimate(
+                any(File.class),
+                eq("Bambu Lab A1 0.4 nozzle"),
+                eq("Bambu PLA Basic @BBL A1"),
+                eq("0.20mm Standard @BBL A1"),
+                eq(Optional.of(dimensions)),
+                anyMap()
+        );
     }
 }

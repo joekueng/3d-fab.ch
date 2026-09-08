@@ -53,9 +53,13 @@ public class QuoteSessionTotalsService {
         BigDecimal cadTotal = calculateCadTotal(session);
         BigDecimal itemsTotal = printItemsTotal.add(cadTotal);
 
-        BigDecimal baseSetupFee = hasSplitPrintingItems(items)
+        BigDecimal standardSetupFee = session.getSetupCostChf() != null
+                ? session.getSetupCostChf()
+                : BigDecimal.ZERO;
+        BigDecimal splitSetupFee = hasSplitPrintingItems(items)
                 ? quoteCalculator.calculateSplitModelSetupFee(policy)
-                : session.getSetupCostChf() != null ? session.getSetupCostChf() : BigDecimal.ZERO;
+                : BigDecimal.ZERO;
+        BigDecimal baseSetupFee = standardSetupFee.add(splitSetupFee);
         BigDecimal nozzleChangeCost = calculateNozzleChangeCost(items);
         BigDecimal setupFee = baseSetupFee.add(nozzleChangeCost).setScale(2, RoundingMode.HALF_UP);
         BigDecimal shippingCost = calculateShippingCost(items);

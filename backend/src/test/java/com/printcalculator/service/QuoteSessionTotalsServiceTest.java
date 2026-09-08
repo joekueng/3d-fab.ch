@@ -124,9 +124,9 @@ class QuoteSessionTotalsServiceTest {
 
         QuoteSessionTotalsService.QuoteSessionTotals totals = service.compute(session, List.of(item));
 
-        assertAmountEquals("10.00", totals.baseSetupCostChf());
-        assertAmountEquals("10.00", totals.setupCostChf());
-        assertAmountEquals("24.00", totals.grandTotalChf());
+        assertAmountEquals("12.00", totals.baseSetupCostChf());
+        assertAmountEquals("12.00", totals.setupCostChf());
+        assertAmountEquals("26.00", totals.grandTotalChf());
     }
 
     @Test

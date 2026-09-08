@@ -149,6 +149,7 @@ public class QuoteSessionItemService {
             }
 
             Exception lastFailure = null;
+            boolean oversizedEstimateAttempted = false;
             for (PrinterMachine machine : candidateMachines) {
                 try {
                     OrcaProfileResolver.ResolvedProfiles profiles = orcaProfileResolver.resolve(machine, nozzleDiameter, selectedVariant);
@@ -164,14 +165,39 @@ public class QuoteSessionItemService {
                     if (modelDimensions.isEmpty() && convertedPersistentPath != null) {
                         modelDimensions = slicerService.inspectModelDimensions(convertedPersistentPath.toFile());
                     }
-                    PrintStats stats = slicerService.slice(
-                            slicerInputPath.toFile(),
-                            profiles.machineProfileName(),
-                            profiles.filamentProfileName(),
-                            processProfile,
-                            null,
-                            processOverrides
-                    );
+                    boolean requiresSplitPrinting = false;
+                    PrintStats stats;
+                    try {
+                        stats = slicerService.slice(
+                                slicerInputPath.toFile(),
+                                profiles.machineProfileName(),
+                                profiles.filamentProfileName(),
+                                processProfile,
+                                null,
+                                processOverrides
+                        );
+                    } catch (ModelProcessingException ex) {
+                        if (!shouldEstimateOversizedSplit(settings, ex)) {
+                            throw ex;
+                        }
+                        if (modelDimensions.isEmpty() || oversizedEstimateAttempted) {
+                            throw buildSplitCustomQuoteFailure(ex);
+                        }
+                        oversizedEstimateAttempted = true;
+                        try {
+                            stats = slicerService.sliceForOversizedEstimate(
+                                    slicerInputPath.toFile(),
+                                    profiles.machineProfileName(),
+                                    profiles.filamentProfileName(),
+                                    processProfile,
+                                    modelDimensions,
+                                    processOverrides
+                            );
+                            requiresSplitPrinting = true;
+                        } catch (Exception estimateFailure) {
+                            throw buildSplitCustomQuoteFailure(estimateFailure);
+                        }
+                    }
 
                     QuoteResult result = quoteCalculator.calculate(stats, machine.getPrinterDisplayName(), selectedVariant);
 
@@ -187,7 +213,7 @@ public class QuoteSessionItemService {
                             modelDimensions,
                             persistentPath,
                             convertedPersistentPath,
-                            false
+                            requiresSplitPrinting
                     );
 
                     return lineItemRepo.save(item);
@@ -279,6 +305,19 @@ public class QuoteSessionItemService {
 
     private boolean isModelReviewFailure(Exception exception) {
         return exception instanceof ModelProcessingException || exception instanceof IOException;
+    }
+
+    private boolean shouldEstimateOversizedSplit(PrintSettingsDto settings, ModelProcessingException exception) {
+        return Boolean.TRUE.equals(settings.getAllowSplitForOversized())
+                && "MODEL_OUT_OF_PRINT_VOLUME".equals(exception.getCode());
+    }
+
+    private ModelProcessingException buildSplitCustomQuoteFailure(Throwable cause) {
+        return new ModelProcessingException(
+                "MODEL_REQUIRES_CUSTOM_QUOTE",
+                "This model is too large for the automatic split-printing estimate. Please request a custom quote.",
+                cause
+        );
     }
 
     private QuoteLineItem buildReviewRequiredLineItem(QuoteSession session,

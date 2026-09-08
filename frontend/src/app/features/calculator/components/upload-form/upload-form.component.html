@@ -33,13 +33,24 @@
           <div
             class="file-card"
             [class.active]="item.file === selectedFile()"
+            [class.has-warning]="item.reviewLevel === 'warning'"
+            [class.has-error]="item.reviewLevel === 'error'"
             (click)="selectFile(item.file)"
           >
             <div class="card-header">
               <span class="file-name" [title]="item.file.name">{{
                 item.file.name
               }}</span>
+              @if (item.reviewLevel) {
+                <span class="review-badge">
+                  {{ "CALC.FILE_REVIEW_REQUIRED" | translate }}
+                </span>
+              }
             </div>
+
+            @if (item.reviewMessage) {
+              <p class="review-message">{{ item.reviewMessage }}</p>
+            }
 
             <div class="card-body">
               <div class="card-controls">

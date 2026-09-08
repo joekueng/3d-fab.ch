@@ -101,6 +101,20 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
         this.errorCode() === 'MODEL_OUT_OF_PRINT_VOLUME' ||
         this.errorCode() === 'MODEL_PROCESSING_FAILED'),
   );
+  isOutOfVolumeError = computed(
+    () => this.errorCode() === 'MODEL_OUT_OF_PRINT_VOLUME',
+  );
+  showSplitPrintingOption = computed(() => {
+    const result = this.result();
+
+    return (
+      this.errorCode() === 'MODEL_OUT_OF_PRINT_VOLUME' ||
+      (result?.failedItems || []).some(
+        (failure) => failure.code === 'MODEL_OUT_OF_PRINT_VOLUME',
+      ) ||
+      (result?.items || []).some((item) => item.requiresSplitPrinting === true)
+    );
+  });
   readonly faqIds = [
     'FILES',
     'MODE',
@@ -162,6 +176,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
   private baselineItemStates: TrackedPrintItemState[] = [];
   private pendingSessionRestore: PendingSessionRestore | null = null;
   private isRestoringQuoteState = false;
+  private restoreDraftWhenViewReady = false;
   private quoteStateVersion = 0;
 
   @ViewChild('uploadForm') uploadForm!: UploadFormComponent;
@@ -208,6 +223,9 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     this.applyPendingSessionRestoreIfNeeded();
 
     if (this.currentSessionId()) {
+      if (this.restoreDraftWhenViewReady) {
+        this.restorePendingDraftFallback();
+      }
       return;
     }
     const pendingDraft = this.estimator.consumePendingCalculatorDraft();
@@ -241,11 +259,15 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
         // 1. Map to Result
         const result = this.estimator.mapSessionToQuoteResult(data);
         if (this.isInvalidQuote(result)) {
-          const failure = result.failedItems?.[0];
+          const failure = result.failedItems?.[0] ?? {
+            fileName: data.items?.[0]?.originalFilename || '',
+            code: 'MODEL_PROCESSING_FAILED',
+            message: '',
+          };
           this.setQuoteError(
-            failure ? 'CALC.ERROR_GENERIC' : 'CALC.ERROR_ZERO_PRICE',
-            failure ? this.failureDisplayMessage(failure) : null,
-            failure?.code || null,
+            'CALC.ERROR_GENERIC',
+            this.failureDisplayMessage(failure),
+            failure.code || null,
           );
           this.restoreFilesAndSettings(data.session, data.items || []);
           return;
@@ -290,6 +312,8 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
   restoreFilesAndSettings(session: any, items: any[]) {
     const restoreStateVersion = this.quoteStateVersion;
     if (!items || items.length === 0) {
+      this.restoreDraftWhenViewReady = true;
+      this.restorePendingDraftFallback();
       this.loading.set(false);
       return;
     }
@@ -377,13 +401,8 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
           return;
         }
         console.error('Failed to download files', err);
-        const pendingDraft = this.estimator.consumePendingCalculatorDraft();
-        if (pendingDraft) {
-          this.uploadForm.restoreRequestDraft(pendingDraft.request, {
-            sameSettingsForAll: pendingDraft.sameSettingsForAll,
-            selectedFileName: pendingDraft.selectedFileName,
-          });
-        }
+        this.restoreDraftWhenViewReady = true;
+        this.restorePendingDraftFallback();
         this.loading.set(false);
         // Still show result? Yes.
       },
@@ -395,6 +414,11 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     this.quoteStateVersion += 1;
     this.pendingSessionRestore = null;
     this.currentRequest = req;
+    this.estimator.setPendingCalculatorDraft({
+      request: req,
+      sameSettingsForAll: this.uploadForm.sameSettingsForAll(),
+      selectedFileName: this.uploadForm.selectedFile()?.name ?? null,
+    });
     this.loading.set(true);
     this.uploadProgress.set(0);
     this.clearQuoteErrorState();
@@ -421,7 +445,17 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
           // It's the result
           const res = event as QuoteResult;
           if (this.isInvalidQuote(res)) {
-            this.setQuoteError('CALC.ERROR_ZERO_PRICE');
+            const failure = res.failedItems?.[0] ?? {
+              fileName: req.items[0]?.file.name || '',
+              code: 'MODEL_PROCESSING_FAILED',
+              message: '',
+            };
+            this.setQuoteError(
+              'CALC.ERROR_GENERIC',
+              this.failureDisplayMessage(failure),
+              failure.code,
+            );
+            this.applyFailureStates([failure]);
             this.loading.set(false);
             return;
           }
@@ -430,6 +464,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
           this.warningMessage.set(
             this.buildPartialFailureMessage(res.failedItems || []),
           );
+          this.applyFailureStates(res.failedItems || []);
           this.result.set(res);
           this.baselinePrintSettings = this.toTrackedSettingsFromRequest(req);
           this.baselineItemStates =
@@ -463,8 +498,12 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
         }
       },
       error: (err) => {
-        const failure = this.normalizeCalculationFailure(err);
-        if (failure?.sessionId) {
+        const failure = this.normalizeCalculationFailure(err) ?? {
+          fileName: req.items[0]?.file.name || '',
+          code: 'MODEL_PROCESSING_FAILED',
+          message: '',
+        };
+        if (failure.sessionId) {
           this.router.navigate([], {
             relativeTo: this.route,
             queryParams: { session: failure.sessionId },
@@ -474,9 +513,10 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
         }
         this.setQuoteError(
           'CALC.ERROR_GENERIC',
-          failure ? this.failureDisplayMessage(failure) : null,
-          failure?.code || null,
+          this.failureDisplayMessage(failure),
+          failure.code || null,
         );
+        this.applyFailureStates([failure]);
         this.loading.set(false);
       },
     });
@@ -896,7 +936,29 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
             filamentVariantId: item.filamentVariantId,
           });
         }
+        if (item.status === 'REVIEW_REQUIRED') {
+          const failure: QuoteCalculationFailure = {
+            fileName: item.originalFilename || '',
+            code: item.errorCode,
+            message: item.errorMessage || '',
+          };
+          this.uploadForm.setItemReviewStateByIndex(
+            index,
+            item.errorCode === 'MODEL_OUT_OF_PRINT_VOLUME'
+              ? 'warning'
+              : 'error',
+            this.failureDisplayMessage(failure),
+          );
+        }
       });
+
+      this.uploadForm.setAcceptSplitPrinting(
+        payload.items.some(
+          (item) =>
+            item.status !== 'REVIEW_REQUIRED' &&
+            Boolean(item.requiresSplitPrinting),
+        ),
+      );
 
       const selected = payload.files[payload.files.length - 1] ?? null;
       if (selected) {
@@ -917,7 +979,30 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
       this.clearQuoteErrorState();
     }
     this.estimator.setPendingCalculatorDraft(null);
+    this.restoreDraftWhenViewReady = false;
     this.pendingSessionRestore = null;
+  }
+
+  private restorePendingDraftFallback(): void {
+    if (!this.uploadForm) return;
+    const pendingDraft = this.estimator.consumePendingCalculatorDraft();
+    if (!pendingDraft) return;
+    this.uploadForm.restoreRequestDraft(pendingDraft.request, {
+      sameSettingsForAll: pendingDraft.sameSettingsForAll,
+      selectedFileName: pendingDraft.selectedFileName,
+    });
+    this.restoreDraftWhenViewReady = false;
+  }
+
+  private applyFailureStates(failures: QuoteCalculationFailure[]): void {
+    if (!this.uploadForm) return;
+    failures.forEach((failure) => {
+      this.uploadForm.setItemReviewStateByName(
+        failure.fileName,
+        failure.code === 'MODEL_OUT_OF_PRINT_VOLUME' ? 'warning' : 'error',
+        this.failureDisplayMessage(failure),
+      );
+    });
   }
 
   private toTrackedSettingsFromRequest(
