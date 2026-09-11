@@ -299,11 +299,7 @@
     }
   </div>
 
-  <app-input
-    formControlName="notes"
-    [label]="'CALC.NOTES' | translate"
-    [placeholder]="'CALC.NOTES_PLACEHOLDER' | translate"
-  ></app-input>
+  <app-order-information [models]="informationModels" />
 
   <div class="actions">
     @if (loading() && uploadProgress() < 100) {
@@ -316,7 +312,7 @@
 
     <app-button
       type="submit"
-      [disabled]="items().length === 0 || loading()"
+      [disabled]="items().length === 0 || loading() || informationService.busy()"
       [fullWidth]="true"
     >
       {{

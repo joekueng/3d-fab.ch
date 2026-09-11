@@ -1438,5 +1438,37 @@
       "MATTE_WHITE": "Blanc mat",
       "MATTE_GRAY": "Gris mat"
     }
+  },
+  "INFORMATION": {
+    "TITLE": "Instructions et pièces jointes",
+    "OPTIONAL": "— Facultatif",
+    "ALL_MODELS": "Toutes les pièces",
+    "SUMMARY": "{{notes}} · {{files}}",
+    "NEW": "Nouvelles informations",
+    "DOWNLOAD": "Télécharger",
+    "MARK_READ": "Marquer comme lu",
+    "CLOSE": "Fermer",
+    "ADD": "Ajouter des informations",
+    "EDIT": "Modifier",
+    "ADD_EMPTY": "Ajouter des instructions ou des pièces jointes",
+    "TEXT": "Instructions",
+    "PLACEHOLDER": "Orientation, paramètres souhaités et exigences particulières…",
+    "AFTER_ORDER_HINT": "Nous vous contacterons en cas de problème avec vos demandes. Les instructions ajoutées après la commande pourraient ne pas être applicables si l’impression a déjà commencé.",
+    "MODEL": "Concerne",
+    "UPLOAD": "Importer des photos ou des PDF",
+    "LIMITS": "JPEG, PNG ou PDF : maximum 10 Mo par fichier, 10 pièces jointes et 30 Mo au total.",
+    "REMOVE": "Supprimer",
+    "SAVE": "Enregistrer",
+    "ADDED": "Informations ajoutées à la commande",
+    "SAVED": "Instructions et pièces jointes enregistrées",
+    "SAVE_ERROR": "Enregistrement impossible. Réessayez avant de continuer.",
+    "ACCESS_ERROR": "Pour accéder aux informations, ouvrez le lien reçu dans la confirmation de commande ou utilisez le navigateur avec lequel vous avez créé le devis.",
+    "TEXT_LIMIT": "Le texte ne doit pas dépasser 5000 caractères.",
+    "COPY_LINK": "Copier le lien client",
+    "NOTE": "note",
+    "NOTES": "notes",
+    "FILE": "pièce jointe",
+    "FILES": "pièces jointes",
+    "MODEL_REMOVED": "Le modèle indiqué ne figure plus parmi les pièces. Choisissez un autre modèle ou toutes les pièces."
   }
 }

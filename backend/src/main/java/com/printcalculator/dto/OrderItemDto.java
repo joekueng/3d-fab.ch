@@ -4,6 +4,10 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 public class OrderItemDto {
+    @jakarta.validation.constraints.Size(max = 100)
+    private String clientModelKey;
+    public String getClientModelKey() { return clientModelKey; }
+    public void setClientModelKey(String key) { clientModelKey = key; }
     private UUID id;
     private String itemType;
     private String originalFilename;

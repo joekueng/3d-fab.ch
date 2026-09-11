@@ -31,6 +31,7 @@ public class OrderService {
     private static final Path QUOTE_STORAGE_ROOT = Paths.get("storage_quotes").toAbsolutePath().normalize();
     private static final String SHOP_LINE_ITEM_TYPE = "SHOP_PRODUCT";
 
+    private final com.printcalculator.service.information.OrderInformationService informationService;
     private final OrderRepository orderRepo;
     private final OrderItemRepository orderItemRepo;
     private final QuoteSessionRepository quoteSessionRepo;
@@ -55,7 +56,9 @@ public class OrderService {
                         ApplicationEventPublisher eventPublisher,
                         PaymentService paymentService,
                         QuoteSessionTotalsService quoteSessionTotalsService,
-                        MaterialPrintCompatibilityService materialPrintCompatibilityService) {
+                        MaterialPrintCompatibilityService materialPrintCompatibilityService,
+                        com.printcalculator.service.information.OrderInformationService informationService) {
+        this.informationService = informationService;
         this.orderRepo = orderRepo;
         this.orderItemRepo = orderItemRepo;
         this.quoteSessionRepo = quoteSessionRepo;
@@ -79,6 +82,11 @@ public class OrderService {
         QuoteSession session = quoteSessionRepo.findById(quoteSessionId)
                 .orElseThrow(() -> new RuntimeException("Quote Session not found"));
 
+        if (session.getInformationDraftId() == null && request.getInformationDraftId() != null) {
+            informationService.link(session, new com.printcalculator.dto.InformationDto.DraftLink(request.getInformationDraftId(), request.getInformationToken()));
+        }
+        informationService.validateCheckout(session, request.getInformationToken());
+
         if (session.getConvertedOrderId() != null) {
             throw new IllegalStateException("Quote session already converted to order");
         }
@@ -87,6 +95,7 @@ public class OrderService {
         quoteItems = quoteItems.stream()
                 .filter(item -> !"REVIEW_REQUIRED".equalsIgnoreCase(item.getStatus()))
                 .toList();
+        informationService.validateModelsForCheckout(session, quoteItems);
         if (quoteItems.isEmpty() && quoteSessionTotalsService.calculateCadTotal(session).compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalStateException("Quote session has no orderable items");
         }
@@ -209,6 +218,7 @@ public class OrderService {
             oItem.setOrder(order);
             oItem.setItemType(qItem.getLineItemType() != null ? qItem.getLineItemType() : "PRINT_FILE");
             oItem.setOriginalFilename(qItem.getOriginalFilename());
+            oItem.setClientModelKey(qItem.getClientModelKey() != null ? qItem.getClientModelKey() : qItem.getId() == null ? null : qItem.getId().toString());
             oItem.setDisplayName(
                     qItem.getDisplayName() != null && !qItem.getDisplayName().isBlank()
                             ? qItem.getDisplayName()

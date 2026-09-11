@@ -36,7 +36,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = {AdminAuthController.class, AdminOrderController.class})
+@WebMvcTest(controllers = {AdminAuthController.class, AdminOrderController.class, AdminOrderInformationController.class})
 @Import({
         CorsConfig.class,
         AllowedOriginService.class,
@@ -61,6 +61,24 @@ class AdminOrderControllerSecurityTest {
 
     @MockitoBean
     private AdminOrderControllerService adminOrderControllerService;
+
+    @MockitoBean
+    private com.printcalculator.service.information.OrderInformationService informationService;
+
+    @Test void informationWithoutAdminSessionIsRejected() throws Exception {
+        mockMvc.perform(get("/api/admin/orders/information-unread")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/admin/orders/{id}/information/files/{file}", UUID.randomUUID(), UUID.randomUUID())).andExpect(status().isUnauthorized());
+    }
+    @Test void informationReadAcknowledgementRequiresTrustedOrigin() throws Exception {
+        mockMvc.perform(post("/api/admin/orders/{id}/information/read", UUID.randomUUID()).cookie(loginAndExtractCookie())
+                .contentType(MediaType.APPLICATION_JSON).content("{\"entries\":[]}"))
+                .andExpect(status().isForbidden());
+    }
+    @Test void informationReadAcknowledgementAcceptsAuthenticatedSameOriginRequest() throws Exception {
+        mockMvc.perform(post("/api/admin/orders/{id}/information/read", UUID.randomUUID()).cookie(loginAndExtractCookie())
+                .header(HttpHeaders.ORIGIN, ALLOWED_ORIGIN).contentType(MediaType.APPLICATION_JSON).content("{\"entries\":[]}"))
+                .andExpect(status().isOk());
+    }
 
     @Test
     void confirmationDocument_withoutAdminCookie_shouldReturn401() throws Exception {

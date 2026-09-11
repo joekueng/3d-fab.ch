@@ -80,6 +80,9 @@ class OrderServiceTest {
     @Mock
     private MaterialPrintCompatibilityService materialPrintCompatibilityService;
 
+    @Mock
+    private com.printcalculator.service.information.OrderInformationService informationService;
+
     @InjectMocks
     private OrderService service;
 

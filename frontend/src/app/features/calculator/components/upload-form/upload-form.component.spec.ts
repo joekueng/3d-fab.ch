@@ -1,3 +1,5 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -54,7 +56,7 @@ describe('UploadFormComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [UploadFormComponent, TranslateModule.forRoot()],
-      providers: [
+      providers: [provideHttpClient(), provideHttpClientTesting(),
         {
           provide: QuoteEstimatorService,
           useValue: { getOptions: () => of(options) },

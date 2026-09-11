@@ -5,10 +5,12 @@ import {
   HttpEventType,
   HttpResponse,
 } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Observable, of, from, switchMap, tap } from 'rxjs';
+import { OrderInformationService } from '../../order-information/order-information.service';
 import { environment } from '../../../../environments/environment';
 
 export interface QuoteRequestItem {
+  clientModelKey?: string;
   file: File;
   quantity: number;
   material?: string;
@@ -153,6 +155,7 @@ export interface SimpleOption {
 })
 export class QuoteEstimatorService {
   private http = inject(HttpClient);
+  private information = inject(OrderInformationService);
 
   private pendingConsultation = signal<{
     files: File[];
@@ -172,12 +175,12 @@ export class QuoteEstimatorService {
 
   getQuoteSession(sessionId: string): Observable<any> {
     const headers: any = {};
-    return this.http.get(
+    return this.http.get<{ session: { informationDraftId?: string; notes?: string } }>(
       `${environment.apiUrl}/api/quote-sessions/${sessionId}`,
       {
         headers,
       },
-    );
+    ).pipe(switchMap(data => from(this.information.useDraft(data.session.informationDraftId, data.session.notes, sessionId)).pipe(switchMap(() => of(data)))));
   }
 
   updateLineItem(lineItemId: string, changes: any): Observable<any> {
@@ -202,11 +205,11 @@ export class QuoteEstimatorService {
 
   createOrder(sessionId: string, orderDetails: any): Observable<any> {
     const headers: any = {};
-    return this.http.post(
+    return from(this.information.saveDraft()).pipe(switchMap(credential => this.http.post<{ id: string; informationToken?: string }>(
       `${environment.apiUrl}/api/orders/from-quote/${sessionId}`,
-      orderDetails,
+      { ...orderDetails, informationToken: credential.token, informationDraftId: credential.id },
       { headers },
-    );
+    )), tap(order => { if (order.informationToken) this.information.rememberOrder(order.id, order.informationToken); this.information.resetDraft(); }));
   }
 
   getOrder(orderId: string): Observable<any> {
@@ -267,6 +270,10 @@ export class QuoteEstimatorService {
   }
 
   calculate(request: QuoteRequest): Observable<number | QuoteResult> {
+    return from(this.information.saveDraft()).pipe(switchMap(() => this.calculateWithInformation(request)));
+  }
+
+  private calculateWithInformation(request: QuoteRequest): Observable<number | QuoteResult> {
     if (!request.items || request.items.length === 0) {
       return of(0);
     }
@@ -275,7 +282,7 @@ export class QuoteEstimatorService {
       const headers: any = {};
 
       this.http
-        .post<any>(`${environment.apiUrl}/api/quote-sessions`, {}, { headers })
+        .post<any>(`${environment.apiUrl}/api/quote-sessions`, { information: this.information.draftCredential() }, { headers })
         .subscribe({
           next: (sessionRes) => {
             const sessionId = String(sessionRes?.id || '');
@@ -639,6 +646,7 @@ export class QuoteEstimatorService {
         : null;
 
     return {
+      clientModelKey: item.clientModelKey,
       complexityMode: request.mode === 'easy' ? 'BASIC' : 'ADVANCED',
       quantity: this.normalizeQuantity(item.quantity),
       material: String(item.material || request.material || 'PLA'),

@@ -5,6 +5,7 @@ import { environment } from '../../../../environments/environment';
 import { AdminEmailLog } from './admin-email-log.model';
 
 export interface AdminOrderItem {
+  clientModelKey?: string;
   id: string;
   itemType: string;
   originalFilename: string;
@@ -126,6 +127,12 @@ export class AdminOrdersService {
 
   getOrder(orderId: string): Observable<AdminOrder> {
     return this.http.get<AdminOrder>(`${this.baseUrl}/${orderId}`, {
+      withCredentials: true,
+    });
+  }
+
+  getUnreadInformation(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.baseUrl}/information-unread`, {
       withCredentials: true,
     });
   }

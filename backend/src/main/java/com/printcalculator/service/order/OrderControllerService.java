@@ -74,7 +74,9 @@ public class OrderControllerService {
     public OrderDto createOrderFromQuote(UUID quoteSessionId, CreateOrderRequest request) {
         Order order = orderService.createOrderFromQuote(quoteSessionId, request);
         List<OrderItem> items = orderItemRepo.findByOrder_Id(order.getId());
-        return convertToDto(order, items);
+        OrderDto dto = convertToDto(order, items);
+        dto.setInformationToken(order.getInformationToken());
+        return dto;
     }
 
     public Optional<OrderDto> getOrder(UUID orderId) {
@@ -228,6 +230,7 @@ public class OrderControllerService {
             itemDto.setId(item.getId());
             itemDto.setItemType(item.getItemType() != null ? item.getItemType() : "PRINT_FILE");
             itemDto.setOriginalFilename(item.getOriginalFilename());
+            itemDto.setClientModelKey(item.getClientModelKey());
             itemDto.setDisplayName(
                     item.getDisplayName() != null && !item.getDisplayName().isBlank()
                             ? item.getDisplayName()

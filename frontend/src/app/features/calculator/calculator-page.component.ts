@@ -980,6 +980,9 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
           return;
         }
 
+        if ((item.clientModelKey || item.id) && this.uploadForm.items?.update) {
+          this.uploadForm.items.update(items => items.map((entry, i) => i === index ? { ...entry, clientKey: item.clientModelKey || item.id } : entry));
+        }
         // Preserve persisted quantities when restoring from session.
         // Without this, setFiles() defaults every item back to 1.
         this.uploadForm.updateItemQuantityByIndex(

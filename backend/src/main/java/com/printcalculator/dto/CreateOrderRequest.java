@@ -8,6 +8,9 @@ public class CreateOrderRequest {
     @jakarta.validation.constraints.DecimalMin("0.00")
     @jakarta.validation.constraints.Digits(integer = 10, fraction = 2)
     private java.math.BigDecimal expectedShippingCostChf;
+    @jakarta.validation.constraints.Size(max = 100)
+    private String informationToken;
+    private java.util.UUID informationDraftId;
     private CustomerDto customer;
     private AddressDto billingAddress;
     private AddressDto shippingAddress;

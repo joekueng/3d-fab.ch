@@ -1667,3 +1667,18 @@ ALTER TABLE orders
 ALTER TABLE orders
     ADD CONSTRAINT fk_orders_source_request
         FOREIGN KEY (source_request_id) REFERENCES custom_quote_requests (request_id);
+
+-- Private order instructions and attachments (additive; Hibernate ddl-auto=update creates these too).
+ALTER TABLE quote_sessions ADD COLUMN IF NOT EXISTS information_draft_id uuid;
+ALTER TABLE quote_line_items ADD COLUMN IF NOT EXISTS client_model_key varchar(100);
+ALTER TABLE order_items ADD COLUMN IF NOT EXISTS client_model_key varchar(100);
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS information_token varchar(100);
+CREATE TABLE IF NOT EXISTS order_information (
+    id uuid PRIMARY KEY,
+    order_id uuid UNIQUE,
+    access_token varchar(255) NOT NULL,
+    expires_at timestamptz,
+    entries jsonb NOT NULL,
+    unread_count integer NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS ix_information_expiry ON order_information(expires_at);
