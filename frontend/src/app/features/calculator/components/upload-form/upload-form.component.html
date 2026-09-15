@@ -299,8 +299,6 @@
     }
   </div>
 
-  <app-order-information [models]="informationModels" />
-
   <div class="actions">
     @if (loading() && uploadProgress() < 100) {
       <div class="progress-container">
@@ -312,7 +310,7 @@
 
     <app-button
       type="submit"
-      [disabled]="items().length === 0 || loading() || informationService.busy()"
+      [disabled]="items().length === 0 || loading()"
       [fullWidth]="true"
     >
       {{

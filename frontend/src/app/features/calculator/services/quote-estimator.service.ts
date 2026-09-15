@@ -47,6 +47,7 @@ export interface PendingCalculatorDraft {
 
 export interface QuoteItem {
   id?: string;
+  clientModelKey?: string;
   fileName: string;
   unitPrice: number;
   unitTime: number;
@@ -594,6 +595,7 @@ export class QuoteEstimatorService {
       shippingQuote: sessionData?.shippingQuote,
       items: items.map((item: any) => ({
         id: item?.id,
+        clientModelKey: item?.clientModelKey,
         fileName: item?.originalFilename,
         unitPrice: Number(item?.unitPriceChf || 0),
         unitTime: Number(item?.printTimeSeconds || 0),

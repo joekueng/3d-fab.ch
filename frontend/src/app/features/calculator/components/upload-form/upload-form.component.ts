@@ -1,5 +1,3 @@
-import { OrderInformationComponent } from '../../../order-information/order-information.component';
-import { OrderInformationService, InformationModel } from '../../../order-information/order-information.service';
 import {
   Component,
   input,
@@ -56,7 +54,6 @@ import {
   selector: 'app-upload-form',
   standalone: true,
   imports: [
-    OrderInformationComponent,
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,
@@ -94,8 +91,6 @@ export class UploadFormComponent implements OnInit {
     supportEnabled: boolean;
   }>();
 
-  readonly informationService = inject(OrderInformationService);
-  get informationModels(): InformationModel[] { return this.items().map((item, index) => ({ label: `${index + 1}. ${item.file.name}`, value: item.clientKey })); }
   private estimator = inject(QuoteEstimatorService);
   private fb = inject(FormBuilder);
   private translate = inject(TranslateService);

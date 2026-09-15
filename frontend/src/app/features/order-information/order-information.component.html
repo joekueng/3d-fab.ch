@@ -1,4 +1,4 @@
-<app-card>
+<app-card [bodyPadding]="compact() ? 'var(--space-3)' : ''">
   <h3>{{ 'INFORMATION.TITLE' | translate }} @if (!orderId()) { <span>{{ 'INFORMATION.OPTIONAL' | translate }}</span> }</h3>
   @if (!orderId()) { <p>{{ summary }}</p> }
   @if (!orderId() && review() && !expanded()) {
@@ -51,9 +51,9 @@
         <app-textarea [(ngModel)]="text" [ngModelOptions]="{standalone: true}" [label]="'INFORMATION.TEXT' | translate" [placeholder]="'INFORMATION.PLACEHOLDER' | translate" [disabled]="disabled" [rows]="4" />
         @if (orderId()) { <p class="ui-copy-subtitle">{{ 'INFORMATION.AFTER_ORDER_HINT' | translate }}</p> }
         @if (models().length > 1 || model) { <app-select [(ngModel)]="model" [ngModelOptions]="{standalone: true}" [options]="modelOptions" [label]="'INFORMATION.MODEL' | translate" [disabled]="disabled" /> }
-        <label class="ui-file-picker">
-          <span>{{ 'INFORMATION.UPLOAD' | translate }}</span>
+        <label class="ui-file-picker drop-zone">
           <input class="information-file-input" type="file" accept="image/jpeg,image/png,application/pdf" multiple [disabled]="disabled" (change)="choose($event)" />
+          <p>{{ 'INFORMATION.UPLOAD' | translate }}</p>
         </label>
         <p class="ui-copy-subtitle">{{ 'INFORMATION.LIMITS' | translate }}</p>
         <div class="attachments">

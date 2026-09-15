@@ -20,6 +20,7 @@ export class OrderInformationComponent implements OnChanges, OnDestroy {
   orderId = input<string | null>(null);
   admin = input(false);
   review = input(false);
+  compact = input(false);
   models = input<InformationModel[]>([]);
   read = output<void>();
   readonly information = signal<Information | null>(null);

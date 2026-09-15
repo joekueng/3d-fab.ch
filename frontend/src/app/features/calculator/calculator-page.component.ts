@@ -31,6 +31,8 @@ import {
 import { SuccessStateComponent } from '../../shared/components/success-state/success-state.component';
 import { Router, ActivatedRoute } from '@angular/router';
 import { LanguageService } from '../../core/services/language.service';
+import { OrderInformationComponent } from '../order-information/order-information.component';
+import { InformationModel } from '../order-information/order-information.service';
 
 type TrackedPrintSettings = {
   mode: 'easy' | 'advanced';
@@ -72,6 +74,7 @@ type PendingSessionRestore = {
     UploadFormComponent,
     QuoteResultComponent,
     SuccessStateComponent,
+    OrderInformationComponent,
   ],
   templateUrl: './calculator-page.component.html',
   styleUrl: './calculator-page.component.scss',
@@ -90,6 +93,12 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
   errorMessage = signal<string | null>(null);
   errorCode = signal<string | null>(null);
   warningMessage = signal<string | null>(null);
+  get informationModels(): InformationModel[] {
+    return (this.result()?.items || []).map((item, index) => ({
+      label: `${index + 1}. ${item.fileName}`,
+      value: item.clientModelKey || item.id || item.fileName,
+    }));
+  }
   showErrorAlert = computed(() => this.error() && !this.result());
   isZeroQuoteError = computed(
     () => this.error() && this.errorKey() === 'CALC.ERROR_ZERO_PRICE',
