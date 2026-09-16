@@ -8,6 +8,7 @@ import java.util.UUID;
 /** Public session snapshot, materialized inside the transaction without Hibernate proxies. */
 public record QuoteSessionDto(
         UUID id,
+        UUID informationDraftId,
         String status,
         String sessionType,
         String pricingVersion,
@@ -28,6 +29,7 @@ public record QuoteSessionDto(
     public static QuoteSessionDto from(QuoteSession session) {
         return new QuoteSessionDto(
                 session.getId(),
+                session.getInformationDraftId(),
                 session.getStatus(),
                 session.getSessionType(),
                 session.getPricingVersion(),

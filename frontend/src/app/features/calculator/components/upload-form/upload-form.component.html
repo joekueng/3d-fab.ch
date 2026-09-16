@@ -299,12 +299,6 @@
     }
   </div>
 
-  <app-input
-    formControlName="notes"
-    [label]="'CALC.NOTES' | translate"
-    [placeholder]="'CALC.NOTES_PLACEHOLDER' | translate"
-  ></app-input>
-
   <div class="actions">
     @if (loading() && uploadProgress() < 100) {
       <div class="progress-container">

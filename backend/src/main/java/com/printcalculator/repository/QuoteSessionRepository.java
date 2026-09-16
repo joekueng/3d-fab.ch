@@ -11,6 +11,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface QuoteSessionRepository extends JpaRepository<QuoteSession, UUID> {
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("select s from QuoteSession s where s.id = :id")
+    Optional<QuoteSession> findLockedById(@Param("id") UUID id);
+
     List<QuoteSession> findByExpiresAtBefore(java.time.OffsetDateTime cutoff);
 
     List<QuoteSession> findByStatusInOrderByCreatedAtDesc(List<String> statuses);

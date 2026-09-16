@@ -18,6 +18,13 @@ public class Order {
     public java.util.Map<String, Object> getShippingQuoteSnapshot() { return shippingQuoteSnapshot; }
     public void setShippingQuoteSnapshot(java.util.Map<String, Object> value) { shippingQuoteSnapshot = value; }
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    @Column(name = "information_token", length = 100)
+    private String informationToken = com.printcalculator.service.information.OrderInformationService.newToken();
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public String getInformationToken() { return informationToken; }
+    public void setInformationToken(String token) { informationToken = token; }
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "order_id", nullable = false)

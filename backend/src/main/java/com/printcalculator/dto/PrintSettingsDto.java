@@ -1,6 +1,10 @@
 package com.printcalculator.dto;
 
 public class PrintSettingsDto {
+    @jakarta.validation.constraints.Size(max = 100)
+    private String clientModelKey;
+    public String getClientModelKey() { return clientModelKey; }
+    public void setClientModelKey(String key) { clientModelKey = key; }
     // Mode: "BASIC" or "ADVANCED"
     private String complexityMode;
     

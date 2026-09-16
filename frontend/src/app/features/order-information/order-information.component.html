@@ -1,0 +1,241 @@
+<app-card [bodyPadding]="compact() ? 'var(--space-3)' : ''">
+  <h3>
+    {{ "INFORMATION.TITLE" | translate }}
+    @if (!orderId()) {
+      <span>{{ "INFORMATION.OPTIONAL" | translate }}</span>
+    }
+  </h3>
+  @if (!orderId()) {
+    <p class="ui-form-hint">{{ summary }}</p>
+  }
+  @if (!orderId() && review() && !expanded()) {
+    <p class="instruction-text">{{ text }}</p>
+    @if (model) {
+      <p>{{ service.modelName() }}</p>
+    }
+    <div class="attachments">
+      @for (file of attachments; track file.id) {
+        <div class="attachment ui-subpanel">
+          @if (previews()[file.id]) {
+            <img [src]="previews()[file.id]" [alt]="file.name" />
+          }
+          <span
+            >{{ file.name }} · {{ file.size / 1024 | number: "1.0-0" }} KB</span
+          >
+          <app-button
+            type="button"
+            variant="secondary"
+            (click)="download(file)"
+            >{{ "INFORMATION.DOWNLOAD" | translate }}</app-button
+          >
+        </div>
+      }
+      @for (file of files; track file) {
+        <div class="attachment ui-subpanel">
+          @if (file.type.startsWith("image/")) {
+            <img [src]="preview(file)" [alt]="file.name" />
+          }
+          <span
+            >{{ file.name }} · {{ file.size / 1024 | number: "1.0-0" }} KB</span
+          >
+        </div>
+      }
+    </div>
+  }
+  @for (entry of information()?.entries || []; track entry.id) {
+    <section class="ui-subpanel information-entry">
+      <div class="entry-meta">
+        <time [attr.datetime]="entry.createdAt">{{
+          entry.createdAt | date: "dd.MM.yyyy HH:mm"
+        }}</time>
+        @if (admin() && !entry.readAt) {
+          <strong>{{ "INFORMATION.NEW" | translate }}</strong>
+        }
+      </div>
+      <p>{{ modelLabel(entry) }}</p>
+      <p class="instruction-text">{{ entry.text }}</p>
+      <div class="attachments">
+        @for (file of entry.attachments; track file.id) {
+          <div class="attachment ui-subpanel">
+            @if (previews()[file.id]) {
+              <img [src]="previews()[file.id]" [alt]="file.name" />
+            }
+            <span
+              >{{ file.name }} ·
+              {{ file.size / 1024 | number: "1.0-0" }} KB</span
+            >
+            <app-button
+              type="button"
+              variant="secondary"
+              (click)="download(file)"
+              >{{ "INFORMATION.DOWNLOAD" | translate }}</app-button
+            >
+          </div>
+        }
+      </div>
+    </section>
+  }
+  @if (admin()) {
+    @if (customerLink()) {
+      <app-button
+        type="button"
+        variant="secondary"
+        [appCopyOnClick]="customerLink()"
+        >{{ "INFORMATION.COPY_LINK" | translate }}</app-button
+      >
+    }
+    @if (hasUnread()) {
+      <app-button type="button" [disabled]="disabled" (click)="markRead()">{{
+        "INFORMATION.MARK_READ" | translate
+      }}</app-button>
+    }
+  } @else {
+    @if (!expanded()) {
+      <app-button
+        type="button"
+        variant="secondary"
+        [disabled]="disabled"
+        (click)="toggle()"
+        [attr.aria-expanded]="false"
+      >
+        {{
+          (orderId()
+            ? "INFORMATION.ADD"
+            : text || attachments.length || files.length
+              ? "INFORMATION.EDIT"
+              : "INFORMATION.ADD_EMPTY"
+          ) | translate
+        }}
+      </app-button>
+    }
+    @if (expanded()) {
+      <div class="information-editor">
+        <app-textarea
+          [(ngModel)]="text"
+          [ngModelOptions]="{ standalone: true }"
+          [label]="'INFORMATION.TEXT' | translate"
+          [placeholder]="'INFORMATION.PLACEHOLDER' | translate"
+          [disabled]="disabled"
+          [rows]="4"
+        />
+        @if (orderId()) {
+          <p class="ui-copy-subtitle">
+            {{ "INFORMATION.AFTER_ORDER_HINT" | translate }}
+          </p>
+        }
+        @if (models().length > 1 || model) {
+          <app-select
+            [(ngModel)]="model"
+            [ngModelOptions]="{ standalone: true }"
+            [options]="modelOptions"
+            [label]="'INFORMATION.MODEL' | translate"
+            [disabled]="disabled"
+          />
+        }
+        <div class="ui-form-group">
+          <span class="ui-form-label">{{
+            "CONTACT.UPLOAD_LABEL" | translate
+          }}</span>
+          <p class="ui-form-hint">{{ "INFORMATION.LIMITS" | translate }}</p>
+          <p class="ui-form-hint ui-upload-privacy-note">
+            {{ "LEGAL.CONSENT.UPLOAD_NOTICE_PREFIX" | translate }}
+            <a
+              [href]="languageService.localizedPath('/privacy')"
+              target="_blank"
+              rel="noopener"
+              >{{ "LEGAL.CONSENT.UPLOAD_NOTICE_LINK" | translate }}</a
+            >.
+          </p>
+          <label class="ui-upload-zone">
+            <input
+              class="information-file-input"
+              type="file"
+              accept="image/jpeg,image/png,application/pdf"
+              multiple
+              [attr.aria-label]="'CONTACT.UPLOAD_LABEL' | translate"
+              [disabled]="disabled"
+              (change)="choose($event)"
+            />
+            <p>{{ "CONTACT.DROP_FILES" | translate }}</p>
+          </label>
+          @if (attachments.length || files.length) {
+            <div class="attachments">
+              @for (file of attachments; track file.id) {
+                <div class="attachment ui-subpanel">
+                  @if (previews()[file.id]) {
+                    <img [src]="previews()[file.id]" [alt]="file.name" />
+                  }
+                  <span
+                    >{{ file.name }} ·
+                    {{ file.size / 1024 | number: "1.0-0" }} KB</span
+                  >
+                  <app-button
+                    type="button"
+                    variant="secondary"
+                    [disabled]="disabled"
+                    (click)="removeAttachment(file.id)"
+                    >{{ "INFORMATION.REMOVE" | translate }}</app-button
+                  >
+                </div>
+              }
+              @for (file of files; track file) {
+                <div class="attachment ui-subpanel">
+                  @if (file.type.startsWith("image/")) {
+                    <img [src]="preview(file)" [alt]="file.name" />
+                  }
+                  <span
+                    >{{ file.name }} ·
+                    {{ file.size / 1024 | number: "1.0-0" }} KB</span
+                  >
+                  <app-button
+                    type="button"
+                    variant="secondary"
+                    [disabled]="disabled"
+                    (click)="removeFile(file)"
+                    >{{ "INFORMATION.REMOVE" | translate }}</app-button
+                  >
+                </div>
+              }
+            </div>
+          }
+        </div>
+        <div class="ui-actions ui-actions--end">
+          <app-button
+            type="button"
+            variant="secondary"
+            [disabled]="disabled"
+            (click)="toggle()"
+            [attr.aria-expanded]="true"
+            >{{ "INFORMATION.CLOSE" | translate }}</app-button
+          >
+          <app-button
+            type="button"
+            [disabled]="
+              disabled ||
+              text.length > 5000 ||
+              missingModel ||
+              (!!orderId() && !text.trim() && !files.length)
+            "
+            (click)="save()"
+            >{{ "INFORMATION.SAVE" | translate }}</app-button
+          >
+        </div>
+      </div>
+    }
+  }
+  @if (missingModel && expanded()) {
+    <p class="ui-form-error" role="alert">
+      {{ "INFORMATION.MODEL_REMOVED" | translate }}
+    </p>
+  }
+  @if (confirmation()) {
+    <p role="status">
+      {{ (orderId() ? "INFORMATION.ADDED" : "INFORMATION.SAVED") | translate }}
+    </p>
+  }
+  @if (error() || (!orderId() && service.error())) {
+    <p class="ui-form-error" role="alert">
+      {{ error() || "INFORMATION.SAVE_ERROR" | translate }}
+    </p>
+  }
+</app-card>

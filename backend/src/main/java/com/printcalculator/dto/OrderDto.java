@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.UUID;
 
 public class OrderDto {
+    private String informationToken;
+    public String getInformationToken() { return informationToken; }
+    public void setInformationToken(String token) { informationToken = token; }
     private UUID id;
     private String orderNumber;
     private String sourceType;

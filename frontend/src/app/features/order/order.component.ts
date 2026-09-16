@@ -1,3 +1,8 @@
+import { OrderInformationComponent } from '../order-information/order-information.component';
+import {
+  OrderInformationService,
+  InformationModel,
+} from '../order-information/order-information.service';
 import { Component, OnInit, PLATFORM_ID, inject, signal } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -17,6 +22,7 @@ import {
 import { downloadBlobInBrowser } from '../../core/utils/browser-download';
 
 interface PublicOrderItem {
+  clientModelKey?: string;
   id: string;
   itemType?: string;
   originalFilename?: string;
@@ -78,6 +84,7 @@ interface PublicOrder {
   selector: 'app-order',
   standalone: true,
   imports: [
+    OrderInformationComponent,
     CommonModule,
     AppButtonComponent,
     AppCardComponent,
@@ -88,6 +95,13 @@ interface PublicOrder {
   styleUrl: './order.component.scss',
 })
 export class OrderComponent implements OnInit {
+  readonly informationService = inject(OrderInformationService);
+  get informationModels(): InformationModel[] {
+    return (this.order()?.items || []).map((item, index) => ({
+      label: `${index + 1}. ${item.originalFilename || item.displayName || item.id}`,
+      value: item.clientModelKey || item.id,
+    }));
+  }
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private quoteService = inject(QuoteEstimatorService);
@@ -105,6 +119,18 @@ export class OrderComponent implements OnInit {
   ngOnInit(): void {
     this.orderId = this.route.snapshot.paramMap.get('orderId');
     if (this.orderId) {
+      const token = new URLSearchParams(this.route.snapshot.fragment || '').get(
+        'informationKey',
+      );
+      if (token && this.isBrowser) {
+        this.informationService.rememberOrder(this.orderId, token);
+        void this.router.navigate([], {
+          relativeTo: this.route,
+          fragment: undefined,
+          queryParamsHandling: 'preserve',
+          replaceUrl: true,
+        });
+      }
       this.loadOrder();
       this.loadTwintPayment();
     } else {

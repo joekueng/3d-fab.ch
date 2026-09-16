@@ -13,6 +13,11 @@ import java.util.UUID;
 @Table(name = "order_items", indexes = {@Index(name = "ix_order_items_order",
         columnList = "order_id")})
 public class OrderItem {
+    @Column(name = "client_model_key", length = 100)
+    private String clientModelKey;
+    public String getClientModelKey() { return clientModelKey; }
+    public void setClientModelKey(String key) { clientModelKey = key; }
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "order_item_id", nullable = false)

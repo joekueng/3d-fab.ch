@@ -17,7 +17,6 @@ import {
 } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { AppInputComponent } from '../../../../shared/components/app-input/app-input.component';
 import { AppDropzoneComponent } from '../../../../shared/components/app-dropzone/app-dropzone.component';
 import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
 import { AppCheckboxComponent } from '../../../../shared/components/app-checkbox/app-checkbox.component';
@@ -58,7 +57,6 @@ import {
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,
-    AppInputComponent,
     AppDropzoneComponent,
     AppButtonComponent,
     AppCheckboxComponent,
@@ -761,6 +759,12 @@ export class UploadFormComponent implements OnInit {
     this.onSameSettingsToggle(sameSettingsForAll);
 
     request.items.forEach((item, index) => {
+      if (item.clientModelKey)
+        this.items.update((items) =>
+          items.map((entry, i) =>
+            i === index ? { ...entry, clientKey: item.clientModelKey! } : entry,
+          ),
+        );
       this.updateItemQuantityByIndex(index, Number(item.quantity || 1));
       this.setItemPrintSettingsByIndex(index, {
         material: item.material ?? request.material,
@@ -940,6 +944,7 @@ export class UploadFormComponent implements OnInit {
     if (this.mode() === 'easy') {
       const preset = easyModePresetForQuality(quality);
       return {
+        clientModelKey: item.clientKey,
         file: item.file,
         quantity: normalizeQuantity(item.quantity),
         material: item.material || defaults.material,
@@ -955,6 +960,7 @@ export class UploadFormComponent implements OnInit {
     }
 
     return {
+      clientModelKey: item.clientKey,
       file: item.file,
       quantity: normalizeQuantity(item.quantity),
       material: item.material || defaults.material,

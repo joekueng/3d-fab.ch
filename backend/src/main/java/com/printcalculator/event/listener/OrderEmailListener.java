@@ -663,7 +663,8 @@ public class OrderEmailListener {
 
     private String buildOrderDetailsUrl(Order order, String language) {
         String baseUrl = frontendBaseUrl == null ? "" : frontendBaseUrl.replaceAll("/+$", "");
-        return baseUrl + "/" + language + "/co/" + order.getId();
+        return baseUrl + "/" + language + "/co/" + order.getId()
+                + (order.getInformationToken() == null ? "" : "#informationKey=" + order.getInformationToken());
     }
 
     private String buildConfirmationAttachmentName(String language, String orderNumber) {

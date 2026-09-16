@@ -1,0 +1,14 @@
+:host {
+  display: block;
+}
+
+:host > .ui-form-hint {
+  margin-bottom: var(--space-4);
+}
+
+.session-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}

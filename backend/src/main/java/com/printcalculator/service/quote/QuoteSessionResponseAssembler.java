@@ -63,6 +63,7 @@ public class QuoteSessionResponseAssembler {
 
     private Map<String, Object> toItemDto(QuoteLineItem item, QuoteSessionTotalsService.QuoteSessionTotals totals) {
         Map<String, Object> dto = new HashMap<>();
+        dto.put("clientModelKey", item.getClientModelKey());
         dto.put("id", item.getId());
         dto.put("lineItemType", item.getLineItemType() != null ? item.getLineItemType() : "PRINT_FILE");
         dto.put("originalFilename", item.getOriginalFilename());
