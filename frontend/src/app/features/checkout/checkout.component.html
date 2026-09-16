@@ -206,7 +206,9 @@
             </div>
           </app-card>
 
-          <app-legal-consent [control]="legalConsentControl"></app-legal-consent>
+          <app-legal-consent
+            [control]="legalConsentControl"
+          ></app-legal-consent>
 
           <div class="ui-actions">
             @if (shippingUnavailable()) {
@@ -239,7 +241,11 @@
 
       <!-- RIGHT COLUMN: Order Summary -->
       <div class="checkout-summary-section">
-        <app-order-information class="mb-6" [review]="true" [models]="informationModels" />
+        <app-order-information
+          class="mb-6"
+          [review]="true"
+          [models]="informationModels"
+        />
         <app-card class="sticky-card">
           <div class="ui-card-header">
             <h3 class="ui-card-title">
@@ -381,29 +387,17 @@
   </div>
 </div>
 
-<div
-  class="preview-modal-backdrop"
+<app-dialog
   *ngIf="previewModalOpen()"
-  (click)="closePreview()"
+  [title]="selectedPreviewName()"
+  [closeLabel]="'CHECKOUT.PREVIEW_CLOSE' | translate"
+  (dismissed)="closePreview()"
 >
-  <div class="preview-modal" (click)="$event.stopPropagation()">
-    <div class="preview-modal-header">
-      <h4>{{ selectedPreviewName() }}</h4>
-      <button
-        type="button"
-        class="preview-modal-close"
-        (click)="closePreview()"
-        [attr.aria-label]="'CHECKOUT.PREVIEW_CLOSE' | translate"
-      >
-        ×
-      </button>
-    </div>
-    <app-stl-viewer
-      *ngIf="selectedPreviewFile() as preview"
-      [file]="preview"
-      [height]="460"
-      [color]="selectedPreviewColor()"
-      [borderRadius]="'var(--radius-lg)'"
-    ></app-stl-viewer>
-  </div>
-</div>
+  <app-stl-viewer
+    *ngIf="selectedPreviewFile() as preview"
+    [file]="preview"
+    [height]="460"
+    [color]="selectedPreviewColor()"
+    [borderRadius]="'var(--radius-lg)'"
+  ></app-stl-viewer>
+</app-dialog>

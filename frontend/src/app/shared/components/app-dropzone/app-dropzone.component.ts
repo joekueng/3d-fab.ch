@@ -47,7 +47,7 @@ export class AppDropzoneComponent {
     const input = e.target as HTMLInputElement;
     if (input.files?.length) {
       this.handleFiles(Array.from(input.files));
-      input.value = "";
+      input.value = '';
     }
   }
 

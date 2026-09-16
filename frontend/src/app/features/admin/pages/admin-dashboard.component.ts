@@ -1,3 +1,4 @@
+import { AppDialogComponent } from '../../../shared/components/app-dialog/app-dialog.component';
 import { OrderInformationComponent } from '../../order-information/order-information.component';
 import { InformationModel } from '../../order-information/order-information.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
@@ -30,6 +31,7 @@ import { firstValueFrom } from 'rxjs';
   selector: 'app-admin-dashboard',
   standalone: true,
   imports: [
+    AppDialogComponent,
     OrderInformationComponent,
     CommonModule,
     FormsModule,
@@ -148,9 +150,20 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   unreadInformation = new Set<string>();
-  get informationModels(): InformationModel[] { return (this.selectedOrder?.items || []).map((item, index) => ({ label: `${index + 1}. ${this.itemDisplayName(item)}`, value: item.clientModelKey || item.id })); }
+  get informationModels(): InformationModel[] {
+    return (this.selectedOrder?.items || []).map((item, index) => ({
+      label: `${index + 1}. ${this.itemDisplayName(item)}`,
+      value: item.clientModelKey || item.id,
+    }));
+  }
   async refreshUnreadInformation(): Promise<void> {
-    try { this.unreadInformation = new Set(await firstValueFrom(this.adminOrdersService.getUnreadInformation())); } catch { /* Order list remains available. */ }
+    try {
+      this.unreadInformation = new Set(
+        await firstValueFrom(this.adminOrdersService.getUnreadInformation()),
+      );
+    } catch {
+      /* Order list remains available. */
+    }
   }
   loadOrders(): void {
     void this.refreshUnreadInformation();

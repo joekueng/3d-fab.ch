@@ -3,6 +3,7 @@ package com.printcalculator.service.quote;
 import com.printcalculator.dto.*;
 import com.printcalculator.entity.QuoteSession;
 import com.printcalculator.repository.QuoteSessionRepository;
+import com.printcalculator.service.QuoteSessionExpiryPolicy;
 import com.printcalculator.service.email.*;
 import com.printcalculator.service.information.OrderInformationService;
 import org.junit.jupiter.api.*;
@@ -19,13 +20,18 @@ class QuoteSessionEmailServiceTest {
     private final OrderInformationService information = mock(OrderInformationService.class);
     private final EmailNotificationService mail = mock(EmailNotificationService.class);
     private final EmailAuditService audit = mock(EmailAuditService.class);
+    private final QuoteSessionExpiryPolicy expiryPolicy = mock(QuoteSessionExpiryPolicy.class);
     private QuoteSessionEmailService service;
     private QuoteSession session;
     private QuoteSessionEmailRequest request;
+    private OffsetDateTime renewedExpiry;
     @BeforeEach void setup() {
         PlatformTransactionManager manager = mock(PlatformTransactionManager.class);
         when(manager.getTransaction(any())).thenReturn(new SimpleTransactionStatus());
-        service = new QuoteSessionEmailService(repo, information, mail, audit, manager, "https://example.test/");
+        renewedExpiry = OffsetDateTime.now().plusMonths(3);
+        when(expiryPolicy.newExpiry()).thenReturn(renewedExpiry);
+        service = new QuoteSessionEmailService(repo, information, mail, audit, manager, expiryPolicy,
+                "https://example.test/");
         session = new QuoteSession();
         session.setId(UUID.randomUUID()); session.setInformationDraftId(UUID.randomUUID());
         session.setStatus("ACTIVE"); session.setExpiresAt(OffsetDateTime.now().plusMonths(6));
@@ -68,6 +74,7 @@ class QuoteSessionEmailServiceTest {
         assertEquals("https://example.test/assets/images/SVG/logo-giallo-spesso.svg", document.selectFirst(".brand-logo").attr("src"));
         assertEquals("https://example.test/" + language + "/calculator/advanced?session=" + session.getId(),
                 document.selectFirst(".content a").attr("href"));
+        assertEquals(data.get("action"), document.selectFirst(".action-button").text());
         assertEquals(data.get("expiresAt"), document.selectFirst(".content strong").text());
         assertEquals(data.get("notice"), document.select(".footer p").last().text());
         assertTrue(document.selectFirst(".footer").text().contains(String.valueOf(java.time.Year.now().getValue())));
@@ -103,10 +110,21 @@ class QuoteSessionEmailServiceTest {
         assertThrows(ResponseStatusException.class, () -> service.resume(session.getId()));
         verifyNoInteractions(mail);
     }
+    @Test void rejectsCreatingOrResumingALinkAfterOrderConversion() {
+        session.setConvertedOrderId(UUID.randomUUID());
+        var linkRequest = new QuoteSessionLinkRequest("en", "easy", request.information());
+        assertEquals(410, assertThrows(ResponseStatusException.class,
+                () -> service.createLink(session.getId(), linkRequest)).getStatusCode().value());
+        assertEquals(410, assertThrows(ResponseStatusException.class,
+                () -> service.resume(session.getId())).getStatusCode().value());
+        verifyNoInteractions(information, mail);
+    }
     @Test void resolvesThePersistedDraftFromTheNormalSessionLink() {
         var credential = new InformationDto.Credential(session.getInformationDraftId(), "private-key");
         when(information.sessionCredential(session)).thenReturn(credential);
         assertEquals(credential, service.resume(session.getId()));
+        assertEquals(renewedExpiry, session.getExpiresAt());
+        verify(expiryPolicy).newExpiry();
         verify(information).sessionCredential(session);
     }
     @Test void throttlesRepeatedSessionAndRecipient() {

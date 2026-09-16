@@ -4,6 +4,7 @@ import {
   output,
   signal,
   computed,
+  effect,
   inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -79,6 +80,16 @@ export class ColorSelectorComponent {
     return PRODUCT_COLORS;
   });
 
+  constructor() {
+    effect(() => {
+      this.groups();
+      this.selectedVariantId();
+      this.selectedColor();
+      this.disabled();
+      this.isOpen.set(false);
+    });
+  }
+
   toggleOpen() {
     if (this.disabled()) return;
     this.isOpen.update((v) => !v);
@@ -87,10 +98,12 @@ export class ColorSelectorComponent {
   selectColor(color: ColorSelectorChoice) {
     if (this.disabled() || color.outOfStock) return;
 
-    if (color.variantId !== undefined) this.variantSelected.emit(color.variantId);
+    if (color.variantId !== undefined)
+      this.variantSelected.emit(color.variantId);
     this.colorSelected.emit({
       colorName: color.value,
-      filamentVariantId: typeof color.variantId === 'number' ? color.variantId : undefined,
+      filamentVariantId:
+        typeof color.variantId === 'number' ? color.variantId : undefined,
     });
     this.isOpen.set(false);
   }

@@ -344,27 +344,13 @@
           </section>
 
           @if (modelModalOpen()) {
-            <button
-              type="button"
-              class="model-modal-backdrop"
-              (click)="closeModelModal()"
-            ></button>
-            <div class="model-modal" role="dialog" aria-modal="true">
-              <div class="model-modal-head">
-                <div>
-                  <p class="viewer-kicker">{{ "SHOP.MODEL_3D" | translate }}</p>
-                  <h3>{{ "SHOP.MODEL_TITLE" | translate }}</h3>
-                </div>
-                <button
-                  type="button"
-                  class="model-close-btn"
-                  (click)="closeModelModal()"
-                  [attr.aria-label]="'SHOP.MODEL_CLOSE' | translate"
-                >
-                  ×
-                </button>
-              </div>
-
+            <app-dialog
+              [title]="'SHOP.MODEL_TITLE' | translate"
+              [subtitle]="'SHOP.MODEL_3D' | translate"
+              [closeLabel]="'SHOP.MODEL_CLOSE' | translate"
+              size="large"
+              (dismissed)="closeModelModal()"
+            >
               <div class="model-modal-body">
                 @if (modelLoading()) {
                   <div class="viewer-state viewer-loading">
@@ -385,7 +371,7 @@
                   }
                 }
               </div>
-            </div>
+            </app-dialog>
           }
         }
       }

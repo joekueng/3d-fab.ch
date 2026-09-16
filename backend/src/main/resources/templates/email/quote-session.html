@@ -11,8 +11,10 @@
 
     <div class="content">
         <p th:text="${intro}">Your models, settings, instructions and attachments are saved.</p>
+        <p class="action">
+            <a class="action-button" th:href="${resumeUrl}" th:text="${action}">Resume session</a>
+        </p>
         <p>
-            <span th:text="${action}">Resume session</span>:
             <a th:href="${resumeUrl}" th:text="${resumeUrl}">https://example.com/en/calculator/basic?session=00000000-0000-0000-0000-000000000000</a>
         </p>
         <p>

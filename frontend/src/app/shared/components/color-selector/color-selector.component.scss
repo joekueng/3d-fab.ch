@@ -175,9 +175,30 @@
   opacity: 0.6;
 }
 
-.trigger { background: transparent; border: 0; }
-.trigger .color-circle { display: block; }
-.trigger--label { display: flex; align-items: center; gap: var(--space-3); text-align: left; color: var(--color-text); }
-.trigger-copy { display: grid; gap: var(--space-1); }
-.trigger-copy small { color: var(--color-text-muted); }
-.color-item { border: 0; background: transparent; padding: 0; font: inherit; }
+.trigger {
+  background: transparent;
+  border: 0;
+}
+.trigger .color-circle {
+  display: block;
+}
+.trigger--label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  text-align: left;
+  color: var(--color-text);
+}
+.trigger-copy {
+  display: grid;
+  gap: var(--space-1);
+}
+.trigger-copy small {
+  color: var(--color-text-muted);
+}
+.color-item {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+}

@@ -1031,8 +1031,8 @@
     "PRIVACY_TITLE": "Informativa Privacy",
     "TERMS_TITLE": "Termini e Condizioni",
     "LAST_UPDATE": "Ultimo aggiornamento",
-    "TERMS_UPDATE_DATE": "24 febbraio 2026",
-    "PRIVACY_UPDATE_DATE": "24 febbraio 2026",
+    "TERMS_UPDATE_DATE": "16 settembre 2026",
+    "PRIVACY_UPDATE_DATE": "16 settembre 2026",
     "CONSENT": {
       "LABEL_PREFIX": "Ho letto e accetto i",
       "TERMS_LINK": "Termini e Condizioni",
@@ -1050,18 +1050,21 @@
       "S1": {
         "TITLE": "1. Quali dati trattiamo",
         "P1": "1.1. Raccogliamo i dati necessari per preventivi e ordini: nome, cognome, email, telefono, indirizzo, dati di spedizione/fatturazione e dettagli dell'ordine.",
-        "P2": "1.2. Quando carichi file 3D o allegati tecnici, i file vengono trattati solo per analisi, produzione, assistenza e gestione dell'ordine."
+        "P2": "1.2. Quando carichi file 3D o allegati tecnici, i file vengono trattati solo per analisi, produzione, assistenza e gestione dell'ordine.",
+        "P3": "1.3. Una sessione salvata del calcolatore può contenere modelli 3D caricati, quantità, colori, materiali e impostazioni di qualità selezionati, calcoli del preventivo, istruzioni, allegati e altri dati associati al preventivo."
       },
       "S2": {
         "TITLE": "2. Finalità del trattamento",
         "P1": "2.1. Usiamo i dati esclusivamente per: preparare preventivi, confermare ordini, ricevere pagamenti, organizzare spedizioni e fornire supporto post-vendita.",
-        "P2": "2.2. Non usiamo i dati per profilazione, marketing automatico o vendita a terzi."
+        "P2": "2.2. Non usiamo i dati per profilazione, marketing automatico o vendita a terzi.",
+        "P3": "2.3. Se scegli di salvare una sessione di stampa tramite email, utilizziamo il tuo indirizzo email esclusivamente per inviarti il link necessario a riaprire la sessione. Non utilizziamo questo indirizzo per inviare reminder, email promozionali o altre comunicazioni di marketing in seguito al salvataggio della sessione. Un registro di consegna contenente l’indirizzo del destinatario viene conservato per un massimo di 365 giorni per finalità operative e di verifica e non viene utilizzato per comunicazioni successive."
       },
       "S3": {
         "TITLE": "3. Conservazione dei file e dei dati",
-        "P1": "3.1. I file caricati per il solo preventivo vengono conservati per la durata della sessione e rimossi automaticamente alla sua scadenza.",
+        "P1": "3.1. I file e i dati associati a una sessione salvata del calcolatore sono programmati per la cancellazione automatica dopo la data di scadenza indicata all’utente. Ogni volta che una sessione attiva viene riaperta tramite il link di accesso, la scadenza viene reimpostata a tre mesi dalla data dell’accesso. Se la sessione viene convertita in un ordine, i dati necessari all’ordine vengono conservati come descritto nella sezione 3.2.",
         "P2": "3.2. I file e i dati legati a ordini confermati vengono conservati per il tempo necessario a produzione, consegna, assistenza e obblighi amministrativi/legali, poi eliminati o minimizzati.",
-        "P3": "3.3. I file caricati nel calcolatore vengono usati solo per analisi tecnica e stima del preventivo e restano associati esclusivamente alla sessione del calcolatore."
+        "P3": "3.3. I file caricati nel calcolatore vengono usati solo per analisi tecnica e stima del preventivo e restano associati esclusivamente alla sessione del calcolatore.",
+        "P4": "3.4. Il link di una sessione salvata è un link di accesso. Chiunque possieda il link può accedere ai contenuti associati alla sessione finché il link non scade o diventa invalido in seguito a un ordine."
       },
       "S4": {
         "TITLE": "4. Cookie e tracciamento",
@@ -1083,7 +1086,7 @@
     "TERMS": {
       "META": {
         "PROVIDER": "Fornitore: 3D-Fab.ch (Matteo Caletti e Joe Kung)",
-        "VERSION": "Versione: v1.0",
+        "VERSION": "Versione: v1.1",
         "SCOPE": "Validi per stampa 3D FDM/FFF e servizi collegati, con vendita e consegna esclusivamente in Svizzera (CH)."
       },
       "S1": {
@@ -1107,6 +1110,13 @@
         "P1": "4.1. Il contratto si conclude con conferma ordine (email/portale) o con avvio produzione dopo pagamento/anticipo.",
         "P2": "4.2. I preventivi automatici possono essere confermati o aggiornati dopo verifica tecnica minima (stampabilità, supporti, limiti macchina).",
         "P3": "4.3. Il fornitore può rifiutare ordini tecnicamente non fattibili o non conformi ai presenti termini."
+      },
+      "S4A": {
+        "TITLE": "4A. Sessioni di stampa salvate",
+        "P1": "4A.1. Gli utenti possono salvare una sessione del calcolatore e riprenderla tramite un link di accesso generato. Il salvataggio di una sessione non costituisce un ordine, accettazione di un preventivo, prenotazione della capacità produttiva o conclusione di un contratto.",
+        "P2": "4A.2. I prezzi e i preventivi presenti in una sessione salvata rimangono soggetti ai presenti Termini e alla verifica tecnica descritta nella sezione 4.",
+        "P3": "4A.3. Le sessioni salvate rimangono disponibili soltanto fino alla data di scadenza indicata all’utente. Ogni riapertura valida tramite il link di accesso reimposta la scadenza a tre mesi dalla data dell’accesso. 3D-Fab non si impegna a conservare una sessione oltre la data di scadenza così aggiornata.",
+        "P4": "4A.4. Chiunque possieda il link di accesso può accedere alla sessione associata, inclusi file caricati, impostazioni, istruzioni e allegati. Gli utenti sono responsabili di mantenere riservato il link e di condividerlo soltanto con persone autorizzate."
       },
       "S5": {
         "TITLE": "5. Prezzi, imposte e spedizione",
@@ -1179,8 +1189,9 @@
       },
       "S15": {
         "TITLE": "15. Protezione dei dati",
-        "P1": "15.1. Il fornitore tratta i dati personali per gestione ordini, pagamenti, spedizioni e assistenza.",
-        "P2": "15.2. I dati possono essere condivisi con fornitori tecnici e corrieri solo nella misura necessaria all'erogazione del servizio."
+        "P1": "15.1. Il fornitore tratta dati personali per le sessioni salvate del calcolatore, i preventivi, la gestione degli ordini, i pagamenti, le spedizioni e l’assistenza.",
+        "P2": "15.2. I dati possono essere condivisi con fornitori tecnici e corrieri solo nella misura necessaria all'erogazione del servizio.",
+        "P3": "15.3. Ulteriori informazioni sulle sessioni salvate, sui link di accesso, sui periodi di conservazione e sull’utilizzo degli indirizzi email sono disponibili nell’Informativa Privacy."
       },
       "S16": {
         "TITLE": "16. Limitazione di responsabilità",
@@ -1468,7 +1479,10 @@
     "EMAIL_LABEL": "Email",
     "TITLE": "Salva la sessione",
     "OPEN": "Salva sessione via email",
-    "HINT": "Salva modelli, impostazioni, istruzioni e allegati e riaprili da qualsiasi dispositivo con un unico link. Puoi copiarlo o riceverlo via email. Chi possiede il link può accedere alla sessione.",
+    "HINT": "Salva modelli, impostazioni, istruzioni e allegati e riaprili da qualsiasi dispositivo. Copia il link oppure ricevilo via email.",
+    "EMAIL_PRIVACY": "Useremo il tuo indirizzo email esclusivamente per inviarti il link di questa sessione.",
+    "ACCESS_NOTICE": "Chiunque possieda il link può accedere alla sessione.",
+    "EXPIRY_LABEL": "Disponibile fino al",
     "CANCEL": "Annulla",
     "SEND": "Invia link",
     "SENDING": "Salvataggio e invio…",

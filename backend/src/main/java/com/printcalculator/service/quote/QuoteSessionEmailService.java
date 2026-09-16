@@ -3,6 +3,7 @@ package com.printcalculator.service.quote;
 import com.printcalculator.dto.QuoteSessionEmailRequest;
 import com.printcalculator.dto.QuoteSessionLinkRequest;
 import com.printcalculator.repository.QuoteSessionRepository;
+import com.printcalculator.service.QuoteSessionExpiryPolicy;
 import com.printcalculator.service.email.EmailNotificationService;
 import com.printcalculator.service.email.EmailSendResult;
 import com.printcalculator.service.information.OrderInformationService;
@@ -22,18 +23,21 @@ public class QuoteSessionEmailService {
     private final OrderInformationService information;
     private final EmailNotificationService email;
     private final TransactionTemplate transactions;
+    private final QuoteSessionExpiryPolicy expiryPolicy;
     private final com.printcalculator.service.email.EmailAuditService audit;
     private final String frontend;
     private final Map<String, Long> attempts = new HashMap<>();
 
     public QuoteSessionEmailService(QuoteSessionRepository sessions, OrderInformationService information,
-            EmailNotificationService email, com.printcalculator.service.email.EmailAuditService audit, org.springframework.transaction.PlatformTransactionManager manager,
+            EmailNotificationService email, com.printcalculator.service.email.EmailAuditService audit,
+            org.springframework.transaction.PlatformTransactionManager manager, QuoteSessionExpiryPolicy expiryPolicy,
             @Value("${app.frontend.base-url}") String frontend) {
         this.sessions = sessions;
         this.information = information;
         this.email = email;
         this.audit = audit;
         this.transactions = new TransactionTemplate(manager);
+        this.expiryPolicy = expiryPolicy;
         this.frontend = frontend.replaceAll("/+$", "");
     }
 
@@ -97,11 +101,12 @@ public class QuoteSessionEmailService {
 
     public com.printcalculator.dto.InformationDto.Credential resume(UUID id) {
         return transactions.execute(status -> {
-            var session = sessions.findById(id).orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
+            var session = sessions.findLockedById(id).orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
             if (session.getExpiresAt() == null || !session.getExpiresAt().isAfter(OffsetDateTime.now())
                     || session.getConvertedOrderId() != null || !Set.of("ACTIVE", "CAD_ACTIVE").contains(session.getStatus())) {
                 throw new ResponseStatusException(GONE, "SESSION_UNAVAILABLE");
             }
+            session.setExpiresAt(expiryPolicy.newExpiry());
             return information.sessionCredential(session);
         });
     }

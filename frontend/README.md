@@ -52,6 +52,12 @@ npm run check:ui-reuse
 
 Exercise the affected UI and compare it with the existing reference. Add behavior tests when needed; report what was verified and any remaining limitations.
 
+## Shared feature building blocks
+
+See the [shared component guide](src/app/shared/components/README.md) for modal, color selection, file upload, legal consent, and form-control APIs. Reuse these in both public and admin features. Calculator global/per-file settings share `app-print-settings` within the calculator feature.
+
+`npm run check:ui-reuse` also rejects known copies of color popups, modal shells, consent text, and print-setting styles. It catches established regression patterns; code review still needs to assess new component duplication.
+
 ## Adding a New Feature
 
 1. **Create Directory**: `src/app/features/my-feature`.

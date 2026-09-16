@@ -18,6 +18,8 @@ Read the [frontend README consistency workflow](README.md#preserve-the-existing-
 
 This project already has a shared UI layer. Do not create parallel form controls, button styles, or an admin-only fallback design system.
 
+Read the [shared component guide](src/app/shared/components/README.md) before adding dialogs, color pickers, upload controls, or legal consent. Reuse `app-dialog`, `app-color-selector`, `app-dropzone`, and `app-legal-consent`; use the calculator feature’s `app-print-settings` for global/per-file settings.
+
 Use these first:
 
 - Shared Angular controls in `src/app/shared/components/`: `app-input`, `app-select`, `app-textarea`, `app-checkbox`, `app-button`, and `app-card`.

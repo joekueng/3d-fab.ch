@@ -66,7 +66,10 @@ class OrderInformationServiceTest {
         service.saveDraft(credential.id(), credential.token(), entry("Saved instructions"), List.of(pdf()));
         QuoteSession session = new QuoteSession();
         session.setInformationDraftId(credential.id());
+        OffsetDateTime renewedExpiry = OffsetDateTime.now().plusMonths(3);
+        session.setExpiresAt(renewedExpiry);
         var recovered = service.sessionCredential(session);
+        assertEquals(renewedExpiry, repo.findById(credential.id()).orElseThrow().getExpiresAt());
         var value = service.getDraft(recovered.id(), recovered.token());
         assertEquals("Saved instructions", value.entries().getFirst().text());
         var response = service.download(recovered.id(), recovered.token(),

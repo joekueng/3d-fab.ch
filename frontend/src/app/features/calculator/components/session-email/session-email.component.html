@@ -1,4 +1,11 @@
 <p class="ui-form-hint">{{ 'SESSION_EMAIL.HINT' | translate }}</p>
+<div class="session-access-details">
+  <p class="ui-form-hint">{{ 'SESSION_EMAIL.ACCESS_NOTICE' | translate }}</p>
+  <p class="ui-form-hint">
+    {{ 'SESSION_EMAIL.EXPIRY_LABEL' | translate }}:
+    <strong>{{ expiresAt() | date:'medium' }}</strong>
+  </p>
+</div>
 <div class="session-links">
   <app-button type="button" variant="secondary" [appCopyOnClick]="copyLink"
     (copySucceeded)="finishCopy()" (copyFailed)="failCopy($event)"
@@ -17,6 +24,7 @@
   <form [formGroup]="form" (ngSubmit)="send()">
     <app-input formControlName="email" type="email" autocomplete="email" [required]="true"
       [label]="'SESSION_EMAIL.EMAIL_LABEL' | translate" [readonly]="sending()" />
+    <p class="ui-form-hint">{{ 'SESSION_EMAIL.EMAIL_PRIVACY' | translate }}</p>
     <div class="ui-actions ui-actions--end">
       <app-button type="button" variant="secondary" [disabled]="sending()" (click)="expanded.set(false)">{{ 'SESSION_EMAIL.CANCEL' | translate }}</app-button>
       <app-button type="submit" [disabled]="form.invalid || sending() || information.busy() || recalculationRequired() || missingModel()">

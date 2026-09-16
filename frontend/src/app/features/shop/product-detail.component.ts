@@ -1,3 +1,4 @@
+import { AppDialogComponent } from '../../shared/components/app-dialog/app-dialog.component';
 import { ColorSelectorComponent } from '../../shared/components/color-selector/color-selector.component';
 import { CommonModule, Location, isPlatformBrowser } from '@angular/common';
 import {
@@ -60,6 +61,7 @@ interface ShopMaterialProperty {
   selector: 'app-product-detail',
   standalone: true,
   imports: [
+    AppDialogComponent,
     ColorSelectorComponent,
     CommonModule,
     RouterLink,
@@ -175,15 +177,17 @@ export class ProductDetailComponent {
     () => this.selectedMaterial()?.variants ?? [],
   );
 
-  readonly colorGroups = computed(() => [{
-    name: this.selectedMaterial()?.label ?? '',
-    colors: this.colorOptions().map((variant) => ({
-      variantId: variant.id,
-      value: variant.colorName ?? '',
-      label: this.colorLabel(variant),
-      hex: this.colorHex(variant),
-    })),
-  }]);
+  readonly colorGroups = computed(() => [
+    {
+      name: this.selectedMaterial()?.label ?? '',
+      colors: this.colorOptions().map((variant) => ({
+        variantId: variant.id,
+        value: variant.colorName ?? '',
+        label: this.colorLabel(variant),
+        hex: this.colorHex(variant),
+      })),
+    },
+  ]);
 
   selectColorVariant(id: string | number): void {
     const variant = this.colorOptions().find((option) => option.id === id);
@@ -517,7 +521,6 @@ export class ProductDetailComponent {
   materialColorCount(material: ShopMaterialOption): number {
     return material.variants.length;
   }
-
 
   openModelModal(): void {
     const model = this.product()?.model3d;

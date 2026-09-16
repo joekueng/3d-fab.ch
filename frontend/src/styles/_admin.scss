@@ -209,21 +209,6 @@
   background: transparent;
 }
 
-.admin-shell .content .modal-backdrop,
-.admin-shell .content .dialog-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 4000;
-  background: rgba(16, 24, 32, 0.35);
-}
-
-.admin-shell .content .modal-card,
-.admin-shell .content .confirm-dialog {
-  max-width: calc(100vw - var(--space-4));
-  max-height: calc(100dvh - var(--space-4));
-  overflow: auto;
-}
-
 .admin-shell .content .ui-table-wrap {
   max-width: 100%;
 }
@@ -610,18 +595,6 @@
 
   .admin-shell .content .actions {
     white-space: normal;
-  }
-
-  .admin-shell .content .modal-backdrop {
-    align-items: stretch;
-    padding: var(--space-2);
-  }
-
-  .admin-shell .content .modal-card,
-  .admin-shell .content .confirm-dialog {
-    width: 100%;
-    max-width: 100%;
-    max-height: calc(100dvh - var(--space-4));
   }
 }
 

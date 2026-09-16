@@ -44,7 +44,9 @@
       </svg>
     </div>
     <p class="text">{{ label() | translate }}</p>
-    @if (subtext()) { <p class="subtext">{{ subtext() | translate }}</p> }
+    @if (subtext()) {
+      <p class="subtext">{{ subtext() | translate }}</p>
+    }
 
     @if (showFileNames() && fileNames().length > 0) {
       <div class="file-badges">

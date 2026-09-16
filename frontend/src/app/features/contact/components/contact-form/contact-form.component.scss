@@ -86,20 +86,4 @@ app-input.col {
   }
 }
 
-.legal-consent {
-  margin: var(--space-4) 0 var(--space-4);
-
-  a {
-    color: var(--color-brand);
-    text-decoration: underline;
-  }
-}
-
-.consent-error {
-  margin-top: var(--space-2);
-  margin-left: 2.1rem;
-  color: var(--color-danger-500);
-  font-size: 0.9rem;
-}
-
 /* Success State styles moved to shared component */

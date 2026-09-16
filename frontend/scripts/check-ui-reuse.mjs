@@ -14,6 +14,31 @@ const scanRoots = [
 
 const rules = [
   {
+    name: 'color-selector-clone',
+    pattern: /\.(?:color-popup|color-trigger)[\w-]*\b/g,
+    message:
+      'Use app-color-selector; adapt product data through its groups input instead of rebuilding the popup.',
+  },
+  {
+    name: 'dialog-shell-clone',
+    pattern:
+      /\.(?:preview-modal|modal-backdrop|modal-card|model-modal|dialog-backdrop|confirm-dialog)(?![\w-])/g,
+    message:
+      'Use app-dialog for the modal shell, header, backdrop, and dismissal behavior.',
+  },
+  {
+    name: 'legal-consent-clone',
+    pattern: /LEGAL\.CONSENT\.(?:LABEL_PREFIX|TERMS_LINK|REQUIRED_ERROR)/g,
+    message:
+      'Use app-legal-consent with the existing form control instead of duplicating consent markup.',
+  },
+  {
+    name: 'print-settings-clone',
+    pattern: /\.item-settings-(?:panel|grid|checkbox)(?![\w-])/g,
+    message:
+      'Use app-print-settings for global and per-file settings, with the relevant layer options.',
+  },
+  {
     name: 'carousel-dot-clone',
     pattern:
       /\.(?!ui-carousel-dot\b)[A-Za-z0-9_-]*(?:carousel|slider|gallery|project)[A-Za-z0-9_-]*-dot\b/g,
@@ -31,8 +56,7 @@ const rules = [
     name: 'carousel-duration-token-clone',
     pattern:
       /--(?!ui-carousel-duration\b)[A-Za-z0-9_-]*(?:carousel|slider|gallery|project)[A-Za-z0-9_-]*duration\b/g,
-    message:
-      'Use --ui-carousel-duration for carousel progress timing.',
+    message: 'Use --ui-carousel-duration for carousel progress timing.',
   },
   {
     name: 'old-home-project-display-style',
@@ -49,9 +73,9 @@ const rules = [
 ];
 
 const allowedExtensions = new Set(['.html', '.scss', '.ts']);
-const files = scanRoots.flatMap((root) => walk(root)).filter((file) =>
-  allowedExtensions.has(extname(file)),
-);
+const files = scanRoots
+  .flatMap((root) => walk(root))
+  .filter((file) => allowedExtensions.has(extname(file)));
 
 const failures = [];
 
