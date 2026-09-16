@@ -81,7 +81,10 @@ describe('AppDialogComponent', () => {
         expect(bounds.right).toBeLessThanOrEqual(width + 1);
         expect(bounds.bottom).toBeLessThanOrEqual(801);
         expect(dialog.scrollWidth).toBeLessThanOrEqual(dialog.clientWidth + 1);
-        expect(Math.round(bounds.width)).toBe(width === 375 ? width : 860);
+        const layoutViewportWidth = target.documentElement.clientWidth;
+        expect(Math.round(bounds.width)).toBe(
+          width === 375 ? layoutViewportWidth : 860,
+        );
       } finally {
         fixture.destroy();
         frame.remove();
