@@ -46,6 +46,36 @@ class QuoteSessionEmailServiceTest {
                         && context.containsKey("expiresAt")));
         order.verify(audit).recordSessionEmail(eq(request.email()), anyString(), any());
     }
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"it", "en", "de", "fr"})
+    void rendersLocalizedEmailWithBrandingAndWorkingLink(String language) {
+        var localized = new QuoteSessionEmailRequest(request.email(), language, "advanced", request.information());
+        service.send(session.getId(), localized);
+        org.mockito.ArgumentCaptor<Map<String, Object>> captor = org.mockito.ArgumentCaptor.captor();
+        verify(mail).sendEmail(eq(request.email()), anyString(), eq("quote-session"), captor.capture());
+        var data = captor.getValue();
+        var resolver = new org.thymeleaf.templateresolver.ClassLoaderTemplateResolver();
+        resolver.setPrefix("templates/");
+        resolver.setSuffix(".html");
+        resolver.setCharacterEncoding("UTF-8");
+        var engine = new org.thymeleaf.spring6.SpringTemplateEngine();
+        engine.setTemplateResolver(resolver);
+        var context = new org.thymeleaf.context.Context();
+        context.setVariables(data);
+        var document = org.jsoup.Jsoup.parse(engine.process("email/quote-session", context));
+        assertEquals(language, document.selectFirst("html").attr("lang"));
+        assertEquals(data.get("title"), document.selectFirst(".header h1").text());
+        assertEquals("https://example.test/assets/images/SVG/logo-giallo-spesso.svg", document.selectFirst(".brand-logo").attr("src"));
+        assertEquals("https://example.test/" + language + "/calculator/advanced?session=" + session.getId(),
+                document.selectFirst(".content a").attr("href"));
+        assertEquals(data.get("expiresAt"), document.selectFirst(".content strong").text());
+        assertEquals(data.get("notice"), document.select(".footer p").last().text());
+        assertTrue(document.selectFirst(".footer").text().contains(String.valueOf(java.time.Year.now().getValue())));
+        for (String key : List.of("title", "intro", "action", "expiryLabel", "notice")) {
+            assertFalse(data.get(key).toString().isBlank());
+            assertTrue(document.text().contains(data.get(key).toString()));
+        }
+    }
     @Test void neverSendsWhenScanFails() {
         doThrow(new ResponseStatusException(org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE))
                 .when(information).scanDraft(any(), any());

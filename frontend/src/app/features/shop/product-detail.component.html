@@ -262,67 +262,13 @@
                         </p>
                       </div>
 
-                      @if (selectedVariant(); as activeVariant) {
-                        <button
-                          type="button"
-                          class="color-trigger"
-                          [class.open]="colorPopupOpen()"
-                          (click)="toggleColorPopup()"
-                        >
-                          <span class="color-trigger__ring">
-                            <span
-                              class="color-trigger__swatch"
-                              [style.background-color]="colorHex(activeVariant)"
-                            ></span>
-                          </span>
-
-                          <span class="color-trigger__copy">
-                            <strong>{{
-                              colorLabel(activeVariant) | translate
-                            }}</strong>
-                            <small>{{ selectedMaterial()?.label }}</small>
-                          </span>
-                        </button>
-                      }
-
-                      @if (colorPopupOpen()) {
-                        <button
-                          type="button"
-                          class="color-popup-backdrop"
-                          (click)="closeColorPopup()"
-                        ></button>
-                        <div class="color-popup">
-                          <div class="color-popup__category">
-                            {{ selectedMaterial()?.label || "" | uppercase }}
-                          </div>
-
-                          <div class="color-popup__grid">
-                            @for (variant of colorOptions(); track variant.id) {
-                              <button
-                                type="button"
-                                class="color-popup__item"
-                                (click)="selectVariant(variant)"
-                              >
-                                <span
-                                  class="color-popup__ring"
-                                  [class.active]="
-                                    selectedVariant()?.id === variant.id
-                                  "
-                                >
-                                  <span
-                                    class="color-popup__swatch"
-                                    [style.background-color]="colorHex(variant)"
-                                  ></span>
-                                </span>
-
-                                <span class="color-popup__name">{{
-                                  colorLabel(variant) | translate
-                                }}</span>
-                              </button>
-                            }
-                          </div>
-                        </div>
-                      }
+                      <app-color-selector
+                        [groups]="colorGroups()"
+                        [selectedVariantId]="selectedVariant()?.id ?? null"
+                        [showLabel]="true"
+                        [subtitle]="selectedMaterial()?.label ?? ''"
+                        (variantSelected)="selectColorVariant($event)"
+                      />
                     </div>
 
                     <div class="selector-card quantity-card">

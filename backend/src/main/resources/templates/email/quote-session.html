@@ -1,13 +1,27 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:lang="${language}">
-<head><meta charset="UTF-8"><title th:text="${title}">Print session</title></head>
-<body style="margin:0;background:#f8f7f4;font-family:Arial,sans-serif;color:#202a33">
-  <main style="max-width:560px;margin:32px auto;padding:32px;background:white;border-radius:12px">
-    <h1 style="font-size:24px" th:text="${title}"></h1>
-    <p th:text="${intro}"></p>
-    <p style="margin:32px 0"><a th:href="${resumeUrl}" th:text="${action}" style="display:inline-block;padding:14px 24px;background:#ffcf00;color:#202a33;text-decoration:none;border-radius:8px;font-weight:bold"></a></p>
-    <p><span th:text="${expiryLabel}"></span>: <strong th:text="${expiresAt}"></strong></p>
-    <p style="font-size:13px;color:#646464" th:text="${notice}"></p>
-  </main>
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${title}">Print session</title>
+    <style th:replace="~{email/fragments/layout :: styles}"></style>
+</head>
+<body>
+<div class="container">
+    <div th:replace="~{email/fragments/layout :: header(${title})}"></div>
+
+    <div class="content">
+        <p th:text="${intro}">Your models, settings, instructions and attachments are saved.</p>
+        <p>
+            <span th:text="${action}">Resume session</span>:
+            <a th:href="${resumeUrl}" th:text="${resumeUrl}">https://example.com/en/calculator/basic?session=00000000-0000-0000-0000-000000000000</a>
+        </p>
+        <p>
+            <span th:text="${expiryLabel}">Available until</span>:
+            <strong th:text="${expiresAt}">01.01.2027 12:00 CET</strong>
+        </p>
+    </div>
+
+    <div th:replace="~{email/fragments/layout :: footer(${notice})}"></div>
+</div>
 </body>
 </html>

@@ -1,3 +1,6 @@
+import { AppDropzoneComponent } from '../../../../shared/components/app-dropzone/app-dropzone.component';
+import { FormControl } from '@angular/forms';
+import { LegalConsentComponent } from '../../../../shared/components/legal-consent/legal-consent.component';
 import {
   Component,
   signal,
@@ -39,6 +42,8 @@ interface FilePreview {
   selector: 'app-contact-form',
   standalone: true,
   imports: [
+    AppDropzoneComponent,
+    LegalConsentComponent,
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,
@@ -51,6 +56,9 @@ interface FilePreview {
   styleUrl: './contact-form.component.scss',
 })
 export class ContactFormComponent implements OnDestroy {
+  get legalConsentControl(): FormControl {
+    return this.form.get('acceptLegal') as FormControl;
+  }
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly route = inject(ActivatedRoute);
   form: FormGroup;
@@ -156,23 +164,6 @@ export class ContactFormComponent implements OnDestroy {
 
   setCompanyMode(isCompany: boolean) {
     this.form.patchValue({ isCompany });
-  }
-
-  onFileSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files) this.handleFiles(Array.from(input.files));
-  }
-
-  onDragOver(event: DragEvent) {
-    event.preventDefault();
-    event.stopPropagation();
-  }
-
-  onDrop(event: DragEvent) {
-    event.preventDefault();
-    event.stopPropagation();
-    if (event.dataTransfer?.files)
-      this.handleFiles(Array.from(event.dataTransfer.files));
   }
 
   handleFiles(newFiles: File[]) {

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, forwardRef, input } from '@angular/core';
+import { Component, computed, forwardRef, input, signal } from '@angular/core';
 import {
   ControlValueAccessor,
   NG_VALUE_ACCESSOR,
@@ -28,13 +28,13 @@ export class AppCheckboxComponent implements ControlValueAccessor {
   disabledInput = input<boolean>(false, { alias: 'disabled' });
 
   checked = false;
-  private controlDisabled = false;
+  private controlDisabled = signal(false);
   readonly isDisabled = computed(
-    () => this.controlDisabled || this.disabledInput(),
+    () => this.controlDisabled() || this.disabledInput(),
   );
 
-  onChange: any = () => {};
-  onTouched: any = () => {};
+  onChange: (value: boolean) => void = () => {};
+  onTouched: () => void = () => {};
 
   checkboxClass(): string {
     return this.variant() === 'pill'
@@ -42,20 +42,20 @@ export class AppCheckboxComponent implements ControlValueAccessor {
       : 'ui-checkbox';
   }
 
-  writeValue(obj: any): void {
+  writeValue(obj: unknown): void {
     this.checked = !!obj;
   }
 
-  registerOnChange(fn: any): void {
+  registerOnChange(fn: (value: boolean) => void): void {
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any): void {
+  registerOnTouched(fn: () => void): void {
     this.onTouched = fn;
   }
 
   setDisabledState(isDisabled: boolean): void {
-    this.controlDisabled = isDisabled;
+    this.controlDisabled.set(isDisabled);
   }
 
   onInput(event: Event): void {

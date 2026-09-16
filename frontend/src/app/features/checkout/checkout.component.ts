@@ -1,3 +1,5 @@
+import { FormControl } from '@angular/forms';
+import { LegalConsentComponent } from '../../shared/components/legal-consent/legal-consent.component';
 import { OrderInformationComponent } from '../order-information/order-information.component';
 import { OrderInformationService, InformationModel } from '../order-information/order-information.service';
 import {
@@ -48,6 +50,7 @@ import {
   selector: 'app-checkout',
   standalone: true,
   imports: [
+    LegalConsentComponent,
     OrderInformationComponent,
     CommonModule,
     ReactiveFormsModule,
@@ -64,6 +67,9 @@ import {
   styleUrls: ['./checkout.component.scss'],
 })
 export class CheckoutComponent implements OnInit {
+  get legalConsentControl(): FormControl {
+    return this.checkoutForm.get('acceptLegal') as FormControl;
+  }
   readonly informationService = inject(OrderInformationService);
   get informationModels(): InformationModel[] {
     const items: { id: string; originalFilename: string; clientModelKey?: string }[] = this.quoteSession()?.items || [];

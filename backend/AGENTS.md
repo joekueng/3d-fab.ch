@@ -13,6 +13,10 @@ The backend is a Java 21 / Spring Boot 3.4 REST application. The entry point is 
 
 Application configuration is under `src/main/resources/`; the current persistence policy is Hibernate `ddl-auto=update` in `application.properties`, and `db.sql` is repository-level database support material. OrcaSlicer profiles are under `backend/profiles/`. Local runtime storage directories are operational data, not source code.
 
+## Consistency references
+
+Read [README.md](README.md) before extending backend features. For email changes, [the email template README](src/main/resources/templates/email/README.md) is mandatory: use the shared layout fragments and compare against existing order emails. For generated documents, reuse the existing invoice template and rendering conventions.
+
 ## Implementation conventions
 
 - Keep controllers thin: validate (`@Valid`), delegate to a service, and return DTOs. Do not expose JPA entities directly.

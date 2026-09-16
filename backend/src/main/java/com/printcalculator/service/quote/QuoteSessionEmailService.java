@@ -72,7 +72,9 @@ public class QuoteSessionEmailService {
         var result = email.sendEmail(request.email().trim(), copy[0], "quote-session",
                 Map.of("language", request.language(), "title", copy[0], "intro", copy[1],
                         "action", copy[2], "expiryLabel", copy[3], "notice", copy[4],
-                        "expiresAt", prepared.expiry(), "resumeUrl", prepared.url()));
+                        "expiresAt", prepared.expiry(), "resumeUrl", prepared.url(),
+                        "logoUrl", frontend + "/assets/images/SVG/logo-giallo-spesso.svg",
+                        "currentYear", java.time.Year.now().getValue()));
         audit.recordSessionEmail(request.email().trim(), copy[0], result);
         if (result == null || !EmailSendResult.STATUS_SENT.equals(result.status())) {
             throw new ResponseStatusException(BAD_GATEWAY, "SESSION_EMAIL_FAILED");

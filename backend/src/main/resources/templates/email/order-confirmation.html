@@ -3,48 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title th:text="${emailTitle}">Order Confirmation</title>
+    <style th:replace="~{email/fragments/layout :: styles}"></style>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 20px auto;
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .header {
-            text-align: center;
-            border-bottom: 1px solid #eeeeee;
-            padding-bottom: 20px;
-            margin-bottom: 20px;
-        }
-
-        .brand-logo {
-            display: block;
-            width: 220px;
-            max-width: 220px;
-            height: auto;
-            margin: 0 auto 16px;
-        }
-
-        .header h1 {
-            color: #333333;
-            margin: 0;
-        }
-
-        .content {
-            color: #555555;
-            line-height: 1.6;
-        }
-
         .order-details {
             background-color: #f9f9f9;
             padding: 15px;
@@ -62,23 +22,11 @@
         .order-details td {
             word-break: break-word;
         }
-
-        .footer {
-            text-align: center;
-            font-size: 0.9em;
-            color: #999999;
-            margin-top: 30px;
-            border-top: 1px solid #eeeeee;
-            padding-top: 20px;
-        }
     </style>
 </head>
 <body>
 <div class="container">
-    <div class="header">
-        <img class="brand-logo" th:src="${logoUrl}" src="https://example.com/assets/images/SVG/logo-giallo-spesso.svg" alt="3D-Fab">
-        <h1 th:text="${headlineText}">Thank you for your order #00000000</h1>
-    </div>
+    <div th:replace="~{email/fragments/layout :: header(${headlineText})}"></div>
 
     <div class="content">
         <p th:text="${greetingText}">Hi Customer,</p>
@@ -111,10 +59,7 @@
         <p th:text="${supportText}">If you have questions, reply to this email.</p>
     </div>
 
-    <div class="footer">
-        <p>&copy; <span th:text="${currentYear}">2026</span> 3D-Fab</p>
-        <p th:text="${footerText}">Automated message.</p>
-    </div>
+    <div th:replace="~{email/fragments/layout :: footer(${footerText})}"></div>
 </div>
 </body>
 </html>

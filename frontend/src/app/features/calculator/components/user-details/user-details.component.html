@@ -115,36 +115,7 @@
             </div>
           </div>
 
-          <div class="legal-consent">
-            <label>
-              <input type="checkbox" formControlName="acceptLegal" />
-              <span>
-                {{ "LEGAL.CONSENT.LABEL_PREFIX" | translate }}
-                <a
-                  [href]="languageService.localizedPath('/terms')"
-                  target="_blank"
-                  rel="noopener"
-                  >{{ "LEGAL.CONSENT.TERMS_LINK" | translate }}</a
-                >
-                {{ "LEGAL.CONSENT.AND" | translate }}
-                <a
-                  [href]="languageService.localizedPath('/privacy')"
-                  target="_blank"
-                  rel="noopener"
-                  >{{ "LEGAL.CONSENT.PRIVACY_LINK" | translate }}</a
-                >.
-              </span>
-            </label>
-            <div
-              class="consent-error"
-              *ngIf="
-                form.get('acceptLegal')?.invalid &&
-                form.get('acceptLegal')?.touched
-              "
-            >
-              {{ "LEGAL.CONSENT.REQUIRED_ERROR" | translate }}
-            </div>
-          </div>
+          <app-legal-consent [control]="legalConsentControl"></app-legal-consent>
 
           <div class="actions">
             <app-button type="button" variant="outline" (click)="onCancel()">

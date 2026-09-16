@@ -2,6 +2,23 @@
 
 A full-stack application (Angular + Spring Boot) for calculating accurate 3D-printing quotes with **OrcaSlicer** running headlessly.
 
+## Contributing and AI agents: preserve project conventions
+
+Before implementing anything, read [AGENTS.md](AGENTS.md), the nearest module guide, and the relevant README. This applies to UI, emails, PDFs, APIs, background jobs, tests, and documentation.
+
+1. Find an existing implementation of the same kind and inspect its markup, styles, service flow, naming, copy, and tests before editing. Prefer established shared implementations over the most recent feature if they differ.
+2. Reuse the existing components, templates, tokens, helpers, and architecture. Extend the shared implementation when a generic capability is missing; do not introduce a separate visual language or parallel infrastructure for one feature.
+3. Preserve typography, colors, spacing, logo, headers/footers, terminology, localization, validation, and loading/error/success behavior on the affected surface. A new feature is not authorization for a redesign.
+4. Keep necessary exceptions small and explain their concrete reason in the change description. When introducing a reusable convention, document its source of truth in the relevant README and link it from AGENTS.md.
+5. Run the relevant checks and compare the rendered result with the existing reference, including narrow screens and long translated content where applicable. Report the reference reused, validation performed, and any verification limitations.
+
+| Area | Source of truth and implementation guide |
+| --- | --- |
+| Public and admin UI | [Frontend README](frontend/README.md), [frontend agent guide](frontend/AGENTS.md), shared controls and `frontend/src/styles/` |
+| Backend services, APIs, integrations | [Backend README](backend/README.md), [backend agent guide](backend/AGENTS.md), nearest existing domain implementation |
+| Transactional email | [Email template README](backend/src/main/resources/templates/email/README.md), shared Thymeleaf fragments and established order emails |
+| Invoices and generated documents | `backend/src/main/resources/templates/invoice.html`, `invoice-logo.svg`, and their existing generation services; retain document-specific layout and formatting |
+
 ## Features
 
 * **Real slicing:** Uses the OrcaSlicer engine to estimate print time and material as accurately as possible.

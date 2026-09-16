@@ -11,12 +11,19 @@ import { TranslateModule } from '@ngx-translate/core';
 import {
   PRODUCT_COLORS,
   getColorHex,
-  ColorCategory,
   ColorOption,
   resolveLocalizedColorLabel,
 } from '../../../core/constants/colors.const';
 import { VariantOption } from '../../../features/calculator/services/quote-estimator.service';
 import { LanguageService } from '../../../core/services/language.service';
+
+export interface ColorSelectorChoice extends Omit<ColorOption, 'variantId'> {
+  variantId?: string | number;
+}
+export interface ColorSelectorGroup {
+  name: string;
+  colors: ColorSelectorChoice[];
+}
 
 @Component({
   selector: 'app-color-selector',
@@ -29,13 +36,18 @@ export class ColorSelectorComponent {
   private readonly languageService = inject(LanguageService);
   disabled = input(false);
   selectedColor = input<string>('Black');
-  selectedVariantId = input<number | null>(null);
+  selectedVariantId = input<string | number | null>(null);
   variants = input<VariantOption[]>([]);
   colorSelected = output<{ colorName: string; filamentVariantId?: number }>();
 
+  groups = input<ColorSelectorGroup[] | null>(null);
+  showLabel = input(false);
+  subtitle = input('');
+  variantSelected = output<string | number>();
   isOpen = signal(false);
 
-  categories = computed(() => {
+  categories = computed<ColorSelectorGroup[]>(() => {
+    if (this.groups() !== null) return this.groups()!;
     const vars = this.variants();
     if (vars && vars.length > 0) {
       const byFinish = new Map<string, ColorOption[]>();
@@ -62,7 +74,7 @@ export class ColorSelectorComponent {
       return Array.from(byFinish.entries()).map(([finish, colors]) => ({
         name: finish,
         colors,
-      })) as ColorCategory[];
+      }));
     }
     return PRODUCT_COLORS;
   });
@@ -72,36 +84,30 @@ export class ColorSelectorComponent {
     this.isOpen.update((v) => !v);
   }
 
-  selectColor(color: ColorOption) {
+  selectColor(color: ColorSelectorChoice) {
     if (this.disabled() || color.outOfStock) return;
 
+    if (color.variantId !== undefined) this.variantSelected.emit(color.variantId);
     this.colorSelected.emit({
       colorName: color.value,
-      filamentVariantId: color.variantId,
+      filamentVariantId: typeof color.variantId === 'number' ? color.variantId : undefined,
     });
     this.isOpen.set(false);
   }
 
-  // Helper to find hex for the current selected value
-  getCurrentHex(): string {
-    // Check in dynamic variants first
-    const vars = this.variants();
-    if (vars && vars.length > 0) {
-      const found = vars.find((v) => v.colorName === this.selectedColor());
-      if (found) return found.hexColor;
-    }
+  private selectedChoice(): ColorSelectorChoice | undefined {
+    const choices = this.categories().flatMap((category) => category.colors);
+    return this.selectedVariantId() !== null
+      ? choices.find((choice) => choice.variantId === this.selectedVariantId())
+      : choices.find((choice) => choice.value === this.selectedColor());
+  }
 
-    return getColorHex(this.selectedColor());
+  getCurrentHex(): string {
+    return this.selectedChoice()?.hex ?? getColorHex(this.selectedColor());
   }
 
   getCurrentLabel(): string {
-    for (const category of this.categories()) {
-      const color = category.colors.find(
-        (entry) => entry.value === this.selectedColor(),
-      );
-      if (color) return color.label;
-    }
-    return this.selectedColor();
+    return this.selectedChoice()?.label ?? this.selectedColor();
   }
 
   private finishCategoryLabel(finishType: string): string {

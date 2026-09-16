@@ -30,6 +30,13 @@ Read the nearest `AGENTS.md` before editing. The backend and frontend guides con
 - `docs/uml/en/` — English architecture diagrams; matching source diagrams are under `docs/uml/`.
 - `scripts/` — repository-level local checks and diagnostic scripts.
 
+## Consistency is required for every implementation
+
+- Read the [contribution workflow in README.md](README.md#contributing-and-ai-agents-preserve-project-conventions) and the relevant module README before implementing a feature.
+- Inspect an established implementation of the same kind first. Reuse its shared building blocks, visual style, terminology, architecture, and behavior; a new feature must not create a separate design or implementation pattern.
+- For emails, read the [email template guide](backend/src/main/resources/templates/email/README.md) and reuse the shared Thymeleaf fragments. For PDFs, inspect the existing invoice template and generation service. For UI, follow the frontend guide and shared controls/tokens.
+- Document reusable conventions at their source, link them from the relevant agent guide, and verify rendered output against the reference. Mention any necessary exception and validation limitations in the final handoff.
+
 ## Cross-cutting rules
 
 - Preserve the existing controller → service → repository flow. Controllers should validate and map HTTP concerns; services own business rules and transactions.

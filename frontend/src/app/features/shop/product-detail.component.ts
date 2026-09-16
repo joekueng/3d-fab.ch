@@ -1,3 +1,4 @@
+import { ColorSelectorComponent } from '../../shared/components/color-selector/color-selector.component';
 import { CommonModule, Location, isPlatformBrowser } from '@angular/common';
 import {
   RESPONSE_INIT,
@@ -59,6 +60,7 @@ interface ShopMaterialProperty {
   selector: 'app-product-detail',
   standalone: true,
   imports: [
+    ColorSelectorComponent,
     CommonModule,
     RouterLink,
     TranslateModule,
@@ -104,7 +106,6 @@ export class ProductDetailComponent {
   readonly isAddingToCart = signal(false);
   readonly addSuccess = signal(false);
   readonly selectedMaterialKey = signal<string | null>(null);
-  readonly colorPopupOpen = signal(false);
   readonly modelModalOpen = signal(false);
 
   readonly modelLoading = signal(false);
@@ -173,6 +174,21 @@ export class ProductDetailComponent {
   readonly colorOptions = computed<ShopProductVariantOption[]>(
     () => this.selectedMaterial()?.variants ?? [],
   );
+
+  readonly colorGroups = computed(() => [{
+    name: this.selectedMaterial()?.label ?? '',
+    colors: this.colorOptions().map((variant) => ({
+      variantId: variant.id,
+      value: variant.colorName ?? '',
+      label: this.colorLabel(variant),
+      hex: this.colorHex(variant),
+    })),
+  }]);
+
+  selectColorVariant(id: string | number): void {
+    const variant = this.colorOptions().find((option) => option.id === id);
+    if (variant) this.selectVariant(variant);
+  }
 
   readonly selectedMaterialProperties = computed<ShopMaterialProperty[]>(() =>
     this.materialPropertiesFor(this.selectedMaterial()?.label),
@@ -252,7 +268,6 @@ export class ProductDetailComponent {
           this.error.set(null);
           this.addSuccess.set(false);
           this.modelError.set(false);
-          this.colorPopupOpen.set(false);
           this.modelModalOpen.set(false);
         }),
         switchMap(([routeParams]) => {
@@ -405,13 +420,11 @@ export class ProductDetailComponent {
   selectVariant(variant: ShopProductVariantOption): void {
     this.selectedVariantId.set(variant.id);
     this.selectedMaterialKey.set(this.materialKeyForVariant(variant));
-    this.colorPopupOpen.set(false);
     this.addSuccess.set(false);
   }
 
   selectMaterial(materialKey: string): void {
     this.selectedMaterialKey.set(materialKey);
-    this.colorPopupOpen.set(false);
     const material = this.materialOptions().find(
       (item) => item.key === materialKey,
     );
@@ -505,21 +518,12 @@ export class ProductDetailComponent {
     return material.variants.length;
   }
 
-  toggleColorPopup(): void {
-    this.colorPopupOpen.update((open) => !open);
-  }
-
-  closeColorPopup(): void {
-    this.colorPopupOpen.set(false);
-  }
 
   openModelModal(): void {
     const model = this.product()?.model3d;
     if (!model) {
       return;
     }
-
-    this.colorPopupOpen.set(false);
     this.modelModalOpen.set(true);
 
     if (this.modelFile() || this.modelLoading()) {
