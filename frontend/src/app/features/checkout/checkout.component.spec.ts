@@ -83,7 +83,9 @@ describe('CheckoutComponent', () => {
     );
 
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting(),
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         FormBuilder,
         {
           provide: QuoteEstimatorService,

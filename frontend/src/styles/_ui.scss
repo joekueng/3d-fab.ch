@@ -1338,7 +1338,6 @@ select.ui-form-control {
   }
 }
 
-
 // Shared upload treatment for contact messages and order instructions.
 .ui-upload-zone {
   position: relative;
@@ -1349,7 +1348,9 @@ select.ui-form-control {
   text-align: center;
   cursor: pointer;
   color: var(--color-text-muted);
-  transition: border-color 0.2s, color 0.2s;
+  transition:
+    border-color 0.2s,
+    color 0.2s;
 
   &:hover {
     border-color: var(--color-brand);
@@ -1370,7 +1371,9 @@ select.ui-form-control {
     cursor: pointer;
   }
 
-  p { margin: 0 0 var(--space-4); }
+  p {
+    margin: 0 0 var(--space-4);
+  }
 }
 
 .ui-upload-privacy-note {

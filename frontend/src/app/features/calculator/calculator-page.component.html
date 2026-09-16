@@ -67,7 +67,7 @@
       </app-card>
       @if (!loading() && result()?.sessionId) {
         <app-card>
-          <h3>{{ 'SESSION_EMAIL.TITLE' | translate }}</h3>
+          <h3>{{ "SESSION_EMAIL.TITLE" | translate }}</h3>
           <app-session-email
             [sessionId]="result()!.sessionId!"
             [expiresAt]="result()!.expiresAt!"

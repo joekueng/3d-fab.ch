@@ -56,7 +56,9 @@ describe('UploadFormComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [UploadFormComponent, TranslateModule.forRoot()],
-      providers: [provideHttpClient(), provideHttpClientTesting(),
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         {
           provide: QuoteEstimatorService,
           useValue: { getOptions: () => of(options) },

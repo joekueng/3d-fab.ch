@@ -163,7 +163,10 @@ describe('CalculatorPageComponent', () => {
 
   it('shows benefits only before a session exists, including during server rendering', () => {
     expect(createComponent().component.showBenefits).toBeTrue();
-    expect(createComponent('server', { session: 'restored-session' }).component.showBenefits).toBeFalse();
+    expect(
+      createComponent('server', { session: 'restored-session' }).component
+        .showBenefits,
+    ).toBeFalse();
     const { component } = createComponent();
     component.loading.set(true);
     expect(component.showBenefits).toBeFalse();

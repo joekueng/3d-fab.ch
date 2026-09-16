@@ -18,7 +18,17 @@ describe('QuoteEstimatorService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting(), { provide: OrderInformationService, useValue: { saveDraft: () => Promise.resolve({ id: 'draft', token: 'key' }), draftCredential: () => ({ id: 'draft', token: 'key' }) } }],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        {
+          provide: OrderInformationService,
+          useValue: {
+            saveDraft: () => Promise.resolve({ id: 'draft', token: 'key' }),
+            draftCredential: () => ({ id: 'draft', token: 'key' }),
+          },
+        },
+      ],
     });
     service = TestBed.inject(QuoteEstimatorService);
     httpTesting = TestBed.inject(HttpTestingController);

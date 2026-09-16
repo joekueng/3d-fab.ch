@@ -16,7 +16,11 @@ import {
 export class CopyOnClickDirective {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
-  @Input('appCopyOnClick') value: string | null | undefined | (() => Promise<string>);
+  @Input('appCopyOnClick') value:
+    | string
+    | null
+    | undefined
+    | (() => Promise<string>);
 
   readonly copySucceeded = output<void>();
   readonly copyFailed = output<unknown>();
@@ -32,7 +36,11 @@ export class CopyOnClickDirective {
 
   private async resolveAndCopy(): Promise<void> {
     try {
-      const text = (typeof this.value === 'function' ? await this.value() : this.value ?? '').trim();
+      const text = (
+        typeof this.value === 'function'
+          ? await this.value()
+          : (this.value ?? '')
+      ).trim();
       if (!text) return;
       await this.copy(text);
       this.copySucceeded.emit();
@@ -62,7 +70,8 @@ export class CopyOnClickDirective {
     document.body.appendChild(textarea);
     textarea.select();
     try {
-      if (!document.execCommand('copy')) throw new Error('Clipboard unavailable');
+      if (!document.execCommand('copy'))
+        throw new Error('Clipboard unavailable');
     } finally {
       document.body.removeChild(textarea);
     }

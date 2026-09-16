@@ -1,4 +1,6 @@
-:host { display: block; }
+:host {
+  display: block;
+}
 
 :host > .ui-form-hint {
   margin-bottom: var(--space-2);

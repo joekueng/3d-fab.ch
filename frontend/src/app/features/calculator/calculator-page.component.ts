@@ -316,7 +316,11 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
       },
       error: (err) => {
         console.error('Failed to load session', err);
-        this.setQuoteError(err?.status === 410 || err?.status === 404 ? 'SESSION_EMAIL.UNAVAILABLE' : 'CALC.ERROR_GENERIC');
+        this.setQuoteError(
+          err?.status === 410 || err?.status === 404
+            ? 'SESSION_EMAIL.UNAVAILABLE'
+            : 'CALC.ERROR_GENERIC',
+        );
         this.loading.set(false);
       },
     });
@@ -996,7 +1000,13 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
         }
 
         if ((item.clientModelKey || item.id) && this.uploadForm.items?.update) {
-          this.uploadForm.items.update(items => items.map((entry, i) => i === index ? { ...entry, clientKey: item.clientModelKey || item.id } : entry));
+          this.uploadForm.items.update((items) =>
+            items.map((entry, i) =>
+              i === index
+                ? { ...entry, clientKey: item.clientModelKey || item.id }
+                : entry,
+            ),
+          );
         }
         // Preserve persisted quantities when restoring from session.
         // Without this, setFiles() defaults every item back to 1.
