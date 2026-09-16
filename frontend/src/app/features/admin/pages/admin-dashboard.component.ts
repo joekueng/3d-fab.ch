@@ -148,9 +148,20 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   unreadInformation = new Set<string>();
-  get informationModels(): InformationModel[] { return (this.selectedOrder?.items || []).map((item, index) => ({ label: `${index + 1}. ${this.itemDisplayName(item)}`, value: item.clientModelKey || item.id })); }
+  get informationModels(): InformationModel[] {
+    return (this.selectedOrder?.items || []).map((item, index) => ({
+      label: `${index + 1}. ${this.itemDisplayName(item)}`,
+      value: item.clientModelKey || item.id,
+    }));
+  }
   async refreshUnreadInformation(): Promise<void> {
-    try { this.unreadInformation = new Set(await firstValueFrom(this.adminOrdersService.getUnreadInformation())); } catch { /* Order list remains available. */ }
+    try {
+      this.unreadInformation = new Set(
+        await firstValueFrom(this.adminOrdersService.getUnreadInformation()),
+      );
+    } catch {
+      /* Order list remains available. */
+    }
   }
   loadOrders(): void {
     void this.refreshUnreadInformation();

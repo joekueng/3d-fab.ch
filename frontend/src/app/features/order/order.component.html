@@ -179,7 +179,11 @@
         </app-card>
       </div>
 
-      <app-order-information class="order-information" [orderId]="o.id" [models]="informationModels" />
+      <app-order-information
+        class="order-information"
+        [orderId]="o.id"
+        [models]="informationModels"
+      />
       <div class="payment-summary">
         <app-card class="sticky-card">
           <div class="ui-card-header">

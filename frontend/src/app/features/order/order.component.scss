@@ -447,9 +447,17 @@
   }
 }
 
-.payment-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-.payment-main { grid-column: 1 / -1; }
-.order-information { min-width: 0; }
+.payment-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+.payment-main {
+  grid-column: 1 / -1;
+}
+.order-information {
+  min-width: 0;
+}
 @media (max-width: 767px) {
-  .payment-layout { grid-template-columns: minmax(0, 1fr); }
+  .payment-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

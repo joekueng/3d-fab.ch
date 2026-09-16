@@ -177,32 +177,70 @@ export class QuoteEstimatorService {
   getQuoteSession(sessionId: string): Observable<any> {
     return defer(() => {
       const access = this.http.post<{ id: string; token: string } | null>(
-        `${environment.apiUrl}/api/quote-sessions/${sessionId}/resume`, {},
+        `${environment.apiUrl}/api/quote-sessions/${sessionId}/resume`,
+        {},
       );
-      return access.pipe(switchMap(credential =>
-        this.http.get<{ session: { informationDraftId?: string; notes?: string } }>(
-          `${environment.apiUrl}/api/quote-sessions/${sessionId}`,
-        ).pipe(switchMap(data => from(this.information.useDraft(
-          data.session.informationDraftId, data.session.notes, sessionId, credential?.token,
-        )).pipe(switchMap(() => of(data))))),
-      ));
+      return access.pipe(
+        switchMap((credential) =>
+          this.http
+            .get<{
+              session: { informationDraftId?: string; notes?: string };
+            }>(`${environment.apiUrl}/api/quote-sessions/${sessionId}`)
+            .pipe(
+              switchMap((data) =>
+                from(
+                  this.information.useDraft(
+                    data.session.informationDraftId,
+                    data.session.notes,
+                    sessionId,
+                    credential?.token,
+                  ),
+                ).pipe(switchMap(() => of(data))),
+              ),
+            ),
+        ),
+      );
     });
   }
 
-  sessionLink(sessionId: string, language: string, mode: 'easy' | 'advanced'): Observable<{ url: string }> {
-    return defer(() => from(this.information.saveDraft())).pipe(switchMap(information =>
-      this.http.post<{ url: string }>(`${environment.apiUrl}/api/quote-sessions/${sessionId}/link`, {
-        language, mode, information,
-      }),
-    ));
+  sessionLink(
+    sessionId: string,
+    language: string,
+    mode: 'easy' | 'advanced',
+  ): Observable<{ url: string }> {
+    return defer(() => from(this.information.saveDraft())).pipe(
+      switchMap((information) =>
+        this.http.post<{ url: string }>(
+          `${environment.apiUrl}/api/quote-sessions/${sessionId}/link`,
+          {
+            language,
+            mode,
+            information,
+          },
+        ),
+      ),
+    );
   }
 
-  emailSession(sessionId: string, email: string, language: string, mode: 'easy' | 'advanced'): Observable<void> {
-    return defer(() => from(this.information.saveDraft())).pipe(switchMap(information =>
-      this.http.post<void>(`${environment.apiUrl}/api/quote-sessions/${sessionId}/email`, {
-        email, language, mode, information,
-      }),
-    ));
+  emailSession(
+    sessionId: string,
+    email: string,
+    language: string,
+    mode: 'easy' | 'advanced',
+  ): Observable<void> {
+    return defer(() => from(this.information.saveDraft())).pipe(
+      switchMap((information) =>
+        this.http.post<void>(
+          `${environment.apiUrl}/api/quote-sessions/${sessionId}/email`,
+          {
+            email,
+            language,
+            mode,
+            information,
+          },
+        ),
+      ),
+    );
   }
 
   updateLineItem(lineItemId: string, changes: any): Observable<any> {
@@ -227,11 +265,24 @@ export class QuoteEstimatorService {
 
   createOrder(sessionId: string, orderDetails: any): Observable<any> {
     const headers: any = {};
-    return from(this.information.saveDraft()).pipe(switchMap(credential => this.http.post<{ id: string; informationToken?: string }>(
-      `${environment.apiUrl}/api/orders/from-quote/${sessionId}`,
-      { ...orderDetails, informationToken: credential.token, informationDraftId: credential.id },
-      { headers },
-    )), tap(order => { if (order.informationToken) this.information.rememberOrder(order.id, order.informationToken); this.information.resetDraft(); }));
+    return from(this.information.saveDraft()).pipe(
+      switchMap((credential) =>
+        this.http.post<{ id: string; informationToken?: string }>(
+          `${environment.apiUrl}/api/orders/from-quote/${sessionId}`,
+          {
+            ...orderDetails,
+            informationToken: credential.token,
+            informationDraftId: credential.id,
+          },
+          { headers },
+        ),
+      ),
+      tap((order) => {
+        if (order.informationToken)
+          this.information.rememberOrder(order.id, order.informationToken);
+        this.information.resetDraft();
+      }),
+    );
   }
 
   getOrder(orderId: string): Observable<any> {
@@ -292,10 +343,14 @@ export class QuoteEstimatorService {
   }
 
   calculate(request: QuoteRequest): Observable<number | QuoteResult> {
-    return from(this.information.saveDraft()).pipe(switchMap(() => this.calculateWithInformation(request)));
+    return from(this.information.saveDraft()).pipe(
+      switchMap(() => this.calculateWithInformation(request)),
+    );
   }
 
-  private calculateWithInformation(request: QuoteRequest): Observable<number | QuoteResult> {
+  private calculateWithInformation(
+    request: QuoteRequest,
+  ): Observable<number | QuoteResult> {
     if (!request.items || request.items.length === 0) {
       return of(0);
     }
@@ -304,7 +359,11 @@ export class QuoteEstimatorService {
       const headers: any = {};
 
       this.http
-        .post<any>(`${environment.apiUrl}/api/quote-sessions`, { information: this.information.draftCredential() }, { headers })
+        .post<any>(
+          `${environment.apiUrl}/api/quote-sessions`,
+          { information: this.information.draftCredential() },
+          { headers },
+        )
         .subscribe({
           next: (sessionRes) => {
             const sessionId = String(sessionRes?.id || '');

@@ -759,7 +759,12 @@ export class UploadFormComponent implements OnInit {
     this.onSameSettingsToggle(sameSettingsForAll);
 
     request.items.forEach((item, index) => {
-      if (item.clientModelKey) this.items.update(items => items.map((entry, i) => i === index ? { ...entry, clientKey: item.clientModelKey! } : entry));
+      if (item.clientModelKey)
+        this.items.update((items) =>
+          items.map((entry, i) =>
+            i === index ? { ...entry, clientKey: item.clientModelKey! } : entry,
+          ),
+        );
       this.updateItemQuantityByIndex(index, Number(item.quantity || 1));
       this.setItemPrintSettingsByIndex(index, {
         material: item.material ?? request.material,

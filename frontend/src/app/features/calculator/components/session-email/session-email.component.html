@@ -1,34 +1,93 @@
-<p class="ui-form-hint">{{ 'SESSION_EMAIL.HINT' | translate }}</p>
+<p class="ui-form-hint">{{ "SESSION_EMAIL.HINT" | translate }}</p>
 <div class="session-links">
-  <app-button type="button" variant="secondary" [appCopyOnClick]="copyLink"
-    (copySucceeded)="finishCopy()" (copyFailed)="failCopy($event)"
-    [disabled]="sending() || information.busy() || recalculationRequired() || missingModel()">
-    {{ (copying() ? 'SESSION_EMAIL.COPYING' : 'SESSION_EMAIL.COPY') | translate }}
+  <app-button
+    type="button"
+    variant="secondary"
+    [appCopyOnClick]="copyLink"
+    (copySucceeded)="finishCopy()"
+    (copyFailed)="failCopy($event)"
+    [disabled]="
+      sending() ||
+      information.busy() ||
+      recalculationRequired() ||
+      missingModel()
+    "
+  >
+    {{
+      (copying() ? "SESSION_EMAIL.COPYING" : "SESSION_EMAIL.COPY") | translate
+    }}
   </app-button>
   @if (!expanded()) {
-    <app-button type="button" variant="secondary" [disabled]="sending()" (click)="expanded.set(true); sent.set(false)">
-      {{ 'SESSION_EMAIL.OPEN' | translate }}
+    <app-button
+      type="button"
+      variant="secondary"
+      [disabled]="sending()"
+      (click)="expanded.set(true); sent.set(false)"
+    >
+      {{ "SESSION_EMAIL.OPEN" | translate }}
     </app-button>
   }
 </div>
-@if (recalculationRequired()) { <p class="ui-form-hint">{{ 'SESSION_EMAIL.RECALCULATE' | translate }}</p> }
-@if (missingModel()) { <p class="ui-form-error">{{ 'INFORMATION.MODEL_REMOVED' | translate }}</p> }
+@if (recalculationRequired()) {
+  <p class="ui-form-hint">{{ "SESSION_EMAIL.RECALCULATE" | translate }}</p>
+}
+@if (missingModel()) {
+  <p class="ui-form-error">{{ "INFORMATION.MODEL_REMOVED" | translate }}</p>
+}
 @if (expanded()) {
   <form [formGroup]="form" (ngSubmit)="send()">
-    <app-input formControlName="email" type="email" autocomplete="email" [required]="true"
-      [label]="'SESSION_EMAIL.EMAIL_LABEL' | translate" [readonly]="sending()" />
+    <app-input
+      formControlName="email"
+      type="email"
+      autocomplete="email"
+      [required]="true"
+      [label]="'SESSION_EMAIL.EMAIL_LABEL' | translate"
+      [readonly]="sending()"
+    />
     <div class="ui-actions ui-actions--end">
-      <app-button type="button" variant="secondary" [disabled]="sending()" (click)="expanded.set(false)">{{ 'SESSION_EMAIL.CANCEL' | translate }}</app-button>
-      <app-button type="submit" [disabled]="form.invalid || sending() || information.busy() || recalculationRequired() || missingModel()">
-        {{ (sending() ? 'SESSION_EMAIL.SENDING' : 'SESSION_EMAIL.SEND') | translate }}
+      <app-button
+        type="button"
+        variant="secondary"
+        [disabled]="sending()"
+        (click)="expanded.set(false)"
+        >{{ "SESSION_EMAIL.CANCEL" | translate }}</app-button
+      >
+      <app-button
+        type="submit"
+        [disabled]="
+          form.invalid ||
+          sending() ||
+          information.busy() ||
+          recalculationRequired() ||
+          missingModel()
+        "
+      >
+        {{
+          (sending() ? "SESSION_EMAIL.SENDING" : "SESSION_EMAIL.SEND")
+            | translate
+        }}
       </app-button>
     </div>
   </form>
 }
-@if (sent()) { <p role="status" class="ui-form-hint">{{ 'SESSION_EMAIL.SENT' | translate }}</p> }
-@if (error()) { <p role="alert" class="ui-form-error">{{ error() | translate }}</p> }
+@if (sent()) {
+  <p role="status" class="ui-form-hint">
+    {{ "SESSION_EMAIL.SENT" | translate }}
+  </p>
+}
+@if (error()) {
+  <p role="alert" class="ui-form-error">{{ error() | translate }}</p>
+}
 
-@if (copied()) { <p role="status" class="ui-form-hint">{{ 'SESSION_EMAIL.COPIED' | translate }}</p> }
-@if (error() === 'SESSION_EMAIL.COPY_ERROR') {
-  <app-input [formControl]="linkControl" [readonly]="true" [label]="'SESSION_EMAIL.COPY' | translate" />
+@if (copied()) {
+  <p role="status" class="ui-form-hint">
+    {{ "SESSION_EMAIL.COPIED" | translate }}
+  </p>
+}
+@if (error() === "SESSION_EMAIL.COPY_ERROR") {
+  <app-input
+    [formControl]="linkControl"
+    [readonly]="true"
+    [label]="'SESSION_EMAIL.COPY' | translate"
+  />
 }

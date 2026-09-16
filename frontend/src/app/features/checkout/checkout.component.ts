@@ -1,5 +1,8 @@
 import { OrderInformationComponent } from '../order-information/order-information.component';
-import { OrderInformationService, InformationModel } from '../order-information/order-information.service';
+import {
+  OrderInformationService,
+  InformationModel,
+} from '../order-information/order-information.service';
 import {
   Component,
   inject,
@@ -66,8 +69,15 @@ import {
 export class CheckoutComponent implements OnInit {
   readonly informationService = inject(OrderInformationService);
   get informationModels(): InformationModel[] {
-    const items: { id: string; originalFilename: string; clientModelKey?: string }[] = this.quoteSession()?.items || [];
-    return items.map((item, index) => ({ label: `${index + 1}. ${item.originalFilename}`, value: item.clientModelKey || item.id }));
+    const items: {
+      id: string;
+      originalFilename: string;
+      clientModelKey?: string;
+    }[] = this.quoteSession()?.items || [];
+    return items.map((item, index) => ({
+      label: `${index + 1}. ${item.originalFilename}`,
+      value: item.clientModelKey || item.id,
+    }));
   }
   private fb = inject(FormBuilder);
   private quoteService = inject(QuoteEstimatorService);
