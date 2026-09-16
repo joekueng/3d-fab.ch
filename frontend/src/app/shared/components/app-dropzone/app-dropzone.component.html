@@ -4,10 +4,18 @@
   (dragover)="onDragOver($event)"
   (dragleave)="onDragLeave($event)"
   (drop)="onDrop($event)"
-  (click)="fileInput.click()"
+  (click)="!disabled() && fileInput.click()"
+  (keydown.enter)="!disabled() && fileInput.click()"
+  (keydown.space)="$event.preventDefault(); !disabled() && fileInput.click()"
+  role="button"
+  [attr.tabindex]="disabled() ? -1 : 0"
+  [attr.aria-disabled]="disabled()"
+  [attr.aria-label]="label() | translate"
 >
   <input
     #fileInput
+    (click)="$event.stopPropagation()"
+    [disabled]="disabled()"
     type="file"
     (change)="onFileSelected($event)"
     hidden
@@ -36,11 +44,13 @@
       </svg>
     </div>
     <p class="text">{{ label() | translate }}</p>
-    <p class="subtext">{{ subtext() | translate }}</p>
+    @if (subtext()) {
+      <p class="subtext">{{ subtext() | translate }}</p>
+    }
 
-    @if (fileNames().length > 0) {
+    @if (showFileNames() && fileNames().length > 0) {
       <div class="file-badges">
-        @for (name of fileNames(); track name) {
+        @for (name of fileNames(); track $index) {
           <div class="file-badge">{{ name }}</div>
         }
       </div>

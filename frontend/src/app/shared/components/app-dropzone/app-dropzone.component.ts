@@ -14,6 +14,8 @@ export class AppDropzoneComponent {
   subtext = input<string>('DROPZONE.DEFAULT_SUBTEXT');
   accept = input<string>('.stl,.3mf');
   multiple = input<boolean>(true);
+  showFileNames = input(true);
+  disabled = input(false);
 
   filesDropped = output<File[]>();
 
@@ -23,7 +25,7 @@ export class AppDropzoneComponent {
   onDragOver(e: Event) {
     e.preventDefault();
     e.stopPropagation();
-    this.isDragOver.set(true);
+    if (!this.disabled()) this.isDragOver.set(true);
   }
 
   onDragLeave(e: Event) {
@@ -33,24 +35,25 @@ export class AppDropzoneComponent {
   }
 
   onDrop(e: DragEvent) {
-    console.log('Drop event', e);
     e.preventDefault();
     e.stopPropagation();
     this.isDragOver.set(false);
-    if (e.dataTransfer?.files.length) {
+    if (!this.disabled() && e.dataTransfer?.files.length) {
       this.handleFiles(Array.from(e.dataTransfer.files));
     }
   }
 
   onFileSelected(e: Event) {
-    console.log('File selected', e);
     const input = e.target as HTMLInputElement;
     if (input.files?.length) {
       this.handleFiles(Array.from(input.files));
+      input.value = '';
     }
   }
 
   handleFiles(files: File[]) {
+    if (this.disabled()) return;
+    files = this.multiple() ? files : files.slice(0, 1);
     const newNames = files.map((f) => f.name);
     this.fileNames.update((current) => [...current, ...newNames]);
     this.filesDropped.emit(files);

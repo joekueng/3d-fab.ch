@@ -15,6 +15,7 @@ import {
 } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { HttpErrorResponse } from '@angular/common/http';
+import { DatePipe } from '@angular/common';
 import { finalize, firstValueFrom } from 'rxjs';
 import { CopyOnClickDirective } from '../../../../shared/directives/copy-on-click.directive';
 import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
@@ -31,6 +32,7 @@ import {
   imports: [
     ReactiveFormsModule,
     TranslateModule,
+    DatePipe,
     AppButtonComponent,
     AppInputComponent,
     CopyOnClickDirective,
@@ -44,6 +46,7 @@ export class SessionEmailComponent {
   private readonly translate = inject(TranslateService);
   readonly information = inject(OrderInformationService);
   readonly sessionId = input.required<string>();
+  readonly expiresAt = input.required<string>();
   readonly mode = input<'easy' | 'advanced'>('easy');
   readonly recalculationRequired = input(false);
   readonly models = input<InformationModel[]>([]);

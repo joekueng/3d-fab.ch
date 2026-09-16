@@ -206,37 +206,9 @@
             </div>
           </app-card>
 
-          <div class="legal-consent">
-            <label class="ui-checkbox">
-              <input type="checkbox" formControlName="acceptLegal" />
-              <span class="ui-checkbox__mark"></span>
-              <span>
-                {{ "LEGAL.CONSENT.LABEL_PREFIX" | translate }}
-                <a
-                  [href]="languageService.localizedPath('/terms')"
-                  target="_blank"
-                  rel="noopener"
-                  >{{ "LEGAL.CONSENT.TERMS_LINK" | translate }}</a
-                >
-                {{ "LEGAL.CONSENT.AND" | translate }}
-                <a
-                  [href]="languageService.localizedPath('/privacy')"
-                  target="_blank"
-                  rel="noopener"
-                  >{{ "LEGAL.CONSENT.PRIVACY_LINK" | translate }}</a
-                >.
-              </span>
-            </label>
-            <div
-              class="consent-error"
-              *ngIf="
-                checkoutForm.get('acceptLegal')?.invalid &&
-                checkoutForm.get('acceptLegal')?.touched
-              "
-            >
-              {{ "LEGAL.CONSENT.REQUIRED_ERROR" | translate }}
-            </div>
-          </div>
+          <app-legal-consent
+            [control]="legalConsentControl"
+          ></app-legal-consent>
 
           <div class="ui-actions">
             @if (shippingUnavailable()) {
@@ -415,29 +387,17 @@
   </div>
 </div>
 
-<div
-  class="preview-modal-backdrop"
+<app-dialog
   *ngIf="previewModalOpen()"
-  (click)="closePreview()"
+  [title]="selectedPreviewName()"
+  [closeLabel]="'CHECKOUT.PREVIEW_CLOSE' | translate"
+  (dismissed)="closePreview()"
 >
-  <div class="preview-modal" (click)="$event.stopPropagation()">
-    <div class="preview-modal-header">
-      <h4>{{ selectedPreviewName() }}</h4>
-      <button
-        type="button"
-        class="preview-modal-close"
-        (click)="closePreview()"
-        [attr.aria-label]="'CHECKOUT.PREVIEW_CLOSE' | translate"
-      >
-        ×
-      </button>
-    </div>
-    <app-stl-viewer
-      *ngIf="selectedPreviewFile() as preview"
-      [file]="preview"
-      [height]="460"
-      [color]="selectedPreviewColor()"
-      [borderRadius]="'var(--radius-lg)'"
-    ></app-stl-viewer>
-  </div>
-</div>
+  <app-stl-viewer
+    *ngIf="selectedPreviewFile() as preview"
+    [file]="preview"
+    [height]="460"
+    [color]="selectedPreviewColor()"
+    [borderRadius]="'var(--radius-lg)'"
+  ></app-stl-viewer>
+</app-dialog>

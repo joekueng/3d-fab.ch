@@ -79,6 +79,7 @@ export interface QuoteResult {
     status: 'QUOTED' | 'NOT_REQUIRED' | 'PENDING' | 'MANUAL_QUOTE';
   };
   sessionId?: string;
+  expiresAt?: string;
   items: QuoteItem[];
   baseSetupCost?: number;
   nozzleChangeCost?: number;
@@ -671,6 +672,7 @@ export class QuoteEstimatorService {
 
     return {
       sessionId: session?.id,
+      expiresAt: session?.expiresAt,
       shippingCost: Number(sessionData?.shippingCostChf ?? 0),
       shippingQuote: sessionData?.shippingQuote,
       items: items.map((item: any) => ({

@@ -1,3 +1,4 @@
+import { PrintSettingsComponent } from '../print-settings/print-settings.component';
 import {
   Component,
   input,
@@ -54,6 +55,7 @@ import {
   selector: 'app-upload-form',
   standalone: true,
   imports: [
+    PrintSettingsComponent,
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,

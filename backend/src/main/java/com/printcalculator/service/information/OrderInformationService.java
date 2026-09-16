@@ -96,6 +96,9 @@ public class OrderInformationService {
                 .orElseThrow(() -> new ResponseStatusException(GONE));
         if (value.getOrderId() != null || value.getExpiresAt().isBefore(OffsetDateTime.now()))
             throw new ResponseStatusException(GONE);
+        if (session.getExpiresAt().isAfter(value.getExpiresAt())) {
+            value.setExpiresAt(session.getExpiresAt());
+        }
         return new InformationDto.Credential(value.getId(), value.getAccessToken());
     }
 

@@ -93,22 +93,13 @@
         >.
       </p>
 
-      <div
-        class="ui-upload-zone"
-        (click)="fileInput.click()"
-        (dragover)="onDragOver($event)"
-        (drop)="onDrop($event)"
-      >
-        <input
-          #fileInput
-          type="file"
-          multiple
-          (change)="onFileSelected($event)"
-          hidden
-          [accept]="acceptedFormats"
-        />
-        <p>{{ "CONTACT.DROP_FILES" | translate }}</p>
-      </div>
+      <app-dropzone
+        label="CONTACT.DROP_FILES"
+        [subtext]="''"
+        [accept]="acceptedFormats"
+        [showFileNames]="false"
+        (filesDropped)="handleFiles($event)"
+      ></app-dropzone>
 
       <div class="file-grid" *ngIf="files().length > 0">
         <div class="file-item" *ngFor="let file of files(); let i = index">
@@ -157,36 +148,7 @@
       </div>
     </div>
 
-    <div class="legal-consent">
-      <label class="ui-checkbox">
-        <input type="checkbox" formControlName="acceptLegal" />
-        <span class="ui-checkbox__mark"></span>
-        <span>
-          {{ "LEGAL.CONSENT.LABEL_PREFIX" | translate }}
-          <a
-            [href]="languageService.localizedPath('/terms')"
-            target="_blank"
-            rel="noopener"
-            >{{ "LEGAL.CONSENT.TERMS_LINK" | translate }}</a
-          >
-          {{ "LEGAL.CONSENT.AND" | translate }}
-          <a
-            [href]="languageService.localizedPath('/privacy')"
-            target="_blank"
-            rel="noopener"
-            >{{ "LEGAL.CONSENT.PRIVACY_LINK" | translate }}</a
-          >.
-        </span>
-      </label>
-      <div
-        class="consent-error"
-        *ngIf="
-          form.get('acceptLegal')?.invalid && form.get('acceptLegal')?.touched
-        "
-      >
-        {{ "LEGAL.CONSENT.REQUIRED_ERROR" | translate }}
-      </div>
-    </div>
+    <app-legal-consent [control]="legalConsentControl"></app-legal-consent>
 
     <div class="ui-actions ui-actions--end">
       <app-button type="submit" [disabled]="form.invalid || sent()">

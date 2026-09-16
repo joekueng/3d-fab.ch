@@ -70,6 +70,7 @@
           <h3>{{ "SESSION_EMAIL.TITLE" | translate }}</h3>
           <app-session-email
             [sessionId]="result()!.sessionId!"
+            [expiresAt]="result()!.expiresAt!"
             [mode]="mode()"
             [recalculationRequired]="requiresRecalculation()"
             [models]="informationModels"

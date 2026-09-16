@@ -1,0 +1,41 @@
+<section class="ui-subpanel" [formGroup]="form()">
+  <h4>{{ title() }}</h4>
+  <div class="settings-grid">
+    <app-select
+      formControlName="material"
+      [label]="'CALC.MATERIAL' | translate"
+      [options]="materials()"
+      [compact]="true"
+    />
+    <app-select
+      formControlName="nozzleDiameter"
+      [label]="'CALC.NOZZLE' | translate"
+      [options]="nozzles()"
+      [compact]="true"
+    />
+    <app-select
+      formControlName="infillPattern"
+      [label]="'CALC.PATTERN' | translate"
+      [options]="patterns()"
+      [compact]="true"
+    />
+    <app-select
+      formControlName="layerHeight"
+      [label]="'CALC.LAYER_HEIGHT' | translate"
+      [options]="layers()"
+      [compact]="true"
+    />
+    <app-input
+      type="number"
+      formControlName="infillDensity"
+      [label]="'CALC.INFILL' | translate"
+      [min]="0"
+      [max]="100"
+      [compact]="true"
+    />
+    <app-checkbox
+      formControlName="supportEnabled"
+      [label]="'CALC.SUPPORT' | translate"
+    />
+  </div>
+</section>

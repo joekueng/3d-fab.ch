@@ -12,9 +12,13 @@ The Angular 19 application uses standalone components and a Core / Shared / Feat
 
 Routes start in `src/app/app.routes.ts`. Keep feature code within its feature folder; use `core` only for true application-wide concerns.
 
+Read the [frontend README consistency workflow](README.md#preserve-the-existing-ui-in-every-feature) before implementing new UI.
+
 ## UI source of truth
 
 This project already has a shared UI layer. Do not create parallel form controls, button styles, or an admin-only fallback design system.
+
+Read the [shared component guide](src/app/shared/components/README.md) before adding dialogs, color pickers, upload controls, or legal consent. Reuse `app-dialog`, `app-color-selector`, `app-dropzone`, and `app-legal-consent`; use the calculator feature’s `app-print-settings` for global/per-file settings.
 
 Use these first:
 

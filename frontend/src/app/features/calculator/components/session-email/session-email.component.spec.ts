@@ -28,7 +28,14 @@ describe('SessionEmailComponent', () => {
     });
     const fixture = TestBed.createComponent(SessionEmailComponent);
     fixture.componentRef.setInput('sessionId', 'session');
+    fixture.componentRef.setInput('expiresAt', '2026-12-16T12:00:00+01:00');
     fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain(
+      'SESSION_EMAIL.ACCESS_NOTICE',
+    );
+    expect(fixture.nativeElement.textContent).toContain(
+      'SESSION_EMAIL.EXPIRY_LABEL',
+    );
     const buttons: HTMLButtonElement[] = Array.from(
       fixture.nativeElement.querySelectorAll('button'),
     );
@@ -63,12 +70,16 @@ describe('SessionEmailComponent', () => {
     });
     const fixture = TestBed.createComponent(SessionEmailComponent);
     fixture.componentRef.setInput('sessionId', 'session');
+    fixture.componentRef.setInput('expiresAt', '2026-12-16T12:00:00+01:00');
     fixture.componentInstance.expanded.set(true);
     fixture.componentInstance.form.controls.email.setValue(
       'customer@example.test',
     );
     fixture.componentRef.setInput('recalculationRequired', true);
     fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('form').textContent).toContain(
+      'SESSION_EMAIL.EMAIL_PRIVACY',
+    );
     expect(
       fixture.nativeElement.querySelector('button[type=submit]').disabled,
     ).toBeTrue();

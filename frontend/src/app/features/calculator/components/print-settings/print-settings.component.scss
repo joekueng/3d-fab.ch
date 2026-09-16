@@ -1,0 +1,20 @@
+:host {
+  display: block;
+  margin-top: var(--space-4);
+  min-width: 0;
+}
+h4 {
+  margin: 0 0 var(--space-4);
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+}
+.settings-grid {
+  display: grid;
+  gap: var(--space-3);
+  align-items: center;
+}
+@media (min-width: 640px) {
+  .settings-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

@@ -1,3 +1,4 @@
+import { AppDialogComponent } from '../../../shared/components/app-dialog/app-dialog.component';
 import { OrderInformationComponent } from '../../order-information/order-information.component';
 import { InformationModel } from '../../order-information/order-information.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
@@ -30,6 +31,7 @@ import { firstValueFrom } from 'rxjs';
   selector: 'app-admin-dashboard',
   standalone: true,
   imports: [
+    AppDialogComponent,
     OrderInformationComponent,
     CommonModule,
     FormsModule,

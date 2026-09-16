@@ -1,0 +1,23 @@
+<dialog
+  #dialog
+  class="dialog"
+  [class.dialog--small]="size() === 'small'"
+  [class.dialog--large]="size() === 'large'"
+  [class.dialog--fullscreen-mobile]="fullscreenOnMobile()"
+  [attr.aria-label]="title()"
+  (cancel)="cancel($event)"
+  (click)="backdropClick($event)"
+>
+  <header class="dialog-header">
+    <div>
+      <h3>{{ title() }}</h3>
+      @if (subtitle()) {
+        <p class="dialog-subtitle">{{ subtitle() }}</p>
+      }
+    </div>
+    <app-button type="button" variant="ghost" (click)="dismissed.emit()">{{
+      closeLabel()
+    }}</app-button>
+  </header>
+  <ng-content></ng-content>
+</dialog>
