@@ -85,6 +85,20 @@ public class OrderInformationService {
         if (!admin) authorize(value, token);
         return value;
     }
+    /**
+     * Quote links intentionally grant access to the complete active session.
+     * The quote service validates expiry/status before resolving its persisted draft.
+     * Order credentials remain separate and cannot be resolved through a quote link.
+     */
+    public InformationDto.Credential sessionCredential(QuoteSession session) {
+        if (session.getInformationDraftId() == null) return null;
+        OrderInformation value = repo.lockById(session.getInformationDraftId())
+                .orElseThrow(() -> new ResponseStatusException(GONE));
+        if (value.getOrderId() != null || value.getExpiresAt().isBefore(OffsetDateTime.now()))
+            throw new ResponseStatusException(GONE);
+        return new InformationDto.Credential(value.getId(), value.getAccessToken());
+    }
+
     public void validateCheckout(QuoteSession session, String token) {
         if (session.getInformationDraftId() != null) draft(session.getInformationDraftId(), token);
     }
@@ -103,6 +117,17 @@ public class OrderInformationService {
         value.setExpiresAt(session.getExpiresAt().isAfter(value.getExpiresAt()) ? session.getExpiresAt() : value.getExpiresAt());
         session.setInformationDraftId(value.getId());
     }
+    public void scanDraft(UUID id, String token) {
+        OrderInformation value = draft(id, token);
+        for (Entry entry : value.getEntries()) for (Attachment attachment : entry.attachments()) {
+            try (InputStream stream = Files.newInputStream(path(value, attachment))) {
+                if (!antivirus.scanRequired(stream)) throw new ResponseStatusException(BAD_REQUEST, "INFORMATION_FILE_REJECTED");
+            } catch (IOException e) {
+                throw new ResponseStatusException(SERVICE_UNAVAILABLE, "INFORMATION_FILE_UNAVAILABLE");
+            }
+        }
+    }
+
     public InformationDto getDraft(UUID id, String token) { return dto(draft(id, token)); }
     public InformationDto getOrder(UUID id, String token, boolean admin) {
         OrderInformation value = order(id, token, admin);
@@ -204,7 +229,7 @@ public class OrderInformationService {
             if (file.isEmpty() || file.getSize() > MAX_FILE) throw new ResponseStatusException(BAD_REQUEST, "INFORMATION_FILE_SIZE");
             String mime = validateType(file);
             try (InputStream stream = file.getInputStream()) {
-                if (!antivirus.scan(stream)) throw new ResponseStatusException(BAD_REQUEST, "INFORMATION_FILE_REJECTED");
+                if (!antivirus.scanRequired(stream)) throw new ResponseStatusException(BAD_REQUEST, "INFORMATION_FILE_REJECTED");
             }
             String name = normalize(file.getOriginalFilename()).replaceAll("[\\/\\\\\\p{Cntrl}]", "_");
             if (name.isBlank() || name.length() > 255) throw new ResponseStatusException(BAD_REQUEST, "INFORMATION_FILE_NAME");

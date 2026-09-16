@@ -38,6 +38,15 @@ describe('OrderInformationComponent', () => {
     button('Chiudi').click(); fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('1 nota · 0 allegati');
   }));
+  it('keeps instructions and file controls editable while copying a link saves the draft', fakeAsync(() => {
+    fixture.detectChanges();
+    button('Aggiungi istruzioni o allegati').click(); fixture.detectChanges(); tick();
+    service.busy.set(true); fixture.detectChanges();
+    expect((fixture.nativeElement.querySelector('textarea') as HTMLTextAreaElement).disabled).toBeFalse();
+    expect((fixture.nativeElement.querySelector('input[type=file]') as HTMLInputElement).disabled).toBeFalse();
+    expect(button('Chiudi').disabled).toBeFalse();
+  }));
+
   it('shows draft instructions in checkout and allows editing without losing them', fakeAsync(() => {
     service.text.set('Conservare la superficie esterna'); fixture.componentRef.setInput('review', true);
     fixture.detectChanges(); tick();

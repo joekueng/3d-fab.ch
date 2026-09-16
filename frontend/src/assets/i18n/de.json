@@ -1475,5 +1475,24 @@
     "FILE": "Anhang",
     "FILES": "Anhänge",
     "MODEL_REMOVED": "Das angegebene Modell ist nicht mehr enthalten. Wählen Sie ein anderes Modell oder alle Teile."
+  },
+  "SESSION_EMAIL": {
+    "EMAIL_LABEL": "E-Mail",
+    "TITLE": "Sitzung speichern",
+    "OPEN": "Sitzung per E-Mail speichern",
+    "HINT": "Speichere Modelle, Einstellungen, Anweisungen und Anhänge und öffne sie auf jedem Gerät über einen Link. Kopiere ihn oder erhalte ihn per E-Mail. Wer den Link besitzt, kann auf die Sitzung zugreifen.",
+    "CANCEL": "Abbrechen",
+    "SEND": "Link senden",
+    "SENDING": "Wird gespeichert und gesendet…",
+    "SENT": "E-Mail gesendet. Über den Link kannst du die Sitzung fortsetzen.",
+    "ERROR": "Die Sitzung konnte nicht gespeichert oder die E-Mail nicht gesendet werden. Deine Arbeit bleibt verfügbar. Bitte erneut versuchen.",
+    "RATE_LIMIT": "Warte eine Minute, bevor du einen weiteren Link sendest.",
+    "SCAN_ERROR": "Die Virenprüfung ist nicht verfügbar. Die Anhänge wurden nicht freigegeben. Versuche es später erneut.",
+    "UNAVAILABLE": "Diese Sitzung ist abgelaufen, wurde bereits bestellt oder ist nicht mehr verfügbar. Starte eine neue Kalkulation.",
+    "RECALCULATE": "Berechne das Angebot erneut, um Änderungen an Modellen, Mengen und Einstellungen vor dem Senden zu speichern.",
+    "COPY": "Link kopieren",
+    "COPYING": "Link wird gespeichert…",
+    "COPIED": "Link kopiert. Damit kannst du die gesamte Sitzung wieder öffnen.",
+    "COPY_ERROR": "Automatisches Kopieren ist nicht verfügbar. Markiere und kopiere den Link unten."
   }
 }

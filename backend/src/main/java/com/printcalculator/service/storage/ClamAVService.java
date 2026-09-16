@@ -38,6 +38,29 @@ public class ClamAVService {
         this.clamavClient = client;
     }
 
+    /** Required for private order attachments: scanner outages must never approve a file. */
+    public boolean scanRequired(InputStream inputStream) {
+        if (!enabled || clamavClient == null) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE, "ANTIVIRUS_UNAVAILABLE");
+        }
+        try {
+            ScanResult result = clamavClient.scan(inputStream);
+            if (result instanceof ScanResult.OK) return true;
+            if (result instanceof ScanResult.VirusFound) {
+                throw new VirusDetectedException("Virus detected in the uploaded file");
+            }
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE, "ANTIVIRUS_UNAVAILABLE");
+        } catch (VirusDetectedException | org.springframework.web.server.ResponseStatusException e) {
+            throw e;
+        } catch (Exception e) {
+            logger.error("Required attachment scan failed", e);
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE, "ANTIVIRUS_UNAVAILABLE");
+        }
+    }
+
     public boolean scan(InputStream inputStream) {
         if (!enabled || clamavClient == null) {
             return true;

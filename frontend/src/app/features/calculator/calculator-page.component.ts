@@ -31,6 +31,7 @@ import {
 import { SuccessStateComponent } from '../../shared/components/success-state/success-state.component';
 import { Router, ActivatedRoute } from '@angular/router';
 import { LanguageService } from '../../core/services/language.service';
+import { SessionEmailComponent } from './components/session-email/session-email.component';
 import { OrderInformationComponent } from '../order-information/order-information.component';
 import { InformationModel } from '../order-information/order-information.service';
 
@@ -75,6 +76,7 @@ type PendingSessionRestore = {
     QuoteResultComponent,
     SuccessStateComponent,
     OrderInformationComponent,
+    SessionEmailComponent,
   ],
   templateUrl: './calculator-page.component.html',
   styleUrl: './calculator-page.component.scss',
@@ -314,7 +316,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
       },
       error: (err) => {
         console.error('Failed to load session', err);
-        this.setQuoteError('CALC.ERROR_GENERIC');
+        this.setQuoteError(err?.status === 410 || err?.status === 404 ? 'SESSION_EMAIL.UNAVAILABLE' : 'CALC.ERROR_GENERIC');
         this.loading.set(false);
       },
     });
@@ -892,6 +894,10 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
       relativeTo: this.route,
       queryParamsHandling: 'preserve',
     });
+  }
+
+  get showBenefits(): boolean {
+    return !this.loading() && !this.result() && !this.currentSessionId();
   }
 
   private currentSessionId(): string | null {

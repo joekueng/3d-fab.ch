@@ -35,12 +35,45 @@ describe('OrderInformationService', () => {
     expect(service.draftCredential()).toEqual({ id: 'draft', token: 'secret' });
   }));
 
+  it('preserves edits and newly selected files while a background save finishes', fakeAsync(() => {
+    const uploaded = new File(['png'], 'photo.png', { type: 'image/png' });
+    const nextFile = new File(['pdf'], 'next.pdf', { type: 'application/pdf' });
+    service.text.set('Vertical');
+    service.files.set([uploaded]);
+    void service.saveDraft();
+    http.expectOne(api + '/information-drafts').flush({ id: 'draft', token: 'secret' }); flushMicrotasks();
+    const upload = http.expectOne(api + '/information-drafts/draft');
+    service.text.set('Edited while copying');
+    service.files.set([uploaded, nextFile]);
+    upload.flush(stored); flushMicrotasks();
+    expect(service.text()).toBe('Edited while copying');
+    expect(service.files()).toEqual([nextFile]);
+    expect(service.attachments()).toEqual([attachment]);
+  }));
+
   it('restores saved information when opening a quote in another page instance', fakeAsync(() => {
     localStorage.setItem('information-draft:draft', 'secret');
     void service.useDraft('draft');
     http.expectOne(api + '/information-drafts/draft').flush(stored); flushMicrotasks();
     expect(service.text()).toBe('Vertical'); expect(service.attachments()).toEqual([attachment]);
     expect(service.model()).toBe('part-key');
+  }));
+
+  it('queues an explicit save of newer edits behind the copy operation', fakeAsync(() => {
+    service.text.set('First version');
+    void service.saveDraft();
+    http.expectOne(api + '/information-drafts').flush({ id: 'draft', token: 'secret' }); flushMicrotasks();
+    const first = http.expectOne(api + '/information-drafts/draft');
+    service.text.set('New version');
+    let secondSaved = false;
+    void service.saveDraft().then(() => secondSaved = true);
+    first.flush({ id: 'draft', entries: [{ ...stored.entries[0], text: 'First version', attachments: [] }] }); flushMicrotasks();
+    expect(service.text()).toBe('New version');
+    expect(secondSaved).toBeFalse();
+    const second = http.expectOne(api + '/information-drafts/draft');
+    second.flush({ id: 'draft', entries: [{ ...stored.entries[0], text: 'New version', attachments: [] }] }); flushMicrotasks();
+    expect(service.text()).toBe('New version');
+    expect(secondSaved).toBeTrue();
   }));
 
   it('retains input after failed upload and never silently replaces an inaccessible draft', fakeAsync(() => {

@@ -1462,5 +1462,24 @@
     "FILE": "attachment",
     "FILES": "attachments",
     "MODEL_REMOVED": "The referenced model is no longer included. Choose another model or all parts."
+  },
+  "SESSION_EMAIL": {
+    "EMAIL_LABEL": "Email",
+    "TITLE": "Save your session",
+    "OPEN": "Save session by email",
+    "HINT": "Save your models, settings, instructions and attachments and reopen them on any device with one link. Copy it or receive it by email. Anyone with the link can access the session.",
+    "CANCEL": "Cancel",
+    "SEND": "Send link",
+    "SENDING": "Saving and sending…",
+    "SENT": "Email sent. Use the link to resume your session.",
+    "ERROR": "Could not save the session or send the email. Your work is still available: please try again.",
+    "RATE_LIMIT": "Wait one minute before sending another link.",
+    "SCAN_ERROR": "Virus scanning is unavailable. Attachments have not been approved. Please try again later.",
+    "UNAVAILABLE": "This session has expired, has already become an order or is no longer available. Start a new quote.",
+    "RECALCULATE": "Recalculate the quote to save changes to models, quantities and settings before sending.",
+    "COPY": "Copy link",
+    "COPYING": "Saving link…",
+    "COPIED": "Link copied. Use it to reopen the complete session.",
+    "COPY_ERROR": "Automatic copying is unavailable. Select and copy the link below."
   }
 }

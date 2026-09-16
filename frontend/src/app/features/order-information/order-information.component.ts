@@ -1,3 +1,4 @@
+import { LanguageService } from '../../core/services/language.service';
 import { CopyOnClickDirective } from '../../shared/directives/copy-on-click.directive';
 import { Component, OnChanges, OnDestroy, SimpleChanges, PLATFORM_ID, inject, input, output, signal, effect } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
@@ -16,6 +17,7 @@ import { Information, InformationFile, InformationModel, OrderInformationService
 })
 export class OrderInformationComponent implements OnChanges, OnDestroy {
   readonly service = inject(OrderInformationService);
+  readonly languageService = inject(LanguageService);
   private readonly translate = inject(TranslateService);
   orderId = input<string | null>(null);
   admin = input(false);
@@ -46,7 +48,7 @@ export class OrderInformationComponent implements OnChanges, OnDestroy {
   set model(value: string) { if (this.orderId()) this.orderModel = value; else { this.service.model.set(value); this.service.modelName.set(this.models().find(m => m.value === value)?.label || ''); } }
   get files(): File[] { return this.orderId() ? this.orderFiles : this.service.files(); }
   get attachments(): InformationFile[] { return this.orderId() ? [] : this.service.attachments(); }
-  get disabled(): boolean { return this.saving() || (!!this.orderId() && !this.information()) || (!this.orderId() && this.service.busy()); }
+  get disabled(): boolean { return this.saving() || (!!this.orderId() && !this.information()); }
   get modelOptions(): InformationModel[] {
     return [{ label: this.translate.instant('INFORMATION.ALL_MODELS'), value: '' }, ...this.models()];
   }

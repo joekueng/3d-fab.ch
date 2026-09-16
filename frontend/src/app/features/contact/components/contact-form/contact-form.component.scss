@@ -1,27 +1,8 @@
-.upload-privacy-note {
-  margin-top: calc(var(--space-2) * -1);
-  font-size: 0.78rem;
-}
-
 app-input.col {
   width: 100%;
 }
 
 /* File Upload Styles */
-.drop-zone {
-  border: 2px dashed var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-6);
-  text-align: center;
-  cursor: pointer;
-  color: var(--color-text-muted);
-  transition: all 0.2s;
-  &:hover {
-    border-color: var(--color-brand);
-    color: var(--color-brand);
-  }
-}
-
 .file-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));

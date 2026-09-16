@@ -44,15 +44,15 @@ export class OrderInformationService {
     this.credential = null; this.quoteId = null; this.inaccessible = false;
     this.text.set(''); this.model.set(''); this.modelName.set(''); this.files.set([]); this.attachments.set([]); this.error.set(false);
   }
-  async useDraft(id: string | null | undefined, legacyNotes = '', quoteId?: string): Promise<void> {
+  async useDraft(id: string | null | undefined, legacyNotes = '', quoteId?: string, serverToken?: string): Promise<void> {
     if (quoteId && quoteId !== this.quoteId && !id) this.resetDraft();
     if (quoteId) this.quoteId = quoteId;
-    if (id && this.credential?.id === id && !this.inaccessible) { if (this.loading) await this.loading; return; }
+    if (id && this.credential?.id === id && !this.inaccessible) { if (this.loading) await this.loading; this.publishLink(); return; }
     if (!id) {
       if (!this.credential && legacyNotes) this.text.set(legacyNotes);
       return;
     }
-    const token = this.read('information-draft:' + id);
+    const token = serverToken || this.read('information-draft:' + id);
     this.resetDraft();
     this.quoteId = quoteId || null;
     this.credential = token ? { id, token } : null;
@@ -63,7 +63,7 @@ export class OrderInformationService {
       this.busy.set(true);
       try {
         const value = await firstValueFrom(this.http.get<Information>(`${this.api}/information-drafts/${id}`, { headers: this.headers(token) }));
-        if (generation === this.generation) { this.applyDraft(value); this.error.set(false); }
+        if (generation === this.generation) { this.applyDraft(value); this.write('information-draft:' + id, token); this.publishLink(); this.error.set(false); }
       } catch { if (generation === this.generation) { this.inaccessible = true; this.error.set(true); } }
       finally { if (generation === this.generation) this.busy.set(false); }
     })();
@@ -71,12 +71,27 @@ export class OrderInformationService {
     await loading;
     if (this.loading === loading) this.loading = null;
   }
+  private publishLink(): void {
+    if (!this.quoteId || typeof window === 'undefined') return;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('session') !== this.quoteId) return;
+    const fragment = new URLSearchParams(url.hash.slice(1));
+    if (!fragment.has('informationKey')) return;
+    fragment.delete('informationKey');
+    url.hash = fragment.toString();
+    window.history.replaceState(window.history.state, '', url);
+  }
+
   private applyDraft(value: Information): void {
     this.text.set(value.entries[0]?.text || ''); this.model.set(value.entries[0]?.modelKey || ''); this.modelName.set(value.entries[0]?.model || '');
     this.attachments.set(value.entries.flatMap(e => e.attachments)); this.files.set([]);
   }
   async saveDraft(): Promise<InformationCredential> {
-    if (this.pending) return this.pending;
+    if (this.pending) {
+      await this.pending;
+      // A second explicit save must include edits made while the first save was in flight.
+      return this.saveDraft();
+    }
     const pending = this.persistDraft();
     this.pending = pending;
     try { return await pending; } finally { if (this.pending === pending) this.pending = null; }
@@ -84,7 +99,11 @@ export class OrderInformationService {
   private async persistDraft(): Promise<InformationCredential> {
     if (this.loading) await this.loading;
     const generation = this.generation;
-    const body = this.form(this.text(), this.model(), this.modelName(), this.files(), this.attachments().map(a => a.id));
+    const snapshot = {
+      text: this.text(), model: this.model(), modelName: this.modelName(),
+      files: [...this.files()], attachments: [...this.attachments()],
+    };
+    const body = this.form(snapshot.text, snapshot.model, snapshot.modelName, snapshot.files, snapshot.attachments.map(a => a.id));
     this.busy.set(true);
     try {
       if (this.inaccessible) throw new Error('Information access required');
@@ -97,7 +116,25 @@ export class OrderInformationService {
       }
       const value = await firstValueFrom(this.http.put<Information>(`${this.api}/information-drafts/${credential.id}`, body, { headers: this.headers(credential.token) }));
       if (generation !== this.generation) throw new Error('Draft changed');
-      this.applyDraft(value); this.error.set(false);
+      // Keep the scanned upload result even if linking fails, so retrying does not upload duplicates.
+      // Saving a link runs in the background: never overwrite edits made during the request.
+      const entry = value.entries[0];
+      if (this.text() === snapshot.text) this.text.set(entry?.text || '');
+      if (this.model() === snapshot.model) this.model.set(entry?.modelKey || '');
+      if (this.modelName() === snapshot.modelName) this.modelName.set(entry?.model || '');
+      const existingIds = new Set(snapshot.attachments.map(file => file.id));
+      const remainingIds = new Set(this.attachments().map(file => file.id));
+      const pendingFiles = new Set(this.files());
+      let uploadedIndex = 0;
+      this.attachments.set(value.entries.flatMap(entry => entry.attachments).filter(file =>
+        existingIds.has(file.id) ? remainingIds.has(file.id) : pendingFiles.has(snapshot.files[uploadedIndex++]),
+      ));
+      this.files.update(files => files.filter(file => !snapshot.files.includes(file)));
+      if (this.quoteId) {
+        await firstValueFrom(this.http.put<void>(`${this.api}/quote-sessions/${this.quoteId}/information`, credential));
+        if (generation !== this.generation) throw new Error('Draft changed');
+      }
+      this.publishLink(); this.error.set(false);
       return credential;
     } catch (error) { if (generation === this.generation) this.error.set(true); throw error; }
     finally { if (generation === this.generation) this.busy.set(false); }

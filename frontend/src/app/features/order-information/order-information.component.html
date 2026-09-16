@@ -1,6 +1,6 @@
 <app-card [bodyPadding]="compact() ? 'var(--space-3)' : ''">
   <h3>{{ 'INFORMATION.TITLE' | translate }} @if (!orderId()) { <span>{{ 'INFORMATION.OPTIONAL' | translate }}</span> }</h3>
-  @if (!orderId()) { <p>{{ summary }}</p> }
+  @if (!orderId()) { <p class="ui-form-hint">{{ summary }}</p> }
   @if (!orderId() && review() && !expanded()) {
     <p class="instruction-text">{{ text }}</p>
     @if (model) { <p>{{ service.modelName() }}</p> }
@@ -43,19 +43,28 @@
     @if (customerLink()) { <app-button type="button" variant="secondary" [appCopyOnClick]="customerLink()">{{ 'INFORMATION.COPY_LINK' | translate }}</app-button> }
     @if (hasUnread()) { <app-button type="button" [disabled]="disabled" (click)="markRead()">{{ 'INFORMATION.MARK_READ' | translate }}</app-button> }
   } @else {
-    <app-button type="button" variant="secondary" [disabled]="disabled" (click)="toggle()" [attr.aria-expanded]="expanded()">
-      {{ (expanded() ? 'INFORMATION.CLOSE' : orderId() ? 'INFORMATION.ADD' : text || attachments.length || files.length ? 'INFORMATION.EDIT' : 'INFORMATION.ADD_EMPTY') | translate }}
-    </app-button>
+    @if (!expanded()) {
+      <app-button type="button" variant="secondary" [disabled]="disabled" (click)="toggle()" [attr.aria-expanded]="false">
+        {{ (orderId() ? 'INFORMATION.ADD' : text || attachments.length || files.length ? 'INFORMATION.EDIT' : 'INFORMATION.ADD_EMPTY') | translate }}
+      </app-button>
+    }
     @if (expanded()) {
       <div class="information-editor">
         <app-textarea [(ngModel)]="text" [ngModelOptions]="{standalone: true}" [label]="'INFORMATION.TEXT' | translate" [placeholder]="'INFORMATION.PLACEHOLDER' | translate" [disabled]="disabled" [rows]="4" />
         @if (orderId()) { <p class="ui-copy-subtitle">{{ 'INFORMATION.AFTER_ORDER_HINT' | translate }}</p> }
         @if (models().length > 1 || model) { <app-select [(ngModel)]="model" [ngModelOptions]="{standalone: true}" [options]="modelOptions" [label]="'INFORMATION.MODEL' | translate" [disabled]="disabled" /> }
-        <label class="ui-file-picker drop-zone">
-          <input class="information-file-input" type="file" accept="image/jpeg,image/png,application/pdf" multiple [disabled]="disabled" (change)="choose($event)" />
-          <p>{{ 'INFORMATION.UPLOAD' | translate }}</p>
+        <div class="ui-form-group">
+          <span class="ui-form-label">{{ 'CONTACT.UPLOAD_LABEL' | translate }}</span>
+          <p class="ui-form-hint">{{ 'INFORMATION.LIMITS' | translate }}</p>
+          <p class="ui-form-hint ui-upload-privacy-note">
+            {{ 'LEGAL.CONSENT.UPLOAD_NOTICE_PREFIX' | translate }}
+            <a [href]="languageService.localizedPath('/privacy')" target="_blank" rel="noopener">{{ 'LEGAL.CONSENT.UPLOAD_NOTICE_LINK' | translate }}</a>.
+          </p>
+        <label class="ui-upload-zone">
+          <input class="information-file-input" type="file" accept="image/jpeg,image/png,application/pdf" multiple [attr.aria-label]="'CONTACT.UPLOAD_LABEL' | translate" [disabled]="disabled" (change)="choose($event)" />
+          <p>{{ 'CONTACT.DROP_FILES' | translate }}</p>
         </label>
-        <p class="ui-copy-subtitle">{{ 'INFORMATION.LIMITS' | translate }}</p>
+        @if (attachments.length || files.length) {
         <div class="attachments">
           @for (file of attachments; track file.id) {
             <div class="attachment ui-subpanel">
@@ -72,7 +81,12 @@
             </div>
           }
         </div>
-        <app-button type="button" [disabled]="disabled || text.length > 5000 || missingModel || (!!orderId() && !text.trim() && !files.length)" (click)="save()">{{ 'INFORMATION.SAVE' | translate }}</app-button>
+        }
+        </div>
+        <div class="ui-actions ui-actions--end">
+          <app-button type="button" variant="secondary" [disabled]="disabled" (click)="toggle()" [attr.aria-expanded]="true">{{ 'INFORMATION.CLOSE' | translate }}</app-button>
+          <app-button type="button" [disabled]="disabled || text.length > 5000 || missingModel || (!!orderId() && !text.trim() && !files.length)" (click)="save()">{{ 'INFORMATION.SAVE' | translate }}</app-button>
+        </div>
       </div>
     }
   }

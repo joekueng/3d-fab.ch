@@ -1463,5 +1463,24 @@
     "FILE": "allegato",
     "FILES": "allegati",
     "MODEL_REMOVED": "Il modello indicato non è più tra i pezzi. Scegli un altro riferimento oppure tutti i pezzi."
+  },
+  "SESSION_EMAIL": {
+    "EMAIL_LABEL": "Email",
+    "TITLE": "Salva la sessione",
+    "OPEN": "Salva sessione via email",
+    "HINT": "Salva modelli, impostazioni, istruzioni e allegati e riaprili da qualsiasi dispositivo con un unico link. Puoi copiarlo o riceverlo via email. Chi possiede il link può accedere alla sessione.",
+    "CANCEL": "Annulla",
+    "SEND": "Invia link",
+    "SENDING": "Salvataggio e invio…",
+    "SENT": "Email inviata. Usa il link per riprendere la sessione.",
+    "ERROR": "Impossibile salvare la sessione o inviare l’email. Il lavoro rimane disponibile: riprova.",
+    "RATE_LIMIT": "Attendi un minuto prima di inviare un altro link.",
+    "SCAN_ERROR": "Scansione antivirus non disponibile. Gli allegati non sono stati approvati: riprova più tardi.",
+    "UNAVAILABLE": "Questa sessione è scaduta, è già diventata un ordine oppure non è più disponibile. Avvia un nuovo preventivo.",
+    "RECALCULATE": "Ricalcola il preventivo per salvare le modifiche a modelli, quantità e impostazioni prima dell’invio.",
+    "COPY": "Copia link",
+    "COPYING": "Salvataggio del link…",
+    "COPIED": "Link copiato. Puoi usarlo per riaprire tutta la sessione.",
+    "COPY_ERROR": "Copia automatica non disponibile. Seleziona e copia il link qui sotto."
   }
 }

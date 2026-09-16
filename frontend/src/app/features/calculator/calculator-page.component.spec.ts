@@ -161,6 +161,17 @@ describe('CalculatorPageComponent', () => {
     };
   }
 
+  it('shows benefits only before a session exists, including during server rendering', () => {
+    expect(createComponent().component.showBenefits).toBeTrue();
+    expect(createComponent('server', { session: 'restored-session' }).component.showBenefits).toBeFalse();
+    const { component } = createComponent();
+    component.loading.set(true);
+    expect(component.showBenefits).toBeFalse();
+    component.loading.set(false);
+    component.result.set(createResult('new-session'));
+    expect(component.showBenefits).toBeFalse();
+  });
+
   it('updates left panel quantities even when item id is missing', () => {
     const { component, estimator, uploadForm } = createComponent();
 

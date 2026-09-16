@@ -5,7 +5,7 @@ import {
   HttpEventType,
   HttpResponse,
 } from '@angular/common/http';
-import { Observable, of, from, switchMap, tap } from 'rxjs';
+import { Observable, of, from, switchMap, tap, defer } from 'rxjs';
 import { OrderInformationService } from '../../order-information/order-information.service';
 import { environment } from '../../../../environments/environment';
 
@@ -175,13 +175,34 @@ export class QuoteEstimatorService {
   }
 
   getQuoteSession(sessionId: string): Observable<any> {
-    const headers: any = {};
-    return this.http.get<{ session: { informationDraftId?: string; notes?: string } }>(
-      `${environment.apiUrl}/api/quote-sessions/${sessionId}`,
-      {
-        headers,
-      },
-    ).pipe(switchMap(data => from(this.information.useDraft(data.session.informationDraftId, data.session.notes, sessionId)).pipe(switchMap(() => of(data)))));
+    return defer(() => {
+      const access = this.http.post<{ id: string; token: string } | null>(
+        `${environment.apiUrl}/api/quote-sessions/${sessionId}/resume`, {},
+      );
+      return access.pipe(switchMap(credential =>
+        this.http.get<{ session: { informationDraftId?: string; notes?: string } }>(
+          `${environment.apiUrl}/api/quote-sessions/${sessionId}`,
+        ).pipe(switchMap(data => from(this.information.useDraft(
+          data.session.informationDraftId, data.session.notes, sessionId, credential?.token,
+        )).pipe(switchMap(() => of(data))))),
+      ));
+    });
+  }
+
+  sessionLink(sessionId: string, language: string, mode: 'easy' | 'advanced'): Observable<{ url: string }> {
+    return defer(() => from(this.information.saveDraft())).pipe(switchMap(information =>
+      this.http.post<{ url: string }>(`${environment.apiUrl}/api/quote-sessions/${sessionId}/link`, {
+        language, mode, information,
+      }),
+    ));
+  }
+
+  emailSession(sessionId: string, email: string, language: string, mode: 'easy' | 'advanced'): Observable<void> {
+    return defer(() => from(this.information.saveDraft())).pipe(switchMap(information =>
+      this.http.post<void>(`${environment.apiUrl}/api/quote-sessions/${sessionId}/email`, {
+        email, language, mode, information,
+      }),
+    ));
   }
 
   updateLineItem(lineItemId: string, changes: any): Observable<any> {

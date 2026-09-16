@@ -1,24 +1,10 @@
 :host { display: block; min-width: 0; }
 .information-editor h3, h3 { font-size: 1rem; margin: 0; }
 .calculator-information { font-size: .9rem; }
-.information-editor, .information-entry { display: grid; gap: 1rem; margin-top: 1rem; }
+.information-editor { margin-top: var(--space-4); }
+.information-entry { display: grid; gap: var(--space-4); margin-top: var(--space-4); }
 .entry-meta { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
 .attachments { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); gap: .75rem; }
 .attachment { display: grid; gap: .5rem; align-content: start; overflow-wrap: anywhere; }
 .attachment img { width: 100%; height: 7rem; object-fit: contain; }
 .instruction-text { white-space: pre-wrap; overflow-wrap: anywhere; }
-
-.ui-file-picker { position: relative; }
-.drop-zone {
-  border: 2px dashed var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
-  text-align: center;
-  cursor: pointer;
-  color: var(--color-text-muted);
-  transition: all 0.2s;
-}
-.drop-zone:hover { border-color: var(--color-brand); color: var(--color-brand); }
-.drop-zone p { margin: 0; }
-.information-file-input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-.ui-file-picker:focus-within { outline: 2px solid var(--color-brand); outline-offset: 2px; }

@@ -49,7 +49,7 @@ class OrderInformationServiceTest {
     @MockitoBean ClamAVService antivirus;
     @MockitoBean OrderItemRepository orderItems;
     @MockitoBean com.printcalculator.repository.OrderRepository orders;
-    @BeforeEach void allowCleanFiles() { lenient().when(antivirus.scan(any())).thenReturn(true); }
+    @BeforeEach void allowCleanFiles() { lenient().when(antivirus.scanRequired(any())).thenReturn(true); }
     @AfterEach void cleanup() throws IOException {
         repo.deleteAll();
         try (var paths = Files.walk(ROOT)) { for (Path p : paths.sorted(Comparator.reverseOrder()).toList()) if (!p.equals(ROOT)) Files.deleteIfExists(p); }
@@ -61,6 +61,27 @@ class OrderInformationServiceTest {
         Order order = new Order(); order.setId(UUID.randomUUID()); order.setSourceQuoteSession(session);
         service.snapshot(new OrderCreatedEvent(this, order)); return order;
     }
+    @Test void recoversStoredNotesAndDiskFilesFromTheSessionAssociation() throws Exception {
+        var credential = service.create();
+        service.saveDraft(credential.id(), credential.token(), entry("Saved instructions"), List.of(pdf()));
+        QuoteSession session = new QuoteSession();
+        session.setInformationDraftId(credential.id());
+        var recovered = service.sessionCredential(session);
+        var value = service.getDraft(recovered.id(), recovered.token());
+        assertEquals("Saved instructions", value.entries().getFirst().text());
+        var response = service.download(recovered.id(), recovered.token(),
+                value.entries().getFirst().attachments().getFirst().id(), false, false);
+        assertArrayEquals(pdf().getBytes(), response.getBody().getInputStream().readAllBytes());
+    }
+
+    @Test void rejectsAttachmentWhenAntivirusUnavailableWithoutSavingIt() throws Exception {
+        var c = service.create();
+        when(antivirus.scanRequired(any())).thenThrow(new ResponseStatusException(org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE));
+        assertThrows(ResponseStatusException.class, () -> service.saveDraft(c.id(), c.token(), entry("Keep"), List.of(pdf())));
+        assertTrue(service.getDraft(c.id(), c.token()).entries().isEmpty());
+        try (var paths = Files.walk(ROOT)) { assertEquals(0, paths.filter(Files::isRegularFile).count()); }
+    }
+
     @Test void persistsDraftAndRequiresItsSeparateCredentialForReadAndWrite() throws Exception {
         var c = service.create();
         service.saveDraft(c.id(), c.token(), entry("Vertical orientation"), List.of(pdf()));
@@ -69,7 +90,7 @@ class OrderInformationServiceTest {
         assertEquals(1, restored.entries().getFirst().attachments().size());
         assertEquals(403, assertThrows(ResponseStatusException.class, () -> service.getDraft(c.id(), "wrong")).getStatusCode().value());
         assertThrows(ResponseStatusException.class, () -> service.saveDraft(c.id(), "wrong", entry("overwrite"), List.of()));
-        verify(antivirus).scan(any());
+        verify(antivirus).scanRequired(any());
     }
     @Test void snapshotsFilesAtPurchaseAndPreservesThemAfterDraftRemovalAndCleanup() throws Exception {
         var c = service.create(); var before = service.saveDraft(c.id(), c.token(), entry("Original"), List.of(pdf()));
