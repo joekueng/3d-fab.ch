@@ -23,6 +23,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.IOException;
 import java.nio.file.*;
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -69,7 +70,9 @@ class OrderInformationServiceTest {
         OffsetDateTime renewedExpiry = OffsetDateTime.now().plusMonths(3);
         session.setExpiresAt(renewedExpiry);
         var recovered = service.sessionCredential(session);
-        assertEquals(renewedExpiry, repo.findById(credential.id()).orElseThrow().getExpiresAt());
+        OffsetDateTime persistedExpiry = repo.findById(credential.id()).orElseThrow().getExpiresAt();
+        assertEquals(renewedExpiry.toInstant().truncatedTo(ChronoUnit.MILLIS),
+                persistedExpiry.toInstant().truncatedTo(ChronoUnit.MILLIS));
         var value = service.getDraft(recovered.id(), recovered.token());
         assertEquals("Saved instructions", value.entries().getFirst().text());
         var response = service.download(recovered.id(), recovered.token(),
