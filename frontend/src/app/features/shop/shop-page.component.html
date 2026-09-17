@@ -183,7 +183,7 @@
             </span>
           </div>
 
-          @if (loading() || softFallbackActive()) {
+          @if (loading()) {
             <div class="product-grid skeleton-grid">
               @for (ghost of [1, 2, 3, 4]; track ghost) {
                 <div class="skeleton-card"></div>
