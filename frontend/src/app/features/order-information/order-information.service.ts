@@ -78,6 +78,15 @@ export class OrderInformationService {
       this.orderTokens.get(id) || this.read('order-information:' + id) || ''
     );
   }
+  async resumeOrder(id: string): Promise<void> {
+    const credential = await firstValueFrom(
+      this.http.post<InformationCredential>(
+        `${this.api}/orders/${id}/information/resume`,
+        {},
+      ),
+    );
+    this.rememberOrder(id, credential.token);
+  }
   draftCredential(): InformationCredential | null {
     return this.credential;
   }

@@ -131,8 +131,18 @@ export class OrderComponent implements OnInit {
           replaceUrl: true,
         });
       }
-      this.loadOrder();
-      this.loadTwintPayment();
+      if (this.isBrowser) {
+        void this.informationService
+          .resumeOrder(this.orderId)
+          .catch(() => undefined)
+          .finally(() => {
+            this.loadOrder();
+            this.loadTwintPayment();
+          });
+      } else {
+        this.loadOrder();
+        this.loadTwintPayment();
+      }
     } else {
       this.error.set('ORDER.ERR_ID_NOT_FOUND');
       this.loading.set(false);

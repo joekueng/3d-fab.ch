@@ -136,6 +136,17 @@ public class OrderInformationService {
         OrderInformation value = order(id, token, admin);
         return new InformationDto(value.getId(), List.copyOf(value.getEntries()), admin ? value.getAccessToken() : null);
     }
+
+    /**
+     * The customer order URL is the bearer capability delivered by email. Resolve
+     * its private information credential server-side so it never appears in the URL.
+     */
+    @Transactional(readOnly = true)
+    public InformationDto.Credential resumeOrder(UUID id) {
+        OrderInformation value = repo.findByOrderId(id)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
+        return new InformationDto.Credential(value.getId(), value.getAccessToken());
+    }
     private InformationDto dto(OrderInformation value) { return new InformationDto(value.getId(), List.copyOf(value.getEntries())); }
     public InformationDto saveDraft(UUID id, String token, InformationDto.EntryRequest request, List<MultipartFile> files) throws IOException {
         OrderInformation value = draft(id, token);

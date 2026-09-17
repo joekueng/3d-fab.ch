@@ -118,7 +118,7 @@ class OrderEmailListenerTest {
         assertEquals("John", customerData.get("customerName"));
         assertEquals(order.getId(), customerData.get("orderId"));
         assertEquals(order.getOrderNumber(), customerData.get("orderNumber"));
-        assertEquals("https://3d-fab.ch/it/co/" + order.getId() + "#informationKey=" + order.getInformationToken(), customerData.get("orderDetailsUrl"));
+        assertEquals("https://3d-fab.ch/it/co/" + order.getId(), customerData.get("orderDetailsUrl"));
         assertNotNull(customerData.get("orderDate"));
         assertTrue(customerData.get("orderDate").toString().contains("2026"));
         assertTrue(customerData.get("totalCost").toString().contains("150"));

@@ -171,4 +171,18 @@ describe('OrderInformationService', () => {
     admin.flush({ id: 'order', entries: [] });
     flushMicrotasks();
   }));
+
+  it('resolves an order credential from the backend before loading private information', fakeAsync(() => {
+    void service.resumeOrder('order');
+    const resume = http.expectOne(api + '/orders/order/information/resume');
+    expect(resume.request.method).toBe('POST');
+    expect(resume.request.body).toEqual({});
+    resume.flush({ id: 'information', token: 'server-secret' });
+    flushMicrotasks();
+
+    void service.getOrder('order', false);
+    const information = http.expectOne(api + '/orders/order/information');
+    expect(information.request.headers.get('X-Information-Token')).toBe('server-secret');
+    information.flush({ id: 'information', entries: [] });
+  }));
 });
