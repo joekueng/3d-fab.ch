@@ -99,9 +99,11 @@ describe('ShopPageComponent', () => {
         .and.returnValue(of([] as ShopCategoryTree[])),
       getProductCatalog: jasmine
         .createSpy('getProductCatalog')
-        .and.returnValue(apiStatus
-          ? throwError(() => ({ status: apiStatus }))
-          : of(buildCatalog())),
+        .and.returnValue(
+          apiStatus
+            ? throwError(() => ({ status: apiStatus }))
+            : of(buildCatalog()),
+        ),
       flattenCategoryTree: jasmine
         .createSpy('flattenCategoryTree')
         .and.returnValue([]),
@@ -124,7 +126,9 @@ describe('ShopPageComponent', () => {
     } as unknown as Router;
 
     const activatedRoute = {
-      paramMap: of(convertToParamMap({ categorySlug: 'compatible-with-garmin' })),
+      paramMap: of(
+        convertToParamMap({ categorySlug: 'compatible-with-garmin' }),
+      ),
       snapshot: {
         paramMap: convertToParamMap({}),
       },
@@ -192,7 +196,8 @@ describe('ShopPageComponent', () => {
 
   it('returns 503 and a visible error for temporary category load failures', () => {
     const { component, fixture, seoService, responseInit } = createComponent(
-      '/de/shop/compatible-with-garmin', 500,
+      '/de/shop/compatible-with-garmin',
+      500,
     );
 
     fixture.detectChanges();
@@ -213,7 +218,8 @@ describe('ShopPageComponent', () => {
 
   it('keeps hard 404 noindex behavior for missing categories', () => {
     const { fixture, seoService, responseInit } = createComponent(
-      '/de/shop/compatible-with-garmin', 404,
+      '/de/shop/compatible-with-garmin',
+      404,
     );
 
     fixture.detectChanges();

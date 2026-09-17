@@ -26,7 +26,9 @@ export class ProductStructuredDataService {
     }
     const url = this.absoluteUrl(path);
     const image = [
-      ...new Set(images.map((value) => this.absoluteUrl(value)).filter(Boolean)),
+      ...new Set(
+        images.map((value) => this.absoluteUrl(value)).filter(Boolean),
+      ),
     ];
     if (!url || !image.length) {
       this.clear();

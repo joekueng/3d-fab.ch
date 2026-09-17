@@ -58,12 +58,25 @@ describe('ProductDetailComponent', () => {
         },
       ],
       primaryImage: null,
-      images: [{
-        mediaAssetId: 'image-1', title: null, altText: null,
-        usageType: 'SHOP_PRODUCT', usageKey: 'product-1', sortOrder: 0,
-        isPrimary: true, thumb: null, card: null,
-        hero: { jpegUrl: '/media/product.jpg', avifUrl: null, webpUrl: null, pngUrl: null },
-      }],
+      images: [
+        {
+          mediaAssetId: 'image-1',
+          title: null,
+          altText: null,
+          usageType: 'SHOP_PRODUCT',
+          usageKey: 'product-1',
+          sortOrder: 0,
+          isPrimary: true,
+          thumb: null,
+          card: null,
+          hero: {
+            jpegUrl: '/media/product.jpg',
+            avifUrl: null,
+            webpUrl: null,
+            pngUrl: null,
+          },
+        },
+      ],
       model3d: null,
       publicPath: '91823f84-bike-wall-hanger',
       localizedPaths: {
@@ -124,9 +137,11 @@ describe('ProductDetailComponent', () => {
       cartLoading: signal(false),
       getProductByPublicPath: jasmine
         .createSpy('getProductByPublicPath')
-        .and.returnValue(options?.apiStatus
-          ? throwError(() => ({ status: options.apiStatus }))
-          : of(buildProduct())),
+        .and.returnValue(
+          options?.apiStatus
+            ? throwError(() => ({ status: options.apiStatus }))
+            : of(buildProduct()),
+        ),
       quantityForVariant: jasmine
         .createSpy('quantityForVariant')
         .and.returnValue(0),
@@ -183,7 +198,9 @@ describe('ProductDetailComponent', () => {
       ],
     });
 
-    TestBed.overrideComponent(ProductDetailComponent, { set: { template: '' } });
+    TestBed.overrideComponent(ProductDetailComponent, {
+      set: { template: '' },
+    });
     const fixture: ComponentFixture<ProductDetailComponent> =
       TestBed.createComponent(ProductDetailComponent);
 
@@ -198,7 +215,9 @@ describe('ProductDetailComponent', () => {
 
   function readStructuredData() {
     const document = TestBed.inject(DOCUMENT);
-    return JSON.parse(document.getElementById('shop-product-jsonld')?.textContent ?? 'null');
+    return JSON.parse(
+      document.getElementById('shop-product-jsonld')?.textContent ?? 'null',
+    );
   }
 
   for (const lang of ['it', 'en', 'de', 'fr'] as const) {
@@ -207,12 +226,22 @@ describe('ProductDetailComponent', () => {
       fixture.detectChanges();
       const data = readStructuredData();
       expect(data['@type']).toBe('Product');
-      expect(data.url).toBe(new URL(buildProduct().localizedPaths[lang]!, document.location.origin).href);
-      expect(data.image).toEqual([`${document.location.origin}/media/product.jpg`]);
-      expect(data.offers).toEqual(jasmine.objectContaining({
-        '@type': 'Offer', price: '29.90', priceCurrency: 'CHF',
-        availability: 'https://schema.org/InStock', itemCondition: 'https://schema.org/NewCondition',
-      }));
+      expect(data.url).toBe(
+        new URL(buildProduct().localizedPaths[lang]!, document.location.origin)
+          .href,
+      );
+      expect(data.image).toEqual([
+        `${document.location.origin}/media/product.jpg`,
+      ]);
+      expect(data.offers).toEqual(
+        jasmine.objectContaining({
+          '@type': 'Offer',
+          price: '29.90',
+          priceCurrency: 'CHF',
+          availability: 'https://schema.org/InStock',
+          itemCondition: 'https://schema.org/NewCondition',
+        }),
+      );
       expect(data.description).toBe('Wall mount for bicycles');
       fixture.destroy();
       expect(readStructuredData()).toBeNull();
@@ -223,8 +252,17 @@ describe('ProductDetailComponent', () => {
     const { component, fixture } = createComponent();
     fixture.detectChanges();
     const product = buildProduct();
-    const variant = { ...product.variants[0], id: 'variant-2', sku: 'BW-2', priceChf: 42.5, colorLabel: 'Red' };
-    component.product.set({ ...product, variants: [...product.variants, variant] });
+    const variant = {
+      ...product.variants[0],
+      id: 'variant-2',
+      sku: 'BW-2',
+      priceChf: 42.5,
+      colorLabel: 'Red',
+    };
+    component.product.set({
+      ...product,
+      variants: [...product.variants, variant],
+    });
     component.selectVariant(variant);
     fixture.detectChanges();
     const data = readStructuredData();
@@ -270,7 +308,9 @@ describe('ProductDetailComponent', () => {
     component.product.set(buildProduct({ name }));
     fixture.detectChanges();
     expect(readStructuredData().name).toBe(name);
-    expect(document.getElementById('shop-product-jsonld')?.outerHTML).not.toContain(name);
+    expect(
+      document.getElementById('shop-product-jsonld')?.outerHTML,
+    ).not.toContain(name);
   });
 
   it('applies index follow SEO for indexable products', () => {
@@ -318,7 +358,8 @@ describe('ProductDetailComponent', () => {
 
   it('returns 503 and a visible error for a temporary backend failure', () => {
     const { component, fixture, seoService, responseInit } = createComponent(
-      undefined, { apiStatus: 500 },
+      undefined,
+      { apiStatus: 500 },
     );
     fixture.detectChanges();
     expect(responseInit.status).toBe(503);
@@ -338,9 +379,9 @@ describe('ProductDetailComponent', () => {
   });
 
   it('keeps hard fallback noindex for missing products', () => {
-    const { fixture, seoService, responseInit } = createComponent(
-      undefined, { apiStatus: 404 },
-    );
+    const { fixture, seoService, responseInit } = createComponent(undefined, {
+      apiStatus: 404,
+    });
     fixture.detectChanges();
 
     expect(responseInit.status).toBe(404);

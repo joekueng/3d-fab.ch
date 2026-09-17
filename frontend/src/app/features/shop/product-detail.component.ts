@@ -244,11 +244,7 @@ export class ProductDetailComponent {
   constructor() {
     effect(() => {
       const product = this.product();
-      if (
-        this.loading() ||
-        this.error() ||
-        !product
-      ) {
+      if (this.loading() || this.error() || !product) {
         this.structuredData.clear();
         return;
       }

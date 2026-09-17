@@ -73,9 +73,14 @@ describe('SeoService', () => {
     canonical.href = `${document.location.origin}/it/terms`;
     document.head.appendChild(canonical);
     const { title, meta } = createService({
-      url: '/', navigated: false, data: {}, translations: {},
+      url: '/',
+      navigated: false,
+      data: {},
+      translations: {},
     });
-    expect(canonical.getAttribute('href')).toBe(`${document.location.origin}/it/terms`);
+    expect(canonical.getAttribute('href')).toBe(
+      `${document.location.origin}/it/terms`,
+    );
     expect(title.setTitle).not.toHaveBeenCalled();
     expect(meta.updateTag).not.toHaveBeenCalled();
   });
@@ -87,14 +92,27 @@ describe('SeoService', () => {
 
   it('updates the canonical after initial navigation and language changes', () => {
     const { router, events$ } = createService({
-      url: '/', navigated: false, data: {}, translations: {},
+      url: '/',
+      navigated: false,
+      data: {},
+      translations: {},
     });
     let navigationId = 0;
-    for (const path of ['/it/terms', '/de/terms', '/fr/privacy', '/en/materials']) {
-      Object.defineProperty(router, 'url', { value: `${path}?utm_source=test`, configurable: true });
+    for (const path of [
+      '/it/terms',
+      '/de/terms',
+      '/fr/privacy',
+      '/en/materials',
+    ]) {
+      Object.defineProperty(router, 'url', {
+        value: `${path}?utm_source=test`,
+        configurable: true,
+      });
       events$.next(new NavigationEnd(++navigationId, path, path));
       const canonical = document.querySelector('link[rel="canonical"]');
-      expect(canonical?.getAttribute('href')).toBe(`${document.location.origin}${path}`);
+      expect(canonical?.getAttribute('href')).toBe(
+        `${document.location.origin}${path}`,
+      );
       expect(document.querySelectorAll('link[rel="canonical"]').length).toBe(1);
     }
   });
