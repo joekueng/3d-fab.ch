@@ -23,6 +23,11 @@ public class CustomerOrderInformationController {
     private final OrderInformationService service;
     private final QuoteRateLimitService limits;
     public CustomerOrderInformationController(OrderInformationService service, QuoteRateLimitService limits) { this.service = service; this.limits = limits; }
+    @PostMapping("/resume")
+    public InformationDto.Credential resume(@PathVariable UUID id, HttpServletRequest request) {
+        limits.checkAllowed(request);
+        return service.resumeOrder(id);
+    }
     @GetMapping public InformationDto get(@PathVariable UUID id, @RequestHeader("X-Information-Token") String token) { return service.getOrder(id, token, false); }
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public InformationDto append(@PathVariable UUID id, @RequestHeader("X-Information-Token") String token,

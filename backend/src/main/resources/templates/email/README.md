@@ -31,6 +31,7 @@ The shared appearance is Arial, a light gray background, a centered white 600px 
 
 1. Inspect the closest established message and the service providing its context. Use the shared fragments for new transactional templates; put only message-specific content in the new file.
 2. Keep action links consistent with order emails: localized action text followed by an absolute visible URL. Preserve functional links, expiry information, and access notices.
+   Customer order and saved-session URLs contain only the order/session identifier. Never append an access token in a query string or fragment: the frontend calls the corresponding `resume` endpoint, receives the credential with `Cache-Control: no-store`, and then loads private information from the backend.
 3. Supply all dynamic values from the existing service flow. Use `th:text` for escaped text and `th:href`/`th:src` for URLs; do not use unescaped user HTML. Keep Italian, English, German, and French copy aligned.
 4. If a shared design change is needed, update the fragment and check every consumer. Do not change shared branding as a side effect of adding a feature.
 5. Render through the real Thymeleaf engine with fixture context, including the service context for new messages. Check fragment resolution, localized content, logo, footer, and exact links. Compare the rendered output with an established order email at desktop and narrow widths; opening the raw source does not resolve fragments. Real customer sends are unnecessary.

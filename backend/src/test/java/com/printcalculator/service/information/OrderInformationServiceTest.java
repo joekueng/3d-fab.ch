@@ -112,6 +112,15 @@ class OrderInformationServiceTest {
         assertEquals("Original", service.getOrder(order.getId(), order.getInformationToken(), false).entries().getFirst().text());
         assertArrayEquals(pdf().getBytes(), service.download(order.getId(), order.getInformationToken(), purchasedFile, true, false).getBody().getContentAsByteArray());
     }
+    @Test void resumesOrderInformationWithoutExposingTheCredentialInTheCustomerUrl() throws Exception {
+        var order = order(service.create());
+
+        var credential = service.resumeOrder(order.getId());
+
+        assertEquals(order.getInformationToken(), credential.token());
+        assertNotNull(credential.id());
+        assertDoesNotThrow(() -> service.getOrder(order.getId(), credential.token(), false));
+    }
     @Test void postPurchaseAddsTimestampedEntriesAndReadAcknowledgementDoesNotHideLaterAdditions() throws Exception {
         var c = service.create(); var order = order(c);
         var first = service.append(order.getId(), order.getInformationToken(), entry("First"), List.of());
@@ -194,6 +203,18 @@ class OrderInformationServiceTest {
         mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart("/api/information-drafts/{id}", c.id())
                 .file(excessive).header("X-Information-Token", c.token()).with(request -> { request.setMethod("PUT"); return request; }))
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isBadRequest());
+    }
+    @Test void orderResumeEndpointReturnsTheCredentialWithNoStoreHeaders() throws Exception {
+        var limits = mock(com.printcalculator.service.QuoteRateLimitService.class);
+        var mvc = org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup(
+                new com.printcalculator.controller.CustomerOrderInformationController(service, limits)).build();
+        var order = order(service.create());
+
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/orders/{id}/information/resume", order.getId()))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.header().string("Cache-Control", "no-store"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.token").value(order.getInformationToken()));
+        verify(limits).checkAllowed(any());
     }
     @Test void expiredDraftCannotBeReadOrConverted() {
         var c = service.create(); var draft = repo.findById(c.id()).orElseThrow();
