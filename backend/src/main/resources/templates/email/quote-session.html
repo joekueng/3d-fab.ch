@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${language}">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${title}">Print session</title>
+    <style th:replace="~{email/fragments/layout :: styles}"></style>
+</head>
+<body>
+<div class="container">
+    <div th:replace="~{email/fragments/layout :: header(${title})}"></div>
+
+    <div class="content">
+        <p th:text="${intro}">Your models, settings, instructions and attachments are saved.</p>
+        <p class="action">
+            <a class="action-button" th:href="${resumeUrl}" th:text="${action}">Resume session</a>
+        </p>
+        <p>
+            <a th:href="${resumeUrl}" th:text="${resumeUrl}">https://example.com/en/calculator/basic?session=00000000-0000-0000-0000-000000000000</a>
+        </p>
+        <p>
+            <span th:text="${expiryLabel}">Available until</span>:
+            <strong th:text="${expiresAt}">01.01.2027 12:00 CET</strong>
+        </p>
+    </div>
+
+    <div th:replace="~{email/fragments/layout :: footer(${notice})}"></div>
+</div>
+</body>
+</html>

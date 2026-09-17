@@ -6,6 +6,7 @@ import {
   Input,
   PLATFORM_ID,
   inject,
+  output,
 } from '@angular/core';
 
 @Directive({
@@ -15,19 +16,37 @@ import {
 export class CopyOnClickDirective {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
-  @Input('appCopyOnClick') value: string | null | undefined;
+  @Input('appCopyOnClick') value:
+    | string
+    | null
+    | undefined
+    | (() => Promise<string>);
+
+  readonly copySucceeded = output<void>();
+  readonly copyFailed = output<unknown>();
 
   @HostBinding('style.cursor') readonly cursor = 'pointer';
 
   @HostListener('click', ['$event'])
   onClick(event: MouseEvent): void {
-    const text = (this.value ?? '').trim();
-    if (!text) {
-      return;
-    }
-
+    if (!this.value || !this.isBrowser) return;
     event.stopPropagation();
-    void this.copy(text);
+    void this.resolveAndCopy();
+  }
+
+  private async resolveAndCopy(): Promise<void> {
+    try {
+      const text = (
+        typeof this.value === 'function'
+          ? await this.value()
+          : (this.value ?? '')
+      ).trim();
+      if (!text) return;
+      await this.copy(text);
+      this.copySucceeded.emit();
+    } catch (error: unknown) {
+      this.copyFailed.emit(error);
+    }
   }
 
   private async copy(text: string): Promise<void> {
@@ -51,7 +70,8 @@ export class CopyOnClickDirective {
     document.body.appendChild(textarea);
     textarea.select();
     try {
-      document.execCommand('copy');
+      if (!document.execCommand('copy'))
+        throw new Error('Clipboard unavailable');
     } finally {
       document.body.removeChild(textarea);
     }

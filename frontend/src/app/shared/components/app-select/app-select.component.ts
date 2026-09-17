@@ -1,4 +1,4 @@
-import { Component, computed, forwardRef, input } from '@angular/core';
+import { Component, computed, forwardRef, input, signal } from '@angular/core';
 import {
   ControlValueAccessor,
   NG_VALUE_ACCESSOR,
@@ -35,9 +35,9 @@ export class AppSelectComponent implements ControlValueAccessor {
   disabledInput = input<boolean>(false, { alias: 'disabled' });
 
   value: any = '';
-  private controlDisabled = false;
+  private controlDisabled = signal(false);
   readonly isDisabled = computed(
-    () => this.controlDisabled || this.disabledInput(),
+    () => this.controlDisabled() || this.disabledInput(),
   );
 
   onChange: any = () => {};
@@ -53,7 +53,7 @@ export class AppSelectComponent implements ControlValueAccessor {
     this.onTouched = fn;
   }
   setDisabledState(isDisabled: boolean): void {
-    this.controlDisabled = isDisabled;
+    this.controlDisabled.set(isDisabled);
   }
 
   onModelChange(val: any) {

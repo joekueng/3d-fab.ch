@@ -334,6 +334,7 @@ public class QuoteSessionItemService {
         item.setQuoteSession(session);
         item.setLineItemType("PRINT_FILE");
         item.setOriginalFilename(originalFilename);
+        item.setClientModelKey(settings.getClientModelKey());
         item.setDisplayName(originalFilename);
         item.setStoredPath(quoteStorageService.toStoredPath(persistentPath));
         item.setQuantity(normalizeQuantity(settings.getQuantity()));
@@ -380,6 +381,7 @@ public class QuoteSessionItemService {
         item.setQuoteSession(session);
         item.setLineItemType("PRINT_FILE");
         item.setOriginalFilename(originalFilename);
+        item.setClientModelKey(settings.getClientModelKey());
         item.setDisplayName(originalFilename);
         item.setStoredPath(quoteStorageService.toStoredPath(persistentPath));
         item.setQuantity(normalizeQuantity(settings.getQuantity()));

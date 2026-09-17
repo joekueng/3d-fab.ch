@@ -1,4 +1,4 @@
-<div class="color-selector-container">
+<div class="color-selector-container" (keydown.escape)="close()">
   @if (isOpen() && !disabled()) {
     <div class="backdrop" (click)="close()"></div>
   }
@@ -8,11 +8,22 @@
     [disabled]="disabled()"
     [attr.aria-label]="getCurrentLabel() | translate"
     [attr.aria-expanded]="isOpen() && !disabled()"
-    class="color-circle trigger"
-    [style.background-color]="getCurrentHex()"
+    class="trigger"
+    [class.trigger--label]="showLabel()"
     [title]="getCurrentLabel() | translate"
     (click)="toggleOpen()"
-  ></button>
+  >
+    <span
+      class="color-circle"
+      [style.background-color]="getCurrentHex()"
+    ></span>
+    @if (showLabel()) {
+      <span class="trigger-copy"
+        ><strong>{{ getCurrentLabel() | translate }}</strong
+        ><small>{{ subtitle() }}</small></span
+      >
+    }
+  </button>
 
   @if (isOpen() && !disabled()) {
     <div class="color-popup">
@@ -20,8 +31,18 @@
         <div class="category">
           <div class="category-name">{{ category.name | translate }}</div>
           <div class="colors-grid">
-            @for (color of category.colors; track color.value) {
-              <div
+            @for (
+              color of category.colors;
+              track color.variantId ?? color.value
+            ) {
+              <button
+                type="button"
+                [disabled]="color.outOfStock"
+                [attr.aria-pressed]="
+                  selectedVariantId() !== null
+                    ? selectedVariantId() === color.variantId
+                    : selectedColor() === color.value
+                "
                 class="color-item"
                 (click)="selectColor(color)"
                 [class.disabled]="color.outOfStock"
@@ -29,7 +50,7 @@
                 <div
                   class="selection-ring"
                   [class.active]="
-                    selectedVariantId()
+                    selectedVariantId() !== null
                       ? selectedVariantId() === color.variantId
                       : selectedColor() === color.value
                   "
@@ -42,7 +63,7 @@
                 </div>
 
                 <span class="color-name">{{ color.label | translate }}</span>
-              </div>
+              </button>
             }
           </div>
         </div>

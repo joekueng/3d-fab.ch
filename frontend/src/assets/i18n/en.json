@@ -976,18 +976,21 @@
       "S1": {
         "TITLE": "1. What data we process",
         "P1": "1.1. We collect the data required for quotes and orders: first name, last name, email, phone, address, shipping/billing data and order details.",
-        "P2": "1.2. When you upload 3D files or technical attachments, files are processed only for analysis, production, support and order management."
+        "P2": "1.2. When you upload 3D files or technical attachments, files are processed only for analysis, production, support and order management.",
+        "P3": "1.3. A saved calculator session may include uploaded 3D models, selected quantities, colours, materials and quality settings, quote calculations, instructions, attachments and other data associated with the quote."
       },
       "S2": {
         "TITLE": "2. Purpose of processing",
         "P1": "2.1. We use data exclusively to: prepare quotes, confirm orders, receive payments, organize shipments and provide after-sales support.",
-        "P2": "2.2. We do not use data for profiling, automated marketing or sale to third parties."
+        "P2": "2.2. We do not use data for profiling, automated marketing or sale to third parties.",
+        "P3": "2.3. If you choose to save a printing session by email, we use your email address solely to send you the link required to reopen that session. We do not use this address to send reminders, promotional emails or other marketing communications as a result of saving the session. A delivery record containing the recipient address is retained for up to 365 days for operational and audit purposes and is not used for subsequent communications."
       },
       "S3": {
         "TITLE": "3. Storage of files and data",
-        "P1": "3.1. Files uploaded only for quoting are stored for the session duration and automatically removed when it expires.",
+        "P1": "3.1. Files and data associated with a saved calculator session are scheduled for automatic deletion after the expiry date shown to the user. Each time an active session is reopened through the access link, its expiry is reset to three months from the date of access. If the session is converted into an order, the data required for the order is retained as described in section 3.2.",
         "P2": "3.2. Files and data linked to confirmed orders are stored for the time necessary for production, delivery, support and administrative/legal obligations, then deleted or minimized.",
-        "P3": "3.3. Files uploaded in the calculator are used only for technical analysis and quote estimation and remain associated exclusively with the calculator session."
+        "P3": "3.3. Files uploaded in the calculator are used only for technical analysis and quote estimation and remain associated exclusively with the calculator session.",
+        "P4": "3.4. A saved session link is an access link. Anyone who possesses the link can access the associated session contents until the link expires or becomes invalid following an order."
       },
       "S4": {
         "TITLE": "4. Cookies and tracking",
@@ -1009,7 +1012,7 @@
     "TERMS": {
       "META": {
         "PROVIDER": "Provider: 3D-Fab.ch (Matteo Caletti and Joe Kung)",
-        "VERSION": "Version: v1.0",
+        "VERSION": "Version: v1.1",
         "SCOPE": "Valid for FDM/FFF 3D printing and related services, with sale and delivery exclusively in Switzerland (CH)."
       },
       "S1": {
@@ -1033,6 +1036,13 @@
         "P1": "4.1. The contract is concluded with order confirmation (email/portal) or with production start after payment/down payment.",
         "P2": "4.2. Automatic quotes may be confirmed or updated after minimum technical verification (printability, supports, machine limits).",
         "P3": "4.3. The provider may refuse technically unfeasible orders or orders not compliant with these terms."
+      },
+      "S4A": {
+        "TITLE": "4A. Saved printing sessions",
+        "P1": "4A.1. Users may save a calculator session and resume it through a generated access link. Saving a session does not constitute an order, acceptance of a quotation, reservation of production capacity or conclusion of a contract.",
+        "P2": "4A.2. Prices and quotations shown in a saved session remain subject to these Terms and to the technical verification described in section 4.",
+        "P3": "4A.3. Saved sessions remain available only until the expiry date indicated to the user. Each valid reopening through the access link resets the expiry to three months from the date of access. 3D-Fab does not undertake to retain a session beyond the updated expiry date.",
+        "P4": "4A.4. Anyone possessing the access link may access the associated session, including uploaded files, settings, instructions and attachments. Users are responsible for keeping the link confidential and sharing it only with authorized persons."
       },
       "S5": {
         "TITLE": "5. Prices, taxes and shipping",
@@ -1105,8 +1115,9 @@
       },
       "S15": {
         "TITLE": "15. Data protection",
-        "P1": "15.1. The provider processes personal data for order management, payments, shipping and support.",
-        "P2": "15.2. Data may be shared with technical providers and couriers only to the extent necessary for service delivery."
+        "P1": "15.1. The provider processes personal data for saved calculator sessions, quotes, order management, payments, shipping and support.",
+        "P2": "15.2. Data may be shared with technical providers and couriers only to the extent necessary for service delivery.",
+        "P3": "15.3. Further information about saved sessions, access links, retention periods and the use of email addresses is provided in the Privacy Policy."
       },
       "S16": {
         "TITLE": "16. Limitation of liability",
@@ -1125,8 +1136,8 @@
         "P3": "18.3. In case of interpretative discrepancies, the Italian version of these terms prevails and is the only legally binding version, unless otherwise agreed in writing."
       }
     },
-    "TERMS_UPDATE_DATE": "24 February 2026",
-    "PRIVACY_UPDATE_DATE": "24 February 2026"
+    "TERMS_UPDATE_DATE": "16 September 2026",
+    "PRIVACY_UPDATE_DATE": "16 September 2026"
   },
   "CONTACT": {
     "TITLE": "Contact Us",
@@ -1430,5 +1441,59 @@
     "INVALID_EMAIL": "Invalid email",
     "BACK": "Back",
     "OPTIONAL": "(Optional)"
+  },
+  "INFORMATION": {
+    "TITLE": "Instructions and attachments",
+    "OPTIONAL": "— Optional",
+    "ALL_MODELS": "All parts",
+    "SUMMARY": "{{notes}} · {{files}}",
+    "NEW": "New information",
+    "DOWNLOAD": "Download",
+    "MARK_READ": "Mark as read",
+    "CLOSE": "Close",
+    "ADD": "Add information",
+    "EDIT": "Edit",
+    "ADD_EMPTY": "Add instructions or attachments",
+    "TEXT": "Instructions",
+    "PLACEHOLDER": "Orientation, requested settings and special requirements…",
+    "AFTER_ORDER_HINT": "We will contact you if there are problems with your requests. Instructions added after placing the order may not be applicable if printing has already started.",
+    "MODEL": "Applies to",
+    "UPLOAD": "Upload photos or PDFs",
+    "LIMITS": "JPEG, PNG or PDF: up to 10 MB per file, 10 attachments and 30 MB in total.",
+    "REMOVE": "Remove",
+    "SAVE": "Save",
+    "ADDED": "Information added to your order",
+    "SAVED": "Instructions and attachments saved",
+    "SAVE_ERROR": "Could not save. Please try again before continuing.",
+    "ACCESS_ERROR": "To access this information, open the link in your order confirmation or use the browser where you created the quote.",
+    "TEXT_LIMIT": "The text must not exceed 5000 characters.",
+    "COPY_LINK": "Copy customer link",
+    "NOTE": "note",
+    "NOTES": "notes",
+    "FILE": "attachment",
+    "FILES": "attachments",
+    "MODEL_REMOVED": "The referenced model is no longer included. Choose another model or all parts."
+  },
+  "SESSION_EMAIL": {
+    "EMAIL_LABEL": "Email",
+    "TITLE": "Save your session",
+    "OPEN": "Save session by email",
+    "HINT": "Save your models, settings, instructions and attachments and reopen them on any device. Copy the link or receive it by email.",
+    "EMAIL_PRIVACY": "We’ll use your email only to send you this session link.",
+    "ACCESS_NOTICE": "Anyone with the link can access the session.",
+    "EXPIRY_LABEL": "Available until",
+    "CANCEL": "Cancel",
+    "SEND": "Send link",
+    "SENDING": "Saving and sending…",
+    "SENT": "Email sent. Use the link to resume your session.",
+    "ERROR": "Could not save the session or send the email. Your work is still available: please try again.",
+    "RATE_LIMIT": "Wait one minute before sending another link.",
+    "SCAN_ERROR": "Virus scanning is unavailable. Attachments have not been approved. Please try again later.",
+    "UNAVAILABLE": "This session has expired, has already become an order or is no longer available. Start a new quote.",
+    "RECALCULATE": "Recalculate the quote to save changes to models, quantities and settings before sending.",
+    "COPY": "Copy link",
+    "COPYING": "Saving link…",
+    "COPIED": "Link copied. Use it to reopen the complete session.",
+    "COPY_ERROR": "Automatic copying is unavailable. Select and copy the link below."
   }
 }

@@ -176,37 +176,6 @@
   color: var(--color-text-muted);
 }
 
-.dialog-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.32);
-  z-index: 1100;
-}
-
-.confirm-dialog {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: min(460px, calc(100vw - 2rem));
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  padding: var(--space-3);
-  z-index: 1101;
-  display: grid;
-  gap: var(--space-2);
-}
-
-.confirm-dialog h4 {
-  margin: 0;
-}
-
-.confirm-dialog p {
-  margin: 0;
-}
-
 .dialog-actions {
   display: flex;
   justify-content: flex-end;

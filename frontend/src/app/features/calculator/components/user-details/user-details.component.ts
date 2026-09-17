@@ -1,3 +1,5 @@
+import { FormControl } from '@angular/forms';
+import { LegalConsentComponent } from '../../../../shared/components/legal-consent/legal-consent.component';
 import { Component, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -17,6 +19,7 @@ import { LanguageService } from '../../../../core/services/language.service';
   selector: 'app-user-details',
   standalone: true,
   imports: [
+    LegalConsentComponent,
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,
@@ -28,6 +31,9 @@ import { LanguageService } from '../../../../core/services/language.service';
   styleUrl: './user-details.component.scss',
 })
 export class UserDetailsComponent {
+  get legalConsentControl(): FormControl {
+    return this.form.get('acceptLegal') as FormControl;
+  }
   quote = input<QuoteResult>();
   submitOrder = output<any>();
   cancel = output<void>();

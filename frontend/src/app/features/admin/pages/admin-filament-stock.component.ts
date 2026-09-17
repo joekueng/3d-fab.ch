@@ -1,3 +1,4 @@
+import { AppDialogComponent } from '../../../shared/components/app-dialog/app-dialog.component';
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -19,6 +20,7 @@ import { AppSelectComponent } from '../../../shared/components/app-select/app-se
   selector: 'app-admin-filament-stock',
   standalone: true,
   imports: [
+    AppDialogComponent,
     CommonModule,
     FormsModule,
     AppButtonComponent,

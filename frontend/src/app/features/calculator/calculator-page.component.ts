@@ -31,6 +31,9 @@ import {
 import { SuccessStateComponent } from '../../shared/components/success-state/success-state.component';
 import { Router, ActivatedRoute } from '@angular/router';
 import { LanguageService } from '../../core/services/language.service';
+import { SessionEmailComponent } from './components/session-email/session-email.component';
+import { OrderInformationComponent } from '../order-information/order-information.component';
+import { InformationModel } from '../order-information/order-information.service';
 
 type TrackedPrintSettings = {
   mode: 'easy' | 'advanced';
@@ -72,6 +75,8 @@ type PendingSessionRestore = {
     UploadFormComponent,
     QuoteResultComponent,
     SuccessStateComponent,
+    OrderInformationComponent,
+    SessionEmailComponent,
   ],
   templateUrl: './calculator-page.component.html',
   styleUrl: './calculator-page.component.scss',
@@ -90,6 +95,12 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
   errorMessage = signal<string | null>(null);
   errorCode = signal<string | null>(null);
   warningMessage = signal<string | null>(null);
+  get informationModels(): InformationModel[] {
+    return (this.result()?.items || []).map((item, index) => ({
+      label: `${index + 1}. ${item.fileName}`,
+      value: item.clientModelKey || item.id || item.fileName,
+    }));
+  }
   showErrorAlert = computed(() => this.error() && !this.result());
   isZeroQuoteError = computed(
     () => this.error() && this.errorKey() === 'CALC.ERROR_ZERO_PRICE',
@@ -305,7 +316,11 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
       },
       error: (err) => {
         console.error('Failed to load session', err);
-        this.setQuoteError('CALC.ERROR_GENERIC');
+        this.setQuoteError(
+          err?.status === 410 || err?.status === 404
+            ? 'SESSION_EMAIL.UNAVAILABLE'
+            : 'CALC.ERROR_GENERIC',
+        );
         this.loading.set(false);
       },
     });
@@ -885,6 +900,10 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     });
   }
 
+  get showBenefits(): boolean {
+    return !this.loading() && !this.result() && !this.currentSessionId();
+  }
+
   private currentSessionId(): string | null {
     const fromResult = this.result()?.sessionId;
     if (fromResult) {
@@ -980,6 +999,15 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
           return;
         }
 
+        if ((item.clientModelKey || item.id) && this.uploadForm.items?.update) {
+          this.uploadForm.items.update((items) =>
+            items.map((entry, i) =>
+              i === index
+                ? { ...entry, clientKey: item.clientModelKey || item.id }
+                : entry,
+            ),
+          );
+        }
         // Preserve persisted quantities when restoring from session.
         // Without this, setFiles() defaults every item back to 1.
         this.uploadForm.updateItemQuantityByIndex(

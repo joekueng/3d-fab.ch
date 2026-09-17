@@ -10,7 +10,7 @@ import java.time.OffsetDateTime;
 public class QuoteSessionExpiryPolicy {
     private final long ttlMonths;
 
-    public QuoteSessionExpiryPolicy(@Value("${quote.session.ttl-months:6}") long ttlMonths) {
+    public QuoteSessionExpiryPolicy(@Value("${quote.session.ttl-months:3}") long ttlMonths) {
         if (ttlMonths < 1) {
             throw new IllegalStateException("QUOTE_SESSION_TTL_MONTHS must be > 0");
         }

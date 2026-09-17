@@ -14,6 +14,11 @@ import java.util.UUID;
         @Index(name = "ix_quote_sessions_expires_at",
                 columnList = "expires_at")})
 public class QuoteSession {
+    @Column(name = "information_draft_id")
+    private UUID informationDraftId;
+    public UUID getInformationDraftId() { return informationDraftId; }
+    public void setInformationDraftId(UUID id) { informationDraftId = id; }
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "quote_session_id", nullable = false)

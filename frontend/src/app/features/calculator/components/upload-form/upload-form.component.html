@@ -154,142 +154,26 @@
           </label>
         </div>
 
-        @if (sameSettingsForAll()) {
-          <div class="item-settings-panel">
-            <h4 class="item-settings-title">
-              {{ "CALC.GLOBAL_SETTINGS" | translate }}
-            </h4>
-
-            <div class="item-settings-grid">
-              <label>
-                {{ "CALC.MATERIAL" | translate }}
-                <select formControlName="material">
-                  @for (mat of materials(); track mat.value) {
-                    <option [value]="mat.value">{{ mat.label }}</option>
-                  }
-                </select>
-              </label>
-
-              <label>
-                {{ "CALC.NOZZLE" | translate }}
-                <select formControlName="nozzleDiameter">
-                  @for (n of nozzleDiameters(); track n.value) {
-                    <option [value]="n.value">{{ n.label }}</option>
-                  }
-                </select>
-              </label>
-            </div>
-
-            <div class="item-settings-grid">
-              <label>
-                {{ "CALC.PATTERN" | translate }}
-                <select formControlName="infillPattern">
-                  @for (p of infillPatterns(); track p.value) {
-                    <option [value]="p.value">{{ p.label }}</option>
-                  }
-                </select>
-              </label>
-
-              <label>
-                {{ "CALC.LAYER_HEIGHT" | translate }}
-                <select formControlName="layerHeight">
-                  @for (l of layerHeights(); track l.value) {
-                    <option [value]="l.value">{{ l.label }}</option>
-                  }
-                </select>
-              </label>
-            </div>
-
-            <div class="item-settings-grid">
-              <label>
-                {{ "CALC.INFILL" | translate }}
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  formControlName="infillDensity"
-                />
-              </label>
-
-              <label class="item-settings-checkbox">
-                <input type="checkbox" formControlName="supportEnabled" />
-                <span>{{ "CALC.SUPPORT" | translate }}</span>
-              </label>
-            </div>
-          </div>
-        } @else {
-          @if (getSelectedItem(); as selectedItem) {
-            <div class="item-settings-panel">
-              <h4 class="item-settings-title">
-                {{
-                  "CALC.FILE_SETTINGS"
-                    | translate: { fileName: selectedItem.file.name }
-                }}
-              </h4>
-
-              <div class="item-settings-grid">
-                <label>
-                  {{ "CALC.MATERIAL" | translate }}
-                  <select formControlName="material">
-                    @for (mat of materials(); track mat.value) {
-                      <option [value]="mat.value">{{ mat.label }}</option>
-                    }
-                  </select>
-                </label>
-
-                <label>
-                  {{ "CALC.NOZZLE" | translate }}
-                  <select formControlName="nozzleDiameter">
-                    @for (n of nozzleDiameters(); track n.value) {
-                      <option [value]="n.value">{{ n.label }}</option>
-                    }
-                  </select>
-                </label>
-              </div>
-
-              <div class="item-settings-grid">
-                <label>
-                  {{ "CALC.PATTERN" | translate }}
-                  <select formControlName="infillPattern">
-                    @for (p of infillPatterns(); track p.value) {
-                      <option [value]="p.value">{{ p.label }}</option>
-                    }
-                  </select>
-                </label>
-
-                <label>
-                  {{ "CALC.LAYER_HEIGHT" | translate }}
-                  <select formControlName="layerHeight">
-                    @for (
-                      l of getLayerHeightOptionsForNozzle(
-                        form.get("nozzleDiameter")?.value
-                      );
-                      track l.value
-                    ) {
-                      <option [value]="l.value">{{ l.label }}</option>
-                    }
-                  </select>
-                </label>
-              </div>
-
-              <div class="item-settings-grid">
-                <label>
-                  {{ "CALC.INFILL" | translate }}
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    formControlName="infillDensity"
-                  />
-                </label>
-
-                <label class="item-settings-checkbox">
-                  <input type="checkbox" formControlName="supportEnabled" />
-                  <span>{{ "CALC.SUPPORT" | translate }}</span>
-                </label>
-              </div>
-            </div>
-          }
+        @if (sameSettingsForAll() || getSelectedItem()) {
+          <app-print-settings
+            [form]="form"
+            [title]="
+              sameSettingsForAll()
+                ? ('CALC.GLOBAL_SETTINGS' | translate)
+                : ('CALC.FILE_SETTINGS'
+                  | translate: { fileName: getSelectedItem()?.file?.name })
+            "
+            [materials]="materials()"
+            [nozzles]="nozzleDiameters()"
+            [patterns]="infillPatterns()"
+            [layers]="
+              sameSettingsForAll()
+                ? layerHeights()
+                : getLayerHeightOptionsForNozzle(
+                    form.get('nozzleDiameter')?.value
+                  )
+            "
+          />
         }
       }
     }
@@ -298,12 +182,6 @@
       <div class="error-msg">{{ "CALC.ERR_FILE_REQUIRED" | translate }}</div>
     }
   </div>
-
-  <app-input
-    formControlName="notes"
-    [label]="'CALC.NOTES' | translate"
-    [placeholder]="'CALC.NOTES_PLACEHOLDER' | translate"
-  ></app-input>
 
   <div class="actions">
     @if (loading() && uploadProgress() < 100) {

@@ -70,6 +70,13 @@ public class EmailAuditService {
         return emailLogRepository.save(log);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void recordSessionEmail(String recipient, String subject, EmailSendResult result) {
+        // Metadata only: never persist the resume URL or the information credential.
+        emailLogRepository.save(buildBaseLog("QUOTE_SESSION", "QUOTE_SESSION_SAVED", ORIGIN_SYSTEM,
+                recipient, subject, "quote-session", null, result, null));
+    }
+
     public List<AdminEmailLogDto> getOrderEmailLogDtos(UUID orderId) {
         return emailLogRepository.findByOrder_IdOrderByAttemptedAtDesc(orderId)
                 .stream()

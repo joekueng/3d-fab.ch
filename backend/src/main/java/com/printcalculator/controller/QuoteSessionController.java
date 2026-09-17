@@ -34,6 +34,8 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 @RestController
 @RequestMapping("/api/quote-sessions")
 public class QuoteSessionController {
+    public record SessionRequest(@jakarta.validation.Valid com.printcalculator.dto.InformationDto.DraftLink information) {}
+    private final com.printcalculator.service.information.OrderInformationService informationService;
     private final QuoteSessionRepository sessionRepo;
     private final QuoteLineItemRepository lineItemRepo;
     private final QuoteCalculator quoteCalculator;
@@ -54,7 +56,9 @@ public class QuoteSessionController {
                                   QuoteStorageService quoteStorageService,
                                   QuoteSessionResponseAssembler quoteSessionResponseAssembler,
                                   QuoteSessionExpiryPolicy quoteSessionExpiryPolicy,
-                                  QuoteRateLimitService quoteRateLimitService) {
+                                  QuoteRateLimitService quoteRateLimitService,
+                                  com.printcalculator.service.information.OrderInformationService informationService) {
+        this.informationService = informationService;
         this.sessionRepo = sessionRepo;
         this.lineItemRepo = lineItemRepo;
         this.quoteCalculator = quoteCalculator;
@@ -69,7 +73,8 @@ public class QuoteSessionController {
 
     @PostMapping(value = "")
     @Transactional
-    public ResponseEntity<QuoteSession> createSession(HttpServletRequest request) {
+    public ResponseEntity<com.printcalculator.dto.QuoteSessionDto> createSession(HttpServletRequest request,
+            @jakarta.validation.Valid @RequestBody(required = false) SessionRequest payload) {
         quoteRateLimitService.checkAllowed(request);
         QuoteSession session = new QuoteSession();
         session.setStatus("ACTIVE");
@@ -83,14 +88,15 @@ public class QuoteSessionController {
         var policy = pricingRepo.findFirstByIsActiveTrueOrderByValidFromDesc();
         session.setSetupCostChf(quoteCalculator.calculateSessionSetupFee(policy));
 
+        informationService.link(session, payload == null ? null : payload.information());
         session = sessionRepo.save(session);
-        return ResponseEntity.ok(session);
+        return ResponseEntity.ok(com.printcalculator.dto.QuoteSessionDto.from(session));
     }
 
     @PostMapping(value = "/{id}/line-items", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Transactional
     public ResponseEntity<QuoteLineItem> addItemToExistingSession(@PathVariable UUID id,
-                                                                   @RequestPart("settings") PrintSettingsDto settings,
+                                                                   @jakarta.validation.Valid @RequestPart("settings") PrintSettingsDto settings,
                                                                    @RequestPart("file") MultipartFile file,
                                                                    HttpServletRequest request) throws IOException {
         quoteRateLimitService.checkAllowed(request);

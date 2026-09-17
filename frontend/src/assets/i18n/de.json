@@ -989,18 +989,21 @@
       "S1": {
         "TITLE": "1. Welche Daten wir verarbeiten",
         "P1": "1.1. Wir erfassen die für Angebote und Bestellungen erforderlichen Daten: Vorname, Nachname, E-Mail, Telefon, Adresse, Versand-/Rechnungsdaten und Bestelldetails.",
-        "P2": "1.2. Wenn Sie 3D-Dateien oder technische Anhänge hochladen, werden die Dateien nur für Analyse, Produktion, Support und Bestellverwaltung verarbeitet."
+        "P2": "1.2. Wenn Sie 3D-Dateien oder technische Anhänge hochladen, werden die Dateien nur für Analyse, Produktion, Support und Bestellverwaltung verarbeitet.",
+        "P3": "1.3. Eine gespeicherte Rechner-Sitzung kann hochgeladene 3D-Modelle, ausgewählte Mengen, Farben, Materialien und Qualitätseinstellungen, Angebotsberechnungen, Anweisungen, Anhänge und weitere mit dem Angebot verbundene Daten enthalten."
       },
       "S2": {
         "TITLE": "2. Zweck der Verarbeitung",
         "P1": "2.1. Wir verwenden Daten ausschließlich, um: Angebote zu erstellen, Bestellungen zu bestätigen, Zahlungen zu erhalten, Versand zu organisieren und After-Sales-Support bereitzustellen.",
-        "P2": "2.2. Wir verwenden Daten nicht für Profiling, automatisches Marketing oder Verkauf an Dritte."
+        "P2": "2.2. Wir verwenden Daten nicht für Profiling, automatisches Marketing oder Verkauf an Dritte.",
+        "P3": "2.3. Wenn Sie eine Drucksitzung per E-Mail speichern, verwenden wir Ihre E-Mail-Adresse ausschließlich, um Ihnen den zum erneuten Öffnen der Sitzung erforderlichen Link zu senden. Aufgrund der Speicherung der Sitzung verwenden wir diese Adresse nicht für Erinnerungen, Werbe-E-Mails oder andere Marketingmitteilungen. Ein Zustellnachweis mit der Empfängeradresse wird für betriebliche und Prüfzwecke bis zu 365 Tage aufbewahrt und nicht für spätere Mitteilungen verwendet."
       },
       "S3": {
         "TITLE": "3. Speicherung von Dateien und Daten",
-        "P1": "3.1. Dateien, die nur für ein Angebot hochgeladen werden, werden für die Dauer der Sitzung gespeichert und bei Ablauf automatisch entfernt.",
+        "P1": "3.1. Dateien und Daten, die mit einer gespeicherten Rechner-Sitzung verbunden sind, werden nach dem dem Nutzer angezeigten Ablaufdatum zur automatischen Löschung eingeplant. Jedes Mal, wenn eine aktive Sitzung über den Zugangslink erneut geöffnet wird, wird ihr Ablaufdatum auf drei Monate ab dem Zugriffsdatum zurückgesetzt. Wird die Sitzung in eine Bestellung umgewandelt, werden die für die Bestellung erforderlichen Daten wie in Abschnitt 3.2 beschrieben aufbewahrt.",
         "P2": "3.2. Dateien und Daten im Zusammenhang mit bestätigten Bestellungen werden so lange gespeichert, wie es für Produktion, Lieferung, Support und administrative/rechtliche Pflichten erforderlich ist, danach gelöscht oder minimiert.",
-        "P3": "3.3. Im Rechner hochgeladene Dateien werden nur für technische Analyse und Angebotsschätzung verwendet und bleiben ausschließlich mit der Rechner-Sitzung verknüpft."
+        "P3": "3.3. Im Rechner hochgeladene Dateien werden nur für technische Analyse und Angebotsschätzung verwendet und bleiben ausschließlich mit der Rechner-Sitzung verknüpft.",
+        "P4": "3.4. Der Link zu einer gespeicherten Sitzung ist ein Zugangslink. Jede Person, die den Link besitzt, kann auf die zugehörigen Inhalte zugreifen, bis der Link abläuft oder infolge einer Bestellung ungültig wird."
       },
       "S4": {
         "TITLE": "4. Cookies und Tracking",
@@ -1022,7 +1025,7 @@
     "TERMS": {
       "META": {
         "PROVIDER": "Anbieter: 3D-Fab.ch (Matteo Caletti und Joe Kung)",
-        "VERSION": "Version: v1.0",
+        "VERSION": "Version: v1.1",
         "SCOPE": "Gültig für FDM/FFF-3D-Druck und verbundene Dienstleistungen, mit Verkauf und Lieferung ausschließlich in der Schweiz (CH)."
       },
       "S1": {
@@ -1046,6 +1049,13 @@
         "P1": "4.1. Der Vertrag kommt mit Auftragsbestätigung (E-Mail/Portal) oder mit Produktionsstart nach Zahlung/Anzahlung zustande.",
         "P2": "4.2. Automatische Angebote können nach minimaler technischer Prüfung (Druckbarkeit, Stützen, Maschinenlimits) bestätigt oder aktualisiert werden.",
         "P3": "4.3. Der Anbieter kann technisch nicht umsetzbare oder nicht konforme Bestellungen ablehnen."
+      },
+      "S4A": {
+        "TITLE": "4A. Gespeicherte Drucksitzungen",
+        "P1": "4A.1. Nutzer können eine Rechner-Sitzung speichern und über einen erzeugten Zugangslink fortsetzen. Das Speichern einer Sitzung stellt weder eine Bestellung noch die Annahme eines Angebots, die Reservierung von Produktionskapazität oder den Abschluss eines Vertrags dar.",
+        "P2": "4A.2. Preise und Angebote in einer gespeicherten Sitzung unterliegen weiterhin diesen Bedingungen und der in Abschnitt 4 beschriebenen technischen Prüfung.",
+        "P3": "4A.3. Gespeicherte Sitzungen bleiben nur bis zu dem dem Nutzer angezeigten Ablaufdatum verfügbar. Bei jedem gültigen erneuten Öffnen über den Zugangslink wird das Ablaufdatum auf drei Monate ab dem Zugriffsdatum zurückgesetzt. 3D-Fab verpflichtet sich nicht, eine Sitzung über das so aktualisierte Ablaufdatum hinaus aufzubewahren.",
+        "P4": "4A.4. Jede Person, die den Zugangslink besitzt, kann auf die zugehörige Sitzung einschließlich hochgeladener Dateien, Einstellungen, Anweisungen und Anhänge zugreifen. Nutzer sind dafür verantwortlich, den Link vertraulich zu behandeln und nur mit berechtigten Personen zu teilen."
       },
       "S5": {
         "TITLE": "5. Preise, Steuern und Versand",
@@ -1118,8 +1128,9 @@
       },
       "S15": {
         "TITLE": "15. Datenschutz",
-        "P1": "15.1. Der Anbieter verarbeitet personenbezogene Daten für Bestellverwaltung, Zahlungen, Versand und Support.",
-        "P2": "15.2. Daten können nur im erforderlichen Umfang zur Leistungserbringung mit technischen Anbietern und Kurieren geteilt werden."
+        "P1": "15.1. Der Anbieter verarbeitet personenbezogene Daten für gespeicherte Rechner-Sitzungen, Angebote, Bestellverwaltung, Zahlungen, Versand und Support.",
+        "P2": "15.2. Daten können nur im erforderlichen Umfang zur Leistungserbringung mit technischen Anbietern und Kurieren geteilt werden.",
+        "P3": "15.3. Weitere Informationen zu gespeicherten Sitzungen, Zugangslinks, Aufbewahrungsfristen und der Verwendung von E-Mail-Adressen enthält die Datenschutzerklärung."
       },
       "S16": {
         "TITLE": "16. Haftungsbeschränkung",
@@ -1138,8 +1149,8 @@
         "P3": "18.3. Bei Auslegungsunterschieden gilt die italienische Version dieser Bedingungen und ist die einzige rechtlich bindende Version, sofern nicht schriftlich anders vereinbart."
       }
     },
-    "TERMS_UPDATE_DATE": "24. Februar 2026",
-    "PRIVACY_UPDATE_DATE": "24. Februar 2026"
+    "TERMS_UPDATE_DATE": "16. September 2026",
+    "PRIVACY_UPDATE_DATE": "16. September 2026"
   },
   "CONTACT": {
     "TITLE": "Kontaktieren Sie uns",
@@ -1443,5 +1454,59 @@
     "INVALID_EMAIL": "Ungültige E-Mail",
     "BACK": "Zurück",
     "OPTIONAL": "(Optional)"
+  },
+  "INFORMATION": {
+    "TITLE": "Anweisungen und Anhänge",
+    "OPTIONAL": "— Optional",
+    "ALL_MODELS": "Alle Teile",
+    "SUMMARY": "{{notes}} · {{files}}",
+    "NEW": "Neue Informationen",
+    "DOWNLOAD": "Herunterladen",
+    "MARK_READ": "Als gelesen markieren",
+    "CLOSE": "Schliessen",
+    "ADD": "Informationen hinzufügen",
+    "EDIT": "Bearbeiten",
+    "ADD_EMPTY": "Anweisungen oder Anhänge hinzufügen",
+    "TEXT": "Anweisungen",
+    "PLACEHOLDER": "Ausrichtung, gewünschte Einstellungen und besondere Anforderungen…",
+    "AFTER_ORDER_HINT": "Wir kontaktieren Sie, wenn es Probleme mit Ihren Wünschen gibt. Nach der Bestellung hinzugefügte Anweisungen können möglicherweise nicht berücksichtigt werden, wenn der Druck bereits begonnen hat.",
+    "MODEL": "Bezug",
+    "UPLOAD": "Fotos oder PDFs hochladen",
+    "LIMITS": "JPEG, PNG oder PDF: maximal 10 MB pro Datei, 10 Anhänge und insgesamt 30 MB.",
+    "REMOVE": "Entfernen",
+    "SAVE": "Speichern",
+    "ADDED": "Informationen zur Bestellung hinzugefügt",
+    "SAVED": "Anweisungen und Anhänge gespeichert",
+    "SAVE_ERROR": "Speichern fehlgeschlagen. Bitte versuchen Sie es erneut, bevor Sie fortfahren.",
+    "ACCESS_ERROR": "Öffnen Sie den Link in Ihrer Bestellbestätigung oder verwenden Sie den Browser, in dem Sie das Angebot erstellt haben.",
+    "TEXT_LIMIT": "Der Text darf höchstens 5000 Zeichen enthalten.",
+    "COPY_LINK": "Kundenlink kopieren",
+    "NOTE": "Notiz",
+    "NOTES": "Notizen",
+    "FILE": "Anhang",
+    "FILES": "Anhänge",
+    "MODEL_REMOVED": "Das angegebene Modell ist nicht mehr enthalten. Wählen Sie ein anderes Modell oder alle Teile."
+  },
+  "SESSION_EMAIL": {
+    "EMAIL_LABEL": "E-Mail",
+    "TITLE": "Sitzung speichern",
+    "OPEN": "Sitzung per E-Mail speichern",
+    "HINT": "Speichere Modelle, Einstellungen, Anweisungen und Anhänge und öffne sie auf jedem Gerät wieder. Kopiere den Link oder erhalte ihn per E-Mail.",
+    "EMAIL_PRIVACY": "Wir verwenden deine E-Mail-Adresse ausschließlich, um dir den Link zu dieser Sitzung zu senden.",
+    "ACCESS_NOTICE": "Jede Person, die den Link besitzt, kann auf die Sitzung zugreifen.",
+    "EXPIRY_LABEL": "Verfügbar bis",
+    "CANCEL": "Abbrechen",
+    "SEND": "Link senden",
+    "SENDING": "Wird gespeichert und gesendet…",
+    "SENT": "E-Mail gesendet. Über den Link kannst du die Sitzung fortsetzen.",
+    "ERROR": "Die Sitzung konnte nicht gespeichert oder die E-Mail nicht gesendet werden. Deine Arbeit bleibt verfügbar. Bitte erneut versuchen.",
+    "RATE_LIMIT": "Warte eine Minute, bevor du einen weiteren Link sendest.",
+    "SCAN_ERROR": "Die Virenprüfung ist nicht verfügbar. Die Anhänge wurden nicht freigegeben. Versuche es später erneut.",
+    "UNAVAILABLE": "Diese Sitzung ist abgelaufen, wurde bereits bestellt oder ist nicht mehr verfügbar. Starte eine neue Kalkulation.",
+    "RECALCULATE": "Berechne das Angebot erneut, um Änderungen an Modellen, Mengen und Einstellungen vor dem Senden zu speichern.",
+    "COPY": "Link kopieren",
+    "COPYING": "Link wird gespeichert…",
+    "COPIED": "Link kopiert. Damit kannst du die gesamte Sitzung wieder öffnen.",
+    "COPY_ERROR": "Automatisches Kopieren ist nicht verfügbar. Markiere und kopiere den Link unten."
   }
 }

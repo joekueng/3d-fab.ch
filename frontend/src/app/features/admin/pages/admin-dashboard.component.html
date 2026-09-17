@@ -130,6 +130,9 @@
             >
               <td class="order-table__identity" data-label="Ordine">
                 <strong class="order-number">{{ order.orderNumber }}</strong>
+                @if (unreadInformation.has(order.id)) {
+                  <strong>{{ "INFORMATION.NEW" | translate }}</strong>
+                }
                 <span class="order-table__date">
                   {{
                     order.createdAt
@@ -277,11 +280,22 @@
         </summary>
         <div class="disclosure-content">
           <div class="items">
-            <div class="item" *ngFor="let item of selectedOrder.items">
+            <app-order-information
+              [orderId]="selectedOrder.id"
+              [admin]="true"
+              [models]="informationModels"
+              (read)="refreshUnreadInformation()"
+            />
+            <div
+              class="item"
+              *ngFor="let item of selectedOrder.items; let itemIndex = index"
+            >
               <div class="item-main">
                 <div class="item-heading">
                   <p class="file-name">
-                    <strong>{{ itemDisplayName(item) }}</strong>
+                    <strong
+                      >{{ itemIndex + 1 }}. {{ itemDisplayName(item) }}</strong
+                    >
                   </p>
                   <span class="item-kind-badge">
                     {{
@@ -676,113 +690,77 @@
   <p class="muted">Nessuna email tracciata per questo ordine.</p>
 </ng-template>
 
-<div
-  class="modal-backdrop"
+<app-dialog
   *ngIf="showPrintDetails && selectedOrder"
-  (click)="closePrintDetails()"
+  [title]="'Dettagli stampa ordine ' + selectedOrder.orderNumber"
+  closeLabel="Chiudi"
+  (dismissed)="closePrintDetails()"
 >
-  <div class="modal-card" (click)="$event.stopPropagation()">
-    <header class="modal-header">
-      <h3>Dettagli stampa ordine {{ selectedOrder.orderNumber }}</h3>
-      <app-button
-        class="close-btn"
-        type="button"
-        variant="ghost"
-        (click)="closePrintDetails()"
-      >
-        Chiudi
-      </app-button>
-    </header>
-
-    <div class="modal-grid ui-meta-grid">
-      <div class="ui-meta-item">
-        <strong>Qualità</strong
-        ><span>{{ getQualityLabel(selectedOrder.printLayerHeightMm) }}</span>
-      </div>
-      <div class="ui-meta-item">
-        <strong>Materiale</strong
-        ><span>{{ selectedOrder.printMaterialCode || "-" }}</span>
-      </div>
-      <div class="ui-meta-item">
-        <strong>Layer height</strong
-        ><span>{{ selectedOrder.printLayerHeightMm || "-" }} mm</span>
-      </div>
-      <div class="ui-meta-item">
-        <strong>Nozzle</strong
-        ><span>{{ selectedOrder.printNozzleDiameterMm || "-" }} mm</span>
-      </div>
-      <div class="ui-meta-item">
-        <strong>Infill pattern</strong
-        ><span>{{ selectedOrder.printInfillPattern || "-" }}</span>
-      </div>
-      <div class="ui-meta-item">
-        <strong>Infill %</strong
-        ><span>{{ selectedOrder.printInfillPercent ?? "-" }}</span>
-      </div>
-      <div class="ui-meta-item">
-        <strong>Supporti</strong
-        ><span>{{ selectedOrder.printSupportsEnabled ? "Sì" : "No" }}</span>
-      </div>
+  <div class="modal-grid ui-meta-grid">
+    <div class="ui-meta-item">
+      <strong>Qualità</strong
+      ><span>{{ getQualityLabel(selectedOrder.printLayerHeightMm) }}</span>
     </div>
-
-    <h4>Parametri per file</h4>
-    <div class="file-color-list">
-      <div
-        class="file-color-row"
-        *ngFor="let item of printItems(selectedOrder)"
-      >
-        <span class="filename">{{ item.originalFilename }}</span>
-        <span class="file-color">
-          {{ getItemMaterialLabel(item) }} | Colore:
-          {{ getItemColorLabel(item) }} | {{ item.nozzleDiameterMm ?? "-" }} mm
-          | {{ item.layerHeightMm ?? "-" }} mm |
-          {{ item.infillPercent ?? "-" }}% | {{ item.infillPattern || "-" }} |
-          {{ formatSupportsState(item.supportsEnabled) }}
-        </span>
-      </div>
+    <div class="ui-meta-item">
+      <strong>Materiale</strong
+      ><span>{{ selectedOrder.printMaterialCode || "-" }}</span>
+    </div>
+    <div class="ui-meta-item">
+      <strong>Layer height</strong
+      ><span>{{ selectedOrder.printLayerHeightMm || "-" }} mm</span>
+    </div>
+    <div class="ui-meta-item">
+      <strong>Nozzle</strong
+      ><span>{{ selectedOrder.printNozzleDiameterMm || "-" }} mm</span>
+    </div>
+    <div class="ui-meta-item">
+      <strong>Infill pattern</strong
+      ><span>{{ selectedOrder.printInfillPattern || "-" }}</span>
+    </div>
+    <div class="ui-meta-item">
+      <strong>Infill %</strong
+      ><span>{{ selectedOrder.printInfillPercent ?? "-" }}</span>
+    </div>
+    <div class="ui-meta-item">
+      <strong>Supporti</strong
+      ><span>{{ selectedOrder.printSupportsEnabled ? "Sì" : "No" }}</span>
     </div>
   </div>
-</div>
 
-<div
-  class="modal-backdrop preview-backdrop"
-  *ngIf="previewItem"
-  (click)="closePreview()"
-  role="presentation"
->
-  <section
-    class="modal-card preview-modal"
-    (click)="$event.stopPropagation()"
-    role="dialog"
-    aria-modal="true"
-    [attr.aria-label]="'ADMIN_ORDERS.PREVIEW_TITLE' | translate"
-  >
-    <header class="modal-header">
-      <div>
-        <h3>{{ "ADMIN_ORDERS.PREVIEW_TITLE" | translate }}</h3>
-        <p class="preview-filename">{{ itemDisplayName(previewItem) }}</p>
-      </div>
-      <app-button
-        class="close-btn"
-        type="button"
-        variant="ghost"
-        (click)="closePreview()"
-      >
-        {{ "ADMIN_ORDERS.CLOSE" | translate }}
-      </app-button>
-    </header>
-
-    <div class="preview-loading" *ngIf="previewLoading">
-      {{ "ADMIN_ORDERS.PREVIEW_LOADING" | translate }}
+  <h4>Parametri per file</h4>
+  <div class="file-color-list">
+    <div class="file-color-row" *ngFor="let item of printItems(selectedOrder)">
+      <span class="filename">{{ item.originalFilename }}</span>
+      <span class="file-color">
+        {{ getItemMaterialLabel(item) }} | Colore:
+        {{ getItemColorLabel(item) }} | {{ item.nozzleDiameterMm ?? "-" }} mm |
+        {{ item.layerHeightMm ?? "-" }} mm | {{ item.infillPercent ?? "-" }}% |
+        {{ item.infillPattern || "-" }} |
+        {{ formatSupportsState(item.supportsEnabled) }}
+      </span>
     </div>
-    <p class="ui-banner ui-banner--error" *ngIf="previewError">
-      {{ "ADMIN_ORDERS.PREVIEW_ERROR" | translate }}
-    </p>
-    <app-stl-viewer
-      *ngIf="previewFile"
-      [file]="previewFile"
-      [color]="getItemColorHex(previewItem) || '#facf0a'"
-      [height]="previewViewerHeight()"
-    ></app-stl-viewer>
-  </section>
-</div>
+  </div>
+</app-dialog>
+
+<app-dialog
+  *ngIf="previewItem"
+  [title]="'ADMIN_ORDERS.PREVIEW_TITLE' | translate"
+  [subtitle]="itemDisplayName(previewItem)"
+  [closeLabel]="'ADMIN_ORDERS.CLOSE' | translate"
+  size="large"
+  [fullscreenOnMobile]="true"
+  (dismissed)="closePreview()"
+>
+  <div class="preview-loading" *ngIf="previewLoading">
+    {{ "ADMIN_ORDERS.PREVIEW_LOADING" | translate }}
+  </div>
+  <p class="ui-banner ui-banner--error" *ngIf="previewError">
+    {{ "ADMIN_ORDERS.PREVIEW_ERROR" | translate }}
+  </p>
+  <app-stl-viewer
+    *ngIf="previewFile"
+    [file]="previewFile"
+    [color]="getItemColorHex(previewItem) || '#facf0a'"
+    [height]="previewViewerHeight()"
+  ></app-stl-viewer>
+</app-dialog>

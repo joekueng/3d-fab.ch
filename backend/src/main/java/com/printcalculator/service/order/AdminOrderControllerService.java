@@ -320,6 +320,7 @@ public class AdminOrderControllerService {
             itemDto.setId(item.getId());
             itemDto.setItemType(item.getItemType() != null ? item.getItemType() : "PRINT_FILE");
             itemDto.setOriginalFilename(item.getOriginalFilename());
+            itemDto.setClientModelKey(item.getClientModelKey());
             itemDto.setDisplayName(
                     item.getDisplayName() != null && !item.getDisplayName().isBlank()
                             ? item.getDisplayName()

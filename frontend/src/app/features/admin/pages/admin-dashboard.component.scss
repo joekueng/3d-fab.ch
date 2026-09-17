@@ -647,59 +647,11 @@ tbody tr.no-results:hover {
   color: #1d4ed8;
 }
 
-.modal-card.preview-modal {
-  width: min(980px, 100%);
-}
-
-.preview-filename {
-  margin: 0.25rem 0 0;
-  color: var(--color-text-muted);
-  overflow-wrap: anywhere;
-}
-
 .preview-loading {
   display: grid;
   place-items: center;
   min-height: 320px;
   color: var(--color-text-muted);
-}
-
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(16, 24, 32, 0.35);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 4000;
-  padding: var(--space-4);
-}
-
-.modal-card {
-  width: min(860px, 100%);
-  max-height: 88vh;
-  overflow: auto;
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  padding: var(--space-4);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--space-3);
-  margin-bottom: var(--space-3);
-}
-
-.modal-header h3 {
-  margin: 0;
-}
-
-.close-btn {
-  white-space: nowrap;
 }
 
 .modal-grid {
@@ -931,19 +883,6 @@ h4 {
   .items {
     grid-template-columns: 1fr;
   }
-
-  .preview-backdrop {
-    padding: 0;
-  }
-
-  .modal-card.preview-modal {
-    width: 100%;
-    height: 100dvh;
-    max-height: none;
-    border: 0;
-    border-radius: 0;
-    padding: var(--space-3);
-  }
 }
 
 @media (max-width: 520px) {
@@ -951,14 +890,6 @@ h4 {
   .ui-data-table td {
     padding: var(--space-2);
     font-size: 0.88rem;
-  }
-
-  .modal-backdrop {
-    padding: var(--space-2);
-  }
-
-  .preview-backdrop {
-    padding: 0;
   }
 
   .orders-table td {

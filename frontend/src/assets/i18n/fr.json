@@ -1038,8 +1038,8 @@
     "PRIVACY_TITLE": "Politique de confidentialité",
     "TERMS_TITLE": "Conditions générales",
     "LAST_UPDATE": "Dernière mise à jour",
-    "TERMS_UPDATE_DATE": "24 février 2026",
-    "PRIVACY_UPDATE_DATE": "24 février 2026",
+    "TERMS_UPDATE_DATE": "16 septembre 2026",
+    "PRIVACY_UPDATE_DATE": "16 septembre 2026",
     "CONSENT": {
       "LABEL_PREFIX": "J'ai lu et j'accepte les",
       "TERMS_LINK": "Conditions générales",
@@ -1057,18 +1057,21 @@
       "S1": {
         "TITLE": "1. Quelles données nous traitons",
         "P1": "1.1. Nous collectons les données nécessaires aux devis et aux commandes : prénom, nom, e-mail, téléphone, adresse, données de livraison/facturation et détails de la commande.",
-        "P2": "1.2. Lorsque vous téléversez des fichiers 3D ou des pièces jointes techniques, les fichiers sont traités uniquement pour l'analyse, la production, l'assistance et la gestion de la commande."
+        "P2": "1.2. Lorsque vous téléversez des fichiers 3D ou des pièces jointes techniques, les fichiers sont traités uniquement pour l'analyse, la production, l'assistance et la gestion de la commande.",
+        "P3": "1.3. Une session enregistrée du calculateur peut contenir des modèles 3D téléversés, les quantités, couleurs, matériaux et réglages de qualité sélectionnés, les calculs du devis, des instructions, des pièces jointes et d’autres données associées au devis."
       },
       "S2": {
         "TITLE": "2. Finalité du traitement",
         "P1": "2.1. Nous utilisons les données exclusivement pour : préparer les devis, confirmer les commandes, recevoir les paiements, organiser les expéditions et fournir l'assistance après-vente.",
-        "P2": "2.2. Nous n'utilisons pas les données pour le profilage, le marketing automatisé ou la vente à des tiers."
+        "P2": "2.2. Nous n'utilisons pas les données pour le profilage, le marketing automatisé ou la vente à des tiers.",
+        "P3": "2.3. Si vous choisissez d’enregistrer une session d’impression par e-mail, nous utilisons votre adresse e-mail uniquement pour vous envoyer le lien nécessaire à la réouverture de cette session. Nous n’utilisons pas cette adresse pour envoyer des rappels, des e-mails promotionnels ou d’autres communications marketing à la suite de l’enregistrement de la session. Un enregistrement de livraison contenant l’adresse du destinataire est conservé jusqu’à 365 jours à des fins opérationnelles et d’audit et n’est pas utilisé pour des communications ultérieures."
       },
       "S3": {
         "TITLE": "3. Conservation des fichiers et des données",
-        "P1": "3.1. Les fichiers téléversés uniquement pour un devis sont conservés pendant la durée de la session et supprimés automatiquement à son expiration.",
+        "P1": "3.1. Les fichiers et données associés à une session enregistrée du calculateur sont programmés pour être supprimés automatiquement après la date d’expiration indiquée à l’utilisateur. Chaque fois qu’une session active est rouverte au moyen du lien d’accès, son expiration est réinitialisée à trois mois à compter de la date d’accès. Si la session est convertie en commande, les données nécessaires à la commande sont conservées comme décrit à la section 3.2.",
         "P2": "3.2. Les fichiers et données liés aux commandes confirmées sont conservés le temps nécessaire à la production, la livraison, l'assistance et les obligations administratives/légales, puis supprimés ou minimisés.",
-        "P3": "3.3. Les fichiers téléversés dans le calculateur sont utilisés uniquement pour l'analyse technique et l'estimation du devis et restent associés exclusivement à la session du calculateur."
+        "P3": "3.3. Les fichiers téléversés dans le calculateur sont utilisés uniquement pour l'analyse technique et l'estimation du devis et restent associés exclusivement à la session du calculateur.",
+        "P4": "3.4. Le lien d’une session enregistrée est un lien d’accès. Toute personne disposant du lien peut accéder aux contenus associés jusqu’à l’expiration du lien ou jusqu’à son invalidation à la suite d’une commande."
       },
       "S4": {
         "TITLE": "4. Cookies et traçage",
@@ -1090,7 +1093,7 @@
     "TERMS": {
       "META": {
         "PROVIDER": "Fournisseur : 3D-Fab.ch (Matteo Caletti et Joe Kung)",
-        "VERSION": "Version : v1.0",
+        "VERSION": "Version : v1.1",
         "SCOPE": "Valables pour l'impression 3D FDM/FFF et les services associés, avec vente et livraison exclusivement en Suisse (CH)."
       },
       "S1": {
@@ -1114,6 +1117,13 @@
         "P1": "4.1. Le contrat est conclu avec la confirmation de commande (e-mail/portail) ou avec le démarrage de la production après paiement/acompte.",
         "P2": "4.2. Les devis automatiques peuvent être confirmés ou mis à jour après vérification technique minimale (imprimabilité, supports, limites machine).",
         "P3": "4.3. Le fournisseur peut refuser des commandes techniquement non réalisables ou non conformes aux présentes conditions."
+      },
+      "S4A": {
+        "TITLE": "4A. Sessions d’impression enregistrées",
+        "P1": "4A.1. Les utilisateurs peuvent enregistrer une session du calculateur et la reprendre au moyen d’un lien d’accès généré. L’enregistrement d’une session ne constitue ni une commande, ni l’acceptation d’un devis, ni la réservation d’une capacité de production, ni la conclusion d’un contrat.",
+        "P2": "4A.2. Les prix et devis figurant dans une session enregistrée restent soumis aux présentes Conditions et à la vérification technique décrite à la section 4.",
+        "P3": "4A.3. Les sessions enregistrées restent disponibles uniquement jusqu’à la date d’expiration indiquée à l’utilisateur. Chaque réouverture valide au moyen du lien d’accès réinitialise l’expiration à trois mois à compter de la date d’accès. 3D-Fab ne s’engage pas à conserver une session au-delà de la date d’expiration ainsi actualisée.",
+        "P4": "4A.4. Toute personne disposant du lien d’accès peut accéder à la session associée, y compris aux fichiers téléversés, réglages, instructions et pièces jointes. Les utilisateurs sont responsables de la confidentialité du lien et de son partage uniquement avec des personnes autorisées."
       },
       "S5": {
         "TITLE": "5. Prix, taxes et expédition",
@@ -1186,8 +1196,9 @@
       },
       "S15": {
         "TITLE": "15. Protection des données",
-        "P1": "15.1. Le fournisseur traite les données personnelles pour la gestion des commandes, paiements, expéditions et assistance.",
-        "P2": "15.2. Les données peuvent être partagées avec des fournisseurs techniques et transporteurs uniquement dans la mesure nécessaire à la fourniture du service."
+        "P1": "15.1. Le fournisseur traite les données personnelles pour les sessions enregistrées du calculateur, les devis, la gestion des commandes, les paiements, les expéditions et l’assistance.",
+        "P2": "15.2. Les données peuvent être partagées avec des fournisseurs techniques et transporteurs uniquement dans la mesure nécessaire à la fourniture du service.",
+        "P3": "15.3. Des informations complémentaires sur les sessions enregistrées, les liens d’accès, les durées de conservation et l’utilisation des adresses e-mail figurent dans la Politique de confidentialité."
       },
       "S16": {
         "TITLE": "16. Limitation de responsabilité",
@@ -1438,5 +1449,59 @@
       "MATTE_WHITE": "Blanc mat",
       "MATTE_GRAY": "Gris mat"
     }
+  },
+  "INFORMATION": {
+    "TITLE": "Instructions et pièces jointes",
+    "OPTIONAL": "— Facultatif",
+    "ALL_MODELS": "Toutes les pièces",
+    "SUMMARY": "{{notes}} · {{files}}",
+    "NEW": "Nouvelles informations",
+    "DOWNLOAD": "Télécharger",
+    "MARK_READ": "Marquer comme lu",
+    "CLOSE": "Fermer",
+    "ADD": "Ajouter des informations",
+    "EDIT": "Modifier",
+    "ADD_EMPTY": "Ajouter des instructions ou des pièces jointes",
+    "TEXT": "Instructions",
+    "PLACEHOLDER": "Orientation, paramètres souhaités et exigences particulières…",
+    "AFTER_ORDER_HINT": "Nous vous contacterons en cas de problème avec vos demandes. Les instructions ajoutées après la commande pourraient ne pas être applicables si l’impression a déjà commencé.",
+    "MODEL": "Concerne",
+    "UPLOAD": "Importer des photos ou des PDF",
+    "LIMITS": "JPEG, PNG ou PDF : maximum 10 Mo par fichier, 10 pièces jointes et 30 Mo au total.",
+    "REMOVE": "Supprimer",
+    "SAVE": "Enregistrer",
+    "ADDED": "Informations ajoutées à la commande",
+    "SAVED": "Instructions et pièces jointes enregistrées",
+    "SAVE_ERROR": "Enregistrement impossible. Réessayez avant de continuer.",
+    "ACCESS_ERROR": "Pour accéder aux informations, ouvrez le lien reçu dans la confirmation de commande ou utilisez le navigateur avec lequel vous avez créé le devis.",
+    "TEXT_LIMIT": "Le texte ne doit pas dépasser 5000 caractères.",
+    "COPY_LINK": "Copier le lien client",
+    "NOTE": "note",
+    "NOTES": "notes",
+    "FILE": "pièce jointe",
+    "FILES": "pièces jointes",
+    "MODEL_REMOVED": "Le modèle indiqué ne figure plus parmi les pièces. Choisissez un autre modèle ou toutes les pièces."
+  },
+  "SESSION_EMAIL": {
+    "EMAIL_LABEL": "E-mail",
+    "TITLE": "Enregistrer la session",
+    "OPEN": "Enregistrer la session par e-mail",
+    "HINT": "Enregistrez vos modèles, réglages, instructions et pièces jointes et rouvrez-les sur n’importe quel appareil. Copiez le lien ou recevez-le par e-mail.",
+    "EMAIL_PRIVACY": "Nous utiliserons votre adresse e-mail uniquement pour vous envoyer le lien de cette session.",
+    "ACCESS_NOTICE": "Toute personne disposant du lien peut accéder à la session.",
+    "EXPIRY_LABEL": "Disponible jusqu’au",
+    "CANCEL": "Annuler",
+    "SEND": "Envoyer le lien",
+    "SENDING": "Enregistrement et envoi…",
+    "SENT": "E-mail envoyé. Utilisez le lien pour reprendre votre session.",
+    "ERROR": "Impossible d’enregistrer la session ou d’envoyer l’e-mail. Votre travail reste disponible. Veuillez réessayer.",
+    "RATE_LIMIT": "Attendez une minute avant d’envoyer un autre lien.",
+    "SCAN_ERROR": "L’analyse antivirus est indisponible. Les pièces jointes n’ont pas été approuvées. Réessayez plus tard.",
+    "UNAVAILABLE": "Cette session a expiré, a déjà été transformée en commande ou n’est plus disponible. Lancez un nouveau devis.",
+    "RECALCULATE": "Recalculez le devis pour enregistrer les modifications des modèles, quantités et réglages avant l’envoi.",
+    "COPY": "Copier le lien",
+    "COPYING": "Enregistrement du lien…",
+    "COPIED": "Lien copié. Utilisez-le pour rouvrir la session complète.",
+    "COPY_ERROR": "La copie automatique est indisponible. Sélectionnez et copiez le lien ci-dessous."
   }
 }

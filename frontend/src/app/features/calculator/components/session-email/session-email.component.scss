@@ -1,0 +1,26 @@
+:host {
+  display: block;
+}
+
+:host > .ui-form-hint {
+  margin-bottom: var(--space-2);
+}
+
+.session-access-details {
+  margin-bottom: var(--space-4);
+}
+
+.session-access-details .ui-form-hint {
+  margin: 0;
+}
+
+.session-access-details .ui-form-hint + .ui-form-hint {
+  margin-top: var(--space-1);
+}
+
+.session-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}

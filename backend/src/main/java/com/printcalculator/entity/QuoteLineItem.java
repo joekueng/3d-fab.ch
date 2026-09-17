@@ -16,6 +16,11 @@ import java.util.UUID;
 @Table(name = "quote_line_items", indexes = {@Index(name = "ix_quote_line_items_session",
         columnList = "quote_session_id")})
 public class QuoteLineItem {
+    @Column(name = "client_model_key", length = 100)
+    private String clientModelKey;
+    public String getClientModelKey() { return clientModelKey; }
+    public void setClientModelKey(String key) { clientModelKey = key; }
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "quote_line_item_id", nullable = false)

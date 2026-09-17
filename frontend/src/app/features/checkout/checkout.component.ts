@@ -1,3 +1,11 @@
+import { AppDialogComponent } from '../../shared/components/app-dialog/app-dialog.component';
+import { FormControl } from '@angular/forms';
+import { LegalConsentComponent } from '../../shared/components/legal-consent/legal-consent.component';
+import { OrderInformationComponent } from '../order-information/order-information.component';
+import {
+  OrderInformationService,
+  InformationModel,
+} from '../order-information/order-information.service';
 import {
   Component,
   inject,
@@ -46,6 +54,9 @@ import {
   selector: 'app-checkout',
   standalone: true,
   imports: [
+    AppDialogComponent,
+    LegalConsentComponent,
+    OrderInformationComponent,
     CommonModule,
     ReactiveFormsModule,
     PrintItemControlsComponent,
@@ -61,6 +72,21 @@ import {
   styleUrls: ['./checkout.component.scss'],
 })
 export class CheckoutComponent implements OnInit {
+  get legalConsentControl(): FormControl {
+    return this.checkoutForm.get('acceptLegal') as FormControl;
+  }
+  readonly informationService = inject(OrderInformationService);
+  get informationModels(): InformationModel[] {
+    const items: {
+      id: string;
+      originalFilename: string;
+      clientModelKey?: string;
+    }[] = this.quoteSession()?.items || [];
+    return items.map((item, index) => ({
+      label: `${index + 1}. ${item.originalFilename}`,
+      value: item.clientModelKey || item.id,
+    }));
+  }
   private fb = inject(FormBuilder);
   private quoteService = inject(QuoteEstimatorService);
   private router = inject(Router);

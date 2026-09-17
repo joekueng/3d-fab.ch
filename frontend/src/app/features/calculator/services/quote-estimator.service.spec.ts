@@ -1,4 +1,5 @@
-import { TestBed } from '@angular/core/testing';
+import { OrderInformationService } from '../../order-information/order-information.service';
+import { TestBed, fakeAsync, flushMicrotasks } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import {
   HttpTestingController,
@@ -17,7 +18,17 @@ describe('QuoteEstimatorService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        {
+          provide: OrderInformationService,
+          useValue: {
+            saveDraft: () => Promise.resolve({ id: 'draft', token: 'key' }),
+            draftCredential: () => ({ id: 'draft', token: 'key' }),
+          },
+        },
+      ],
     });
     service = TestBed.inject(QuoteEstimatorService);
     httpTesting = TestBed.inject(HttpTestingController);
@@ -27,7 +38,7 @@ describe('QuoteEstimatorService', () => {
     httpTesting.verify();
   });
 
-  it('preserves a rate-limit failure when session creation returns 429', () => {
+  it('preserves a rate-limit failure when session creation returns 429', fakeAsync(() => {
     const request: QuoteRequest = {
       items: [
         {
@@ -47,6 +58,7 @@ describe('QuoteEstimatorService', () => {
       },
     });
 
+    flushMicrotasks();
     httpTesting.expectOne(`${environment.apiUrl}/api/quote-sessions`).flush(
       {
         status: 429,
@@ -63,5 +75,5 @@ describe('QuoteEstimatorService', () => {
         code: 'QUOTE_RATE_LIMITED',
       }),
     );
-  });
+  }));
 });

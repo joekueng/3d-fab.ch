@@ -490,13 +490,13 @@
   <p class="muted">Sezione collassata.</p>
 </ng-template>
 
-<div
-  class="dialog-backdrop"
+<app-dialog
   *ngIf="variantToDelete"
-  (click)="closeDeleteVariantDialog()"
-></div>
-<div class="confirm-dialog" *ngIf="variantToDelete">
-  <h4>Sei sicuro?</h4>
+  title="Sei sicuro?"
+  closeLabel="Annulla"
+  size="small"
+  (dismissed)="closeDeleteVariantDialog()"
+>
   <p>
     Vuoi eliminare la variante
     <strong>{{ variantToDelete.variantDisplayName }}</strong
@@ -524,4 +524,4 @@
       }}
     </app-button>
   </div>
-</div>
+</app-dialog>
