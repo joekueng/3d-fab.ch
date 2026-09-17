@@ -182,7 +182,9 @@ describe('OrderInformationService', () => {
 
     void service.getOrder('order', false);
     const information = http.expectOne(api + '/orders/order/information');
-    expect(information.request.headers.get('X-Information-Token')).toBe('server-secret');
+    expect(information.request.headers.get('X-Information-Token')).toBe(
+      'server-secret',
+    );
     information.flush({ id: 'information', entries: [] });
   }));
 });
