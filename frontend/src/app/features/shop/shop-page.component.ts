@@ -77,8 +77,6 @@ export class ShopPageComponent {
   );
 
   readonly loading = signal(true);
-  readonly softFallbackActive = signal(false);
-  readonly softFallbackCategoryLabel = signal<string | null>(null);
   readonly error = signal<string | null>(null);
   readonly categories = signal<ShopCategoryTree[]>([]);
   readonly categoryNodes = signal<ShopCategoryNavNode[]>([]);
@@ -113,19 +111,12 @@ export class ShopPageComponent {
       );
     }
 
-    if (this.softFallbackActive() && this.routeCategorySlug()) {
-      return this.resolveTranslatedText(
-        'SEO.ROUTES.SHOP.CATEGORY_DESCRIPTION',
-        this.translate.instant('SHOP.CATALOG_META_DESCRIPTION'),
-      );
-    }
-
     return this.translate.instant('SHOP.SUBTITLE');
   });
   readonly catalogEyebrow = computed(() => {
     this.languageService.currentLang();
 
-    return this.selectedCategory() || this.softFallbackCategoryLabel()
+    return this.selectedCategory()
       ? this.translate.instant('SHOP.SELECTED_CATEGORY')
       : this.translate.instant('SHOP.CATALOG_LABEL');
   });
@@ -134,7 +125,6 @@ export class ShopPageComponent {
 
     return (
       this.selectedCategory()?.name ||
-      this.softFallbackCategoryLabel() ||
       this.translate.instant('SHOP.CATALOG_TITLE')
     );
   });
@@ -156,8 +146,6 @@ export class ShopPageComponent {
       .pipe(
         tap(() => {
           this.loading.set(true);
-          this.softFallbackActive.set(false);
-          this.softFallbackCategoryLabel.set(null);
           this.error.set(null);
         }),
         switchMap(([categorySlug]) => {
@@ -179,19 +167,9 @@ export class ShopPageComponent {
                 return of(null);
               }
 
-              if (this.shouldUseSoftSeoFallback(error)) {
-                this.error.set(null);
-                this.softFallbackActive.set(true);
-                this.softFallbackCategoryLabel.set(
-                  categorySlug ? humanizeShopSlug(categorySlug) : null,
-                );
-                this.setResponseStatus(200);
-                this.applySoftFallbackSeo(categorySlug);
-                return of(null);
-              }
-
               this.error.set('SHOP.LOAD_ERROR');
               this.setResponseStatus(503);
+              this.applyTemporaryErrorSeo(categorySlug);
               return of(null);
             }),
             finalize(() => this.loading.set(false)),
@@ -213,8 +191,7 @@ export class ShopPageComponent {
         );
         this.selectedCategory.set(result.catalog.category ?? null);
         this.products.set(result.catalog.products);
-        this.softFallbackActive.set(false);
-        this.softFallbackCategoryLabel.set(null);
+        this.setResponseStatus(200);
         this.applySeo(result.catalog.category ?? null);
         this.restoreCatalogScrollIfNeeded();
       });
@@ -446,7 +423,7 @@ export class ShopPageComponent {
     });
   }
 
-  private applySoftFallbackSeo(categorySlug: string | null): void {
+  private applyTemporaryErrorSeo(categorySlug: string | null): void {
     if (!categorySlug) {
       this.applyDefaultSeo();
       return;
@@ -468,10 +445,6 @@ export class ShopPageComponent {
       alternates: null,
       xDefault: null,
     });
-  }
-
-  private shouldUseSoftSeoFallback(error: { status?: number } | null): boolean {
-    return !this.isBrowser && error?.status !== 404;
   }
 
   private buildSoftFallbackCategoryTitle(categorySlug: string): string {

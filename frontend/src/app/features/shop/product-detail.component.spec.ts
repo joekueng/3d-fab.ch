@@ -1,9 +1,9 @@
-import { Location } from '@angular/common';
+import { DOCUMENT, Location } from '@angular/common';
 import { PLATFORM_ID, RESPONSE_INIT, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { SeoService } from '../../core/services/seo.service';
 import { LanguageService } from '../../core/services/language.service';
 import { ShopRouteService } from './services/shop-route.service';
@@ -58,7 +58,12 @@ describe('ProductDetailComponent', () => {
         },
       ],
       primaryImage: null,
-      images: [],
+      images: [{
+        mediaAssetId: 'image-1', title: null, altText: null,
+        usageType: 'SHOP_PRODUCT', usageKey: 'product-1', sortOrder: 0,
+        isPrimary: true, thumb: null, card: null,
+        hero: { jpegUrl: '/media/product.jpg', avifUrl: null, webpUrl: null, pngUrl: null },
+      }],
       model3d: null,
       publicPath: '91823f84-bike-wall-hanger',
       localizedPaths: {
@@ -76,6 +81,7 @@ describe('ProductDetailComponent', () => {
     options?: {
       currentLang?: 'it' | 'en' | 'de' | 'fr';
       selectedLang?: 'it' | 'en' | 'de' | 'fr';
+      apiStatus?: number;
     },
   ) {
     const responseInit: { status?: number } = {};
@@ -118,14 +124,16 @@ describe('ProductDetailComponent', () => {
       cartLoading: signal(false),
       getProductByPublicPath: jasmine
         .createSpy('getProductByPublicPath')
-        .and.returnValue(of(buildProduct())),
+        .and.returnValue(options?.apiStatus
+          ? throwError(() => ({ status: options.apiStatus }))
+          : of(buildProduct())),
       quantityForVariant: jasmine
         .createSpy('quantityForVariant')
         .and.returnValue(0),
       loadCart: jasmine.createSpy('loadCart').and.returnValue(of(null)),
       resolveMediaUrl: jasmine
         .createSpy('resolveMediaUrl')
-        .and.returnValue(null),
+        .and.callFake((media) => media?.jpegUrl ?? null),
     };
 
     const router = {
@@ -175,6 +183,7 @@ describe('ProductDetailComponent', () => {
       ],
     });
 
+    TestBed.overrideComponent(ProductDetailComponent, { set: { template: '' } });
     const fixture: ComponentFixture<ProductDetailComponent> =
       TestBed.createComponent(ProductDetailComponent);
 
@@ -182,8 +191,87 @@ describe('ProductDetailComponent', () => {
       component: fixture.componentInstance,
       seoService,
       responseInit,
+      fixture,
+      currentLang,
     };
   }
+
+  function readStructuredData() {
+    const document = TestBed.inject(DOCUMENT);
+    return JSON.parse(document.getElementById('shop-product-jsonld')?.textContent ?? 'null');
+  }
+
+  for (const lang of ['it', 'en', 'de', 'fr'] as const) {
+    it(`renders the displayed offer with the ${lang} canonical URL on the server`, () => {
+      const { fixture } = createComponent(undefined, { currentLang: lang });
+      fixture.detectChanges();
+      const data = readStructuredData();
+      expect(data['@type']).toBe('Product');
+      expect(data.url).toBe(new URL(buildProduct().localizedPaths[lang]!, document.location.origin).href);
+      expect(data.image).toEqual([`${document.location.origin}/media/product.jpg`]);
+      expect(data.offers).toEqual(jasmine.objectContaining({
+        '@type': 'Offer', price: '29.90', priceCurrency: 'CHF',
+        availability: 'https://schema.org/InStock', itemCondition: 'https://schema.org/NewCondition',
+      }));
+      expect(data.description).toBe('Wall mount for bicycles');
+      fixture.destroy();
+      expect(readStructuredData()).toBeNull();
+    });
+  }
+
+  it('updates the offer with the selected variant without duplicating scripts', () => {
+    const { component, fixture } = createComponent();
+    fixture.detectChanges();
+    const product = buildProduct();
+    const variant = { ...product.variants[0], id: 'variant-2', sku: 'BW-2', priceChf: 42.5, colorLabel: 'Red' };
+    component.product.set({ ...product, variants: [...product.variants, variant] });
+    component.selectVariant(variant);
+    fixture.detectChanges();
+    const data = readStructuredData();
+    expect(data.offers.price).toBe(component.priceLabel().toFixed(2));
+    expect(data.sku).toBe('BW-2');
+    expect(data.color).toBe('Red');
+    expect(document.querySelectorAll('#shop-product-jsonld').length).toBe(1);
+  });
+
+  it('removes stale offers during loading and errors', () => {
+    const { component, fixture } = createComponent();
+    fixture.detectChanges();
+    expect(readStructuredData()).not.toBeNull();
+    component.loading.set(true);
+    fixture.detectChanges();
+    expect(readStructuredData()).toBeNull();
+    component.loading.set(false);
+    fixture.detectChanges();
+    expect(readStructuredData()).not.toBeNull();
+    component.error.set('SHOP.NOT_FOUND');
+    fixture.detectChanges();
+    expect(readStructuredData()).toBeNull();
+  });
+
+  it('omits non-indexable, imageless and non-purchasable products', () => {
+    const { component, fixture } = createComponent();
+    fixture.detectChanges();
+    for (const product of [
+      buildProduct({ indexable: false }),
+      buildProduct({ images: [] }),
+      buildProduct({ variants: [], defaultVariant: null }),
+    ]) {
+      component.product.set(product);
+      fixture.detectChanges();
+      expect(readStructuredData()).toBeNull();
+    }
+  });
+
+  it('escapes product text so SSR serialization cannot close the JSON-LD script', () => {
+    const { component, fixture } = createComponent();
+    fixture.detectChanges();
+    const name = '</script><script>alert(1)</script>';
+    component.product.set(buildProduct({ name }));
+    fixture.detectChanges();
+    expect(readStructuredData().name).toBe(name);
+    expect(document.getElementById('shop-product-jsonld')?.outerHTML).not.toContain(name);
+  });
 
   it('applies index follow SEO for indexable products', () => {
     const { component, seoService } = createComponent();
@@ -228,16 +316,14 @@ describe('ProductDetailComponent', () => {
     );
   });
 
-  it('builds a soft SSR fallback with 200 + index follow', () => {
-    const { component, seoService, responseInit } = createComponent();
-
-    expect(
-      (component as any).shouldUseSoftSeoFallback({ status: 500 }),
-    ).toBeTrue();
-    (component as any).setResponseStatus(200);
-    (component as any).applySoftFallbackSeo('91823f84-bike-wall-hanger');
-
-    expect(responseInit.status).toBe(200);
+  it('returns 503 and a visible error for a temporary backend failure', () => {
+    const { component, fixture, seoService, responseInit } = createComponent(
+      undefined, { apiStatus: 500 },
+    );
+    fixture.detectChanges();
+    expect(responseInit.status).toBe(503);
+    expect(component.error()).toBe('SHOP.LOAD_ERROR');
+    expect(readStructuredData()).toBeNull();
     expect(seoService.applyResolvedSeo).toHaveBeenCalledWith(
       jasmine.objectContaining({
         title: 'Bike Wall Hanger | 3D fab',
@@ -252,13 +338,10 @@ describe('ProductDetailComponent', () => {
   });
 
   it('keeps hard fallback noindex for missing products', () => {
-    const { component, seoService, responseInit } = createComponent();
-
-    expect(
-      (component as any).shouldUseSoftSeoFallback({ status: 404 }),
-    ).toBeFalse();
-    (component as any).setResponseStatus(404);
-    (component as any).applyHardFallbackSeo();
+    const { fixture, seoService, responseInit } = createComponent(
+      undefined, { apiStatus: 404 },
+    );
+    fixture.detectChanges();
 
     expect(responseInit.status).toBe(404);
     expect(seoService.applyResolvedSeo).toHaveBeenCalledWith(

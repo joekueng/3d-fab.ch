@@ -13,6 +13,7 @@ The Angular 19 application uses standalone components and a Core / Shared / Feat
 Routes start in `src/app/app.routes.ts`. Keep feature code within its feature folder; use `core` only for true application-wide concerns.
 
 Read the [frontend README consistency workflow](README.md#preserve-the-existing-ui-in-every-feature) before implementing new UI.
+For product SEO, follow the [structured data conventions](README.md#product-structured-data).
 
 ## UI source of truth
 

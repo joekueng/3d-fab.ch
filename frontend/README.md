@@ -70,6 +70,37 @@ See the [shared component guide](src/app/shared/components/README.md) for modal,
    }
    ```
 
+## Product structured data
+
+`SeoService` must wait for the first completed router navigation before generating
+route metadata. Before that event, `router.url` is `/` even on a deep link;
+rewriting metadata then would temporarily replace the SSR canonical with `/it`
+during hydration. Preserve the SSR head until the actual route is available.
+
+Shop HTTP responses are propagated from Angular's request-scoped `RESPONSE_INIT`
+through `CommonEngine` to Express in `src/server.ts`: missing products/categories
+return 404, temporary API failures return 503 with `Retry-After: 60`, and successful
+loads return 200. Error responses are not cached. Do not serve loading placeholders
+with HTTP 200 after a failed API request, or add `noindex` for temporary outages;
+503 already tells crawlers to retry. Existing localized error messages are shown
+instead of an indefinite loading state. Verify actual SSR HTTP responses, not only
+the component's response metadata, when changing this behavior.
+
+Product detail pages own a single JSON-LD script through
+`ProductStructuredDataService`. It is rendered on the server and updated with
+the displayed variant (unit price in CHF, SKU, material and color), localized
+product content, canonical path and public gallery images. Loading, error,
+non-indexable and incomplete products must not leave stale offers in the document;
+the script is removed when leaving the page. Escape `<` when serializing JSON-LD
+to prevent product content from closing the script tag in SSR HTML.
+
+Active public variants are currently orderable without inventory limits, so their
+availability is `InStock` (including made-to-order products). If inventory or
+backorders are introduced, update this mapping alongside cart eligibility.
+Do not invent GTINs, reviews, shipping costs or return policies. Verify rendered
+HTML and variant changes when modifying this code; after deployment validate a
+public product URL with Google's Rich Results Test.
+
 ## Internationalization (i18n)
 
 Translations are stored in `src/assets/i18n/`.

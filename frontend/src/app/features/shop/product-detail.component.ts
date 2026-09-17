@@ -12,6 +12,7 @@ import {
   QueryList,
   ViewChildren,
   computed,
+  effect,
   inject,
   signal,
 } from '@angular/core';
@@ -43,6 +44,7 @@ import {
 } from './services/shop.service';
 import { ShopRouteService } from './services/shop-route.service';
 import { humanizeShopSlug } from './shop-seo-fallback';
+import { ProductStructuredDataService } from './services/product-structured-data.service';
 
 interface ShopMaterialOption {
   key: string;
@@ -60,6 +62,7 @@ interface ShopMaterialProperty {
 @Component({
   selector: 'app-product-detail',
   standalone: true,
+  providers: [ProductStructuredDataService],
   imports: [
     AppDialogComponent,
     ColorSelectorComponent,
@@ -85,6 +88,7 @@ export class ProductDetailComponent {
   private readonly router = inject(Router);
   private readonly translate = inject(TranslateService);
   private readonly seoService = inject(SeoService);
+  private readonly structuredData = inject(ProductStructuredDataService);
   private readonly languageService = inject(LanguageService);
   private readonly shopRouteService = inject(ShopRouteService);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
@@ -99,7 +103,6 @@ export class ProductDetailComponent {
   );
 
   readonly loading = signal(true);
-  readonly softFallbackActive = signal(false);
   readonly error = signal<string | null>(null);
   readonly product = signal<ShopProductDetail | null>(null);
   readonly selectedVariantId = signal<string | null>(null);
@@ -239,10 +242,39 @@ export class ProductDetailComponent {
   );
 
   constructor() {
+    effect(() => {
+      const product = this.product();
+      if (
+        this.loading() ||
+        this.error() ||
+        !product
+      ) {
+        this.structuredData.clear();
+        return;
+      }
+      const lang = this.languageService.currentLang();
+      const path = product.localizedPaths?.[lang];
+      if (!path) {
+        this.structuredData.clear();
+        return;
+      }
+      this.structuredData.update(
+        product,
+        this.selectedVariant(),
+        path,
+        this.galleryImages()
+          .map((image) => this.imageUrl(image))
+          .filter((url): url is string => !!url),
+        this.descriptionPlainText(product.description) ||
+          product.excerpt ||
+          product.name,
+      );
+    });
     afterNextRender(() => {
       this.scheduleCartWarmup();
     });
     this.destroyRef.onDestroy(() => {
+      this.structuredData.clear();
       if (this.isBrowser && this.thumbScrollFrame !== null) {
         window.cancelAnimationFrame(this.thumbScrollFrame);
       }
@@ -268,7 +300,6 @@ export class ProductDetailComponent {
       .pipe(
         tap(() => {
           this.loading.set(true);
-          this.softFallbackActive.set(false);
           this.error.set(null);
           this.addSuccess.set(false);
           this.modelError.set(false);
@@ -301,16 +332,9 @@ export class ProductDetailComponent {
                 return of(null);
               }
 
-              if (this.shouldUseSoftSeoFallback(error)) {
-                this.error.set(null);
-                this.softFallbackActive.set(true);
-                this.setResponseStatus(200);
-                this.applySoftFallbackSeo(productSlug);
-                return of(null);
-              }
-
               this.error.set('SHOP.LOAD_ERROR');
               this.setResponseStatus(503);
+              this.applyTemporaryErrorSeo(productSlug);
               return of(null);
             }),
             finalize(() => this.loading.set(false)),
@@ -324,7 +348,7 @@ export class ProductDetailComponent {
         }
 
         this.product.set(product);
-        this.softFallbackActive.set(false);
+        this.setResponseStatus(200);
         this.selectedVariantId.set(
           product.defaultVariant?.id ?? product.variants[0]?.id ?? null,
         );
@@ -677,7 +701,7 @@ export class ProductDetailComponent {
     });
   }
 
-  private applySoftFallbackSeo(productSlug: string): void {
+  private applyTemporaryErrorSeo(productSlug: string): void {
     const title = this.buildSoftFallbackTitle(productSlug);
     const description = this.resolveTranslatedText(
       'SEO.ROUTES.SHOP.PRODUCT_DESCRIPTION',
@@ -694,10 +718,6 @@ export class ProductDetailComponent {
       alternates: null,
       xDefault: null,
     });
-  }
-
-  private shouldUseSoftSeoFallback(error: { status?: number } | null): boolean {
-    return !this.isBrowser && error?.status !== 404;
   }
 
   private buildSoftFallbackTitle(productSlug: string): string {
