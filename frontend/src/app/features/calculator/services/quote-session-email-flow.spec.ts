@@ -93,9 +93,7 @@ describe('Session email and cross-device restore', () => {
       .getQuoteSession('ordered-session')
       .subscribe((value) => (restored = value));
 
-    http
-      .expectOne(api + '/quote-sessions/ordered-session/resume')
-      .flush(null);
+    http.expectOne(api + '/quote-sessions/ordered-session/resume').flush(null);
     http.expectOne(api + '/quote-sessions/ordered-session').flush({
       session: {
         id: 'ordered-session',
