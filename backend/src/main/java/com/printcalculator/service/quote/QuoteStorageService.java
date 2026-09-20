@@ -9,9 +9,11 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @Service
 public class QuoteStorageService {
@@ -86,5 +88,20 @@ public class QuoteStorageService {
         }
         String path = String.valueOf(converted).trim();
         return path.isEmpty() ? null : path;
+    }
+
+    public void clearSessionStorage(UUID sessionId) throws IOException {
+        Path sessionRoot = QUOTE_STORAGE_ROOT.resolve(sessionId.toString()).normalize();
+        if (!sessionRoot.startsWith(QUOTE_STORAGE_ROOT) || !Files.exists(sessionRoot)) {
+            return;
+        }
+
+        try (Stream<Path> paths = Files.walk(sessionRoot)) {
+            for (Path path : paths.sorted(Comparator.reverseOrder()).toList()) {
+                if (!path.equals(sessionRoot)) {
+                    Files.deleteIfExists(path);
+                }
+            }
+        }
     }
 }

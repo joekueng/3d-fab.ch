@@ -43,6 +43,7 @@ class SmtpEmailNotificationServiceTest {
     void setUp() {
         ReflectionTestUtils.setField(emailNotificationService, "fromAddress", "noreply@test.com");
         ReflectionTestUtils.setField(emailNotificationService, "mailEnabled", true);
+        ReflectionTestUtils.setField(emailNotificationService, "logoUrl", "https://3d-fab.ch/assets/images/SVG/logo-giallo-spesso.svg");
     }
 
     @Test
@@ -62,7 +63,10 @@ class SmtpEmailNotificationServiceTest {
 
         // Assert
         assertEquals(EmailSendResult.STATUS_SENT, result.status());
-        verify(templateEngine, times(1)).process(eq("email/" + templateName), any(Context.class));
+        ArgumentCaptor<Context> contextCaptor = ArgumentCaptor.forClass(Context.class);
+        verify(templateEngine, times(1)).process(eq("email/" + templateName), contextCaptor.capture());
+        assertEquals("https://3d-fab.ch/assets/images/SVG/logo-giallo-spesso.svg",
+                contextCaptor.getValue().getVariable("logoUrl"));
         verify(emailSender, times(1)).createMimeMessage();
         verify(emailSender, times(1)).send(mimeMessage);
     }

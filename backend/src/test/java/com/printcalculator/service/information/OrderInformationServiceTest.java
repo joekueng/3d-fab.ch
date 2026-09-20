@@ -186,9 +186,8 @@ class OrderInformationServiceTest {
         assertNull(customer.customerToken()); assertEquals(admin.entries(), customer.entries());
     }
     @Test void publicHttpEndpointsValidateRequestsAndEnforceFileCredentials() throws Exception {
-        var limits = mock(com.printcalculator.service.QuoteRateLimitService.class);
         var mvc = org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup(
-                new com.printcalculator.controller.OrderInformationController(service, limits)).build();
+                new com.printcalculator.controller.OrderInformationController(service)).build();
         var c = service.create();
         mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/information-drafts/{id}", c.id())
                 .header("X-Information-Token", "incorrect"))
@@ -205,16 +204,14 @@ class OrderInformationServiceTest {
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isBadRequest());
     }
     @Test void orderResumeEndpointReturnsTheCredentialWithNoStoreHeaders() throws Exception {
-        var limits = mock(com.printcalculator.service.QuoteRateLimitService.class);
         var mvc = org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup(
-                new com.printcalculator.controller.CustomerOrderInformationController(service, limits)).build();
+                new com.printcalculator.controller.CustomerOrderInformationController(service)).build();
         var order = order(service.create());
 
         mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/orders/{id}/information/resume", order.getId()))
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk())
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.header().string("Cache-Control", "no-store"))
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.token").value(order.getInformationToken()));
-        verify(limits).checkAllowed(any());
     }
     @Test void expiredDraftCannotBeReadOrConverted() {
         var c = service.create(); var draft = repo.findById(c.id()).orElseThrow();

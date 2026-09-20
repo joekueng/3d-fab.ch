@@ -14,7 +14,9 @@
     "TOTAL": "Gesamt",
     "MAX_QTY_NOTICE": "Für Mengen über {{max}} Stück bitte Beratung anfragen.",
     "RECALC_REQUIRED": "Sie haben die Druckeinstellungen geändert. Berechnen Sie das Angebot neu, bevor Sie mit der Bestellung fortfahren.",
-    "RECALC_CHECKOUT_DISABLED": "Berechnen Sie das Angebot neu, um den Checkout wieder zu aktivieren."
+    "RECALC_CHECKOUT_DISABLED": "Berechnen Sie das Angebot neu, um den Checkout wieder zu aktivieren.",
+    "RECALC_ORDERED_SESSION": "Dieses Angebot wurde bereits für eine Bestellung verwendet. Berechnen Sie es neu, um eine Kopie mit einer neuen Sitzungsnummer zu erstellen.",
+    "RECALC_ORDERED_CHECKOUT_DISABLED": "Erstellen Sie durch Neuberechnung des Angebots eine neue Sitzung, bevor Sie mit der Bestellung fortfahren."
   },
   "USER_DETAILS": {
     "TITLE": "Ihre Daten",
@@ -719,7 +721,9 @@
     "ORDER": "Jetzt bestellen",
     "CONSULT": "Beratung anfragen",
     "ERROR_GENERIC": "Bei der Angebotsberechnung ist ein Fehler aufgetreten.",
-    "ERROR_RATE_LIMIT": "In kurzer Zeit wurden zu viele Versuche unternommen. Der Rechner funktioniert korrekt: Warten Sie mindestens 60 Sekunden, ohne es erneut zu versuchen, und berechnen Sie dann das Angebot erneut.",
+    "ERROR_RATE_LIMIT": "In kurzer Zeit wurden zu viele Versuche unternommen. Warten Sie einen Moment und berechnen Sie das Angebot dann erneut.",
+    "ERROR_RATE_LIMIT_COUNTDOWN": "In kurzer Zeit wurden zu viele Versuche unternommen. Sie können es in {{seconds}} Sekunden erneut versuchen.",
+    "RETRY_IN": "Erneut versuchen in {{seconds}} s",
     "ERROR_SESSION_INIT": "Die Angebotsberechnung konnte nicht gestartet werden. Bitte versuchen Sie es erneut.",
     "ERROR_FINALIZATION": "Die Berechnung wurde abgeschlossen, das endgültige Angebot konnte jedoch nicht geladen werden. Bitte versuchen Sie es erneut.",
     "ERROR_ITEM_PROCESSING": "Die Datei konnte nicht verarbeitet werden.",
@@ -1003,7 +1007,7 @@
         "P1": "3.1. Dateien und Daten, die mit einer gespeicherten Rechner-Sitzung verbunden sind, werden nach dem dem Nutzer angezeigten Ablaufdatum zur automatischen Löschung eingeplant. Jedes Mal, wenn eine aktive Sitzung über den Zugangslink erneut geöffnet wird, wird ihr Ablaufdatum auf drei Monate ab dem Zugriffsdatum zurückgesetzt. Wird die Sitzung in eine Bestellung umgewandelt, werden die für die Bestellung erforderlichen Daten wie in Abschnitt 3.2 beschrieben aufbewahrt.",
         "P2": "3.2. Dateien und Daten im Zusammenhang mit bestätigten Bestellungen werden so lange gespeichert, wie es für Produktion, Lieferung, Support und administrative/rechtliche Pflichten erforderlich ist, danach gelöscht oder minimiert.",
         "P3": "3.3. Im Rechner hochgeladene Dateien werden nur für technische Analyse und Angebotsschätzung verwendet und bleiben ausschließlich mit der Rechner-Sitzung verknüpft.",
-        "P4": "3.4. Der Link zu einer gespeicherten Sitzung ist ein Zugangslink. Jede Person, die den Link besitzt, kann auf die zugehörigen Inhalte zugreifen, bis der Link abläuft oder infolge einer Bestellung ungültig wird."
+        "P4": "3.4. Der Link zu einer gespeicherten Sitzung ist ein Zugangslink. Jede Person, die den Link besitzt, kann bis zum Ablauf auf die Angebotsinhalte zugreifen. Wurde das Angebot bereits bestellt, wird für eine weitere Bestellung eine neue Sitzung erstellt, ohne die persönlichen Daten des ersten Kunden zu übernehmen."
       },
       "S4": {
         "TITLE": "4. Cookies und Tracking",
@@ -1502,7 +1506,7 @@
     "ERROR": "Die Sitzung konnte nicht gespeichert oder die E-Mail nicht gesendet werden. Deine Arbeit bleibt verfügbar. Bitte erneut versuchen.",
     "RATE_LIMIT": "Warte eine Minute, bevor du einen weiteren Link sendest.",
     "SCAN_ERROR": "Die Virenprüfung ist nicht verfügbar. Die Anhänge wurden nicht freigegeben. Versuche es später erneut.",
-    "UNAVAILABLE": "Diese Sitzung ist abgelaufen, wurde bereits bestellt oder ist nicht mehr verfügbar. Starte eine neue Kalkulation.",
+    "UNAVAILABLE": "Diese Sitzung ist abgelaufen oder nicht mehr verfügbar. Starte eine neue Kalkulation.",
     "RECALCULATE": "Berechne das Angebot erneut, um Änderungen an Modellen, Mengen und Einstellungen vor dem Senden zu speichern.",
     "COPY": "Link kopieren",
     "COPYING": "Link wird gespeichert…",

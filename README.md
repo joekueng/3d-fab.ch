@@ -4,6 +4,7 @@ A full-stack application (Angular + Spring Boot) for calculating accurate 3D-pri
 
 ## Contributing and AI agents: preserve project conventions
 
+
 Before implementing anything, read [AGENTS.md](AGENTS.md), the nearest module guide, and the relevant README. This applies to UI, emails, PDFs, APIs, background jobs, tests, and documentation.
 
 1. Find an existing implementation of the same kind and inspect its markup, styles, service flow, naming, copy, and tests before editing. Prefer established shared implementations over the most recent feature if they differ.
@@ -41,6 +42,28 @@ Before implementing anything, read [AGENTS.md](AGENTS.md), the nearest module gu
 * **FFmpeg** installed on the system or included in the backend Docker image.
 
 ## Quick start
+
+### Start the complete local environment
+
+From the repository root, run:
+
+```bash
+./start.sh
+```
+
+The command starts or creates the PostgreSQL and ClamAV Docker containers,
+waits for them to become ready, and then starts the Spring Boot backend with the
+`local` profile, the Angular frontend, and the static image server on port 8081.
+Press `Ctrl+C` to stop the three local processes. The Docker containers remain
+running and can be stopped separately with `docker compose down`.
+
+The services are available at:
+
+- frontend: `http://localhost:4200`
+- backend: `http://localhost:8000`
+- image server: `http://localhost:8081`
+
+The following sections describe the equivalent manual startup.
 
 ### 1. Database
 Create a PostgreSQL database named `printcalc`. The project manages the schema through its JPA/SQL configuration.

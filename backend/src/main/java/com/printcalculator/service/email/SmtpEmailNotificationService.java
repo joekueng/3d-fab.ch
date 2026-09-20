@@ -35,6 +35,9 @@ public class SmtpEmailNotificationService implements EmailNotificationService {
     @Value("${app.mail.enabled:true}")
     private boolean mailEnabled;
 
+    @Value("${app.mail.logo-url:https://3d-fab.ch/assets/images/SVG/logo-giallo-spesso.svg}")
+    private String logoUrl;
+
     @Override
     public EmailSendResult sendEmail(String to, String subject, String templateName, Map<String, Object> contextData) {
         return sendEmailWithAttachment(to, subject, templateName, contextData, null, null);
@@ -53,6 +56,7 @@ public class SmtpEmailNotificationService implements EmailNotificationService {
         try {
             Context context = new Context();
             context.setVariables(contextData);
+            context.setVariable("logoUrl", logoUrl);
 
             String process = templateEngine.process("email/" + templateName, context);
             MimeMessage mimeMessage = emailSender.createMimeMessage();

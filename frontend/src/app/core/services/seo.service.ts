@@ -75,7 +75,12 @@ export class SeoService {
     private translate: TranslateService,
     @Inject(DOCUMENT) private document: Document,
   ) {
-    this.applyRouteSeo(this.router.routerState.snapshot.root);
+    // Before initial navigation router.url is '/', even on a deep link.
+    // Preserve the server-rendered metadata during hydration instead of
+    // briefly replacing the page canonical with the Italian homepage.
+    if (this.router.navigated) {
+      this.applyRouteSeo(this.router.routerState.snapshot.root);
+    }
     this.router.events
       .pipe(
         filter(

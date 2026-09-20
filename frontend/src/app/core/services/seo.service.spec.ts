@@ -1,4 +1,4 @@
-import { ActivatedRouteSnapshot, Router } from '@angular/router';
+import { ActivatedRouteSnapshot, NavigationEnd, Router } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
@@ -28,10 +28,13 @@ describe('SeoService', () => {
     url: string;
     data: Record<string, unknown>;
     translations: Record<string, string>;
+    navigated?: boolean;
   }): {
     service: SeoService;
     meta: jasmine.SpyObj<Meta>;
     title: jasmine.SpyObj<Title>;
+    router: Router;
+    events$: Subject<unknown>;
   } {
     const events$ = new Subject<unknown>();
     const title = jasmine.createSpyObj<Title>('Title', ['setTitle']);
@@ -41,6 +44,7 @@ describe('SeoService', () => {
     } as TranslateService;
     const router = {
       url: options.url,
+      navigated: options.navigated ?? true,
       events: events$.asObservable(),
       routerState: {
         snapshot: {
@@ -52,7 +56,7 @@ describe('SeoService', () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const service = new SeoService(router, title, meta, translate, document);
 
-    return { service, meta, title };
+    return { service, meta, title, router, events$ };
   }
 
   beforeEach(() => {
@@ -61,6 +65,56 @@ describe('SeoService', () => {
 
   afterEach(() => {
     cleanupSeoDom();
+  });
+
+  it('preserves the SSR canonical while the initial router URL is still root', () => {
+    const canonical = document.createElement('link');
+    canonical.rel = 'canonical';
+    canonical.href = `${document.location.origin}/it/terms`;
+    document.head.appendChild(canonical);
+    const { title, meta } = createService({
+      url: '/',
+      navigated: false,
+      data: {},
+      translations: {},
+    });
+    expect(canonical.getAttribute('href')).toBe(
+      `${document.location.origin}/it/terms`,
+    );
+    expect(title.setTitle).not.toHaveBeenCalled();
+    expect(meta.updateTag).not.toHaveBeenCalled();
+  });
+
+  it('does not invent a homepage canonical before initial client navigation', () => {
+    createService({ url: '/', navigated: false, data: {}, translations: {} });
+    expect(document.querySelector('link[rel="canonical"]')).toBeNull();
+  });
+
+  it('updates the canonical after initial navigation and language changes', () => {
+    const { router, events$ } = createService({
+      url: '/',
+      navigated: false,
+      data: {},
+      translations: {},
+    });
+    let navigationId = 0;
+    for (const path of [
+      '/it/terms',
+      '/de/terms',
+      '/fr/privacy',
+      '/en/materials',
+    ]) {
+      Object.defineProperty(router, 'url', {
+        value: `${path}?utm_source=test`,
+        configurable: true,
+      });
+      events$.next(new NavigationEnd(++navigationId, path, path));
+      const canonical = document.querySelector('link[rel="canonical"]');
+      expect(canonical?.getAttribute('href')).toBe(
+        `${document.location.origin}${path}`,
+      );
+      expect(document.querySelectorAll('link[rel="canonical"]').length).toBe(1);
+    }
   });
 
   it('adds the language prefix to canonical and hreflang URLs', () => {

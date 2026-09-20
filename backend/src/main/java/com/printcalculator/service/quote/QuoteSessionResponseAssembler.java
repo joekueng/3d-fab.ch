@@ -30,7 +30,10 @@ public class QuoteSessionResponseAssembler {
         }
 
         Map<String, Object> response = new HashMap<>();
-        response.put("session", QuoteSessionDto.from(session));
+        boolean alreadyOrdered = session.getConvertedOrderId() != null || "CONVERTED".equals(session.getStatus());
+        response.put("session", alreadyOrdered
+                ? QuoteSessionDto.forOrderedSessionReuse(session)
+                : QuoteSessionDto.from(session));
         response.put("items", itemsDto);
         response.put("printItemsTotalChf", totals.printItemsTotalChf());
         response.put("cadTotalChf", totals.cadTotalChf());

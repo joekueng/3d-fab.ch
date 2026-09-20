@@ -85,6 +85,32 @@ describe('Session email and cross-device restore', () => {
     flushMicrotasks();
   }));
 
+  it('opens an ordered quote without restoring the first customer information', fakeAsync(() => {
+    information.text.set('First customer private note');
+    let restored: any;
+
+    estimator
+      .getQuoteSession('ordered-session')
+      .subscribe((value) => (restored = value));
+
+    http.expectOne(api + '/quote-sessions/ordered-session/resume').flush(null);
+    http.expectOne(api + '/quote-sessions/ordered-session').flush({
+      session: {
+        id: 'ordered-session',
+        status: 'CONVERTED',
+        convertedOrderId: 'order-1',
+        informationDraftId: null,
+      },
+      items: [],
+    });
+    flushMicrotasks();
+
+    expect(restored.session.id).toBe('ordered-session');
+    expect(information.text()).toBe('');
+    expect(information.draftCredential()).toBeNull();
+    http.expectNone(api + '/information-drafts/email-draft');
+  }));
+
   it('saves and scans pending files before requesting the email', fakeAsync(() => {
     information.text.set('Print upright');
     information.files.set([

@@ -1,4 +1,5 @@
 import { APP_BASE_HREF } from '@angular/common';
+import { RESPONSE_INIT } from '@angular/core';
 import { CommonEngine, isMainModule } from '@angular/ssr/node';
 import express from 'express';
 import { createRequire } from 'node:module';
@@ -88,6 +89,9 @@ app.get('**', (req, res, next) => {
 app.get('**', (req, res, next) => {
   const { originalUrl, baseUrl } = req;
   const origin = resolveRequestOrigin(req);
+  // CommonEngine does not propagate Angular's response metadata to Express.
+  // Keep this object request-local: concurrent renders must not share status.
+  const responseInit: ResponseInit = { status: 200 };
 
   commonEngine
     .render({
@@ -95,9 +99,21 @@ app.get('**', (req, res, next) => {
       documentFilePath: indexHtml,
       url: `${origin ?? 'http://localhost:4000'}${originalUrl}`,
       publicPath: browserDistFolder,
-      providers: [{ provide: APP_BASE_HREF, useValue: baseUrl }],
+      providers: [
+        { provide: APP_BASE_HREF, useValue: baseUrl },
+        { provide: RESPONSE_INIT, useValue: responseInit },
+      ],
     })
-    .then((html) => res.send(html))
+    .then((html) => {
+      const status = responseInit.status ?? 200;
+      if (status >= 400) {
+        res.setHeader('Cache-Control', 'no-store');
+      }
+      if (status === 503) {
+        res.setHeader('Retry-After', '60');
+      }
+      res.status(status).send(html);
+    })
     .catch((err) => next(err));
 });
 

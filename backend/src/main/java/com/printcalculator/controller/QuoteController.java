@@ -68,7 +68,7 @@ public class QuoteController {
             HttpServletRequest request
             ) throws IOException {
 
-        quoteRateLimitService.checkAllowed(request);
+        quoteRateLimitService.checkSlicingAllowed(request);
 
         // ... process selection logic ...
         String actualProcess = process;
@@ -124,7 +124,7 @@ public class QuoteController {
             @RequestParam("file") MultipartFile file,
             HttpServletRequest request
     ) throws IOException {
-        quoteRateLimitService.checkAllowed(request);
+        quoteRateLimitService.checkSlicingAllowed(request);
         // Legacy endpoint uses defaults
         return processRequest(file, DEFAULT_FILAMENT, DEFAULT_PROCESS, null, null);
     }

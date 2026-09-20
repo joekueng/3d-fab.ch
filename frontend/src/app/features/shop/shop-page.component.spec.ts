@@ -3,7 +3,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { SeoService } from '../../core/services/seo.service';
 import { LanguageService } from '../../core/services/language.service';
 import {
@@ -51,7 +51,7 @@ describe('ShopPageComponent', () => {
     };
   }
 
-  function createComponent(routerUrl = '/de/shop') {
+  function createComponent(routerUrl = '/de/shop', apiStatus?: number) {
     const responseInit: { status?: number } = {};
     const seoService = jasmine.createSpyObj<SeoService>('SeoService', [
       'applyResolvedSeo',
@@ -99,7 +99,11 @@ describe('ShopPageComponent', () => {
         .and.returnValue(of([] as ShopCategoryTree[])),
       getProductCatalog: jasmine
         .createSpy('getProductCatalog')
-        .and.returnValue(of(buildCatalog())),
+        .and.returnValue(
+          apiStatus
+            ? throwError(() => ({ status: apiStatus }))
+            : of(buildCatalog()),
+        ),
       flattenCategoryTree: jasmine
         .createSpy('flattenCategoryTree')
         .and.returnValue([]),
@@ -122,7 +126,9 @@ describe('ShopPageComponent', () => {
     } as unknown as Router;
 
     const activatedRoute = {
-      paramMap: of(convertToParamMap({})),
+      paramMap: of(
+        convertToParamMap({ categorySlug: 'compatible-with-garmin' }),
+      ),
       snapshot: {
         paramMap: convertToParamMap({}),
       },
@@ -149,6 +155,7 @@ describe('ShopPageComponent', () => {
       ],
     });
 
+    TestBed.overrideComponent(ShopPageComponent, { set: { template: '' } });
     const fixture: ComponentFixture<ShopPageComponent> =
       TestBed.createComponent(ShopPageComponent);
 
@@ -156,6 +163,7 @@ describe('ShopPageComponent', () => {
       component: fixture.componentInstance,
       seoService,
       responseInit,
+      fixture,
     };
   }
 
@@ -186,18 +194,15 @@ describe('ShopPageComponent', () => {
     );
   });
 
-  it('uses a soft SSR fallback for non-404 category load errors', () => {
-    const { component, seoService, responseInit } = createComponent(
+  it('returns 503 and a visible error for temporary category load failures', () => {
+    const { component, fixture, seoService, responseInit } = createComponent(
       '/de/shop/compatible-with-garmin',
+      500,
     );
 
-    expect(
-      (component as any).shouldUseSoftSeoFallback({ status: 500 }),
-    ).toBeTrue();
-    (component as any).setResponseStatus(200);
-    (component as any).applySoftFallbackSeo('compatible-with-garmin');
-
-    expect(responseInit.status).toBe(200);
+    fixture.detectChanges();
+    expect(responseInit.status).toBe(503);
+    expect(component.error()).toBe('SHOP.LOAD_ERROR');
     expect(seoService.applyResolvedSeo).toHaveBeenCalledWith(
       jasmine.objectContaining({
         title: 'Compatible With Garmin | Technische Lösungen | 3D fab',
@@ -212,15 +217,12 @@ describe('ShopPageComponent', () => {
   });
 
   it('keeps hard 404 noindex behavior for missing categories', () => {
-    const { component, seoService, responseInit } = createComponent(
+    const { fixture, seoService, responseInit } = createComponent(
       '/de/shop/compatible-with-garmin',
+      404,
     );
 
-    expect(
-      (component as any).shouldUseSoftSeoFallback({ status: 404 }),
-    ).toBeFalse();
-    (component as any).setResponseStatus(404);
-    (component as any).applyHardErrorSeo();
+    fixture.detectChanges();
 
     expect(responseInit.status).toBe(404);
     expect(seoService.applyResolvedSeo).toHaveBeenCalledWith(

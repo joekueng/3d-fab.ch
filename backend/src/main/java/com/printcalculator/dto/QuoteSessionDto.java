@@ -27,9 +27,17 @@ public record QuoteSessionDto(
         BigDecimal cadHours,
         BigDecimal cadHourlyRateChf) {
     public static QuoteSessionDto from(QuoteSession session) {
+        return from(session, true);
+    }
+
+    public static QuoteSessionDto forOrderedSessionReuse(QuoteSession session) {
+        return from(session, false);
+    }
+
+    private static QuoteSessionDto from(QuoteSession session, boolean includeInformationDraft) {
         return new QuoteSessionDto(
                 session.getId(),
-                session.getInformationDraftId(),
+                includeInformationDraft ? session.getInformationDraftId() : null,
                 session.getStatus(),
                 session.getSessionType(),
                 session.getPricingVersion(),

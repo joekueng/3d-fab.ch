@@ -69,6 +69,7 @@ export interface QuoteCalculationFailure {
   fileName: string;
   sessionId?: string;
   status?: number;
+  retryAfterSeconds?: number;
   code?: string;
   message: string;
 }
@@ -185,19 +186,31 @@ export class QuoteEstimatorService {
         switchMap((credential) =>
           this.http
             .get<{
-              session: { informationDraftId?: string; notes?: string };
+              session: {
+                informationDraftId?: string;
+                notes?: string;
+                status?: string;
+                convertedOrderId?: string;
+              };
             }>(`${environment.apiUrl}/api/quote-sessions/${sessionId}`)
             .pipe(
-              switchMap((data) =>
-                from(
+              switchMap((data) => {
+                const alreadyOrdered =
+                  data.session.status === 'CONVERTED' ||
+                  Boolean(data.session.convertedOrderId);
+                if (alreadyOrdered) {
+                  this.information.resetDraft();
+                  return of(data);
+                }
+                return from(
                   this.information.useDraft(
                     data.session.informationDraftId,
                     data.session.notes,
                     sessionId,
                     credential?.token,
                   ),
-                ).pipe(switchMap(() => of(data))),
-              ),
+                ).pipe(switchMap(() => of(data)));
+              }),
             ),
         ),
       );
@@ -343,14 +356,18 @@ export class QuoteEstimatorService {
     });
   }
 
-  calculate(request: QuoteRequest): Observable<number | QuoteResult> {
+  calculate(
+    request: QuoteRequest,
+    reuseSessionId?: string | null,
+  ): Observable<number | QuoteResult> {
     return from(this.information.saveDraft()).pipe(
-      switchMap(() => this.calculateWithInformation(request)),
+      switchMap(() => this.calculateWithInformation(request, reuseSessionId)),
     );
   }
 
   private calculateWithInformation(
     request: QuoteRequest,
+    reuseSessionId?: string | null,
   ): Observable<number | QuoteResult> {
     if (!request.items || request.items.length === 0) {
       return of(0);
@@ -362,7 +379,10 @@ export class QuoteEstimatorService {
       this.http
         .post<any>(
           `${environment.apiUrl}/api/quote-sessions`,
-          { information: this.information.draftCredential() },
+          {
+            information: this.information.draftCredential(),
+            ...(reuseSessionId ? { reuseSessionId } : {}),
+          },
           { headers },
         )
         .subscribe({
@@ -589,6 +609,7 @@ export class QuoteEstimatorService {
   ): QuoteCalculationFailure {
     if (error instanceof HttpErrorResponse) {
       const isRateLimited = error.status === 429;
+      const retryAfterSeconds = this.extractRetryAfterSeconds(error);
       const body = error.error;
       if (body && typeof body === 'object' && !(body instanceof Blob)) {
         const payload = body as Record<string, unknown>;
@@ -601,6 +622,7 @@ export class QuoteEstimatorService {
         return {
           fileName,
           status: error.status || undefined,
+          retryAfterSeconds,
           code: isRateLimited
             ? 'QUOTE_RATE_LIMITED'
             : typeof payload['code'] === 'string'
@@ -613,6 +635,7 @@ export class QuoteEstimatorService {
       return {
         fileName,
         status: error.status || undefined,
+        retryAfterSeconds,
         code: isRateLimited
           ? 'QUOTE_RATE_LIMITED'
           : 'QUOTE_ITEM_PROCESSING_FAILED',
@@ -632,6 +655,13 @@ export class QuoteEstimatorService {
       code: 'QUOTE_ITEM_PROCESSING_FAILED',
       message: '',
     };
+  }
+
+  private extractRetryAfterSeconds(
+    error: HttpErrorResponse,
+  ): number | undefined {
+    const value = Number(error.headers?.get('Retry-After'));
+    return Number.isFinite(value) && value > 0 ? Math.ceil(value) : undefined;
   }
 
   mapSessionToQuoteResult(sessionData: any): QuoteResult {

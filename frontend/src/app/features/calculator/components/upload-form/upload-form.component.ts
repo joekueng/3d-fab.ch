@@ -72,6 +72,7 @@ export class UploadFormComponent implements OnInit {
   mode = input<'easy' | 'advanced'>('easy');
   lockedSettings = input<boolean>(false);
   loading = input<boolean>(false);
+  rateLimitSecondsRemaining = input<number>(0);
   uploadProgress = input<number>(0);
   showSplitPrintingOption = input<boolean>(false);
 
@@ -831,6 +832,9 @@ export class UploadFormComponent implements OnInit {
   }
 
   onSubmit() {
+    if (this.rateLimitSecondsRemaining() > 0) {
+      return;
+    }
     if (!this.form.valid || this.items().length === 0) {
       this.form.markAllAsTouched();
       this.form.get('itemsTouched')?.setValue(true);

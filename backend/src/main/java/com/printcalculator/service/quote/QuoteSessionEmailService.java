@@ -77,7 +77,6 @@ public class QuoteSessionEmailService {
                 Map.of("language", request.language(), "title", copy[0], "intro", copy[1],
                         "action", copy[2], "expiryLabel", copy[3], "notice", copy[4],
                         "expiresAt", prepared.expiry(), "resumeUrl", prepared.url(),
-                        "logoUrl", frontend + "/assets/images/SVG/logo-giallo-spesso.svg",
                         "currentYear", java.time.Year.now().getValue()));
         audit.recordSessionEmail(request.email().trim(), copy[0], result);
         if (result == null || !EmailSendResult.STATUS_SENT.equals(result.status())) {
@@ -102,8 +101,13 @@ public class QuoteSessionEmailService {
     public com.printcalculator.dto.InformationDto.Credential resume(UUID id) {
         return transactions.execute(status -> {
             var session = sessions.findLockedById(id).orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
-            if (session.getExpiresAt() == null || !session.getExpiresAt().isAfter(OffsetDateTime.now())
-                    || session.getConvertedOrderId() != null || !Set.of("ACTIVE", "CAD_ACTIVE").contains(session.getStatus())) {
+            if (session.getExpiresAt() == null || !session.getExpiresAt().isAfter(OffsetDateTime.now())) {
+                throw new ResponseStatusException(GONE, "SESSION_UNAVAILABLE");
+            }
+            if (session.getConvertedOrderId() != null || "CONVERTED".equals(session.getStatus())) {
+                return null;
+            }
+            if (!Set.of("ACTIVE", "CAD_ACTIVE").contains(session.getStatus())) {
                 throw new ResponseStatusException(GONE, "SESSION_UNAVAILABLE");
             }
             session.setExpiresAt(expiryPolicy.newExpiry());
@@ -125,10 +129,10 @@ public class QuoteSessionEmailService {
 
     private String[] copy(String language) {
         return switch (language) {
-            case "de" -> new String[]{"Deine gespeicherte Drucksitzung", "Modelle, Einstellungen, Anweisungen und Anhänge sind gespeichert.", "Sitzung fortsetzen", "Verfügbar bis", "Wer diesen Link besitzt, kann auf die Sitzung zugreifen. Nach der Bestellung ist der Link nicht mehr gültig."};
-            case "fr" -> new String[]{"Votre session d’impression enregistrée", "Vos modèles, réglages, instructions et pièces jointes sont enregistrés.", "Reprendre la session", "Disponible jusqu’au", "Toute personne disposant de ce lien peut accéder à la session. Le lien devient invalide après la commande."};
-            case "en" -> new String[]{"Your saved printing session", "Your models, settings, instructions and attachments are saved.", "Resume session", "Available until", "Anyone with this link can access the session. The link is no longer valid after ordering."};
-            default -> new String[]{"La tua sessione di stampa salvata", "Modelli, impostazioni, istruzioni e allegati sono salvati.", "Riprendi la sessione", "Disponibile fino al", "Chi possiede questo link può accedere alla sessione. Il link non è più valido dopo l’ordine."};
+            case "de" -> new String[]{"Deine gespeicherte Drucksitzung", "Modelle, Einstellungen, Anweisungen und Anhänge sind gespeichert.", "Sitzung fortsetzen", "Verfügbar bis", "Wer diesen Link besitzt, kann auf das Angebot zugreifen. Nach einer Bestellung wird für eine weitere Bestellung eine neue Sitzung erstellt."};
+            case "fr" -> new String[]{"Votre session d’impression enregistrée", "Vos modèles, réglages, instructions et pièces jointes sont enregistrés.", "Reprendre la session", "Disponible jusqu’au", "Toute personne disposant de ce lien peut accéder au devis. Après une commande, une nouvelle session est créée pour toute commande supplémentaire."};
+            case "en" -> new String[]{"Your saved printing session", "Your models, settings, instructions and attachments are saved.", "Resume session", "Available until", "Anyone with this link can access the quote. After an order, a new session is created for any additional order."};
+            default -> new String[]{"La tua sessione di stampa salvata", "Modelli, impostazioni, istruzioni e allegati sono salvati.", "Riprendi la sessione", "Disponibile fino al", "Chi possiede questo link può accedere al preventivo. Dopo un ordine viene creata una nuova sessione per ogni ordine successivo."};
         };
     }
 }

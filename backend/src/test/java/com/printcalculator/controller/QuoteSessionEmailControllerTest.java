@@ -1,7 +1,6 @@
 package com.printcalculator.controller;
 
 import com.printcalculator.dto.InformationDto;
-import com.printcalculator.service.QuoteRateLimitService;
 import com.printcalculator.service.quote.QuoteSessionEmailService;
 import org.junit.jupiter.api.*;
 import org.springframework.test.web.servlet.MockMvc;
@@ -13,11 +12,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class QuoteSessionEmailControllerTest {
     private final QuoteSessionEmailService service = mock(QuoteSessionEmailService.class);
-    private final QuoteRateLimitService limits = mock(QuoteRateLimitService.class);
     private final UUID id = UUID.randomUUID();
     private MockMvc mvc;
     @BeforeEach void setup() {
-        mvc = MockMvcBuilders.standaloneSetup(new QuoteSessionEmailController(service, limits)).build();
+        mvc = MockMvcBuilders.standaloneSetup(new QuoteSessionEmailController(service)).build();
     }
     @Test void rejectsInvalidRecipientAndLanguageBeforeSending() throws Exception {
         mvc.perform(post("/api/quote-sessions/" + id + "/email").contentType("application/json")
@@ -41,7 +39,6 @@ class QuoteSessionEmailControllerTest {
                     {"email":"customer@example.test","language":"en","mode":"advanced","information":{"id":"%s","token":"key"}}
                     """.formatted(UUID.randomUUID())))
                 .andExpect(status().isNoContent()).andExpect(header().string("Cache-Control", "no-store"));
-        verify(limits).checkAllowed(any());
         verify(service).send(eq(id), any());
     }
     @Test void resumeLoadsTheStoredCredentialWithoutAKeyInTheRequest() throws Exception {

@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -13,10 +14,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Sliding-window rate limiter used to protect CPU- and I/O-intensive public
- * endpoints (slicing, quote estimation) from abuse. State is in-memory and
- * keyed by client IP, following the same client-key resolution strategy used
- * by the admin login throttle.
+ * Sliding-window rate limiter used to protect public endpoints that invoke
+ * OrcaSlicer from abuse. Lightweight quote-session operations must not consume
+ * this budget. State is in-memory and keyed by client IP, following the same
+ * client-key resolution strategy used by the admin login throttle.
  */
 @Service
 public class QuoteRateLimitService {
@@ -44,7 +45,7 @@ public class QuoteRateLimitService {
      * Records one request for the caller and rejects the request with HTTP 429
      * when the sliding-window budget for the client is exhausted.
      */
-    public void checkAllowed(HttpServletRequest request) {
+    public void checkSlicingAllowed(HttpServletRequest request) {
         String clientKey = resolveClientKey(request);
         long now = System.currentTimeMillis();
         long windowStart = now - windowMillis;
@@ -59,11 +60,12 @@ public class QuoteRateLimitService {
         });
 
         if (state.requests > maxRequests) {
-            logger.warn("Rate limit exceeded for quote endpoint by client {}", clientKey);
-            throw new ResponseStatusException(
-                    HttpStatus.TOO_MANY_REQUESTS,
-                    "Too many requests. Please wait a moment and try again."
+            long retryAfterSeconds = Math.max(
+                    1L,
+                    (state.lastRequestAt + windowMillis - now + 999L) / 1000L
             );
+            logger.warn("Rate limit exceeded for quote endpoint by client {}", clientKey);
+            throw new SlicingRateLimitException(retryAfterSeconds);
         }
 
         if ((evictionCounter.incrementAndGet() & 0xFF) == 0) {
@@ -106,6 +108,23 @@ public class QuoteRateLimitService {
         private ClientRequestState(long lastRequestAt) {
             this.requests = 1;
             this.lastRequestAt = lastRequestAt;
+        }
+    }
+
+    private static final class SlicingRateLimitException extends ResponseStatusException {
+        private final HttpHeaders headers = new HttpHeaders();
+
+        private SlicingRateLimitException(long retryAfterSeconds) {
+            super(
+                    HttpStatus.TOO_MANY_REQUESTS,
+                    "Too many requests. Please wait a moment and try again."
+            );
+            headers.set(HttpHeaders.RETRY_AFTER, Long.toString(retryAfterSeconds));
+        }
+
+        @Override
+        public HttpHeaders getHeaders() {
+            return headers;
         }
     }
 }

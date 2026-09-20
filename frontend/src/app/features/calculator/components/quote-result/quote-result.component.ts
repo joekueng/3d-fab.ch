@@ -55,6 +55,7 @@ export class QuoteResultComponent {
     return status === 'PENDING' || status === 'MANUAL_QUOTE';
   });
   recalculationRequired = input<boolean>(false);
+  recalculationReason = input<'changes' | 'ordered'>('changes');
   itemSettingsDiffByFileName = input<Record<string, { differences: string[] }>>(
     {},
   );

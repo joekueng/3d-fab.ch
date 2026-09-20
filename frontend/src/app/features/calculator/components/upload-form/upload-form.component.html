@@ -194,15 +194,20 @@
 
     <app-button
       type="submit"
-      [disabled]="items().length === 0 || loading()"
+      [disabled]="
+        items().length === 0 || loading() || rateLimitSecondsRemaining() > 0
+      "
       [fullWidth]="true"
     >
       {{
-        loading()
-          ? uploadProgress() < 100
-            ? ("CALC.UPLOADING" | translate)
-            : ("CALC.PROCESSING" | translate)
-          : ("CALC.CALCULATE" | translate)
+        rateLimitSecondsRemaining() > 0
+          ? ("CALC.RETRY_IN"
+            | translate: { seconds: rateLimitSecondsRemaining() })
+          : loading()
+            ? uploadProgress() < 100
+              ? ("CALC.UPLOADING" | translate)
+              : ("CALC.PROCESSING" | translate)
+            : ("CALC.CALCULATE" | translate)
       }}
     </app-button>
   </div>

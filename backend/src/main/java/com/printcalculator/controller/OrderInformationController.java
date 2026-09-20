@@ -2,8 +2,6 @@ package com.printcalculator.controller;
 
 import com.printcalculator.dto.InformationDto;
 import com.printcalculator.service.information.OrderInformationService;
-import com.printcalculator.service.QuoteRateLimitService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
@@ -21,17 +19,16 @@ public class OrderInformationController {
         response.setHeader("Referrer-Policy", "no-referrer");
     }
     private final OrderInformationService service;
-    private final QuoteRateLimitService limits;
-    public OrderInformationController(OrderInformationService service, QuoteRateLimitService limits) { this.service = service; this.limits = limits; }
-    @PostMapping public InformationDto.Credential create(HttpServletRequest request) {
-        limits.checkAllowed(request); return service.create();
+    public OrderInformationController(OrderInformationService service) { this.service = service; }
+    @PostMapping public InformationDto.Credential create() {
+        return service.create();
     }
     @GetMapping("/{id}") public InformationDto get(@PathVariable UUID id, @RequestHeader("X-Information-Token") String token) { return service.getDraft(id, token); }
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public InformationDto save(@PathVariable UUID id, @RequestHeader("X-Information-Token") String token,
             @Valid @RequestPart("entry") InformationDto.EntryRequest entry,
-            @RequestPart(value = "files", required = false) List<MultipartFile> files, HttpServletRequest request) throws IOException {
-        limits.checkAllowed(request); return service.saveDraft(id, token, entry, files);
+            @RequestPart(value = "files", required = false) List<MultipartFile> files) throws IOException {
+        return service.saveDraft(id, token, entry, files);
     }
     @GetMapping("/{id}/files/{file}") public ResponseEntity<Resource> file(@PathVariable UUID id, @PathVariable UUID file,
             @RequestHeader("X-Information-Token") String token) throws IOException { return service.download(id, token, file, false, false); }

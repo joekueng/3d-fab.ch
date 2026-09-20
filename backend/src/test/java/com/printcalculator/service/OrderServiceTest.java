@@ -87,6 +87,25 @@ class OrderServiceTest {
     private OrderService service;
 
     @Test
+    void createOrderFromQuote_rejectsSessionAlreadyLinkedToAnOrder() {
+        UUID sessionId = UUID.randomUUID();
+        QuoteSession session = new QuoteSession();
+        session.setId(sessionId);
+        session.setStatus("ACTIVE");
+
+        when(quoteSessionRepo.findLockedById(sessionId)).thenReturn(Optional.of(session));
+        when(orderRepo.existsBySourceQuoteSession_Id(sessionId)).thenReturn(true);
+
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> service.createOrderFromQuote(sessionId, buildRequest())
+        );
+
+        assertEquals("Quote session already converted to order", exception.getMessage());
+        verify(orderRepo, never()).save(any());
+    }
+
+    @Test
     void createOrderFromQuote_validatesCalculatorMaterialSettingsBeforeCreatingCustomer() {
         UUID sessionId = UUID.randomUUID();
         QuoteSession session = new QuoteSession();
@@ -98,7 +117,7 @@ class OrderServiceTest {
         qItem.setNozzleDiameterMm(new BigDecimal("0.20"));
         qItem.setLayerHeightMm(new BigDecimal("0.120"));
 
-        when(quoteSessionRepo.findById(sessionId)).thenReturn(Optional.of(session));
+        when(quoteSessionRepo.findLockedById(sessionId)).thenReturn(Optional.of(session));
         when(quoteLineItemRepo.findByQuoteSessionId(sessionId)).thenReturn(List.of(qItem));
         doThrow(new IllegalArgumentException("invalid technical material settings"))
                 .when(materialPrintCompatibilityService)
@@ -181,7 +200,7 @@ class OrderServiceTest {
         customer.setId(UUID.randomUUID());
         customer.setEmail("buyer@example.com");
 
-        when(quoteSessionRepo.findById(sessionId)).thenReturn(Optional.of(session));
+        when(quoteSessionRepo.findLockedById(sessionId)).thenReturn(Optional.of(session));
         when(customerRepo.findByEmail("buyer@example.com")).thenReturn(Optional.empty());
         when(customerRepo.save(any(Customer.class))).thenAnswer(invocation -> {
             Customer saved = invocation.getArgument(0);
@@ -318,7 +337,7 @@ class OrderServiceTest {
         qItem.setUnitPriceChf(new BigDecimal("18.00"));
         qItem.setStoredPath(missingSource.toString());
 
-        when(quoteSessionRepo.findById(sessionId)).thenReturn(Optional.of(session));
+        when(quoteSessionRepo.findLockedById(sessionId)).thenReturn(Optional.of(session));
         when(customerRepo.findByEmail("buyer@example.com")).thenReturn(Optional.empty());
         when(customerRepo.save(any(Customer.class))).thenAnswer(invocation -> {
             Customer saved = invocation.getArgument(0);
@@ -409,7 +428,7 @@ class OrderServiceTest {
         qItem.setUnitPriceChf(new BigDecimal("9.50"));
         qItem.setStoredPath(missingSource.toString());
 
-        when(quoteSessionRepo.findById(sessionId)).thenReturn(Optional.of(session));
+        when(quoteSessionRepo.findLockedById(sessionId)).thenReturn(Optional.of(session));
         when(customerRepo.findByEmail("buyer@example.com")).thenReturn(Optional.empty());
         when(customerRepo.save(any(Customer.class))).thenAnswer(invocation -> {
             Customer saved = invocation.getArgument(0);
@@ -504,7 +523,7 @@ class OrderServiceTest {
         UUID id = UUID.randomUUID();
         QuoteSession session = new QuoteSession(); session.setId(id);
         Customer customer = new Customer(); customer.setEmail("buyer@example.com");
-        when(quoteSessionRepo.findById(id)).thenReturn(Optional.of(session));
+        when(quoteSessionRepo.findLockedById(id)).thenReturn(Optional.of(session));
         when(customerRepo.findByEmail("buyer@example.com")).thenReturn(Optional.of(customer));
         when(quoteLineItemRepo.findByQuoteSessionId(id)).thenReturn(List.of());
         when(quoteSessionTotalsService.calculateCadTotal(session)).thenReturn(BigDecimal.ONE);

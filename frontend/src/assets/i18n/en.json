@@ -14,7 +14,9 @@
     "TOTAL": "Total Estimate",
     "MAX_QTY_NOTICE": "For quantities above {{max}} pieces, request consultation.",
     "RECALC_REQUIRED": "You changed the print settings. Recalculate the quote before proceeding with the order.",
-    "RECALC_CHECKOUT_DISABLED": "Recalculate the quote to re-enable checkout."
+    "RECALC_CHECKOUT_DISABLED": "Recalculate the quote to re-enable checkout.",
+    "RECALC_ORDERED_SESSION": "This quote has already been used for an order. Recalculate it to create a copy with a new session number.",
+    "RECALC_ORDERED_CHECKOUT_DISABLED": "Create a new session by recalculating the quote before proceeding with the order."
   },
   "USER_DETAILS": {
     "TITLE": "Shipping Details",
@@ -706,7 +708,9 @@
     "ORDER": "Order Now",
     "CONSULT": "Request Consultation",
     "ERROR_GENERIC": "An error occurred while calculating the quote.",
-    "ERROR_RATE_LIMIT": "Too many attempts were made in a short time. The calculator is working correctly: wait at least 60 seconds without retrying, then calculate the quote again.",
+    "ERROR_RATE_LIMIT": "Too many attempts were made in a short time. Wait a moment, then calculate the quote again.",
+    "ERROR_RATE_LIMIT_COUNTDOWN": "Too many attempts were made in a short time. You can try again in {{seconds}} seconds.",
+    "RETRY_IN": "Try again in {{seconds}}s",
     "ERROR_SESSION_INIT": "The quote calculation could not be started. Please try again.",
     "ERROR_FINALIZATION": "The calculation finished, but the final quote could not be loaded. Please try again.",
     "ERROR_ITEM_PROCESSING": "The file could not be processed.",
@@ -990,7 +994,7 @@
         "P1": "3.1. Files and data associated with a saved calculator session are scheduled for automatic deletion after the expiry date shown to the user. Each time an active session is reopened through the access link, its expiry is reset to three months from the date of access. If the session is converted into an order, the data required for the order is retained as described in section 3.2.",
         "P2": "3.2. Files and data linked to confirmed orders are stored for the time necessary for production, delivery, support and administrative/legal obligations, then deleted or minimized.",
         "P3": "3.3. Files uploaded in the calculator are used only for technical analysis and quote estimation and remain associated exclusively with the calculator session.",
-        "P4": "3.4. A saved session link is an access link. Anyone who possesses the link can access the associated session contents until the link expires or becomes invalid following an order."
+        "P4": "3.4. A saved session link is an access link. Anyone who possesses the link can access the quote contents until it expires. If the quote has already been ordered, a new session is created for another order without reusing the first customer's personal information."
       },
       "S4": {
         "TITLE": "4. Cookies and tracking",
@@ -1489,7 +1493,7 @@
     "ERROR": "Could not save the session or send the email. Your work is still available: please try again.",
     "RATE_LIMIT": "Wait one minute before sending another link.",
     "SCAN_ERROR": "Virus scanning is unavailable. Attachments have not been approved. Please try again later.",
-    "UNAVAILABLE": "This session has expired, has already become an order or is no longer available. Start a new quote.",
+    "UNAVAILABLE": "This session has expired or is no longer available. Start a new quote.",
     "RECALCULATE": "Recalculate the quote to save changes to models, quantities and settings before sending.",
     "COPY": "Copy link",
     "COPYING": "Saving link…",
