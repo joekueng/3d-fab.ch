@@ -204,10 +204,10 @@
           ? ("CALC.RETRY_IN"
             | translate: { seconds: rateLimitSecondsRemaining() })
           : loading()
-          ? uploadProgress() < 100
-            ? ("CALC.UPLOADING" | translate)
-            : ("CALC.PROCESSING" | translate)
-          : ("CALC.CALCULATE" | translate)
+            ? uploadProgress() < 100
+              ? ("CALC.UPLOADING" | translate)
+              : ("CALC.PROCESSING" | translate)
+            : ("CALC.CALCULATE" | translate)
       }}
     </app-button>
   </div>

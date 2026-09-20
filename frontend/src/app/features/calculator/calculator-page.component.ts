@@ -99,9 +99,7 @@ export class CalculatorPageComponent
   errorCode = signal<string | null>(null);
   warningMessage = signal<string | null>(null);
   rateLimitSecondsRemaining = signal(0);
-  isRateLimitError = computed(
-    () => this.errorCode() === 'QUOTE_RATE_LIMITED',
-  );
+  isRateLimitError = computed(() => this.errorCode() === 'QUOTE_RATE_LIMITED');
   private rateLimitTimer: ReturnType<typeof setInterval> | null = null;
   get informationModels(): InformationModel[] {
     return (this.result()?.items || []).map((item, index) => ({

@@ -361,9 +361,7 @@ export class QuoteEstimatorService {
     reuseSessionId?: string | null,
   ): Observable<number | QuoteResult> {
     return from(this.information.saveDraft()).pipe(
-      switchMap(() =>
-        this.calculateWithInformation(request, reuseSessionId),
-      ),
+      switchMap(() => this.calculateWithInformation(request, reuseSessionId)),
     );
   }
 
