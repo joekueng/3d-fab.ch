@@ -756,8 +756,7 @@ export class QuoteEstimatorService {
       machineHourTiers: Array.isArray(sessionData?.machineHourTiers)
         ? sessionData.machineHourTiers.map((tier: MachineHourTierResponse) => ({
             startHours: Number(tier?.startHours || 0),
-            endHours:
-              tier?.endHours == null ? null : Number(tier.endHours),
+            endHours: tier?.endHours == null ? null : Number(tier.endHours),
             costChfPerHour: Number(tier?.costChfPerHour || 0),
           }))
         : [],

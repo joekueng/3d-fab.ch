@@ -107,10 +107,7 @@
               class="qty-input"
             />
           </div>
-          <div
-            class="item-price"
-            [class.estimated-price]="quantitiesPending()"
-          >
+          <div class="item-price" [class.estimated-price]="quantitiesPending()">
             <span class="item-total-price">
               {{ displayItemTotal(item) | currency: result().currency }}
             </span>

@@ -109,7 +109,9 @@ describe('QuoteResultComponent', () => {
       fixture.nativeElement.querySelector('.price-estimate-note'),
     ).not.toBeNull();
     expect(
-      fixture.nativeElement.querySelector('app-price-breakdown.estimated-price'),
+      fixture.nativeElement.querySelector(
+        'app-price-breakdown.estimated-price',
+      ),
     ).not.toBeNull();
 
     fixture.componentRef.setInput('result', {
