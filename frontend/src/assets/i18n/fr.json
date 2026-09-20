@@ -753,7 +753,9 @@
     "ORDER": "Commander maintenant",
     "CONSULT": "Demander une consultation",
     "ERROR_GENERIC": "Une erreur s'est produite pendant le calcul du devis.",
-    "ERROR_RATE_LIMIT": "Trop de tentatives ont été effectuées en peu de temps. Le calculateur fonctionne correctement : attendez au moins 60 secondes sans réessayer, puis calculez à nouveau le devis.",
+    "ERROR_RATE_LIMIT": "Trop de tentatives ont été effectuées en peu de temps. Attendez un instant, puis calculez à nouveau le devis.",
+    "ERROR_RATE_LIMIT_COUNTDOWN": "Trop de tentatives ont été effectuées en peu de temps. Vous pourrez réessayer dans {{seconds}} secondes.",
+    "RETRY_IN": "Réessayer dans {{seconds}} s",
     "ERROR_SESSION_INIT": "Le calcul du devis n’a pas pu être démarré. Veuillez réessayer.",
     "ERROR_FINALIZATION": "Le calcul est terminé, mais le devis final n’a pas pu être chargé. Veuillez réessayer.",
     "ERROR_ITEM_PROCESSING": "Le fichier n’a pas pu être traité.",
@@ -833,7 +835,9 @@
     "TOTAL": "Total",
     "MAX_QTY_NOTICE": "Pour des quantités supérieures à {{max}} pièces, demandez une consultation.",
     "RECALC_REQUIRED": "Vous avez modifié les paramètres d'impression. Recalculez le devis avant de poursuivre la commande.",
-    "RECALC_CHECKOUT_DISABLED": "Recalculez le devis pour réactiver le checkout."
+    "RECALC_CHECKOUT_DISABLED": "Recalculez le devis pour réactiver le checkout.",
+    "RECALC_ORDERED_SESSION": "Ce devis a déjà été utilisé pour une commande. Recalculez-le pour créer une copie avec un nouveau numéro de session.",
+    "RECALC_ORDERED_CHECKOUT_DISABLED": "Créez une nouvelle session en recalculant le devis avant de poursuivre la commande."
   },
   "USER_DETAILS": {
     "TITLE": "Vos données",
@@ -1071,7 +1075,7 @@
         "P1": "3.1. Les fichiers et données associés à une session enregistrée du calculateur sont programmés pour être supprimés automatiquement après la date d’expiration indiquée à l’utilisateur. Chaque fois qu’une session active est rouverte au moyen du lien d’accès, son expiration est réinitialisée à trois mois à compter de la date d’accès. Si la session est convertie en commande, les données nécessaires à la commande sont conservées comme décrit à la section 3.2.",
         "P2": "3.2. Les fichiers et données liés aux commandes confirmées sont conservés le temps nécessaire à la production, la livraison, l'assistance et les obligations administratives/légales, puis supprimés ou minimisés.",
         "P3": "3.3. Les fichiers téléversés dans le calculateur sont utilisés uniquement pour l'analyse technique et l'estimation du devis et restent associés exclusivement à la session du calculateur.",
-        "P4": "3.4. Le lien d’une session enregistrée est un lien d’accès. Toute personne disposant du lien peut accéder aux contenus associés jusqu’à l’expiration du lien ou jusqu’à son invalidation à la suite d’une commande."
+        "P4": "3.4. Le lien d’une session enregistrée est un lien d’accès. Toute personne disposant du lien peut accéder au contenu du devis jusqu’à son expiration. Si le devis a déjà été commandé, une nouvelle session est créée pour toute autre commande sans réutiliser les données personnelles du premier client."
       },
       "S4": {
         "TITLE": "4. Cookies et traçage",
@@ -1497,7 +1501,7 @@
     "ERROR": "Impossible d’enregistrer la session ou d’envoyer l’e-mail. Votre travail reste disponible. Veuillez réessayer.",
     "RATE_LIMIT": "Attendez une minute avant d’envoyer un autre lien.",
     "SCAN_ERROR": "L’analyse antivirus est indisponible. Les pièces jointes n’ont pas été approuvées. Réessayez plus tard.",
-    "UNAVAILABLE": "Cette session a expiré, a déjà été transformée en commande ou n’est plus disponible. Lancez un nouveau devis.",
+    "UNAVAILABLE": "Cette session a expiré ou n’est plus disponible. Lancez un nouveau devis.",
     "RECALCULATE": "Recalculez le devis pour enregistrer les modifications des modèles, quantités et réglages avant l’envoi.",
     "COPY": "Copier le lien",
     "COPYING": "Enregistrement du lien…",

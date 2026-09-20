@@ -10,6 +10,7 @@ import com.printcalculator.service.QuoteRateLimitService;
 import com.printcalculator.service.QuoteSessionExpiryPolicy;
 import com.printcalculator.service.QuoteSessionTotalsService;
 import com.printcalculator.service.quote.QuoteSessionItemService;
+import com.printcalculator.service.quote.QuoteSessionCalculationService;
 import com.printcalculator.service.quote.QuoteSessionResponseAssembler;
 import com.printcalculator.service.quote.QuoteStorageService;
 import org.springframework.core.io.Resource;
@@ -34,7 +35,10 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 @RestController
 @RequestMapping("/api/quote-sessions")
 public class QuoteSessionController {
-    public record SessionRequest(@jakarta.validation.Valid com.printcalculator.dto.InformationDto.DraftLink information) {}
+    public record SessionRequest(
+            @jakarta.validation.Valid com.printcalculator.dto.InformationDto.DraftLink information,
+            UUID reuseSessionId
+    ) {}
     private final com.printcalculator.service.information.OrderInformationService informationService;
     private final QuoteSessionRepository sessionRepo;
     private final QuoteLineItemRepository lineItemRepo;
@@ -46,6 +50,7 @@ public class QuoteSessionController {
     private final QuoteSessionResponseAssembler quoteSessionResponseAssembler;
     private final QuoteSessionExpiryPolicy quoteSessionExpiryPolicy;
     private final QuoteRateLimitService quoteRateLimitService;
+    private final QuoteSessionCalculationService quoteSessionCalculationService;
 
     public QuoteSessionController(QuoteSessionRepository sessionRepo,
                                   QuoteLineItemRepository lineItemRepo,
@@ -57,6 +62,7 @@ public class QuoteSessionController {
                                   QuoteSessionResponseAssembler quoteSessionResponseAssembler,
                                   QuoteSessionExpiryPolicy quoteSessionExpiryPolicy,
                                   QuoteRateLimitService quoteRateLimitService,
+                                  QuoteSessionCalculationService quoteSessionCalculationService,
                                   com.printcalculator.service.information.OrderInformationService informationService) {
         this.informationService = informationService;
         this.sessionRepo = sessionRepo;
@@ -69,13 +75,19 @@ public class QuoteSessionController {
         this.quoteSessionResponseAssembler = quoteSessionResponseAssembler;
         this.quoteSessionExpiryPolicy = quoteSessionExpiryPolicy;
         this.quoteRateLimitService = quoteRateLimitService;
+        this.quoteSessionCalculationService = quoteSessionCalculationService;
     }
 
     @PostMapping(value = "")
     @Transactional
-    public ResponseEntity<com.printcalculator.dto.QuoteSessionDto> createSession(HttpServletRequest request,
+    public ResponseEntity<com.printcalculator.dto.QuoteSessionDto> createSession(
             @jakarta.validation.Valid @RequestBody(required = false) SessionRequest payload) {
-        quoteRateLimitService.checkAllowed(request);
+        UUID reuseSessionId = payload == null ? null : payload.reuseSessionId();
+        var reusableSession = quoteSessionCalculationService.prepareForRecalculation(reuseSessionId);
+        if (reusableSession.isPresent()) {
+            return ResponseEntity.ok(com.printcalculator.dto.QuoteSessionDto.from(reusableSession.get()));
+        }
+
         QuoteSession session = new QuoteSession();
         session.setStatus("ACTIVE");
         session.setSessionType("PRINT_QUOTE");
@@ -99,7 +111,7 @@ public class QuoteSessionController {
                                                                    @jakarta.validation.Valid @RequestPart("settings") PrintSettingsDto settings,
                                                                    @RequestPart("file") MultipartFile file,
                                                                    HttpServletRequest request) throws IOException {
-        quoteRateLimitService.checkAllowed(request);
+        quoteRateLimitService.checkSlicingAllowed(request);
         QuoteSession session = sessionRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Session not found"));
 

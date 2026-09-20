@@ -1,6 +1,6 @@
 import { of, Subject, throwError } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { CalculatorPageComponent } from './calculator-page.component';
 import {
   PendingCalculatorDraft,
@@ -100,6 +100,7 @@ describe('CalculatorPageComponent', () => {
       'LanguageService',
       ['selectedLang'],
     );
+    languageService.selectedLang.and.returnValue('it');
     const translate = jasmine.createSpyObj<TranslateService>(
       'TranslateService',
       ['instant'],
@@ -156,6 +157,7 @@ describe('CalculatorPageComponent', () => {
     return {
       component,
       estimator,
+      router,
       route,
       uploadForm,
     };
@@ -374,6 +376,49 @@ describe('CalculatorPageComponent', () => {
     );
   });
 
+  it('reuses one session during the current visit and resets it for a new quote', () => {
+    const { component, estimator } = createComponent();
+    const request = createDraftRequest();
+    const result = createResult('session-1');
+    estimator.calculate.and.returnValue(of(result));
+    estimator.getQuoteSession.and.returnValue(
+      of({ session: { id: 'session-1' }, items: [] }),
+    );
+
+    component.onCalculate(request);
+    component.onCalculate(request);
+
+    expect(estimator.calculate.calls.argsFor(0)).toEqual([request, null]);
+    expect(estimator.calculate.calls.argsFor(1)).toEqual([
+      request,
+      'session-1',
+    ]);
+
+    component.onNewQuote();
+    component.onCalculate(request);
+    expect(estimator.calculate.calls.argsFor(2)).toEqual([request, null]);
+  });
+
+  it('starts a new session after all files are removed', () => {
+    const { component, estimator, uploadForm } = createComponent();
+    const request = createDraftRequest();
+    const result = createResult('session-1');
+    estimator.calculate.and.returnValue(of(result));
+    estimator.getQuoteSession.and.returnValue(
+      of({ session: { id: 'session-1' }, items: [] }),
+    );
+
+    component.onCalculate(request);
+    Object.defineProperty(uploadForm, 'items', {
+      configurable: true,
+      value: () => [],
+    });
+    component.onItemSettingsDiffChange({});
+    component.onCalculate(request);
+
+    expect(estimator.calculate.calls.argsFor(1)).toEqual([request, null]);
+  });
+
   it('shows backend failure message when calculation fails completely', () => {
     const { component, estimator, uploadForm } = createComponent();
     const request = createDraftRequest();
@@ -401,14 +446,15 @@ describe('CalculatorPageComponent', () => {
     );
   });
 
-  it('shows a clear banner when quote requests are rate limited', () => {
-    const { component, estimator } = createComponent();
+  it('starts the server-provided countdown when quote requests are rate limited', fakeAsync(() => {
+    const { component, estimator, router } = createComponent();
     const request = createDraftRequest();
 
     estimator.calculate.and.returnValue(
       throwError(() => ({
         fileName: 'part-a.stl',
         status: 429,
+        retryAfterSeconds: 37,
         code: 'QUOTE_RATE_LIMITED',
         message: 'Too Many Requests',
       })),
@@ -420,7 +466,13 @@ describe('CalculatorPageComponent', () => {
     expect(component.errorKey()).toBe('CALC.ERROR_RATE_LIMIT');
     expect(component.errorMessage()).toBe('CALC.ERROR_RATE_LIMIT');
     expect(component.errorCode()).toBe('QUOTE_RATE_LIMITED');
-  });
+    expect(component.rateLimitSecondsRemaining()).toBe(37);
+    expect(router.navigate).not.toHaveBeenCalled();
+
+    tick(1000);
+    expect(component.rateLimitSecondsRemaining()).toBe(36);
+    component.ngOnDestroy();
+  }));
 
   it('restores the local draft when a session has no downloadable items', () => {
     const { component, estimator, uploadForm } = createComponent(undefined, {
@@ -598,6 +650,54 @@ describe('CalculatorPageComponent', () => {
     expect(estimator.getQuoteSession).toHaveBeenCalledWith('session-1');
     expect(component.result()?.sessionId).toBe('session-1');
     expect(component.loading()).toBeFalse();
+  });
+
+  it('requires a new session before reordering an already converted quote', () => {
+    const { component, estimator, router, uploadForm } = createComponent(
+      'browser',
+      {
+        session: 'ordered-session',
+      },
+    );
+    const request = createDraftRequest();
+    uploadForm.getCurrentRequestDraft.and.returnValue(request);
+
+    estimator.getQuoteSession.and.returnValue(
+      of({
+        session: {
+          id: 'ordered-session',
+          status: 'CONVERTED',
+          convertedOrderId: 'order-1',
+          materialCode: 'PLA',
+        },
+        items: [],
+      }),
+    );
+    estimator.mapSessionToQuoteResult.and.returnValue(
+      createResult('ordered-session'),
+    );
+
+    component.ngOnInit();
+
+    expect(component.orderedSessionRequiresFork()).toBeTrue();
+    expect(component.requiresRecalculation()).toBeTrue();
+    router.navigate.calls.reset();
+    component.onProceed();
+    expect(router.navigate).not.toHaveBeenCalled();
+
+    estimator.calculate.and.returnValue(of(createResult('new-session')));
+    component.onCalculate(request);
+
+    expect(estimator.calculate).toHaveBeenCalledWith(request, null);
+    expect(component.result()?.sessionId).toBe('new-session');
+    expect(component.orderedSessionRequiresFork()).toBeFalse();
+    expect(component.requiresRecalculation()).toBeFalse();
+
+    router.navigate.calls.reset();
+    component.onProceed();
+    expect(router.navigate).toHaveBeenCalledWith(['/', 'it', 'checkout'], {
+      queryParams: { session: 'new-session' },
+    });
   });
 
   it('applies a pending session restore after the upload form becomes available', () => {

@@ -404,13 +404,8 @@ public class OrderEmailListener {
                 order.getCreatedAt().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).withLocale(locale))
         );
         templateData.put("totalCost", currencyFormatter.format(order.getTotalChf()));
-        templateData.put("logoUrl", buildLogoUrl());
         templateData.put("currentYear", Year.now().getValue());
         return templateData;
-    }
-
-    private String buildLogoUrl() {
-        return frontendBaseUrl.replaceAll("/+$", "") + "/assets/images/SVG/logo-giallo-spesso.svg";
     }
 
     private String applyOrderConfirmationTexts(Map<String, Object> templateData, String language, String orderNumber) {

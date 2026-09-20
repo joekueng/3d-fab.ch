@@ -42,7 +42,12 @@
   }
   @if (recalculationRequired()) {
     <div class="recalc-banner">
-      {{ "QUOTE.RECALC_REQUIRED" | translate }}
+      {{
+        (recalculationReason() === "ordered"
+          ? "QUOTE.RECALC_ORDERED_SESSION"
+          : "QUOTE.RECALC_REQUIRED"
+        ) | translate
+      }}
     </div>
   }
 
@@ -143,7 +148,12 @@
       }
       @if (recalculationRequired()) {
         <small class="limit-note">
-          {{ "QUOTE.RECALC_CHECKOUT_DISABLED" | translate }}
+          {{
+            (recalculationReason() === "ordered"
+              ? "QUOTE.RECALC_ORDERED_CHECKOUT_DISABLED"
+              : "QUOTE.RECALC_CHECKOUT_DISABLED"
+            ) | translate
+          }}
         </small>
       }
     </div>

@@ -746,7 +746,9 @@
     "ORDER": "Ordina Ora",
     "CONSULT": "Richiedi Consulenza",
     "ERROR_GENERIC": "Si è verificato un errore durante il calcolo del preventivo.",
-    "ERROR_RATE_LIMIT": "Sono stati effettuati troppi tentativi in poco tempo. Il calcolatore funziona correttamente: attendi almeno 60 secondi senza riprovare, poi calcola nuovamente il preventivo.",
+    "ERROR_RATE_LIMIT": "Sono stati effettuati troppi tentativi in poco tempo. Attendi qualche istante, poi calcola nuovamente il preventivo.",
+    "ERROR_RATE_LIMIT_COUNTDOWN": "Sono stati effettuati troppi tentativi in poco tempo. Potrai riprovare tra {{seconds}} secondi.",
+    "RETRY_IN": "Riprova tra {{seconds}} s",
     "ERROR_SESSION_INIT": "Non è stato possibile avviare il calcolo del preventivo. Riprova.",
     "ERROR_FINALIZATION": "Il calcolo è terminato, ma non è stato possibile caricare il preventivo finale. Riprova.",
     "ERROR_ITEM_PROCESSING": "Non è stato possibile elaborare il file.",
@@ -826,7 +828,9 @@
     "TOTAL": "Totale",
     "MAX_QTY_NOTICE": "Per quantità oltre {{max}} pezzi, richiedi consulenza.",
     "RECALC_REQUIRED": "Hai modificato i parametri di stampa. Ricalcola il preventivo prima di procedere con l'ordine.",
-    "RECALC_CHECKOUT_DISABLED": "Ricalcola il preventivo per riattivare il checkout."
+    "RECALC_CHECKOUT_DISABLED": "Ricalcola il preventivo per riattivare il checkout.",
+    "RECALC_ORDERED_SESSION": "Questo preventivo è già stato utilizzato per un ordine. Ricalcolalo per crearne una copia con un nuovo numero di sessione.",
+    "RECALC_ORDERED_CHECKOUT_DISABLED": "Crea una nuova sessione ricalcolando il preventivo prima di procedere con l'ordine."
   },
   "USER_DETAILS": {
     "TITLE": "I tuoi dati",
@@ -1064,7 +1068,7 @@
         "P1": "3.1. I file e i dati associati a una sessione salvata del calcolatore sono programmati per la cancellazione automatica dopo la data di scadenza indicata all’utente. Ogni volta che una sessione attiva viene riaperta tramite il link di accesso, la scadenza viene reimpostata a tre mesi dalla data dell’accesso. Se la sessione viene convertita in un ordine, i dati necessari all’ordine vengono conservati come descritto nella sezione 3.2.",
         "P2": "3.2. I file e i dati legati a ordini confermati vengono conservati per il tempo necessario a produzione, consegna, assistenza e obblighi amministrativi/legali, poi eliminati o minimizzati.",
         "P3": "3.3. I file caricati nel calcolatore vengono usati solo per analisi tecnica e stima del preventivo e restano associati esclusivamente alla sessione del calcolatore.",
-        "P4": "3.4. Il link di una sessione salvata è un link di accesso. Chiunque possieda il link può accedere ai contenuti associati alla sessione finché il link non scade o diventa invalido in seguito a un ordine."
+        "P4": "3.4. Il link di una sessione salvata è un link di accesso. Chiunque possieda il link può accedere ai contenuti del preventivo fino alla scadenza. Se il preventivo è già stato ordinato, per un nuovo ordine viene creata una nuova sessione senza riutilizzare le informazioni personali del primo cliente."
       },
       "S4": {
         "TITLE": "4. Cookie e tracciamento",
@@ -1490,7 +1494,7 @@
     "ERROR": "Impossibile salvare la sessione o inviare l’email. Il lavoro rimane disponibile: riprova.",
     "RATE_LIMIT": "Attendi un minuto prima di inviare un altro link.",
     "SCAN_ERROR": "Scansione antivirus non disponibile. Gli allegati non sono stati approvati: riprova più tardi.",
-    "UNAVAILABLE": "Questa sessione è scaduta, è già diventata un ordine oppure non è più disponibile. Avvia un nuovo preventivo.",
+    "UNAVAILABLE": "Questa sessione è scaduta oppure non è più disponibile. Avvia un nuovo preventivo.",
     "RECALCULATE": "Ricalcola il preventivo per salvare le modifiche a modelli, quantità e impostazioni prima dell’invio.",
     "COPY": "Copia link",
     "COPYING": "Salvataggio del link…",

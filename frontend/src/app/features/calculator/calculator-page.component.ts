@@ -6,6 +6,7 @@ import {
   ViewChild,
   ElementRef,
   Inject,
+  OnDestroy,
   OnInit,
   Optional,
   PLATFORM_ID,
@@ -81,7 +82,9 @@ type PendingSessionRestore = {
   templateUrl: './calculator-page.component.html',
   styleUrl: './calculator-page.component.scss',
 })
-export class CalculatorPageComponent implements OnInit, AfterViewInit {
+export class CalculatorPageComponent
+  implements OnInit, AfterViewInit, OnDestroy
+{
   private readonly isBrowser: boolean;
   mode = signal<'easy' | 'advanced'>('easy');
   step = signal<'upload' | 'quote' | 'details' | 'success'>('upload');
@@ -95,6 +98,11 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
   errorMessage = signal<string | null>(null);
   errorCode = signal<string | null>(null);
   warningMessage = signal<string | null>(null);
+  rateLimitSecondsRemaining = signal(0);
+  isRateLimitError = computed(
+    () => this.errorCode() === 'QUOTE_RATE_LIMITED',
+  );
+  private rateLimitTimer: ReturnType<typeof setInterval> | null = null;
   get informationModels(): InformationModel[] {
     return (this.result()?.items || []).map((item, index) => ({
       label: `${index + 1}. ${item.fileName}`,
@@ -180,6 +188,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
 
   orderSuccess = signal(false);
   requiresRecalculation = signal(false);
+  orderedSessionRequiresFork = signal(false);
   itemSettingsDiffByFileName = signal<
     Record<string, { differences: string[] }>
   >({});
@@ -189,6 +198,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
   private isRestoringQuoteState = false;
   private restoreDraftWhenViewReady = false;
   private quoteStateVersion = 0;
+  private activeCalculationSessionId: string | null = null;
 
   @ViewChild('uploadForm') uploadForm!: UploadFormComponent;
   @ViewChild('resultCol') resultCol!: ElementRef;
@@ -228,6 +238,10 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
         }
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.stopRateLimitTimer();
   }
 
   ngAfterViewInit() {
@@ -298,7 +312,11 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
           data.items || [],
           this.baselinePrintSettings,
         );
-        this.requiresRecalculation.set(false);
+        const alreadyOrdered =
+          data?.session?.status === 'CONVERTED' ||
+          Boolean(data?.session?.convertedOrderId);
+        this.orderedSessionRequiresFork.set(alreadyOrdered);
+        this.requiresRecalculation.set(alreadyOrdered);
         this.itemSettingsDiffByFileName.set({});
         const isCadSession = data?.session?.status === 'CAD_ACTIVE';
         this.cadSessionLocked.set(isCadSession);
@@ -427,6 +445,9 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
   }
 
   onCalculate(req: QuoteRequest) {
+    if (this.rateLimitSecondsRemaining() > 0) {
+      return;
+    }
     // ... (logic remains the same, simplified for diff)
     this.quoteStateVersion += 1;
     this.pendingSessionRestore = null;
@@ -455,13 +476,15 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
       }
     }, 100);
 
-    this.estimator.calculate(req).subscribe({
+    this.estimator.calculate(req, this.activeCalculationSessionId).subscribe({
       next: (event) => {
         if (typeof event === 'number') {
           this.uploadProgress.set(event);
         } else {
           // It's the result
           const res = event as QuoteResult;
+          this.activeCalculationSessionId = res.sessionId ?? null;
+          this.orderedSessionRequiresFork.set(false);
           if (this.isInvalidQuote(res)) {
             const failure = res.failedItems?.[0] ?? {
               fileName: req.items[0]?.file.name || '',
@@ -522,6 +545,11 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
           message: '',
         };
         if (failure.sessionId) {
+          this.activeCalculationSessionId = failure.sessionId;
+        }
+        const isRateLimited =
+          failure.code === 'QUOTE_RATE_LIMITED' || failure.status === 429;
+        if (failure.sessionId && !isRateLimited) {
           this.router.navigate([], {
             relativeTo: this.route,
             queryParams: { session: failure.sessionId },
@@ -530,12 +558,13 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
           });
         }
         this.setQuoteError(
-          failure.code === 'QUOTE_RATE_LIMITED' || failure.status === 429
-            ? 'CALC.ERROR_RATE_LIMIT'
-            : 'CALC.ERROR_GENERIC',
+          isRateLimited ? 'CALC.ERROR_RATE_LIMIT' : 'CALC.ERROR_GENERIC',
           this.failureDisplayMessage(failure),
           failure.code || null,
         );
+        if (isRateLimited) {
+          this.startRateLimitCountdown(failure.retryAfterSeconds ?? 60);
+        }
         this.applyFailureStates([failure]);
         this.loading.set(false);
       },
@@ -544,7 +573,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
 
   onProceed() {
     const res = this.result();
-    if (res && res.sessionId) {
+    if (res && res.sessionId && !this.orderedSessionRequiresFork()) {
       this.persistPendingDraft();
       const segments = this.cadSessionLocked()
         ? ['/', this.languageService.selectedLang(), 'checkout', 'cad']
@@ -642,6 +671,7 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
   onSubmitOrder(orderData: any) {
     console.log('Order Submitted:', orderData);
     this.orderSuccess.set(true);
+    this.activeCalculationSessionId = null;
     this.step.set('success');
   }
 
@@ -651,11 +681,13 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     this.step.set('upload');
     this.result.set(null);
     this.requiresRecalculation.set(false);
+    this.orderedSessionRequiresFork.set(false);
     this.itemSettingsDiffByFileName.set({});
     this.baselinePrintSettings = null;
     this.baselineItemStates = [];
     this.cadSessionLocked.set(false);
     this.orderSuccess.set(false);
+    this.activeCalculationSessionId = null;
     this.switchMode('easy'); // Reset to default and sync URL
   }
 
@@ -674,6 +706,9 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
     diffByFileName: Record<string, { differences: string[] }>,
   ) {
     this.itemSettingsDiffByFileName.set(diffByFileName || {});
+    if (this.uploadForm?.items().length === 0) {
+      this.activeCalculationSessionId = null;
+    }
   }
 
   onConsult() {
@@ -797,6 +832,10 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
           typeof maybeFailure.status === 'number'
             ? maybeFailure.status
             : undefined,
+        retryAfterSeconds:
+          typeof maybeFailure.retryAfterSeconds === 'number'
+            ? maybeFailure.retryAfterSeconds
+            : undefined,
         code:
           typeof maybeFailure.code === 'string' ? maybeFailure.code : undefined,
         message: hasMessage ? maybeFailure.message!.trim() : '',
@@ -862,6 +901,26 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
       return this.translate.instant('CALC.ERROR_ITEM_PROCESSING');
     }
     return failure.message || this.translate.instant('CALC.ERROR_GENERIC');
+  }
+
+  private startRateLimitCountdown(seconds: number): void {
+    this.rateLimitSecondsRemaining.set(Math.max(1, Math.ceil(seconds)));
+    this.stopRateLimitTimer();
+    this.rateLimitTimer = setInterval(() => {
+      this.rateLimitSecondsRemaining.update((remaining) =>
+        Math.max(0, remaining - 1),
+      );
+      if (this.rateLimitSecondsRemaining() === 0) {
+        this.stopRateLimitTimer();
+      }
+    }, 1000);
+  }
+
+  private stopRateLimitTimer(): void {
+    if (this.rateLimitTimer !== null) {
+      clearInterval(this.rateLimitTimer);
+      this.rateLimitTimer = null;
+    }
   }
 
   private localizedQuality(value: string): string {
@@ -1243,6 +1302,11 @@ export class CalculatorPageComponent implements OnInit, AfterViewInit {
 
   private refreshRecalculationRequirement(): void {
     if (!this.result()) return;
+
+    if (this.orderedSessionRequiresFork()) {
+      this.requiresRecalculation.set(true);
+      return;
+    }
 
     const draft = this.uploadForm?.getCurrentRequestDraft();
     if (!draft || draft.items.length === 0) {

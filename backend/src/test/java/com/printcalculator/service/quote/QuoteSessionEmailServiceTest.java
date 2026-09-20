@@ -68,10 +68,11 @@ class QuoteSessionEmailServiceTest {
         engine.setTemplateResolver(resolver);
         var context = new org.thymeleaf.context.Context();
         context.setVariables(data);
+        context.setVariable("logoUrl", "https://3d-fab.ch/assets/images/SVG/logo-giallo-spesso.svg");
         var document = org.jsoup.Jsoup.parse(engine.process("email/quote-session", context));
         assertEquals(language, document.selectFirst("html").attr("lang"));
         assertEquals(data.get("title"), document.selectFirst(".header h1").text());
-        assertEquals("https://example.test/assets/images/SVG/logo-giallo-spesso.svg", document.selectFirst(".brand-logo").attr("src"));
+        assertEquals("https://3d-fab.ch/assets/images/SVG/logo-giallo-spesso.svg", document.selectFirst(".brand-logo").attr("src"));
         assertEquals("https://example.test/" + language + "/calculator/advanced?session=" + session.getId(),
                 document.selectFirst(".content a").attr("href"));
         assertEquals(data.get("action"), document.selectFirst(".action-button").text());
@@ -102,21 +103,22 @@ class QuoteSessionEmailServiceTest {
         assertEquals(403, assertThrows(ResponseStatusException.class, () -> service.send(session.getId(), foreign)).getStatusCode().value());
         verifyNoInteractions(information, mail);
     }
-    @Test void rejectsExpiredAndConvertedLinks() {
+    @Test void rejectsExpiredLinksButAllowsConvertedQuotesWithoutCustomerInformation() {
         session.setExpiresAt(OffsetDateTime.now().minusSeconds(1));
         assertEquals(410, assertThrows(ResponseStatusException.class, () -> service.resume(session.getId())).getStatusCode().value());
         assertThrows(ResponseStatusException.class, () -> service.send(session.getId(), request));
         session.setExpiresAt(OffsetDateTime.now().plusMonths(1)); session.setStatus("CONVERTED");
-        assertThrows(ResponseStatusException.class, () -> service.resume(session.getId()));
+        assertNull(service.resume(session.getId()));
+        verify(information, never()).sessionCredential(session);
         verifyNoInteractions(mail);
     }
-    @Test void rejectsCreatingOrResumingALinkAfterOrderConversion() {
+    @Test void rejectsCreatingAnotherLinkButAllowsReusingAnOrderedQuote() {
         session.setConvertedOrderId(UUID.randomUUID());
         var linkRequest = new QuoteSessionLinkRequest("en", "easy", request.information());
         assertEquals(410, assertThrows(ResponseStatusException.class,
                 () -> service.createLink(session.getId(), linkRequest)).getStatusCode().value());
-        assertEquals(410, assertThrows(ResponseStatusException.class,
-                () -> service.resume(session.getId())).getStatusCode().value());
+        assertNull(service.resume(session.getId()));
+        verify(information, never()).sessionCredential(session);
         verifyNoInteractions(information, mail);
     }
     @Test void resolvesThePersistedDraftFromTheNormalSessionLink() {

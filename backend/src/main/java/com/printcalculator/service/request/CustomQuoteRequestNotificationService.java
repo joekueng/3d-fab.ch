@@ -36,9 +36,6 @@ public class CustomQuoteRequestNotificationService {
     @Value("${app.mail.contact-request.customer.enabled:true}")
     private boolean contactRequestCustomerMailEnabled;
 
-    @Value("${app.frontend.base-url:http://localhost:4200}")
-    private String frontendBaseUrl;
-
     public CustomQuoteRequestNotificationService(EmailNotificationService emailNotificationService,
                                                  ContactRequestLocalizationService localizationService,
                                                  EmailAuditService emailAuditService) {
@@ -95,7 +92,6 @@ public class CustomQuoteRequestNotificationService {
         templateData.put("phone", safeValue(request.getPhone()));
         templateData.put("message", safeValue(request.getMessage()));
         templateData.put("attachmentsCount", attachmentsCount);
-        templateData.put("logoUrl", buildLogoUrl());
         templateData.put("currentYear", Year.now().getValue());
         String subject = "Nuova richiesta di contatto #" + request.getId();
 
@@ -168,7 +164,6 @@ public class CustomQuoteRequestNotificationService {
         templateData.put("phone", safeValue(request.getPhone()));
         templateData.put("message", safeValue(request.getMessage()));
         templateData.put("attachmentsCount", attachmentsCount);
-        templateData.put("logoUrl", buildLogoUrl());
         templateData.put("currentYear", Year.now().getValue());
 
         String subject = localizationService.applyCustomerContactRequestTexts(templateData, language, request.getId());
@@ -247,10 +242,4 @@ public class CustomQuoteRequestNotificationService {
         return value;
     }
 
-    private String buildLogoUrl() {
-        String baseUrl = frontendBaseUrl == null || frontendBaseUrl.isBlank()
-                ? "http://localhost:4200"
-                : frontendBaseUrl;
-        return baseUrl.replaceAll("/+$", "") + "/assets/images/SVG/logo-giallo-spesso.svg";
-    }
 }

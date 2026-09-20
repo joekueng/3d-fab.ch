@@ -27,4 +27,6 @@ public interface QuoteLineItemRepository extends JpaRepository<QuoteLineItem, UU
     boolean existsByFilamentVariant_Id(Long filamentVariantId);
     boolean existsByShopProduct_Id(UUID shopProductId);
     boolean existsByShopProductVariant_Id(UUID shopProductVariantId);
+
+    void deleteByQuoteSession_Id(UUID quoteSessionId);
 }

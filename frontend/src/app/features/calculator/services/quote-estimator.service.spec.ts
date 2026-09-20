@@ -38,7 +38,7 @@ describe('QuoteEstimatorService', () => {
     httpTesting.verify();
   });
 
-  it('preserves a rate-limit failure when session creation returns 429', fakeAsync(() => {
+  it('requests reuse of the current session and preserves a 429 response', fakeAsync(() => {
     const request: QuoteRequest = {
       items: [
         {
@@ -52,20 +52,31 @@ describe('QuoteEstimatorService', () => {
     };
     let failure: QuoteCalculationFailure | undefined;
 
-    service.calculate(request).subscribe({
+    service.calculate(request, 'session-1').subscribe({
       error: (error: QuoteCalculationFailure) => {
         failure = error;
       },
     });
 
     flushMicrotasks();
-    httpTesting.expectOne(`${environment.apiUrl}/api/quote-sessions`).flush(
+    const sessionRequest = httpTesting.expectOne(
+      `${environment.apiUrl}/api/quote-sessions`,
+    );
+    expect(sessionRequest.request.body).toEqual({
+      information: { id: 'draft', token: 'key' },
+      reuseSessionId: 'session-1',
+    });
+    sessionRequest.flush(
       {
         status: 429,
         error: 'Too Many Requests',
         path: '/api/quote-sessions',
       },
-      { status: 429, statusText: 'Too Many Requests' },
+      {
+        status: 429,
+        statusText: 'Too Many Requests',
+        headers: { 'Retry-After': '37' },
+      },
     );
 
     expect(failure).toEqual(
@@ -73,6 +84,7 @@ describe('QuoteEstimatorService', () => {
         fileName: 'part-a.stl',
         status: 429,
         code: 'QUOTE_RATE_LIMITED',
+        retryAfterSeconds: 37,
       }),
     );
   }));

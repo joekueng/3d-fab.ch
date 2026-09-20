@@ -25,6 +25,7 @@ services:
       - APP_MAIL_FROM=${APP_MAIL_FROM:-info@3d-fab.ch}
       - APP_MAIL_ADMIN_ENABLED=${APP_MAIL_ADMIN_ENABLED:-true}
       - APP_MAIL_ADMIN_ADDRESS=${APP_MAIL_ADMIN_ADDRESS:-info@3d-fab.ch}
+      - APP_MAIL_LOGO_URL=${APP_MAIL_LOGO_URL:-https://3d-fab.ch/assets/images/SVG/logo-giallo-spesso.svg}
       - APP_FRONTEND_BASE_URL=${APP_FRONTEND_BASE_URL:-http://localhost:4200}
       - APP_QR_TRUST_PROXY_HEADERS=${APP_QR_TRUST_PROXY_HEADERS:-false}
       - APP_QR_TRUSTED_PROXY_NETWORKS=${APP_QR_TRUSTED_PROXY_NETWORKS:-}

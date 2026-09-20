@@ -42,6 +42,28 @@ Before implementing anything, read [AGENTS.md](AGENTS.md), the nearest module gu
 
 ## Quick start
 
+### Start the complete local environment
+
+From the repository root, run:
+
+```bash
+./start.sh
+```
+
+The command starts or creates the PostgreSQL and ClamAV Docker containers,
+waits for them to become ready, and then starts the Spring Boot backend with the
+`local` profile, the Angular frontend, and the static image server on port 8081.
+Press `Ctrl+C` to stop the three local processes. The Docker containers remain
+running and can be stopped separately with `docker compose down`.
+
+The services are available at:
+
+- frontend: `http://localhost:4200`
+- backend: `http://localhost:8000`
+- image server: `http://localhost:8081`
+
+The following sections describe the equivalent manual startup.
+
 ### 1. Database
 Create a PostgreSQL database named `printcalc`. The project manages the schema through its JPA/SQL configuration.
 

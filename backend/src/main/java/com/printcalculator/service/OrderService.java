@@ -79,17 +79,18 @@ public class OrderService {
             throw new IllegalArgumentException("Accettazione Termini e Privacy obbligatoria.");
         }
 
-        QuoteSession session = quoteSessionRepo.findById(quoteSessionId)
+        QuoteSession session = quoteSessionRepo.findLockedById(quoteSessionId)
                 .orElseThrow(() -> new RuntimeException("Quote Session not found"));
+
+        if (session.getConvertedOrderId() != null
+                || orderRepo.existsBySourceQuoteSession_Id(quoteSessionId)) {
+            throw new IllegalStateException("Quote session already converted to order");
+        }
 
         if (session.getInformationDraftId() == null && request.getInformationDraftId() != null) {
             informationService.link(session, new com.printcalculator.dto.InformationDto.DraftLink(request.getInformationDraftId(), request.getInformationToken()));
         }
         informationService.validateCheckout(session, request.getInformationToken());
-
-        if (session.getConvertedOrderId() != null) {
-            throw new IllegalStateException("Quote session already converted to order");
-        }
 
         List<QuoteLineItem> quoteItems = quoteLineItemRepo.findByQuoteSessionId(quoteSessionId);
         quoteItems = quoteItems.stream()

@@ -23,7 +23,7 @@ class EmailTemplateTest {
         engine.setTemplateResolver(resolver);
         var context = new Context();
         context.setVariables(Map.of(
-                "logoUrl", "https://example.test/assets/images/SVG/logo-giallo-spesso.svg",
+                "logoUrl", "https://3d-fab.ch/assets/images/SVG/logo-giallo-spesso.svg",
                 "currentYear", 2026,
                 "headlineText", "Order <confirmation>", "title", "Saved <session>",
                 "footerText", "Automated <message>", "notice", "Private <link>",
@@ -42,5 +42,23 @@ class EmailTemplateTest {
         assertTrue(document.select("style").first().data().contains("max-width: 600px"));
         assertFalse(html.contains("th:replace"));
         assertTrue(document.select("confirmation, session, message, link").isEmpty());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"contact-request-customer", "contact-request-admin"})
+    void contactTemplatesUseTheConfiguredPublicBrandLogo(String template) {
+        var resolver = new ClassLoaderTemplateResolver();
+        resolver.setPrefix("templates/");
+        resolver.setSuffix(".html");
+        resolver.setCharacterEncoding("UTF-8");
+        var engine = new SpringTemplateEngine();
+        engine.setTemplateResolver(resolver);
+
+        var context = new Context();
+        context.setVariable("logoUrl", "https://3d-fab.ch/assets/images/SVG/logo-giallo-spesso.svg");
+        String html = engine.process("email/" + template, context);
+        var document = Jsoup.parse(html);
+
+        assertEquals(context.getVariable("logoUrl"), document.selectFirst(".brand-logo").attr("src"));
     }
 }

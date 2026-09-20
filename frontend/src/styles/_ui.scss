@@ -1040,6 +1040,18 @@ select.ui-form-control {
   font-weight: 600;
 }
 
+.ui-banner--info {
+  color: var(--color-text);
+  background: var(--color-surface-muted);
+  border-color: var(--color-border);
+}
+
+.ui-banner--warning {
+  color: #854d0e;
+  background: #fffbea;
+  border-color: #f0d66b;
+}
+
 .ui-banner--error {
   color: #8a241d;
   background: #fff1f0;

@@ -8,7 +8,12 @@
 
   @if (error()) {
     <app-alert [type]="isOutOfVolumeError() ? 'warning' : 'error'">
-      @if (errorMessage()) {
+      @if (isRateLimitError() && rateLimitSecondsRemaining() > 0) {
+        {{
+          "CALC.ERROR_RATE_LIMIT_COUNTDOWN"
+            | translate: { seconds: rateLimitSecondsRemaining() }
+        }}
+      } @else if (errorMessage()) {
         {{ errorMessage() }}
       } @else {
         {{ errorKey() | translate }}
@@ -58,6 +63,7 @@
           [lockedSettings]="cadSessionLocked()"
           [loading]="loading()"
           [uploadProgress]="uploadProgress()"
+          [rateLimitSecondsRemaining]="rateLimitSecondsRemaining()"
           [showSplitPrintingOption]="showSplitPrintingOption()"
           (submitRequest)="onCalculate($event)"
           (itemQuantityChange)="onUploadItemQuantityChange($event)"
@@ -98,6 +104,9 @@
         <app-quote-result
           [result]="result()!"
           [recalculationRequired]="requiresRecalculation()"
+          [recalculationReason]="
+            orderedSessionRequiresFork() ? 'ordered' : 'changes'
+          "
           [itemSettingsDiffByFileName]="itemSettingsDiffByFileName()"
           (consult)="onConsult()"
           (proceed)="onProceed()"
