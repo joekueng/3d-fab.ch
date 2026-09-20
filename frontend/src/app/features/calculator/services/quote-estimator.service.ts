@@ -50,6 +50,7 @@ export interface QuoteItem {
   clientModelKey?: string;
   fileName: string;
   unitPrice: number;
+  baseUnitPrice?: number;
   unitTime: number;
   unitWeight: number;
   quantity: number;
@@ -63,6 +64,18 @@ export interface QuoteItem {
   layerHeight?: number;
   nozzleDiameter?: number;
   requiresSplitPrinting?: boolean;
+}
+
+export interface MachineHourTier {
+  startHours: number;
+  endHours?: number | null;
+  costChfPerHour: number;
+}
+
+interface MachineHourTierResponse {
+  startHours?: number | string;
+  endHours?: number | string | null;
+  costChfPerHour?: number | string;
 }
 
 export interface QuoteCalculationFailure {
@@ -86,6 +99,7 @@ export interface QuoteResult {
   nozzleChangeCost?: number;
   setupCost: number;
   globalMachineCost: number;
+  machineHourTiers?: MachineHourTier[];
   cadHours?: number;
   cadTotal?: number;
   currency: string;
@@ -710,6 +724,10 @@ export class QuoteEstimatorService {
         clientModelKey: item?.clientModelKey,
         fileName: item?.originalFilename,
         unitPrice: Number(item?.unitPriceChf || 0),
+        baseUnitPrice:
+          item?.baseUnitPriceChf != null
+            ? Number(item.baseUnitPriceChf)
+            : undefined,
         unitTime: Number(item?.printTimeSeconds || 0),
         unitWeight: Number(item?.materialGrams || 0),
         quantity: Number(item?.quantity || 1),
@@ -735,6 +753,14 @@ export class QuoteEstimatorService {
       nozzleChangeCost: Number(sessionData?.nozzleChangeCostChf ?? 0),
       setupCost: effectiveSetupCost,
       globalMachineCost: Number(sessionData?.globalMachineCostChf || 0),
+      machineHourTiers: Array.isArray(sessionData?.machineHourTiers)
+        ? sessionData.machineHourTiers.map((tier: MachineHourTierResponse) => ({
+            startHours: Number(tier?.startHours || 0),
+            endHours:
+              tier?.endHours == null ? null : Number(tier.endHours),
+            costChfPerHour: Number(tier?.costChfPerHour || 0),
+          }))
+        : [],
       cadHours: Number(session?.cadHours || 0),
       cadTotal: Number(sessionData?.cadTotalChf || 0),
       currency: 'CHF',

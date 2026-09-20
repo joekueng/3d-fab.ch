@@ -2,12 +2,19 @@
   <h3 class="title">{{ "CALC.RESULT" | translate }}</h3>
 
   <app-price-breakdown
+    [class.estimated-price]="quantitiesPending()"
     [rows]="priceBreakdownRows()"
     [total]="costBreakdown().total"
     [currency]="result().currency"
     [totalSuffix]="'*'"
     [totalLabelKey]="'CHECKOUT.TOTAL'"
   ></app-price-breakdown>
+
+  @if (quantitiesPending()) {
+    <p class="price-estimate-note" aria-live="polite">
+      {{ "QUOTE.PRICE_ESTIMATE_PENDING" | translate }}
+    </p>
+  }
 
   <div class="result-grid">
     <app-summary-card [label]="'CALC.TIME' | translate">
@@ -100,15 +107,18 @@
               class="qty-input"
             />
           </div>
-          <div class="item-price">
+          <div
+            class="item-price"
+            [class.estimated-price]="quantitiesPending()"
+          >
             <span class="item-total-price">
-              {{ item.unitPrice * item.quantity | currency: result().currency }}
+              {{ displayItemTotal(item) | currency: result().currency }}
             </span>
             <small
               class="item-unit-price"
               *ngIf="item.quantity > 1; else unitPricePlaceholder"
             >
-              {{ item.unitPrice | currency: result().currency }}
+              {{ displayUnitPrice(item) | currency: result().currency }}
               {{ "CHECKOUT.PER_PIECE" | translate }}
             </small>
             <ng-template #unitPricePlaceholder>

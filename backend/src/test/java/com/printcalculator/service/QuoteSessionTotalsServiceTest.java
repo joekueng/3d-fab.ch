@@ -1,10 +1,12 @@
 package com.printcalculator.service;
 
 import com.printcalculator.entity.PricingPolicy;
+import com.printcalculator.entity.PricingPolicyMachineHourTier;
 import com.printcalculator.entity.QuoteLineItem;
 import com.printcalculator.entity.QuoteSession;
 import com.printcalculator.entity.NozzleOption;
 import com.printcalculator.repository.NozzleOptionRepository;
+import com.printcalculator.repository.PricingPolicyMachineHourTierRepository;
 import com.printcalculator.repository.PricingPolicyRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,6 +25,7 @@ class QuoteSessionTotalsServiceTest {
     private PricingPolicyRepository pricingRepo;
     private QuoteCalculator quoteCalculator;
     private NozzleOptionRepository nozzleOptionRepo;
+    private PricingPolicyMachineHourTierRepository machineHourTierRepo;
     private QuoteSessionTotalsService service;
 
     @BeforeEach
@@ -30,7 +33,9 @@ class QuoteSessionTotalsServiceTest {
         pricingRepo = mock(PricingPolicyRepository.class);
         quoteCalculator = mock(QuoteCalculator.class);
         nozzleOptionRepo = mock(NozzleOptionRepository.class);
+        machineHourTierRepo = mock(PricingPolicyMachineHourTierRepository.class);
         service = new QuoteSessionTotalsService(pricingRepo, quoteCalculator, nozzleOptionRepo,
+                machineHourTierRepo,
                 new ShippingQuoteService(3, ShippingQuoteService.DEFAULT_PROFILES));
     }
 
@@ -108,6 +113,30 @@ class QuoteSessionTotalsServiceTest {
         assertAmountEquals("113.00", totals.itemsTotalChf());
         assertAmountEquals("2.00", totals.shippingCostChf());
         assertAmountEquals("120.00", totals.grandTotalChf());
+    }
+
+    @Test
+    void compute_ExposesMachineHourTiersForClientSidePreview() {
+        QuoteSession session = new QuoteSession();
+        session.setSetupCostChf(BigDecimal.ZERO);
+        PricingPolicy policy = new PricingPolicy();
+        PricingPolicyMachineHourTier tier = new PricingPolicyMachineHourTier();
+        tier.setTierStartHours(BigDecimal.ZERO);
+        tier.setTierEndHours(BigDecimal.TEN);
+        tier.setMachineCostChfPerHour(new BigDecimal("2.50"));
+
+        when(pricingRepo.findFirstByIsActiveTrueOrderByValidFromDesc()).thenReturn(policy);
+        when(machineHourTierRepo.findAllByPricingPolicyOrderByTierStartHoursAsc(policy))
+                .thenReturn(List.of(tier));
+        when(quoteCalculator.calculateSessionMachineCost(eq(policy), any(BigDecimal.class)))
+                .thenReturn(BigDecimal.ZERO);
+
+        var totals = service.compute(session, List.of());
+
+        assertEquals(1, totals.machineHourTiers().size());
+        assertAmountEquals("0.00", totals.machineHourTiers().getFirst().startHours());
+        assertAmountEquals("10.00", totals.machineHourTiers().getFirst().endHours());
+        assertAmountEquals("2.50", totals.machineHourTiers().getFirst().costChfPerHour());
     }
 
     @Test

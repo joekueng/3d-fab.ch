@@ -837,7 +837,8 @@
     "RECALC_REQUIRED": "Vous avez modifié les paramètres d'impression. Recalculez le devis avant de poursuivre la commande.",
     "RECALC_CHECKOUT_DISABLED": "Recalculez le devis pour réactiver le checkout.",
     "RECALC_ORDERED_SESSION": "Ce devis a déjà été utilisé pour une commande. Recalculez-le pour créer une copie avec un nouveau numéro de session.",
-    "RECALC_ORDERED_CHECKOUT_DISABLED": "Créez une nouvelle session en recalculant le devis avant de poursuivre la commande."
+    "RECALC_ORDERED_CHECKOUT_DISABLED": "Créez une nouvelle session en recalculant le devis avant de poursuivre la commande.",
+    "PRICE_ESTIMATE_PENDING": "Estimation provisoire : le prix officiel sera confirmé une fois la mise à jour terminée."
   },
   "USER_DETAILS": {
     "TITLE": "Vos données",

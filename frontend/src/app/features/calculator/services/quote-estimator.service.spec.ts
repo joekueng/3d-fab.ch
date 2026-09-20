@@ -88,4 +88,32 @@ describe('QuoteEstimatorService', () => {
       }),
     );
   }));
+
+  it('maps official pricing inputs used for provisional quantity estimates', () => {
+    const result = service.mapSessionToQuoteResult({
+      session: { id: 'session-1', setupCostChf: 2 },
+      items: [
+        {
+          id: 'line-1',
+          originalFilename: 'part.stl',
+          unitPriceChf: 1.52,
+          baseUnitPriceChf: 0.8,
+          printTimeSeconds: 3600,
+          materialGrams: 20,
+          quantity: 10,
+        },
+      ],
+      machineHourTiers: [
+        { startHours: 0, endHours: 10, costChfPerHour: 2 },
+        { startHours: 10, endHours: null, costChfPerHour: 1 },
+      ],
+      grandTotalChf: 26.2,
+    });
+
+    expect(result.items[0].baseUnitPrice).toBe(0.8);
+    expect(result.machineHourTiers).toEqual([
+      { startHours: 0, endHours: 10, costChfPerHour: 2 },
+      { startHours: 10, endHours: null, costChfPerHour: 1 },
+    ]);
+  });
 });

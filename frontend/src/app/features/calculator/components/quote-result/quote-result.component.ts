@@ -157,7 +157,7 @@ export class QuoteResultComponent {
 
     let subtotal = cad;
     currentItems.forEach((item) => {
-      subtotal += item.unitPrice * item.quantity;
+      subtotal += this.displayUnitPrice(item) * item.quantity;
     });
 
     const nozzleChange = Math.max(0, this.result().nozzleChangeCost || 0);
@@ -176,6 +176,48 @@ export class QuoteResultComponent {
       total: Math.round(total * 100) / 100,
     };
   });
+
+  displayUnitPrice(item: QuoteItem): number {
+    if (!this.quantitiesPending()) {
+      return item.unitPrice;
+    }
+
+    const tiers = this.result().machineHourTiers || [];
+    if (item.baseUnitPrice == null || tiers.length === 0) {
+      return item.unitPrice;
+    }
+
+    const totalSeconds = this.items().reduce(
+      (sum, current) => sum + current.unitTime * current.quantity,
+      0,
+    );
+    if (totalSeconds <= 0) {
+      return item.baseUnitPrice;
+    }
+
+    const machineCost = this.estimateMachineCost(totalSeconds / 3600);
+    const unitMachineCost = this.roundCurrency(
+      (machineCost * item.unitTime) / totalSeconds,
+    );
+    return this.roundCurrency(item.baseUnitPrice + unitMachineCost);
+  }
+
+  displayItemTotal(item: QuoteItem): number {
+    return this.roundCurrency(this.displayUnitPrice(item) * item.quantity);
+  }
+
+  private estimateMachineCost(totalHours: number): number {
+    return (this.result().machineHourTiers || []).reduce((total, tier) => {
+      const start = Math.max(0, tier.startHours || 0);
+      const end = tier.endHours == null ? totalHours : tier.endHours;
+      const hoursInTier = Math.max(0, Math.min(totalHours, end) - start);
+      return total + hoursInTier * Math.max(0, tier.costChfPerHour || 0);
+    }, 0);
+  }
+
+  private roundCurrency(value: number): number {
+    return Math.round((value + Number.EPSILON) * 100) / 100;
+  }
 
   priceBreakdownRows = computed<PriceBreakdownRow[]>(() => {
     const breakdown = this.costBreakdown();

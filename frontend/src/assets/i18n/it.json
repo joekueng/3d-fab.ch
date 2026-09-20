@@ -830,7 +830,8 @@
     "RECALC_REQUIRED": "Hai modificato i parametri di stampa. Ricalcola il preventivo prima di procedere con l'ordine.",
     "RECALC_CHECKOUT_DISABLED": "Ricalcola il preventivo per riattivare il checkout.",
     "RECALC_ORDERED_SESSION": "Questo preventivo è già stato utilizzato per un ordine. Ricalcolalo per crearne una copia con un nuovo numero di sessione.",
-    "RECALC_ORDERED_CHECKOUT_DISABLED": "Crea una nuova sessione ricalcolando il preventivo prima di procedere con l'ordine."
+    "RECALC_ORDERED_CHECKOUT_DISABLED": "Crea una nuova sessione ricalcolando il preventivo prima di procedere con l'ordine.",
+    "PRICE_ESTIMATE_PENDING": "Stima provvisoria: il prezzo ufficiale sarà confermato al termine dell'aggiornamento."
   },
   "USER_DETAILS": {
     "TITLE": "I tuoi dati",
