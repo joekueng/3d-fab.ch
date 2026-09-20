@@ -4,6 +4,7 @@ A full-stack application (Angular + Spring Boot) for calculating accurate 3D-pri
 
 ## Contributing and AI agents: preserve project conventions
 
+
 Before implementing anything, read [AGENTS.md](AGENTS.md), the nearest module guide, and the relevant README. This applies to UI, emails, PDFs, APIs, background jobs, tests, and documentation.
 
 1. Find an existing implementation of the same kind and inspect its markup, styles, service flow, naming, copy, and tests before editing. Prefer established shared implementations over the most recent feature if they differ.
