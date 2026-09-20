@@ -16,7 +16,8 @@
     "RECALC_REQUIRED": "You changed the print settings. Recalculate the quote before proceeding with the order.",
     "RECALC_CHECKOUT_DISABLED": "Recalculate the quote to re-enable checkout.",
     "RECALC_ORDERED_SESSION": "This quote has already been used for an order. Recalculate it to create a copy with a new session number.",
-    "RECALC_ORDERED_CHECKOUT_DISABLED": "Create a new session by recalculating the quote before proceeding with the order."
+    "RECALC_ORDERED_CHECKOUT_DISABLED": "Create a new session by recalculating the quote before proceeding with the order.",
+    "PRICE_ESTIMATE_PENDING": "Provisional estimate: the official price will be confirmed when the update is complete."
   },
   "USER_DETAILS": {
     "TITLE": "Shipping Details",

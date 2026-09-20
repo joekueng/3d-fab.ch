@@ -4,6 +4,7 @@ import com.printcalculator.entity.PricingPolicy;
 import com.printcalculator.entity.QuoteLineItem;
 import com.printcalculator.entity.QuoteSession;
 import com.printcalculator.repository.NozzleOptionRepository;
+import com.printcalculator.repository.PricingPolicyMachineHourTierRepository;
 import com.printcalculator.repository.PricingPolicyRepository;
 import org.springframework.stereotype.Service;
 
@@ -19,15 +20,18 @@ public class QuoteSessionTotalsService {
     private final PricingPolicyRepository pricingRepo;
     private final QuoteCalculator quoteCalculator;
     private final NozzleOptionRepository nozzleOptionRepo;
+    private final PricingPolicyMachineHourTierRepository machineHourTierRepo;
     private final ShippingQuoteService shippingQuoteService;
 
     public QuoteSessionTotalsService(PricingPolicyRepository pricingRepo,
                                      QuoteCalculator quoteCalculator,
                                      NozzleOptionRepository nozzleOptionRepo,
+                                     PricingPolicyMachineHourTierRepository machineHourTierRepo,
                                      ShippingQuoteService shippingQuoteService) {
         this.pricingRepo = pricingRepo;
         this.quoteCalculator = quoteCalculator;
         this.nozzleOptionRepo = nozzleOptionRepo;
+        this.machineHourTierRepo = machineHourTierRepo;
         this.shippingQuoteService = shippingQuoteService;
     }
 
@@ -50,6 +54,15 @@ public class QuoteSessionTotalsService {
 
         BigDecimal totalHours = totalSeconds.divide(BigDecimal.valueOf(3600), 4, RoundingMode.HALF_UP);
         PricingPolicy policy = pricingRepo.findFirstByIsActiveTrueOrderByValidFromDesc();
+        List<MachineHourTierPreview> machineHourTiers = policy == null
+                ? List.of()
+                : machineHourTierRepo.findAllByPricingPolicyOrderByTierStartHoursAsc(policy).stream()
+                .map(tier -> new MachineHourTierPreview(
+                        tier.getTierStartHours(),
+                        tier.getTierEndHours(),
+                        tier.getMachineCostChfPerHour()
+                ))
+                .toList();
         BigDecimal globalMachineCost = quoteCalculator.calculateSessionMachineCost(policy, totalHours);
         BigDecimal printItemsTotal = printItemsBaseTotal.add(globalMachineCost);
 
@@ -85,7 +98,8 @@ public class QuoteSessionTotalsService {
                 shippingCost,
                 grandTotal,
                 totalSeconds,
-                shippingQuote
+                shippingQuote,
+                machineHourTiers
         );
     }
 
@@ -188,6 +202,12 @@ public class QuoteSessionTotalsService {
         return quantity;
     }
 
+    public record MachineHourTierPreview(
+            BigDecimal startHours,
+            BigDecimal endHours,
+            BigDecimal costChfPerHour
+    ) {}
+
     public record QuoteSessionTotals(
             BigDecimal printItemsTotalChf,
             BigDecimal globalMachineCostChf,
@@ -199,14 +219,26 @@ public class QuoteSessionTotalsService {
             BigDecimal shippingCostChf,
             BigDecimal grandTotalChf,
             BigDecimal totalPrintSeconds,
-            ShippingQuoteService.ShippingQuote shippingQuote
+            ShippingQuoteService.ShippingQuote shippingQuote,
+            List<MachineHourTierPreview> machineHourTiers
     ) {
+        public QuoteSessionTotals(BigDecimal printItemsTotalChf, BigDecimal globalMachineCostChf,
+                BigDecimal cadTotalChf, BigDecimal itemsTotalChf, BigDecimal baseSetupCostChf,
+                BigDecimal nozzleChangeCostChf, BigDecimal setupCostChf, BigDecimal shippingCostChf,
+                BigDecimal grandTotalChf, BigDecimal totalPrintSeconds,
+                ShippingQuoteService.ShippingQuote shippingQuote) {
+            this(printItemsTotalChf, globalMachineCostChf, cadTotalChf, itemsTotalChf, baseSetupCostChf,
+                    nozzleChangeCostChf, setupCostChf, shippingCostChf, grandTotalChf, totalPrintSeconds,
+                    shippingQuote, List.of());
+        }
+
         public QuoteSessionTotals(BigDecimal printItemsTotalChf, BigDecimal globalMachineCostChf,
                 BigDecimal cadTotalChf, BigDecimal itemsTotalChf, BigDecimal baseSetupCostChf,
                 BigDecimal nozzleChangeCostChf, BigDecimal setupCostChf, BigDecimal shippingCostChf,
                 BigDecimal grandTotalChf, BigDecimal totalPrintSeconds) {
             this(printItemsTotalChf, globalMachineCostChf, cadTotalChf, itemsTotalChf, baseSetupCostChf,
-                    nozzleChangeCostChf, setupCostChf, shippingCostChf, grandTotalChf, totalPrintSeconds, null);
+                    nozzleChangeCostChf, setupCostChf, shippingCostChf, grandTotalChf, totalPrintSeconds,
+                    null, List.of());
         }
     }
 }

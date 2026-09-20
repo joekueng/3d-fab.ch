@@ -133,6 +133,18 @@
   visibility: hidden;
 }
 
+.estimated-price {
+  opacity: 0.62;
+}
+
+.price-estimate-note {
+  margin: calc(var(--space-3) * -1) 0 var(--space-4);
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
 .result-grid {
   display: grid;
   grid-template-columns: 1fr;

@@ -16,7 +16,8 @@
     "RECALC_REQUIRED": "Sie haben die Druckeinstellungen geändert. Berechnen Sie das Angebot neu, bevor Sie mit der Bestellung fortfahren.",
     "RECALC_CHECKOUT_DISABLED": "Berechnen Sie das Angebot neu, um den Checkout wieder zu aktivieren.",
     "RECALC_ORDERED_SESSION": "Dieses Angebot wurde bereits für eine Bestellung verwendet. Berechnen Sie es neu, um eine Kopie mit einer neuen Sitzungsnummer zu erstellen.",
-    "RECALC_ORDERED_CHECKOUT_DISABLED": "Erstellen Sie durch Neuberechnung des Angebots eine neue Sitzung, bevor Sie mit der Bestellung fortfahren."
+    "RECALC_ORDERED_CHECKOUT_DISABLED": "Erstellen Sie durch Neuberechnung des Angebots eine neue Sitzung, bevor Sie mit der Bestellung fortfahren.",
+    "PRICE_ESTIMATE_PENDING": "Vorläufige Schätzung: Der offizielle Preis wird nach Abschluss der Aktualisierung bestätigt."
   },
   "USER_DETAILS": {
     "TITLE": "Ihre Daten",

@@ -77,6 +77,66 @@ describe('QuoteResultComponent', () => {
     expect(totals.weight).toBe(4);
   });
 
+  it('updates the provisional unit price using the official pricing tiers', () => {
+    fixture.componentRef.setInput('result', {
+      ...createResult(),
+      items: [
+        {
+          id: 'line-1',
+          fileName: 'part-a.stl',
+          baseUnitPrice: 1,
+          unitPrice: 3,
+          unitTime: 3600,
+          unitWeight: 20,
+          quantity: 2,
+        },
+      ],
+      machineHourTiers: [
+        { startHours: 0, endHours: 10, costChfPerHour: 2 },
+        { startHours: 10, endHours: null, costChfPerHour: 1 },
+      ],
+    });
+    fixture.detectChanges();
+
+    component.updateQuantity(0, 12);
+    fixture.detectChanges();
+
+    expect(component.quantitiesPending()).toBeTrue();
+    expect(component.displayUnitPrice(component.items()[0])).toBe(2.83);
+    expect(component.displayItemTotal(component.items()[0])).toBe(33.96);
+    expect(component.costBreakdown().subtotal).toBe(33.96);
+    expect(
+      fixture.nativeElement.querySelector('.price-estimate-note'),
+    ).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector(
+        'app-price-breakdown.estimated-price',
+      ),
+    ).not.toBeNull();
+
+    fixture.componentRef.setInput('result', {
+      ...createResult(),
+      items: [
+        {
+          ...component.items()[0],
+          quantity: 12,
+          unitPrice: 2.84,
+        },
+      ],
+      machineHourTiers: [
+        { startHours: 0, endHours: 10, costChfPerHour: 2 },
+        { startHours: 10, endHours: null, costChfPerHour: 1 },
+      ],
+    });
+    fixture.detectChanges();
+
+    expect(component.quantitiesPending()).toBeFalse();
+    expect(component.displayUnitPrice(component.items()[0])).toBe(2.84);
+    expect(
+      fixture.nativeElement.querySelector('.price-estimate-note'),
+    ).toBeNull();
+  });
+
   it('flags over-limit quantities for direct order', () => {
     component.updateQuantity(0, 101);
     expect(component.hasQuantityOverLimit()).toBeTrue();
