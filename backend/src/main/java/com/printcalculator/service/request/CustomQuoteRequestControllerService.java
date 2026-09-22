@@ -2,7 +2,9 @@ package com.printcalculator.service.request;
 
 import com.printcalculator.dto.QuoteRequestDto;
 import com.printcalculator.entity.CustomQuoteRequest;
+import com.printcalculator.event.CustomQuoteRequestCreatedEvent;
 import com.printcalculator.repository.CustomQuoteRequestRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,17 +23,17 @@ public class CustomQuoteRequestControllerService {
 
     private final CustomQuoteRequestRepository requestRepo;
     private final CustomQuoteRequestAttachmentService attachmentService;
-    private final CustomQuoteRequestNotificationService notificationService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public CustomQuoteRequestControllerService(CustomQuoteRequestRepository requestRepo,
                                                CustomQuoteRequestAttachmentService attachmentService,
-                                               CustomQuoteRequestNotificationService notificationService) {
+                                               ApplicationEventPublisher eventPublisher) {
         this.requestRepo = requestRepo;
         this.attachmentService = attachmentService;
-        this.notificationService = notificationService;
+        this.eventPublisher = eventPublisher;
     }
 
-    @Transactional
+    @Transactional(rollbackFor = IOException.class)
     public CustomQuoteRequest createCustomQuoteRequest(QuoteRequestDto requestDto, List<MultipartFile> files) throws IOException {
         validateConsents(requestDto);
 
@@ -51,7 +53,7 @@ public class CustomQuoteRequestControllerService {
         request = requestRepo.save(request);
 
         int attachmentsCount = attachmentService.storeAttachments(request, files);
-        notificationService.sendNotifications(request, attachmentsCount, requestDto.getLanguage());
+        eventPublisher.publishEvent(new CustomQuoteRequestCreatedEvent(request.getId(), attachmentsCount, requestDto.getLanguage()));
 
         return request;
     }

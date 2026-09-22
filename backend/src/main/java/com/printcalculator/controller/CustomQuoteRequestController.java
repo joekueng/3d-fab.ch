@@ -6,7 +6,6 @@ import com.printcalculator.service.request.CustomQuoteRequestControllerService;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,7 +29,6 @@ public class CustomQuoteRequestController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Transactional
     public ResponseEntity<CustomQuoteRequest> createCustomQuoteRequest(
             @Valid @RequestPart("request") QuoteRequestDto requestDto,
             @RequestPart(value = "files", required = false) List<MultipartFile> files

@@ -8,6 +8,16 @@ Before adding an endpoint, service, integration, or document, inspect a comparab
 
 For persistent changes, align entities, repositories, DTOs, frontend models, and migration/deployment expectations; the project currently uses Hibernate schema updates. For external integrations, reuse configuration and error/audit handling rather than adding a separate delivery path.
 
+## Email transaction boundaries
+
+Order and contact-request creation publish domain events inside the service transaction.
+Their email listeners run asynchronously with `@TransactionalEventListener(AFTER_COMMIT)`;
+notifications must not be sent before the request and its attachments are committed.
+`EmailAuditService` writes in a separate `REQUIRES_NEW` transaction, whose foreign keys
+can only reference committed orders/requests. Keep this boundary even when email is
+disabled, because skipped attempts are audited too. Attachment I/O failures roll back
+contact-request creation, and rolled-back requests must not trigger notifications.
+
 ## Customer-facing output
 
 - **Emails:** read the [template guide](src/main/resources/templates/email/README.md). New transactional messages reuse the shared layout fragments and the established localized context/SMTP flow.
