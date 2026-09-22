@@ -2,17 +2,18 @@ package com.printcalculator.service.request;
 
 import com.printcalculator.dto.QuoteRequestDto;
 import com.printcalculator.entity.CustomQuoteRequest;
+import com.printcalculator.event.CustomQuoteRequestCreatedEvent;
 import com.printcalculator.repository.CustomQuoteRequestRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -35,7 +35,7 @@ class CustomQuoteRequestControllerServiceTest {
     @Mock
     private CustomQuoteRequestAttachmentService attachmentService;
     @Mock
-    private CustomQuoteRequestNotificationService notificationService;
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private CustomQuoteRequestControllerService service;
@@ -50,7 +50,7 @@ class CustomQuoteRequestControllerServiceTest {
         );
 
         assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
-        verifyNoInteractions(requestRepo, attachmentService, notificationService);
+        verifyNoInteractions(requestRepo, attachmentService, eventPublisher);
     }
 
     @Test
@@ -76,7 +76,7 @@ class CustomQuoteRequestControllerServiceTest {
 
         verify(requestRepo).save(any(CustomQuoteRequest.class));
         verify(attachmentService).storeAttachments(saved, files);
-        verify(notificationService).sendNotifications(saved, 2, "de-CH");
+        verify(eventPublisher).publishEvent(new CustomQuoteRequestCreatedEvent(requestId, 2, "de-CH"));
     }
 
     @Test

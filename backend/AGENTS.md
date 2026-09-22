@@ -29,7 +29,7 @@ Read [README.md](README.md) before extending backend features. For email changes
 ## Domain dependencies to preserve
 
 - Quote calculations combine model inspection, Orca profile resolution, slicing/G-code parsing, print statistics, and pricing policy. Changes require special care around `SlicerService`, `QuoteCalculator`, `QuoteSessionTotalsService`, and related entities.
-- Order/payment changes can emit events consumed by email and invoice flows. Trace the relevant `event` and `event/listener` classes before changing an order status or payment state.
+- Order/payment changes can emit events consumed by email and invoice flows. Trace the relevant `event` and `event/listener` classes before changing an order status or payment state. For contact-request and order creation, preserve the [email transaction boundaries](README.md#email-transaction-boundaries).
 - Uploads and media must retain file validation, antivirus/storage handling, and access boundaries between `original`, `public`, and `private` assets.
 - QR location is inferred from backend-observed IP data; proxy-header trust and GeoLite configuration are security-sensitive.
 - SMTP, TWINT, QR-bill, and OpenAI translation integrations must be configuration-driven. Never log credentials or full sensitive request data.
