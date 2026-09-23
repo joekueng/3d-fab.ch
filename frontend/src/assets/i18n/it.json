@@ -76,6 +76,7 @@
         "DESCRIPTION": "Consulta il riepilogo del tuo ordine e lo stato della richiesta di stampa 3D."
       },
       "ADMIN": {
+    "EMAIL_STATUS_UNKNOWN": "Esito incerto",
         "TITLE": "Admin | 3D fab",
         "DESCRIPTION": "Area amministrativa riservata di 3D fab."
       }
@@ -1341,6 +1342,10 @@
     "TWINT_BUTTON_ALT": "Pulsante TWINT incorporato"
   },
   "TRACKING": {
+    "STEP_PAID": "Pagato",
+    "PAID_DESCRIPTION": "Pagamento confermato. Il tuo ordine è in attesa di produzione e a breve entrerà in lavorazione.",
+    "STATUS_CANCELLED": "Ordine annullato",
+    "STATUS_COMPLETED": "Ordine completato",
     "TITLE": "Stato dell'Ordine",
     "SUBTITLE": "Consulta lo stato del tuo ordine e gestisci il pagamento se necessario.",
     "STEP_PENDING": "In attesa",

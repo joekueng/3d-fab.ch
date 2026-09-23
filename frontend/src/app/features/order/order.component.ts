@@ -3,7 +3,9 @@ import {
   OrderInformationService,
   InformationModel,
 } from '../order-information/order-information.service';
-import { Component, OnInit, PLATFORM_ID, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, DestroyRef, PLATFORM_ID, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize } from 'rxjs';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
@@ -94,7 +96,15 @@ interface PublicOrder {
   templateUrl: './order.component.html',
   styleUrl: './order.component.scss',
 })
-export class OrderComponent implements OnInit {
+export class OrderComponent implements OnInit, OnDestroy {
+  private readonly destroyRef = inject(DestroyRef);
+  private refreshTimer?: ReturnType<typeof setTimeout>;
+  private requestVersion = 0;
+  private loadingOrder = false;
+  private reportingPayment = false;
+  private destroyed = false;
+  private readonly openedAt = Date.now();
+  readonly trackingSteps = ['PENDING', 'REPORTED', 'PAID', 'PRODUCTION', 'SHIPPED'];
   readonly informationService = inject(OrderInformationService);
   get informationModels(): InformationModel[] {
     return (this.order()?.items || []).map((item, index) => ({
@@ -136,8 +146,10 @@ export class OrderComponent implements OnInit {
           .resumeOrder(this.orderId)
           .catch(() => undefined)
           .finally(() => {
-            this.loadOrder();
-            this.loadTwintPayment();
+            if (!this.destroyed) {
+              this.loadOrder();
+              this.loadTwintPayment();
+            }
           });
       } else {
         this.loadOrder();
@@ -149,19 +161,62 @@ export class OrderComponent implements OnInit {
     }
   }
 
-  loadOrder() {
-    if (!this.orderId) return;
-    this.quoteService.getOrder(this.orderId).subscribe({
+  ngOnDestroy(): void {
+    this.destroyed = true;
+    clearTimeout(this.refreshTimer);
+  }
+
+  @HostListener('document:visibilitychange')
+  @HostListener('window:focus')
+  refreshWhenVisible(): void {
+    clearTimeout(this.refreshTimer);
+    if (this.isBrowser && !document.hidden) this.loadOrder();
+  }
+
+  private scheduleRefresh(): void {
+    clearTimeout(this.refreshTimer);
+    if (!this.isBrowser || this.destroyed || document.hidden) return;
+    if (['COMPLETED', 'CANCELLED'].includes(this.order()?.status ?? '')) return;
+    const awaitingPayment = this.order()?.status === 'PENDING_PAYMENT';
+    const delay = awaitingPayment && Date.now() - this.openedAt < 10 * 60_000 ? 10_000 : 60_000;
+    this.refreshTimer = setTimeout(() => this.loadOrder(), delay);
+  }
+
+  loadOrder(): void {
+    if (!this.orderId || this.destroyed || this.loadingOrder || this.reportingPayment) return;
+    clearTimeout(this.refreshTimer);
+    const version = ++this.requestVersion;
+    this.loadingOrder = true;
+    this.quoteService.getOrder(this.orderId).pipe(
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => {
+        this.loadingOrder = false;
+        this.scheduleRefresh();
+      }),
+    ).subscribe({
       next: (order) => {
+        if (version !== this.requestVersion) return;
         this.order.set(order);
+        this.error.set(null);
         this.loading.set(false);
       },
-      error: (err) => {
-        console.error('Failed to load order', err);
-        this.error.set('ORDER.ERR_LOAD_ORDER');
+      error: () => {
+        if (version !== this.requestVersion) return;
+        if (!this.order()) this.error.set('ORDER.ERR_LOAD_ORDER');
         this.loading.set(false);
       },
     });
+  }
+
+  trackingStep(order: PublicOrder): number {
+    switch (order.status) {
+      case 'PENDING_PAYMENT': return order.paymentStatus === 'REPORTED' ? 1 : 0;
+      case 'PAID': return 2;
+      case 'IN_PRODUCTION': return 3;
+      case 'SHIPPED': return 4;
+      case 'COMPLETED': return 5;
+      default: return -1;
+    }
   }
 
   selectPayment(method: 'twint' | 'bill'): void {
@@ -271,18 +326,23 @@ export class OrderComponent implements OnInit {
   }
 
   completeOrder(): void {
-    if (!this.orderId || !this.selectedPaymentMethod) {
+    if (!this.orderId || !this.selectedPaymentMethod || this.reportingPayment) {
       return;
     }
 
+    this.reportingPayment = true;
+    ++this.requestVersion; // Invalidate any GET started before this mutation.
+    clearTimeout(this.refreshTimer);
     this.quoteService
       .reportPayment(this.orderId, this.selectedPaymentMethod)
+      .pipe(takeUntilDestroyed(this.destroyRef), finalize(() => {
+        this.reportingPayment = false;
+        this.scheduleRefresh();
+      }))
       .subscribe({
         next: (order) => {
           this.order.set(order);
-          // The UI will re-render and show the 'REPORTED' state.
-          // We stay on this page to let the user see the "In verifica"
-          // status along with payment instructions.
+          this.error.set(null);
         },
         error: (err) => {
           console.error('Failed to report payment', err);
@@ -291,7 +351,7 @@ export class OrderComponent implements OnInit {
       });
   }
 
-  getDisplayOrderNumber(order: any): string {
+  getDisplayOrderNumber(order: PublicOrder | null): string {
     if (order?.orderNumber) {
       return order.orderNumber;
     }
@@ -301,7 +361,7 @@ export class OrderComponent implements OnInit {
     return this.translate.instant('ORDER.NOT_AVAILABLE');
   }
 
-  orderPriceBreakdownRows(order: any): PriceBreakdownRow[] {
+  orderPriceBreakdownRows(order: PublicOrder | null): PriceBreakdownRow[] {
     return [
       {
         labelKey: 'PAYMENT.SUBTOTAL',

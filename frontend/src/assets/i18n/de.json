@@ -107,6 +107,7 @@
         "DESCRIPTION": "Prüfen Sie die Zusammenfassung Ihrer Bestellung und den Status Ihrer 3D-Druck-Anfrage."
       },
       "ADMIN": {
+    "EMAIL_STATUS_UNKNOWN": "Versandstatus unklar",
         "TITLE": "Admin | 3D fab",
         "DESCRIPTION": "Geschützter Administrationsbereich von 3D fab."
       }
@@ -1282,6 +1283,10 @@
     "TWINT_BUTTON_ALT": "Eingebettete TWINT-Schaltfläche"
   },
   "TRACKING": {
+    "STEP_PAID": "Bezahlt",
+    "PAID_DESCRIPTION": "Zahlung bestätigt. Ihre Bestellung wartet auf die Produktion und wird in Kürze bearbeitet.",
+    "STATUS_CANCELLED": "Bestellung storniert",
+    "STATUS_COMPLETED": "Bestellung abgeschlossen",
     "TITLE": "Bestellstatus",
     "SUBTITLE": "Prüfen Sie den Status Ihrer Bestellung und verwalten Sie bei Bedarf die Zahlung.",
     "STEP_PENDING": "Ausstehend",

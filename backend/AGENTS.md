@@ -50,3 +50,5 @@ Add or update focused unit tests for service logic and controller tests for API 
 - Do not commit secrets or replace environment-based configuration with hard-coded values.
 - Do not alter production defaults, proxy trust settings, security filters, or file-size limits without understanding their deployment impact.
 - Keep generated files, temporary slicing outputs, uploaded files, and local storage out of source changes.
+
+For payment automation, follow [payment confirmation and TWINT inbox conventions](README.md#payment-confirmation-and-twint-inbox), including order locks, the transactional email outbox and direct DKIM verification.

@@ -10,7 +10,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
   AdminOrder,
   AdminOrderAddress,
@@ -46,6 +46,7 @@ import { firstValueFrom } from 'rxjs';
   styleUrl: './admin-dashboard.component.scss',
 })
 export class AdminDashboardComponent implements OnInit {
+  private readonly translate = inject(TranslateService);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly adminOrdersService = inject(AdminOrdersService);
 
@@ -878,6 +879,8 @@ export class AdminDashboardComponent implements OnInit {
         return 'Fallita';
       case 'SKIPPED':
         return 'Saltata';
+      case 'UNKNOWN':
+        return this.translate.instant('ADMIN.EMAIL_STATUS_UNKNOWN');
       default:
         return status || '-';
     }

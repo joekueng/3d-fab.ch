@@ -111,3 +111,14 @@ Translations are stored in `src/assets/i18n/`.
 - `fr.json` (French)
 
 To add a language, create the JSON file, update the supported-language types and `LanguageService` in `src/app/core/services/language.service.ts`, and update the static translation loader. Run `npm run check:i18n` before committing.
+
+## Customer order tracking
+
+The order page keeps `PAID` (awaiting production) separate from `IN_PRODUCTION`.
+Cancelled orders replace the progress timeline with an explicit terminal status.
+Polling continues after a customer reports payment, runs only while visible, and
+refreshes on focus/visibility return. It starts at ten seconds, slows to one minute
+after ten minutes or after payment, and stops for completed/cancelled orders.
+Request versions prevent pre-report GET responses from overwriting the mutation;
+transient polling failures retain the last displayed order. Page polling never
+opens or extends a backend mailbox acquisition window.

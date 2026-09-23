@@ -107,6 +107,7 @@
         "DESCRIPTION": "Review your order summary and the status of your 3D printing request."
       },
       "ADMIN": {
+    "EMAIL_STATUS_UNKNOWN": "Delivery uncertain",
         "TITLE": "Admin | 3D fab",
         "DESCRIPTION": "Restricted 3D fab administration area."
       }
@@ -1269,6 +1270,10 @@
     "TWINT_BUTTON_ALT": "Embedded TWINT button"
   },
   "TRACKING": {
+    "STEP_PAID": "Paid",
+    "PAID_DESCRIPTION": "Payment confirmed. Your order is awaiting production and will enter production shortly.",
+    "STATUS_CANCELLED": "Order cancelled",
+    "STATUS_COMPLETED": "Order completed",
     "TITLE": "Order Status",
     "SUBTITLE": "Check the status of your order and manage the payment if necessary.",
     "STEP_PENDING": "Pending",

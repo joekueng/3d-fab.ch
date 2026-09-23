@@ -42,7 +42,7 @@ class PaymentServiceTest {
         payment.setOrder(order);
         payment.setStatus("PENDING");
 
-        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+        when(orderRepository.findLockedById(orderId)).thenReturn(Optional.of(order));
         when(paymentRepository.findByOrder_Id(orderId)).thenReturn(Optional.of(payment));
         when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -70,14 +70,13 @@ class PaymentServiceTest {
         payment.setOrder(order);
         payment.setStatus("RECEIVED");
 
-        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+        when(orderRepository.findLockedById(orderId)).thenReturn(Optional.of(order));
         when(paymentRepository.findByOrder_Id(orderId)).thenReturn(Optional.of(payment));
-        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         new PaymentService(paymentRepository, orderRepository, eventPublisher)
                 .confirmPayment(orderId, "TWINT");
 
-        assertEquals("PAID", order.getStatus());
+        assertEquals("IN_PRODUCTION", order.getStatus());
         verify(paymentRepository, never()).save(any(Payment.class));
         verify(eventPublisher, never()).publishEvent(any());
     }
@@ -92,15 +91,49 @@ class PaymentServiceTest {
         payment.setOrder(order);
         payment.setStatus("COMPLETED");
 
-        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+        when(orderRepository.findLockedById(orderId)).thenReturn(Optional.of(order));
         when(paymentRepository.findByOrder_Id(orderId)).thenReturn(Optional.of(payment));
-        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         new PaymentService(paymentRepository, orderRepository, eventPublisher)
                 .confirmPayment(orderId, "TWINT");
 
-        assertEquals("PAID", order.getStatus());
+        assertEquals("IN_PRODUCTION", order.getStatus());
         verify(paymentRepository, never()).save(any(Payment.class));
+        verify(eventPublisher, never()).publishEvent(any());
+    }
+
+    @Test
+    void repeatedReportDoesNotResetTimestampOrPublishAgain() {
+        UUID id = UUID.randomUUID();
+        Order order = new Order(); order.setId(id); order.setStatus("PENDING_PAYMENT");
+        Payment payment = new Payment(); payment.setStatus("PENDING");
+        when(orderRepository.findLockedById(id)).thenReturn(Optional.of(order));
+        when(paymentRepository.findByOrder_Id(id)).thenReturn(Optional.of(payment));
+        when(paymentRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+        var service = new PaymentService(paymentRepository, orderRepository, eventPublisher);
+        service.reportPayment(id, "TWINT");
+        var first = payment.getReportedAt();
+        service.reportPayment(id, "TWINT");
+        assertEquals(first, payment.getReportedAt());
+        verify(eventPublisher, org.mockito.Mockito.times(1)).publishEvent(any());
+    }
+
+    @Test
+    void reportAfterConfirmationReturnsPaymentUnchanged() {
+        UUID id = UUID.randomUUID();
+        Order order = new Order(); order.setId(id); order.setStatus("PAID");
+        Payment payment = new Payment(); payment.setStatus("RECEIVED"); payment.setMethod("BANK_TRANSFER");
+        when(orderRepository.findLockedById(id)).thenReturn(Optional.of(order));
+        when(paymentRepository.findByOrder_Id(id)).thenReturn(Optional.of(payment));
+        new PaymentService(paymentRepository, orderRepository, eventPublisher).reportPayment(id, "TWINT");
+        assertEquals("RECEIVED", payment.getStatus());
+        assertEquals("BANK_TRANSFER", payment.getMethod());
+        verifyNoPaymentMutation();
+    }
+
+    private void verifyNoPaymentMutation() {
+        verify(paymentRepository, never()).save(any());
+        verify(orderRepository, never()).save(any());
         verify(eventPublisher, never()).publishEvent(any());
     }
 }

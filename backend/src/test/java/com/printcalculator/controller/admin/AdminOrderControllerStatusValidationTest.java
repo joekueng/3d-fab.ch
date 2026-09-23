@@ -97,7 +97,7 @@ class AdminOrderControllerStatusValidationTest {
         order.setId(orderId);
         order.setStatus("PENDING_PAYMENT");
 
-        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+        when(orderRepository.findLockedById(orderId)).thenReturn(Optional.of(order));
 
         AdminOrderStatusUpdateRequest payload = new AdminOrderStatusUpdateRequest();
         payload.setStatus("REPORTED");
@@ -119,6 +119,7 @@ class AdminOrderControllerStatusValidationTest {
         order.setStatus("PENDING_PAYMENT");
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+        when(orderRepository.findLockedById(orderId)).thenReturn(Optional.of(order));
         when(orderItemRepository.findByOrder_Id(orderId)).thenReturn(List.of());
         when(paymentRepository.findByOrder_Id(orderId)).thenReturn(Optional.empty());
         doAnswer(invocation -> {

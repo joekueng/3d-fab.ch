@@ -18,6 +18,7 @@ import java.util.UUID;
 public class EmailAuditService {
     public static final String SCOPE_ORDER = "ORDER";
     public static final String SCOPE_CONTACT_REQUEST = "CONTACT_REQUEST";
+    public static final String ORIGIN_PAYMENT_OUTBOX = "PAYMENT_OUTBOX";
     public static final String ORIGIN_SYSTEM = "SYSTEM";
     public static final String ORIGIN_ADMIN = "ADMIN";
 
@@ -35,6 +36,16 @@ public class EmailAuditService {
     public EmailAuditService(EmailLogRepository emailLogRepository, EntityManager entityManager) {
         this.emailLogRepository = emailLogRepository;
         this.entityManager = entityManager;
+    }
+
+    /** Jobs already hold a lock on a committed order; audit in that transaction to avoid FK lock waits. */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public EmailLog recordQueuedPaymentEmail(Order order, String eventType, String recipient,
+            String subject, String templateName, String attachmentName, EmailSendResult result) {
+        EmailLog log = buildBaseLog(SCOPE_ORDER, eventType, ORIGIN_SYSTEM, recipient, subject,
+                templateName, attachmentName, result, null);
+        log.setOrder(entityManager.getReference(Order.class, order.getId()));
+        return emailLogRepository.save(log);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)

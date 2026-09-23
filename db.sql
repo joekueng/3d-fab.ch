@@ -1682,3 +1682,44 @@ CREATE TABLE IF NOT EXISTS order_information (
     unread_count integer NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS ix_information_expiry ON order_information(expires_at);
+
+-- Payment automation: additive tables; existing orders/payments remain unchanged.
+create table payment_email_jobs (
+    id uuid primary key,
+    order_id uuid not null,
+    kind varchar(24) not null,
+    status varchar(24) not null,
+    due_at timestamptz not null,
+    attempted_at timestamptz,
+    finished_at timestamptz,
+    email_log_id uuid,
+    result varchar(500),
+    constraint uq_payment_email_order_kind unique (order_id, kind)
+);
+create index ix_payment_email_due on payment_email_jobs (status, due_at);
+
+create table twint_mailbox_cursors (
+    id varchar(255) primary key,
+    uid_validity bigint not null,
+    last_uid bigint not null,
+    initial_since timestamptz not null
+);
+
+create table twint_receipts (
+    id uuid primary key,
+    mailbox_key varchar(255) not null,
+    uid_validity bigint not null,
+    message_uid bigint not null,
+    content_hash varchar(64) not null,
+    order_id uuid,
+    match_type varchar(255),
+    payment_message varchar(1000),
+    amount numeric(12,2),
+    transaction_id varchar(255),
+    claimed_transaction_id varchar(255),
+    transaction_at timestamptz,
+    acquired_at timestamptz not null,
+    outcome varchar(64) not null,
+    constraint uq_twint_delivery unique (mailbox_key, uid_validity, message_uid),
+    constraint uq_twint_claimed_transaction unique (claimed_transaction_id)
+);

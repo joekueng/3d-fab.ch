@@ -151,7 +151,8 @@ public class AdminOrderControllerService {
             throw new ResponseStatusException(BAD_REQUEST, "Status is required");
         }
 
-        Order order = getOrderOrThrow(orderId);
+        Order order = orderRepo.findLockedById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Order not found"));
         String normalizedStatus = payload.getStatus().trim().toUpperCase(Locale.ROOT);
         if (!ALLOWED_ORDER_STATUSES.contains(normalizedStatus)) {
             throw new ResponseStatusException(

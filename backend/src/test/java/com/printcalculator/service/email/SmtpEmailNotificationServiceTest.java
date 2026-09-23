@@ -144,4 +144,15 @@ class SmtpEmailNotificationServiceTest {
         assertTrue(result.errorMessage().length() <= 503);
         assertTrue(result.errorMessage().endsWith("..."));
     }
+
+    @Test
+    void smtpSubmissionFailureIsUncertainAndDoesNotRetry() {
+        when(templateEngine.process(eq("email/payment-confirmed"), any(Context.class))).thenReturn("<p>Fixture</p>");
+        when(emailSender.createMimeMessage()).thenReturn(mimeMessage);
+        doThrow(new org.springframework.mail.MailSendException("Connection lost during submission"))
+                .when(emailSender).send(mimeMessage);
+        EmailSendResult result = emailNotificationService.sendEmail("fixture@example.test", "Fixture", "payment-confirmed", Map.of());
+        assertEquals(EmailSendResult.STATUS_UNKNOWN, result.status());
+        verify(emailSender, times(1)).send(mimeMessage);
+    }
 }

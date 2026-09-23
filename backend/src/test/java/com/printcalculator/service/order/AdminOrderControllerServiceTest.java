@@ -149,7 +149,7 @@ class AdminOrderControllerServiceTest {
         UUID orderId = UUID.randomUUID();
         Order order = buildOrder(orderId, "PAID");
 
-        when(orderRepo.findById(orderId)).thenReturn(Optional.of(order));
+        when(orderRepo.findLockedById(orderId)).thenReturn(Optional.of(order));
         when(orderRepo.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(orderItemRepo.findByOrder_Id(orderId)).thenReturn(List.of());
         when(paymentRepo.findByOrder_Id(orderId)).thenReturn(Optional.empty());
@@ -171,6 +171,7 @@ class AdminOrderControllerServiceTest {
         payment.setMethod("TWINT");
         payment.setStatus("PENDING");
 
+        when(orderRepo.findLockedById(orderId)).thenReturn(Optional.of(order));
         when(orderRepo.findById(orderId)).thenReturn(Optional.of(order));
         when(orderItemRepo.findByOrder_Id(orderId)).thenReturn(List.of());
         when(paymentRepo.findByOrder_Id(orderId)).thenReturn(Optional.of(payment));
@@ -189,7 +190,7 @@ class AdminOrderControllerServiceTest {
         UUID orderId = UUID.randomUUID();
         Order order = buildOrder(orderId, "SHIPPED");
 
-        when(orderRepo.findById(orderId)).thenReturn(Optional.of(order));
+        when(orderRepo.findLockedById(orderId)).thenReturn(Optional.of(order));
         when(orderRepo.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(orderItemRepo.findByOrder_Id(orderId)).thenReturn(List.of());
         when(paymentRepo.findByOrder_Id(orderId)).thenReturn(Optional.empty());
