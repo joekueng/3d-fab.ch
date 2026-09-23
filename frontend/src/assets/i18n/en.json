@@ -107,7 +107,7 @@
         "DESCRIPTION": "Review your order summary and the status of your 3D printing request."
       },
       "ADMIN": {
-    "EMAIL_STATUS_UNKNOWN": "Delivery uncertain",
+        "EMAIL_STATUS_UNKNOWN": "Delivery uncertain",
         "TITLE": "Admin | 3D fab",
         "DESCRIPTION": "Restricted 3D fab administration area."
       }

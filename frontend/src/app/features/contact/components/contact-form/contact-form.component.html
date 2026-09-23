@@ -10,7 +10,11 @@
       <label class="ui-form-label" for="contact-request-type"
         >{{ "CONTACT.REQ_TYPE_LABEL" | translate }} *</label
       >
-      <select id="contact-request-type" formControlName="requestType" class="ui-form-control">
+      <select
+        id="contact-request-type"
+        formControlName="requestType"
+        class="ui-form-control"
+      >
         <option *ngFor="let type of requestTypes" [value]="type.value">
           {{ type.label | translate }}
         </option>
