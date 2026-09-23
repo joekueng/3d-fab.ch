@@ -60,3 +60,8 @@ The harness transfers sources through the build context and copies reports back
 with `docker cp`, without host bind mounts. Local headed runs continue to use
 the host browser and published loopback ports. Failed readiness prints the
 last HTTP error, container state and recent application logs before cleanup.
+
+Navigation specs use `openNavigation` from `e2e/navigation.ts` before interacting
+with header links. It opens the actual mobile menu when the responsive toggle
+is visible; desktop keeps its normal navigation. Follow the link and check that
+the menu closes before interacting with footer links or page content.

@@ -1,11 +1,15 @@
 import { expect, test } from '@playwright/test';
+import { openNavigation } from '../navigation';
 
 const locales = ['it', 'en', 'de', 'fr'] as const;
 
 for (const locale of locales) {
   test(`PUBLIC-001: ${locale} navigation, language switch, and legal links`, async ({ page }) => {
     await page.goto(`/${locale}/contact`);
+    await openNavigation(page);
     await expect(page.locator('header.navbar nav a[href="/' + locale + '/contact"]')).toBeVisible();
+    await page.locator('header.navbar nav a[href="/' + locale + '/contact"]').click();
+    await expect(page.locator('header.navbar nav')).not.toHaveClass(/\bopen\b/);
 
     const privacy = page.locator('footer a[href="/' + locale + '/privacy"]');
     await privacy.click();
