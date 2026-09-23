@@ -99,10 +99,6 @@ jobs:
         working-directory: frontend
         run: npm ci --no-audit --no-fund --prefer-offline
 
-      - name: Install Playwright Chromium
-        working-directory: frontend
-        run: npx playwright install --with-deps chromium
-
       - name: Verify Docker support
         shell: bash
         run: |
@@ -111,6 +107,7 @@ jobs:
 
       - name: Run isolated full-stack browser tests
         env:
+          E2E_CONTAINER_BROWSER: "true"
           CI: "true"
           E2E_PROJECTS: chromium
         run: bash scripts/e2e/run.sh

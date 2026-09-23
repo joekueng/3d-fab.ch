@@ -18,6 +18,10 @@ export E2E_ADMIN_PASSWORD="$(openssl rand -hex 24)"
 export E2E_SESSION_SECRET="$(openssl rand -hex 32)"
 export E2E_BASE_URL="http://127.0.0.1:${E2E_PORT}"
 export E2E_DISPOSABLE_STACK=1
+if [[ "${E2E_CONTAINER_BROWSER:-false}" == true ]]; then
+  export E2E_BASE_URL=http://127.0.0.1
+  export E2E_MAIL_URL=http://mail:8025
+fi
 
 compose() {
   docker compose --progress quiet --project-name "$run_id" -f "$compose_file" "$@"
@@ -92,17 +96,31 @@ printf 'public E2E media\n' | compose exec -T backend sh -c \
 printf 'private E2E media\n' | compose exec -T backend sh -c \
   'mkdir -p /app/storage_media/private; cat > /app/storage_media/private/e2e-private-marker.txt'
 
+probe() {
+  if [[ "${E2E_CONTAINER_BROWSER:-false}" == true ]]; then
+    compose exec -T proxy wget -T 5 -O /dev/null "$E2E_BASE_URL$1"
+  else
+    curl --fail --show-error --silent --max-time 5 "$E2E_BASE_URL$1" >/dev/null
+  fi
+}
 for attempt in $(seq 1 30); do
-  if curl --fail --silent --max-time 5 "$E2E_BASE_URL/it" >/dev/null && \
-     curl --fail --silent --max-time 5 "$E2E_BASE_URL/api/shop/categories" >/dev/null; then
+  if { probe /it && probe /api/shop/categories; } > "$run_dir/readiness.log" 2>&1; then
     break
   fi
   if [[ "$attempt" -eq 30 ]]; then
-    echo 'E2E proxy/backend did not become ready within 150 seconds.' >&2
+    echo 'E2E proxy/backend readiness failed after 30 attempts.' >&2
+    cat "$run_dir/readiness.log" >&2
+    compose ps >&2
+    compose logs --no-color --tail 60 proxy frontend backend >&2
     exit 4
   fi
   sleep 5
 done
+
+if [[ "${E2E_CONTAINER_BROWSER:-false}" == true ]]; then
+  bash "$repo_root/scripts/e2e/browser.sh" "$suite" "$(compose ps -q proxy)"
+  exit $?
+fi
 
 cd "$repo_root/frontend"
 npm run e2e:typecheck

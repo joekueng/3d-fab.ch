@@ -54,8 +54,8 @@ services:
       APP_MAIL_ADMIN_ADDRESS: admin@example.test
       APP_MAIL_CONTACT_REQUEST_ADMIN_ADDRESS: contact@example.test
       APP_MAIL_LOGO_URL: http://proxy/assets/images/SVG/logo-giallo-spesso.svg
-      APP_FRONTEND_BASE_URL: http://127.0.0.1:${E2E_PORT}
-      APP_CORS_ADDITIONAL_ALLOWED_ORIGINS: http://127.0.0.1:${E2E_PORT}
+      APP_FRONTEND_BASE_URL: ${E2E_BASE_URL}
+      APP_CORS_ADDITIONAL_ALLOWED_ORIGINS: ${E2E_BASE_URL}
       TWINT_INBOX_ENABLED: "false"
       TWINT_PAYMENT_URL: https://example.test/twint-test-only
       LINKEDIN_SYNC_ENABLED: "false"

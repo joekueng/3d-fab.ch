@@ -44,7 +44,7 @@ test('PUBLIC-004: a contact request reaches the local mailbox', async ({ page, r
   await submit.click();
   await expect(page.locator('app-contact-form .success-state')).toBeVisible();
 
-  const mailbox = `http://127.0.0.1:${mailPort}`;
+  const mailbox = process.env['E2E_MAIL_URL'] ?? `http://127.0.0.1:${mailPort}`;
   await expect.poll(async () => {
     const response = await request.get(`${mailbox}/api/v1/messages`);
     expect(response.status()).toBe(200);

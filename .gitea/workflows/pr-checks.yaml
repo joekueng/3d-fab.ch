@@ -220,10 +220,6 @@ jobs:
         working-directory: frontend
         run: npm ci --no-audit --no-fund --prefer-offline
 
-      - name: Install Playwright browsers
-        working-directory: frontend
-        run: npx playwright install --with-deps chromium firefox webkit
-
       - name: Verify Docker support
         run: |
           docker version
@@ -231,6 +227,7 @@ jobs:
 
       - name: Run browsers on one isolated stack
         env:
+          E2E_CONTAINER_BROWSER: "true"
           CI: "true"
           E2E_PROJECTS: chromium,firefox,webkit,mobile-chromium,mobile-webkit
           E2E_BROWSER_MATRIX: "true"

@@ -49,3 +49,14 @@ and Docker daemon may have different filesystems;
 do not claim those combinations pass until that job has run successfully. The
 disposable stack has no external email or payment delivery: SMTP goes to
 Mailpit and the TWINT inbox is disabled.
+
+In CI, `E2E_CONTAINER_BROWSER=true` runs Playwright in a disposable container
+sharing the proxy network namespace, so its loopback points at the proxy even
+when the Gitea job uses a separate container and a host Docker socket. Readiness
+is checked inside the proxy. Mailpit is reached at `http://mail:8025` via
+`E2E_MAIL_URL`. Browser dependencies are installed from the frontend lockfile
+in `scripts/e2e/browser.Dockerfile`; Docker caches that layer across runs.
+The harness transfers sources through the build context and copies reports back
+with `docker cp`, without host bind mounts. Local headed runs continue to use
+the host browser and published loopback ports. Failed readiness prints the
+last HTTP error, container state and recent application logs before cleanup.
