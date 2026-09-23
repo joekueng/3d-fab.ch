@@ -24,7 +24,7 @@ public class TwintMailboxScheduler {
     private volatile boolean initialized;
 
     public TwintMailboxScheduler(TwintMailboxReader reader, TwintProperties config,
-            @Qualifier("twintMailboxScheduler") TaskScheduler scheduler) {
+            @Qualifier("twintMailboxTaskScheduler") TaskScheduler scheduler) {
         this.reader = reader;
         this.config = config;
         this.scheduler = scheduler;
@@ -44,7 +44,7 @@ public class TwintMailboxScheduler {
         }
     }
 
-    @Scheduled(fixedDelayString = "${app.twint.inbox.poll-ms:5000}", scheduler = "twintMailboxScheduler")
+    @Scheduled(fixedDelayString = "${app.twint.inbox.poll-ms:5000}", scheduler = "twintMailboxTaskScheduler")
     public void tick() {
         if (!initialized || !config.isEnabled()) return;
         try { reader.poll(); }

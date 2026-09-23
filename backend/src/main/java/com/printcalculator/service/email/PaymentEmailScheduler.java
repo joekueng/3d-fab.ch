@@ -15,7 +15,7 @@ public class PaymentEmailScheduler {
     private final PaymentEmailJobRepository jobs;
     private final PaymentEmailDelivery delivery;
 
-    @Scheduled(fixedDelayString = "${app.payment.email-poll-ms:1000}", scheduler = "paymentEmailScheduler")
+    @Scheduled(fixedDelayString = "${app.payment.email-poll-ms:1000}", scheduler = "paymentEmailTaskScheduler")
     public void tick() {
         jobs.findByStatusAndAttemptedAtBefore("SENDING", OffsetDateTime.now().minusMinutes(15), PageRequest.of(0, 25))
                 .forEach(j -> delivery.markUncertain(j.getId()));

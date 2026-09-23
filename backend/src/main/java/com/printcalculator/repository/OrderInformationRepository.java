@@ -13,6 +13,8 @@ public interface OrderInformationRepository extends JpaRepository<OrderInformati
     Optional<OrderInformation> lockById(@Param("id") UUID id);
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<OrderInformation> findByOrderId(UUID orderId);
+    @Query("select i from OrderInformation i where i.orderId = :orderId")
+    Optional<OrderInformation> findUnlockedByOrderId(@Param("orderId") UUID orderId);
     List<OrderInformation> findByOrderIdIsNullAndExpiresAtBefore(OffsetDateTime cutoff);
     @Query("select i.orderId from OrderInformation i where i.orderId is not null and i.unreadCount > 0")
     List<UUID> orderIds();
