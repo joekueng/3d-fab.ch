@@ -1,6 +1,7 @@
 name: PR Checks
 
 on:
+  workflow_dispatch:
   pull_request:
     branches: [main, int, dev]
 
@@ -182,3 +183,84 @@ jobs:
           cd frontend
           echo "Karma CHROME_BIN=$CHROME_BIN"
           npm run test -- --watch=false --browsers=ChromeHeadlessNoSandbox
+
+  i18n-parity:
+    needs: prettier-autofix
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Check translation parity
+        shell: bash
+        run: |
+          cd frontend
+          npm run check:i18n
+
+  browser-matrix:
+    needs: [security-sast, test-backend, test-frontend, i18n-parity]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - project: chromium
+            browser: chromium
+            grep: ""
+          - project: firefox
+            browser: firefox
+            grep: "CALC-001|CHECKOUT-001|ORDER-001|ADMIN-001|PUBLIC-001"
+          - project: webkit
+            browser: webkit
+            grep: "CALC-001|CHECKOUT-001|ORDER-001|ADMIN-001|PUBLIC-001"
+          - project: mobile-chromium
+            browser: chromium
+            grep: "PUBLIC-001|PUBLIC-002|SMOKE-001"
+          - project: mobile-webkit
+            browser: webkit
+            grep: "PUBLIC-001|PUBLIC-002|SMOKE-001"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: "frontend/package-lock.json"
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci --no-audit --no-fund --prefer-offline
+
+      - name: Install selected Playwright browser
+        working-directory: frontend
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Verify Docker support
+        run: |
+          docker version
+          docker compose version
+
+      - name: Run isolated browser selection
+        env:
+          CI: "true"
+          E2E_PROJECTS: ${{ matrix.project }}
+          E2E_TEST_GREP: ${{ matrix.grep }}
+        run: bash scripts/e2e/run.sh
+
+      - name: Upload failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4.4.0
+        with:
+          name: browser-e2e-${{ matrix.project }}
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+          retention-days: 7
