@@ -12,25 +12,35 @@
 
 <div class="container">
   <ng-container *ngIf="order() as o">
-    <div class="status-timeline mb-6" *ngIf="o.status !== 'CANCELLED'"
-      [attr.aria-label]="'TRACKING.TITLE' | translate">
-      <div class="timeline-step" *ngFor="let step of trackingSteps; let i = index"
+    <div
+      class="status-timeline mb-6"
+      *ngIf="o.status !== 'CANCELLED'"
+      [attr.aria-label]="'TRACKING.TITLE' | translate"
+    >
+      <div
+        class="timeline-step"
+        *ngFor="let step of trackingSteps; let i = index"
         [class.active]="trackingStep(o) === i"
         [class.completed]="trackingStep(o) > i"
-        [attr.aria-current]="trackingStep(o) === i ? 'step' : null">
+        [attr.aria-current]="trackingStep(o) === i ? 'step' : null"
+      >
         <div class="circle">{{ i + 1 }}</div>
-        <div class="label">{{ ('TRACKING.STEP_' + step) | translate }}</div>
+        <div class="label">{{ "TRACKING.STEP_" + step | translate }}</div>
       </div>
     </div>
 
     <app-card class="mb-6" *ngIf="o.status === 'PAID'">
       <div class="status-content text-center" role="status">
-        <h3>{{ 'TRACKING.STEP_PAID' | translate }}</h3>
-        <p>{{ 'TRACKING.PAID_DESCRIPTION' | translate }}</p>
+        <h3>{{ "TRACKING.STEP_PAID" | translate }}</h3>
+        <p>{{ "TRACKING.PAID_DESCRIPTION" | translate }}</p>
       </div>
     </app-card>
-    <div class="ui-banner mb-6" role="status" *ngIf="o.status === 'CANCELLED' || o.status === 'COMPLETED'">
-      {{ ('TRACKING.STATUS_' + o.status) | translate }}
+    <div
+      class="ui-banner mb-6"
+      role="status"
+      *ngIf="o.status === 'CANCELLED' || o.status === 'COMPLETED'"
+    >
+      {{ "TRACKING.STATUS_" + o.status | translate }}
     </div>
 
     <app-card
