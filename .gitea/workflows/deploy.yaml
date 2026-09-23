@@ -75,8 +75,55 @@ jobs:
           echo "Karma CHROME_BIN=$CHROME_BIN"
           npm run test -- --watch=false --browsers=ChromeHeadlessNoSandbox
 
-  build-and-push:
+      - name: Check browser tests and route inventory
+        working-directory: frontend
+        run: |
+          npm run e2e:typecheck
+          npm run check:e2e-routes
+
+  e2e-fullstack:
     needs: [test-backend, test-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: "frontend/package-lock.json"
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci --no-audit --no-fund --prefer-offline
+
+      - name: Verify Docker support
+        shell: bash
+        run: |
+          docker version
+          docker compose version
+
+      - name: Run isolated full-stack browser tests
+        env:
+          E2E_CONTAINER_BROWSER: "true"
+          CI: "true"
+          E2E_PROJECTS: chromium
+        run: bash scripts/e2e/run.sh
+
+      - name: Upload browser failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4.4.0
+        with:
+          name: isolated-fullstack-browser-tests
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+          retention-days: 7
+
+  build-and-push:
+    needs: [test-backend, test-frontend, e2e-fullstack]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -239,3 +286,65 @@ jobs:
         run: |
           set -euo pipefail
           ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" "deploy ${{ env.ENV }}"
+
+  e2e-dev:
+    needs: deploy
+    if: gitea.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: "frontend/package-lock.json"
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci --no-audit --no-fund --prefer-offline
+
+      - name: Install headless Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Wait for the dev site
+        shell: bash
+        env:
+          E2E_HTTP_USER: ${{ secrets.DEV_BASIC_AUTH_USER }}
+          E2E_HTTP_PASSWORD: ${{ secrets.DEV_BASIC_AUTH_PASSWORD }}
+        run: |
+          if [[ -z "$E2E_HTTP_USER" || -z "$E2E_HTTP_PASSWORD" ]]; then
+            echo 'Configure DEV_BASIC_AUTH_USER and DEV_BASIC_AUTH_PASSWORD for dev smoke.' >&2
+            exit 1
+          fi
+          for attempt in {1..30}; do
+            if curl --fail --silent --show-error --max-time 10 \
+              --user "$E2E_HTTP_USER:$E2E_HTTP_PASSWORD" https://dev.3d-fab.ch/it >/dev/null; then
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "The dev site did not become ready within five minutes."
+          exit 1
+
+      - name: Run dev-only browser smoke tests
+        working-directory: frontend
+        env:
+          CI: "true"
+          E2E_BASE_URL: https://dev.3d-fab.ch
+          E2E_HTTP_USER: ${{ secrets.DEV_BASIC_AUTH_USER }}
+          E2E_HTTP_PASSWORD: ${{ secrets.DEV_BASIC_AUTH_PASSWORD }}
+        run: npm run e2e:dev
+
+      - name: Upload browser failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4.4.0
+        with:
+          name: dev-browser-smoke
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+          retention-days: 7

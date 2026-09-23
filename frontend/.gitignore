@@ -20,6 +20,13 @@ yarn-error.log
 testem.log
 /typings
 
+# Playwright run artifacts and authentication state
+/playwright-report/
+/test-results/
+/e2e/.auth/
+/e2e/downloads/
+/e2e/mail/
+
 # System files
 .DS_Store
 Thumbs.db

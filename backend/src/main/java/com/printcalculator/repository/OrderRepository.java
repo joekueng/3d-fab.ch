@@ -15,6 +15,17 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     @org.springframework.data.jpa.repository.Query("select o from Order o where o.id = :id")
     java.util.Optional<Order> findLockedById(@org.springframework.data.repository.query.Param("id") java.util.UUID id);
 
+    @Query("""
+            select count(o) > 0 from Order o where o.status = 'PENDING_PAYMENT'
+              and not exists (select p.id from Payment p where p.order = o and p.status not in ('PENDING', 'REPORTED'))
+              and (o.createdAt >= :since or exists (
+                select p.id from Payment p where p.order = o and p.status = 'REPORTED' and p.reportedAt >= :since))
+            """)
+    boolean hasActivePaymentWindow(java.time.OffsetDateTime since);
+
+    @Query("select o.id from Order o where lower(cast(o.id as string)) like concat(:prefix, '%')")
+    List<UUID> findIdsByUuidPrefix(String prefix);
+
     List<Order> findAllByOrderByCreatedAtDesc();
 
     boolean existsBySourceQuoteSession_Id(UUID sourceQuoteSessionId);

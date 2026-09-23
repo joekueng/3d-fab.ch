@@ -1,0 +1,5 @@
+.gradle
+build
+.qodana
+storage_*
+venv

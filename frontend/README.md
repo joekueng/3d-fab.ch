@@ -111,3 +111,68 @@ Translations are stored in `src/assets/i18n/`.
 - `fr.json` (French)
 
 To add a language, create the JSON file, update the supported-language types and `LanguageService` in `src/app/core/services/language.service.ts`, and update the static translation loader. Run `npm run check:i18n` before committing.
+
+## Customer order tracking
+
+The order page keeps `PAID` (awaiting production) separate from `IN_PRODUCTION`.
+Cancelled orders replace the progress timeline with an explicit terminal status.
+Polling continues after a customer reports payment, runs only while visible, and
+refreshes on focus/visibility return. It starts at ten seconds, slows to one minute
+after ten minutes or after payment, and stops for completed/cancelled orders.
+Request versions prevent pre-report GET responses from overwriting the mutation;
+transient polling failures retain the last displayed order. Page polling never
+opens or extends a backend mailbox acquisition window.
+
+## Dev end-to-end checks
+
+Playwright has a read-only `smoke` suite for deployed dev and a `fullstack`
+suite for a disposable local stack. Its target guard accepts only
+`https://dev.3d-fab.ch` or an HTTP loopback URL. Deployed dev runs select only
+`e2e/smoke/`; they never submit forms or mutate server data. The route coverage
+decisions and open gaps live in `e2e/coverage-manifest.ts`.
+The dev hostname currently requires HTTP Basic Auth. Set `E2E_HTTP_USER` and
+`E2E_HTTP_PASSWORD` locally; the Gitea job reads `DEV_BASIC_AUTH_USER` and
+`DEV_BASIC_AUTH_PASSWORD` repository secrets.
+
+Install Node 22, Docker with Compose, and Chromium once:
+
+```bash
+cd frontend
+npm ci
+npx playwright install chromium
+```
+
+From the repository root, `bash scripts/e2e/run.sh` builds the real SSR and
+Spring images, starts a unique Compose project with PostgreSQL, ClamAV and
+local SMTP capture, verifies the disposable database, seeds synthetic records,
+runs the Chromium fullstack suite, saves service logs, then removes only that
+run's containers and volumes. The initial image build downloads OrcaSlicer and
+may take several minutes. Docker must be available to the current user. This
+command chooses free loopback ports and prints their URLs in
+`frontend/test-results/e2e-run.txt`. Pass `headed` to watch the full suite or
+`ui-states` to run the simulated failure suite on an isolated stack.
+
+For browser authoring against an already running isolated stack, set
+`E2E_BASE_URL` to its loopback proxy and run `npm run e2e:local` for visible
+Chromium, `npm run e2e:full` for headless execution, `npm run e2e:states`
+for simulated failure states, or `npm run e2e:ui` for Playwright UI mode.
+Mutation specs require `E2E_DISPOSABLE_STACK=1`, which the
+harness sets only after checking its database identity. `npm run e2e:dev`
+selects only the smoke suite; CI sets its target to the exact dev hostname.
+Use `npm run e2e:typecheck`, `npm run check:e2e-routes`, and
+`npm run e2e:report` for test compilation, route inventory, and the latest
+HTML report. Failure traces, screenshots, video, JSON results and service logs
+are ignored by Git under `frontend/test-results/` and `playwright-report/`.
+Set `E2E_PROJECTS=firefox`, `webkit`, `mobile-chromium`, or `mobile-webkit`
+for a manual alternate-browser run after installing that Playwright browser.
+The deploy workflow runs the isolated Chromium suite before image build and
+keeps the read-only dev smoke after deployment. On pull requests, the browser job waits for all preliminary checks, starts one
+isolated stack, and runs the full Chromium suite followed by reduced Firefox,
+WebKit and mobile selections. Set `E2E_BROWSER_MATRIX=true` and
+`E2E_PROJECTS=chromium,firefox,webkit,mobile-chromium,mobile-webkit` to use the
+same selection locally. The PR workflow can also be started manually.
+
+See [the E2E guide](e2e/README.md) for fixture ownership, adding tests and
+current coverage limitations. Browser tests complement backend and Angular
+tests; real device TWINT handoff and hardware-specific 3D rendering still need
+separate manual review.

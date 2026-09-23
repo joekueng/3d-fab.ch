@@ -6,8 +6,6 @@ import com.printcalculator.entity.EmailLog;
 import com.printcalculator.entity.Payment;
 import com.printcalculator.event.OrderCreatedEvent;
 import com.printcalculator.event.OrderShippedEvent;
-import com.printcalculator.event.PaymentConfirmedEvent;
-import com.printcalculator.event.PaymentReportedEvent;
 import com.printcalculator.repository.OrderItemRepository;
 import com.printcalculator.repository.OrderRepository;
 import com.printcalculator.repository.PaymentRepository;
@@ -77,33 +75,6 @@ public class OrderEmailListener {
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handlePaymentReportedEvent(PaymentReportedEvent event) {
-        Order order = loadCommittedOrder(event.getOrder());
-        log.info("Processing PaymentReportedEvent for order id: {}", order.getId());
-
-        try {
-            sendPaymentReportedEmail(order);
-        } catch (Exception e) {
-            log.error("Failed to send payment reported email for order id: {}", order.getId(), e);
-        }
-    }
-
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handlePaymentConfirmedEvent(PaymentConfirmedEvent event) {
-        Order order = loadCommittedOrder(event.getOrder());
-        Payment payment = event.getPayment();
-        log.info("Processing PaymentConfirmedEvent for order id: {}", order.getId());
-
-        try {
-            sendPaidInvoiceEmail(order, payment);
-        } catch (Exception e) {
-            log.error("Failed to send paid invoice email for order id: {}", order.getId(), e);
-        }
-    }
-
-    @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleOrderShippedEvent(OrderShippedEvent event) {
         Order order = loadCommittedOrder(event.getOrder());
         log.info("Processing OrderShippedEvent for order id: {}", order.getId());
@@ -157,10 +128,6 @@ public class OrderEmailListener {
         );
     }
 
-    private void sendPaymentReportedEmail(Order order) {
-        sendPaymentReportedEmail(order, EmailAuditService.ORIGIN_SYSTEM, null);
-    }
-
     public EmailLog sendPaymentReportedEmail(Order order, String origin, UUID resentFromEmailLogId) {
         String language = resolveLanguage(order.getPreferredLanguage());
         String orderNumber = getDisplayOrderNumber(order);
@@ -175,7 +142,7 @@ public class OrderEmailListener {
                 templateData
         );
 
-        return emailAuditService.recordOrderEmail(
+        return recordPaymentEmail(
                 order,
                 EmailAuditService.EVENT_PAYMENT_REPORTED_CUSTOMER,
                 origin,
@@ -188,10 +155,6 @@ public class OrderEmailListener {
         );
     }
 
-    private void sendPaidInvoiceEmail(Order order, Payment payment) {
-        sendPaidInvoiceEmail(order, payment, EmailAuditService.ORIGIN_SYSTEM, null);
-    }
-
     public EmailLog sendPaidInvoiceEmail(Order order, Payment payment, String origin, UUID resentFromEmailLogId) {
         String language = resolveLanguage(order.getPreferredLanguage());
         String orderNumber = getDisplayOrderNumber(order);
@@ -199,15 +162,19 @@ public class OrderEmailListener {
         Map<String, Object> templateData = buildBaseTemplateData(order, language);
         String subject = applyPaymentConfirmedTexts(templateData, language, orderNumber);
 
-        byte[] pdf = null;
+        String attachmentName = buildPaidInvoiceAttachmentName(language, orderNumber);
+        byte[] pdf;
         try {
             List<OrderItem> items = orderItemRepository.findByOrder_Id(order.getId());
             pdf = invoicePdfRenderingService.generateDocumentPdf(order, items, false, qrBillService, payment);
+            if (pdf == null || pdf.length == 0) throw new IllegalStateException("Empty invoice");
         } catch (Exception e) {
-            log.error("Failed to generate PDF for paid invoice email: {}", e.getMessage(), e);
+            return recordPaymentEmail(order, EmailAuditService.EVENT_PAYMENT_CONFIRMED_CUSTOMER,
+                    origin, resolveCustomerEmail(order), subject, "payment-confirmed", attachmentName,
+                    EmailSendResult.failed(OffsetDateTime.now(), "Invoice preparation failed before SMTP submission."),
+                    resentFromEmailLogId);
         }
 
-        String attachmentName = buildPaidInvoiceAttachmentName(language, orderNumber);
         EmailSendResult result = emailNotificationService.sendEmailWithAttachment(
                 resolveCustomerEmail(order),
                 subject,
@@ -217,7 +184,7 @@ public class OrderEmailListener {
                 pdf
         );
 
-        return emailAuditService.recordOrderEmail(
+        return recordPaymentEmail(
                 order,
                 EmailAuditService.EVENT_PAYMENT_CONFIRMED_CUSTOMER,
                 origin,
@@ -228,6 +195,14 @@ public class OrderEmailListener {
                 result,
                 resentFromEmailLogId
         );
+    }
+
+    private EmailLog recordPaymentEmail(Order order, String eventType, String origin, String recipient,
+            String subject, String template, String attachment, EmailSendResult result, UUID resentFrom) {
+        if (EmailAuditService.ORIGIN_PAYMENT_OUTBOX.equals(origin)) {
+            return emailAuditService.recordQueuedPaymentEmail(order, eventType, recipient, subject, template, attachment, result);
+        }
+        return emailAuditService.recordOrderEmail(order, eventType, origin, recipient, subject, template, attachment, result, resentFrom);
     }
 
     private void sendOrderShippedEmail(Order order) {
@@ -536,11 +511,11 @@ public class OrderEmailListener {
                 templateData.put("emailTitle", "Payment Confirmed");
                 templateData.put("headlineText", "Payment confirmed for order #" + orderNumber);
                 templateData.put("greetingText", "Hi " + templateData.get("customerName") + ",");
-                templateData.put("introText", "Your payment has been confirmed and the order moved into production.");
-                templateData.put("statusText", "Current status: In production.");
+                templateData.put("introText", "We have confirmed payment for your order. It will enter production shortly.");
+                templateData.put("statusText", "Current status: Paid — awaiting production.");
                 templateData.put("attachmentHintText", "The paid invoice PDF is attached to this email.");
                 templateData.put("orderDetailsCtaText", "View order status");
-                templateData.put("supportText", "We will notify you again when the shipment is ready.");
+                templateData.put("supportText", "Check your order status to follow production progress. We will email you when it has shipped.");
                 templateData.put("footerText", "Automated message from 3D-Fab.");
                 templateData.put("labelOrderNumber", "Order number");
                 templateData.put("labelTotal", "Total");
@@ -550,11 +525,11 @@ public class OrderEmailListener {
                 templateData.put("emailTitle", "Zahlung bestaetigt");
                 templateData.put("headlineText", "Zahlung fuer Bestellung #" + orderNumber + " bestaetigt");
                 templateData.put("greetingText", "Hallo " + templateData.get("customerName") + ",");
-                templateData.put("introText", "Ihre Zahlung wurde bestaetigt und die Bestellung ist jetzt in Produktion.");
-                templateData.put("statusText", "Aktueller Status: In Produktion.");
+                templateData.put("introText", "Wir haben Ihre Zahlung bestätigt. Ihre Bestellung geht in Kürze in Produktion.");
+                templateData.put("statusText", "Aktueller Status: Bezahlt — wartet auf Produktion.");
                 templateData.put("attachmentHintText", "Die bezahlte Rechnung als PDF ist dieser E-Mail beigefuegt.");
                 templateData.put("orderDetailsCtaText", "Bestellstatus ansehen");
-                templateData.put("supportText", "Wir informieren Sie erneut, sobald der Versand bereit ist.");
+                templateData.put("supportText", "Verfolgen Sie den Fortschritt über den Bestellstatus. Wir informieren Sie per E-Mail, sobald Ihre Bestellung versandt wurde.");
                 templateData.put("footerText", "Automatische Nachricht von 3D-Fab.");
                 templateData.put("labelOrderNumber", "Bestellnummer");
                 templateData.put("labelTotal", "Gesamtbetrag");
@@ -564,11 +539,11 @@ public class OrderEmailListener {
                 templateData.put("emailTitle", "Paiement confirme");
                 templateData.put("headlineText", "Paiement confirme pour la commande #" + orderNumber);
                 templateData.put("greetingText", "Bonjour " + templateData.get("customerName") + ",");
-                templateData.put("introText", "Votre paiement est confirme et la commande est passe en production.");
-                templateData.put("statusText", "Statut actuel: En production.");
+                templateData.put("introText", "Nous avons confirmé le paiement de votre commande. Elle entrera bientôt en production.");
+                templateData.put("statusText", "Statut actuel : Payée — en attente de production.");
                 templateData.put("attachmentHintText", "La facture payee en PDF est jointe a cet email.");
                 templateData.put("orderDetailsCtaText", "Voir le statut de la commande");
-                templateData.put("supportText", "Nous vous informerons a nouveau des que l'expedition sera prete.");
+                templateData.put("supportText", "Consultez le statut de votre commande pour suivre la production. Nous vous informerons par email lors de son expédition.");
                 templateData.put("footerText", "Message automatique de 3D-Fab.");
                 templateData.put("labelOrderNumber", "Numero de commande");
                 templateData.put("labelTotal", "Total");
@@ -578,11 +553,11 @@ public class OrderEmailListener {
                 templateData.put("emailTitle", "Pagamento confermato");
                 templateData.put("headlineText", "Pagamento confermato per ordine #" + orderNumber);
                 templateData.put("greetingText", "Ciao " + templateData.get("customerName") + ",");
-                templateData.put("introText", "Il tuo pagamento e' stato confermato e l'ordine e' entrato in produzione.");
-                templateData.put("statusText", "Stato attuale: in produzione.");
+                templateData.put("introText", "Abbiamo confermato il pagamento del tuo ordine. A breve entrerà in produzione.");
+                templateData.put("statusText", "Stato attuale: pagato — in attesa di produzione.");
                 templateData.put("attachmentHintText", "In allegato trovi la fattura saldata in PDF.");
                 templateData.put("orderDetailsCtaText", "Visualizza stato ordine");
-                templateData.put("supportText", "Ti aggiorneremo di nuovo quando la spedizione sara' pronta.");
+                templateData.put("supportText", "Controlla lo stato del tuo ordine per seguire l’avanzamento della lavorazione. Ti informeremo via email quando verrà spedito.");
                 templateData.put("footerText", "Messaggio automatico di 3D-Fab.");
                 templateData.put("labelOrderNumber", "Numero ordine");
                 templateData.put("labelTotal", "Totale");

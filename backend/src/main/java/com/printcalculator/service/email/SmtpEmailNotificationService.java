@@ -53,6 +53,7 @@ public class SmtpEmailNotificationService implements EmailNotificationService {
 
         log.info("Preparing to send email to {} with template {}", to, templateName);
 
+        boolean submissionStarted = false;
         try {
             Context context = new Context();
             context.setVariables(contextData);
@@ -71,17 +72,22 @@ public class SmtpEmailNotificationService implements EmailNotificationService {
                 helper.addAttachment(attachmentName, new ByteArrayResource(attachmentData));
             }
 
+            submissionStarted = true;
             emailSender.send(mimeMessage);
             log.info("Email successfully sent to {}", to);
             return EmailSendResult.sent(attemptedAt, OffsetDateTime.now());
 
+        } catch (org.springframework.mail.MailAuthenticationException | org.springframework.mail.MailPreparationException e) {
+            return EmailSendResult.failed(attemptedAt, errorMessage(e));
         } catch (MessagingException e) {
             log.error("Failed to send email to {}", to, e);
             // Non blocco l'ordine se l'email fallisce, ma loggo l'errore adeguatamente.
-            return EmailSendResult.failed(attemptedAt, errorMessage(e));
+            return submissionStarted ? EmailSendResult.unknown(attemptedAt, errorMessage(e))
+                    : EmailSendResult.failed(attemptedAt, errorMessage(e));
         } catch (Exception e) {
             log.error("Unexpected error while sending email to {}", to, e);
-            return EmailSendResult.failed(attemptedAt, errorMessage(e));
+            return submissionStarted ? EmailSendResult.unknown(attemptedAt, errorMessage(e))
+                    : EmailSendResult.failed(attemptedAt, errorMessage(e));
         }
     }
 
