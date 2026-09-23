@@ -18,7 +18,9 @@ project name, two loopback ports and temporary admin credentials, checks the
 database container's project label and database name, and seeds only that run.
 The seed in `scripts/e2e/seed.sql` contains synthetic pricing, printer, shop,
 CAD and order data. Tests that write data must use unique IDs or names and
-must never reset shared state. The harness drops its project volumes on exit.
+must never reset shared state. Pending orders are separate for each browser project and retry so reporting a
+payment in one browser cannot alter another browser's starting state.
+The harness drops its project volumes on exit.
 Do not point `e2e:full` at a non-disposable local database. The QR mutation
 spec requires `E2E_DISPOSABLE_STACK=1` from the harness.
 
@@ -39,7 +41,11 @@ The browser matrix runs inside `PR Checks` on pull requests to `main`, `int`
 and `dev`; the complete workflow can also be started manually. Formatting runs
 first, followed by security, backend, frontend and translation checks. The browser
 matrix starts only when all those checks succeed; a failed prerequisite skips it.
-It defines reduced Firefox, WebKit and mobile selections;
+One job starts one stack and runs all five Playwright projects sequentially
+(`workers: 1`), preserving a full Chromium suite and reduced Firefox, WebKit
+and mobile selections via `E2E_BROWSER_MATRIX=true`. The proxy image includes
+`nginx.conf` at build time; do not bind-mount checkout paths because the runner
+and Docker daemon may have different filesystems;
 do not claim those combinations pass until that job has run successfully. The
 disposable stack has no external email or payment delivery: SMTP goes to
 Mailpit and the TWINT inbox is disabled.

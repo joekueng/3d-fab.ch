@@ -63,7 +63,9 @@ compose exec -T db psql -v ON_ERROR_STOP=1 -U e2e -d printcalc_e2e \
   < "$repo_root/scripts/e2e/seed.sql"
 
 export E2E_ORDER_PENDING_ID="$(compose exec -T db psql -U e2e -d printcalc_e2e -tAc \
-  "select order_id from orders where customer_email = 'pending-order@example.test'")"
+  "select order_id from orders where customer_email = 'pending-order-chromium-0@example.test'")"
+export E2E_ORDER_PENDING_IDS="$(compose exec -T db psql -U e2e -d printcalc_e2e -tAc \
+  "select json_object_agg(customer_email, order_id) from orders where customer_email LIKE 'pending-order-%@example.test'")"
 export E2E_CAD_SESSION_ID="$(compose exec -T db psql -U e2e -d printcalc_e2e -tAc \
   "select quote_session_id from quote_sessions where notes = 'E2E CAD fixture'")"
 export E2E_ORDER_CAD_PENDING_ID="$(compose exec -T db psql -U e2e -d printcalc_e2e -tAc \

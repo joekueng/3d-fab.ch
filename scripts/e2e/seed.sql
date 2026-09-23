@@ -123,9 +123,12 @@ INSERT INTO orders
    billing_address_line1, billing_zip, billing_city, billing_country_code,
    shipping_same_as_billing, currency, setup_cost_chf, shipping_cost_chf,
    discount_chf, subtotal_chf, is_cad_order, cad_total_chf, total_chf)
-VALUES (gen_random_uuid(), 'CALCULATOR', 'PENDING_PAYMENT', 'pending-order@example.test', 'it',
+SELECT gen_random_uuid(), 'CALCULATOR', 'PENDING_PAYMENT',
+  'pending-order-' || browser || '-' || attempt || '@example.test', 'it',
   'PRIVATE', 'E2E', 'Customer', 'Teststrasse 1', '8000', 'Zürich', 'CH',
-  true, 'CHF', 0, 0, 0, 12.50, false, 0, 12.50);
+  true, 'CHF', 0, 0, 0, 12.50, false, 0, 12.50
+FROM (VALUES ('chromium'), ('firefox'), ('webkit'), ('mobile-chromium'),
+  ('mobile-webkit')) AS browsers(browser) CROSS JOIN generate_series(0, 1) AS attempt;
 
 INSERT INTO order_items
   (order_item_id, order_id, item_type, original_filename, stored_relative_path, stored_filename,
@@ -133,12 +136,12 @@ INSERT INTO order_items
 SELECT gen_random_uuid(), o.order_id, 'PRINT_FILE', 'e2e-cube.stl', 'e2e/fixture/e2e-cube.stl',
   'e2e-cube.stl', 'PLA', fv.filament_variant_id, 'Nero', 1, 12.50, 12.50
 FROM orders o CROSS JOIN filament_variant fv
-WHERE o.customer_email = 'pending-order@example.test'
+WHERE o.customer_email LIKE 'pending-order-%@example.test'
   AND fv.variant_display_name = 'E2E PLA Nero';
 
 INSERT INTO payments (payment_id, order_id, method, status, currency, amount_chf)
 SELECT gen_random_uuid(), order_id, 'OTHER', 'PENDING', 'CHF', 12.50
-FROM orders WHERE customer_email = 'pending-order@example.test';
+FROM orders WHERE customer_email LIKE 'pending-order-%@example.test';
 
 INSERT INTO orders
   (order_id, source_type, status, customer_email, preferred_language,

@@ -60,6 +60,11 @@ export default defineConfig({
   retries: process.env['CI'] ? 1 : 0,
   projects: requestedProjects.map((name) => ({
     name,
+    grep: process.env['E2E_BROWSER_MATRIX'] === 'true' && name !== 'chromium'
+      ? name.startsWith('mobile-')
+        ? /PUBLIC-001|PUBLIC-002|SMOKE-001/
+        : /CALC-001|CHECKOUT-001|ORDER-001|ADMIN-001|PUBLIC-001/
+      : undefined,
     use: deviceProjects[name as keyof typeof deviceProjects],
   })),
   reporter: [

@@ -1,13 +1,20 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, TestInfo } from '@playwright/test';
 
-function pendingOrderId(): string {
+function pendingOrderId(testInfo: TestInfo): string {
+  const fixtureMap = process.env['E2E_ORDER_PENDING_IDS'];
+  if (fixtureMap) {
+    const ids = JSON.parse(fixtureMap) as Record<string, string>;
+    const key = `pending-order-${testInfo.project.name}-${testInfo.retry}@example.test`;
+    if (!ids[key]) throw new Error(`Missing isolated order fixture: ${key}`);
+    return ids[key];
+  }
   const id = process.env['E2E_ORDER_PENDING_ID'];
   if (!id) throw new Error('Fullstack order tracking requires E2E_ORDER_PENDING_ID from the isolated seed');
   return id;
 }
 
-test('ORDER-001: a pending order can report payment once and retains its summary', async ({ page }) => {
-  await page.goto(`/it/order/${encodeURIComponent(pendingOrderId())}`);
+test('ORDER-001: a pending order can report payment once and retains its summary', async ({ page }, testInfo) => {
+  await page.goto(`/it/order/${encodeURIComponent(pendingOrderId(testInfo))}`);
   await expect(page.locator('.order-id-title')).toBeVisible();
   await expect(page.locator('.order-item').first()).toBeVisible();
   await expect(page.locator('.payment-main')).toBeVisible();
@@ -23,8 +30,8 @@ test('ORDER-001: a pending order can report payment once and retains its summary
   await expect(page.locator('.order-item').first()).toBeVisible();
 });
 
-test('ORDER-002: the short customer order URL displays the same tracking record', async ({ page }) => {
-  await page.goto(`/it/co/${encodeURIComponent(pendingOrderId())}?source=e2e#details`);
+test('ORDER-002: the short customer order URL displays the same tracking record', async ({ page }, testInfo) => {
+  await page.goto(`/it/co/${encodeURIComponent(pendingOrderId(testInfo))}?source=e2e#details`);
   await expect(page).toHaveURL(/\/it\/(co|order)\//);
   await expect(page.locator('.order-id-title')).toBeVisible();
 });

@@ -166,9 +166,11 @@ are ignored by Git under `frontend/test-results/` and `playwright-report/`.
 Set `E2E_PROJECTS=firefox`, `webkit`, `mobile-chromium`, or `mobile-webkit`
 for a manual alternate-browser run after installing that Playwright browser.
 The deploy workflow runs the isolated Chromium suite before image build and
-keeps the read-only dev smoke after deployment. A separate scheduled/manual
-workflow runs the full Chromium suite and reduced Firefox, WebKit and mobile
-selections.
+keeps the read-only dev smoke after deployment. On pull requests, the browser job waits for all preliminary checks, starts one
+isolated stack, and runs the full Chromium suite followed by reduced Firefox,
+WebKit and mobile selections. Set `E2E_BROWSER_MATRIX=true` and
+`E2E_PROJECTS=chromium,firefox,webkit,mobile-chromium,mobile-webkit` to use the
+same selection locally. The PR workflow can also be started manually.
 
 See [the E2E guide](e2e/README.md) for fixture ownership, adding tests and
 current coverage limitations. Browser tests complement backend and Angular
