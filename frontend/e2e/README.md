@@ -35,7 +35,8 @@ checks on representative public pages, SSR behavior and a real slicing case.
 The remaining workflows in the manifest still require implementation, notably
 full admin mutations, private attachments, mixed checkout, deeper document
 content checks, failure recovery, keyboard interaction and visual baselines.
-The scheduled workflow defines reduced Firefox, WebKit and mobile selections;
+The browser matrix workflow runs on pull requests to `main`, `int` and `dev`,
+and can also be started manually. It defines reduced Firefox, WebKit and mobile selections;
 do not claim those combinations pass until that job has run successfully. The
 disposable stack has no external email or payment delivery: SMTP goes to
 Mailpit and the TWINT inbox is disabled.

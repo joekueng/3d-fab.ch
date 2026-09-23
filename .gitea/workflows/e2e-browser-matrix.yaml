@@ -2,8 +2,8 @@ name: Browser E2E Matrix
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "30 2 * * 1"
+  pull_request:
+    branches: [main, int, dev]
 
 concurrency:
   group: print-calculator-browser-matrix

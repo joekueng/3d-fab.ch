@@ -24,11 +24,20 @@ test('PUBLIC-004: a contact request reaches the local mailbox', async ({ page, r
   const customerEmail = `contact-${crypto.randomUUID()}@example.test`;
   const message = `Browser contact request ${crypto.randomUUID()}`;
   await page.goto('/en/contact');
+  await page.waitForLoadState('networkidle');
   const form = page.locator('app-contact-form form');
-  await form.locator('app-input[formcontrolname="name"] input').fill('E2E Contact');
-  await form.locator('app-input[formcontrolname="email"] input').fill(customerEmail);
-  await form.locator('textarea[formcontrolname="message"]').fill(message);
-  await form.locator('app-legal-consent input[type="checkbox"]').check();
+  const nameInput = form.locator('app-input[formcontrolname="name"] input');
+  const emailInput = form.locator('app-input[formcontrolname="email"] input');
+  const messageInput = form.locator('textarea[formcontrolname="message"]');
+  const consent = form.locator('app-legal-consent input[type="checkbox"]');
+  await nameInput.fill('E2E Contact');
+  await emailInput.fill(customerEmail);
+  await messageInput.fill(message);
+  await consent.check();
+  await expect(nameInput).toHaveValue('E2E Contact');
+  await expect(emailInput).toHaveValue(customerEmail);
+  await expect(messageInput).toHaveValue(message);
+  await expect(consent).toBeChecked();
 
   const submit = form.locator('app-button[type="submit"] button');
   await expect(submit).toBeEnabled();
