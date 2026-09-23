@@ -107,7 +107,7 @@
         "DESCRIPTION": "Prüfen Sie die Zusammenfassung Ihrer Bestellung und den Status Ihrer 3D-Druck-Anfrage."
       },
       "ADMIN": {
-    "EMAIL_STATUS_UNKNOWN": "Versandstatus unklar",
+        "EMAIL_STATUS_UNKNOWN": "Versandstatus unklar",
         "TITLE": "Admin | 3D fab",
         "DESCRIPTION": "Geschützter Administrationsbereich von 3D fab."
       }

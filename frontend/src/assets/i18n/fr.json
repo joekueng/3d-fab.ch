@@ -76,7 +76,7 @@
         "DESCRIPTION": "Consultez le récapitulatif de votre commande et l'état de votre demande d'impression 3D."
       },
       "ADMIN": {
-    "EMAIL_STATUS_UNKNOWN": "Envoi incertain",
+        "EMAIL_STATUS_UNKNOWN": "Envoi incertain",
         "TITLE": "Admin | 3D fab",
         "DESCRIPTION": "Espace d'administration restreint de 3D fab."
       }
