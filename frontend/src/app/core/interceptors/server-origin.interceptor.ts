@@ -121,10 +121,12 @@ function resolveApiOrigin(
   relativeUrl: string,
 ): string | null {
   const internalOrigin = readInternalApiOrigin();
+  const e2eRouteAllApi = (globalThis as { process?: { env?: Record<string, string | undefined> } })
+    .process?.env?.['SSR_ROUTE_ALL_API_INTERNALLY'] === 'true';
   if (
     internalOrigin &&
-    isPublicShopPageRequest(request) &&
-    isPublicShopDiscoveryApi(relativeUrl)
+    ((e2eRouteAllApi && /^\/api\//i.test(normalizeRelativePath(relativeUrl))) ||
+      (isPublicShopPageRequest(request) && isPublicShopDiscoveryApi(relativeUrl)))
   ) {
     return internalOrigin;
   }

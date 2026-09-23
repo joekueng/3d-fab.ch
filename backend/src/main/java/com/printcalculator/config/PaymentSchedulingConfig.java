@@ -7,14 +7,14 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 @Configuration
 public class PaymentSchedulingConfig {
     @Bean
-    public ThreadPoolTaskScheduler paymentEmailScheduler() {
+    public ThreadPoolTaskScheduler paymentEmailTaskScheduler() {
         var scheduler = new ThreadPoolTaskScheduler();
         scheduler.setPoolSize(1);
         scheduler.setThreadNamePrefix("payment-email-");
         return scheduler;
     }
     @Bean
-    public ThreadPoolTaskScheduler twintMailboxScheduler() {
+    public ThreadPoolTaskScheduler twintMailboxTaskScheduler() {
         var scheduler = new ThreadPoolTaskScheduler();
         scheduler.setPoolSize(1);
         scheduler.setThreadNamePrefix("twint-mailbox-");

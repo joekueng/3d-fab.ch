@@ -7,10 +7,10 @@
   <form [formGroup]="form" (ngSubmit)="onSubmit()">
     <!-- Request Type -->
     <div class="ui-form-group">
-      <label class="ui-form-label"
+      <label class="ui-form-label" for="contact-request-type"
         >{{ "CONTACT.REQ_TYPE_LABEL" | translate }} *</label
       >
-      <select formControlName="requestType" class="ui-form-control">
+      <select id="contact-request-type" formControlName="requestType" class="ui-form-control">
         <option *ngFor="let type of requestTypes" [value]="type.value">
           {{ type.label | translate }}
         </option>
@@ -67,10 +67,11 @@
     </div>
 
     <div class="ui-form-group">
-      <label class="ui-form-label">{{
+      <label class="ui-form-label" for="contact-message">{{
         "CONTACT.LABEL_MESSAGE" | translate
       }}</label>
       <textarea
+        id="contact-message"
         formControlName="message"
         class="ui-form-control"
         rows="4"

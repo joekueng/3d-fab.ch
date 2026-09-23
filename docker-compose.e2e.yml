@@ -1,0 +1,117 @@
+# Run only through scripts/e2e/run.sh. Compose project and exposed port are unique per run.
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: e2e
+      POSTGRES_PASSWORD: e2e-only
+      POSTGRES_DB: printcalc_e2e
+    volumes:
+      - db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U e2e -d printcalc_e2e"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  clamav:
+    image: clamav/clamav:stable
+    platform: linux/amd64
+    volumes:
+      - clamav-db:/var/lib/clamav
+
+  mail:
+    image: axllent/mailpit:latest
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: "0"
+    ports:
+      - "127.0.0.1:${E2E_MAIL_PORT}:8025"
+
+  backend:
+    platform: linux/amd64
+    build:
+      context: ./backend
+      platforms:
+        - linux/amd64
+      args:
+        ORCA_VERSION: "2.2.0"
+        ORCA_DOWNLOAD_URL: https://github.com/OrcaSlicer/OrcaSlicer/releases/download/v2.2.0/OrcaSlicer_Linux_V2.2.0.AppImage
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/printcalc_e2e
+      DB_USERNAME: e2e
+      DB_PASSWORD: e2e-only
+      ADMIN_PASSWORD: ${E2E_ADMIN_PASSWORD:?Set E2E_ADMIN_PASSWORD through the run harness}
+      ADMIN_SESSION_SECRET: ${E2E_SESSION_SECRET:?Set E2E_SESSION_SECRET through the run harness}
+      CLAMAV_ENABLED: "true"
+      CLAMAV_HOST: clamav
+      CLAMAV_PORT: "3310"
+      MAIL_HOST: mail
+      MAIL_PORT: "1025"
+      MAIL_SMTP_AUTH: "false"
+      MAIL_SMTP_STARTTLS: "false"
+      MAIL_USERNAME: noreply@example.test
+      APP_MAIL_FROM: noreply@example.test
+      APP_MAIL_ADMIN_ADDRESS: admin@example.test
+      APP_MAIL_CONTACT_REQUEST_ADMIN_ADDRESS: contact@example.test
+      APP_MAIL_LOGO_URL: http://proxy/assets/images/SVG/logo-giallo-spesso.svg
+      APP_FRONTEND_BASE_URL: http://127.0.0.1:${E2E_PORT}
+      APP_CORS_ADDITIONAL_ALLOWED_ORIGINS: http://127.0.0.1:${E2E_PORT}
+      TWINT_INBOX_ENABLED: "false"
+      TWINT_PAYMENT_URL: https://example.test/twint-test-only
+      LINKEDIN_SYNC_ENABLED: "false"
+      OPENAI_API_KEY: ""
+      MEDIA_STORAGE_ROOT: /app/storage_media
+      SHOP_STORAGE_ROOT: /app/storage_shop
+      PROFILES_DIR: /app/profiles
+    volumes:
+      - quotes:/app/storage_quotes
+      - orders:/app/storage_orders
+      - requests:/app/storage_requests
+      - media:/app/storage_media
+      - shop:/app/storage_shop
+    depends_on:
+      db:
+        condition: service_healthy
+      clamav:
+        condition: service_healthy
+      mail:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:8000/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 36
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        BUILD_CONFIGURATION: production,e2e
+    environment:
+      PORT: "80"
+      SSR_INTERNAL_API_ORIGIN: http://backend:8000
+      SSR_ROUTE_ALL_API_INTERNALLY: "true"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  proxy:
+    image: nginx:1.27-alpine
+    ports:
+      - "127.0.0.1:${E2E_PORT}:80"
+    volumes:
+      - ./scripts/e2e/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - media:/srv/media:ro
+      - shop:/srv/shop:ro
+    depends_on:
+      frontend:
+        condition: service_started
+
+volumes:
+  db:
+  clamav-db:
+  quotes:
+  orders:
+  requests:
+  media:
+  shop:

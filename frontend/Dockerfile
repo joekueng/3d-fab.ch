@@ -4,7 +4,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --legacy-peer-deps
 COPY . .
-RUN npm run build -- --configuration=production
+ARG BUILD_CONFIGURATION=production
+RUN npm run build -- --configuration="${BUILD_CONFIGURATION}"
 
 ENV NODE_ENV=production
 ENV PORT=80

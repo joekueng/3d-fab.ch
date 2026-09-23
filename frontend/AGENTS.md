@@ -63,6 +63,11 @@ npm run check:ui-reuse
 npm test
 ```
 
+The Playwright smoke suite, disposable local stack, commands, and CI target
+restrictions are documented in [README.md](README.md#dev-end-to-end-checks).
+Read [e2e/README.md](e2e/README.md) before adding browser tests. Gitea's
+post-deploy smoke job targets only `https://dev.3d-fab.ch`.
+
 When touching UI or admin pages, also inspect for prohibited patterns:
 
 ```bash
