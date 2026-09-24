@@ -45,6 +45,7 @@ public class OrderDto {
     private Integer printInfillPercent;
     private Boolean printSupportsEnabled;
     private List<AdminEmailLogDto> emailLogs;
+    private boolean trustpilotInvitationUnavailable;
     private List<OrderItemDto> items;
 
     // Getters and Setters
@@ -155,6 +156,9 @@ public class OrderDto {
 
     public List<AdminEmailLogDto> getEmailLogs() { return emailLogs; }
     public void setEmailLogs(List<AdminEmailLogDto> emailLogs) { this.emailLogs = emailLogs; }
+
+    public boolean isTrustpilotInvitationUnavailable() { return trustpilotInvitationUnavailable; }
+    public void setTrustpilotInvitationUnavailable(boolean value) { this.trustpilotInvitationUnavailable = value; }
 
     public List<OrderItemDto> getItems() { return items; }
     public void setItems(List<OrderItemDto> items) { this.items = items; }

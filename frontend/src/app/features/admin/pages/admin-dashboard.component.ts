@@ -71,6 +71,7 @@ export class AdminDashboardComponent implements OnInit {
   statisticsLoading = false;
   detailLoading = false;
   confirmingPayment = false;
+  sendingTrustpilotInvitation = false;
   updatingStatus = false;
   uploadingCadFiles = false;
   errorMessage: string | null = null;
@@ -406,6 +407,31 @@ export class AdminDashboardComponent implements OnInit {
           this.errorMessage = 'Reinvio email non riuscito.';
         },
       });
+  }
+
+  sendTrustpilotInvitation(): void {
+    if (!this.selectedOrder || this.sendingTrustpilotInvitation) return;
+    this.errorMessage = null;
+    this.sendingTrustpilotInvitation = true;
+    this.adminOrdersService.sendTrustpilotInvitation(this.selectedOrder.id).subscribe({
+      next: (updatedOrder) => {
+        this.sendingTrustpilotInvitation = false;
+        this.applyOrderUpdate(updatedOrder);
+      },
+      error: () => {
+        this.sendingTrustpilotInvitation = false;
+        this.errorMessage = this.translate.instant('ADMIN_ORDERS.TRUSTPILOT_SEND_ERROR');
+      },
+    });
+  }
+
+  canSendTrustpilotInvitation(order: AdminOrder): boolean {
+    return this.supportsTrustpilotInvitation(order) &&
+      !order.trustpilotInvitationUnavailable;
+  }
+
+  supportsTrustpilotInvitation(order: AdminOrder): boolean {
+    return ['SHIPPED', 'COMPLETED'].includes(order.status.toUpperCase());
   }
 
   downloadItemFile(itemId: string, filename: string): void {

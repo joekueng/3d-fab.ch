@@ -72,6 +72,8 @@ class AdminOrderControllerServiceTest {
     private EmailAuditService emailAuditService;
     @Mock
     private OrderEmailListener orderEmailListener;
+    @Mock
+    private TrustpilotInvitationService trustpilotInvitationService;
 
     @InjectMocks
     private AdminOrderControllerService service;

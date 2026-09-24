@@ -26,6 +26,21 @@ contact-request creation, and rolled-back requests must not trigger notification
 
 Use the [repository contribution workflow](../README.md#contributing-and-ai-agents-preserve-project-conventions) for every new implementation, including areas not listed here.
 
+### Trustpilot invitation trigger
+
+The admin order detail offers a manual Trustpilot AFS trigger for `SHIPPED` and
+`COMPLETED` orders. It sends a separate email only to
+`TRUSTPILOT_INVITATION_EMAIL` (defaulting to the account's supplied AFS address)
+with Trustpilot's `application/json+trustpilot` data snippet; the customer is not
+sent this trigger email. Its message contains only the required structured data
+and uses no shared branded layout, so Trustpilot receives a minimal trigger.
+UUID order references are shortened to their first eight characters.
+Successful and SMTP-ambiguous attempts block another
+invitation to the same customer email across orders while the audit record is
+retained. Failed/skipped attempts can be retried. The duplicate guard follows
+the configured email audit retention period (`app.mail.audit.retention-days`,
+default 365 days).
+
 ## Verification
 
 From this directory, run the narrowest relevant tests first:

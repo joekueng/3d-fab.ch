@@ -76,6 +76,12 @@ public class AdminOrderController {
         return ResponseEntity.ok(adminOrderControllerService.resendEmail(orderId, emailLogId));
     }
 
+    @PostMapping("/{orderId}/trustpilot-invitation")
+    @Transactional
+    public ResponseEntity<OrderDto> sendTrustpilotInvitation(@PathVariable UUID orderId) {
+        return ResponseEntity.ok(adminOrderControllerService.sendTrustpilotInvitation(orderId));
+    }
+
     @GetMapping("/{orderId}/items/{orderItemId}/file")
     public ResponseEntity<Resource> downloadOrderItemFile(
             @PathVariable UUID orderId,

@@ -62,6 +62,7 @@ export interface AdminOrder {
   orderNumber: string;
   sourceType?: string | null;
   status: string;
+  trustpilotInvitationUnavailable?: boolean;
   paymentStatus?: string | null;
   paymentMethod?: string | null;
   billingCustomerType?: string | null;
@@ -159,6 +160,14 @@ export class AdminOrdersService {
   resendEmail(orderId: string, emailLogId: string): Observable<AdminOrder> {
     return this.http.post<AdminOrder>(
       `${this.baseUrl}/${orderId}/email-logs/${emailLogId}/resend`,
+      {},
+      { withCredentials: true },
+    );
+  }
+
+  sendTrustpilotInvitation(orderId: string): Observable<AdminOrder> {
+    return this.http.post<AdminOrder>(
+      `${this.baseUrl}/${orderId}/trustpilot-invitation`,
       {},
       { withCredentials: true },
     );

@@ -10,6 +10,7 @@ import com.printcalculator.repository.OrderRepository;
 import com.printcalculator.repository.PaymentRepository;
 import com.printcalculator.repository.QuoteLineItemRepository;
 import com.printcalculator.service.order.OrderCadFileService;
+import com.printcalculator.service.order.TrustpilotInvitationService;
 import com.printcalculator.service.order.AdminOrderControllerService;
 import com.printcalculator.service.email.EmailAuditService;
 import com.printcalculator.service.payment.InvoicePdfRenderingService;
@@ -67,6 +68,8 @@ class AdminOrderControllerStatusValidationTest {
     private EmailAuditService emailAuditService;
     @Mock
     private OrderEmailListener orderEmailListener;
+    @Mock
+    private TrustpilotInvitationService trustpilotInvitationService;
 
     private AdminOrderController controller;
 
@@ -85,7 +88,8 @@ class AdminOrderControllerStatusValidationTest {
                 eventPublisher,
                 orderCadFileService,
                 emailAuditService,
-                orderEmailListener
+                orderEmailListener,
+                trustpilotInvitationService
         );
         controller = new AdminOrderController(adminOrderControllerService);
     }

@@ -12,5 +12,8 @@ public interface EmailLogRepository extends JpaRepository<EmailLog, UUID> {
 
     List<EmailLog> findByContactRequest_IdOrderByAttemptedAtDesc(UUID contactRequestId);
 
+    boolean existsByEventTypeAndRecipientIgnoreCaseAndStatusIn(
+            String eventType, String recipient, List<String> statuses);
+
     long deleteByAttemptedAtBefore(OffsetDateTime cutoff);
 }

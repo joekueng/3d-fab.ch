@@ -77,6 +77,7 @@ public class AdminOrderControllerService {
     private final OrderCadFileService orderCadFileService;
     private final EmailAuditService emailAuditService;
     private final OrderEmailListener orderEmailListener;
+    private final TrustpilotInvitationService trustpilotInvitationService;
 
     public AdminOrderControllerService(OrderRepository orderRepo,
                                        OrderItemRepository orderItemRepo,
@@ -90,7 +91,8 @@ public class AdminOrderControllerService {
                                        ApplicationEventPublisher eventPublisher,
                                        OrderCadFileService orderCadFileService,
                                        EmailAuditService emailAuditService,
-                                       OrderEmailListener orderEmailListener) {
+                                       OrderEmailListener orderEmailListener,
+                                       TrustpilotInvitationService trustpilotInvitationService) {
         this.orderRepo = orderRepo;
         this.orderItemRepo = orderItemRepo;
         this.paymentRepo = paymentRepo;
@@ -104,6 +106,7 @@ public class AdminOrderControllerService {
         this.orderCadFileService = orderCadFileService;
         this.emailAuditService = emailAuditService;
         this.orderEmailListener = orderEmailListener;
+        this.trustpilotInvitationService = trustpilotInvitationService;
     }
 
     public List<OrderDto> listOrders() {
@@ -188,9 +191,20 @@ public class AdminOrderControllerService {
         if (emailLog.getOrder() == null || !emailLog.getOrder().getId().equals(orderId)) {
             throw new ResponseStatusException(NOT_FOUND, "Email log not found for order");
         }
+        if (EmailAuditService.EVENT_TRUSTPILOT_INVITATION.equals(emailLog.getEventType())) {
+            throw new ResponseStatusException(BAD_REQUEST, "Trustpilot invitations cannot be resent from email history");
+        }
 
         orderEmailListener.resendOrderEmail(order, emailLog);
         return toOrderDto(getOrderOrThrow(orderId), true);
+    }
+
+    @Transactional
+    public OrderDto sendTrustpilotInvitation(UUID orderId) {
+        Order order = orderRepo.findLockedById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Order not found"));
+        trustpilotInvitationService.sendInvitation(order);
+        return toOrderDto(order, true);
     }
 
     public ResponseEntity<Resource> downloadOrderItemFile(UUID orderId, UUID orderItemId) {
@@ -371,6 +385,8 @@ public class AdminOrderControllerService {
         dto.setItems(itemDtos);
         if (includeEmailLogs) {
             dto.setEmailLogs(emailAuditService.getOrderEmailLogDtos(order.getId()));
+            dto.setTrustpilotInvitationUnavailable(
+                    trustpilotInvitationService.wasSentToCustomer(order.getCustomerEmail()));
         } else {
             dto.setEmailLogs(List.of());
         }

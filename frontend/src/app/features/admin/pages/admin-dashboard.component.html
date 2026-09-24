@@ -269,6 +269,27 @@
             {{ updatingStatus ? "Salvataggio..." : "Aggiorna stato" }}
           </app-button>
         </div>
+        <div
+          class="status-editor status-editor--trustpilot"
+          *ngIf="supportsTrustpilotInvitation(selectedOrder)"
+        >
+          <app-button
+            type="button"
+            variant="ghost"
+            (click)="sendTrustpilotInvitation()"
+            [disabled]="
+              sendingTrustpilotInvitation || !canSendTrustpilotInvitation(selectedOrder)
+            "
+          >
+            {{
+              sendingTrustpilotInvitation
+                ? ("ADMIN_ORDERS.TRUSTPILOT_SENDING" | translate)
+                : selectedOrder.trustpilotInvitationUnavailable
+                  ? ("ADMIN_ORDERS.TRUSTPILOT_ALREADY_SENT" | translate)
+                  : ("ADMIN_ORDERS.SEND_TRUSTPILOT_INVITATION" | translate)
+            }}
+          </app-button>
+        </div>
       </section>
 
       <details class="order-disclosure ui-subpanel" open>
@@ -661,6 +682,7 @@
                 size="sm"
                 (click)="resendEmail(emailLog)"
                 [disabled]="isResendingEmailLog(emailLog.id)"
+                *ngIf="emailLog.eventType !== 'TRUSTPILOT_INVITATION'"
               >
                 {{
                   isResendingEmailLog(emailLog.id) ? "Reinvio..." : "Reinvia"
