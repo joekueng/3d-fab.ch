@@ -24,9 +24,9 @@ public class QrBillService {
         bill.setAccount("CH7409000000154821581"); // TODO: Configurable IBAN
         bill.setCreditor(createAddress(
                 "Joe Küng",
-                "Via G. Pioda 29a",
-                "6710",
-                "Biasca",
+                "Via Camischolas Sura 23",
+                "7187",
+                "Camischolas",
                 "CH"
         ));
 
