@@ -278,7 +278,8 @@
             variant="ghost"
             (click)="sendTrustpilotInvitation()"
             [disabled]="
-              sendingTrustpilotInvitation || !canSendTrustpilotInvitation(selectedOrder)
+              sendingTrustpilotInvitation ||
+              !canSendTrustpilotInvitation(selectedOrder)
             "
           >
             {{

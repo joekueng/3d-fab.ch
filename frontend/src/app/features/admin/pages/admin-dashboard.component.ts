@@ -413,21 +413,27 @@ export class AdminDashboardComponent implements OnInit {
     if (!this.selectedOrder || this.sendingTrustpilotInvitation) return;
     this.errorMessage = null;
     this.sendingTrustpilotInvitation = true;
-    this.adminOrdersService.sendTrustpilotInvitation(this.selectedOrder.id).subscribe({
-      next: (updatedOrder) => {
-        this.sendingTrustpilotInvitation = false;
-        this.applyOrderUpdate(updatedOrder);
-      },
-      error: () => {
-        this.sendingTrustpilotInvitation = false;
-        this.errorMessage = this.translate.instant('ADMIN_ORDERS.TRUSTPILOT_SEND_ERROR');
-      },
-    });
+    this.adminOrdersService
+      .sendTrustpilotInvitation(this.selectedOrder.id)
+      .subscribe({
+        next: (updatedOrder) => {
+          this.sendingTrustpilotInvitation = false;
+          this.applyOrderUpdate(updatedOrder);
+        },
+        error: () => {
+          this.sendingTrustpilotInvitation = false;
+          this.errorMessage = this.translate.instant(
+            'ADMIN_ORDERS.TRUSTPILOT_SEND_ERROR',
+          );
+        },
+      });
   }
 
   canSendTrustpilotInvitation(order: AdminOrder): boolean {
-    return this.supportsTrustpilotInvitation(order) &&
-      !order.trustpilotInvitationUnavailable;
+    return (
+      this.supportsTrustpilotInvitation(order) &&
+      !order.trustpilotInvitationUnavailable
+    );
   }
 
   supportsTrustpilotInvitation(order: AdminOrder): boolean {
