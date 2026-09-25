@@ -1,56 +1,67 @@
 package com.printcalculator.service.payment.twint;
 
-import com.printcalculator.event.OrderCreatedEvent;
-import com.printcalculator.event.PaymentReportedEvent;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
+import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @Slf4j
 public class TwintMailboxScheduler {
     private final TwintMailboxReader reader;
     private final TwintProperties config;
-    private final TaskScheduler scheduler;
-    private final AtomicBoolean queued = new AtomicBoolean();
+    private final Clock clock;
     private volatile boolean initialized;
+    private Instant lastAttemptCompleted;
+    private Boolean activeMode;
 
-    public TwintMailboxScheduler(TwintMailboxReader reader, TwintProperties config,
-            @Qualifier("twintMailboxTaskScheduler") TaskScheduler scheduler) {
+    @Autowired
+    public TwintMailboxScheduler(TwintMailboxReader reader, TwintProperties config) {
+        this(reader, config, Clock.systemUTC());
+    }
+
+    TwintMailboxScheduler(TwintMailboxReader reader, TwintProperties config, Clock clock) {
         this.reader = reader;
         this.config = config;
-        this.scheduler = scheduler;
+        this.clock = clock;
     }
 
     @EventListener(ApplicationReadyEvent.class)
     public void initialize() {
         reader.initialize();
         initialized = true;
-        tick();
     }
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, classes = {OrderCreatedEvent.class, PaymentReportedEvent.class})
-    public void wakeUp() {
-        if (config.isEnabled() && queued.compareAndSet(false, true)) {
-            log.info("TWINT inbox check scheduled after order creation or first payment report");
-            scheduler.schedule(() -> { queued.set(false); tick(); }, Instant.now());
-        }
-    }
-
+    // Only this dedicated, single-thread scheduler invokes poll. Order events never
+    // enqueue extra reads. The lightweight database check also detects mode changes.
     @Scheduled(fixedDelayString = "${app.twint.inbox.poll-ms:5000}", scheduler = "twintMailboxTaskScheduler")
-    public void tick() {
+    public synchronized void tick() {
         if (!initialized || !config.isEnabled()) return;
-        try { reader.poll(); }
-        catch (Exception e) {
-            log.warn("TWINT mailbox check interrupted ({}); cursor will resume on next active check", e.getClass().getSimpleName());
+        try {
+            boolean active = reader.hasActivePaymentWindow();
+            Duration interval = active ? Duration.ofMillis(config.getPollMs()) : config.getPeriodicInterval();
+            if (activeMode == null || activeMode != active) {
+                log.info("TWINT inbox mode={}; interval={}", active ? "ACTIVE" : "PERIODIC", interval);
+                activeMode = active;
+            }
+            if (lastAttemptCompleted != null && clock.instant().isBefore(lastAttemptCompleted.plus(interval))) return;
+            log.info("TWINT inbox check started: mode={}", active ? "ACTIVE" : "PERIODIC");
+            try {
+                reader.poll();
+                log.info("TWINT inbox check completed");
+            } finally {
+                // Failed reads respect the same interval; their database transaction
+                // rolls back, so the next attempt resumes from the committed cursor.
+                lastAttemptCompleted = clock.instant();
+            }
+        } catch (Exception e) {
+            log.warn("TWINT mailbox check interrupted ({}); retry at the current mode interval",
+                    e.getClass().getSimpleName());
         }
     }
 }

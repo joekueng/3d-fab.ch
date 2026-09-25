@@ -18,13 +18,17 @@ flowchart TB
     subgraph OrderLifecycle[Lifecycle ordine e pagamento]
         O1[PENDING_PAYMENT<br/>payment = PENDING]:::order
         O2[PENDING_PAYMENT<br/>payment = REPORTED]:::order
+        Paid[PAID<br/>payment = RECEIVED]:::order
         O3[IN_PRODUCTION]:::order
         O4[SHIPPED]:::order
         O5[COMPLETED]:::order
 
         O1 -->|cliente segnala pagamento| O2
-        O1 -->|admin puo avviare lavorazione| O3
-        O2 -->|backoffice prende in carico| O3
+        O1 -->|conferma admin o ricevuta TWINT verificata| Paid
+        O2 -->|conferma admin o ricevuta TWINT verificata| Paid
+        Paid -->|admin avvia lavorazione| O3
+        O1 -.->|cambio manuale stato| O3
+        O2 -.->|cambio manuale stato| O3
         O3 -->|spedizione| O4
         O4 -->|chiusura| O5
     end
@@ -32,3 +36,8 @@ flowchart TB
     Q3 -->|createOrderFromQuote| O1
     Note1[Email e documenti nascono alla creazione ordine.<br/>Email di spedizione parte quando lo stato passa a SHIPPED.]:::note
     O1 -.-> Note1
+
+    PaymentMail[Conferma pagamento e fattura<br/>outbox transazionale]:::note
+    Paid -.-> PaymentMail
+    Twint[Coordinatore TWINT unico<br/>5 secondi con finestre attive di 10 minuti<br/>3 ore altrimenti]:::note
+    Twint -.->|ricevuta verificata e ordine compatibile| Paid

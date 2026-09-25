@@ -31,8 +31,10 @@ class TwintMailboxReaderTest {
         cursor = new TwintMailboxCursor(); cursor.setId(config.mailboxKey()); cursor.setInitialSince(config.getInitialSince());
         cursor.setUidValidity(7); cursor.setLastUid(100);
     }
-    @Test void inactiveWindowNeverOpensMailbox() throws Exception {
-        reader.poll(); verifyNoInteractions(cursors, receipts, auth);
+    @Test void windowLookupDoesNotOpenMailbox() {
+        assertFalse(reader.hasActivePaymentWindow());
+        verify(orders).hasActivePaymentWindow(any());
+        verifyNoInteractions(cursors, receipts, auth);
     }
     @Test void disabledAutomationNeverQueriesOrdersOrMailbox() throws Exception {
         config.setEnabled(false); reader.poll(); verifyNoInteractions(orders, cursors, receipts, auth);
@@ -46,8 +48,7 @@ class TwintMailboxReaderTest {
         when(cursors.existsById(config.mailboxKey())).thenReturn(true);
         reader.initialize(); verify(cursors, never()).saveAndFlush(any());
     }
-    @Test void readsAlreadyOpenedMailAndAdvancesCursorWithoutDeleting() throws Exception {
-        when(orders.hasActivePaymentWindow(any())).thenReturn(true);
+    @Test void periodicReadWithoutActiveOrdersAdvancesCursorWithoutDeleting() throws Exception {
         when(cursors.findLockedById(config.mailboxKey())).thenReturn(Optional.of(cursor));
         Session session = mock(Session.class); Store store = mock(Store.class);
         Folder folder = mock(Folder.class, withSettings().extraInterfaces(UIDFolder.class));
@@ -69,6 +70,6 @@ class TwintMailboxReaderTest {
         assertEquals("AUTHENTICITY_REVIEW", receipt.getValue().getOutcome());
         verify(folder).open(Folder.READ_ONLY); verify(folder).close(false);
         verify(message, never()).isSet(any());
-        verifyNoInteractions(reconciliation);
+        verifyNoInteractions(reconciliation, orders);
     }
 }

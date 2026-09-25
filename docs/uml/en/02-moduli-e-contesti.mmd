@@ -25,6 +25,7 @@ flowchart TB
         QuoteCore[QuoteSessionItemService<br/>QuoteSessionTotalsService<br/>QuoteCalculator]:::backend
         ShopCore[PublicShopCatalogService<br/>ShopCartService]:::backend
         OrderCore[OrderService<br/>PaymentService]:::backend
+        TwintCore[Dedicated TWINT component<br/>TwintMailboxScheduler / Reader<br/>Authenticator / ReconciliationService]:::backend
         ContentCore[AdminMediaControllerService<br/>PublicMediaQueryService]:::backend
         AnalyticsCore[PublicQrControllerService<br/>QrScanGeoEnrichmentService]:::backend
     end
@@ -35,6 +36,7 @@ flowchart TB
         StorageInfra[StorageService<br/>MediaStorageService<br/>ShopStorageService]:::infra
         EmailInfra[Event listeners<br/>EmailNotificationService]:::infra
         RepoInfra[(Repositories + PostgreSQL)]:::data
+        TwintMail[IMAPS / TWINT notifications]:::infra
     end
 
     CalcFE --> QuoteAPI
@@ -69,3 +71,7 @@ flowchart TB
     OrderCore --> RepoInfra
     ContentCore --> RepoInfra
     Security --> RepoInfra
+
+    TwintCore --> TwintMail
+    TwintCore --> RepoInfra
+    TwintCore --> OrderCore

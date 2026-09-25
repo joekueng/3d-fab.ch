@@ -16,7 +16,6 @@ import java.security.MessageDigest;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +28,6 @@ public class TwintMailboxReader {
     private final TwintNotificationAuthenticator authenticator;
     private final TwintNotificationParser parser;
     private final TwintReconciliationService reconciliation;
-    private final AtomicReference<Boolean> lastActiveWindow = new AtomicReference<>();
     private final AtomicBoolean connectionLogged = new AtomicBoolean();
 
     @Transactional
@@ -40,8 +38,9 @@ public class TwintMailboxReader {
         }
         if (config.getInitialSince() == null || config.getPassword() == null || config.getPassword().isBlank()
                 || config.getActiveWindow().isNegative() || config.getActiveWindow().isZero()
+                || config.getPollMs() <= 0 || config.getPeriodicInterval().isNegative() || config.getPeriodicInterval().isZero()
                 || config.getBatchSize() < 1 || config.getBatchSize() > 500) {
-            throw new IllegalStateException("Configure TWINT IMAP credentials, initial-since, positive window and batch-size 1..500");
+            throw new IllegalStateException("Configure TWINT IMAP credentials, initial-since, positive window/intervals and batch-size 1..500");
         }
         if (!cursors.existsById(config.mailboxKey())) {
             var cursor = new TwintMailboxCursor();
@@ -58,10 +57,7 @@ public class TwintMailboxReader {
     @Transactional(rollbackFor = Exception.class)
     public void poll() throws Exception {
         if (!config.isEnabled()) return;
-        if (!activePaymentWindow()) return;
         TwintMailboxCursor cursor = cursors.findLockedById(config.mailboxKey()).orElseThrow();
-        // Recheck after acquiring the shared cursor lock, before opening a connection.
-        if (!activePaymentWindow()) return;
         Properties properties = new Properties();
         properties.setProperty("mail.imaps.ssl.checkserveridentity", "true");
         properties.setProperty("mail.imaps.connectiontimeout", "5000");
@@ -164,15 +160,9 @@ public class TwintMailboxReader {
         }
     }
 
-    private boolean activePaymentWindow() {
-        boolean active = orders.hasActivePaymentWindow(OffsetDateTime.now().minus(config.getActiveWindow()));
-        Boolean previous = lastActiveWindow.getAndSet(active);
-        if (previous == null || previous != active) {
-            if (active) log.info("TWINT inbox active payment window: checking mailbox for receipts");
-            else log.info("TWINT inbox idle: no pending payment in the last {}; IMAP connection skipped",
-                    config.getActiveWindow());
-        }
-        return active;
+    @Transactional(readOnly = true)
+    public boolean hasActivePaymentWindow() {
+        return orders.hasActivePaymentWindow(OffsetDateTime.now().minus(config.getActiveWindow()));
     }
 
     static String text(Part part, int depth) throws Exception {

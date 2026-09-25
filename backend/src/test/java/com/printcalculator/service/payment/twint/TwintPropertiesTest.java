@@ -18,10 +18,13 @@ class TwintPropertiesTest {
             assertNull(context.getBean(TwintProperties.class).getInitialSince());
         });
         runner.withPropertyValues("app.twint.inbox.initial-since=2026-09-23T10:00:00+02:00",
-                "app.twint.inbox.active-window=PT10M").run(context -> {
+                "app.twint.inbox.active-window=PT10M", "app.twint.inbox.periodic-interval=PT2H",
+                "app.twint.inbox.poll-ms=7000").run(context -> {
             assertNull(context.getStartupFailure());
             assertEquals(OffsetDateTime.parse("2026-09-23T10:00:00+02:00"), context.getBean(TwintProperties.class).getInitialSince());
             assertEquals(Duration.ofMinutes(10), context.getBean(TwintProperties.class).getActiveWindow());
+            assertEquals(Duration.ofHours(2), context.getBean(TwintProperties.class).getPeriodicInterval());
+            assertEquals(7000, context.getBean(TwintProperties.class).getPollMs());
         });
     }
 }

@@ -75,6 +75,7 @@ TWINT_INBOX_FOLDER=INBOX
 TWINT_INBOX_ORIGINAL_RECIPIENT=joekueng05@gmail.com
 TWINT_INBOX_INITIAL_SINCE=<explicit ISO-8601 timestamp including offset>
 TWINT_INBOX_POLL_MS=5000
+TWINT_INBOX_PERIODIC_INTERVAL=PT3H
 TWINT_INBOX_ACTIVE_WINDOW=PT10M
 PAYMENT_REPORTED_EMAIL_DELAY=PT5M
 ```
@@ -86,21 +87,40 @@ Infomaniak* in a test environment before enabling it for customer orders.
 The Unraid deploy script merges `common.env` before the environment-specific `.env`;
 check the resulting container environment when diagnosing a running deployment.
 
-No IMAP connection is opened unless an unpaid `PENDING_PAYMENT` order was created
-or first reported within the active window. Creation/report events wake the reader
-immediately; subsequent checks are every five seconds. Repeated reports and page
-refreshes do not extend the window. When all qualifying orders are paid/cancelled,
-or the last window expires, acquisition stops. Late messages wait for the next
-new order/first report to reactivate the reader. This also applies after a server
-restart: windows derive from persisted creation/report timestamps.
+`TwintMailboxScheduler` is the sole polling coordinator on the dedicated single-thread
+`twintMailboxTaskScheduler`. Its lightweight database check runs every
+`TWINT_INBOX_POLL_MS` (default 5000 ms). It selects one of two mailbox frequencies:
 
-At INFO level the reader logs whether it is disabled or idle, when an order wakes
-it, the first successful IMAP connection, UID scan counts, and each TWINT candidate's
-review/confirmation outcome. `otherSender` means the message's visible From address
-is not the original TWINT sender; `olderThanCutoff` means it predates the saved
-initial timestamp. No message body, subject, recipient, transaction ID or password
-is logged. Per-poll connection and empty-inbox details are available at DEBUG level
-for `com.printcalculator.service.payment.twint` when needed.
+- **ACTIVE:** read every `TWINT_INBOX_POLL_MS` while at least one unpaid
+  `PENDING_PAYMENT` order was created or first reported within
+  `TWINT_INBOX_ACTIVE_WINDOW` (default `PT10M`).
+- **PERIODIC:** otherwise read every `TWINT_INBOX_PERIODIC_INTERVAL` (default
+  `PT3H`), even with no unpaid orders, to acquire delayed notifications.
+
+Intervals run from completion of the last attempt, including failures. A slow read
+never overlaps another read. New orders are noticed on the next database check;
+they do not create tasks, reset the last-attempt time or accelerate the shared rate.
+Payment, cancellation or expiry of the last window returns the reader to PERIODIC.
+Repeated reports and page refreshes do not extend a window. Due periodic reads may
+start up to one database-check interval later. Existing bounded UID batches remain
+in effect: a backlog is processed across successive reads at the selected frequency.
+
+On restart, the first scheduled check reads the mailbox once, then resumes the
+appropriate frequency. Windows and the mailbox cursor come from persisted state;
+the scheduling deadline is local to the process. Each backend instance has its own
+coordinator: configure the enable flag per environment if `common.env` is shared.
+The cursor lock continues to serialize readers sharing the same database.
+
+INFO logs show disabled status, ACTIVE/PERIODIC transitions, check start/completion,
+the first successful IMAP connection, UID scan counts and each candidate's outcome.
+`otherSender` means the visible From does not match the original TWINT sender;
+`olderThanCutoff` counts messages with a missing or earlier receive date than the
+saved initial timestamp. No body, subject, recipient, transaction ID or password is
+logged. Connection and empty-inbox details are available at DEBUG level for
+`com.printcalculator.service.payment.twint`.
+
+The coordinator flow is documented in the [Italian diagram](../docs/uml/10-polling-twint.mmd)
+and [English diagram](../docs/uml/en/10-polling-twint.mmd).
 
 Acquisition uses TLS with hostname verification and a read-only mailbox. It uses
 UIDVALIDITY/UID, never unread flags, and never deletes mail. The initial timestamp
@@ -108,7 +128,7 @@ is required and stored per mailbox; changing the environment variable later does
 not rewind it. A UIDVALIDITY reset replays from that cutoff, with transaction
 claims protecting against duplicate payment confirmation. All candidate receipt
 outcomes and the cursor commit together. Network/DNS interruptions roll back the
-batch and resume during the next active check.
+batch and resume at the next check in the current mode.
 
 ### Authentication, parser and reconciliation
 
