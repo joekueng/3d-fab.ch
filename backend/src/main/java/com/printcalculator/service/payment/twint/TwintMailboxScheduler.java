@@ -40,6 +40,7 @@ public class TwintMailboxScheduler {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, classes = {OrderCreatedEvent.class, PaymentReportedEvent.class})
     public void wakeUp() {
         if (config.isEnabled() && queued.compareAndSet(false, true)) {
+            log.info("TWINT inbox check scheduled after order creation or first payment report");
             scheduler.schedule(() -> { queued.set(false); tick(); }, Instant.now());
         }
     }

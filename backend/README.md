@@ -83,6 +83,8 @@ The enabled setting defaults to false. There is no dry-run mode. With automation
 enabled, an authenticated matching payment really confirms the order and queues
 its invoice. Validate the Gmail filter and an original message *received at
 Infomaniak* in a test environment before enabling it for customer orders.
+The Unraid deploy script merges `common.env` before the environment-specific `.env`;
+check the resulting container environment when diagnosing a running deployment.
 
 No IMAP connection is opened unless an unpaid `PENDING_PAYMENT` order was created
 or first reported within the active window. Creation/report events wake the reader
@@ -91,6 +93,14 @@ refreshes do not extend the window. When all qualifying orders are paid/cancelle
 or the last window expires, acquisition stops. Late messages wait for the next
 new order/first report to reactivate the reader. This also applies after a server
 restart: windows derive from persisted creation/report timestamps.
+
+At INFO level the reader logs whether it is disabled or idle, when an order wakes
+it, the first successful IMAP connection, UID scan counts, and each TWINT candidate's
+review/confirmation outcome. `otherSender` means the message's visible From address
+is not the original TWINT sender; `olderThanCutoff` means it predates the saved
+initial timestamp. No message body, subject, recipient, transaction ID or password
+is logged. Per-poll connection and empty-inbox details are available at DEBUG level
+for `com.printcalculator.service.payment.twint` when needed.
 
 Acquisition uses TLS with hostname verification and a read-only mailbox. It uses
 UIDVALIDITY/UID, never unread flags, and never deletes mail. The initial timestamp
