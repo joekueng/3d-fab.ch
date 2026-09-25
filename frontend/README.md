@@ -77,6 +77,13 @@ route metadata. Before that event, `router.url` is `/` even on a deep link;
 rewriting metadata then would temporarily replace the SSR canonical with `/it`
 during hydration. Preserve the SSR head until the actual route is available.
 
+The Express `CommonEngine` bridge must explicitly provide the request-local
+`REQUEST` token. The origin interceptor uses its path and headers to route shop
+catalogue reads through `SSR_INTERNAL_API_ORIGIN`, including behind Basic Auth.
+Verify this bridge with `npm run build && npm run check:shop-ssr`: it runs the real
+production SSR bundle against a loopback catalogue fixture without
+`SSR_ROUTE_ALL_API_INTERNALLY`, including concurrent locales and API failure status.
+
 Shop HTTP responses are propagated from Angular's request-scoped `RESPONSE_INIT`
 through `CommonEngine` to Express in `src/server.ts`: missing products/categories
 return 404, temporary API failures return 503 with `Retry-After: 60`, and successful

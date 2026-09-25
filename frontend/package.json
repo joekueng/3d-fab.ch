@@ -15,6 +15,7 @@
     "e2e:ui": "E2E_SUITE=fullstack playwright test --ui",
     "e2e:report": "playwright show-report",
     "e2e:typecheck": "tsc -p tsconfig.e2e.json --noEmit",
+    "check:shop-ssr": "node --test scripts/shop-ssr.test.mjs",
     "check:e2e-routes": "node scripts/check-e2e-routes.mjs",
     "check:i18n": "node scripts/check-i18n-parity.mjs",
     "check:ui-reuse": "node scripts/check-ui-reuse.mjs",
