@@ -21,6 +21,8 @@ public class TwintProperties {
     private String folder = "INBOX";
     private OffsetDateTime initialSince;
     private Duration activeWindow = Duration.ofMinutes(10);
+    private long pollMs = 5000;
+    private Duration periodicInterval = Duration.ofHours(3);
     private int batchSize = 50;
 
     public String mailboxKey() { return host + "/" + username + "/" + folder; }

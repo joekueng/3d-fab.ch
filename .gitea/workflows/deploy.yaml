@@ -75,6 +75,12 @@ jobs:
           echo "Karma CHROME_BIN=$CHROME_BIN"
           npm run test -- --watch=false --browsers=ChromeHeadlessNoSandbox
 
+      - name: Verify production shop SSR bridge
+        working-directory: frontend
+        run: |
+          npm run build
+          npm run check:shop-ssr
+
       - name: Check browser tests and route inventory
         working-directory: frontend
         run: |
