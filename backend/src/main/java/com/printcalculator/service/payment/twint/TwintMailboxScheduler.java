@@ -11,6 +11,8 @@ import java.time.Duration;
 import java.time.Instant;
 
 @Component
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
+        name = "app.twint.inbox.idle-enabled", havingValue = "false")
 @Slf4j
 public class TwintMailboxScheduler {
     private final TwintMailboxReader reader;

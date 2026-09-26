@@ -13,8 +13,8 @@ import {
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { forkJoin, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { forkJoin, of, Subscription } from 'rxjs';
+import { catchError, filter, map, take } from 'rxjs/operators';
 
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
 import { AppAlertComponent } from '../../shared/components/app-alert/app-alert.component';
@@ -30,7 +30,7 @@ import {
   QuoteEstimatorService,
 } from './services/quote-estimator.service';
 import { SuccessStateComponent } from '../../shared/components/success-state/success-state.component';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, Scroll } from '@angular/router';
 import { LanguageService } from '../../core/services/language.service';
 import { SessionEmailComponent } from './components/session-email/session-email.component';
 import { OrderInformationComponent } from '../order-information/order-information.component';
@@ -197,6 +197,8 @@ export class CalculatorPageComponent
   private restoreDraftWhenViewReady = false;
   private quoteStateVersion = 0;
   private activeCalculationSessionId: string | null = null;
+  private resultScrollSubscription?: Subscription;
+  private resultScrollFrame?: number;
 
   @ViewChild('uploadForm') uploadForm!: UploadFormComponent;
   @ViewChild('resultCol') resultCol!: ElementRef;
@@ -240,6 +242,40 @@ export class CalculatorPageComponent
 
   ngOnDestroy(): void {
     this.stopRateLimitTimer();
+    this.cancelResultScroll();
+  }
+
+  private cancelResultScroll(): void {
+    this.resultScrollSubscription?.unsubscribe();
+    if (this.resultScrollFrame !== undefined) {
+      cancelAnimationFrame(this.resultScrollFrame);
+      this.resultScrollFrame = undefined;
+    }
+  }
+
+  private scrollToResult(
+    loading: boolean,
+    scrollOrigin?: { left: number; top: number },
+  ): void {
+    if (!this.isBrowser || window.innerWidth >= 768) return;
+    if (this.resultScrollFrame !== undefined) {
+      cancelAnimationFrame(this.resultScrollFrame);
+    }
+    // Measure after Angular has rendered the loading/result layout.
+    this.resultScrollFrame = requestAnimationFrame(() => {
+      this.resultScrollFrame = undefined;
+      // Undo the router's reset before painting, so the animation starts from
+      // the user's position rather than travelling down from the page header.
+      if (scrollOrigin) {
+        window.scrollTo({ ...scrollOrigin, behavior: 'instant' });
+      }
+      this.resultCol?.nativeElement.scrollIntoView({
+        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
+          ? 'instant'
+          : 'smooth',
+        block: loading ? 'nearest' : 'start',
+      });
+    });
   }
 
   ngAfterViewInit() {
@@ -446,7 +482,7 @@ export class CalculatorPageComponent
     if (this.rateLimitSecondsRemaining() > 0) {
       return;
     }
-    // ... (logic remains the same, simplified for diff)
+    this.cancelResultScroll();
     this.quoteStateVersion += 1;
     this.pendingSessionRestore = null;
     this.currentRequest = req;
@@ -464,15 +500,7 @@ export class CalculatorPageComponent
     this.cadSessionLocked.set(false);
     this.orderSuccess.set(false);
 
-    // Auto-scroll on mobile to make analysis visible
-    setTimeout(() => {
-      if (this.isBrowser && this.resultCol && window.innerWidth < 768) {
-        this.resultCol.nativeElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start',
-        });
-      }
-    }, 100);
+    this.scrollToResult(true);
 
     this.estimator.calculate(req, this.activeCalculationSessionId).subscribe({
       next: (event) => {
@@ -516,6 +544,20 @@ export class CalculatorPageComponent
 
           // Update URL with session ID without reloading
           if (res.sessionId) {
+            if (this.isBrowser && window.innerWidth < 768) {
+              const scrollOrigin = {
+                left: window.scrollX,
+                top: window.scrollY,
+              };
+              // Router scroll restoration runs even for query-only changes and
+              // same-URL recalculations. Reveal the quote after that restoration.
+              this.resultScrollSubscription = this.router.events
+                .pipe(
+                  filter((event): event is Scroll => event instanceof Scroll),
+                  take(1),
+                )
+                .subscribe(() => this.scrollToResult(false, scrollOrigin));
+            }
             this.router.navigate([], {
               relativeTo: this.route,
               queryParams: { session: res.sessionId },
@@ -533,6 +575,8 @@ export class CalculatorPageComponent
                 console.warn('Failed to refresh files for preview', err);
               },
             });
+          } else {
+            this.scrollToResult(false);
           }
         }
       },

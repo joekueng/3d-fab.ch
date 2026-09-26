@@ -26,12 +26,17 @@ import static org.junit.jupiter.api.Assertions.*;
         "app.payment.reported-email-delay=PT5M"
 })
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({PaymentService.class, PaymentEmailOutbox.class, PaymentWorkflowIntegrationTest.H2LockSyntax.class})
+@Import({PaymentService.class, PaymentEmailOutbox.class, com.printcalculator.service.order.OrderEventService.class, PaymentWorkflowIntegrationTest.H2LockSyntax.class})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class PaymentWorkflowIntegrationTest {
     // Keep the repository's PostgreSQL text mappings; translate only its lock syntax for H2.
     @org.springframework.boot.test.context.TestConfiguration
     static class H2LockSyntax {
+        @org.springframework.context.annotation.Bean(name = "orderEventsTaskScheduler")
+        org.springframework.scheduling.TaskScheduler orderEventsScheduler() {
+            // Drive flush explicitly to assert commit/rollback without timer races.
+            return org.mockito.Mockito.mock(org.springframework.scheduling.TaskScheduler.class);
+        }
         @org.springframework.context.annotation.Bean
         org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer h2Locks() {
             return properties -> properties.put("hibernate.session_factory.statement_inspector",
@@ -43,6 +48,7 @@ class PaymentWorkflowIntegrationTest {
     @Autowired PaymentEmailJobRepository jobs;
     @Autowired PaymentService service;
     @Autowired PlatformTransactionManager transactions;
+    @Autowired com.printcalculator.service.order.OrderEventService events;
     @Autowired org.springframework.jdbc.core.JdbcTemplate jdbc;
     UUID id;
 
@@ -60,7 +66,47 @@ class PaymentWorkflowIntegrationTest {
         service.getOrCreatePaymentForOrder(order, "OTHER");
     }
     @AfterEach void cleanup() {
+        events.close();
         jobs.deleteAll(); payments.deleteAll(); orders.deleteAll();
+    }
+    @Test void streamNotifiesOnlyAfterCommitAndOmitsPrivateData() throws Exception {
+        var mvc = org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup(
+                new com.printcalculator.controller.OrderEventController(events)).build();
+        var result = mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                .get("/api/orders/{id}/events", id)).andReturn();
+        assertTrue(result.getRequest().isAsyncStarted());
+        events.flush();
+        assertEquals("no", result.getResponse().getHeader("X-Accel-Buffering"));
+        String initial = result.getResponse().getContentAsString();
+        assertTrue(initial.contains("event:order-changed"));
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            service.confirmPayment(id, "TWINT");
+            events.flush();
+            tx.setRollbackOnly();
+        });
+        events.flush();
+        assertEquals(initial, result.getResponse().getContentAsString());
+        service.confirmPayment(id, "TWINT");
+        events.flush();
+        String updated = result.getResponse().getContentAsString();
+        assertEquals(2, updated.split("event:order-changed", -1).length - 1);
+        assertFalse(updated.contains("fixture@example.test"));
+        assertFalse(updated.contains("Teststrasse"));
+    }
+    @Test void streamsRejectUnknownOrdersAndReleaseSlotsOnDisconnect() throws Exception {
+        var mvc = org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup(
+                new com.printcalculator.controller.OrderEventController(events)).build();
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                .get("/api/orders/{id}/events", UUID.randomUUID()))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isNotFound());
+        var first = mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                .get("/api/orders/{id}/events", id)).andReturn();
+        for (int i = 1; i < 10; i++) events.subscribe(id);
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                .get("/api/orders/{id}/events", id))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isServiceUnavailable());
+        first.getRequest().getAsyncContext().complete();
+        assertDoesNotThrow(() -> events.subscribe(id));
     }
     @Test void queueAndPaymentCommitTogetherAndSurviveNewTransaction() {
         service.reportPayment(id, "TWINT");

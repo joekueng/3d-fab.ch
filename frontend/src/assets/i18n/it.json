@@ -1337,6 +1337,8 @@
     "METHOD_BANK": "Fattura QR / Bonifico",
     "STATUS_REPORTED_TITLE": "Ordine in lavorazione",
     "STATUS_REPORTED_DESC": "Abbiamo registrato la tua operazione. Appena confermiamo il pagamento l'ordine entrerà in produzione",
+    "CHECKING_TWINT": "Verifica del pagamento…",
+    "CHECKING_TWINT_HINT": "Stiamo aspettando la conferma TWINT. La pagina si aggiornerà automaticamente appena il pagamento sarà confermato.",
     "IN_VERIFICATION": "Pagamento Segnalato",
     "TWINT_QR_ALT": "QR di pagamento TWINT",
     "TWINT_BUTTON_ALT": "Pulsante TWINT incorporato"

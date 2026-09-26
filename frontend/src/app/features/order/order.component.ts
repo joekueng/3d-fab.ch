@@ -14,7 +14,8 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { finalize } from 'rxjs';
+import { finalize, Subscription } from 'rxjs';
+import { OrderEventsService } from './order-events.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
@@ -107,10 +108,15 @@ interface PublicOrder {
 })
 export class OrderComponent implements OnInit, OnDestroy {
   private readonly destroyRef = inject(DestroyRef);
+  private readonly orderEvents = inject(OrderEventsService);
+  private eventSubscription?: Subscription;
+  private streamConnected = false;
+  private refreshRequested = false;
   private refreshTimer?: ReturnType<typeof setTimeout>;
   private requestVersion = 0;
   private loadingOrder = false;
-  private reportingPayment = false;
+  reportingPayment = false;
+  private paymentReportStartedAt: number | null = null;
   private destroyed = false;
   private readonly openedAt = Date.now();
   readonly trackingSteps = [
@@ -178,6 +184,7 @@ export class OrderComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.destroyed = true;
+    this.closeEvents();
     clearTimeout(this.refreshTimer);
   }
 
@@ -185,7 +192,39 @@ export class OrderComponent implements OnInit, OnDestroy {
   @HostListener('window:focus')
   refreshWhenVisible(): void {
     clearTimeout(this.refreshTimer);
+    if (this.isBrowser && document.hidden) this.closeEvents();
     if (this.isBrowser && !document.hidden) this.loadOrder();
+  }
+
+  private closeEvents(): void {
+    this.eventSubscription?.unsubscribe();
+    this.eventSubscription = undefined;
+    this.streamConnected = false;
+  }
+
+  private syncEvents(): void {
+    if (
+      !this.isBrowser ||
+      this.destroyed ||
+      document.hidden ||
+      ['COMPLETED', 'CANCELLED'].includes(this.order()?.status ?? '')
+    ) {
+      this.closeEvents();
+      return;
+    }
+    if (this.eventSubscription || !this.orderId) return;
+    this.eventSubscription = this.orderEvents
+      .watch(this.orderId)
+      .subscribe((event) => {
+        this.streamConnected = event !== 'disconnected';
+        if (event === 'changed') {
+          // An event arriving during a GET/report must be fetched after that request.
+          this.refreshRequested = true;
+          if (!this.loadingOrder && !this.reportingPayment) this.loadOrder();
+        } else {
+          this.scheduleRefresh();
+        }
+      });
   }
 
   private scheduleRefresh(): void {
@@ -193,11 +232,24 @@ export class OrderComponent implements OnInit, OnDestroy {
     if (!this.isBrowser || this.destroyed || document.hidden) return;
     if (['COMPLETED', 'CANCELLED'].includes(this.order()?.status ?? '')) return;
     const awaitingPayment = this.order()?.status === 'PENDING_PAYMENT';
-    const delay =
-      awaitingPayment && Date.now() - this.openedAt < 10 * 60_000
-        ? 10_000
-        : 60_000;
+    const delay = this.streamConnected
+      ? 60_000
+      : this.isCheckingTwint()
+        ? 1_000
+        : awaitingPayment && Date.now() - this.openedAt < 10 * 60_000
+          ? 10_000
+          : 60_000;
     this.refreshTimer = setTimeout(() => this.loadOrder(), delay);
+  }
+
+  isCheckingTwint(): boolean {
+    const order = this.order();
+    return (
+      this.selectedPaymentMethod === 'twint' &&
+      order?.status === 'PENDING_PAYMENT' &&
+      (this.reportingPayment || order.paymentStatus === 'REPORTED') &&
+      Date.now() - (this.paymentReportStartedAt ?? this.openedAt) < 10 * 60_000
+    );
   }
 
   loadOrder(): void {
@@ -209,6 +261,7 @@ export class OrderComponent implements OnInit, OnDestroy {
     )
       return;
     clearTimeout(this.refreshTimer);
+    this.refreshRequested = false;
     const version = ++this.requestVersion;
     this.loadingOrder = true;
     this.quoteService
@@ -217,13 +270,15 @@ export class OrderComponent implements OnInit, OnDestroy {
         takeUntilDestroyed(this.destroyRef),
         finalize(() => {
           this.loadingOrder = false;
-          this.scheduleRefresh();
+          if (this.refreshRequested && !this.reportingPayment) this.loadOrder();
+          else this.scheduleRefresh();
         }),
       )
       .subscribe({
         next: (order) => {
           if (version !== this.requestVersion) return;
           this.order.set(order);
+          this.syncEvents();
           this.error.set(null);
           this.loading.set(false);
         },
@@ -254,6 +309,7 @@ export class OrderComponent implements OnInit, OnDestroy {
 
   selectPayment(method: 'twint' | 'bill'): void {
     this.selectedPaymentMethod = method;
+    this.scheduleRefresh();
   }
 
   downloadQrInvoice() {
@@ -363,6 +419,7 @@ export class OrderComponent implements OnInit, OnDestroy {
       return;
     }
 
+    this.paymentReportStartedAt = Date.now();
     this.reportingPayment = true;
     ++this.requestVersion; // Invalidate any GET started before this mutation.
     clearTimeout(this.refreshTimer);
@@ -372,12 +429,14 @@ export class OrderComponent implements OnInit, OnDestroy {
         takeUntilDestroyed(this.destroyRef),
         finalize(() => {
           this.reportingPayment = false;
-          this.scheduleRefresh();
+          if (this.refreshRequested && !this.loadingOrder) this.loadOrder();
+          else this.scheduleRefresh();
         }),
       )
       .subscribe({
         next: (order) => {
           this.order.set(order);
+          this.syncEvents();
           this.error.set(null);
         },
         error: (err) => {

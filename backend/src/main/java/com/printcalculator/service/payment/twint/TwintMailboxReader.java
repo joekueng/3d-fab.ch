@@ -57,7 +57,6 @@ public class TwintMailboxReader {
     @Transactional(rollbackFor = Exception.class)
     public void poll() throws Exception {
         if (!config.isEnabled()) return;
-        TwintMailboxCursor cursor = cursors.findLockedById(config.mailboxKey()).orElseThrow();
         Properties properties = new Properties();
         properties.setProperty("mail.imaps.ssl.checkserveridentity", "true");
         properties.setProperty("mail.imaps.connectiontimeout", "5000");
@@ -75,89 +74,98 @@ public class TwintMailboxReader {
             Folder folder = store.getFolder(config.getFolder());
             try {
                 folder.open(Folder.READ_ONLY);
-                UIDFolder uids = (UIDFolder) folder;
-                long validity = uids.getUIDValidity();
-                if (cursor.getUidValidity() != validity) {
-                    // UIDVALIDITY changes invalidate UIDs. Replay from the persisted cutoff;
-                    // transaction IDs still prevent a second confirmation.
-                    cursor.setUidValidity(validity);
-                    cursor.setLastUid(0);
-                    log.info("TWINT inbox UID validity changed; scanning again from saved initial cutoff {}",
-                            cursor.getInitialSince());
-                }
-                if (cursor.getLastUid() == 0) {
-                    Message[] eligible = folder.search(new ReceivedDateTerm(ComparisonTerm.GE,
-                            Date.from(cursor.getInitialSince().toInstant())));
-                    long first = Long.MAX_VALUE;
-                    for (Message message : eligible) first = Math.min(first, uids.getUID(message));
-                    if (first == Long.MAX_VALUE) {
-                        if (folder.getMessageCount() > 0) cursor.setLastUid(uids.getUID(folder.getMessage(folder.getMessageCount())));
-                        log.info("TWINT inbox opened: no messages received since saved cutoff {}; mailbox count={}, cursorUid={}",
-                                cursor.getInitialSince(), folder.getMessageCount(), cursor.getLastUid());
-                        return;
-                    }
-                    cursor.setLastUid(first - 1);
-                }
-                long last = folder.getMessageCount() == 0 ? 0 : uids.getUID(folder.getMessage(folder.getMessageCount()));
-                long end = Math.min(last, cursor.getLastUid() + config.getBatchSize());
-                if (end <= cursor.getLastUid()) {
-                    log.debug("TWINT inbox has no new UIDs after {}", cursor.getLastUid());
-                    return;
-                }
-                long start = cursor.getLastUid() + 1;
-                int olderThanCutoff = 0;
-                int alreadyRecorded = 0;
-                int otherSender = 0;
-                int candidateCount = 0;
-                for (Message message : uids.getMessagesByUID(cursor.getLastUid() + 1, end)) {
-                    if (message == null) continue;
-                    long uid = uids.getUID(message);
-                    Date received = message.getReceivedDate();
-                    if (received == null || received.toInstant().isBefore(cursor.getInitialSince().toInstant())) {
-                        olderThanCutoff++;
-                        continue;
-                    }
-                    if (receipts.existsByMailboxKeyAndUidValidityAndMessageUid(config.mailboxKey(), validity, uid)) {
-                        alreadyRecorded++;
-                        continue;
-                    }
-                    if (!authenticator.isCandidate((MimeMessage) message)) {
-                        otherSender++;
-                        continue;
-                    }
-                    candidateCount++;
-                    TwintReceipt receipt = new TwintReceipt();
-                    receipt.setMailboxKey(config.mailboxKey());
-                    receipt.setUidValidity(validity);
-                    receipt.setMessageUid(uid);
-                    receipt.setContentHash(hash(config.mailboxKey() + ":" + validity + ":" + uid));
-                    if (message.getSize() > 1_000_000) {
-                        receipt.setOutcome("MESSAGE_TOO_LARGE");
-                    } else if (!authenticator.isAuthentic((MimeMessage) message)) {
-                        receipt.setOutcome("AUTHENTICITY_REVIEW");
-                    } else {
-                        Optional<TwintNotificationParser.Notification> notification;
-                        try {
-                            String body = text(message, 0);
-                            receipt.setContentHash(hash(body));
-                            notification = parser.parse(body);
-                        } catch (IllegalArgumentException | jakarta.mail.internet.ParseException malformed) {
-                            notification = Optional.empty();
-                        }
-                        if (notification.isEmpty()) receipt.setOutcome("FORMAT_REVIEW");
-                        else reconciliation.reconcile(receipt, notification.get());
-                    }
-                    receipts.save(receipt);
-                    log.info("TWINT inbox candidate uid={} outcome={} matchedOrder={}",
-                            uid, receipt.getOutcome(), receipt.getOrderId());
-                }
-                cursor.setLastUid(end);
-                log.info("TWINT inbox scanned UIDs {}..{}: candidates={}, otherSender={}, olderThanCutoff={}, alreadyRecorded={}",
-                        start, end, candidateCount, otherSender, olderThanCutoff, alreadyRecorded);
+                readBatch(folder);
             } finally {
                 if (folder.isOpen()) folder.close(false);
             }
         }
+    }
+
+    /** One bounded transaction; the IDLE wait never holds a database connection or lock. */
+    @Transactional(rollbackFor = Exception.class)
+    public boolean readBatch(Folder folder) throws Exception {
+        if (!config.isEnabled()) return false;
+        TwintMailboxCursor cursor = cursors.findLockedById(config.mailboxKey()).orElseThrow();
+        UIDFolder uids = (UIDFolder) folder;
+        long validity = uids.getUIDValidity();
+        if (cursor.getUidValidity() != validity) {
+            // UIDVALIDITY changes invalidate UIDs. Replay from the persisted cutoff;
+            // transaction IDs still prevent a second confirmation.
+            cursor.setUidValidity(validity);
+            cursor.setLastUid(0);
+            log.info("TWINT inbox UID validity changed; scanning again from saved initial cutoff {}",
+                    cursor.getInitialSince());
+        }
+        if (cursor.getLastUid() == 0) {
+            Message[] eligible = folder.search(new ReceivedDateTerm(ComparisonTerm.GE,
+                    Date.from(cursor.getInitialSince().toInstant())));
+            long first = Long.MAX_VALUE;
+            for (Message message : eligible) first = Math.min(first, uids.getUID(message));
+            if (first == Long.MAX_VALUE) {
+                if (folder.getMessageCount() > 0) cursor.setLastUid(uids.getUID(folder.getMessage(folder.getMessageCount())));
+                log.info("TWINT inbox opened: no messages received since saved cutoff {}; mailbox count={}, cursorUid={}",
+                        cursor.getInitialSince(), folder.getMessageCount(), cursor.getLastUid());
+                return false;
+            }
+            cursor.setLastUid(first - 1);
+        }
+        long last = folder.getMessageCount() == 0 ? 0 : uids.getUID(folder.getMessage(folder.getMessageCount()));
+        long end = Math.min(last, cursor.getLastUid() + config.getBatchSize());
+        if (end <= cursor.getLastUid()) {
+            log.debug("TWINT inbox has no new UIDs after {}", cursor.getLastUid());
+            return false;
+        }
+        long start = cursor.getLastUid() + 1;
+        int olderThanCutoff = 0;
+        int alreadyRecorded = 0;
+        int otherSender = 0;
+        int candidateCount = 0;
+        for (Message message : uids.getMessagesByUID(cursor.getLastUid() + 1, end)) {
+            if (message == null) continue;
+            long uid = uids.getUID(message);
+            Date received = message.getReceivedDate();
+            if (received == null || received.toInstant().isBefore(cursor.getInitialSince().toInstant())) {
+                olderThanCutoff++;
+                continue;
+            }
+            if (receipts.existsByMailboxKeyAndUidValidityAndMessageUid(config.mailboxKey(), validity, uid)) {
+                alreadyRecorded++;
+                continue;
+            }
+            if (!authenticator.isCandidate((MimeMessage) message)) {
+                otherSender++;
+                continue;
+            }
+            candidateCount++;
+            TwintReceipt receipt = new TwintReceipt();
+            receipt.setMailboxKey(config.mailboxKey());
+            receipt.setUidValidity(validity);
+            receipt.setMessageUid(uid);
+            receipt.setContentHash(hash(config.mailboxKey() + ":" + validity + ":" + uid));
+            if (message.getSize() > 1_000_000) {
+                receipt.setOutcome("MESSAGE_TOO_LARGE");
+            } else if (!authenticator.isAuthentic((MimeMessage) message)) {
+                receipt.setOutcome("AUTHENTICITY_REVIEW");
+            } else {
+                Optional<TwintNotificationParser.Notification> notification;
+                try {
+                    String body = text(message, 0);
+                    receipt.setContentHash(hash(body));
+                    notification = parser.parse(body);
+                } catch (IllegalArgumentException | jakarta.mail.internet.ParseException malformed) {
+                    notification = Optional.empty();
+                }
+                if (notification.isEmpty()) receipt.setOutcome("FORMAT_REVIEW");
+                else reconciliation.reconcile(receipt, notification.get());
+            }
+            receipts.save(receipt);
+            log.info("TWINT inbox candidate uid={} outcome={} matchedOrder={}",
+                    uid, receipt.getOutcome(), receipt.getOrderId());
+        }
+        cursor.setLastUid(end);
+        log.info("TWINT inbox scanned UIDs {}..{}: candidates={}, otherSender={}, olderThanCutoff={}, alreadyRecorded={}",
+                start, end, candidateCount, otherSender, olderThanCutoff, alreadyRecorded);
+        return end < last;
     }
 
     @Transactional(readOnly = true)

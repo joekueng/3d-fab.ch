@@ -1344,6 +1344,8 @@
     "METHOD_BANK": "Facture QR / Virement",
     "STATUS_REPORTED_TITLE": "Commande en cours",
     "STATUS_REPORTED_DESC": "Nous avons enregistré votre opération. Dès que nous confirmons le paiement, la commande entrera en production.",
+    "CHECKING_TWINT": "Vérification du paiement…",
+    "CHECKING_TWINT_HINT": "Nous attendons la confirmation TWINT. Cette page se mettra à jour automatiquement dès que votre paiement sera confirmé.",
     "IN_VERIFICATION": "Paiement signalé",
     "TWINT_QR_ALT": "QR de paiement TWINT",
     "TWINT_BUTTON_ALT": "Bouton TWINT intégré"

@@ -177,6 +177,10 @@ public class AdminOrderControllerService {
             eventPublisher.publishEvent(new OrderShippedEvent(this, savedOrder));
         }
 
+        if (!java.util.Objects.equals(previousStatus, savedOrder.getStatus())) {
+            eventPublisher.publishEvent(new com.printcalculator.event.OrderStatusChangedEvent(orderId));
+        }
+
         return toOrderDto(savedOrder, true);
     }
 

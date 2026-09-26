@@ -1278,6 +1278,8 @@
     "METHOD_BANK": "QR-Rechnung / Überweisung",
     "STATUS_REPORTED_TITLE": "Bestellung in Bearbeitung",
     "STATUS_REPORTED_DESC": "Wir haben Ihren Vorgang registriert. Sobald wir die Zahlung bestätigen, geht die Bestellung in Produktion.",
+    "CHECKING_TWINT": "Zahlung wird geprüft…",
+    "CHECKING_TWINT_HINT": "Wir warten auf die TWINT-Bestätigung. Diese Seite wird automatisch aktualisiert, sobald deine Zahlung bestätigt ist.",
     "IN_VERIFICATION": "Zahlung gemeldet",
     "TWINT_QR_ALT": "TWINT-Zahlungs-QR",
     "TWINT_BUTTON_ALT": "Eingebettete TWINT-Schaltfläche"

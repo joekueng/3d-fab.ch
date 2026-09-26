@@ -48,6 +48,25 @@ class TwintMailboxReaderTest {
         when(cursors.existsById(config.mailboxKey())).thenReturn(true);
         reader.initialize(); verify(cursors, never()).saveAndFlush(any());
     }
+    @Test void persistentFolderDrainsBoundedBatchesFromCommittedCursor() throws Exception {
+        when(cursors.findLockedById(config.mailboxKey())).thenReturn(Optional.of(cursor));
+        Folder folder = mock(Folder.class, withSettings().extraInterfaces(UIDFolder.class));
+        UIDFolder uids = (UIDFolder) folder;
+        Message latest = mock(Message.class);
+        when(folder.getMessageCount()).thenReturn(1);
+        when(folder.getMessage(1)).thenReturn(latest);
+        when(uids.getUIDValidity()).thenReturn(7L);
+        when(uids.getUID(latest)).thenReturn(175L);
+        when(uids.getMessagesByUID(anyLong(), anyLong())).thenReturn(new Message[0]);
+        assertTrue(reader.readBatch(folder));
+        assertEquals(150, cursor.getLastUid());
+        assertFalse(reader.readBatch(folder));
+        assertEquals(175, cursor.getLastUid());
+        verify(uids).getMessagesByUID(101, 150);
+        verify(uids).getMessagesByUID(151, 175);
+        verify(folder, never()).close(anyBoolean());
+        verifyNoInteractions(orders);
+    }
     @Test void periodicReadWithoutActiveOrdersAdvancesCursorWithoutDeleting() throws Exception {
         when(cursors.findLockedById(config.mailboxKey())).thenReturn(Optional.of(cursor));
         Session session = mock(Session.class); Store store = mock(Store.class);
