@@ -16,7 +16,9 @@ export class OrderEventsService {
         `${environment.apiUrl}/api/orders/${encodeURIComponent(orderId)}/events`,
       );
       source.onopen = () => subscriber.next('connected');
-      source.addEventListener('order-changed', () => subscriber.next('changed'));
+      source.addEventListener('order-changed', () =>
+        subscriber.next('changed'),
+      );
       source.onerror = () => subscriber.next('disconnected');
       return () => source.close();
     });

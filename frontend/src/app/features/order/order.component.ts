@@ -203,22 +203,28 @@ export class OrderComponent implements OnInit, OnDestroy {
   }
 
   private syncEvents(): void {
-    if (!this.isBrowser || this.destroyed || document.hidden ||
-        ['COMPLETED', 'CANCELLED'].includes(this.order()?.status ?? '')) {
+    if (
+      !this.isBrowser ||
+      this.destroyed ||
+      document.hidden ||
+      ['COMPLETED', 'CANCELLED'].includes(this.order()?.status ?? '')
+    ) {
       this.closeEvents();
       return;
     }
     if (this.eventSubscription || !this.orderId) return;
-    this.eventSubscription = this.orderEvents.watch(this.orderId).subscribe((event) => {
-      this.streamConnected = event !== 'disconnected';
-      if (event === 'changed') {
-        // An event arriving during a GET/report must be fetched after that request.
-        this.refreshRequested = true;
-        if (!this.loadingOrder && !this.reportingPayment) this.loadOrder();
-      } else {
-        this.scheduleRefresh();
-      }
-    });
+    this.eventSubscription = this.orderEvents
+      .watch(this.orderId)
+      .subscribe((event) => {
+        this.streamConnected = event !== 'disconnected';
+        if (event === 'changed') {
+          // An event arriving during a GET/report must be fetched after that request.
+          this.refreshRequested = true;
+          if (!this.loadingOrder && !this.reportingPayment) this.loadOrder();
+        } else {
+          this.scheduleRefresh();
+        }
+      });
   }
 
   private scheduleRefresh(): void {
@@ -229,19 +235,21 @@ export class OrderComponent implements OnInit, OnDestroy {
     const delay = this.streamConnected
       ? 60_000
       : this.isCheckingTwint()
-      ? 1_000
-      : awaitingPayment && Date.now() - this.openedAt < 10 * 60_000
-        ? 10_000
-        : 60_000;
+        ? 1_000
+        : awaitingPayment && Date.now() - this.openedAt < 10 * 60_000
+          ? 10_000
+          : 60_000;
     this.refreshTimer = setTimeout(() => this.loadOrder(), delay);
   }
 
   isCheckingTwint(): boolean {
     const order = this.order();
-    return this.selectedPaymentMethod === 'twint' &&
+    return (
+      this.selectedPaymentMethod === 'twint' &&
       order?.status === 'PENDING_PAYMENT' &&
       (this.reportingPayment || order.paymentStatus === 'REPORTED') &&
-      Date.now() - (this.paymentReportStartedAt ?? this.openedAt) < 10 * 60_000;
+      Date.now() - (this.paymentReportStartedAt ?? this.openedAt) < 10 * 60_000
+    );
   }
 
   loadOrder(): void {

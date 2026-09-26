@@ -159,12 +159,16 @@
                 isCheckingTwint()
                   ? ("PAYMENT.CHECKING_TWINT" | translate)
                   : o.paymentStatus === "REPORTED"
-                  ? ("PAYMENT.IN_VERIFICATION" | translate)
-                  : ("PAYMENT.CONFIRM" | translate)
+                    ? ("PAYMENT.IN_VERIFICATION" | translate)
+                    : ("PAYMENT.CONFIRM" | translate)
               }}
             </app-button>
           </div>
-          <p *ngIf="isCheckingTwint()" class="billing-hint text-center" role="status">
+          <p
+            *ngIf="isCheckingTwint()"
+            class="billing-hint text-center"
+            role="status"
+          >
             {{ "PAYMENT.CHECKING_TWINT_HINT" | translate }}
           </p>
         </app-card>

@@ -271,7 +271,8 @@ export class CalculatorPageComponent
       }
       this.resultCol?.nativeElement.scrollIntoView({
         behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
-          ? 'instant' : 'smooth',
+          ? 'instant'
+          : 'smooth',
         block: loading ? 'nearest' : 'start',
       });
     });
@@ -544,13 +545,18 @@ export class CalculatorPageComponent
           // Update URL with session ID without reloading
           if (res.sessionId) {
             if (this.isBrowser && window.innerWidth < 768) {
-              const scrollOrigin = { left: window.scrollX, top: window.scrollY };
+              const scrollOrigin = {
+                left: window.scrollX,
+                top: window.scrollY,
+              };
               // Router scroll restoration runs even for query-only changes and
               // same-URL recalculations. Reveal the quote after that restoration.
-              this.resultScrollSubscription = this.router.events.pipe(
-                filter((event): event is Scroll => event instanceof Scroll),
-                take(1),
-              ).subscribe(() => this.scrollToResult(false, scrollOrigin));
+              this.resultScrollSubscription = this.router.events
+                .pipe(
+                  filter((event): event is Scroll => event instanceof Scroll),
+                  take(1),
+                )
+                .subscribe(() => this.scrollToResult(false, scrollOrigin));
             }
             this.router.navigate([], {
               relativeTo: this.route,

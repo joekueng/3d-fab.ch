@@ -47,7 +47,9 @@ describe('OrderComponent payment tracking', () => {
   afterEach(() => component.ngOnDestroy());
 
   it('refreshes on SSE and uses slow recovery polling while connected', fakeAsync(() => {
-    api.getOrder.and.returnValue(of({ ...paid, status: 'PENDING_PAYMENT', paymentStatus: 'REPORTED' }));
+    api.getOrder.and.returnValue(
+      of({ ...paid, status: 'PENDING_PAYMENT', paymentStatus: 'REPORTED' }),
+    );
     component.loadOrder();
     events.next('connected');
     tick(10_000);
@@ -60,7 +62,9 @@ describe('OrderComponent payment tracking', () => {
   }));
 
   it('falls back to fast polling when the stream disconnects', fakeAsync(() => {
-    api.getOrder.and.returnValue(of({ ...paid, status: 'PENDING_PAYMENT', paymentStatus: 'REPORTED' }));
+    api.getOrder.and.returnValue(
+      of({ ...paid, status: 'PENDING_PAYMENT', paymentStatus: 'REPORTED' }),
+    );
     component.loadOrder();
     events.next('connected');
     events.next('disconnected');
@@ -85,10 +89,14 @@ describe('OrderComponent payment tracking', () => {
     api.getOrder.and.returnValue(of(paid));
     component.loadOrder();
     expect(events.observed).toBeTrue();
-    (Object.getOwnPropertyDescriptor(document, 'hidden')?.get as jasmine.Spy).and.returnValue(true);
+    (
+      Object.getOwnPropertyDescriptor(document, 'hidden')?.get as jasmine.Spy
+    ).and.returnValue(true);
     component.refreshWhenVisible();
     expect(events.observed).toBeFalse();
-    (Object.getOwnPropertyDescriptor(document, 'hidden')?.get as jasmine.Spy).and.returnValue(false);
+    (
+      Object.getOwnPropertyDescriptor(document, 'hidden')?.get as jasmine.Spy
+    ).and.returnValue(false);
     component.refreshWhenVisible();
     expect(events.observed).toBeTrue();
     api.getOrder.and.returnValue(of({ ...paid, status: 'COMPLETED' }));
@@ -130,7 +138,11 @@ describe('OrderComponent payment tracking', () => {
   }));
 
   it('starts the animation immediately and opens a fresh fast window after a late report', fakeAsync(() => {
-    component.order.set({ id: 'fixture', status: 'PENDING_PAYMENT', paymentStatus: 'PENDING' });
+    component.order.set({
+      id: 'fixture',
+      status: 'PENDING_PAYMENT',
+      paymentStatus: 'PENDING',
+    });
     tick(11 * 60_000);
     const report = new Subject<typeof paid>();
     api.reportPayment.and.returnValue(report);
@@ -139,7 +151,11 @@ describe('OrderComponent payment tracking', () => {
     expect(component.isCheckingTwint()).toBeTrue();
     component.completeOrder();
     expect(api.reportPayment).toHaveBeenCalledTimes(1);
-    report.next({ ...paid, status: 'PENDING_PAYMENT', paymentStatus: 'REPORTED' });
+    report.next({
+      ...paid,
+      status: 'PENDING_PAYMENT',
+      paymentStatus: 'REPORTED',
+    });
     report.complete();
     tick(999);
     expect(api.getOrder).not.toHaveBeenCalled();
@@ -150,7 +166,9 @@ describe('OrderComponent payment tracking', () => {
   }));
 
   it('ends fast checking after ten minutes and keeps slower status refreshes', fakeAsync(() => {
-    api.getOrder.and.returnValue(of({ ...paid, status: 'PENDING_PAYMENT', paymentStatus: 'REPORTED' }));
+    api.getOrder.and.returnValue(
+      of({ ...paid, status: 'PENDING_PAYMENT', paymentStatus: 'REPORTED' }),
+    );
     component.loadOrder();
     tick(10 * 60_000);
     expect(component.isCheckingTwint()).toBeFalse();
@@ -164,7 +182,9 @@ describe('OrderComponent payment tracking', () => {
 
   it('keeps bank transfer reports on the regular polling interval', fakeAsync(() => {
     component.selectPayment('bill');
-    api.getOrder.and.returnValue(of({ ...paid, status: 'PENDING_PAYMENT', paymentStatus: 'REPORTED' }));
+    api.getOrder.and.returnValue(
+      of({ ...paid, status: 'PENDING_PAYMENT', paymentStatus: 'REPORTED' }),
+    );
     component.loadOrder();
     expect(component.isCheckingTwint()).toBeFalse();
     tick(9_999);
@@ -272,14 +292,24 @@ describe('OrderComponent rendered timeline', () => {
     const fixture = TestBed.createComponent(OrderComponent);
     fixture.detectChanges();
     flushMicrotasks();
-    fixture.componentInstance.order.set({ id: 'fixture', status: 'PENDING_PAYMENT', paymentStatus: 'REPORTED' });
+    fixture.componentInstance.order.set({
+      id: 'fixture',
+      status: 'PENDING_PAYMENT',
+      paymentStatus: 'REPORTED',
+    });
     fixture.detectChanges();
     const root: HTMLElement = fixture.nativeElement;
-    const button = root.querySelector<HTMLButtonElement>('button[aria-busy="true"]');
+    const button = root.querySelector<HTMLButtonElement>(
+      'button[aria-busy="true"]',
+    );
     expect(button?.disabled).toBeTrue();
     expect(button?.querySelector('.button-spinner')).not.toBeNull();
     expect(root.querySelector('p[role="status"]')).not.toBeNull();
-    fixture.componentInstance.order.set({ id: 'fixture', status: 'PAID', paymentStatus: 'RECEIVED' });
+    fixture.componentInstance.order.set({
+      id: 'fixture',
+      status: 'PAID',
+      paymentStatus: 'RECEIVED',
+    });
     fixture.detectChanges();
     expect(root.querySelector('.button-spinner')).toBeNull();
     expect(root.querySelector('button[aria-busy="true"]')).toBeNull();

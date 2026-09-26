@@ -1,5 +1,13 @@
 import { of, Subject, throwError } from 'rxjs';
-import { ActivatedRoute, Event, NavigationEnd, NavigationSkipped, NavigationSkippedCode, Router, Scroll } from '@angular/router';
+import {
+  ActivatedRoute,
+  Event,
+  NavigationEnd,
+  NavigationSkipped,
+  NavigationSkippedCode,
+  Router,
+  Scroll,
+} from '@angular/router';
 import { ElementRef } from '@angular/core';
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { CalculatorPageComponent } from './calculator-page.component';
@@ -173,7 +181,9 @@ describe('CalculatorPageComponent', () => {
     spyOnProperty(window, 'scrollY').and.returnValue(640);
     spyOnProperty(window, 'scrollX').and.returnValue(0);
     const restoreScroll = spyOn(window, 'scrollTo');
-    spyOn(window, 'matchMedia').and.returnValue({ matches: false } as MediaQueryList);
+    spyOn(window, 'matchMedia').and.returnValue({
+      matches: false,
+    } as MediaQueryList);
     const { component, estimator, routerEvents } = createComponent();
     const scrollIntoView = jasmine.createSpy('scrollIntoView');
     component.resultCol = new ElementRef({ scrollIntoView });
@@ -183,26 +193,51 @@ describe('CalculatorPageComponent', () => {
 
     component.onCalculate(createDraftRequest());
     tick(16);
-    expect(scrollIntoView).toHaveBeenCalledWith(jasmine.objectContaining({ block: 'nearest' }));
+    expect(scrollIntoView).toHaveBeenCalledWith(
+      jasmine.objectContaining({ block: 'nearest' }),
+    );
     calculation.next(createResult('session-1'));
     tick(16);
     expect(scrollIntoView).toHaveBeenCalledTimes(1);
     scrollIntoView.calls.reset();
-    routerEvents.next(new Scroll(new NavigationEnd(1, '/it/basic', '/it/basic?session=session-1'), null, null));
+    routerEvents.next(
+      new Scroll(
+        new NavigationEnd(1, '/it/basic', '/it/basic?session=session-1'),
+        null,
+        null,
+      ),
+    );
     tick(16);
     expect<unknown[]>(restoreScroll.calls.mostRecent().args).toEqual([
       { left: 0, top: 640, behavior: 'instant' },
     ]);
     expect(restoreScroll).toHaveBeenCalledBefore(scrollIntoView);
-    expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
+    expect(scrollIntoView).toHaveBeenCalledWith({
+      behavior: 'smooth',
+      block: 'start',
+    });
 
     // The same session still emits a Scroll event on a skipped navigation.
     component.onCalculate(createDraftRequest());
     calculation.next(createResult('session-1'));
     scrollIntoView.calls.reset();
-    routerEvents.next(new Scroll(new NavigationSkipped(2, '/it/basic?session=session-1', '', NavigationSkippedCode.IgnoredSameUrlNavigation), null, null));
+    routerEvents.next(
+      new Scroll(
+        new NavigationSkipped(
+          2,
+          '/it/basic?session=session-1',
+          '',
+          NavigationSkippedCode.IgnoredSameUrlNavigation,
+        ),
+        null,
+        null,
+      ),
+    );
     tick(16);
-    expect(scrollIntoView).toHaveBeenCalledOnceWith({ behavior: 'smooth', block: 'start' });
+    expect(scrollIntoView).toHaveBeenCalledOnceWith({
+      behavior: 'smooth',
+      block: 'start',
+    });
     component.ngOnDestroy();
   }));
 
@@ -215,7 +250,9 @@ describe('CalculatorPageComponent', () => {
     estimator.getQuoteSession.and.returnValue(of({ session: {}, items: [] }));
     component.onCalculate(createDraftRequest());
     component.ngOnDestroy();
-    routerEvents.next(new Scroll(new NavigationEnd(1, '/it/shop', '/it/shop'), null, null));
+    routerEvents.next(
+      new Scroll(new NavigationEnd(1, '/it/shop', '/it/shop'), null, null),
+    );
     tick(16);
     expect(scrollIntoView).not.toHaveBeenCalled();
   }));
@@ -228,7 +265,13 @@ describe('CalculatorPageComponent', () => {
     estimator.calculate.and.returnValue(of(createResult('session-1')));
     estimator.getQuoteSession.and.returnValue(of({ session: {}, items: [] }));
     component.onCalculate(createDraftRequest());
-    routerEvents.next(new Scroll(new NavigationEnd(1, '/it/basic', '/it/basic?session=session-1'), null, null));
+    routerEvents.next(
+      new Scroll(
+        new NavigationEnd(1, '/it/basic', '/it/basic?session=session-1'),
+        null,
+        null,
+      ),
+    );
     tick(16);
     expect(scrollIntoView).not.toHaveBeenCalled();
   }));
