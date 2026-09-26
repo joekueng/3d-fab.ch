@@ -13,6 +13,9 @@ import java.time.OffsetDateTime;
 @Setter
 public class TwintProperties {
     private boolean enabled;
+    private boolean idleEnabled = true;
+    private Duration idleRenewal = Duration.ofMinutes(20);
+    private Duration idleFallbackInterval = Duration.ofMinutes(1);
     private String host = "mail.infomaniak.com";
     private int port = 993;
     private String username = "info@3d-fab.ch";

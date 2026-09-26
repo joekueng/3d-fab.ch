@@ -7,6 +7,13 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 @Configuration
 public class PaymentSchedulingConfig {
     @Bean
+    public ThreadPoolTaskScheduler orderEventsTaskScheduler() {
+        var scheduler = new ThreadPoolTaskScheduler();
+        scheduler.setPoolSize(1);
+        scheduler.setThreadNamePrefix("order-events-");
+        return scheduler;
+    }
+    @Bean
     public ThreadPoolTaskScheduler paymentEmailTaskScheduler() {
         var scheduler = new ThreadPoolTaskScheduler();
         scheduler.setPoolSize(1);

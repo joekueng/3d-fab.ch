@@ -123,9 +123,15 @@ To add a language, create the JSON file, update the supported-language types and
 
 The order page keeps `PAID` (awaiting production) separate from `IN_PRODUCTION`.
 Cancelled orders replace the progress timeline with an explicit terminal status.
-Polling continues after a customer reports payment, runs only while visible, and
-refreshes on focus/visibility return. It starts at ten seconds, slows to one minute
-after ten minutes or after payment, and stops for completed/cancelled orders.
+`OrderEventsService` opens one SSE subscription while the order page is visible.
+`order-changed` invalidations reload the existing public order API; native
+EventSource reconnection receives an initial invalidation to recover missed changes.
+Healthy streams retain a 60-second recovery poll. During disconnection, polling
+runs every second while checking TWINT (up to ten minutes), otherwise every ten
+seconds initially and every minute after ten minutes or payment. Streams and timers
+close on component destruction, hidden pages and completed/cancelled orders.
+Returning to the page refreshes the order and reconnects. Backend streaming and
+proxy conventions are in [the backend guide](../backend/README.md#live-order-notifications).
 Request versions prevent pre-report GET responses from overwriting the mutation;
 transient polling failures retain the last displayed order. Page polling never
 opens or extends a backend mailbox acquisition window.
@@ -183,3 +189,12 @@ See [the E2E guide](e2e/README.md) for fixture ownership, adding tests and
 current coverage limitations. Browser tests complement backend and Angular
 tests; real device TWINT handoff and hardware-specific 3D rendering still need
 separate manual review.
+
+## TWINT payment feedback
+
+The order page uses the shared button loading state after a TWINT payment report.
+It refreshes the order every second for ten minutes from the local report (or page
+opening for an already reported order), then returns to the existing slower refresh.
+Reads remain serial, pause in hidden tabs, resume on focus and stop on destruction.
+The animation ends on confirmation or expiry; reduced motion keeps the indicator
+static. This only reads order status: it does not increase backend mailbox polling.

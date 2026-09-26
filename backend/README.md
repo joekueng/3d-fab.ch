@@ -38,6 +38,26 @@ Use `./gradlew test` for broader backend changes. Render affected emails/documen
 
 ## Payment confirmation and TWINT inbox
 
+### Live order notifications
+
+`GET /api/orders/{id}/events` provides SSE invalidations (`order-changed`, empty
+JSON payload) under the same public tracking contract as the existing order GET.
+It exposes no customer data, credentials or payment details. Angular reloads the
+existing public DTO when notified. Payment reports/confirmations and admin status
+changes mark subscriptions only after commit. A dedicated scheduler coalesces and
+sends updates within 250 ms, without network writes in payment transactions.
+Every connection receives an initial invalidation to cover changes during setup
+or reconnection. Heartbeats run every 15 seconds; streams expire after five minutes
+and EventSource reconnects. Completion, timeout, errors and shutdown remove emitters.
+There are limits of 1,000 streams per instance and ten per order; excess clients
+use polling. Reverse proxies must preserve streaming (`proxy_buffering off`,
+`proxy_read_timeout 75s` or longer); the endpoint also sets `X-Accel-Buffering: no`
+and `Cache-Control: no-store`. Configure every external proxy accordingly.
+
+Subscriptions are local to one backend instance. The 60-second client recovery
+poll covers missed events and changes committed on another replica; immediate
+cross-replica delivery would require shared pub/sub. No database migration is needed.
+
 `PaymentService` locks the order before reporting or confirming payment. Only
 `PENDING_PAYMENT` with payment `PENDING`/`REPORTED` can become `PAID`; repeat
 confirmations preserve the confirmed method, timestamps and production/shipping
@@ -67,6 +87,9 @@ Set dedicated reading credentials; SMTP credentials are not reused:
 
 ```dotenv
 TWINT_INBOX_ENABLED=true
+TWINT_INBOX_IDLE_ENABLED=true
+TWINT_INBOX_IDLE_RENEWAL=PT20M
+TWINT_INBOX_IDLE_FALLBACK_INTERVAL=PT1M
 TWINT_INBOX_HOST=mail.infomaniak.com
 TWINT_INBOX_PORT=993
 TWINT_INBOX_USERNAME=info@3d-fab.ch
@@ -86,6 +109,39 @@ its invoice. Validate the Gmail filter and an original message *received at
 Infomaniak* in a test environment before enabling it for customer orders.
 The Unraid deploy script merges `common.env` before the environment-specific `.env`;
 check the resulting container environment when diagnosing a running deployment.
+
+### IMAP IDLE (default when inbox acquisition is enabled)
+
+`TwintIdleListener` keeps the configured mailbox open in read-only IMAPS mode.
+It uses [Angus IdleManager](https://eclipse-ee4j.github.io/angus-mail/docs/api/org.eclipse.angus.mail/org/eclipse/angus/mail/imap/IdleManager.html)
+with socket channels. A notification wakes one reader, which scans only UIDs after
+the persisted cursor, using the existing DKIM verification, parser and reconciliation.
+Message-ID alone is not trusted for deduplication: UIDVALIDITY/UID, content hashes
+and transaction claims remain in force. No new mailbox or forwarding change is required.
+
+Startup/reconnect drains the backlog in bounded, separately committed batches on
+the same IMAP connection. The listener installs callbacks before reading and retains
+notifications received during processing, then re-arms IDLE. Waiting never holds a
+database transaction/lock. The existing payment commit triggers SSE and the email
+outbox as before. No periodic order-window database query runs in IDLE mode.
+
+Connections renew every 20 minutes (allowed range 1..25 minutes), also recovering
+missed notifications. Network/authentication/processing failures close the session
+and reconnect with exponential backoff from 5 seconds to 5 minutes. A server without
+the IDLE capability uses a one-minute recovery read on the persistent connection
+(minimum configured fallback interval: ten seconds). Shutdown stops the selector,
+closes the folder without expunging, and interrupts the reader. No SMTP credentials
+are reused; no mail is marked read, moved or deleted. `TWINT_INBOX_ENABLED` still
+defaults to false; enabling it can confirm actual customer payments.
+
+Each enabled backend instance owns a listener. Enable acquisition on only the
+intended instance/environment; the persisted cursor lock still serializes concurrent
+readers sharing a database. Logs show `mode=IDLE` or `mode=FALLBACK` and reconnect
+delays without credentials or message contents. Automated tests simulate notifications,
+read/watch races, backlog, failures and shutdown; real server capability and forwarded
+DKIM preservation must also be verified in the target environment.
+
+### Legacy polling (TWINT_INBOX_IDLE_ENABLED=false)
 
 `TwintMailboxScheduler` is the sole polling coordinator on the dedicated single-thread
 `twintMailboxTaskScheduler`. Its lightweight database check runs every
@@ -119,7 +175,7 @@ saved initial timestamp. No body, subject, recipient, transaction ID or password
 logged. Connection and empty-inbox details are available at DEBUG level for
 `com.printcalculator.service.payment.twint`.
 
-The coordinator flow is documented in the [Italian diagram](../docs/uml/10-polling-twint.mmd)
+The legacy polling coordinator flow is documented in the [Italian diagram](../docs/uml/10-polling-twint.mmd)
 and [English diagram](../docs/uml/en/10-polling-twint.mmd).
 
 Acquisition uses TLS with hostname verification and a read-only mailbox. It uses
@@ -128,7 +184,7 @@ is required and stored per mailbox; changing the environment variable later does
 not rewind it. A UIDVALIDITY reset replays from that cutoff, with transaction
 claims protecting against duplicate payment confirmation. All candidate receipt
 outcomes and the cursor commit together. Network/DNS interruptions roll back the
-batch and resume at the next check in the current mode.
+batch and resume from the committed cursor after reconnect or the next legacy poll.
 
 ### Authentication, parser and reconciliation
 

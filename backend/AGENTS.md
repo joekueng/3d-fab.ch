@@ -52,3 +52,5 @@ Add or update focused unit tests for service logic and controller tests for API 
 - Keep generated files, temporary slicing outputs, uploaded files, and local storage out of source changes.
 
 For payment automation, follow [payment confirmation and TWINT inbox conventions](README.md#payment-confirmation-and-twint-inbox), including order locks, the transactional email outbox and direct DKIM verification.
+IMAP IDLE is the default acquisition mode when enabled; keep its wait outside database transactions and reuse `TwintMailboxReader.readBatch` for cursor-safe reconciliation. Legacy polling is an explicit alternative, never a concurrent worker.
+For SSE tracking, follow [live order notifications](README.md#live-order-notifications): emit only after commit, preserve the public data boundary, and clean up disconnected streams.

@@ -1265,6 +1265,8 @@
     "METHOD_BANK": "Bank Transfer / QR",
     "STATUS_REPORTED_TITLE": "Order in progress",
     "STATUS_REPORTED_DESC": "We have registered your operation. Your order will soon move to production.",
+    "CHECKING_TWINT": "Checking your payment…",
+    "CHECKING_TWINT_HINT": "We are waiting for TWINT confirmation. This page will update automatically as soon as your payment is confirmed.",
     "IN_VERIFICATION": "Payment Reported",
     "TWINT_QR_ALT": "TWINT payment QR",
     "TWINT_BUTTON_ALT": "Embedded TWINT button"

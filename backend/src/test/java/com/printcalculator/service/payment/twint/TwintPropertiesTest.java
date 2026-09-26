@@ -11,6 +11,21 @@ class TwintPropertiesTest {
     @Configuration(proxyBeanMethods = false)
     @EnableConfigurationProperties(TwintProperties.class)
     static class Config {}
+    @Test void idleAndLegacyPollingAreMutuallyExclusive() {
+        var runner = new ApplicationContextRunner().withUserConfiguration(Config.class,
+                TwintIdleListener.class, TwintMailboxScheduler.class)
+                .withBean(TwintMailboxReader.class, () -> org.mockito.Mockito.mock(TwintMailboxReader.class));
+        runner.run(context -> {
+            assertNull(context.getStartupFailure());
+            assertEquals(1, context.getBeansOfType(TwintIdleListener.class).size());
+            assertTrue(context.getBeansOfType(TwintMailboxScheduler.class).isEmpty());
+        });
+        runner.withPropertyValues("app.twint.inbox.idle-enabled=false").run(context -> {
+            assertNull(context.getStartupFailure());
+            assertTrue(context.getBeansOfType(TwintIdleListener.class).isEmpty());
+            assertEquals(1, context.getBeansOfType(TwintMailboxScheduler.class).size());
+        });
+    }
     @Test void bindsDeploymentSettingsAndEmptyDisabledCutoff() {
         var runner = new ApplicationContextRunner().withUserConfiguration(Config.class);
         runner.withPropertyValues("app.twint.inbox.initial-since=", "app.twint.inbox.enabled=false").run(context -> {
