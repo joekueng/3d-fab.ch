@@ -17,6 +17,11 @@ public record ServiceLineDto(
         return quantity.multiply(unitPriceChf).setScale(2, RoundingMode.HALF_UP);
     }
 
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY)
+    public BigDecimal getLineTotalChf() {
+        return totalChf();
+    }
+
     @AssertTrue(message = "Fixed-price services must have quantity 1")
     @com.fasterxml.jackson.annotation.JsonIgnore
     public boolean isFixedQuantityValid() {

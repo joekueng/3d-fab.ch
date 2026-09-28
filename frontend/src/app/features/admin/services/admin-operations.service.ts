@@ -381,7 +381,11 @@ export class AdminOperationsService {
 
   updateCadInvoiceMetadata(
     sessionId: string,
-    payload: { invoiceName: string; collaborationName: string; clientName: string },
+    payload: {
+      invoiceName: string;
+      collaborationName: string;
+      clientName: string;
+    },
   ): Observable<void> {
     return this.http.patch<void>(
       `${this.baseUrl}/cad-invoices/${sessionId}/metadata`,

@@ -1,120 +1,302 @@
 <section class="cad-page section-card">
   <header class="page-header section-header">
-    <h1>{{ 'CAD_ORGANIZATION.TITLE' | translate }}</h1>
+    <h1>{{ "CAD_ORGANIZATION.TITLE" | translate }}</h1>
     <app-button type="button" (click)="loadCadInvoices()" [disabled]="loading">
-      {{ 'CAD_ORGANIZATION.REFRESH' | translate }}
+      {{ "CAD_ORGANIZATION.REFRESH" | translate }}
     </app-button>
   </header>
-  <p class="ui-banner ui-banner--error" role="alert" *ngIf="errorMessage">{{ errorMessage }}</p>
-  <p class="ui-banner ui-banner--success" role="status" *ngIf="successMessage">{{ successMessage }}</p>
+  <p class="ui-banner ui-banner--error" role="alert" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </p>
+  <p class="ui-banner ui-banner--success" role="status" *ngIf="successMessage">
+    {{ successMessage }}
+  </p>
 
   <section class="create-box">
-    <h2>{{ (form.sessionId ? 'CAD_ORGANIZATION.EDIT_DRAFT' : 'CAD_ORGANIZATION.CREATE') | translate }}</h2>
+    <h2>
+      {{
+        (form.sessionId
+          ? "CAD_ORGANIZATION.EDIT_DRAFT"
+          : "CAD_ORGANIZATION.CREATE"
+        ) | translate
+      }}
+    </h2>
     <fieldset [disabled]="creating" class="invoice-fields">
-    <div class="form-grid">
-      <app-input name="clientName" [(ngModel)]="form.clientName"
-        [label]="'CAD_ORGANIZATION.CLIENT' | translate"></app-input>
-      <app-input name="invoiceName" [(ngModel)]="form.invoiceName"
-        [label]="'CAD_ORGANIZATION.NAME' | translate"></app-input>
-      <app-select name="existingCollaboration" [(ngModel)]="form.collaborationName"
-        [options]="collaborationOptions" [label]="'CAD_ORGANIZATION.EXISTING' | translate"></app-select>
-      <app-input name="collaborationName" [(ngModel)]="form.collaborationName"
-        [label]="'CAD_ORGANIZATION.COLLABORATION' | translate"></app-input>
-      <p class="ui-copy-subtitle">{{ 'CAD_ORGANIZATION.HINT' | translate }}</p>
-      <app-input name="sessionId" [(ngModel)]="form.sessionId"
-        [label]="'CAD_ORGANIZATION.SESSION' | translate"></app-input>
-      <app-input name="sourceRequestId" [(ngModel)]="form.sourceRequestId"
-        [label]="'CAD_ORGANIZATION.REQUEST' | translate"></app-input>
-      <app-textarea class="notes-field" name="notes" [(ngModel)]="form.notes"
-        [label]="'CAD_ORGANIZATION.NOTES' | translate" [rows]="3"></app-textarea>
-    </div>
+      <div class="form-grid">
+        <app-input
+          name="clientName"
+          [(ngModel)]="form.clientName"
+          [label]="'CAD_ORGANIZATION.CLIENT' | translate"
+        ></app-input>
+        <app-input
+          name="invoiceName"
+          [(ngModel)]="form.invoiceName"
+          [label]="'CAD_ORGANIZATION.NAME' | translate"
+        ></app-input>
+        <app-select
+          name="existingCollaboration"
+          [(ngModel)]="form.collaborationName"
+          [options]="collaborationOptions"
+          [label]="'CAD_ORGANIZATION.EXISTING' | translate"
+        ></app-select>
+        <app-input
+          name="collaborationName"
+          [(ngModel)]="form.collaborationName"
+          [label]="'CAD_ORGANIZATION.COLLABORATION' | translate"
+        ></app-input>
+        <p class="ui-copy-subtitle notes-field">
+          {{ "CAD_ORGANIZATION.HINT" | translate }}
+        </p>
+        <app-input
+          name="sessionId"
+          [(ngModel)]="form.sessionId"
+          [label]="'CAD_ORGANIZATION.SESSION' | translate"
+        ></app-input>
+        <app-input
+          name="sourceRequestId"
+          [(ngModel)]="form.sourceRequestId"
+          [label]="'CAD_ORGANIZATION.REQUEST' | translate"
+        ></app-input>
+        <app-textarea
+          class="notes-field"
+          name="notes"
+          [(ngModel)]="form.notes"
+          [label]="'CAD_ORGANIZATION.NOTES' | translate"
+          [rows]="3"
+        ></app-textarea>
+      </div>
 
-    <h3>{{ 'CAD_ORGANIZATION.SERVICES' | translate }}</h3>
-    <p class="ui-copy-subtitle">{{ 'CAD_ORGANIZATION.SERVICES_HINT' | translate }}</p>
-    <div class="service-lines">
-      <section class="ui-subpanel service-line" *ngFor="let line of serviceLines; let i = index">
-        <h4>{{ 'CAD_ORGANIZATION.LINE' | translate }} {{ i + 1 }}</h4>
-        <div class="form-grid">
-          <app-textarea class="notes-field" [name]="'description-' + i" [(ngModel)]="line.description"
-            [label]="'CAD_ORGANIZATION.DESCRIPTION' | translate" [rows]="2"></app-textarea>
-          <app-select [name]="'billing-' + i" [(ngModel)]="line.billingType"
-            [options]="billingOptions" [label]="'CAD_ORGANIZATION.BILLING' | translate"></app-select>
-          <app-input *ngIf="line.billingType === 'HOURLY'" [name]="'quantity-' + i" [(ngModel)]="line.quantity"
-            inputmode="decimal" [label]="'CAD_ORGANIZATION.HOURS' | translate"></app-input>
-          <app-input [name]="'price-' + i" [(ngModel)]="line.unitPriceChf" inputmode="decimal"
-            [label]="(line.billingType === 'HOURLY' ? 'CAD_ORGANIZATION.RATE' : 'CAD_ORGANIZATION.FIXED_PRICE') | translate"></app-input>
-        </div>
-        <div class="actions create-actions">
-          <span>{{ 'CAD_ORGANIZATION.LINE_TOTAL' | translate }}: {{ lineTotal(line) | currency: 'CHF' }}</span>
-          <app-button type="button" variant="ghost" (click)="serviceLines.splice(i, 1)">
-            {{ 'CAD_ORGANIZATION.REMOVE' | translate }}
-          </app-button>
-        </div>
-      </section>
-    </div>
-    <div class="actions create-actions">
-      <app-button type="button" variant="ghost" (click)="serviceLines.push(newServiceLine())">
-        {{ 'CAD_ORGANIZATION.ADD' | translate }}
-      </app-button>
-    </div>
+      <h3>{{ "CAD_ORGANIZATION.SERVICES" | translate }}</h3>
+      <p class="ui-copy-subtitle">
+        {{ "CAD_ORGANIZATION.SERVICES_HINT" | translate }}
+      </p>
+      <div class="service-lines">
+        <section
+          class="ui-subpanel service-line"
+          *ngFor="let line of serviceLines; let i = index"
+        >
+          <h4>{{ "CAD_ORGANIZATION.LINE" | translate }} {{ i + 1 }}</h4>
+          <div
+            class="service-grid"
+            [class.service-grid--fixed]="line.billingType === 'FIXED'"
+          >
+            <app-textarea
+              [compact]="true"
+              class="notes-field"
+              [name]="'description-' + i"
+              [(ngModel)]="line.description"
+              [label]="'CAD_ORGANIZATION.DESCRIPTION' | translate"
+              [rows]="2"
+            ></app-textarea>
+            <app-select
+              class="service-billing"
+              [compact]="true"
+              [name]="'billing-' + i"
+              [(ngModel)]="line.billingType"
+              [options]="billingOptions"
+              [label]="'CAD_ORGANIZATION.BILLING' | translate"
+            ></app-select>
+            <app-input
+              [compact]="true"
+              *ngIf="line.billingType === 'HOURLY'"
+              [name]="'quantity-' + i"
+              [(ngModel)]="line.quantity"
+              inputmode="decimal"
+              [label]="'CAD_ORGANIZATION.HOURS' | translate"
+            ></app-input>
+            <app-input
+              [compact]="true"
+              [name]="'price-' + i"
+              [(ngModel)]="line.unitPriceChf"
+              inputmode="decimal"
+              [label]="
+                (line.billingType === 'HOURLY'
+                  ? 'CAD_ORGANIZATION.RATE'
+                  : 'CAD_ORGANIZATION.FIXED_PRICE'
+                ) | translate
+              "
+            ></app-input>
+            <div class="actions service-line-actions">
+              <span
+                >{{ "CAD_ORGANIZATION.LINE_TOTAL" | translate }}:
+                {{ lineTotal(line) | currency: "CHF" }}</span
+              >
+              <app-button
+                type="button"
+                variant="ghost"
+                (click)="serviceLines.splice(i, 1)"
+              >
+                {{ "CAD_ORGANIZATION.REMOVE" | translate }}
+              </app-button>
+            </div>
+          </div>
+        </section>
+      </div>
+      <div class="actions create-actions">
+        <app-button
+          type="button"
+          variant="ghost"
+          (click)="serviceLines.push(newServiceLine())"
+        >
+          {{ "CAD_ORGANIZATION.ADD" | translate }}
+        </app-button>
+      </div>
+      <p>
+        <strong
+          >{{ "CAD_ORGANIZATION.SERVICES_TOTAL" | translate }}:
+          {{ draftServicesTotal | currency: "CHF" }}</strong
+        >
+      </p>
     </fieldset>
     <div class="actions create-actions">
-      <app-button type="button" (click)="createCadInvoice()" [disabled]="creating || !serviceLines.length">
-        {{ (creating ? 'CAD_ORGANIZATION.SAVING' : 'CAD_ORGANIZATION.PREPARE') | translate }}
+      <app-button
+        type="button"
+        (click)="createCadInvoice()"
+        [disabled]="creating || !serviceLines.length"
+      >
+        {{
+          (creating ? "CAD_ORGANIZATION.SAVING" : "CAD_ORGANIZATION.PREPARE")
+            | translate
+        }}
       </app-button>
-      <app-button type="button" variant="ghost" (click)="resetForm()" [disabled]="creating">
-        {{ 'CAD_ORGANIZATION.RESET' | translate }}
+      <app-button
+        type="button"
+        variant="ghost"
+        (click)="resetForm()"
+        [disabled]="creating"
+      >
+        {{ "CAD_ORGANIZATION.RESET" | translate }}
       </app-button>
     </div>
   </section>
 
   <ng-container *ngIf="!loading; else loadingTpl">
-    <p *ngIf="invoices.length === 0">{{ 'CAD_ORGANIZATION.EMPTY' | translate }}</p>
-    <section *ngFor="let group of invoiceGroups">
-      <h2 class="ui-section-display-subtitle">{{ group.clientName }} {{ group.clientName ? ' / ' : '' }}{{ group.name || ('CAD_ORGANIZATION.UNGROUPED' | translate) }} ({{ group.rows.length }})</h2>
-      <app-button type="button" variant="ghost" (click)="newInterimInvoice(group)" [disabled]="creating">
-        {{ 'CAD_ORGANIZATION.INTERIM' | translate }}
+    <p *ngIf="invoices.length === 0">
+      {{ "CAD_ORGANIZATION.EMPTY" | translate }}
+    </p>
+    <section *ngFor="let group of invoiceGroups; trackBy: trackGroup">
+      <h2 class="ui-section-display-subtitle">
+        {{ group.clientName }} {{ group.clientName ? " / " : ""
+        }}{{ group.name || ("CAD_ORGANIZATION.UNGROUPED" | translate) }} ({{
+          group.rows.length
+        }})
+      </h2>
+      <app-button
+        type="button"
+        variant="ghost"
+        (click)="newInterimInvoice(group)"
+        [disabled]="creating"
+      >
+        {{ "CAD_ORGANIZATION.INTERIM" | translate }}
       </app-button>
       <div class="table-wrap ui-table-wrap">
         <table class="cad-invoices-table ui-data-table">
-          <thead><tr>
-            <th>{{ 'CAD_ORGANIZATION.NAME' | translate }}</th>
-            <th>{{ 'CAD_ORGANIZATION.SERVICES' | translate }}</th>
-            <th>{{ 'CAD_ORGANIZATION.SERVICES_TOTAL' | translate }}</th>
-            <th>{{ 'CAD_ORGANIZATION.ORDER_TOTAL' | translate }}</th>
-            <th>{{ 'CAD_ORGANIZATION.STATUS' | translate }}</th>
-            <th>{{ 'CAD_ORGANIZATION.ACTIONS' | translate }}</th>
-          </tr></thead>
+          <thead>
+            <tr>
+              <th>{{ "CAD_ORGANIZATION.NAME" | translate }}</th>
+              <th>{{ "CAD_ORGANIZATION.SERVICES" | translate }}</th>
+              <th>{{ "CAD_ORGANIZATION.SERVICES_TOTAL" | translate }}</th>
+              <th>{{ "CAD_ORGANIZATION.ORDER_TOTAL" | translate }}</th>
+              <th>{{ "CAD_ORGANIZATION.STATUS" | translate }}</th>
+              <th>{{ "CAD_ORGANIZATION.ACTIONS" | translate }}</th>
+            </tr>
+          </thead>
           <tbody>
-            <tr *ngFor="let row of group.rows">
-              <td class="invoice-name" [attr.data-label]="'CAD_ORGANIZATION.NAME' | translate">
-                <strong>{{ row.invoiceName || ('CAD_ORGANIZATION.UNTITLED' | translate) }}</strong>
-                <div [appCopyOnClick]="row.sessionId" [title]="row.sessionId">{{ row.sessionId | slice: 0 : 8 }}</div>
+            <tr *ngFor="let row of group.rows; trackBy: trackInvoice">
+              <td
+                class="invoice-name"
+                [attr.data-label]="'CAD_ORGANIZATION.NAME' | translate"
+              >
+                <strong>{{
+                  row.invoiceName || ("CAD_ORGANIZATION.UNTITLED" | translate)
+                }}</strong>
+                <div [appCopyOnClick]="row.sessionId" [title]="row.sessionId">
+                  {{ row.sessionId | slice: 0 : 8 }}
+                </div>
               </td>
               <td [attr.data-label]="'CAD_ORGANIZATION.SERVICES' | translate">
                 <details *ngIf="row.serviceLines?.length; else legacyCad">
-                  <summary>{{ row.serviceLines?.length }} {{ 'CAD_ORGANIZATION.SERVICES' | translate }}</summary>
+                  <summary>
+                    {{ row.serviceLines?.length }}
+                    {{ "CAD_ORGANIZATION.SERVICES" | translate }}
+                  </summary>
                   <ul class="service-details">
-                    <li *ngFor="let line of row.serviceLines">{{ line.description }} —
-                      {{ line.billingType === 'HOURLY' ? line.quantity + ' h × ' : '' }}
-                      {{ line.unitPriceChf | currency: 'CHF' }}
+                    <li *ngFor="let line of row.serviceLines">
+                      {{ line.description }} —
+                      {{
+                        line.billingType === "HOURLY"
+                          ? line.quantity + " h × "
+                          : ""
+                      }}
+                      {{ line.unitPriceChf | currency: "CHF" }}
                     </li>
                   </ul>
                 </details>
-                <ng-template #legacyCad>{{ row.cadHours }} h × {{ row.cadHourlyRateChf | currency: 'CHF' }}</ng-template>
+                <p *ngIf="row.notes" class="service-details">{{ row.notes }}</p>
+                <ng-template #legacyCad
+                  >{{ row.cadHours }} h ×
+                  {{ row.cadHourlyRateChf | currency: "CHF" }}</ng-template
+                >
               </td>
-              <td [attr.data-label]="'CAD_ORGANIZATION.SERVICES_TOTAL' | translate">{{ servicesTotal(row) | currency: 'CHF' }}</td>
-              <td [attr.data-label]="'CAD_ORGANIZATION.ORDER_TOTAL' | translate">{{ row.grandTotalChf | currency: 'CHF' }}</td>
+              <td
+                [attr.data-label]="
+                  'CAD_ORGANIZATION.SERVICES_TOTAL' | translate
+                "
+              >
+                {{ servicesTotal(row) | currency: "CHF" }}
+              </td>
+              <td
+                [attr.data-label]="'CAD_ORGANIZATION.ORDER_TOTAL' | translate"
+              >
+                {{ row.grandTotalChf | currency: "CHF" }}
+              </td>
               <td [attr.data-label]="'CAD_ORGANIZATION.STATUS' | translate">
                 {{ row.convertedOrderStatus || row.sessionStatus }}
-                <div *ngIf="row.convertedOrderId" [appCopyOnClick]="row.convertedOrderId" [title]="row.convertedOrderId">{{ row.convertedOrderId | slice: 0 : 8 }}</div>
+                <div
+                  *ngIf="row.convertedOrderId"
+                  [appCopyOnClick]="row.convertedOrderId"
+                  [title]="row.convertedOrderId"
+                >
+                  {{ row.convertedOrderId | slice: 0 : 8 }}
+                </div>
               </td>
-              <td class="actions" [attr.data-label]="'CAD_ORGANIZATION.ACTIONS' | translate">
-                <app-button type="button" variant="ghost" (click)="editMetadata(row)">{{ 'CAD_ORGANIZATION.EDIT' | translate }}</app-button>
-                <app-button *ngIf="!row.convertedOrderId" type="button" variant="ghost" (click)="editInvoice(row)" [disabled]="creating">{{ 'CAD_ORGANIZATION.EDIT_DRAFT' | translate }}</app-button>
-                <app-button type="button" variant="ghost" (click)="openCheckout(row.checkoutPath)">{{ 'CAD_ORGANIZATION.OPEN' | translate }}</app-button>
-                <app-button type="button" variant="ghost" (click)="copyCheckout(row.checkoutPath)">{{ 'CAD_ORGANIZATION.COPY' | translate }}</app-button>
-                <app-button *ngIf="row.convertedOrderId" type="button" variant="ghost" (click)="downloadInvoice(row.convertedOrderId)">{{ 'CAD_ORGANIZATION.DOWNLOAD' | translate }}</app-button>
+              <td
+                class="actions"
+                [attr.data-label]="'CAD_ORGANIZATION.ACTIONS' | translate"
+              >
+                <app-button
+                  type="button"
+                  variant="ghost"
+                  (click)="editMetadata(row)"
+                  >{{ "CAD_ORGANIZATION.EDIT" | translate }}</app-button
+                >
+                <app-button
+                  *ngIf="!row.convertedOrderId"
+                  type="button"
+                  variant="ghost"
+                  (click)="editInvoice(row)"
+                  [disabled]="creating"
+                  >{{ "CAD_ORGANIZATION.EDIT_DRAFT" | translate }}</app-button
+                >
+                <app-button
+                  type="button"
+                  variant="ghost"
+                  (click)="openCheckout(row.checkoutPath)"
+                  >{{ "CAD_ORGANIZATION.OPEN" | translate }}</app-button
+                >
+                <app-button
+                  type="button"
+                  variant="ghost"
+                  (click)="copyCheckout(row.checkoutPath)"
+                  >{{ "CAD_ORGANIZATION.COPY" | translate }}</app-button
+                >
+                <app-button
+                  *ngIf="row.convertedOrderId"
+                  type="button"
+                  variant="ghost"
+                  (click)="downloadInvoice(row.convertedOrderId)"
+                  >{{ "CAD_ORGANIZATION.DOWNLOAD" | translate }}</app-button
+                >
               </td>
             </tr>
           </tbody>
@@ -124,23 +306,64 @@
   </ng-container>
 </section>
 
-<app-dialog *ngIf="editingSessionId" [title]="'CAD_ORGANIZATION.EDIT' | translate"
-  [closeLabel]="'CAD_ORGANIZATION.CLOSE' | translate" (dismissed)="closeMetadata()">
-  <p class="ui-banner ui-banner--error" role="alert" *ngIf="metadataError">{{ metadataError }}</p>
+<app-dialog
+  *ngIf="editingSessionId"
+  [title]="'CAD_ORGANIZATION.EDIT' | translate"
+  [closeLabel]="'CAD_ORGANIZATION.CLOSE' | translate"
+  (dismissed)="closeMetadata()"
+>
+  <p class="ui-banner ui-banner--error" role="alert" *ngIf="metadataError">
+    {{ metadataError }}
+  </p>
   <div class="form-grid">
-    <app-input name="editClientName" [(ngModel)]="metadata.clientName" [disabled]="savingMetadata"
-      [label]="'CAD_ORGANIZATION.CLIENT' | translate"></app-input>
-    <app-input name="editInvoiceName" [(ngModel)]="metadata.invoiceName" [disabled]="savingMetadata"
-      [label]="'CAD_ORGANIZATION.NAME' | translate"></app-input>
-    <app-select name="editExistingCollaboration" [(ngModel)]="metadata.collaborationName" [disabled]="savingMetadata"
-      [options]="collaborationOptions" [label]="'CAD_ORGANIZATION.EXISTING' | translate"></app-select>
-    <app-input name="editCollaborationName" [(ngModel)]="metadata.collaborationName" [disabled]="savingMetadata"
-      [label]="'CAD_ORGANIZATION.COLLABORATION' | translate"></app-input>
+    <app-input
+      name="editClientName"
+      [(ngModel)]="metadata.clientName"
+      [disabled]="savingMetadata"
+      [label]="'CAD_ORGANIZATION.CLIENT' | translate"
+    ></app-input>
+    <app-input
+      name="editInvoiceName"
+      [(ngModel)]="metadata.invoiceName"
+      [disabled]="savingMetadata"
+      [label]="'CAD_ORGANIZATION.NAME' | translate"
+    ></app-input>
+    <app-select
+      name="editExistingCollaboration"
+      [(ngModel)]="metadata.collaborationName"
+      [disabled]="savingMetadata"
+      [options]="collaborationOptions"
+      [label]="'CAD_ORGANIZATION.EXISTING' | translate"
+    ></app-select>
+    <app-input
+      name="editCollaborationName"
+      [(ngModel)]="metadata.collaborationName"
+      [disabled]="savingMetadata"
+      [label]="'CAD_ORGANIZATION.COLLABORATION' | translate"
+    ></app-input>
   </div>
-  <p class="ui-copy-subtitle">{{ 'CAD_ORGANIZATION.HINT' | translate }}</p>
+  <p class="ui-copy-subtitle notes-field">
+    {{ "CAD_ORGANIZATION.HINT" | translate }}
+  </p>
   <div class="actions">
-    <app-button type="button" (click)="saveMetadata()" [disabled]="savingMetadata">{{ (savingMetadata ? 'CAD_ORGANIZATION.SAVING' : 'CAD_ORGANIZATION.SAVE') | translate }}</app-button>
-    <app-button type="button" variant="ghost" (click)="closeMetadata()" [disabled]="savingMetadata">{{ 'CAD_ORGANIZATION.CLOSE' | translate }}</app-button>
+    <app-button
+      type="button"
+      (click)="saveMetadata()"
+      [disabled]="savingMetadata"
+      >{{
+        (savingMetadata ? "CAD_ORGANIZATION.SAVING" : "CAD_ORGANIZATION.SAVE")
+          | translate
+      }}</app-button
+    >
+    <app-button
+      type="button"
+      variant="ghost"
+      (click)="closeMetadata()"
+      [disabled]="savingMetadata"
+      >{{ "CAD_ORGANIZATION.CLOSE" | translate }}</app-button
+    >
   </div>
 </app-dialog>
-<ng-template #loadingTpl><p>{{ 'CAD_ORGANIZATION.LOADING' | translate }}</p></ng-template>
+<ng-template #loadingTpl
+  ><p>{{ "CAD_ORGANIZATION.LOADING" | translate }}</p></ng-template
+>

@@ -42,6 +42,7 @@ export const scenarioCatalog: Record<string, {
   'ADMIN-003': { spec: 'admin/admin-auth.spec.ts', priority: 'standard', fixture: 'synthetic-stack' },
   'ADMIN-QR-001': { spec: 'admin/qr.spec.ts', priority: 'standard', fixture: 'synthetic-stack' },
   'ADMIN-FILAMENT-001': { spec: 'admin/filament-stock.spec.ts', priority: 'standard', fixture: 'synthetic-stack' },
+  'UI-INVOICE-002': { spec: 'ui-states/service-invoices.spec.ts', priority: 'standard', fixture: 'synthetic-stack' },
   'UI-INVOICE-001': { spec: 'ui-states/service-invoices.spec.ts', priority: 'standard', fixture: 'synthetic-stack' },
   'UI-001': { spec: 'ui-states/catalog-failure.spec.ts', priority: 'standard', fixture: 'synthetic-stack' },
 };

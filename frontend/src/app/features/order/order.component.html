@@ -190,6 +190,9 @@
             </p>
           </div>
 
+          <p *ngIf="o.invoiceName" class="ui-copy-subtitle">
+            {{ o.invoiceName }}
+          </p>
           <div class="order-summary-meta">
             <div>
               <span class="summary-label">{{

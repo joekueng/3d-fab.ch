@@ -241,11 +241,6 @@
 
       <!-- RIGHT COLUMN: Order Summary -->
       <div class="checkout-summary-section">
-        <app-order-information
-          class="mb-6"
-          [review]="true"
-          [models]="informationModels"
-        />
         <app-card class="sticky-card">
           <div class="ui-card-header">
             <h3 class="ui-card-title">
@@ -257,133 +252,170 @@
             {{ "CHECKOUT.LOADING" | translate }}
           </div>
 
-          <div
-            class="summary-items"
-            *ngIf="!loading && quoteSession() as session"
-          >
-            <div
-              class="summary-item"
-              *ngFor="let item of orderableItems(session)"
-            >
-              <div class="item-details">
-                <span class="item-name">{{ itemDisplayName(item) }}</span>
-                <div class="item-specs">
-                  <span
-                    >{{ "CHECKOUT.QTY" | translate }}: {{ item.quantity }}</span
-                  >
-                  <span *ngIf="showItemMaterial(item)">
-                    {{ "CHECKOUT.MATERIAL" | translate }}:
-                    {{ itemMaterial(item) }}
-                  </span>
-                  <span *ngIf="itemVariantLabel(item) as variantLabel">
-                    {{ "SHOP.VARIANT" | translate }}:
-                    {{ variantLabel | translate }}
-                  </span>
-                  <span class="item-color" *ngIf="itemColorLabel(item) !== '-'">
+          <ng-container *ngIf="!loading && quoteSession() as session">
+            <div class="summary-items" *ngIf="orderableItems(session).length">
+              <div
+                class="summary-item"
+                *ngFor="let item of orderableItems(session)"
+              >
+                <div class="item-details">
+                  <span class="item-name">{{ itemDisplayName(item) }}</span>
+                  <div class="item-specs">
                     <span
-                      class="color-dot"
-                      [style.background-color]="itemColorSwatch(item)"
-                    ></span>
-                    <span class="color-name">{{
-                      itemColorLabel(item) | translate
-                    }}</span>
+                      >{{ "CHECKOUT.QTY" | translate }}:
+                      {{ item.quantity }}</span
+                    >
+                    <span *ngIf="showItemMaterial(item)">
+                      {{ "CHECKOUT.MATERIAL" | translate }}:
+                      {{ itemMaterial(item) }}
+                    </span>
+                    <span *ngIf="itemVariantLabel(item) as variantLabel">
+                      {{ "SHOP.VARIANT" | translate }}:
+                      {{ variantLabel | translate }}
+                    </span>
+                    <span
+                      class="item-color"
+                      *ngIf="itemColorLabel(item) !== '-'"
+                    >
+                      <span
+                        class="color-dot"
+                        [style.background-color]="itemColorSwatch(item)"
+                      ></span>
+                      <span class="color-name">{{
+                        itemColorLabel(item) | translate
+                      }}</span>
+                    </span>
+                  </div>
+                  <app-print-item-controls
+                    class="cad-item-controls"
+                    *ngIf="isCadSession() && !isShopItem(item)"
+                    [quantity]="item.quantity"
+                    [color]="item.colorCode"
+                    [variantId]="item.filamentVariantId ?? null"
+                    [variants]="cadVariants(item)"
+                    [commitOnBlur]="true"
+                    [disabled]="updatingItem() || isSubmitting()"
+                    (quantityChange)="
+                      updateCadItem(item, $event, item.filamentVariantId)
+                    "
+                    (colorChange)="
+                      updateCadItem(
+                        item,
+                        item.quantity,
+                        $event.filamentVariantId ?? item.filamentVariantId
+                      )
+                    "
+                  />
+                  <div
+                    class="item-specs-sub"
+                    *ngIf="showItemPrintMetrics(item)"
+                  >
+                    {{ item.printTimeSeconds / 3600 | number: "1.1-1" }}h |
+                    {{ item.materialGrams | number: "1.0-0" }}g
+                  </div>
+                  <div class="item-preview" *ngIf="isStlItem(item)">
+                    <ng-container
+                      *ngIf="
+                        previewFile(item) as itemPreview;
+                        else previewState
+                      "
+                    >
+                      <button
+                        type="button"
+                        class="preview-trigger"
+                        (click)="openPreview(item)"
+                        [attr.aria-label]="'CHECKOUT.PREVIEW_OPEN' | translate"
+                      >
+                        <div class="preview-surface">
+                          <app-stl-viewer
+                            [file]="itemPreview"
+                            [height]="116"
+                            [color]="previewColor(item)"
+                            [borderRadius]="'var(--radius-lg)'"
+                          ></app-stl-viewer>
+                          <span class="preview-pill">{{
+                            "CHECKOUT.PREVIEW_OPEN" | translate
+                          }}</span>
+                        </div>
+                      </button>
+                    </ng-container>
+                    <ng-template #previewState>
+                      <div class="preview-state" *ngIf="isPreviewLoading(item)">
+                        {{ "CHECKOUT.PREVIEW_LOADING" | translate }}
+                      </div>
+                      <div
+                        class="preview-state preview-state-error"
+                        *ngIf="!isPreviewLoading(item) && hasPreviewError(item)"
+                      >
+                        {{ "CHECKOUT.PREVIEW_UNAVAILABLE" | translate }}
+                      </div>
+                    </ng-template>
+                  </div>
+                </div>
+                <div class="item-price">
+                  <span class="item-total-price">
+                    {{ item.unitPriceChf * item.quantity | currency: "CHF" }}
+                  </span>
+                  <small class="item-unit-price" *ngIf="item.quantity > 1">
+                    {{ item.unitPriceChf | currency: "CHF" }}
+                    {{ "CHECKOUT.PER_PIECE" | translate }}
+                  </small>
+                </div>
+              </div>
+            </div>
+            <div
+              class="summary-services"
+              *ngIf="
+                serviceLines().length ||
+                cadTotal() > 0 ||
+                session.session?.invoiceName
+              "
+            >
+              <p
+                class="ui-copy-subtitle"
+                *ngIf="quoteSession()?.session?.invoiceName"
+              >
+                {{ quoteSession()?.session?.invoiceName }}
+              </p>
+              <div
+                class="summary-item cad-summary-item"
+                *ngFor="let line of serviceLines()"
+              >
+                <div class="item-details">
+                  <span class="item-name">{{ line.description }}</span>
+                  <div class="item-specs-sub">
+                    {{
+                      (line.billingType === "HOURLY"
+                        ? "CAD_ORGANIZATION.HOURLY"
+                        : "CAD_ORGANIZATION.FIXED"
+                      ) | translate
+                    }}
+                    · {{ line.quantity }} ×
+                    {{ line.unitPriceChf | currency: "CHF" }}
+                  </div>
+                </div>
+                <div class="item-price">
+                  <span class="item-total-price">{{
+                    line.lineTotalChf ?? line.quantity * line.unitPriceChf
+                      | currency: "CHF"
+                  }}</span>
+                </div>
+              </div>
+              <div class="summary-item cad-summary-item" *ngIf="cadTotal() > 0">
+                <div class="item-details">
+                  <span class="item-name">{{
+                    "CHECKOUT.CAD_SERVICE" | translate
+                  }}</span>
+                  <div class="item-specs-sub">{{ cadHours() }}h</div>
+                </div>
+                <div class="item-price">
+                  <span class="item-total-price">
+                    {{ cadTotal() | currency: "CHF" }}
                   </span>
                 </div>
-                <app-print-item-controls
-                  class="cad-item-controls"
-                  *ngIf="isCadSession() && !isShopItem(item)"
-                  [quantity]="item.quantity"
-                  [color]="item.colorCode"
-                  [variantId]="item.filamentVariantId ?? null"
-                  [variants]="cadVariants(item)"
-                  [commitOnBlur]="true"
-                  [disabled]="updatingItem() || isSubmitting()"
-                  (quantityChange)="
-                    updateCadItem(item, $event, item.filamentVariantId)
-                  "
-                  (colorChange)="
-                    updateCadItem(
-                      item,
-                      item.quantity,
-                      $event.filamentVariantId ?? item.filamentVariantId
-                    )
-                  "
-                />
-                <div class="item-specs-sub" *ngIf="showItemPrintMetrics(item)">
-                  {{ item.printTimeSeconds / 3600 | number: "1.1-1" }}h |
-                  {{ item.materialGrams | number: "1.0-0" }}g
-                </div>
-                <div class="item-preview" *ngIf="isStlItem(item)">
-                  <ng-container
-                    *ngIf="previewFile(item) as itemPreview; else previewState"
-                  >
-                    <button
-                      type="button"
-                      class="preview-trigger"
-                      (click)="openPreview(item)"
-                      [attr.aria-label]="'CHECKOUT.PREVIEW_OPEN' | translate"
-                    >
-                      <div class="preview-surface">
-                        <app-stl-viewer
-                          [file]="itemPreview"
-                          [height]="116"
-                          [color]="previewColor(item)"
-                          [borderRadius]="'var(--radius-lg)'"
-                        ></app-stl-viewer>
-                        <span class="preview-pill">{{
-                          "CHECKOUT.PREVIEW_OPEN" | translate
-                        }}</span>
-                      </div>
-                    </button>
-                  </ng-container>
-                  <ng-template #previewState>
-                    <div class="preview-state" *ngIf="isPreviewLoading(item)">
-                      {{ "CHECKOUT.PREVIEW_LOADING" | translate }}
-                    </div>
-                    <div
-                      class="preview-state preview-state-error"
-                      *ngIf="!isPreviewLoading(item) && hasPreviewError(item)"
-                    >
-                      {{ "CHECKOUT.PREVIEW_UNAVAILABLE" | translate }}
-                    </div>
-                  </ng-template>
-                </div>
-              </div>
-              <div class="item-price">
-                <span class="item-total-price">
-                  {{ item.unitPriceChf * item.quantity | currency: "CHF" }}
-                </span>
-                <small class="item-unit-price" *ngIf="item.quantity > 1">
-                  {{ item.unitPriceChf | currency: "CHF" }}
-                  {{ "CHECKOUT.PER_PIECE" | translate }}
-                </small>
               </div>
             </div>
-            <p class="ui-copy-subtitle" *ngIf="quoteSession()?.session?.invoiceName">{{ quoteSession()?.session?.invoiceName }}</p>
-            <div class="summary-item cad-summary-item" *ngFor="let line of serviceLines()">
-              <div class="item-details">
-                <span class="item-name">{{ line.description }}</span>
-                <div class="item-specs-sub">
-                  {{ (line.billingType === 'HOURLY' ? 'CAD_ORGANIZATION.HOURLY' : 'CAD_ORGANIZATION.FIXED') | translate }}
-                  · {{ line.quantity }} × {{ line.unitPriceChf | currency: 'CHF' }}
-                </div>
-              </div>
-              <div class="item-price"><span class="item-total-price">{{ line.quantity * line.unitPriceChf | currency: 'CHF' }}</span></div>
-            </div>
-            <div class="summary-item cad-summary-item" *ngIf="cadTotal() > 0">
-              <div class="item-details">
-                <span class="item-name">{{
-                  "CHECKOUT.CAD_SERVICE" | translate
-                }}</span>
-                <div class="item-specs-sub">{{ cadHours() }}h</div>
-              </div>
-              <div class="item-price">
-                <span class="item-total-price">
-                  {{ cadTotal() | currency: "CHF" }}
-                </span>
-              </div>
-            </div>
-          </div>
+          </ng-container>
 
           <app-price-breakdown
             *ngIf="!loading && quoteSession() as session"
@@ -395,6 +427,12 @@
         </app-card>
       </div>
     </div>
+
+    <app-order-information
+      class="checkout-order-information"
+      [review]="true"
+      [models]="informationModels"
+    />
   </div>
 </div>
 

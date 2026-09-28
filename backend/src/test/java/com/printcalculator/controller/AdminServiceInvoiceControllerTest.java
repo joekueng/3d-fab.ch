@@ -40,11 +40,12 @@ class AdminServiceInvoiceControllerTest {
         var service = mock(AdminOperationsControllerService.class);
         var mvc = MockMvcBuilders.standaloneSetup(new AdminOperationsController(service)).build();
         var line = Map.of("description", "Custom finishing / iteration details",
-                "billingType", "FIXED", "quantity", 1, "unitPriceChf", 10);
+                "billingType", "FIXED", "quantity", 1, "unitPriceChf", 10, "lineTotalChf", 0);
         mvc.perform(post("/api/admin/cad-invoices").contentType("application/json")
                 .content(JsonMapper.builder().build().writeValueAsBytes(
                         Map.of("serviceLines", Collections.nCopies(250, line)))))
                 .andExpect(status().isOk());
-        verify(service).createOrUpdateCadInvoice(argThat(request -> request.getServiceLines().size() == 250));
+        verify(service).createOrUpdateCadInvoice(argThat(request -> request.getServiceLines().size() == 250
+                && request.getServiceLines().getFirst().totalChf().compareTo(java.math.BigDecimal.TEN) == 0));
     }
 }

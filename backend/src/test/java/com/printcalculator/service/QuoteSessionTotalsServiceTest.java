@@ -129,6 +129,14 @@ class QuoteSessionTotalsServiceTest {
         assertAmountEquals("113.00", totals.itemsTotalChf());
         assertAmountEquals("2.00", totals.shippingCostChf());
         assertAmountEquals("120.00", totals.grandTotalChf());
+
+        session.setCadHours(BigDecimal.ZERO);
+        session.setServiceLines(List.of(new com.printcalculator.dto.ServiceLineDto("Custom finishing",
+                com.printcalculator.dto.ServiceLineDto.BillingType.FIXED, BigDecimal.ONE, new BigDecimal("50"))));
+        var servicesAndPrint = service.compute(session, List.of(item));
+        assertAmountEquals("23.00", servicesAndPrint.printItemsTotalChf());
+        assertAmountEquals("73.00", servicesAndPrint.itemsTotalChf());
+        assertAmountEquals("80.00", servicesAndPrint.grandTotalChf());
     }
 
     @Test
