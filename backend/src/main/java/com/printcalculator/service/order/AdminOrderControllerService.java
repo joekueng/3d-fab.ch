@@ -5,6 +5,7 @@ import com.printcalculator.dto.AdminOrderStatisticsDto;
 import com.printcalculator.dto.AdminOrderStatusUpdateRequest;
 import com.printcalculator.dto.OrderDto;
 import com.printcalculator.dto.OrderItemDto;
+import com.printcalculator.dto.ReviewRequestPreviewDto;
 import com.printcalculator.entity.EmailLog;
 import com.printcalculator.entity.Order;
 import com.printcalculator.entity.OrderItem;
@@ -22,6 +23,8 @@ import com.printcalculator.service.payment.InvoicePdfRenderingService;
 import com.printcalculator.service.payment.PaymentService;
 import com.printcalculator.service.payment.QrBillService;
 import com.printcalculator.service.email.EmailAuditService;
+import com.printcalculator.service.email.ReviewRequestEmailService;
+import com.printcalculator.service.email.EmailSendResult;
 import com.printcalculator.service.storage.StorageService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.Resource;
@@ -50,6 +53,7 @@ import java.util.UUID;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.CONFLICT;
 
 @Service
 @Transactional(readOnly = true)
@@ -77,6 +81,7 @@ public class AdminOrderControllerService {
     private final OrderCadFileService orderCadFileService;
     private final EmailAuditService emailAuditService;
     private final OrderEmailListener orderEmailListener;
+    private final ReviewRequestEmailService reviewRequestEmailService;
 
     public AdminOrderControllerService(OrderRepository orderRepo,
                                        OrderItemRepository orderItemRepo,
@@ -90,7 +95,8 @@ public class AdminOrderControllerService {
                                        ApplicationEventPublisher eventPublisher,
                                        OrderCadFileService orderCadFileService,
                                        EmailAuditService emailAuditService,
-                                       OrderEmailListener orderEmailListener) {
+                                       OrderEmailListener orderEmailListener,
+                                       ReviewRequestEmailService reviewRequestEmailService) {
         this.orderRepo = orderRepo;
         this.orderItemRepo = orderItemRepo;
         this.paymentRepo = paymentRepo;
@@ -104,6 +110,7 @@ public class AdminOrderControllerService {
         this.orderCadFileService = orderCadFileService;
         this.emailAuditService = emailAuditService;
         this.orderEmailListener = orderEmailListener;
+        this.reviewRequestEmailService = reviewRequestEmailService;
     }
 
     public List<OrderDto> listOrders() {
@@ -192,9 +199,38 @@ public class AdminOrderControllerService {
         if (emailLog.getOrder() == null || !emailLog.getOrder().getId().equals(orderId)) {
             throw new ResponseStatusException(NOT_FOUND, "Email log not found for order");
         }
+        if (EmailAuditService.EVENT_GOOGLE_REVIEW_REQUEST_CUSTOMER.equals(emailLog.getEventType())) {
+            throw new ResponseStatusException(CONFLICT, "Use the review request action to retry a failed request");
+        }
 
         orderEmailListener.resendOrderEmail(order, emailLog);
         return toOrderDto(getOrderOrThrow(orderId), true);
+    }
+
+    public ReviewRequestPreviewDto previewReviewRequest(UUID orderId) {
+        Order order = getOrderOrThrow(orderId);
+        requireReviewEligible(order);
+        return reviewRequestEmailService.preview(order);
+    }
+
+    @Transactional
+    public OrderDto sendReviewRequest(UUID orderId) {
+        Order order = getOrderOrThrow(orderId);
+        requireReviewEligible(order);
+        boolean alreadyAttempted = emailLogRepo.existsByOrder_IdAndEventTypeAndStatusIn(
+                orderId, EmailAuditService.EVENT_GOOGLE_REVIEW_REQUEST_CUSTOMER,
+                List.of(EmailSendResult.STATUS_SENT, EmailSendResult.STATUS_UNKNOWN));
+        if (alreadyAttempted) {
+            throw new ResponseStatusException(CONFLICT, "Review request already sent or its delivery is unknown");
+        }
+        reviewRequestEmailService.send(order);
+        return toOrderDto(order, true);
+    }
+
+    private void requireReviewEligible(Order order) {
+        if (!"SHIPPED".equals(order.getStatus()) && !"COMPLETED".equals(order.getStatus())) {
+            throw new ResponseStatusException(CONFLICT, "Review requests are available after shipping or completion");
+        }
     }
 
     public ResponseEntity<Resource> downloadOrderItemFile(UUID orderId, UUID orderItemId) {

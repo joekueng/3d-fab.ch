@@ -65,6 +65,21 @@ class AdminOrderControllerSecurityTest {
     @MockitoBean
     private com.printcalculator.service.information.OrderInformationService informationService;
 
+    @Test void reviewRequest_requiresAdminSession() throws Exception {
+        UUID orderId = UUID.randomUUID();
+        mockMvc.perform(get("/api/admin/orders/{id}/review-request/preview", orderId))
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(post("/api/admin/orders/{id}/review-request", orderId)
+                        .header(HttpHeaders.ORIGIN, ALLOWED_ORIGIN))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test void reviewRequest_sendRequiresTrustedOrigin() throws Exception {
+        mockMvc.perform(post("/api/admin/orders/{id}/review-request", UUID.randomUUID())
+                        .cookie(loginAndExtractCookie()))
+                .andExpect(status().isForbidden());
+    }
+
     @Test void informationWithoutAdminSessionIsRejected() throws Exception {
         mockMvc.perform(get("/api/admin/orders/information-unread")).andExpect(status().isUnauthorized());
         mockMvc.perform(get("/api/admin/orders/{id}/information/files/{file}", UUID.randomUUID(), UUID.randomUUID())).andExpect(status().isUnauthorized());

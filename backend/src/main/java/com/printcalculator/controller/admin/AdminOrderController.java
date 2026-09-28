@@ -3,6 +3,7 @@ package com.printcalculator.controller.admin;
 import com.printcalculator.dto.AdminOrderStatusUpdateRequest;
 import com.printcalculator.dto.AdminOrderStatisticsDto;
 import com.printcalculator.dto.OrderDto;
+import com.printcalculator.dto.ReviewRequestPreviewDto;
 import com.printcalculator.service.order.AdminOrderControllerService;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
@@ -74,6 +75,17 @@ public class AdminOrderController {
             @PathVariable UUID emailLogId
     ) {
         return ResponseEntity.ok(adminOrderControllerService.resendEmail(orderId, emailLogId));
+    }
+
+    @GetMapping("/{orderId}/review-request/preview")
+    public ResponseEntity<ReviewRequestPreviewDto> previewReviewRequest(@PathVariable UUID orderId) {
+        return ResponseEntity.ok(adminOrderControllerService.previewReviewRequest(orderId));
+    }
+
+    @PostMapping("/{orderId}/review-request")
+    @Transactional
+    public ResponseEntity<OrderDto> sendReviewRequest(@PathVariable UUID orderId) {
+        return ResponseEntity.ok(adminOrderControllerService.sendReviewRequest(orderId));
     }
 
     @GetMapping("/{orderId}/items/{orderItemId}/file")

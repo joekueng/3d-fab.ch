@@ -67,6 +67,8 @@ class AdminOrderControllerStatusValidationTest {
     private EmailAuditService emailAuditService;
     @Mock
     private OrderEmailListener orderEmailListener;
+    @Mock
+    private com.printcalculator.service.email.ReviewRequestEmailService reviewRequestEmailService;
 
     private AdminOrderController controller;
 
@@ -85,7 +87,8 @@ class AdminOrderControllerStatusValidationTest {
                 eventPublisher,
                 orderCadFileService,
                 emailAuditService,
-                orderEmailListener
+                orderEmailListener,
+                reviewRequestEmailService
         );
         controller = new AdminOrderController(adminOrderControllerService);
     }
