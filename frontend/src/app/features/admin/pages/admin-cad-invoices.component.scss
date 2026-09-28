@@ -52,3 +52,16 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+.invoice-name {
+  min-width: 10rem;
+  max-width: 20rem;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.invoice-fields { border: 0; padding: 0; margin: 0; min-width: 0; }
+.service-lines { display: grid; gap: var(--space-3); }
+.service-details { max-width: 28rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+.service-line h4 { margin-top: 0; }

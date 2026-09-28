@@ -359,6 +359,17 @@
                 </small>
               </div>
             </div>
+            <p class="ui-copy-subtitle" *ngIf="quoteSession()?.session?.invoiceName">{{ quoteSession()?.session?.invoiceName }}</p>
+            <div class="summary-item cad-summary-item" *ngFor="let line of serviceLines()">
+              <div class="item-details">
+                <span class="item-name">{{ line.description }}</span>
+                <div class="item-specs-sub">
+                  {{ (line.billingType === 'HOURLY' ? 'CAD_ORGANIZATION.HOURLY' : 'CAD_ORGANIZATION.FIXED') | translate }}
+                  · {{ line.quantity }} × {{ line.unitPriceChf | currency: 'CHF' }}
+                </div>
+              </div>
+              <div class="item-price"><span class="item-total-price">{{ line.quantity * line.unitPriceChf | currency: 'CHF' }}</span></div>
+            </div>
             <div class="summary-item cad-summary-item" *ngIf="cadTotal() > 0">
               <div class="item-details">
                 <span class="item-name">{{

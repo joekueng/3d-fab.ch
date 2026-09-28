@@ -1,3 +1,4 @@
+import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import {
@@ -17,6 +18,7 @@ const SUPPORTED_LANGS = new Set(['it', 'en', 'de', 'fr']);
   standalone: true,
   imports: [
     CommonModule,
+    TranslateModule,
     RouterOutlet,
     RouterLink,
     RouterLinkActive,

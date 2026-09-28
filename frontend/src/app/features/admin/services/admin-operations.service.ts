@@ -1,3 +1,4 @@
+import { ServiceLine } from '../../../shared/models/service-line';
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -185,14 +186,22 @@ export interface AdminQuoteSessionDetail {
 }
 
 export interface AdminCreateCadInvoicePayload {
+  serviceLines?: ServiceLine[];
+  clientName?: string;
+  invoiceName?: string;
+  collaborationName?: string;
   sessionId?: string;
   sourceRequestId?: string;
-  cadHours: number;
+  cadHours?: number;
   cadHourlyRateChf?: number;
   notes?: string;
 }
 
 export interface AdminCadInvoice {
+  serviceLines?: ServiceLine[];
+  clientName?: string;
+  invoiceName?: string;
+  collaborationName?: string;
   sessionId: string;
   sessionStatus: string;
   sourceRequestId?: string;
@@ -368,6 +377,17 @@ export class AdminOperationsService {
     return this.http.get<AdminCadInvoice[]>(`${this.baseUrl}/cad-invoices`, {
       withCredentials: true,
     });
+  }
+
+  updateCadInvoiceMetadata(
+    sessionId: string,
+    payload: { invoiceName: string; collaborationName: string; clientName: string },
+  ): Observable<void> {
+    return this.http.patch<void>(
+      `${this.baseUrl}/cad-invoices/${sessionId}/metadata`,
+      payload,
+      { withCredentials: true },
+    );
   }
 
   createCadInvoice(

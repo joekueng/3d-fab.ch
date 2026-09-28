@@ -40,6 +40,22 @@ class QuoteSessionTotalsServiceTest {
     }
 
     @Test
+    void customHourlyAndFixedServicesRoundEachLineWithoutShippingOrCadDuplication() {
+        QuoteSession session = new QuoteSession();
+        session.setServiceLines(List.of(
+                new com.printcalculator.dto.ServiceLineDto("Design", com.printcalculator.dto.ServiceLineDto.BillingType.HOURLY,
+                        new BigDecimal("1.25"), new BigDecimal("85.50")),
+                new com.printcalculator.dto.ServiceLineDto("Finishing", com.printcalculator.dto.ServiceLineDto.BillingType.FIXED,
+                        BigDecimal.ONE, new BigDecimal("50"))));
+        when(quoteCalculator.calculateSessionMachineCost(any(), any())).thenReturn(BigDecimal.ZERO);
+        var totals = service.compute(session, List.of());
+        assertAmountEquals("156.88", totals.grandTotalChf());
+        assertAmountEquals("156.88", totals.itemsTotalChf());
+        assertAmountEquals("0", totals.cadTotalChf());
+        assertAmountEquals("0", totals.shippingCostChf());
+    }
+
+    @Test
     void compute_WithCadOnlySession_ShouldIncludeCadAndNoShipping() {
         QuoteSession session = new QuoteSession();
         session.setSetupCostChf(BigDecimal.ZERO);

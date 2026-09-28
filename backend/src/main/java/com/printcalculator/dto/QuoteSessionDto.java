@@ -25,7 +25,9 @@ public record QuoteSessionDto(
         UUID convertedOrderId,
         UUID sourceRequestId,
         BigDecimal cadHours,
-        BigDecimal cadHourlyRateChf) {
+        BigDecimal cadHourlyRateChf,
+        String invoiceName,
+        java.util.List<ServiceLineDto> serviceLines) {
     public static QuoteSessionDto from(QuoteSession session) {
         return from(session, true);
     }
@@ -54,6 +56,8 @@ public record QuoteSessionDto(
                 session.getConvertedOrderId(),
                 session.getSourceRequestId(),
                 session.getCadHours(),
-                session.getCadHourlyRateChf());
+                session.getCadHourlyRateChf(),
+                session.getInvoiceName(),
+                session.getServiceLines());
     }
 }
