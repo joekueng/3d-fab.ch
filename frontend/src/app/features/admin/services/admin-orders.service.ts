@@ -119,6 +119,7 @@ export interface ReviewRequestPreview {
   actionText: string;
   reviewUrl: string;
   closing: string;
+  signature: string;
   footer: string;
 }
 

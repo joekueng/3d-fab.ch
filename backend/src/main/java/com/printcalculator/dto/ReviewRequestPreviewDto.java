@@ -11,5 +11,6 @@ public record ReviewRequestPreviewDto(
         String actionText,
         String reviewUrl,
         String closing,
+        String signature,
         String footer
 ) {}

@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
@@ -47,6 +48,15 @@ class ReviewRequestEmailServiceTest {
     }
 
     @Test
+    void previewThanksForTrustAndUsesPersonalSignatureWithoutHonestWording() {
+        ReviewRequestPreviewDto preview = service.preview(order("en"));
+
+        assertEquals("Thank you for your trust. If you need help, you can reply to this email.", preview.closing());
+        assertEquals("Joe and Matteo", preview.signature());
+        assertFalse(preview.request().toLowerCase().contains("honest"));
+    }
+
+    @Test
     void sendUsesPreviewCopyAndRecordsAdminAttempt() {
         Order order = order("it");
         ReviewRequestPreviewDto preview = service.preview(order);
@@ -62,6 +72,7 @@ class ReviewRequestEmailServiceTest {
         assertEquals(preview.request(), context.getValue().get("requestText"));
         assertEquals(preview.photoNote(), context.getValue().get("photoNoteText"));
         assertEquals(preview.reviewUrl(), context.getValue().get("reviewUrl"));
+        assertEquals(preview.signature(), context.getValue().get("signatureText"));
         verify(emailAuditService).recordOrderEmail(order, EmailAuditService.EVENT_GOOGLE_REVIEW_REQUEST_CUSTOMER,
                 EmailAuditService.ORIGIN_ADMIN, preview.recipient(), preview.subject(), "review-request", null, result, null);
     }
