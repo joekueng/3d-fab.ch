@@ -39,24 +39,24 @@ public class ReviewRequestEmailService {
         return switch (language) {
             case "en" -> new ReviewRequestPreviewDto(recipient, "How was your experience with 3D-Fab?", "Thank you for choosing 3D-Fab", greeting,
                     "Thank you for choosing 3D-Fab for your project.",
-                    "If you would like, tell us about your honest experience in a Google review. Your feedback helps us improve our service.",
+                    "If you would like, tell us about your experience in a Google review. Your feedback helps us improve our service.",
                     "You can also add photos of your project if you wish.", "Write a Google review", reviewUrl,
-                    "Thank you for your time. If you need help, you can reply to this email.", "A personal request from 3D-Fab.");
+                    "Thank you for your trust. If you need help, you can reply to this email.", "Joe and Matteo", "A personal request from 3D-Fab.");
             case "de" -> new ReviewRequestPreviewDto(recipient, "Wie war Ihre Erfahrung mit 3D-Fab?", "Danke, dass Sie 3D-Fab gewählt haben", greeting,
                     "Vielen Dank, dass Sie 3D-Fab für Ihr Projekt gewählt haben.",
-                    "Wenn Sie möchten, erzählen Sie in einer Google-Rezension ehrlich von Ihrer Erfahrung. Ihr Feedback hilft uns, unseren Service zu verbessern.",
+                    "Wenn Sie möchten, erzählen Sie in einer Google-Rezension von Ihrer Erfahrung. Ihr Feedback hilft uns, unseren Service zu verbessern.",
                     "Sie können auf Wunsch auch Fotos Ihres Projekts hinzufügen.", "Google-Rezension schreiben", reviewUrl,
-                    "Vielen Dank für Ihre Zeit. Wenn Sie Hilfe benötigen, antworten Sie einfach auf diese E-Mail.", "Eine persönliche Anfrage von 3D-Fab.");
+                    "Vielen Dank für Ihr Vertrauen. Wenn Sie Hilfe benötigen, antworten Sie einfach auf diese E-Mail.", "Joe und Matteo", "Eine persönliche Anfrage von 3D-Fab.");
             case "fr" -> new ReviewRequestPreviewDto(recipient, "Comment s'est passée votre expérience avec 3D-Fab ?", "Merci d'avoir choisi 3D-Fab", greeting,
                     "Merci d'avoir choisi 3D-Fab pour votre projet.",
-                    "Si vous le souhaitez, racontez sincèrement votre expérience dans un avis Google. Votre retour nous aide à améliorer notre service.",
+                    "Si vous le souhaitez, racontez votre expérience dans un avis Google. Votre retour nous aide à améliorer notre service.",
                     "Vous pouvez aussi ajouter des photos de votre projet si vous le souhaitez.", "Laisser un avis Google", reviewUrl,
-                    "Merci pour votre temps. Si vous avez besoin d'aide, répondez simplement à cet e-mail.", "Une demande personnelle de 3D-Fab.");
+                    "Merci de votre confiance. Si vous avez besoin d'aide, répondez simplement à cet e-mail.", "Joe et Matteo", "Une demande personnelle de 3D-Fab.");
             default -> new ReviewRequestPreviewDto(recipient, "Com'è stata la tua esperienza con 3D-Fab?", "Grazie per aver scelto 3D-Fab", greeting,
                     "Grazie per aver scelto 3D-Fab per il tuo progetto.",
-                    "Se ti va, racconta con sincerità la tua esperienza in una recensione su Google. La tua opinione ci aiuta a migliorare il servizio.",
+                    "Se ti va, racconta la tua esperienza in una recensione su Google. La tua opinione ci aiuta a migliorare il servizio.",
                     "Se desideri, puoi aggiungere anche delle foto del tuo progetto.", "Lascia una recensione su Google", reviewUrl,
-                    "Grazie per il tuo tempo. Se hai bisogno di aiuto, puoi rispondere a questa email.", "Una richiesta personale di 3D-Fab.");
+                    "Grazie per la fiducia. Se hai bisogno di aiuto, puoi rispondere a questa email.", "Joe e Matteo", "Una richiesta personale di 3D-Fab.");
         };
     }
 
@@ -72,6 +72,7 @@ public class ReviewRequestEmailService {
         context.put("actionText", copy.actionText());
         context.put("reviewUrl", copy.reviewUrl());
         context.put("closingText", copy.closing());
+        context.put("signatureText", copy.signature());
         context.put("footerText", copy.footer());
         context.put("currentYear", Year.now().getValue());
         EmailSendResult result = emailNotificationService.sendEmail(copy.recipient(), copy.subject(), "review-request", context);

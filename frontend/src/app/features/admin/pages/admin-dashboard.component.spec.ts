@@ -80,6 +80,7 @@ describe('Admin orders responsive layout', () => {
       actionText: 'Write a review',
       reviewUrl: 'https://g.page/r/CXamfIi-St1wEAI/review',
       closing: 'Thank you.',
+      signature: 'Joe and Matteo',
       footer: '3D-Fab',
     };
     const previewCall = spyOn(service, 'previewReviewRequest').and.returnValue(

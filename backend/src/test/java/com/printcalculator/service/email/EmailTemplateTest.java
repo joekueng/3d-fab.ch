@@ -30,6 +30,7 @@ class EmailTemplateTest {
                 "orderDetailsUrl", "https://example.test/it/co/123",
                 "reviewUrl", "https://g.page/r/CXamfIi-St1wEAI/review",
                 "resumeUrl", "https://example.test/it/calculator/basic?session=123&mode=basic"));
+        context.setVariable("signatureText", "Joe and Matteo");
 
         String html = engine.process("email/" + template, context);
         var document = Jsoup.parse(html);
@@ -40,6 +41,10 @@ class EmailTemplateTest {
         assertEquals("© 2026 3D-Fab", document.selectFirst(".footer p").text());
         assertEquals(session ? "Private <link>" : "Automated <message>", document.select(".footer p").last().text());
         assertEquals(context.getVariable(session ? "resumeUrl" : template.equals("review-request") ? "reviewUrl" : "orderDetailsUrl"), document.selectFirst(".content a").attr("href"));
+        if (template.equals("review-request")) {
+            assertTrue(document.select(".action-button").isEmpty());
+            assertEquals("Joe and Matteo", document.select(".content p").last().text());
+        }
         assertTrue(document.select("style").first().data().contains("max-width: 600px"));
         assertFalse(html.contains("th:replace"));
         assertTrue(document.select("confirmation, session, message, link").isEmpty());
