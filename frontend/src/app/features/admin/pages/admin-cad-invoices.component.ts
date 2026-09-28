@@ -67,14 +67,27 @@ export class AdminCadInvoicesComponent implements OnInit {
   get collaborationOptions(): { label: string; value: string }[] {
     return [
       { label: this.translate.instant('CAD_ORGANIZATION.NONE'), value: '' },
-      ...[...new Set(this.invoices.map(row => row.collaborationName).filter(
-        (name): name is string => Boolean(name),
-      ))].sort((a, b) => a.localeCompare(b)).map(name => ({ label: name, value: name })),
+      ...[
+        ...new Set(
+          this.invoices
+            .map((row) => row.collaborationName)
+            .filter((name): name is string => Boolean(name)),
+        ),
+      ]
+        .sort((a, b) => a.localeCompare(b))
+        .map((name) => ({ label: name, value: name })),
     ];
   }
 
-  get invoiceGroups(): { name: string; clientName: string; rows: AdminCadInvoice[] }[] {
-    const groups = new Map<string, { name: string; clientName: string; rows: AdminCadInvoice[] }>();
+  get invoiceGroups(): {
+    name: string;
+    clientName: string;
+    rows: AdminCadInvoice[];
+  }[] {
+    const groups = new Map<
+      string,
+      { name: string; clientName: string; rows: AdminCadInvoice[] }
+    >();
     for (const row of this.invoices) {
       const name = row.collaborationName || '';
       const clientName = row.clientName || '';
@@ -83,8 +96,11 @@ export class AdminCadInvoicesComponent implements OnInit {
       group.rows.push(row);
       groups.set(key, group);
     }
-    return [...groups.values()].sort((a, b) =>
-      a.clientName.localeCompare(b.clientName) || a.name.localeCompare(b.name));
+    return [...groups.values()].sort(
+      (a, b) =>
+        a.clientName.localeCompare(b.clientName) ||
+        a.name.localeCompare(b.name),
+    );
   }
 
   newInterimInvoice(group: { name: string; clientName: string }): void {
@@ -116,22 +132,36 @@ export class AdminCadInvoicesComponent implements OnInit {
     }
     this.savingMetadata = true;
     this.metadataError = null;
-    this.adminOperationsService.updateCadInvoiceMetadata(this.editingSessionId, this.metadata).subscribe({
-      next: () => {
-        this.savingMetadata = false;
-        this.editingSessionId = null;
-        this.successMessage = this.translate.instant('CAD_ORGANIZATION.SAVED');
-        this.loadCadInvoices();
-      },
-      error: () => {
-        this.savingMetadata = false;
-        this.metadataError = this.translate.instant('CAD_ORGANIZATION.SAVE_ERROR');
-      },
-    });
+    this.adminOperationsService
+      .updateCadInvoiceMetadata(this.editingSessionId, this.metadata)
+      .subscribe({
+        next: () => {
+          this.savingMetadata = false;
+          this.editingSessionId = null;
+          this.successMessage = this.translate.instant(
+            'CAD_ORGANIZATION.SAVED',
+          );
+          this.loadCadInvoices();
+        },
+        error: () => {
+          this.savingMetadata = false;
+          this.metadataError = this.translate.instant(
+            'CAD_ORGANIZATION.SAVE_ERROR',
+          );
+        },
+      });
   }
 
-  private validLabels(value: { invoiceName: string; collaborationName: string; clientName: string }): boolean {
-    return value.invoiceName.length <= 160 && value.collaborationName.length <= 160 && value.clientName.length <= 160;
+  private validLabels(value: {
+    invoiceName: string;
+    collaborationName: string;
+    clientName: string;
+  }): boolean {
+    return (
+      value.invoiceName.length <= 160 &&
+      value.collaborationName.length <= 160 &&
+      value.clientName.length <= 160
+    );
   }
   loading = false;
   creating = false;
@@ -161,7 +191,9 @@ export class AdminCadInvoicesComponent implements OnInit {
       },
       error: () => {
         this.loading = false;
-        this.errorMessage = this.translate.instant('CAD_ORGANIZATION.LOAD_ERROR');
+        this.errorMessage = this.translate.instant(
+          'CAD_ORGANIZATION.LOAD_ERROR',
+        );
       },
     });
   }
@@ -169,24 +201,38 @@ export class AdminCadInvoicesComponent implements OnInit {
   serviceLines: ServiceLineForm[] = [this.newServiceLine()];
 
   get billingOptions(): { label: string; value: string }[] {
-    return ['HOURLY', 'FIXED'].map(value => ({
-      label: this.translate.instant('CAD_ORGANIZATION.' + value), value,
+    return ['HOURLY', 'FIXED'].map((value) => ({
+      label: this.translate.instant('CAD_ORGANIZATION.' + value),
+      value,
     }));
   }
 
   newServiceLine(): ServiceLineForm {
-    return { description: '', billingType: 'HOURLY', quantity: '1', unitPriceChf: '' };
+    return {
+      description: '',
+      billingType: 'HOURLY',
+      quantity: '1',
+      unitPriceChf: '',
+    };
   }
 
   lineTotal(line: ServiceLineForm): number {
-    const quantity = line.billingType === 'FIXED' ? 1 : parseDecimalInput(line.quantity);
+    const quantity =
+      line.billingType === 'FIXED' ? 1 : parseDecimalInput(line.quantity);
     const rate = parseDecimalInput(line.unitPriceChf);
-    return Number.isFinite(quantity * rate) ? Math.round((quantity * rate + Number.EPSILON) * 100) / 100 : 0;
+    return Number.isFinite(quantity * rate)
+      ? Math.round((quantity * rate + Number.EPSILON) * 100) / 100
+      : 0;
   }
 
   servicesTotal(row: AdminCadInvoice): number {
-    return (row.serviceLines || []).reduce((total, line) =>
-      total + Math.round((line.quantity * line.unitPriceChf + Number.EPSILON) * 100) / 100, row.cadTotalChf || 0);
+    return (row.serviceLines || []).reduce(
+      (total, line) =>
+        total +
+        Math.round((line.quantity * line.unitPriceChf + Number.EPSILON) * 100) /
+          100,
+      row.cadTotalChf || 0,
+    );
   }
 
   editInvoice(row: AdminCadInvoice): void {
@@ -199,15 +245,32 @@ export class AdminCadInvoicesComponent implements OnInit {
       notes: row.notes || '',
     };
     this.serviceLines = row.serviceLines?.length
-      ? row.serviceLines.map(line => ({ ...line, quantity: String(line.quantity), unitPriceChf: String(line.unitPriceChf) }))
-      : [{ description: this.translate.instant('CHECKOUT.CAD_SERVICE'), billingType: 'HOURLY',
-          quantity: String(row.cadHours), unitPriceChf: String(row.cadHourlyRateChf) }];
+      ? row.serviceLines.map((line) => ({
+          ...line,
+          quantity: String(line.quantity),
+          unitPriceChf: String(line.unitPriceChf),
+        }))
+      : [
+          {
+            description: this.translate.instant('CHECKOUT.CAD_SERVICE'),
+            billingType: 'HOURLY',
+            quantity: String(row.cadHours),
+            unitPriceChf: String(row.cadHourlyRateChf),
+          },
+        ];
     this.errorMessage = null;
     if (this.isBrowser) window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   resetForm(): void {
-    this.form = { clientName: '', invoiceName: '', collaborationName: '', sessionId: '', sourceRequestId: '', notes: '' };
+    this.form = {
+      clientName: '',
+      invoiceName: '',
+      collaborationName: '',
+      sessionId: '',
+      sourceRequestId: '',
+      notes: '',
+    };
     this.serviceLines = [this.newServiceLine()];
     this.errorMessage = null;
   }
@@ -218,45 +281,66 @@ export class AdminCadInvoicesComponent implements OnInit {
       this.errorMessage = this.translate.instant('CAD_ORGANIZATION.TOO_LONG');
       return;
     }
-    const serviceLines: ServiceLine[] = this.serviceLines.map(line => ({
+    const serviceLines: ServiceLine[] = this.serviceLines.map((line) => ({
       description: line.description.trim(),
       billingType: line.billingType,
-      quantity: line.billingType === 'FIXED' ? 1 : parseDecimalInput(line.quantity),
+      quantity:
+        line.billingType === 'FIXED' ? 1 : parseDecimalInput(line.quantity),
       unitPriceChf: parseDecimalInput(line.unitPriceChf),
     }));
-    if (!serviceLines.length || serviceLines.some(line =>
-      !line.description || line.description.length > 2000 ||
-      !Number.isFinite(line.quantity) || line.quantity < 0.01 || line.quantity > 99999 ||
-      !Number.isFinite(line.unitPriceChf) || line.unitPriceChf < 0 || line.unitPriceChf > 999999 ||
-      Math.abs(line.quantity * 100 - Math.round(line.quantity * 100)) > 0.000001 ||
-      Math.abs(line.unitPriceChf * 100 - Math.round(line.unitPriceChf * 100)) > 0.000001
-    )) {
-      this.errorMessage = this.translate.instant('CAD_ORGANIZATION.INVALID_LINES');
+    if (
+      !serviceLines.length ||
+      serviceLines.some(
+        (line) =>
+          !line.description ||
+          line.description.length > 2000 ||
+          !Number.isFinite(line.quantity) ||
+          line.quantity < 0.01 ||
+          line.quantity > 99999 ||
+          !Number.isFinite(line.unitPriceChf) ||
+          line.unitPriceChf < 0 ||
+          line.unitPriceChf > 999999 ||
+          Math.abs(line.quantity * 100 - Math.round(line.quantity * 100)) >
+            0.000001 ||
+          Math.abs(
+            line.unitPriceChf * 100 - Math.round(line.unitPriceChf * 100),
+          ) > 0.000001,
+      )
+    ) {
+      this.errorMessage = this.translate.instant(
+        'CAD_ORGANIZATION.INVALID_LINES',
+      );
       return;
     }
     this.creating = true;
     this.errorMessage = null;
     this.successMessage = null;
-    this.adminOperationsService.createCadInvoice({
-      clientName: this.form.clientName.trim(),
-      invoiceName: this.form.invoiceName.trim(),
-      collaborationName: this.form.collaborationName.trim(),
-      sessionId: this.form.sessionId.trim() || undefined,
-      sourceRequestId: this.form.sourceRequestId.trim() || undefined,
-      notes: this.form.notes.trim(),
-      serviceLines,
-    }).subscribe({
-      next: () => {
-        this.creating = false;
-        this.successMessage = this.translate.instant('CAD_ORGANIZATION.READY');
-        this.resetForm();
-        this.loadCadInvoices();
-      },
-      error: () => {
-        this.creating = false;
-        this.errorMessage = this.translate.instant('CAD_ORGANIZATION.CREATE_ERROR');
-      },
-    });
+    this.adminOperationsService
+      .createCadInvoice({
+        clientName: this.form.clientName.trim(),
+        invoiceName: this.form.invoiceName.trim(),
+        collaborationName: this.form.collaborationName.trim(),
+        sessionId: this.form.sessionId.trim() || undefined,
+        sourceRequestId: this.form.sourceRequestId.trim() || undefined,
+        notes: this.form.notes.trim(),
+        serviceLines,
+      })
+      .subscribe({
+        next: () => {
+          this.creating = false;
+          this.successMessage = this.translate.instant(
+            'CAD_ORGANIZATION.READY',
+          );
+          this.resetForm();
+          this.loadCadInvoices();
+        },
+        error: () => {
+          this.creating = false;
+          this.errorMessage = this.translate.instant(
+            'CAD_ORGANIZATION.CREATE_ERROR',
+          );
+        },
+      });
   }
 
   openCheckout(path: string): void {
@@ -286,7 +370,9 @@ export class AdminCadInvoicesComponent implements OnInit {
         downloadBlobInBrowser(blob, `fattura-cad-${orderId}.pdf`);
       },
       error: () => {
-        this.errorMessage = this.translate.instant('CAD_ORGANIZATION.DOWNLOAD_ERROR');
+        this.errorMessage = this.translate.instant(
+          'CAD_ORGANIZATION.DOWNLOAD_ERROR',
+        );
       },
     });
   }

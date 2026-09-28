@@ -472,9 +472,14 @@ export class OrderComponent implements OnInit, OnDestroy {
         amount: order?.cadTotalChf ?? 0,
         visible: (order?.cadTotalChf ?? 0) > 0,
       },
-      ...(order?.serviceLines || []).map(line => ({
-        label: line.description + (line.billingType === 'HOURLY' ? ' (' + line.quantity + ' h)' : ''),
-        amount: Math.round((line.quantity * line.unitPriceChf + Number.EPSILON) * 100) / 100,
+      ...(order?.serviceLines || []).map((line) => ({
+        label:
+          line.description +
+          (line.billingType === 'HOURLY' ? ' (' + line.quantity + ' h)' : ''),
+        amount:
+          Math.round(
+            (line.quantity * line.unitPriceChf + Number.EPSILON) * 100,
+          ) / 100,
       })),
       {
         labelKey: 'PAYMENT.SHIPPING',
