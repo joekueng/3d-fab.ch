@@ -414,25 +414,37 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   canRequestReview(order: AdminOrder): boolean {
-    return ['SHIPPED', 'COMPLETED'].includes(order.status) &&
-      !(order.emailLogs ?? []).some((log) =>
-        log.eventType === 'GOOGLE_REVIEW_REQUEST_CUSTOMER' &&
-        ['SENT', 'UNKNOWN'].includes(log.status));
+    return (
+      ['SHIPPED', 'COMPLETED'].includes(order.status) &&
+      !(order.emailLogs ?? []).some(
+        (log) =>
+          log.eventType === 'GOOGLE_REVIEW_REQUEST_CUSTOMER' &&
+          ['SENT', 'UNKNOWN'].includes(log.status),
+      )
+    );
   }
 
   openReviewRequestPreview(): void {
-    if (!this.selectedOrder || this.reviewPreviewLoading || !this.canRequestReview(this.selectedOrder)) return;
+    if (
+      !this.selectedOrder ||
+      this.reviewPreviewLoading ||
+      !this.canRequestReview(this.selectedOrder)
+    )
+      return;
     const orderId = this.selectedOrder.id;
     this.reviewPreviewLoading = true;
     this.errorMessage = null;
     this.adminOrdersService.previewReviewRequest(orderId).subscribe({
       next: (preview) => {
         this.reviewPreviewLoading = false;
-        if (this.selectedOrder?.id === orderId) this.reviewRequestPreview = preview;
+        if (this.selectedOrder?.id === orderId)
+          this.reviewRequestPreview = preview;
       },
       error: () => {
         this.reviewPreviewLoading = false;
-        this.errorMessage = this.translate.instant('ADMIN_ORDERS.REVIEW_PREVIEW_ERROR');
+        this.errorMessage = this.translate.instant(
+          'ADMIN_ORDERS.REVIEW_PREVIEW_ERROR',
+        );
       },
     });
   }
@@ -442,7 +454,8 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   sendReviewRequest(): void {
-    if (!this.selectedOrder || !this.reviewRequestPreview || this.reviewSending) return;
+    if (!this.selectedOrder || !this.reviewRequestPreview || this.reviewSending)
+      return;
     const orderId = this.selectedOrder.id;
     this.reviewSending = true;
     this.errorMessage = null;
@@ -452,18 +465,24 @@ export class AdminDashboardComponent implements OnInit {
         this.reviewRequestPreview = null;
         if (this.selectedOrder?.id === orderId) {
           this.applyOrderUpdate(updatedOrder);
-          const attempt = updatedOrder.emailLogs.find((log) =>
-            log.eventType === 'GOOGLE_REVIEW_REQUEST_CUSTOMER');
+          const attempt = updatedOrder.emailLogs.find(
+            (log) => log.eventType === 'GOOGLE_REVIEW_REQUEST_CUSTOMER',
+          );
           if (attempt?.status !== 'SENT') {
-            this.errorMessage = this.translate.instant('ADMIN_ORDERS.REVIEW_SEND_ERROR');
+            this.errorMessage = this.translate.instant(
+              'ADMIN_ORDERS.REVIEW_SEND_ERROR',
+            );
           }
         }
       },
       error: () => {
         this.reviewSending = false;
         this.reviewRequestPreview = null;
-        this.errorMessage = this.translate.instant('ADMIN_ORDERS.REVIEW_SEND_ERROR');
-        if (this.selectedOrder?.id === orderId) this.openDetails(orderId, false);
+        this.errorMessage = this.translate.instant(
+          'ADMIN_ORDERS.REVIEW_SEND_ERROR',
+        );
+        if (this.selectedOrder?.id === orderId)
+          this.openDetails(orderId, false);
       },
     });
   }

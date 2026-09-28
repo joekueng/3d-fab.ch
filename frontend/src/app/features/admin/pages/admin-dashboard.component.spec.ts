@@ -82,28 +82,36 @@ describe('Admin orders responsive layout', () => {
       closing: 'Thank you.',
       footer: '3D-Fab',
     };
-    const previewCall = spyOn(service, 'previewReviewRequest').and.returnValue(of(preview));
+    const previewCall = spyOn(service, 'previewReviewRequest').and.returnValue(
+      of(preview),
+    );
     const sentOrder: AdminOrder = {
       ...order,
       status: 'SHIPPED',
-      emailLogs: [{
-        id: 'review-email',
-        scope: 'ORDER',
-        eventType: 'GOOGLE_REVIEW_REQUEST_CUSTOMER',
-        status: 'SENT',
-        origin: 'ADMIN',
-        recipient: 'customer@example.com',
-        subject: 'Review request',
-        attemptedAt: '2026-09-28T10:00:00Z',
-      }],
+      emailLogs: [
+        {
+          id: 'review-email',
+          scope: 'ORDER',
+          eventType: 'GOOGLE_REVIEW_REQUEST_CUSTOMER',
+          status: 'SENT',
+          origin: 'ADMIN',
+          recipient: 'customer@example.com',
+          subject: 'Review request',
+          attemptedAt: '2026-09-28T10:00:00Z',
+        },
+      ],
     };
-    const sendCall = spyOn(service, 'sendReviewRequest').and.returnValue(of(sentOrder));
+    const sendCall = spyOn(service, 'sendReviewRequest').and.returnValue(
+      of(sentOrder),
+    );
     fixture.componentInstance.selectedOrder = { ...order, status: 'SHIPPED' };
 
     fixture.componentInstance.openReviewRequestPreview();
     expect(previewCall).toHaveBeenCalledWith(order.id);
     expect(sendCall).not.toHaveBeenCalled();
-    expect(fixture.componentInstance.reviewRequestPreview?.reviewUrl).toBe(preview.reviewUrl);
+    expect(fixture.componentInstance.reviewRequestPreview?.reviewUrl).toBe(
+      preview.reviewUrl,
+    );
 
     fixture.componentInstance.sendReviewRequest();
     expect(sendCall).toHaveBeenCalledWith(order.id);

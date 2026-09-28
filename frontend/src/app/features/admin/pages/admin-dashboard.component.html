@@ -616,15 +616,34 @@
         </div>
       </details>
 
-      <div class="review-request-panel ui-subpanel" *ngIf="selectedOrder.status === 'SHIPPED' || selectedOrder.status === 'COMPLETED'">
+      <div
+        class="review-request-panel ui-subpanel"
+        *ngIf="
+          selectedOrder.status === 'SHIPPED' ||
+          selectedOrder.status === 'COMPLETED'
+        "
+      >
         <div>
-          <strong>{{ 'ADMIN_ORDERS.REVIEW_REQUEST_TITLE' | translate }}</strong>
-          <p class="muted">{{ 'ADMIN_ORDERS.REVIEW_REQUEST_HELP' | translate }}</p>
-          <p class="muted" *ngIf="!canRequestReview(selectedOrder)">{{ 'ADMIN_ORDERS.REVIEW_ALREADY_SENT' | translate }}</p>
+          <strong>{{ "ADMIN_ORDERS.REVIEW_REQUEST_TITLE" | translate }}</strong>
+          <p class="muted">
+            {{ "ADMIN_ORDERS.REVIEW_REQUEST_HELP" | translate }}
+          </p>
+          <p class="muted" *ngIf="!canRequestReview(selectedOrder)">
+            {{ "ADMIN_ORDERS.REVIEW_ALREADY_SENT" | translate }}
+          </p>
         </div>
-        <app-button type="button" variant="ghost" (click)="openReviewRequestPreview()"
-          [disabled]="!canRequestReview(selectedOrder) || reviewPreviewLoading">
-          {{ (reviewPreviewLoading ? 'ADMIN_ORDERS.REVIEW_PREVIEW_LOADING' : 'ADMIN_ORDERS.REVIEW_PREVIEW_BUTTON') | translate }}
+        <app-button
+          type="button"
+          variant="ghost"
+          (click)="openReviewRequestPreview()"
+          [disabled]="!canRequestReview(selectedOrder) || reviewPreviewLoading"
+        >
+          {{
+            (reviewPreviewLoading
+              ? "ADMIN_ORDERS.REVIEW_PREVIEW_LOADING"
+              : "ADMIN_ORDERS.REVIEW_PREVIEW_BUTTON"
+            ) | translate
+          }}
         </app-button>
       </div>
 
@@ -652,8 +671,14 @@
                     [ngClass]="emailStatusClass(emailLog.status)"
                     >{{ emailStatusLabel(emailLog.status) }}</span
                   >
-                  <span class="email-origin" *ngIf="emailLog.origin === 'ADMIN'"
-                    >{{ emailLog.resentFromEmailLogId ? 'Reinvio admin' : ('ADMIN_ORDERS.REVIEW_MANUAL_SEND' | translate) }}</span
+                  <span
+                    class="email-origin"
+                    *ngIf="emailLog.origin === 'ADMIN'"
+                    >{{
+                      emailLog.resentFromEmailLogId
+                        ? "Reinvio admin"
+                        : ("ADMIN_ORDERS.REVIEW_MANUAL_SEND" | translate)
+                    }}</span
                   >
                 </div>
                 <p class="email-log-row__meta">
@@ -710,22 +735,51 @@
   (dismissed)="closeReviewRequestPreview()"
 >
   <div class="review-preview">
-    <p><strong>{{ 'ADMIN_ORDERS.REVIEW_RECIPIENT' | translate }}:</strong> {{ preview.recipient }}</p>
-    <p><strong>{{ 'ADMIN_ORDERS.REVIEW_SUBJECT' | translate }}:</strong> {{ preview.subject }}</p>
+    <p>
+      <strong>{{ "ADMIN_ORDERS.REVIEW_RECIPIENT" | translate }}:</strong>
+      {{ preview.recipient }}
+    </p>
+    <p>
+      <strong>{{ "ADMIN_ORDERS.REVIEW_SUBJECT" | translate }}:</strong>
+      {{ preview.subject }}
+    </p>
     <div class="review-preview__message">
       <h4>{{ preview.headline }}</h4>
       <p>{{ preview.greeting }}</p>
       <p>{{ preview.intro }}</p>
       <p>{{ preview.request }}</p>
       <p>{{ preview.photoNote }}</p>
-      <p><a [href]="preview.reviewUrl" target="_blank" rel="noopener noreferrer">{{ preview.actionText }}</a></p>
-      <p><a [href]="preview.reviewUrl" target="_blank" rel="noopener noreferrer">{{ preview.reviewUrl }}</a></p>
+      <p>
+        <a
+          [href]="preview.reviewUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          >{{ preview.actionText }}</a
+        >
+      </p>
+      <p>
+        <a
+          [href]="preview.reviewUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          >{{ preview.reviewUrl }}</a
+        >
+      </p>
       <p>{{ preview.closing }}</p>
       <small>{{ preview.footer }}</small>
     </div>
-    <p class="muted">{{ 'ADMIN_ORDERS.REVIEW_CONFIRM_HELP' | translate }}</p>
-    <app-button type="button" (click)="sendReviewRequest()" [disabled]="reviewSending">
-      {{ (reviewSending ? 'ADMIN_ORDERS.REVIEW_SENDING' : 'ADMIN_ORDERS.REVIEW_SEND') | translate }}
+    <p class="muted">{{ "ADMIN_ORDERS.REVIEW_CONFIRM_HELP" | translate }}</p>
+    <app-button
+      type="button"
+      (click)="sendReviewRequest()"
+      [disabled]="reviewSending"
+    >
+      {{
+        (reviewSending
+          ? "ADMIN_ORDERS.REVIEW_SENDING"
+          : "ADMIN_ORDERS.REVIEW_SEND"
+        ) | translate
+      }}
     </app-button>
   </div>
 </app-dialog>
