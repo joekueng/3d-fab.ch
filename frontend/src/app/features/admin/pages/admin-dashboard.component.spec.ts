@@ -5,6 +5,7 @@ import { AdminDashboardComponent } from './admin-dashboard.component';
 import {
   AdminOrder,
   AdminOrdersService,
+  ReviewRequestPreview,
 } from '../services/admin-orders.service';
 
 describe('Admin orders responsive layout', () => {
@@ -33,6 +34,8 @@ describe('Admin orders responsive layout', () => {
             listOrders: () => of([order]),
             getOrder: () => of(order),
             getStatistics: () => of(null),
+            previewReviewRequest: () => of(null),
+            sendReviewRequest: () => of(order),
           },
         },
       ],
@@ -63,6 +66,57 @@ describe('Admin orders responsive layout', () => {
   function element(selector: string): HTMLElement {
     return frame.contentDocument!.querySelector<HTMLElement>(selector)!;
   }
+
+  it('shows the request before sending and records the manual result', () => {
+    const service = TestBed.inject(AdminOrdersService);
+    const preview: ReviewRequestPreview = {
+      recipient: 'customer@example.com',
+      subject: 'Review request',
+      headline: 'Thank you',
+      greeting: 'Hello,',
+      intro: 'Thank you for your order.',
+      request: 'Tell us honestly about your experience.',
+      photoNote: 'You may add photos.',
+      actionText: 'Write a review',
+      reviewUrl: 'https://g.page/r/CXamfIi-St1wEAI/review',
+      closing: 'Thank you.',
+      footer: '3D-Fab',
+    };
+    const previewCall = spyOn(service, 'previewReviewRequest').and.returnValue(
+      of(preview),
+    );
+    const sentOrder: AdminOrder = {
+      ...order,
+      status: 'SHIPPED',
+      emailLogs: [
+        {
+          id: 'review-email',
+          scope: 'ORDER',
+          eventType: 'GOOGLE_REVIEW_REQUEST_CUSTOMER',
+          status: 'SENT',
+          origin: 'ADMIN',
+          recipient: 'customer@example.com',
+          subject: 'Review request',
+          attemptedAt: '2026-09-28T10:00:00Z',
+        },
+      ],
+    };
+    const sendCall = spyOn(service, 'sendReviewRequest').and.returnValue(
+      of(sentOrder),
+    );
+    fixture.componentInstance.selectedOrder = { ...order, status: 'SHIPPED' };
+
+    fixture.componentInstance.openReviewRequestPreview();
+    expect(previewCall).toHaveBeenCalledWith(order.id);
+    expect(sendCall).not.toHaveBeenCalled();
+    expect(fixture.componentInstance.reviewRequestPreview?.reviewUrl).toBe(
+      preview.reviewUrl,
+    );
+
+    fixture.componentInstance.sendReviewRequest();
+    expect(sendCall).toHaveBeenCalledWith(order.id);
+    expect(fixture.componentInstance.canRequestReview(sentOrder)).toBeFalse();
+  });
 
   it('keeps desktop cells under their headers and filters visible', () => {
     const cells = Array.from(

@@ -17,6 +17,7 @@ import {
   AdminOrderItem,
   AdminOrdersService,
   AdminOrderStatistics,
+  ReviewRequestPreview,
 } from '../services/admin-orders.service';
 import { AdminEmailLog } from '../services/admin-email-log.model';
 import { CopyOnClickDirective } from '../../../shared/directives/copy-on-click.directive';
@@ -77,6 +78,9 @@ export class AdminDashboardComponent implements OnInit {
   cadUploadFiles: File[] = [];
   deletingCadFileIds = new Set<string>();
   resendingEmailLogIds = new Set<string>();
+  reviewRequestPreview: ReviewRequestPreview | null = null;
+  reviewPreviewLoading = false;
+  reviewSending = false;
   readonly orderStatusOptions = [
     'PENDING_PAYMENT',
     'PAID',
@@ -238,6 +242,7 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   openDetails(orderId: string, revealOnMobile = true): void {
+    this.reviewRequestPreview = null;
     if (revealOnMobile && this.isMobileViewport()) {
       this.listScrollPosition = window.scrollY;
       this.mobileDetailOpen = true;
@@ -406,6 +411,80 @@ export class AdminDashboardComponent implements OnInit {
           this.errorMessage = 'Reinvio email non riuscito.';
         },
       });
+  }
+
+  canRequestReview(order: AdminOrder): boolean {
+    return (
+      ['SHIPPED', 'COMPLETED'].includes(order.status) &&
+      !(order.emailLogs ?? []).some(
+        (log) =>
+          log.eventType === 'GOOGLE_REVIEW_REQUEST_CUSTOMER' &&
+          ['SENT', 'UNKNOWN'].includes(log.status),
+      )
+    );
+  }
+
+  openReviewRequestPreview(): void {
+    if (
+      !this.selectedOrder ||
+      this.reviewPreviewLoading ||
+      !this.canRequestReview(this.selectedOrder)
+    )
+      return;
+    const orderId = this.selectedOrder.id;
+    this.reviewPreviewLoading = true;
+    this.errorMessage = null;
+    this.adminOrdersService.previewReviewRequest(orderId).subscribe({
+      next: (preview) => {
+        this.reviewPreviewLoading = false;
+        if (this.selectedOrder?.id === orderId)
+          this.reviewRequestPreview = preview;
+      },
+      error: () => {
+        this.reviewPreviewLoading = false;
+        this.errorMessage = this.translate.instant(
+          'ADMIN_ORDERS.REVIEW_PREVIEW_ERROR',
+        );
+      },
+    });
+  }
+
+  closeReviewRequestPreview(): void {
+    if (!this.reviewSending) this.reviewRequestPreview = null;
+  }
+
+  sendReviewRequest(): void {
+    if (!this.selectedOrder || !this.reviewRequestPreview || this.reviewSending)
+      return;
+    const orderId = this.selectedOrder.id;
+    this.reviewSending = true;
+    this.errorMessage = null;
+    this.adminOrdersService.sendReviewRequest(orderId).subscribe({
+      next: (updatedOrder) => {
+        this.reviewSending = false;
+        this.reviewRequestPreview = null;
+        if (this.selectedOrder?.id === orderId) {
+          this.applyOrderUpdate(updatedOrder);
+          const attempt = updatedOrder.emailLogs.find(
+            (log) => log.eventType === 'GOOGLE_REVIEW_REQUEST_CUSTOMER',
+          );
+          if (attempt?.status !== 'SENT') {
+            this.errorMessage = this.translate.instant(
+              'ADMIN_ORDERS.REVIEW_SEND_ERROR',
+            );
+          }
+        }
+      },
+      error: () => {
+        this.reviewSending = false;
+        this.reviewRequestPreview = null;
+        this.errorMessage = this.translate.instant(
+          'ADMIN_ORDERS.REVIEW_SEND_ERROR',
+        );
+        if (this.selectedOrder?.id === orderId)
+          this.openDetails(orderId, false);
+      },
+    });
   }
 
   downloadItemFile(itemId: string, filename: string): void {
@@ -866,6 +945,8 @@ export class AdminDashboardComponent implements OnInit {
         return 'Pagamento confermato / fattura';
       case 'ORDER_SHIPPED_CUSTOMER':
         return 'Ordine spedito';
+      case 'GOOGLE_REVIEW_REQUEST_CUSTOMER':
+        return this.translate.instant('ADMIN_ORDERS.REVIEW_EMAIL_LABEL');
       default:
         return eventType || '-';
     }
