@@ -33,10 +33,10 @@
 
     <div class="content">
         <p th:text="${greetingText}">Hi Customer,</p>
-        <p th:text="${introText}">Your payment has been confirmed and your order is now in production.</p>
+        <p th:text="${introText}">Your payment has been confirmed. Your order will enter production shortly.</p>
 
         <div class="status-box">
-            <strong th:text="${statusText}">Current status: In production.</strong>
+            <strong th:text="${statusText}">Current status: Paid — awaiting production.</strong>
         </div>
 
         <div class="order-box">

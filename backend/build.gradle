@@ -43,6 +43,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'net.codecrete.qrbill:qrbill-generator:3.4.0'
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
+	implementation 'org.apache.james.jdkim:apache-jdkim-library:0.5'
 	implementation 'org.jsoup:jsoup:1.18.3'
 	implementation platform('org.lwjgl:lwjgl-bom:3.3.4')
 	implementation 'org.lwjgl:lwjgl'
@@ -60,6 +61,29 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+	testLogging {
+		events 'failed', 'passed', 'skipped', 'standardOut'
+		exceptionFormat 'full'
+		showExceptions true
+		showCauses true
+		showStackTraces true
+
+		debug {
+			events 'started', 'failed', 'passed', 'skipped', 'standardError', 'standardOut'
+			exceptionFormat 'full'
+		}
+		info.events = debug.events
+		info.exceptionFormat = debug.exceptionFormat
+
+		afterSuite { descriptor, result ->
+			if (!descriptor.parent) {
+				def output = "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} passed, ${result.failedTestCount} failed, ${result.skippedTestCount} skipped)"
+				def startItem = '|  ', endItem = '  |'
+				def repeatLength = startItem.length() + output.length() + endItem.length()
+				println('\n' + ('-' * repeatLength) + '\n' + startItem + output + endItem + '\n' + ('-' * repeatLength))
+			}
+		}
+	}
 }
 
 tasks.named('bootRun') {

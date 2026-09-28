@@ -72,7 +72,7 @@
         ></app-upload-form>
       </app-card>
       @if (!loading() && result()?.sessionId) {
-        <app-card>
+        <app-card class="session-email-card result-reveal">
           <h3>{{ "SESSION_EMAIL.TITLE" | translate }}</h3>
           <app-session-email
             [sessionId]="result()!.sessionId!"
@@ -102,6 +102,7 @@
         </app-card>
       } @else if (result()) {
         <app-quote-result
+          class="result-reveal"
           [result]="result()!"
           [recalculationRequired]="requiresRecalculation()"
           [recalculationReason]="
@@ -114,7 +115,7 @@
           (itemChange)="onItemChange($event)"
         ></app-quote-result>
         <app-order-information
-          class="calculator-information"
+          class="calculator-information result-reveal"
           [review]="true"
           [compact]="true"
           [models]="informationModels"

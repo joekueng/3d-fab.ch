@@ -143,7 +143,7 @@ public class OrderInformationService {
      */
     @Transactional(readOnly = true)
     public InformationDto.Credential resumeOrder(UUID id) {
-        OrderInformation value = repo.findByOrderId(id)
+        OrderInformation value = repo.findUnlockedByOrderId(id)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
         return new InformationDto.Credential(value.getId(), value.getAccessToken());
     }

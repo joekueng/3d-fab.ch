@@ -403,6 +403,32 @@ tbody tr.no-results:hover {
   margin-bottom: var(--space-3);
 }
 
+.review-request-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+}
+
+.review-request-panel .muted {
+  margin-top: var(--space-2);
+}
+
+.review-preview {
+  padding: var(--space-3);
+}
+
+.review-preview__message {
+  margin: var(--space-3) 0;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow-wrap: anywhere;
+}
+
 .email-log-list {
   display: grid;
   gap: var(--space-2);

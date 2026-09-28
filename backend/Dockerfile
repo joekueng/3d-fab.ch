@@ -22,6 +22,7 @@ RUN set -eux; \
     ffmpeg \
     wget \
     xz-utils \
+    squashfs-tools \
     ca-certificates \
     assimp-utils \
     libgl1 \
@@ -83,12 +84,19 @@ https://github.com/SoftFever/OrcaSlicer/releases/download/v2.2.0/OrcaSlicer_Linu
         exit 1; \
       fi; \
     fi \
-    && chmod +x OrcaSlicer.AppImage \
-    && rm -rf /opt/orcaslicer /opt/squashfs-root \
-    && ./OrcaSlicer.AppImage --appimage-extract >/dev/null \
-    && mv /opt/squashfs-root /opt/orcaslicer \
-    && chmod -R +x /opt/orcaslicer \
-    && rm OrcaSlicer.AppImage
+    && rm -rf /opt/orcaslicer \
+    && offset=''; \
+    for candidate in $(LC_ALL=C grep -abo 'hsqs' OrcaSlicer.AppImage | cut -d: -f1); do \
+      if unsquashfs -s -o "$candidate" OrcaSlicer.AppImage >/dev/null 2>&1; then \
+        offset="$candidate"; \
+        break; \
+      fi; \
+    done; \
+    test -n "$offset"; \
+    unsquashfs -f -o "$offset" -d /opt/orcaslicer OrcaSlicer.AppImage >/dev/null; \
+    test -e /opt/orcaslicer/AppRun; \
+    chmod -R +x /opt/orcaslicer; \
+    rm OrcaSlicer.AppImage
 
 ENV PATH="/opt/orcaslicer/usr/bin:${PATH}"
 # Set Slicer Path env variable for Java app

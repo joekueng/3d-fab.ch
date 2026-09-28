@@ -1,5 +1,5 @@
 import { APP_BASE_HREF } from '@angular/common';
-import { RESPONSE_INIT } from '@angular/core';
+import { REQUEST, RESPONSE_INIT } from '@angular/core';
 import { CommonEngine, isMainModule } from '@angular/ssr/node';
 import express from 'express';
 import { createRequire } from 'node:module';
@@ -101,6 +101,9 @@ app.get('**', (req, res, next) => {
       publicPath: browserDistFolder,
       providers: [
         { provide: APP_BASE_HREF, useValue: baseUrl },
+        // CommonEngine does not provide REQUEST automatically. Existing SSR
+        // consumers use the Express request for path, origin and headers.
+        { provide: REQUEST, useValue: req },
         { provide: RESPONSE_INIT, useValue: responseInit },
       ],
     })

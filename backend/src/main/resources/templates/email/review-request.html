@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${emailTitle}">How was your experience with 3D-Fab?</title>
+    <style th:replace="~{email/fragments/layout :: styles}"></style>
+</head>
+<body>
+<div class="container">
+    <div th:replace="~{email/fragments/layout :: header(${headlineText})}"></div>
+    <div class="content">
+        <p th:text="${greetingText}">Hello,</p>
+        <p th:text="${introText}">Thank you for choosing 3D-Fab.</p>
+        <p th:text="${requestText}">Tell us about your experience.</p>
+        <p th:text="${photoNoteText}">You can add photos if you wish.</p>
+        <p>
+            <span th:text="${actionText}">Write a Google review</span>:
+            <a th:href="${reviewUrl}" th:text="${reviewUrl}">https://g.page/r/CXamfIi-St1wEAI/review</a>
+        </p>
+        <p th:text="${closingText}">Thank you for your trust. If you need help, you can reply to this email.</p>
+        <p th:text="${signatureText}">Joe and Matteo</p>
+    </div>
+    <div th:replace="~{email/fragments/layout :: footer(${footerText})}"></div>
+</div>
+</body>
+</html>

@@ -6,7 +6,10 @@
 
 # BlueJ files
 *.ctxt
+/node_modules
 
+/frontend/playwright-report/
+/frontend/test-results/
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 

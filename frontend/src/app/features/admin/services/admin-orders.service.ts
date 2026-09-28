@@ -108,6 +108,21 @@ export interface AdminUpdateOrderStatusPayload {
   status: string;
 }
 
+export interface ReviewRequestPreview {
+  recipient: string;
+  subject: string;
+  headline: string;
+  greeting: string;
+  intro: string;
+  request: string;
+  photoNote: string;
+  actionText: string;
+  reviewUrl: string;
+  closing: string;
+  signature: string;
+  footer: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -159,6 +174,21 @@ export class AdminOrdersService {
   resendEmail(orderId: string, emailLogId: string): Observable<AdminOrder> {
     return this.http.post<AdminOrder>(
       `${this.baseUrl}/${orderId}/email-logs/${emailLogId}/resend`,
+      {},
+      { withCredentials: true },
+    );
+  }
+
+  previewReviewRequest(orderId: string): Observable<ReviewRequestPreview> {
+    return this.http.get<ReviewRequestPreview>(
+      `${this.baseUrl}/${orderId}/review-request/preview`,
+      { withCredentials: true },
+    );
+  }
+
+  sendReviewRequest(orderId: string): Observable<AdminOrder> {
+    return this.http.post<AdminOrder>(
+      `${this.baseUrl}/${orderId}/review-request`,
       {},
       { withCredentials: true },
     );

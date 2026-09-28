@@ -47,6 +47,8 @@ Component HTML, SCSS, and TypeScript must remain in separate files. Use explicit
 
 ## Data, API, and i18n rules
 
+For live order updates, follow [customer order tracking](README.md#customer-order-tracking).
+
 - Put API access in the relevant feature service; do not issue ad-hoc HTTP requests from presentational components.
 - Update strongly typed API models alongside backend contract changes. Keep public and admin behavior explicit.
 - Every new visible string requires matching keys and English translations in all locale catalogs. Do not use a translation fallback as a substitute for a missing locale key.
@@ -62,6 +64,11 @@ npm run check:i18n
 npm run check:ui-reuse
 npm test
 ```
+
+The Playwright smoke suite, disposable local stack, commands, and CI target
+restrictions are documented in [README.md](README.md#dev-end-to-end-checks).
+Read [e2e/README.md](e2e/README.md) before adding browser tests. Gitea's
+post-deploy smoke job targets only `https://dev.3d-fab.ch`.
 
 When touching UI or admin pages, also inspect for prohibited patterns:
 

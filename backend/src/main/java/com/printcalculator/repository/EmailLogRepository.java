@@ -10,6 +10,8 @@ import java.util.UUID;
 public interface EmailLogRepository extends JpaRepository<EmailLog, UUID> {
     List<EmailLog> findByOrder_IdOrderByAttemptedAtDesc(UUID orderId);
 
+    boolean existsByOrder_IdAndEventTypeAndStatusIn(UUID orderId, String eventType, List<String> statuses);
+
     List<EmailLog> findByContactRequest_IdOrderByAttemptedAtDesc(UUID contactRequestId);
 
     long deleteByAttemptedAtBefore(OffsetDateTime cutoff);

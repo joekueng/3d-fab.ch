@@ -1,6 +1,7 @@
 name: PR Checks
 
 on:
+  workflow_dispatch:
   pull_request:
     branches: [main, int, dev]
 
@@ -182,3 +183,62 @@ jobs:
           cd frontend
           echo "Karma CHROME_BIN=$CHROME_BIN"
           npm run test -- --watch=false --browsers=ChromeHeadlessNoSandbox
+
+  i18n-parity:
+    needs: prettier-autofix
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Check translation parity
+        shell: bash
+        run: |
+          cd frontend
+          npm run check:i18n
+
+  browser-matrix:
+    needs: [security-sast, test-backend, test-frontend, i18n-parity]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: "frontend/package-lock.json"
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci --no-audit --no-fund --prefer-offline
+
+      - name: Verify Docker support
+        run: |
+          docker version
+          docker compose version
+
+      - name: Run browsers on one isolated stack
+        env:
+          E2E_CONTAINER_BROWSER: "true"
+          CI: "true"
+          E2E_PROJECTS: chromium,firefox,webkit,mobile-chromium,mobile-webkit
+          E2E_BROWSER_MATRIX: "true"
+        run: bash scripts/e2e/run.sh
+
+      - name: Upload failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4.4.0
+        with:
+          name: browser-e2e
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+          retention-days: 7

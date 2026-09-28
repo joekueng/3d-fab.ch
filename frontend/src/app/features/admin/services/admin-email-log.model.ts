@@ -3,7 +3,7 @@ export interface AdminEmailLog {
   scope: 'ORDER' | 'CONTACT_REQUEST' | string;
   eventType: string;
   origin: 'SYSTEM' | 'ADMIN' | string;
-  status: 'SENT' | 'FAILED' | 'SKIPPED' | string;
+  status: 'SENT' | 'FAILED' | 'SKIPPED' | 'UNKNOWN' | string;
   recipient: string;
   subject?: string | null;
   templateName?: string | null;

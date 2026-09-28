@@ -107,6 +107,7 @@
         "DESCRIPTION": "Review your order summary and the status of your 3D printing request."
       },
       "ADMIN": {
+        "EMAIL_STATUS_UNKNOWN": "Delivery uncertain",
         "TITLE": "Admin | 3D fab",
         "DESCRIPTION": "Restricted 3D fab administration area."
       }
@@ -1264,11 +1265,17 @@
     "METHOD_BANK": "Bank Transfer / QR",
     "STATUS_REPORTED_TITLE": "Order in progress",
     "STATUS_REPORTED_DESC": "We have registered your operation. Your order will soon move to production.",
+    "CHECKING_TWINT": "Checking your payment…",
+    "CHECKING_TWINT_HINT": "We are waiting for TWINT confirmation. This page will update automatically as soon as your payment is confirmed.",
     "IN_VERIFICATION": "Payment Reported",
     "TWINT_QR_ALT": "TWINT payment QR",
     "TWINT_BUTTON_ALT": "Embedded TWINT button"
   },
   "TRACKING": {
+    "STEP_PAID": "Paid",
+    "PAID_DESCRIPTION": "Payment confirmed. Your order is awaiting production and will enter production shortly.",
+    "STATUS_CANCELLED": "Order cancelled",
+    "STATUS_COMPLETED": "Order completed",
     "TITLE": "Order Status",
     "SUBTITLE": "Check the status of your order and manage the payment if necessary.",
     "STEP_PENDING": "Pending",
@@ -1403,6 +1410,21 @@
     "CUSTOMER_AND_ADDRESSES": "Customer and addresses",
     "PAYMENT_AND_DOCUMENTS": "Payment and documents",
     "EMAIL_HISTORY": "Email history",
+    "REVIEW_REQUEST_TITLE": "Google review",
+    "REVIEW_REQUEST_HELP": "Send a personal request after the customer has received the work.",
+    "REVIEW_ALREADY_SENT": "Request already sent or delivery needs checking in the email history.",
+    "REVIEW_PREVIEW_BUTTON": "Preview and send",
+    "REVIEW_PREVIEW_LOADING": "Loading...",
+    "REVIEW_PREVIEW_TITLE": "Review request preview",
+    "REVIEW_PREVIEW_ERROR": "Could not load the request preview.",
+    "REVIEW_SEND_ERROR": "Could not send the request. Check the email history.",
+    "REVIEW_RECIPIENT": "To",
+    "REVIEW_SUBJECT": "Subject",
+    "REVIEW_CONFIRM_HELP": "The email is sent only when you press the button below.",
+    "REVIEW_SEND": "Send request",
+    "REVIEW_SENDING": "Sending...",
+    "REVIEW_EMAIL_LABEL": "Google review request",
+    "REVIEW_MANUAL_SEND": "Manual send",
     "OPEN_3D_PREVIEW": "3D preview",
     "PREVIEW_TITLE": "3D model preview",
     "PREVIEW_LOADING": "Loading model...",

@@ -1,0 +1,16 @@
+title = "Print Calculator secrets scan"
+
+[extend]
+useDefault = true
+
+# This route/title pair is test data. Keep the exception scoped to the rule,
+# file and exact line content so credentials elsewhere remain detectable.
+[[rules]]
+id = "linkedin-client-secret"
+
+[[rules.allowlists]]
+description = "Admin browser test route and translated page title"
+condition = "AND"
+paths = ['''^frontend/e2e/admin/admin-auth\.spec\.ts$''']
+regexTarget = "line"
+regexes = ['''^\s*\['linkedin', 'Sincronizzazione LinkedIn'\],\s*$''']

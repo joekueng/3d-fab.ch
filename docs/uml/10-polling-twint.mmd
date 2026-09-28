@@ -1,0 +1,34 @@
+flowchart TB
+    classDef backend fill:#e9f8ef,stroke:#2f8f46,color:#222;
+    classDef infra fill:#fff0eb,stroke:#c45a1a,color:#222;
+    classDef data fill:#f5ebff,stroke:#7c49c9,color:#222;
+    classDef note fill:#fff6d6,stroke:#a66c00,color:#222;
+
+    Start[Avvio backend<br/>ripristino cursore e validazione configurazione]:::backend
+    Enabled{TWINT_INBOX_ENABLED?}
+    Disabled[Lettore disabilitato]:::note
+    Tick[TwintMailboxScheduler<br/>un solo thread dedicato<br/>tick ogni TWINT_INBOX_POLL_MS]:::backend
+    Orders[(Ordini e pagamenti<br/>date persistite di creazione e prima segnalazione)]:::data
+    Active{Almeno un ordine non pagato<br/>con finestra ancora aperta?}
+    Fast[ACTIVE<br/>intervallo predefinito 5 secondi<br/>finestra predefinita 10 minuti]:::backend
+    Slow[PERIODIC<br/>intervallo predefinito 3 ore<br/>anche senza ordini non pagati]:::backend
+    Due{Primo controllo dopo avvio<br/>o intervallo trascorso<br/>dalla fine dell'ultimo tentativo?}
+    Read[TwintMailboxReader<br/>lock cursore e lettura IMAPS<br/>lotto limitato di nuovi UID]:::infra
+    Auth[Firma DKIM e parser<br/>riferimento ordine e importo]:::backend
+    Reconcile[TwintReconciliationService<br/>conferma o esito da revisionare]:::backend
+    Saved[(Commit ricevute e cursore<br/>pagamento e outbox se confermato)]:::data
+    Error[Rollback del lotto<br/>log errore]:::note
+    Finish[Registra fine tentativo nel coordinatore<br/>attendi il tick successivo]:::backend
+    Note[Nuovi ordini rilevati dal database<br/>nessun task per ordine<br/>nessuna lettura sovrapposta]:::note
+
+    Start --> Enabled
+    Enabled -->|no| Disabled
+    Enabled -->|si| Tick
+    Tick --> Orders --> Active
+    Active -->|si| Fast --> Due
+    Active -->|no| Slow --> Due
+    Due -->|no| Tick
+    Due -->|si| Read --> Auth --> Reconcile --> Saved --> Finish
+    Read -->|errore connessione o elaborazione| Error --> Finish
+    Finish --> Tick
+    Note -.-> Tick

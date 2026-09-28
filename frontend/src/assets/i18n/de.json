@@ -107,6 +107,7 @@
         "DESCRIPTION": "Prüfen Sie die Zusammenfassung Ihrer Bestellung und den Status Ihrer 3D-Druck-Anfrage."
       },
       "ADMIN": {
+        "EMAIL_STATUS_UNKNOWN": "Versandstatus unklar",
         "TITLE": "Admin | 3D fab",
         "DESCRIPTION": "Geschützter Administrationsbereich von 3D fab."
       }
@@ -1277,11 +1278,17 @@
     "METHOD_BANK": "QR-Rechnung / Überweisung",
     "STATUS_REPORTED_TITLE": "Bestellung in Bearbeitung",
     "STATUS_REPORTED_DESC": "Wir haben Ihren Vorgang registriert. Sobald wir die Zahlung bestätigen, geht die Bestellung in Produktion.",
+    "CHECKING_TWINT": "Zahlung wird geprüft…",
+    "CHECKING_TWINT_HINT": "Wir warten auf die TWINT-Bestätigung. Diese Seite wird automatisch aktualisiert, sobald deine Zahlung bestätigt ist.",
     "IN_VERIFICATION": "Zahlung gemeldet",
     "TWINT_QR_ALT": "TWINT-Zahlungs-QR",
     "TWINT_BUTTON_ALT": "Eingebettete TWINT-Schaltfläche"
   },
   "TRACKING": {
+    "STEP_PAID": "Bezahlt",
+    "PAID_DESCRIPTION": "Zahlung bestätigt. Ihre Bestellung wartet auf die Produktion und wird in Kürze bearbeitet.",
+    "STATUS_CANCELLED": "Bestellung storniert",
+    "STATUS_COMPLETED": "Bestellung abgeschlossen",
     "TITLE": "Bestellstatus",
     "SUBTITLE": "Prüfen Sie den Status Ihrer Bestellung und verwalten Sie bei Bedarf die Zahlung.",
     "STEP_PENDING": "Ausstehend",
@@ -1416,6 +1423,21 @@
     "CUSTOMER_AND_ADDRESSES": "Kunde und Adressen",
     "PAYMENT_AND_DOCUMENTS": "Zahlung und Dokumente",
     "EMAIL_HISTORY": "E-Mail-Verlauf",
+    "REVIEW_REQUEST_TITLE": "Google-Rezension",
+    "REVIEW_REQUEST_HELP": "Senden Sie eine persönliche Anfrage, nachdem der Kunde die Arbeit erhalten hat.",
+    "REVIEW_ALREADY_SENT": "Anfrage bereits gesendet oder Zustellung im E-Mail-Verlauf zu prüfen.",
+    "REVIEW_PREVIEW_BUTTON": "Vorschau und senden",
+    "REVIEW_PREVIEW_LOADING": "Lädt...",
+    "REVIEW_PREVIEW_TITLE": "Vorschau der Rezensionsanfrage",
+    "REVIEW_PREVIEW_ERROR": "Die Vorschau konnte nicht geladen werden.",
+    "REVIEW_SEND_ERROR": "Die Anfrage konnte nicht gesendet werden. Prüfen Sie den E-Mail-Verlauf.",
+    "REVIEW_RECIPIENT": "An",
+    "REVIEW_SUBJECT": "Betreff",
+    "REVIEW_CONFIRM_HELP": "Die E-Mail wird erst gesendet, wenn Sie unten auf die Schaltfläche klicken.",
+    "REVIEW_SEND": "Anfrage senden",
+    "REVIEW_SENDING": "Wird gesendet...",
+    "REVIEW_EMAIL_LABEL": "Google-Rezensionsanfrage",
+    "REVIEW_MANUAL_SEND": "Manueller Versand",
     "OPEN_3D_PREVIEW": "3D-Vorschau",
     "PREVIEW_TITLE": "3D-Modellvorschau",
     "PREVIEW_LOADING": "Modell wird geladen...",

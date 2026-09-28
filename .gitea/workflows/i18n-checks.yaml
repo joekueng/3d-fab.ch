@@ -1,8 +1,6 @@
 name: I18n Checks
 
 on:
-  pull_request:
-    branches: [main, int, dev]
   push:
     branches: [main, int, dev]
 

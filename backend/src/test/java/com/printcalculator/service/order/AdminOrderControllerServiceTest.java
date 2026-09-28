@@ -19,6 +19,7 @@ import com.printcalculator.service.payment.InvoicePdfRenderingService;
 import com.printcalculator.service.payment.PaymentService;
 import com.printcalculator.service.payment.QrBillService;
 import com.printcalculator.service.email.EmailAuditService;
+import com.printcalculator.service.email.ReviewRequestEmailService;
 import com.printcalculator.service.storage.StorageService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -72,9 +73,51 @@ class AdminOrderControllerServiceTest {
     private EmailAuditService emailAuditService;
     @Mock
     private OrderEmailListener orderEmailListener;
+    @Mock
+    private ReviewRequestEmailService reviewRequestEmailService;
 
     @InjectMocks
     private AdminOrderControllerService service;
+
+    @Test
+    void reviewRequest_requiresFulfilledOrder() {
+        UUID orderId = UUID.randomUUID();
+        when(orderRepo.findById(orderId)).thenReturn(Optional.of(buildOrder(orderId, "PAID")));
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+                () -> service.sendReviewRequest(orderId));
+
+        assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
+        verify(reviewRequestEmailService, never()).send(any());
+    }
+
+    @Test
+    void reviewRequest_preventsDuplicateSentEmail() {
+        UUID orderId = UUID.randomUUID();
+        when(orderRepo.findById(orderId)).thenReturn(Optional.of(buildOrder(orderId, "COMPLETED")));
+        when(emailLogRepo.existsByOrder_IdAndEventTypeAndStatusIn(
+                orderId, EmailAuditService.EVENT_GOOGLE_REVIEW_REQUEST_CUSTOMER, List.of("SENT", "UNKNOWN"))).thenReturn(true);
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+                () -> service.sendReviewRequest(orderId));
+
+        assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
+        verify(reviewRequestEmailService, never()).send(any());
+    }
+
+    @Test
+    void reviewRequest_sendsOnceForShippedOrderAndReturnsHistory() {
+        UUID orderId = UUID.randomUUID();
+        Order order = buildOrder(orderId, "SHIPPED");
+        when(orderRepo.findById(orderId)).thenReturn(Optional.of(order));
+        when(orderItemRepo.findByOrder_Id(orderId)).thenReturn(List.of());
+        when(paymentRepo.findByOrder_Id(orderId)).thenReturn(Optional.empty());
+
+        OrderDto result = service.sendReviewRequest(orderId);
+
+        assertEquals("SHIPPED", result.getStatus());
+        verify(reviewRequestEmailService).send(order);
+    }
 
     @Test
     void confirmationDownloadRegeneratesPdfInsteadOfServingArchivedLogo() {
@@ -149,7 +192,7 @@ class AdminOrderControllerServiceTest {
         UUID orderId = UUID.randomUUID();
         Order order = buildOrder(orderId, "PAID");
 
-        when(orderRepo.findById(orderId)).thenReturn(Optional.of(order));
+        when(orderRepo.findLockedById(orderId)).thenReturn(Optional.of(order));
         when(orderRepo.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(orderItemRepo.findByOrder_Id(orderId)).thenReturn(List.of());
         when(paymentRepo.findByOrder_Id(orderId)).thenReturn(Optional.empty());
@@ -171,6 +214,7 @@ class AdminOrderControllerServiceTest {
         payment.setMethod("TWINT");
         payment.setStatus("PENDING");
 
+        when(orderRepo.findLockedById(orderId)).thenReturn(Optional.of(order));
         when(orderRepo.findById(orderId)).thenReturn(Optional.of(order));
         when(orderItemRepo.findByOrder_Id(orderId)).thenReturn(List.of());
         when(paymentRepo.findByOrder_Id(orderId)).thenReturn(Optional.of(payment));
@@ -189,7 +233,7 @@ class AdminOrderControllerServiceTest {
         UUID orderId = UUID.randomUUID();
         Order order = buildOrder(orderId, "SHIPPED");
 
-        when(orderRepo.findById(orderId)).thenReturn(Optional.of(order));
+        when(orderRepo.findLockedById(orderId)).thenReturn(Optional.of(order));
         when(orderRepo.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(orderItemRepo.findByOrder_Id(orderId)).thenReturn(List.of());
         when(paymentRepo.findByOrder_Id(orderId)).thenReturn(Optional.empty());

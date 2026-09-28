@@ -1,3 +1,4 @@
+import { TranslateService } from '@ngx-translate/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Component, PLATFORM_ID, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -27,6 +28,7 @@ import { downloadBlobInBrowser } from '../../../core/utils/browser-download';
   styleUrl: './admin-contact-requests.component.scss',
 })
 export class AdminContactRequestsComponent implements OnInit {
+  private readonly translate = inject(TranslateService);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly adminOperationsService = inject(AdminOperationsService);
 
@@ -237,6 +239,8 @@ export class AdminContactRequestsComponent implements OnInit {
         return 'Fallita';
       case 'SKIPPED':
         return 'Saltata';
+      case 'UNKNOWN':
+        return this.translate.instant('ADMIN.EMAIL_STATUS_UNKNOWN');
       default:
         return status || '-';
     }

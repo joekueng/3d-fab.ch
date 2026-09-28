@@ -24,6 +24,7 @@ export class AppButtonComponent {
   size = input<'md' | 'sm'>('md');
   type = input<'button' | 'submit' | 'reset'>('button');
   disabled = input<boolean>(false);
+  loading = input<boolean>(false);
   fullWidth = input<boolean>(false);
 
   buttonClass(): string {
@@ -50,7 +51,7 @@ export class AppButtonComponent {
   }
 
   handleClick(event: Event) {
-    if (this.disabled()) {
+    if (this.disabled() || this.loading()) {
       event.preventDefault();
       event.stopPropagation();
     }

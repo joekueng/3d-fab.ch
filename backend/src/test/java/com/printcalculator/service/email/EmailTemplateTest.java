@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class EmailTemplateTest {
     @ParameterizedTest
-    @ValueSource(strings = {"order-confirmation", "order-shipped", "payment-confirmed", "payment-reported", "quote-session"})
+    @ValueSource(strings = {"order-confirmation", "order-shipped", "payment-confirmed", "payment-reported", "quote-session", "review-request"})
     void resolvesSharedLayoutAndPreservesContent(String template) {
         var resolver = new ClassLoaderTemplateResolver();
         resolver.setPrefix("templates/");
@@ -28,7 +28,9 @@ class EmailTemplateTest {
                 "headlineText", "Order <confirmation>", "title", "Saved <session>",
                 "footerText", "Automated <message>", "notice", "Private <link>",
                 "orderDetailsUrl", "https://example.test/it/co/123",
+                "reviewUrl", "https://g.page/r/CXamfIi-St1wEAI/review",
                 "resumeUrl", "https://example.test/it/calculator/basic?session=123&mode=basic"));
+        context.setVariable("signatureText", "Joe and Matteo");
 
         String html = engine.process("email/" + template, context);
         var document = Jsoup.parse(html);
@@ -38,7 +40,11 @@ class EmailTemplateTest {
         assertEquals(session ? "Saved <session>" : "Order <confirmation>", document.selectFirst(".header h1").text());
         assertEquals("© 2026 3D-Fab", document.selectFirst(".footer p").text());
         assertEquals(session ? "Private <link>" : "Automated <message>", document.select(".footer p").last().text());
-        assertEquals(context.getVariable(session ? "resumeUrl" : "orderDetailsUrl"), document.selectFirst(".content a").attr("href"));
+        assertEquals(context.getVariable(session ? "resumeUrl" : template.equals("review-request") ? "reviewUrl" : "orderDetailsUrl"), document.selectFirst(".content a").attr("href"));
+        if (template.equals("review-request")) {
+            assertTrue(document.select(".action-button").isEmpty());
+            assertEquals("Joe and Matteo", document.select(".content p").last().text());
+        }
         assertTrue(document.select("style").first().data().contains("max-width: 600px"));
         assertFalse(html.contains("th:replace"));
         assertTrue(document.select("confirmation, session, message, link").isEmpty());

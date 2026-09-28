@@ -42,7 +42,7 @@ public class PaymentService {
 
         Payment payment = new Payment();
         payment.setOrder(order);
-        // Default to "OTHER" always, as payment method should only be set by the admin explicitly
+        // The confirmed method is set by the admin or an authenticated provider receipt.
         payment.setMethod("OTHER");
         payment.setStatus("PENDING");
         payment.setCurrency(order.getCurrency() != null ? order.getCurrency() : "CHF");
@@ -54,22 +54,20 @@ public class PaymentService {
 
     @Transactional
     public Payment reportPayment(UUID orderId, String method) {
-        Order order = orderRepo.findById(orderId)
+        Order order = orderRepo.findLockedById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found with id " + orderId));
 
         Payment payment = paymentRepo.findByOrder_Id(orderId)
                 .orElseGet(() -> getOrCreatePaymentForOrder(order, "OTHER"));
 
-        if (!"PENDING".equals(payment.getStatus())) {
-            throw new IllegalStateException("Payment is not in PENDING state. Current state: " + payment.getStatus());
+        if (!"PENDING_PAYMENT".equals(order.getStatus()) || !"PENDING".equals(payment.getStatus())) {
+            return payment;
         }
 
         payment.setStatus("REPORTED");
         payment.setReportedAt(OffsetDateTime.now());
         
-        // We intentionally do not update the payment method here based on user input,
-        // because the system cannot reliably determine the actual method without an integration.
-        // It will be updated by the backoffice admin manually.
+        // A customer report does not establish the actual payment method.
 
         payment = paymentRepo.save(payment);
 
@@ -80,19 +78,19 @@ public class PaymentService {
 
     @Transactional
     public Payment confirmPayment(UUID orderId, String method) {
-        Order order = orderRepo.findById(orderId)
+        Order order = orderRepo.findLockedById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found with id " + orderId));
 
         Payment payment = paymentRepo.findByOrder_Id(orderId)
                 .orElseGet(() -> getOrCreatePaymentForOrder(order, method != null ? method : "OTHER"));
 
         if (RECEIVED_STATUS.equals(payment.getStatus()) || LEGACY_COMPLETED_STATUS.equals(payment.getStatus())) {
-            order.setStatus("PAID");
-            if (order.getPaidAt() == null) {
-                order.setPaidAt(OffsetDateTime.now());
-            }
-            orderRepo.save(order);
             return payment;
+        }
+
+        if (!"PENDING_PAYMENT".equals(order.getStatus())
+                || !("PENDING".equals(payment.getStatus()) || "REPORTED".equals(payment.getStatus()))) {
+            throw new IllegalStateException("Order/payment requires manual review before confirmation");
         }
 
         payment.setStatus(RECEIVED_STATUS);
@@ -117,7 +115,7 @@ public class PaymentService {
             throw new IllegalArgumentException("Payment method is required");
         }
 
-        Order order = orderRepo.findById(orderId)
+        Order order = orderRepo.findLockedById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found with id " + orderId));
 
         Payment payment = paymentRepo.findByOrder_Id(orderId)

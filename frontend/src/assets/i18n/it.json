@@ -76,6 +76,7 @@
         "DESCRIPTION": "Consulta il riepilogo del tuo ordine e lo stato della richiesta di stampa 3D."
       },
       "ADMIN": {
+        "EMAIL_STATUS_UNKNOWN": "Esito incerto",
         "TITLE": "Admin | 3D fab",
         "DESCRIPTION": "Area amministrativa riservata di 3D fab."
       }
@@ -1336,11 +1337,17 @@
     "METHOD_BANK": "Fattura QR / Bonifico",
     "STATUS_REPORTED_TITLE": "Ordine in lavorazione",
     "STATUS_REPORTED_DESC": "Abbiamo registrato la tua operazione. Appena confermiamo il pagamento l'ordine entrerà in produzione",
+    "CHECKING_TWINT": "Verifica del pagamento…",
+    "CHECKING_TWINT_HINT": "Stiamo aspettando la conferma TWINT. La pagina si aggiornerà automaticamente appena il pagamento sarà confermato.",
     "IN_VERIFICATION": "Pagamento Segnalato",
     "TWINT_QR_ALT": "QR di pagamento TWINT",
     "TWINT_BUTTON_ALT": "Pulsante TWINT incorporato"
   },
   "TRACKING": {
+    "STEP_PAID": "Pagato",
+    "PAID_DESCRIPTION": "Pagamento confermato. Il tuo ordine è in attesa di produzione e a breve entrerà in lavorazione.",
+    "STATUS_CANCELLED": "Ordine annullato",
+    "STATUS_COMPLETED": "Ordine completato",
     "TITLE": "Stato dell'Ordine",
     "SUBTITLE": "Consulta lo stato del tuo ordine e gestisci il pagamento se necessario.",
     "STEP_PENDING": "In attesa",
@@ -1410,6 +1417,21 @@
     "CUSTOMER_AND_ADDRESSES": "Cliente e indirizzi",
     "PAYMENT_AND_DOCUMENTS": "Pagamento e documenti",
     "EMAIL_HISTORY": "Cronologia email",
+    "REVIEW_REQUEST_TITLE": "Recensione Google",
+    "REVIEW_REQUEST_HELP": "Invia una richiesta personale dopo che il cliente ha ricevuto il lavoro.",
+    "REVIEW_ALREADY_SENT": "Richiesta già inviata o consegna da verificare nella cronologia email.",
+    "REVIEW_PREVIEW_BUTTON": "Anteprima e invia",
+    "REVIEW_PREVIEW_LOADING": "Caricamento...",
+    "REVIEW_PREVIEW_TITLE": "Anteprima richiesta recensione",
+    "REVIEW_PREVIEW_ERROR": "Impossibile caricare l'anteprima della richiesta.",
+    "REVIEW_SEND_ERROR": "Invio della richiesta non riuscito. Controlla la cronologia email.",
+    "REVIEW_RECIPIENT": "A",
+    "REVIEW_SUBJECT": "Oggetto",
+    "REVIEW_CONFIRM_HELP": "L'invio parte solo dopo aver premuto il pulsante qui sotto.",
+    "REVIEW_SEND": "Invia richiesta",
+    "REVIEW_SENDING": "Invio...",
+    "REVIEW_EMAIL_LABEL": "Richiesta recensione Google",
+    "REVIEW_MANUAL_SEND": "Invio manuale",
     "OPEN_3D_PREVIEW": "Anteprima 3D",
     "PREVIEW_TITLE": "Anteprima 3D del modello",
     "PREVIEW_LOADING": "Caricamento del modello...",

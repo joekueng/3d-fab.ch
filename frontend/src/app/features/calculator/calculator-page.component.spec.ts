@@ -1,5 +1,14 @@
 import { of, Subject, throwError } from 'rxjs';
-import { ActivatedRoute, Router } from '@angular/router';
+import {
+  ActivatedRoute,
+  Event,
+  NavigationEnd,
+  NavigationSkipped,
+  NavigationSkippedCode,
+  Router,
+  Scroll,
+} from '@angular/router';
+import { ElementRef } from '@angular/core';
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { CalculatorPageComponent } from './calculator-page.component';
 import {
@@ -81,7 +90,10 @@ describe('CalculatorPageComponent', () => {
       ],
     );
     estimator.getPendingCalculatorDraft.and.returnValue(null);
-    const router = jasmine.createSpyObj<Router>('Router', ['navigate']);
+    const routerEvents = new Subject<Event>();
+    const router = jasmine.createSpyObj<Router>('Router', ['navigate'], {
+      events: routerEvents.asObservable(),
+    });
     const route = {
       data: of({}),
       queryParams: of(queryParams),
@@ -158,10 +170,111 @@ describe('CalculatorPageComponent', () => {
       component,
       estimator,
       router,
+      routerEvents,
       route,
       uploadForm,
     };
   }
+
+  it('minimizes loading scroll and reveals mobile results after router restoration', fakeAsync(() => {
+    spyOnProperty(window, 'innerWidth').and.returnValue(390);
+    spyOnProperty(window, 'scrollY').and.returnValue(640);
+    spyOnProperty(window, 'scrollX').and.returnValue(0);
+    const restoreScroll = spyOn(window, 'scrollTo');
+    spyOn(window, 'matchMedia').and.returnValue({
+      matches: false,
+    } as MediaQueryList);
+    const { component, estimator, routerEvents } = createComponent();
+    const scrollIntoView = jasmine.createSpy('scrollIntoView');
+    component.resultCol = new ElementRef({ scrollIntoView });
+    const calculation = new Subject<QuoteResult>();
+    estimator.calculate.and.returnValue(calculation);
+    estimator.getQuoteSession.and.returnValue(of({ session: {}, items: [] }));
+
+    component.onCalculate(createDraftRequest());
+    tick(16);
+    expect(scrollIntoView).toHaveBeenCalledWith(
+      jasmine.objectContaining({ block: 'nearest' }),
+    );
+    calculation.next(createResult('session-1'));
+    tick(16);
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    scrollIntoView.calls.reset();
+    routerEvents.next(
+      new Scroll(
+        new NavigationEnd(1, '/it/basic', '/it/basic?session=session-1'),
+        null,
+        null,
+      ),
+    );
+    tick(16);
+    expect<unknown[]>(restoreScroll.calls.mostRecent().args).toEqual([
+      { left: 0, top: 640, behavior: 'instant' },
+    ]);
+    expect(restoreScroll).toHaveBeenCalledBefore(scrollIntoView);
+    expect(scrollIntoView).toHaveBeenCalledWith({
+      behavior: 'smooth',
+      block: 'start',
+    });
+
+    // The same session still emits a Scroll event on a skipped navigation.
+    component.onCalculate(createDraftRequest());
+    calculation.next(createResult('session-1'));
+    scrollIntoView.calls.reset();
+    routerEvents.next(
+      new Scroll(
+        new NavigationSkipped(
+          2,
+          '/it/basic?session=session-1',
+          '',
+          NavigationSkippedCode.IgnoredSameUrlNavigation,
+        ),
+        null,
+        null,
+      ),
+    );
+    tick(16);
+    expect(scrollIntoView).toHaveBeenCalledOnceWith({
+      behavior: 'smooth',
+      block: 'start',
+    });
+    component.ngOnDestroy();
+  }));
+
+  it('cancels pending mobile scrolling on destruction', fakeAsync(() => {
+    spyOnProperty(window, 'innerWidth').and.returnValue(390);
+    const { component, estimator, routerEvents } = createComponent();
+    const scrollIntoView = jasmine.createSpy('scrollIntoView');
+    component.resultCol = new ElementRef({ scrollIntoView });
+    estimator.calculate.and.returnValue(of(createResult('session-1')));
+    estimator.getQuoteSession.and.returnValue(of({ session: {}, items: [] }));
+    component.onCalculate(createDraftRequest());
+    component.ngOnDestroy();
+    routerEvents.next(
+      new Scroll(new NavigationEnd(1, '/it/shop', '/it/shop'), null, null),
+    );
+    tick(16);
+    expect(scrollIntoView).not.toHaveBeenCalled();
+  }));
+
+  it('does not automatically scroll on desktop', fakeAsync(() => {
+    spyOnProperty(window, 'innerWidth').and.returnValue(1024);
+    const { component, estimator, routerEvents } = createComponent();
+    const scrollIntoView = jasmine.createSpy('scrollIntoView');
+    component.resultCol = new ElementRef({ scrollIntoView });
+    estimator.calculate.and.returnValue(of(createResult('session-1')));
+    estimator.getQuoteSession.and.returnValue(of({ session: {}, items: [] }));
+    component.onCalculate(createDraftRequest());
+    routerEvents.next(
+      new Scroll(
+        new NavigationEnd(1, '/it/basic', '/it/basic?session=session-1'),
+        null,
+        null,
+      ),
+    );
+    tick(16);
+    expect(scrollIntoView).not.toHaveBeenCalled();
+  }));
 
   it('shows benefits only before a session exists, including during server rendering', () => {
     expect(createComponent().component.showBenefits).toBeTrue();

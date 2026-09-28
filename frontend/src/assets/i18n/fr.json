@@ -76,6 +76,7 @@
         "DESCRIPTION": "Consultez le récapitulatif de votre commande et l'état de votre demande d'impression 3D."
       },
       "ADMIN": {
+        "EMAIL_STATUS_UNKNOWN": "Envoi incertain",
         "TITLE": "Admin | 3D fab",
         "DESCRIPTION": "Espace d'administration restreint de 3D fab."
       }
@@ -1343,11 +1344,17 @@
     "METHOD_BANK": "Facture QR / Virement",
     "STATUS_REPORTED_TITLE": "Commande en cours",
     "STATUS_REPORTED_DESC": "Nous avons enregistré votre opération. Dès que nous confirmons le paiement, la commande entrera en production.",
+    "CHECKING_TWINT": "Vérification du paiement…",
+    "CHECKING_TWINT_HINT": "Nous attendons la confirmation TWINT. Cette page se mettra à jour automatiquement dès que votre paiement sera confirmé.",
     "IN_VERIFICATION": "Paiement signalé",
     "TWINT_QR_ALT": "QR de paiement TWINT",
     "TWINT_BUTTON_ALT": "Bouton TWINT intégré"
   },
   "TRACKING": {
+    "STEP_PAID": "Payé",
+    "PAID_DESCRIPTION": "Paiement confirmé. Votre commande est en attente de production et sera bientôt mise en fabrication.",
+    "STATUS_CANCELLED": "Commande annulée",
+    "STATUS_COMPLETED": "Commande terminée",
     "TITLE": "Statut de la commande",
     "SUBTITLE": "Consultez le statut de votre commande et gérez le paiement si nécessaire.",
     "STEP_PENDING": "En attente",
@@ -1417,6 +1424,21 @@
     "CUSTOMER_AND_ADDRESSES": "Client et adresses",
     "PAYMENT_AND_DOCUMENTS": "Paiement et documents",
     "EMAIL_HISTORY": "Historique des e-mails",
+    "REVIEW_REQUEST_TITLE": "Avis Google",
+    "REVIEW_REQUEST_HELP": "Envoyez une demande personnelle après réception du travail par le client.",
+    "REVIEW_ALREADY_SENT": "Demande déjà envoyée ou livraison à vérifier dans l'historique des e-mails.",
+    "REVIEW_PREVIEW_BUTTON": "Aperçu et envoi",
+    "REVIEW_PREVIEW_LOADING": "Chargement...",
+    "REVIEW_PREVIEW_TITLE": "Aperçu de la demande d'avis",
+    "REVIEW_PREVIEW_ERROR": "Impossible de charger l'aperçu de la demande.",
+    "REVIEW_SEND_ERROR": "Impossible d'envoyer la demande. Consultez l'historique des e-mails.",
+    "REVIEW_RECIPIENT": "À",
+    "REVIEW_SUBJECT": "Objet",
+    "REVIEW_CONFIRM_HELP": "L'e-mail est envoyé uniquement après avoir cliqué sur le bouton ci-dessous.",
+    "REVIEW_SEND": "Envoyer la demande",
+    "REVIEW_SENDING": "Envoi...",
+    "REVIEW_EMAIL_LABEL": "Demande d'avis Google",
+    "REVIEW_MANUAL_SEND": "Envoi manuel",
     "OPEN_3D_PREVIEW": "Aperçu 3D",
     "PREVIEW_TITLE": "Aperçu 3D du modèle",
     "PREVIEW_LOADING": "Chargement du modèle...",

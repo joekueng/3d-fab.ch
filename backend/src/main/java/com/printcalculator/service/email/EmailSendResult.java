@@ -8,9 +8,14 @@ public record EmailSendResult(
         OffsetDateTime sentAt,
         String errorMessage
 ) {
+    public static final String STATUS_UNKNOWN = "UNKNOWN";
     public static final String STATUS_SENT = "SENT";
     public static final String STATUS_FAILED = "FAILED";
     public static final String STATUS_SKIPPED = "SKIPPED";
+
+    public static EmailSendResult unknown(OffsetDateTime attemptedAt, String errorMessage) {
+        return new EmailSendResult(STATUS_UNKNOWN, attemptedAt, null, errorMessage);
+    }
 
     public static EmailSendResult sent(OffsetDateTime attemptedAt, OffsetDateTime sentAt) {
         return new EmailSendResult(STATUS_SENT, attemptedAt, sentAt, null);

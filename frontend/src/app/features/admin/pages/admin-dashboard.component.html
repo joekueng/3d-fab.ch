@@ -616,6 +616,37 @@
         </div>
       </details>
 
+      <div
+        class="review-request-panel ui-subpanel"
+        *ngIf="
+          selectedOrder.status === 'SHIPPED' ||
+          selectedOrder.status === 'COMPLETED'
+        "
+      >
+        <div>
+          <strong>{{ "ADMIN_ORDERS.REVIEW_REQUEST_TITLE" | translate }}</strong>
+          <p class="muted">
+            {{ "ADMIN_ORDERS.REVIEW_REQUEST_HELP" | translate }}
+          </p>
+          <p class="muted" *ngIf="!canRequestReview(selectedOrder)">
+            {{ "ADMIN_ORDERS.REVIEW_ALREADY_SENT" | translate }}
+          </p>
+        </div>
+        <app-button
+          type="button"
+          variant="ghost"
+          (click)="openReviewRequestPreview()"
+          [disabled]="!canRequestReview(selectedOrder) || reviewPreviewLoading"
+        >
+          {{
+            (reviewPreviewLoading
+              ? "ADMIN_ORDERS.REVIEW_PREVIEW_LOADING"
+              : "ADMIN_ORDERS.REVIEW_PREVIEW_BUTTON"
+            ) | translate
+          }}
+        </app-button>
+      </div>
+
       <details class="order-disclosure ui-subpanel email-log-panel">
         <summary>
           <span>{{ "ADMIN_ORDERS.EMAIL_HISTORY" | translate }}</span>
@@ -640,8 +671,14 @@
                     [ngClass]="emailStatusClass(emailLog.status)"
                     >{{ emailStatusLabel(emailLog.status) }}</span
                   >
-                  <span class="email-origin" *ngIf="emailLog.origin === 'ADMIN'"
-                    >Reinvio admin</span
+                  <span
+                    class="email-origin"
+                    *ngIf="emailLog.origin === 'ADMIN'"
+                    >{{
+                      emailLog.resentFromEmailLogId
+                        ? "Reinvio admin"
+                        : ("ADMIN_ORDERS.REVIEW_MANUAL_SEND" | translate)
+                    }}</span
                   >
                 </div>
                 <p class="email-log-row__meta">
@@ -656,6 +693,7 @@
                 </p>
               </div>
               <app-button
+                *ngIf="emailLog.eventType !== 'GOOGLE_REVIEW_REQUEST_CUSTOMER'"
                 type="button"
                 variant="ghost"
                 size="sm"
@@ -689,6 +727,56 @@
 <ng-template #noOrderEmailsTpl>
   <p class="muted">Nessuna email tracciata per questo ordine.</p>
 </ng-template>
+
+<app-dialog
+  *ngIf="reviewRequestPreview as preview"
+  [title]="'ADMIN_ORDERS.REVIEW_PREVIEW_TITLE' | translate"
+  [closeLabel]="'ADMIN_ORDERS.CLOSE' | translate"
+  (dismissed)="closeReviewRequestPreview()"
+>
+  <div class="review-preview">
+    <p>
+      <strong>{{ "ADMIN_ORDERS.REVIEW_RECIPIENT" | translate }}:</strong>
+      {{ preview.recipient }}
+    </p>
+    <p>
+      <strong>{{ "ADMIN_ORDERS.REVIEW_SUBJECT" | translate }}:</strong>
+      {{ preview.subject }}
+    </p>
+    <div class="review-preview__message">
+      <h4>{{ preview.headline }}</h4>
+      <p>{{ preview.greeting }}</p>
+      <p>{{ preview.intro }}</p>
+      <p>{{ preview.request }}</p>
+      <p>{{ preview.photoNote }}</p>
+      <p>
+        <span>{{ preview.actionText }}:</span>
+        <a
+          [href]="preview.reviewUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          >{{ preview.reviewUrl }}</a
+        >
+      </p>
+      <p>{{ preview.closing }}</p>
+      <p>{{ preview.signature }}</p>
+      <small>{{ preview.footer }}</small>
+    </div>
+    <p class="muted">{{ "ADMIN_ORDERS.REVIEW_CONFIRM_HELP" | translate }}</p>
+    <app-button
+      type="button"
+      (click)="sendReviewRequest()"
+      [disabled]="reviewSending"
+    >
+      {{
+        (reviewSending
+          ? "ADMIN_ORDERS.REVIEW_SENDING"
+          : "ADMIN_ORDERS.REVIEW_SEND"
+        ) | translate
+      }}
+    </app-button>
+  </div>
+</app-dialog>
 
 <app-dialog
   *ngIf="showPrintDetails && selectedOrder"
