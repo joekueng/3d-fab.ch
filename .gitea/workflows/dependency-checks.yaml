@@ -1,0 +1,25 @@
+name: External package metadata
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main, int, dev]
+    paths:
+      - frontend/package.json
+      - frontend/package-lock.json
+      - backend/build.gradle
+      - scripts/check-external-packages.mjs
+      - .gitea/workflows/dependency-checks.yaml
+
+jobs:
+  verify-publication:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify registry metadata without installing packages
+        run: node scripts/check-external-packages.mjs

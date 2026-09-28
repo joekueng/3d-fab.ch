@@ -29,6 +29,10 @@ Before implementing anything, read [AGENTS.md](AGENTS.md), the nearest module gu
 
 ## Technology stack
 
+Dependency changes follow the [external dependency verification policy](docs/dependency-policy.md).
+See the [Node, Gradle and package upgrade plan](docs/plans/dependency-upgrades.md)
+for the current inventory, compatibility constraints and migration sequence.
+
 - **Backend**: Java 21, Spring Boot 3.4, PostgreSQL.
 - **Frontend**: Angular 19, Angular Material, Three.js.
 - **Slicer**: OrcaSlicer (invocato via CLI).

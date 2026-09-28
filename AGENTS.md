@@ -39,6 +39,8 @@ Read the nearest `AGENTS.md` before editing. The backend and frontend guides con
 
 ## Cross-cutting rules
 
+- **External packages and AI-generated APIs:** follow [dependency verification](docs/dependency-policy.md) before adding/updating packages or using a new third-party API. Verify exact names, published versions, ownership, version-specific APIs and compatibility against official sources. Run `node scripts/check-external-packages.mjs`; record sources and checks. Missing network evidence means unverified, never permission to invent packages, versions, imports or flags.
+
 - Preserve the existing controller → service → repository flow. Controllers should validate and map HTTP concerns; services own business rules and transactions.
 - Use DTOs at API boundaries. Apply `@Valid` to request bodies and Bean Validation constraints to DTO fields.
 - Keep schema changes, entity mappings, repositories, services, DTOs, API contracts, and frontend models aligned. The project currently uses Hibernate `ddl-auto=update`, so assess deployment compatibility and data migration needs before changing persistent data.
