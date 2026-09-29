@@ -120,7 +120,9 @@ describe('AdminCadInvoicesComponent session files', () => {
     adminOperationsService.getAdminQuoteItems.and.returnValue(of(response()));
     loadSession(component);
     adminOperationsService.updateAdminQuoteItemStats.and.returnValue(
-      of(response({ items: [item({ newUnitPriceChf: 15 })], grandTotalChf: 35 })),
+      of(
+        response({ items: [item({ newUnitPriceChf: 15 })], grandTotalChf: 35 }),
+      ),
     );
     component.previewManagedChanges();
     expect(component.managedPreviewActive).toBeTrue();
@@ -193,9 +195,9 @@ describe('AdminCadInvoicesComponent session files', () => {
     );
     loadSession(component);
 
-    expect(adminOperationsService.listQuoteSessionAttachments).toHaveBeenCalledWith(
-      SESSION_ID,
-    );
+    expect(
+      adminOperationsService.listQuoteSessionAttachments,
+    ).toHaveBeenCalledWith(SESSION_ID);
     expect(component.sessionAttachments.length).toBe(1);
 
     component.deleteAttachment(attachment);
@@ -255,12 +257,10 @@ describe('AdminCadInvoicesComponent session files', () => {
 
     expect(
       adminOperationsService.uploadQuoteSessionAttachments,
-    ).toHaveBeenCalledWith(SESSION_ID, [
-      jasmine.any(File) as unknown as File,
-    ]);
-    expect(adminOperationsService.listQuoteSessionAttachments).toHaveBeenCalledTimes(
-      2,
-    );
+    ).toHaveBeenCalledWith(SESSION_ID, [jasmine.any(File) as unknown as File]);
+    expect(
+      adminOperationsService.listQuoteSessionAttachments,
+    ).toHaveBeenCalledTimes(2);
   });
 });
 

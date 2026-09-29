@@ -433,7 +433,9 @@
                   class="attachment-thumb"
                 />
                 <div class="item-details">
-                  <span class="item-name">{{ attachment.originalFilename }}</span>
+                  <span class="item-name">{{
+                    attachment.originalFilename
+                  }}</span>
                   <div class="item-specs-sub" *ngIf="!attachment.image">
                     {{ "CHECKOUT.ATTACHMENTS_AFTER_PAYMENT" | translate }}
                   </div>

@@ -3,7 +3,13 @@ import {
   serviceLineTotal,
 } from '../../../shared/models/service-line';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Component, OnDestroy, OnInit, PLATFORM_ID, inject } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  PLATFORM_ID,
+  inject,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AppSelectComponent } from '../../../shared/components/app-select/app-select.component';
@@ -501,7 +507,11 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
     if (input) {
       input.value = '';
     }
-    if (files.length === 0 || !this.canEditManagedItems() || this.attachmentUploading) {
+    if (
+      files.length === 0 ||
+      !this.canEditManagedItems() ||
+      this.attachmentUploading
+    ) {
       return;
     }
     if (

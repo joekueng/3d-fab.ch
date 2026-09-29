@@ -113,7 +113,9 @@
                   >
                     {{ row.item.displayName || row.item.id }}
                   </td>
-                  <td [attr.data-label]="'CAD_ITEM_PRICING.QUANTITY' | translate">
+                  <td
+                    [attr.data-label]="'CAD_ITEM_PRICING.QUANTITY' | translate"
+                  >
                     {{ row.item.quantity }}
                   </td>
                   <td [attr.data-label]="'CAD_ITEM_PRICING.HOURS' | translate">
@@ -126,7 +128,9 @@
                       inputmode="numeric"
                     ></app-input>
                   </td>
-                  <td [attr.data-label]="'CAD_ITEM_PRICING.MINUTES' | translate">
+                  <td
+                    [attr.data-label]="'CAD_ITEM_PRICING.MINUTES' | translate"
+                  >
                     <app-input
                       [compact]="true"
                       [name]="'minutes-' + row.item.id"
@@ -205,7 +209,6 @@
             </app-button>
           </div>
         </ng-container>
-
       </div>
 
       <h3>{{ "CAD_ORGANIZATION.SERVICES" | translate }}</h3>
@@ -295,7 +298,11 @@
         <p class="ui-copy-subtitle">
           {{ "CAD_ITEM_PRICING.ATTACH_HINT" | translate }}
         </p>
-        <p class="ui-banner ui-banner--error" role="alert" *ngIf="attachmentError">
+        <p
+          class="ui-banner ui-banner--error"
+          role="alert"
+          *ngIf="attachmentError"
+        >
           {{ attachmentError }}
         </p>
         <p class="ui-copy-subtitle" *ngIf="!managedSessionId">
@@ -308,7 +315,10 @@
             else noAttachments
           "
         >
-          <div class="attachment-row" *ngFor="let attachment of sessionAttachments">
+          <div
+            class="attachment-row"
+            *ngFor="let attachment of sessionAttachments"
+          >
             <img
               *ngIf="
                 attachment.image &&
@@ -318,7 +328,9 @@
               [alt]="attachment.originalFilename"
               class="attachment-thumb"
             />
-            <span class="attachment-name">{{ attachment.originalFilename }}</span>
+            <span class="attachment-name">{{
+              attachment.originalFilename
+            }}</span>
             <span class="attachment-note" *ngIf="!attachment.image">
               {{ "CAD_ITEM_PRICING.ATTACH_AFTER_PAYMENT" | translate }}
             </span>
