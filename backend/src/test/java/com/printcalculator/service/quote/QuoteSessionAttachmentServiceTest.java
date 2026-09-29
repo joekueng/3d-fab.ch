@@ -19,8 +19,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -75,7 +78,7 @@ class QuoteSessionAttachmentServiceTest {
     @Test
     void upload_scansAndStoresImageAttachment() throws Exception {
         QuoteSession session = session(UUID.randomUUID(), "CAD_ACTIVE");
-        when(sessionRepo.findById(session.getId())).thenReturn(Optional.of(session));
+        when(sessionRepo.findLockedById(session.getId())).thenReturn(Optional.of(session));
         when(attachmentRepo.countByQuoteSessionId(session.getId())).thenReturn(0L);
         when(attachmentRepo.saveAndFlush(any(QuoteSessionAttachment.class))).thenAnswer(invocation -> {
             QuoteSessionAttachment attachment = invocation.getArgument(0);
@@ -100,7 +103,7 @@ class QuoteSessionAttachmentServiceTest {
     @Test
     void upload_rejectsWhenSessionConverted() {
         QuoteSession session = session(UUID.randomUUID(), "CONVERTED");
-        when(sessionRepo.findById(session.getId())).thenReturn(Optional.of(session));
+        when(sessionRepo.findLockedById(session.getId())).thenReturn(Optional.of(session));
 
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,
@@ -113,7 +116,7 @@ class QuoteSessionAttachmentServiceTest {
     @Test
     void upload_rejectsTooManyFilesPerInvoice() {
         QuoteSession session = session(UUID.randomUUID(), "CAD_ACTIVE");
-        when(sessionRepo.findById(session.getId())).thenReturn(Optional.of(session));
+        when(sessionRepo.findLockedById(session.getId())).thenReturn(Optional.of(session));
         when(attachmentRepo.countByQuoteSessionId(session.getId())).thenReturn(15L);
 
         ResponseStatusException exception = assertThrows(
@@ -130,7 +133,7 @@ class QuoteSessionAttachmentServiceTest {
                 sessionRepo, attachmentRepo, deliverableRepo, antivirus, storageService,
                 tempDir.toString(), tempDir.resolve("orders").toString(), 10, 15);
         QuoteSession session = session(UUID.randomUUID(), "CAD_ACTIVE");
-        when(sessionRepo.findById(session.getId())).thenReturn(Optional.of(session));
+        when(sessionRepo.findLockedById(session.getId())).thenReturn(Optional.of(session));
 
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,
@@ -143,7 +146,7 @@ class QuoteSessionAttachmentServiceTest {
     @Test
     void upload_failsClosedWhenAntivirusUnavailable() {
         QuoteSession session = session(UUID.randomUUID(), "CAD_ACTIVE");
-        when(sessionRepo.findById(session.getId())).thenReturn(Optional.of(session));
+        when(sessionRepo.findLockedById(session.getId())).thenReturn(Optional.of(session));
         when(attachmentRepo.countByQuoteSessionId(session.getId())).thenReturn(0L);
         when(attachmentRepo.saveAndFlush(any(QuoteSessionAttachment.class))).thenAnswer(invocation -> {
             QuoteSessionAttachment attachment = invocation.getArgument(0);
@@ -164,7 +167,7 @@ class QuoteSessionAttachmentServiceTest {
     @Test
     void upload_rejectsImageWithMismatchedContent() {
         QuoteSession session = session(UUID.randomUUID(), "CAD_ACTIVE");
-        when(sessionRepo.findById(session.getId())).thenReturn(Optional.of(session));
+        when(sessionRepo.findLockedById(session.getId())).thenReturn(Optional.of(session));
         when(attachmentRepo.countByQuoteSessionId(session.getId())).thenReturn(0L);
 
         MockMultipartFile fake = new MockMultipartFile(
@@ -182,18 +185,10 @@ class QuoteSessionAttachmentServiceTest {
     void delete_removesMetadataAndFile() throws Exception {
         QuoteSession session = session(UUID.randomUUID(), "CAD_ACTIVE");
         UUID attachmentId = UUID.randomUUID();
-        String relative = session.getId() + "/attachments/" + attachmentId + "/model.stl";
-        Path stored = tempDir.resolve(relative);
-        Files.createDirectories(stored.getParent());
-        Files.writeString(stored, "solid");
-        QuoteSessionAttachment attachment = new QuoteSessionAttachment();
-        attachment.setId(attachmentId);
-        attachment.setQuoteSession(session);
-        attachment.setOriginalFilename("model.stl");
-        attachment.setStoredRelativePath(relative);
-        attachment.setMimeType("model/stl");
+        QuoteSessionAttachment attachment = storedAttachment(session, attachmentId);
+        Path stored = tempDir.resolve(attachment.getStoredRelativePath());
 
-        when(sessionRepo.findById(session.getId())).thenReturn(Optional.of(session));
+        when(sessionRepo.findLockedById(session.getId())).thenReturn(Optional.of(session));
         when(attachmentRepo.findByIdAndQuoteSession_Id(attachmentId, session.getId()))
                 .thenReturn(Optional.of(attachment));
 
@@ -204,10 +199,60 @@ class QuoteSessionAttachmentServiceTest {
     }
 
     @Test
+    void delete_keepsFileWhenTransactionRollsBack() throws Exception {
+        QuoteSession session = session(UUID.randomUUID(), "CAD_ACTIVE");
+        UUID attachmentId = UUID.randomUUID();
+        QuoteSessionAttachment attachment = storedAttachment(session, attachmentId);
+        Path stored = tempDir.resolve(attachment.getStoredRelativePath());
+
+        when(sessionRepo.findLockedById(session.getId())).thenReturn(Optional.of(session));
+        when(attachmentRepo.findByIdAndQuoteSession_Id(attachmentId, session.getId()))
+                .thenReturn(Optional.of(attachment));
+
+        TransactionSynchronizationManager.initSynchronization();
+        try {
+            service.delete(session.getId(), attachmentId);
+            List<TransactionSynchronization> synchronizations =
+                    TransactionSynchronizationManager.getSynchronizations();
+
+            assertTrue(Files.exists(stored));
+            synchronizations.forEach(sync -> sync.afterCompletion(TransactionSynchronization.STATUS_ROLLED_BACK));
+            assertTrue(Files.exists(stored));
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
+    }
+
+    @Test
+    void delete_removesFileAfterTransactionCommit() throws Exception {
+        QuoteSession session = session(UUID.randomUUID(), "CAD_ACTIVE");
+        UUID attachmentId = UUID.randomUUID();
+        QuoteSessionAttachment attachment = storedAttachment(session, attachmentId);
+        Path stored = tempDir.resolve(attachment.getStoredRelativePath());
+
+        when(sessionRepo.findLockedById(session.getId())).thenReturn(Optional.of(session));
+        when(attachmentRepo.findByIdAndQuoteSession_Id(attachmentId, session.getId()))
+                .thenReturn(Optional.of(attachment));
+
+        TransactionSynchronizationManager.initSynchronization();
+        try {
+            service.delete(session.getId(), attachmentId);
+            List<TransactionSynchronization> synchronizations =
+                    TransactionSynchronizationManager.getSynchronizations();
+
+            assertTrue(Files.exists(stored));
+            synchronizations.forEach(TransactionSynchronization::afterCommit);
+            assertFalse(Files.exists(stored));
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
+    }
+
+    @Test
     void delete_rejectsAttachmentOfAnotherSession() {
         QuoteSession session = session(UUID.randomUUID(), "CAD_ACTIVE");
         UUID attachmentId = UUID.randomUUID();
-        when(sessionRepo.findById(session.getId())).thenReturn(Optional.of(session));
+        when(sessionRepo.findLockedById(session.getId())).thenReturn(Optional.of(session));
         when(attachmentRepo.findByIdAndQuoteSession_Id(attachmentId, session.getId()))
                 .thenReturn(Optional.empty());
 
@@ -291,6 +336,21 @@ class QuoteSessionAttachmentServiceTest {
         session.setId(id);
         session.setStatus(status);
         return session;
+    }
+
+    private QuoteSessionAttachment storedAttachment(QuoteSession session, UUID attachmentId) throws IOException {
+        String relative = session.getId() + "/attachments/" + attachmentId + "/model.stl";
+        Path stored = tempDir.resolve(relative);
+        Files.createDirectories(stored.getParent());
+        Files.writeString(stored, "solid");
+
+        QuoteSessionAttachment attachment = new QuoteSessionAttachment();
+        attachment.setId(attachmentId);
+        attachment.setQuoteSession(session);
+        attachment.setOriginalFilename("model.stl");
+        attachment.setStoredRelativePath(relative);
+        attachment.setMimeType("model/stl");
+        return attachment;
     }
 
     private MockMultipartFile pngFile(String name) {

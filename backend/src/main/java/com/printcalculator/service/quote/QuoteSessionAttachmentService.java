@@ -65,8 +65,8 @@ public class QuoteSessionAttachmentService {
                                          StorageService storageService,
                                          @Value("${storage.quotes-root:storage_quotes}") String quotesRoot,
                                          @Value("${storage.location:storage_orders}") String orderStorageRoot,
-                                         @Value("${app.invoice.attachment.max-file-size-bytes:52428800}") long maxFileSizeBytes,
-                                         @Value("${app.invoice.attachment.max-files-per-session:15}") int maxFilesPerSession) {
+                                         @Value("${app.invoice.attachment.max-file-size-bytes}") long maxFileSizeBytes,
+                                         @Value("${app.invoice.attachment.max-files-per-session}") int maxFilesPerSession) {
         this.sessionRepo = sessionRepo;
         this.attachmentRepo = attachmentRepo;
         this.deliverableRepo = deliverableRepo;
@@ -97,7 +97,7 @@ public class QuoteSessionAttachmentService {
     }
 
     public List<QuoteSessionAttachmentDto> upload(UUID sessionId, List<MultipartFile> files) {
-        QuoteSession session = requireSession(sessionId);
+        QuoteSession session = requireLockedSession(sessionId);
         if ("CONVERTED".equals(session.getStatus()) || session.getConvertedOrderId() != null) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Cannot modify a converted session");
         }
@@ -135,7 +135,7 @@ public class QuoteSessionAttachmentService {
     }
 
     public void delete(UUID sessionId, UUID attachmentId) {
-        QuoteSession session = requireSession(sessionId);
+        QuoteSession session = requireLockedSession(sessionId);
         if ("CONVERTED".equals(session.getStatus()) || session.getConvertedOrderId() != null) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Cannot modify a converted session");
         }
@@ -143,14 +143,10 @@ public class QuoteSessionAttachmentService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Attachment not found"));
 
         Path path = resolveStoredPath(attachment.getStoredRelativePath(), sessionId);
-        if (path != null) {
-            try {
-                Files.deleteIfExists(path);
-            } catch (IOException ignored) {
-                // Metadata must still be removable when the file is already gone.
-            }
-        }
         attachmentRepo.delete(attachment);
+        if (path != null) {
+            deleteAfterCommit(path);
+        }
     }
 
     @Transactional(readOnly = true)
@@ -286,6 +282,11 @@ public class QuoteSessionAttachmentService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Session not found"));
     }
 
+    private QuoteSession requireLockedSession(UUID sessionId) {
+        return sessionRepo.findLockedById(sessionId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Session not found"));
+    }
+
     private Path resolveStoredPath(String storedRelativePath, UUID sessionId) {
         if (storedRelativePath == null || storedRelativePath.isBlank() || "PENDING".equals(storedRelativePath)) {
             return null;
@@ -320,6 +321,27 @@ public class QuoteSessionAttachmentService {
                 }
             }
         });
+    }
+
+    private void deleteAfterCommit(Path absolutePath) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            deleteFileBestEffort(absolutePath);
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                deleteFileBestEffort(absolutePath);
+            }
+        });
+    }
+
+    private void deleteFileBestEffort(Path absolutePath) {
+        try {
+            Files.deleteIfExists(absolutePath);
+        } catch (IOException ignored) {
+            // Metadata remains authoritative when a stale file cannot be removed.
+        }
     }
 
     private QuoteSessionAttachmentDto toDto(QuoteSessionAttachment attachment) {

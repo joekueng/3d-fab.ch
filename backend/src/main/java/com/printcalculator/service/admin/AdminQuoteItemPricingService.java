@@ -82,7 +82,7 @@ public class AdminQuoteItemPricingService {
 
     @Transactional
     public AdminQuoteItemsResponse updateStats(UUID sessionId, AdminQuoteItemStatsUpdateRequest request) {
-        QuoteSession session = loadSession(sessionId);
+        QuoteSession session = request.isPersist() ? loadLockedSession(sessionId) : loadSession(sessionId);
         if (STATUS_CONVERTED.equals(session.getStatus())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Cannot modify a converted session");
         }
@@ -174,6 +174,11 @@ public class AdminQuoteItemPricingService {
 
     private QuoteSession loadSession(UUID sessionId) {
         return sessionRepo.findById(sessionId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Session not found"));
+    }
+
+    private QuoteSession loadLockedSession(UUID sessionId) {
+        return sessionRepo.findLockedById(sessionId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Session not found"));
     }
 

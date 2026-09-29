@@ -16,6 +16,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -84,6 +85,15 @@ class AdminQuoteSessionAttachmentControllerSecurityTest {
     }
 
     @Test
+    void previewAttachment_withoutAdminCookie_shouldReturn401() throws Exception {
+        mockMvc.perform(get(
+                        "/api/admin/quote-sessions/{sessionId}/attachments/{attachmentId}/preview",
+                        SESSION_ID,
+                        ATTACHMENT_ID))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void uploadAttachments_withAdminCookieAndMissingOrigin_shouldReturn403() throws Exception {
         mockMvc.perform(multipart("/api/admin/quote-sessions/{sessionId}/attachments", SESSION_ID)
                         .file(new MockMultipartFile("files", "photo.png", "image/png", "data".getBytes()))
@@ -110,6 +120,26 @@ class AdminQuoteSessionAttachmentControllerSecurityTest {
                         .file(new MockMultipartFile("files", "photo.png", "image/png", "data".getBytes()))
                         .cookie(loginAndExtractCookie())
                         .header(HttpHeaders.ORIGIN, ALLOWED_ORIGIN))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void previewAttachment_withAdminCookie_shouldReturnPreview() throws Exception {
+        when(attachmentService.loadPreview(
+                UUID.fromString(SESSION_ID),
+                UUID.fromString(ATTACHMENT_ID)
+        )).thenReturn(new QuoteSessionAttachmentService.AttachmentPreview(
+                new ByteArrayResource(new byte[]{1, 2, 3}),
+                "photo.png",
+                MediaType.IMAGE_PNG_VALUE,
+                3
+        ));
+
+        mockMvc.perform(get(
+                        "/api/admin/quote-sessions/{sessionId}/attachments/{attachmentId}/preview",
+                        SESSION_ID,
+                        ATTACHMENT_ID)
+                        .cookie(loginAndExtractCookie()))
                 .andExpect(status().isOk());
     }
 

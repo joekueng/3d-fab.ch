@@ -133,7 +133,7 @@ class AdminQuoteItemPricingServiceTest {
         PricingPolicy policy = new PricingPolicy();
         PrinterMachine machine = machine(5L);
 
-        when(sessionRepo.findById(session.getId())).thenReturn(Optional.of(session));
+        when(sessionRepo.findLockedById(session.getId())).thenReturn(Optional.of(session));
         when(lineItemRepo.findByQuoteSessionIdOrderByCreatedAtAsc(session.getId())).thenReturn(List.of(item));
         when(pricingRepo.findFirstByIsActiveTrueOrderByValidFromDesc()).thenReturn(policy);
         when(machineRepo.findById(5L)).thenReturn(Optional.of(machine));

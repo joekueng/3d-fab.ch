@@ -507,7 +507,7 @@ export class AdminOperationsService {
     attachmentId: string,
   ): Observable<Blob> {
     return this.http.get(
-      `${environment.apiUrl}/api/quote-sessions/${sessionId}/attachments/${attachmentId}/preview`,
+      `${this.baseUrl}/quote-sessions/${sessionId}/attachments/${attachmentId}/preview`,
       { withCredentials: true, responseType: 'blob' },
     );
   }

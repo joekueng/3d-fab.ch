@@ -471,6 +471,8 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
     this.managedError = null;
     this.attachmentError = null;
     this.successMessage = null;
+    this.attachmentUploading = false;
+    this.deletingAttachmentId = null;
     this.clearAttachmentPreviews();
     this.loadManagedItems(target);
     this.loadSessionAttachments(target);
@@ -483,10 +485,16 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
     }
     this.adminOperationsService.listQuoteSessionAttachments(target).subscribe({
       next: (attachments) => {
+        if (this.managedSessionId !== target) {
+          return;
+        }
         this.sessionAttachments = attachments;
         this.loadAttachmentPreviews(target);
       },
       error: (err) => {
+        if (this.managedSessionId !== target) {
+          return;
+        }
         this.sessionAttachments = [];
         this.attachmentError =
           err?.error?.message ||
@@ -501,7 +509,11 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
     if (input) {
       input.value = '';
     }
-    if (files.length === 0 || !this.canEditManagedItems() || this.attachmentUploading) {
+    if (
+      files.length === 0 ||
+      !this.canEditManagedItems() ||
+      this.attachmentUploading
+    ) {
       return;
     }
     if (
@@ -551,6 +563,9 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
       .uploadQuoteSessionAttachments(sessionId, files)
       .subscribe({
         next: () => {
+          if (this.managedSessionId !== sessionId) {
+            return;
+          }
           this.attachmentUploading = false;
           this.pendingAttachmentFiles = [];
           this.successMessage = this.translate.instant(
@@ -559,6 +574,9 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
           this.loadSessionAttachments(sessionId);
         },
         error: (err) => {
+          if (this.managedSessionId !== sessionId) {
+            return;
+          }
           this.attachmentUploading = false;
           this.attachmentError =
             err?.error?.message ||
@@ -571,12 +589,16 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
     if (!this.managedSessionId || this.deletingAttachmentId) {
       return;
     }
+    const sessionId = this.managedSessionId;
     this.deletingAttachmentId = attachment.id;
     this.attachmentError = null;
     this.adminOperationsService
-      .deleteQuoteSessionAttachment(this.managedSessionId, attachment.id)
+      .deleteQuoteSessionAttachment(sessionId, attachment.id)
       .subscribe({
         next: () => {
+          if (this.managedSessionId !== sessionId) {
+            return;
+          }
           this.deletingAttachmentId = null;
           this.revokeAttachmentPreview(attachment.id);
           this.sessionAttachments = this.sessionAttachments.filter(
@@ -584,6 +606,9 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
           );
         },
         error: (err) => {
+          if (this.managedSessionId !== sessionId) {
+            return;
+          }
           this.deletingAttachmentId = null;
           this.attachmentError =
             err?.error?.message ||
@@ -606,11 +631,17 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
     this.managedPreviewTotalChf = null;
     this.adminOperationsService.getAdminQuoteItems(sessionId).subscribe({
       next: (response) => {
+        if (this.managedSessionId !== sessionId) {
+          return;
+        }
         this.managedLoading = false;
         this.sessionFilesLoaded = true;
         this.applyManagedResponse(response);
       },
       error: (err) => {
+        if (this.managedSessionId !== sessionId) {
+          return;
+        }
         this.managedLoading = false;
         this.sessionFilesLoaded = true;
         this.managedSessionStatus = null;
@@ -635,7 +666,11 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
         .getQuoteSessionAttachmentPreview(sessionId, attachment.id)
         .subscribe({
           next: (blob) => {
-            if (!this.isBrowser || this.attachmentPreviews[attachment.id]) {
+            if (
+              !this.isBrowser ||
+              this.managedSessionId !== sessionId ||
+              this.attachmentPreviews[attachment.id]
+            ) {
               return;
             }
             this.attachmentPreviews = {
@@ -678,6 +713,8 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
     this.sessionAttachments = [];
     this.pendingAttachmentFiles = [];
     this.attachmentError = null;
+    this.attachmentUploading = false;
+    this.deletingAttachmentId = null;
     this.clearAttachmentPreviews();
   }
 

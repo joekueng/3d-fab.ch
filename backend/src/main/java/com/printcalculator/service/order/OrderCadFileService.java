@@ -65,10 +65,10 @@ public class OrderCadFileService {
     private final QuoteLineItemRepository quoteLineItemRepo;
     private final StorageService storageService;
 
-    @Value("${app.cad.upload.max-file-size-bytes:104857600}")
+    @Value("${app.cad.upload.max-file-size-bytes}")
     private long maxCadUploadSizeBytes;
 
-    @Value("${app.cad.upload.max-files-per-request:20}")
+    @Value("${app.cad.upload.max-files-per-request}")
     private int maxCadFilesPerRequest;
 
     public OrderCadFileService(OrderRepository orderRepo,
