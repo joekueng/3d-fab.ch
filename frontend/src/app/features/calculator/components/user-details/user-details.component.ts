@@ -8,7 +8,7 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { AppCardComponent } from '../../../../shared/components/app-card/app-card.component';
 import { AppInputComponent } from '../../../../shared/components/app-input/app-input.component';
 import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
@@ -22,7 +22,7 @@ import { LanguageService } from '../../../../core/services/language.service';
     LegalConsentComponent,
     CommonModule,
     ReactiveFormsModule,
-    TranslateModule,
+    TranslatePipe,
     AppCardComponent,
     AppInputComponent,
     AppButtonComponent,

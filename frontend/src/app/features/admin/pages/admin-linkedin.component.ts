@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
 import {
   AdminLinkedInService,
@@ -10,7 +10,7 @@ import {
 @Component({
   selector: 'app-admin-linkedin',
   standalone: true,
-  imports: [CommonModule, TranslateModule, AppButtonComponent],
+  imports: [CommonModule, TranslatePipe, AppButtonComponent],
   templateUrl: './admin-linkedin.component.html',
   styleUrl: './admin-linkedin.component.scss',
 })

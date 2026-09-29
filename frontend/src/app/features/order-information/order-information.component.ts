@@ -14,7 +14,7 @@ import {
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AppTextareaComponent } from '../../shared/components/app-textarea/app-textarea.component';
 import { AppSelectComponent } from '../../shared/components/app-select/app-select.component';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
@@ -32,7 +32,7 @@ import {
   imports: [
     CommonModule,
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     AppTextareaComponent,
     AppSelectComponent,
     AppButtonComponent,

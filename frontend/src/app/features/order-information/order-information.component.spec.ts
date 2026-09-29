@@ -10,7 +10,7 @@ import {
   HttpTestingController,
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { provideTranslateService, TranslateService } from '@ngx-translate/core';
 import { OrderInformationComponent } from './order-information.component';
 import { OrderInformationService } from './order-information.service';
 import { environment } from '../../../environments/environment';
@@ -23,8 +23,12 @@ describe('OrderInformationComponent', () => {
   const api = environment.apiUrl + '/api';
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [OrderInformationComponent, TranslateModule.forRoot()],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      imports: [OrderInformationComponent],
+      providers: [
+        provideTranslateService(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
     }).compileComponents();
     const translate = TestBed.inject(TranslateService);
     translate.setTranslation('it', itTranslations);

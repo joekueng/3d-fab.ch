@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 import { AdminDashboardComponent } from './admin-dashboard.component';
 import { LanguageService } from '../../../core/services/language.service';
@@ -27,8 +27,9 @@ describe('Admin orders responsive layout', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AdminDashboardComponent, TranslateModule.forRoot()],
+      imports: [AdminDashboardComponent],
       providers: [
+        provideTranslateService(),
         {
           provide: LanguageService,
           useValue: { localizedPath: (path: string) => `/it${path}` },

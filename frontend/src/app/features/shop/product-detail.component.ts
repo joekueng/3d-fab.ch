@@ -18,7 +18,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import {
   catchError,
   combineLatest,
@@ -68,7 +68,7 @@ interface ShopMaterialProperty {
     ColorSelectorComponent,
     CommonModule,
     RouterLink,
-    TranslateModule,
+    TranslatePipe,
     AppButtonComponent,
     AppCardComponent,
     QuickRequestPanelComponent,

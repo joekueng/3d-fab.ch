@@ -9,6 +9,7 @@ resta progressivo dev → int → prod secondo il normale processo di deploy.
 | --- | --- | --- |
 | Node | 22 | **24.21.0 LTS** in `.nvmrc`, Docker e Gitea |
 | Angular, CLI, Material, CDK, SSR | 19.2.19 | **22.2.0** |
+| ngx-translate core / http-loader | 17.0.0 | **18.0.0** |
 | TypeScript | 5.7.3 | **6.0.3** |
 | Express / tipi | 4.22.1 / 4.17.25 | **5.2.1 / 5.0.6** |
 | Three / tipi | 0.182.0 / 0.182.0 | **0.186.1 / 0.186.0** |

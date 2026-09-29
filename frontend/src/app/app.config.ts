@@ -2,7 +2,6 @@ import {
   ApplicationConfig,
   provideAppInitializer,
   provideZoneChangeDetection,
-  importProvidersFrom,
   inject,
   REQUEST,
 } from '@angular/core';
@@ -20,8 +19,8 @@ import {
   withInterceptors,
 } from '@angular/common/http';
 import {
-  TranslateLoader,
-  TranslateModule,
+  provideTranslateLoader,
+  provideTranslateService,
   TranslateService,
 } from '@ngx-translate/core';
 import { adminAuthInterceptor } from './core/interceptors/admin-auth.interceptor';
@@ -54,15 +53,10 @@ export const appConfig: ApplicationConfig = {
       withFetch(),
       withInterceptors([serverOriginInterceptor, adminAuthInterceptor]),
     ),
-    importProvidersFrom(
-      TranslateModule.forRoot({
-        fallbackLang: 'it',
-        loader: {
-          provide: TranslateLoader,
-          useClass: StaticTranslateLoader,
-        },
-      }),
-    ),
+    provideTranslateService({
+      fallbackLang: 'it',
+      loader: provideTranslateLoader(StaticTranslateLoader),
+    }),
     provideAppInitializer(() => {
       const translate = inject(TranslateService);
       const router = inject(Router);

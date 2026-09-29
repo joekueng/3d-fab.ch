@@ -23,7 +23,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import {
   MaterialOption,
   VariantOption,
@@ -60,7 +60,7 @@ import {
     CommonModule,
     ReactiveFormsModule,
     PrintItemControlsComponent,
-    TranslateModule,
+    TranslatePipe,
     AppInputComponent,
     AppButtonComponent,
     AppCardComponent,

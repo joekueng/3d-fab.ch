@@ -11,7 +11,7 @@ import {
   SimpleChanges,
   ViewChild,
   inject,
-  DOCUMENT
+  DOCUMENT,
 } from '@angular/core';
 import {
   normalizeRichTextStorageValue,

@@ -10,7 +10,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import {
   AdminOrder,
   AdminOrderAddress,
@@ -41,7 +41,7 @@ import { firstValueFrom } from 'rxjs';
     AppInputComponent,
     AppSelectComponent,
     StlViewerComponent,
-    TranslateModule,
+    TranslatePipe,
   ],
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.scss',

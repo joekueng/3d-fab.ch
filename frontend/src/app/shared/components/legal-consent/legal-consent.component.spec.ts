@@ -1,15 +1,16 @@
 import deTranslations from '../../../../assets/i18n/de.json';
 import { TestBed } from '@angular/core/testing';
 import { FormControl, Validators } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { provideTranslateService, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language.service';
 import { LegalConsentComponent } from './legal-consent.component';
 
 describe('LegalConsentComponent', () => {
   it('keeps consent required, links localized, and follows form reset and disabled state', async () => {
     await TestBed.configureTestingModule({
-      imports: [LegalConsentComponent, TranslateModule.forRoot()],
+      imports: [LegalConsentComponent],
       providers: [
+        provideTranslateService(),
         {
           provide: LanguageService,
           useValue: { localizedPath: (path: string) => '/fr' + path },

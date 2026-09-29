@@ -1,7 +1,7 @@
 import {
   CommonModule,
   NgOptimizedImage,
-  isPlatformBrowser
+  isPlatformBrowser,
 } from '@angular/common';
 import {
   afterNextRender,
@@ -11,7 +11,7 @@ import {
   computed,
   inject,
   signal,
-  DOCUMENT
+  DOCUMENT,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
@@ -20,7 +20,7 @@ import {
   RouterLink,
   RouterLinkActive,
 } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { LanguageService } from '../services/language.service';
 import { routes } from '../../app.routes';
 import {
@@ -48,7 +48,7 @@ interface PageScrollLockState {
     CommonModule,
     RouterLink,
     RouterLinkActive,
-    TranslateModule,
+    TranslatePipe,
     NgOptimizedImage,
   ],
   templateUrl: './navbar.component.html',

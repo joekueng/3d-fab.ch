@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { AppCardComponent } from '../../../../shared/components/app-card/app-card.component';
 import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
 import { SummaryCardComponent } from '../../../../shared/components/summary-card/summary-card.component';
@@ -31,7 +31,7 @@ interface ItemSettingDetail {
   imports: [
     CommonModule,
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     AppCardComponent,
     AppButtonComponent,
     SummaryCardComponent,

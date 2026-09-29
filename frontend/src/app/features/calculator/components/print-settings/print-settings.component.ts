@@ -1,6 +1,6 @@
 import { Component, input } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { AppSelectComponent } from '../../../../shared/components/app-select/app-select.component';
 import { AppInputComponent } from '../../../../shared/components/app-input/app-input.component';
 import { AppCheckboxComponent } from '../../../../shared/components/app-checkbox/app-checkbox.component';
@@ -11,7 +11,7 @@ import { SimpleOption } from '../../services/quote-estimator.service';
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    TranslateModule,
+    TranslatePipe,
     AppSelectComponent,
     AppInputComponent,
     AppCheckboxComponent,

@@ -1,11 +1,12 @@
 import { TestBed } from '@angular/core/testing';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { AppDropzoneComponent } from './app-dropzone.component';
 
 describe('AppDropzoneComponent', () => {
   it('uses one file flow for selection and drop, supports reselection and delegates previews', async () => {
     await TestBed.configureTestingModule({
-      imports: [AppDropzoneComponent, TranslateModule.forRoot()],
+      imports: [AppDropzoneComponent],
+      providers: [provideTranslateService()],
     }).compileComponents();
     const fixture = TestBed.createComponent(AppDropzoneComponent);
     fixture.componentRef.setInput('showFileNames', false);

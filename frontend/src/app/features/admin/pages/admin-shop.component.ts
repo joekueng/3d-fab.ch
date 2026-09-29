@@ -8,7 +8,7 @@ import {
   PLATFORM_ID,
   ViewChild,
   inject,
-  DOCUMENT
+  DOCUMENT,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';

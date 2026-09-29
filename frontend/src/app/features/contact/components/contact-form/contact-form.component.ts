@@ -15,7 +15,7 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute } from '@angular/router';
 import { AppInputComponent } from '../../../../shared/components/app-input/app-input.component';
 import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
@@ -46,7 +46,7 @@ interface FilePreview {
     LegalConsentComponent,
     CommonModule,
     ReactiveFormsModule,
-    TranslateModule,
+    TranslatePipe,
     AppInputComponent,
     AppButtonComponent,
     AppToggleSelectorComponent,

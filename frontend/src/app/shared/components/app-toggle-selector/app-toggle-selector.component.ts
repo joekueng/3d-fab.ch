@@ -1,6 +1,6 @@
 import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 export interface ToggleOption {
   label: string;
@@ -10,7 +10,7 @@ export interface ToggleOption {
 @Component({
   selector: 'app-toggle-selector',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: './app-toggle-selector.component.html',
   styleUrl: './app-toggle-selector.component.scss',
 })
