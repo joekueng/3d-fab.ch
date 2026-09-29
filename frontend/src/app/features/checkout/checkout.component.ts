@@ -586,7 +586,9 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     if (!this.isBrowser || !this.sessionId) {
       return;
     }
-    const attachments = Array.isArray(session?.attachments) ? session.attachments : [];
+    const attachments = Array.isArray(session?.attachments)
+      ? session.attachments
+      : [];
     for (const attachment of attachments) {
       const id = String(attachment?.id ?? '');
       if (!id || !attachment?.image || this.attachmentPreviews()[id]) {
