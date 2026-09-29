@@ -164,6 +164,34 @@ class QuoteSessionTotalsServiceTest {
     }
 
     @Test
+    void compute_WithOverrides_ShouldUseProposedStatsWithoutMutatingItems() {
+        QuoteSession session = new QuoteSession();
+        session.setSetupCostChf(BigDecimal.ZERO);
+
+        QuoteLineItem item = createItem(new BigDecimal("10.00"), 2, 3600, "0.40");
+        item.setId(java.util.UUID.randomUUID());
+
+        PricingPolicy policy = new PricingPolicy();
+        when(pricingRepo.findFirstByIsActiveTrueOrderByValidFromDesc()).thenReturn(policy);
+        when(quoteCalculator.calculateSessionMachineCost(eq(policy), eq(new BigDecimal("4.0000"))))
+                .thenReturn(new BigDecimal("6.00"));
+
+        QuoteSessionTotalsService.QuoteSessionTotals totals = service.compute(
+                session,
+                List.of(item),
+                java.util.Map.of(
+                        item.getId(),
+                        new QuoteSessionTotalsService.ItemStatsOverride(7200, new BigDecimal("20.00"))
+                )
+        );
+
+        assertAmountEquals("46.00", totals.printItemsTotalChf());
+        assertAmountEquals("6.00", totals.globalMachineCostChf());
+        assertEquals(3600, item.getPrintTimeSeconds());
+        assertAmountEquals("10.00", item.getUnitPriceChf());
+    }
+
+    @Test
     void compute_WithRepeatedNozzleAcrossItems_ShouldChargeNozzleFeeOnlyOncePerType() {
         QuoteSession session = new QuoteSession();
         session.setSetupCostChf(new BigDecimal("2.00"));

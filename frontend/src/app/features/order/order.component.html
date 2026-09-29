@@ -238,6 +238,25 @@
             >
               {{ "ORDER.DOWNLOAD_CAD_FILES" | translate }}
             </app-button>
+            <div
+              class="cad-file-grid"
+              *ngIf="o.cadFileDownloadAvailable && (o.cadFiles || []).length"
+            >
+              <div class="cad-file-card" *ngFor="let file of o.cadFiles">
+                <img
+                  *ngIf="
+                    isImageMime(file.mimeType) &&
+                    cadPreviewUrl(file.id) as previewUrl
+                  "
+                  [src]="previewUrl"
+                  [alt]="file.originalFilename"
+                  class="cad-file-thumb"
+                />
+                <span class="cad-file-name" [title]="file.originalFilename">{{
+                  file.originalFilename
+                }}</span>
+              </div>
+            </div>
           </div>
 
           <div class="summary-items-section" *ngIf="(o.items || []).length > 0">
