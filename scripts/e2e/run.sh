@@ -50,7 +50,7 @@ printf 'project=%s\nurl=%s\nmail_url=http://127.0.0.1:%s\n' \
   > "$run_dir/run.txt"
 echo "Disposable E2E stack: $run_id at $E2E_BASE_URL (Mailpit on port $E2E_MAIL_PORT)"
 
-compose up --build --detach --wait --wait-timeout 600 2>&1 | tee "$run_dir/build.log"
+compose --progress "${E2E_COMPOSE_PROGRESS:-plain}" up --build --detach --wait --wait-timeout 600 2>&1 | tee "$run_dir/build.log"
 
 # The harness only seeds databases created under its own generated Compose project.
 db_container="$(compose ps -q db)"

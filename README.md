@@ -61,6 +61,12 @@ waits for them to become ready, and then starts the Spring Boot backend with the
 Press `Ctrl+C` to stop the three local processes. The Docker containers remain
 running and can be stopped separately with `docker compose down`.
 
+To remove local dependencies and build caches and reinstall them before
+starting, run `./start.sh --clean`. It deletes `frontend/node_modules`, the
+Angular caches, and `backend/build`, reinstalls the frontend packages with
+`npm ci`, and refreshes the Gradle dependencies. Local data such as the Docker
+volumes and the storage directories is preserved.
+
 The services are available at:
 
 - frontend: `http://localhost:4200`

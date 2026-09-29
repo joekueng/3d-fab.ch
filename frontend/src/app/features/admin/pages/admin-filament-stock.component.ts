@@ -1,6 +1,6 @@
 import { AppDialogComponent } from '../../../shared/components/app-dialog/app-dialog.component';
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   AdminFilamentMaterialType,
@@ -33,6 +33,7 @@ import { AppSelectComponent } from '../../../shared/components/app-select/app-se
 })
 export class AdminFilamentStockComponent implements OnInit {
   private readonly adminOperationsService = inject(AdminOperationsService);
+  private readonly changeDetector = inject(ChangeDetectorRef);
   readonly finishTypeOptions = [
     { label: 'GLOSSY', value: 'GLOSSY' },
     { label: 'MATTE', value: 'MATTE' },
@@ -109,6 +110,7 @@ export class AdminFilamentStockComponent implements OnInit {
           this.newVariant.materialTypeId = this.materials[0].id;
         }
         this.loading = false;
+        this.changeDetector.markForCheck();
       },
       error: (err) => {
         this.loading = false;
@@ -116,6 +118,7 @@ export class AdminFilamentStockComponent implements OnInit {
           err,
           'Impossibile caricare i filamenti.',
         );
+        this.changeDetector.markForCheck();
       },
     });
   }
@@ -152,6 +155,7 @@ export class AdminFilamentStockComponent implements OnInit {
         };
         this.creatingMaterial = false;
         this.successMessage = 'Materiale aggiunto.';
+        this.changeDetector.markForCheck();
       },
       error: (err) => {
         this.creatingMaterial = false;
@@ -159,6 +163,7 @@ export class AdminFilamentStockComponent implements OnInit {
           err,
           'Creazione materiale non riuscita.',
         );
+        this.changeDetector.markForCheck();
       },
     });
   }
@@ -202,6 +207,7 @@ export class AdminFilamentStockComponent implements OnInit {
           });
           this.savingMaterialIds.delete(material.id);
           this.successMessage = 'Materiale aggiornato.';
+          this.changeDetector.markForCheck();
         },
         error: (err) => {
           this.savingMaterialIds.delete(material.id);
@@ -209,6 +215,7 @@ export class AdminFilamentStockComponent implements OnInit {
             err,
             'Aggiornamento materiale non riuscito.',
           );
+          this.changeDetector.markForCheck();
         },
       });
   }
@@ -247,6 +254,7 @@ export class AdminFilamentStockComponent implements OnInit {
         };
         this.creatingVariant = false;
         this.successMessage = 'Variante aggiunta.';
+        this.changeDetector.markForCheck();
       },
       error: (err) => {
         this.creatingVariant = false;
@@ -254,6 +262,7 @@ export class AdminFilamentStockComponent implements OnInit {
           err,
           'Creazione variante non riuscita.',
         );
+        this.changeDetector.markForCheck();
       },
     });
   }
@@ -277,6 +286,7 @@ export class AdminFilamentStockComponent implements OnInit {
           );
           this.savingVariantIds.delete(variant.id);
           this.successMessage = 'Variante aggiornata.';
+          this.changeDetector.markForCheck();
         },
         error: (err) => {
           this.savingVariantIds.delete(variant.id);
@@ -284,6 +294,7 @@ export class AdminFilamentStockComponent implements OnInit {
             err,
             'Aggiornamento variante non riuscito.',
           );
+          this.changeDetector.markForCheck();
         },
       });
   }
@@ -362,6 +373,7 @@ export class AdminFilamentStockComponent implements OnInit {
         this.deletingVariantIds.delete(variant.id);
         this.variantToDelete = null;
         this.successMessage = 'Variante eliminata.';
+        this.changeDetector.markForCheck();
       },
       error: (err) => {
         this.deletingVariantIds.delete(variant.id);
@@ -369,6 +381,7 @@ export class AdminFilamentStockComponent implements OnInit {
           err,
           'Eliminazione variante non riuscita.',
         );
+        this.changeDetector.markForCheck();
       },
     });
   }
