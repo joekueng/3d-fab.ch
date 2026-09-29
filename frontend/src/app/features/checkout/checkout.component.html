@@ -415,6 +415,31 @@
                 </div>
               </div>
             </div>
+            <div class="summary-attachments" *ngIf="cadAttachments().length">
+              <p class="ui-copy-subtitle">
+                {{ "CHECKOUT.ATTACHMENTS" | translate }}
+              </p>
+              <div
+                class="summary-item attachment-item"
+                *ngFor="let attachment of cadAttachments()"
+              >
+                <img
+                  *ngIf="
+                    attachment.image &&
+                    attachmentPreviewUrl(attachment.id) as previewUrl
+                  "
+                  [src]="previewUrl"
+                  [alt]="attachment.originalFilename"
+                  class="attachment-thumb"
+                />
+                <div class="item-details">
+                  <span class="item-name">{{ attachment.originalFilename }}</span>
+                  <div class="item-specs-sub" *ngIf="!attachment.image">
+                    {{ "CHECKOUT.ATTACHMENTS_AFTER_PAYMENT" | translate }}
+                  </div>
+                </div>
+              </div>
+            </div>
           </ng-container>
 
           <app-price-breakdown

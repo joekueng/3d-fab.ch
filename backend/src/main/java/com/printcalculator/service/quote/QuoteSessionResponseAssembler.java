@@ -1,5 +1,6 @@
 package com.printcalculator.service.quote;
 
+import com.printcalculator.dto.QuoteSessionAttachmentDto;
 import com.printcalculator.dto.QuoteSessionDto;
 import com.printcalculator.entity.QuoteLineItem;
 import com.printcalculator.entity.QuoteSession;
@@ -24,12 +25,20 @@ public class QuoteSessionResponseAssembler {
     public Map<String, Object> assemble(QuoteSession session,
                                         List<QuoteLineItem> items,
                                         QuoteSessionTotalsService.QuoteSessionTotals totals) {
+        return assemble(session, items, totals, List.of());
+    }
+
+    public Map<String, Object> assemble(QuoteSession session,
+                                        List<QuoteLineItem> items,
+                                        QuoteSessionTotalsService.QuoteSessionTotals totals,
+                                        List<QuoteSessionAttachmentDto> attachments) {
         List<Map<String, Object>> itemsDto = new ArrayList<>();
         for (QuoteLineItem item : items) {
             itemsDto.add(toItemDto(item, totals));
         }
 
         Map<String, Object> response = new HashMap<>();
+        response.put("attachments", attachments != null ? attachments : List.of());
         boolean alreadyOrdered = session.getConvertedOrderId() != null || "CONVERTED".equals(session.getStatus());
         response.put("session", alreadyOrdered
                 ? QuoteSessionDto.forOrderedSessionReuse(session)
@@ -118,14 +127,26 @@ public class QuoteSessionResponseAssembler {
         return dto;
     }
 
-    private BigDecimal resolveDistributedUnitPrice(QuoteLineItem item, QuoteSessionTotalsService.QuoteSessionTotals totals) {
-        BigDecimal unitPrice = item.getUnitPriceChf() != null ? item.getUnitPriceChf() : BigDecimal.ZERO;
-        int quantity = item.getQuantity() != null && item.getQuantity() > 0 ? item.getQuantity() : 1;
-        if (totals.totalPrintSeconds().compareTo(BigDecimal.ZERO) > 0 && item.getPrintTimeSeconds() != null) {
-            BigDecimal itemSeconds = BigDecimal.valueOf(item.getPrintTimeSeconds()).multiply(BigDecimal.valueOf(quantity));
+    public BigDecimal resolveDistributedUnitPrice(QuoteLineItem item, QuoteSessionTotalsService.QuoteSessionTotals totals) {
+        return resolveDistributedUnitPrice(
+                item.getUnitPriceChf() != null ? item.getUnitPriceChf() : BigDecimal.ZERO,
+                item.getPrintTimeSeconds(),
+                item.getQuantity(),
+                totals
+        );
+    }
+
+    public BigDecimal resolveDistributedUnitPrice(BigDecimal baseUnitPrice,
+                                                  Integer printTimeSeconds,
+                                                  Integer quantity,
+                                                  QuoteSessionTotalsService.QuoteSessionTotals totals) {
+        BigDecimal unitPrice = baseUnitPrice != null ? baseUnitPrice : BigDecimal.ZERO;
+        int normalizedQuantity = quantity != null && quantity > 0 ? quantity : 1;
+        if (totals.totalPrintSeconds().compareTo(BigDecimal.ZERO) > 0 && printTimeSeconds != null) {
+            BigDecimal itemSeconds = BigDecimal.valueOf(printTimeSeconds).multiply(BigDecimal.valueOf(normalizedQuantity));
             BigDecimal share = itemSeconds.divide(totals.totalPrintSeconds(), 8, RoundingMode.HALF_UP);
             BigDecimal itemMachineCost = totals.globalMachineCostChf().multiply(share);
-            BigDecimal unitMachineCost = itemMachineCost.divide(BigDecimal.valueOf(quantity), 2, RoundingMode.HALF_UP);
+            BigDecimal unitMachineCost = itemMachineCost.divide(BigDecimal.valueOf(normalizedQuantity), 2, RoundingMode.HALF_UP);
             unitPrice = unitPrice.add(unitMachineCost);
         }
         return unitPrice;

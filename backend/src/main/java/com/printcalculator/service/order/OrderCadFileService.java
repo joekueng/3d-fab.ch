@@ -148,6 +148,50 @@ public class OrderCadFileService {
                 .body(stream);
     }
 
+    public ResponseEntity<Resource> previewDeliverableImage(UUID orderId, UUID fileId) {
+        Order order = getOrderOrThrow(orderId);
+        if (!Boolean.TRUE.equals(order.getIsCadOrder())) {
+            throw new ResponseStatusException(NOT_FOUND, "CAD files not available");
+        }
+        if (!isPaymentConfirmed(order)) {
+            throw new ResponseStatusException(FORBIDDEN, "CAD files are available after payment confirmation");
+        }
+        OrderDeliverableFile deliverable = deliverableFileRepo.findById(fileId)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "CAD file not found"));
+        if (!deliverable.getOrder().getId().equals(orderId)) {
+            throw new ResponseStatusException(NOT_FOUND, "CAD file not found for order");
+        }
+        if (!isPreviewableImage(deliverable.getMimeType())) {
+            throw new ResponseStatusException(NOT_FOUND, "Preview not available");
+        }
+        Path safePath = resolveDeliverableRelativePath(deliverable.getStoredRelativePath(), orderId, fileId);
+        if (safePath == null) {
+            throw new ResponseStatusException(NOT_FOUND, "CAD file not found");
+        }
+        try {
+            Resource resource = storageService.loadAsResource(safePath);
+            return ResponseEntity.ok()
+                    .cacheControl(org.springframework.http.CacheControl.noStore())
+                    .header("X-Content-Type-Options", "nosniff")
+                    .header("Content-Security-Policy", "sandbox; default-src 'none'")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.inline()
+                            .filename(deliverable.getOriginalFilename(), StandardCharsets.UTF_8)
+                            .build()
+                            .toString())
+                    .contentType(mediaTypeOrOctetStream(deliverable.getMimeType()))
+                    .body(resource);
+        } catch (Exception e) {
+            throw new ResponseStatusException(NOT_FOUND, "CAD file not found");
+        }
+    }
+
+    private static boolean isPreviewableImage(String mimeType) {
+        return mimeType != null && switch (mimeType.toLowerCase(Locale.ROOT)) {
+            case "image/png", "image/jpeg", "image/webp" -> true;
+            default -> false;
+        };
+    }
+
     @Transactional
     public List<OrderDeliverableFileDto> uploadAdminCadFiles(UUID orderId, List<MultipartFile> files) {
         Order order = getOrderOrThrow(orderId);

@@ -78,6 +78,14 @@ interface PublicOrderItem {
   lineTotalChf?: number;
 }
 
+interface PublicOrderCadFile {
+  id: string;
+  originalFilename: string;
+  mimeType?: string;
+  fileSizeBytes?: number;
+  createdAt?: string;
+}
+
 interface PublicOrder {
   invoiceName?: string;
   serviceLines?: ServiceLine[];
@@ -95,6 +103,7 @@ interface PublicOrder {
   cadTotalChf?: number;
   cadFileCount?: number;
   cadFileDownloadAvailable?: boolean;
+  cadFiles?: PublicOrderCadFile[];
   items?: PublicOrderItem[];
 }
 
@@ -152,6 +161,7 @@ export class OrderComponent implements OnInit, OnDestroy {
   error = signal<string | null>(null);
   twintOpenUrl = signal<string | null>(null);
   twintQrUrl = signal<string | null>(null);
+  cadPreviews = signal<Record<string, string>>({});
 
   ngOnInit(): void {
     this.orderId = this.route.snapshot.paramMap.get('orderId');
@@ -192,6 +202,7 @@ export class OrderComponent implements OnInit, OnDestroy {
     this.destroyed = true;
     this.closeEvents();
     clearTimeout(this.refreshTimer);
+    this.revokeCadPreviews();
   }
 
   @HostListener('document:visibilitychange')
@@ -284,6 +295,7 @@ export class OrderComponent implements OnInit, OnDestroy {
         next: (order) => {
           if (version !== this.requestVersion) return;
           this.order.set(order);
+          this.loadCadPreviews(order);
           this.syncEvents();
           this.error.set(null);
           this.loading.set(false);
@@ -359,6 +371,58 @@ export class OrderComponent implements OnInit, OnDestroy {
         this.error.set('ORDER.ERR_DOWNLOAD_CAD_FILES');
       },
     });
+  }
+
+  cadPreviewUrl(fileId: string): string | null {
+    return this.cadPreviews()[fileId] ?? null;
+  }
+
+  isImageMime(mimeType?: string): boolean {
+    return (
+      mimeType === 'image/png' ||
+      mimeType === 'image/jpeg' ||
+      mimeType === 'image/webp'
+    );
+  }
+
+  private loadCadPreviews(order: PublicOrder | null): void {
+    if (
+      !this.isBrowser ||
+      !this.orderId ||
+      !order?.cadFileDownloadAvailable ||
+      !Array.isArray(order.cadFiles)
+    ) {
+      return;
+    }
+    for (const file of order.cadFiles) {
+      if (!this.isImageMime(file.mimeType) || this.cadPreviews()[file.id]) {
+        continue;
+      }
+      this.quoteService
+        .getOrderCadFilePreview(this.orderId, file.id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (blob) => {
+            if (!this.isBrowser || this.cadPreviews()[file.id]) {
+              return;
+            }
+            this.cadPreviews.update((prev) => ({
+              ...prev,
+              [file.id]: URL.createObjectURL(blob),
+            }));
+          },
+          error: () => {},
+        });
+    }
+  }
+
+  private revokeCadPreviews(): void {
+    if (this.isBrowser) {
+      for (const url of Object.values(this.cadPreviews())) {
+        URL.revokeObjectURL(url);
+      }
+    }
+    this.cadPreviews.set({});
   }
 
   loadTwintPayment() {

@@ -9,8 +9,9 @@ import com.printcalculator.service.QuoteCalculator;
 import com.printcalculator.service.QuoteRateLimitService;
 import com.printcalculator.service.QuoteSessionExpiryPolicy;
 import com.printcalculator.service.QuoteSessionTotalsService;
-import com.printcalculator.service.quote.QuoteSessionItemService;
+import com.printcalculator.service.quote.QuoteSessionAttachmentService;
 import com.printcalculator.service.quote.QuoteSessionCalculationService;
+import com.printcalculator.service.quote.QuoteSessionItemService;
 import com.printcalculator.service.quote.QuoteSessionResponseAssembler;
 import com.printcalculator.service.quote.QuoteStorageService;
 import org.springframework.core.io.Resource;
@@ -51,6 +52,7 @@ public class QuoteSessionController {
     private final QuoteSessionExpiryPolicy quoteSessionExpiryPolicy;
     private final QuoteRateLimitService quoteRateLimitService;
     private final QuoteSessionCalculationService quoteSessionCalculationService;
+    private final QuoteSessionAttachmentService quoteSessionAttachmentService;
 
     public QuoteSessionController(QuoteSessionRepository sessionRepo,
                                   QuoteLineItemRepository lineItemRepo,
@@ -63,6 +65,7 @@ public class QuoteSessionController {
                                   QuoteSessionExpiryPolicy quoteSessionExpiryPolicy,
                                   QuoteRateLimitService quoteRateLimitService,
                                   QuoteSessionCalculationService quoteSessionCalculationService,
+                                  QuoteSessionAttachmentService quoteSessionAttachmentService,
                                   com.printcalculator.service.information.OrderInformationService informationService) {
         this.informationService = informationService;
         this.sessionRepo = sessionRepo;
@@ -76,6 +79,7 @@ public class QuoteSessionController {
         this.quoteSessionExpiryPolicy = quoteSessionExpiryPolicy;
         this.quoteRateLimitService = quoteRateLimitService;
         this.quoteSessionCalculationService = quoteSessionCalculationService;
+        this.quoteSessionAttachmentService = quoteSessionAttachmentService;
     }
 
     @PostMapping(value = "")
@@ -168,7 +172,32 @@ public class QuoteSessionController {
 
         List<QuoteLineItem> items = lineItemRepo.findByQuoteSessionIdOrderByCreatedAtAsc(id);
         QuoteSessionTotalsService.QuoteSessionTotals totals = quoteSessionTotalsService.compute(session, items);
-        return ResponseEntity.ok(quoteSessionResponseAssembler.assemble(session, items, totals));
+        return ResponseEntity.ok(quoteSessionResponseAssembler.assemble(
+                session,
+                items,
+                totals,
+                quoteSessionAttachmentService.listForQuoteResponse(id)
+        ));
+    }
+
+    @GetMapping(value = "/{sessionId}/attachments/{attachmentId}/preview")
+    @Transactional(readOnly = true)
+    public ResponseEntity<Resource> previewSessionAttachment(@PathVariable UUID sessionId,
+                                                             @PathVariable UUID attachmentId) {
+        QuoteSessionAttachmentService.AttachmentPreview preview =
+                quoteSessionAttachmentService.loadPreview(sessionId, attachmentId);
+        return ResponseEntity.ok()
+                .cacheControl(org.springframework.http.CacheControl.noStore())
+                .header("X-Content-Type-Options", "nosniff")
+                .header("Content-Security-Policy", "sandbox; default-src 'none'")
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION,
+                        org.springframework.http.ContentDisposition.inline()
+                                .filename(preview.filename(), java.nio.charset.StandardCharsets.UTF_8)
+                                .build()
+                                .toString())
+                .contentType(org.springframework.http.MediaType.parseMediaType(preview.mimeType()))
+                .contentLength(preview.sizeBytes())
+                .body(preview.resource());
     }
 
     @GetMapping(value = "/{sessionId}/line-items/{lineItemId}/content")

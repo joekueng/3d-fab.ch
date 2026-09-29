@@ -88,11 +88,26 @@ public class QuoteCalculator {
     }
 
     private QuoteResult calculate(PrintStats stats, PrinterMachine machine, PricingPolicy policy, FilamentVariant variant) {
-        BigDecimal weightKg = BigDecimal.valueOf(stats.filamentWeightGrams())
+        BigDecimal unitPrice = calculatePrintItemUnitPrice(
+                stats.printTimeSeconds(),
+                BigDecimal.valueOf(stats.filamentWeightGrams()),
+                machine,
+                policy,
+                variant
+        );
+        return new QuoteResult(unitPrice.doubleValue(), "CHF", stats);
+    }
+
+    public BigDecimal calculatePrintItemUnitPrice(long printTimeSeconds,
+                                                   BigDecimal materialGrams,
+                                                   PrinterMachine machine,
+                                                   PricingPolicy policy,
+                                                   FilamentVariant variant) {
+        BigDecimal weightKg = materialGrams
                 .divide(BigDecimal.valueOf(1000), 4, RoundingMode.HALF_UP);
         BigDecimal materialCost = weightKg.multiply(variant.getCostChfPerKg());
 
-        BigDecimal totalHours = BigDecimal.valueOf(stats.printTimeSeconds())
+        BigDecimal totalHours = BigDecimal.valueOf(printTimeSeconds)
                 .divide(BigDecimal.valueOf(3600), 4, RoundingMode.HALF_UP);
 
         BigDecimal kw = BigDecimal.valueOf(machine.getPowerWatts())
@@ -104,9 +119,7 @@ public class QuoteCalculator {
         BigDecimal markupFactor = BigDecimal.ONE.add(
                 policy.getMarkupPercent().divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP)
         );
-        subtotal = subtotal.multiply(markupFactor);
-
-        return new QuoteResult(subtotal.doubleValue(), "CHF", stats);
+        return subtotal.multiply(markupFactor);
     }
     public BigDecimal calculateSessionMachineCost(PricingPolicy policy, BigDecimal hours) {
         BigDecimal rawCost = calculateMachineCost(policy, hours);

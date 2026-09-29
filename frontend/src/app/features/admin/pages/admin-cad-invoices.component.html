@@ -50,6 +50,7 @@
         <app-input
           name="sessionId"
           [(ngModel)]="form.sessionId"
+          (ngModelChange)="onSessionIdChange()"
           [label]="'CAD_ORGANIZATION.SESSION' | translate"
         ></app-input>
         <app-input
@@ -64,6 +65,147 @@
           [label]="'CAD_ORGANIZATION.NOTES' | translate"
           [rows]="3"
         ></app-textarea>
+      </div>
+
+      <div
+        class="session-files"
+        *ngIf="
+          managedSessionId &&
+          (sessionFilesLoaded ||
+            managedRows.length ||
+            sessionAttachments.length ||
+            managedError)
+        "
+      >
+        <h3>{{ "CAD_ITEM_PRICING.TITLE" | translate }}</h3>
+        <p class="ui-banner ui-banner--error" role="alert" *ngIf="managedError">
+          {{ managedError }}
+        </p>
+        <p class="manage-warning" *ngIf="managedSessionStatus === 'CONVERTED'">
+          {{ "CAD_ITEM_PRICING.CONVERTED" | translate }}
+        </p>
+        <p *ngIf="managedLoading">
+          {{ "CAD_ITEM_PRICING.LOADING" | translate }}
+        </p>
+        <p *ngIf="sessionFilesLoaded && managedRows.length === 0">
+          {{ "CAD_ITEM_PRICING.EMPTY" | translate }}
+        </p>
+
+        <ng-container *ngIf="managedRows.length > 0">
+          <div class="table-wrap ui-table-wrap">
+            <table class="managed-items-table ui-data-table">
+              <thead>
+                <tr>
+                  <th>{{ "CAD_ITEM_PRICING.FILE" | translate }}</th>
+                  <th>{{ "CAD_ITEM_PRICING.QUANTITY" | translate }}</th>
+                  <th>{{ "CAD_ITEM_PRICING.HOURS" | translate }}</th>
+                  <th>{{ "CAD_ITEM_PRICING.MINUTES" | translate }}</th>
+                  <th>{{ "CAD_ITEM_PRICING.GRAMS" | translate }}</th>
+                  <th>{{ "CAD_ITEM_PRICING.CURRENT_PRICE" | translate }}</th>
+                  <th>{{ "CAD_ITEM_PRICING.NEW_PRICE" | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of managedRows">
+                  <td
+                    class="file-cell"
+                    [attr.data-label]="'CAD_ITEM_PRICING.FILE' | translate"
+                  >
+                    {{ row.item.displayName || row.item.id }}
+                  </td>
+                  <td [attr.data-label]="'CAD_ITEM_PRICING.QUANTITY' | translate">
+                    {{ row.item.quantity }}
+                  </td>
+                  <td [attr.data-label]="'CAD_ITEM_PRICING.HOURS' | translate">
+                    <app-input
+                      [compact]="true"
+                      [name]="'hours-' + row.item.id"
+                      [(ngModel)]="row.hours"
+                      (ngModelChange)="onManagedDraftChange()"
+                      [disabled]="!isRowEditable(row)"
+                      inputmode="numeric"
+                    ></app-input>
+                  </td>
+                  <td [attr.data-label]="'CAD_ITEM_PRICING.MINUTES' | translate">
+                    <app-input
+                      [compact]="true"
+                      [name]="'minutes-' + row.item.id"
+                      [(ngModel)]="row.minutes"
+                      (ngModelChange)="onManagedDraftChange()"
+                      [disabled]="!isRowEditable(row)"
+                      inputmode="numeric"
+                    ></app-input>
+                  </td>
+                  <td [attr.data-label]="'CAD_ITEM_PRICING.GRAMS' | translate">
+                    <app-input
+                      [compact]="true"
+                      [name]="'grams-' + row.item.id"
+                      [(ngModel)]="row.grams"
+                      (ngModelChange)="onManagedDraftChange()"
+                      [disabled]="!isRowEditable(row)"
+                      inputmode="decimal"
+                    ></app-input>
+                  </td>
+                  <td
+                    [attr.data-label]="
+                      'CAD_ITEM_PRICING.CURRENT_PRICE' | translate
+                    "
+                  >
+                    {{ row.item.unitPriceChf | currency: "CHF" }}
+                  </td>
+                  <td
+                    [attr.data-label]="'CAD_ITEM_PRICING.NEW_PRICE' | translate"
+                  >
+                    {{
+                      row.item.newUnitPriceChf != null
+                        ? (row.item.newUnitPriceChf | currency: "CHF")
+                        : "-"
+                    }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="manage-summary">
+            <p>
+              {{ "CAD_ITEM_PRICING.CURRENT_TOTAL" | translate }}:
+              <strong>{{ managedItemsTotalChf | currency: "CHF" }}</strong>
+              <span *ngIf="managedPreviewTotalChf != null">
+                → {{ "CAD_ITEM_PRICING.NEW_TOTAL" | translate }}:
+                <strong>{{ managedPreviewTotalChf | currency: "CHF" }}</strong>
+              </span>
+            </p>
+          </div>
+
+          <div class="manage-actions">
+            <app-button
+              type="button"
+              (click)="previewManagedChanges()"
+              [disabled]="previewing || savingManaged || !canEditManagedItems()"
+            >
+              {{
+                (previewing
+                  ? "CAD_ITEM_PRICING.PREVIEWING"
+                  : "CAD_ITEM_PRICING.PREVIEW"
+                ) | translate
+              }}
+            </app-button>
+            <app-button
+              type="button"
+              (click)="saveManagedChanges()"
+              [disabled]="!managedPreviewActive || previewing || savingManaged"
+            >
+              {{
+                (savingManaged
+                  ? "CAD_ITEM_PRICING.SAVING"
+                  : "CAD_ITEM_PRICING.SAVE"
+                ) | translate
+              }}
+            </app-button>
+          </div>
+        </ng-container>
+
       </div>
 
       <h3>{{ "CAD_ORGANIZATION.SERVICES" | translate }}</h3>
@@ -147,6 +289,92 @@
           {{ draftServicesTotal | currency: "CHF" }}</strong
         >
       </p>
+
+      <div class="invoice-attachments">
+        <h3>{{ "CAD_ITEM_PRICING.ATTACHMENTS_TITLE" | translate }}</h3>
+        <p class="ui-copy-subtitle">
+          {{ "CAD_ITEM_PRICING.ATTACH_HINT" | translate }}
+        </p>
+        <p class="ui-banner ui-banner--error" role="alert" *ngIf="attachmentError">
+          {{ attachmentError }}
+        </p>
+        <p class="ui-copy-subtitle" *ngIf="!managedSessionId">
+          {{ "CAD_ITEM_PRICING.ATTACH_REQUIRES_SESSION" | translate }}
+        </p>
+        <div
+          class="attachment-list"
+          *ngIf="
+            sessionAttachments.length || pendingAttachmentFiles.length;
+            else noAttachments
+          "
+        >
+          <div class="attachment-row" *ngFor="let attachment of sessionAttachments">
+            <img
+              *ngIf="
+                attachment.image &&
+                attachmentPreviewUrl(attachment.id) as previewUrl
+              "
+              [src]="previewUrl"
+              [alt]="attachment.originalFilename"
+              class="attachment-thumb"
+            />
+            <span class="attachment-name">{{ attachment.originalFilename }}</span>
+            <span class="attachment-note" *ngIf="!attachment.image">
+              {{ "CAD_ITEM_PRICING.ATTACH_AFTER_PAYMENT" | translate }}
+            </span>
+            <app-button
+              type="button"
+              variant="ghost"
+              (click)="deleteAttachment(attachment)"
+              [disabled]="
+                deletingAttachmentId === attachment.id || !canEditManagedItems()
+              "
+            >
+              {{ "CAD_ITEM_PRICING.ATTACH_DELETE" | translate }}
+            </app-button>
+          </div>
+          <div
+            class="attachment-row"
+            *ngFor="let file of pendingAttachmentFiles; let index = index"
+          >
+            <span class="attachment-name">{{ file.name }}</span>
+            <span class="attachment-note">
+              {{ "CAD_ITEM_PRICING.ATTACH_PENDING" | translate }}
+            </span>
+            <app-button
+              type="button"
+              variant="ghost"
+              (click)="removePendingAttachment(index)"
+            >
+              {{ "CAD_ITEM_PRICING.ATTACH_DELETE" | translate }}
+            </app-button>
+          </div>
+        </div>
+        <ng-template #noAttachments>
+          <p>{{ "CAD_ITEM_PRICING.ATTACH_EMPTY" | translate }}</p>
+        </ng-template>
+        <div class="attachment-upload">
+          <input
+            id="invoice-attachment-files"
+            class="sr-only"
+            type="file"
+            multiple
+            (change)="onAttachmentFilesSelected($event)"
+            [disabled]="!canEditManagedItems() || attachmentUploading"
+          />
+          <label class="ui-file-picker" for="invoice-attachment-files">
+            <span class="ui-file-picker__button">{{
+              "CAD_ITEM_PRICING.ATTACH_ADD" | translate
+            }}</span>
+            <span class="ui-file-picker__name">{{
+              (attachmentUploading
+                ? "CAD_ITEM_PRICING.ATTACH_UPLOADING"
+                : "CAD_ITEM_PRICING.ATTACH_PICKER_HINT"
+              ) | translate
+            }}</span>
+          </label>
+        </div>
+      </div>
     </fieldset>
     <div class="actions create-actions">
       <app-button
@@ -264,6 +492,12 @@
                 class="actions"
                 [attr.data-label]="'CAD_ORGANIZATION.ACTIONS' | translate"
               >
+                <app-button
+                  type="button"
+                  variant="ghost"
+                  (click)="manageItems(row.sessionId)"
+                  >{{ "CAD_ITEM_PRICING.MANAGE" | translate }}</app-button
+                >
                 <app-button
                   type="button"
                   variant="ghost"

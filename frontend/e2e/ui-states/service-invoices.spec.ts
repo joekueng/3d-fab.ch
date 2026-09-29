@@ -235,3 +235,210 @@ test('UI-INVOICE-002: simulated service-only checkout and order show agreed deta
     page.getByRole('button', { name: 'Scarica file CAD', exact: true }),
   ).toBeDisabled();
 });
+
+
+test('UI-INVOICE-003: session id loads files inline and admin manages attachments', async ({
+  page,
+}) => {
+  const sessionId = '33333333-3333-3333-3333-333333333333';
+  const imageId = '44444444-4444-4444-4444-444444444444';
+  const pdfId = '55555555-5555-5555-5555-555555555555';
+  const updateCalls: { persist: boolean }[] = [];
+  let uploadCalls = 0;
+  const pngBytes = Buffer.from([
+    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0,
+  ]);
+  const invoice: AdminCadInvoice = {
+    sessionId,
+    sessionStatus: 'CAD_ACTIVE',
+    invoiceName: 'Correzione prezzo',
+    clientName: 'Example company',
+    collaborationName: 'Prototype A',
+    cadHours: 0,
+    cadHourlyRateChf: 0,
+    cadTotalChf: 0,
+    printItemsTotalChf: 20,
+    setupCostChf: 0,
+    shippingCostChf: 0,
+    grandTotalChf: 20,
+    checkoutPath: `/checkout/cad?session=${sessionId}`,
+    createdAt: '2026-09-28T12:00:00Z',
+  };
+  const attachments = [
+    {
+      id: imageId,
+      originalFilename: 'photo.png',
+      mimeType: 'image/png',
+      fileSizeBytes: 12,
+      image: true,
+      createdAt: '2026-09-28T12:00:00Z',
+    },
+    {
+      id: pdfId,
+      originalFilename: 'report.pdf',
+      mimeType: 'application/pdf',
+      fileSizeBytes: 42,
+      image: false,
+      createdAt: '2026-09-28T12:00:00Z',
+    },
+  ];
+
+  const statsResponse = (persist: boolean) => ({
+    sessionId,
+    sessionStatus: 'CAD_ACTIVE',
+    items: [
+      {
+        id: 'item-1',
+        displayName: 'fixture.stl',
+        quantity: 2,
+        printTimeSeconds: persist ? 7200 : 3600,
+        materialGrams: persist ? 200 : 100,
+        unitPriceChf: persist ? 20 : 10,
+        newUnitPriceChf: persist ? null : 20,
+        status: 'READY',
+        lineItemType: 'PRINT_FILE',
+        editable: true,
+      },
+    ],
+    printItemsTotalChf: 40,
+    globalMachineCostChf: 0,
+    cadTotalChf: 0,
+    itemsTotalChf: 40,
+    setupCostChf: 0,
+    shippingCostChf: 0,
+    grandTotalChf: 40,
+  });
+
+  await page.route('**/api/**', async (route) => {
+    const url = new URL(route.request().url());
+    const path = url.pathname;
+    const method = route.request().method();
+    if (path.endsWith('/auth/me')) {
+      return route.fulfill({ json: { authenticated: true } });
+    }
+    if (path.endsWith('/cad-invoices')) {
+      return route.fulfill({ json: [invoice] });
+    }
+    if (path.endsWith('/preview') && method === 'GET') {
+      return route.fulfill({
+        status: 200,
+        contentType: 'image/png',
+        body: pngBytes,
+      });
+    }
+    if (path.endsWith('/items/print-stats') && method === 'POST') {
+      const body = route.request().postDataJSON() as {
+        persist: boolean;
+        items: unknown[];
+      };
+      updateCalls.push({ persist: body.persist });
+      expect(body.items).toHaveLength(1);
+      return route.fulfill({ json: statsResponse(body.persist) });
+    }
+    if (path.endsWith('/items') && method === 'GET') {
+      return route.fulfill({ json: statsResponse(false) });
+    }
+    if (path.endsWith('/attachments') && method === 'POST') {
+      uploadCalls += 1;
+      return route.fulfill({ json: attachments });
+    }
+    if (path.includes('/attachments/') && method === 'DELETE') {
+      return route.fulfill({ status: 204, body: '' });
+    }
+    if (path.endsWith('/attachments') && method === 'GET') {
+      return route.fulfill({ json: attachments });
+    }
+    return route.fulfill({ json: [] });
+  });
+
+  await page.goto('/it/admin/cad-invoices');
+  await expect(
+    page.getByRole('heading', { name: 'Fatture e prestazioni' }),
+  ).toBeVisible();
+
+  const attachmentsSection = page.locator('.invoice-attachments');
+  await expect(
+    attachmentsSection.getByRole('heading', { name: 'Allegati fattura' }),
+  ).toBeVisible();
+  await expect(
+    attachmentsSection.getByText('Salva la fattura per caricare gli allegati.'),
+  ).toBeVisible();
+
+  await page
+    .getByLabel('ID sessione calcolatore (opzionale)')
+    .fill(sessionId);
+
+  const sessionFiles = page.locator('.session-files');
+  await expect(
+    sessionFiles.getByRole('heading', { name: 'Correzione prezzi file' }),
+  ).toBeVisible();
+  const row = sessionFiles.locator('table.managed-items-table tbody tr').first();
+  await expect(row).toContainText('fixture.stl');
+  await expect(attachmentsSection.locator('.attachment-thumb').first()).toBeVisible();
+  await expect(attachmentsSection.getByText('report.pdf')).toBeVisible();
+  await expect(
+    attachmentsSection.getByText('Scaricabile dopo il pagamento'),
+  ).toBeVisible();
+
+  const sectionOrder = await page.evaluate(() => {
+    const files = document.querySelector('.session-files');
+    const attachments = document.querySelector('.invoice-attachments');
+    const heading = Array.from(document.querySelectorAll('h3')).find(
+      (candidate) => candidate.textContent?.trim() === 'Prestazioni',
+    );
+    if (!files || !attachments || !heading) return { files: false, attachments: false };
+    return {
+      files: Boolean(
+        files.compareDocumentPosition(heading) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ),
+      attachments: Boolean(
+        attachments.compareDocumentPosition(heading) &
+          Node.DOCUMENT_POSITION_PRECEDING,
+      ),
+    };
+  });
+  expect(sectionOrder.files).toBe(true);
+  expect(sectionOrder.attachments).toBe(true);
+
+  const saveButton = sessionFiles.getByRole('button', {
+    name: 'Salva modifiche',
+    exact: true,
+  });
+  await expect(saveButton).toBeDisabled();
+
+  await row.locator('input').nth(0).fill('2');
+  await row.locator('input').nth(1).fill('0');
+  await row.locator('input').nth(2).fill('200');
+  await sessionFiles
+    .getByRole('button', { name: 'Aggiorna prezzo', exact: true })
+    .click();
+
+  expect(updateCalls).toEqual([{ persist: false }]);
+  await expect(row).toContainText('20.00');
+  await expect(sessionFiles).toContainText('40.00');
+  await expect(saveButton).toBeEnabled();
+
+  await row.locator('input').nth(2).fill('150');
+  await expect(saveButton).toBeDisabled();
+  await sessionFiles
+    .getByRole('button', { name: 'Aggiorna prezzo', exact: true })
+    .click();
+  await expect(saveButton).toBeEnabled();
+
+  await saveButton.click();
+
+  expect(updateCalls.at(-1)).toEqual({ persist: true });
+  await expect(
+    page.getByText(
+      'Prezzi aggiornati. Il cliente deve ricaricare la pagina checkout.',
+      { exact: true },
+    ),
+  ).toBeVisible();
+
+  await page.setInputFiles('#invoice-attachment-files', {
+    name: 'model.stl',
+    mimeType: 'model/stl',
+    buffer: Buffer.from('solid test'),
+  });
+  expect(uploadCalls).toBe(1);
+});

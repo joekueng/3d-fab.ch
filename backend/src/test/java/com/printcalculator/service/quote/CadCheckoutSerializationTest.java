@@ -61,7 +61,8 @@ class CadCheckoutSerializationTest {
             when(totals.compute(proxy, List.of(item))).thenReturn(new QuoteSessionTotalsService.QuoteSessionTotals(
                     zero, zero, zero, zero, zero, zero, zero, zero, new BigDecimal("12.00"), zero));
             var service = new CadCheckoutService(items, variants, mock(PricingPolicyRepository.class), totals,
-                    new QuoteSessionResponseAssembler(mock(QuoteStorageService.class)));
+                    new QuoteSessionResponseAssembler(mock(QuoteStorageService.class)),
+                    mock(QuoteSessionAttachmentService.class));
             var response = service.update(session.getId(), item.getId(), new CadCheckoutItemRequest(3, 16L));
             // The original entity-based response cannot be serialized, even while its proxy is initialized.
             var mapper = JsonMapper.builder().findAndAddModules().build();
