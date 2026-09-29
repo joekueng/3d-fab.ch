@@ -27,6 +27,12 @@ app-toggle-selector.user-type-selector-compact {
   position: relative;
 }
 
+.checkout-order-information {
+  display: block;
+  margin-top: var(--space-6);
+  margin-bottom: var(--space-6);
+}
+
 .sticky-card {
   position: sticky;
   top: var(--space-6);
@@ -235,4 +241,18 @@ app-toggle-selector.user-type-selector-compact {
   gap: var(--spacing-sm, 0.75rem);
   margin-block: 0.75rem;
   min-width: 0;
+}
+
+.cad-summary-item .item-name {
+  white-space: pre-line;
+}
+
+.summary-services {
+  display: grid;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.summary-services .ui-copy-subtitle {
+  margin: 0 0 var(--space-1);
 }

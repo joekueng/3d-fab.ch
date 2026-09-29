@@ -1,3 +1,7 @@
+import {
+  ServiceLine,
+  serviceLineTotal,
+} from '../../shared/models/service-line';
 import { OrderInformationComponent } from '../order-information/order-information.component';
 import {
   OrderInformationService,
@@ -75,6 +79,8 @@ interface PublicOrderItem {
 }
 
 interface PublicOrder {
+  invoiceName?: string;
+  serviceLines?: ServiceLine[];
   id: string;
   orderNumber?: string;
   status?: string;
@@ -469,6 +475,14 @@ export class OrderComponent implements OnInit, OnDestroy {
         amount: order?.cadTotalChf ?? 0,
         visible: (order?.cadTotalChf ?? 0) > 0,
       },
+      ...(order?.serviceLines || []).map((line) => ({
+        label:
+          line.description +
+          (line.billingType === 'HOURLY' ? ' (' + line.quantity + ' h)' : ''),
+        amount:
+          line.lineTotalChf ??
+          serviceLineTotal(line.quantity, line.unitPriceChf),
+      })),
       {
         labelKey: 'PAYMENT.SHIPPING',
         amount: order?.shippingCostChf ?? 0,
@@ -587,6 +601,9 @@ export class OrderComponent implements OnInit, OnDestroy {
   }
 
   orderKindLabel(order: PublicOrder | null): string {
+    if (order?.serviceLines?.length && !order.items?.length) {
+      return this.translate.instant('CAD_ORGANIZATION.SERVICES');
+    }
     switch (this.orderKind(order)) {
       case 'SHOP':
         return this.translate.instant('ORDER.TYPE_SHOP');

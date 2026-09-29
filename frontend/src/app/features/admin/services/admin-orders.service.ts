@@ -1,3 +1,4 @@
+import { ServiceLine } from '../../../shared/models/service-line';
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -58,6 +59,8 @@ export interface AdminOrderAddress {
 }
 
 export interface AdminOrder {
+  invoiceName?: string;
+  serviceLines?: ServiceLine[];
   id: string;
   orderNumber: string;
   sourceType?: string | null;

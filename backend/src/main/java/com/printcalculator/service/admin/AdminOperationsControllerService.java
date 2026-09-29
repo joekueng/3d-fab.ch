@@ -2,6 +2,7 @@ package com.printcalculator.service.admin;
 
 import com.printcalculator.dto.AdminCadInvoiceCreateRequest;
 import com.printcalculator.dto.AdminCadInvoiceDto;
+import com.printcalculator.dto.AdminCadInvoiceMetadataRequest;
 import com.printcalculator.dto.AdminContactRequestAttachmentDto;
 import com.printcalculator.dto.AdminContactRequestDetailDto;
 import com.printcalculator.dto.AdminContactRequestDto;
@@ -330,27 +331,36 @@ public class AdminOperationsControllerService {
 
     @Transactional
     public AdminCadInvoiceDto createOrUpdateCadInvoice(AdminCadInvoiceCreateRequest payload) {
-        if (payload == null || payload.getCadHours() == null) {
+        if (payload == null || payload.getServiceLines() == null && payload.getCadHours() == null) {
             throw new ResponseStatusException(BAD_REQUEST, "cadHours is required");
         }
 
-        BigDecimal cadHours = payload.getCadHours().setScale(2, RoundingMode.HALF_UP);
-        if (cadHours.compareTo(BigDecimal.ZERO) <= 0) {
+        boolean hasServiceLines = payload.getServiceLines() != null;
+        if (hasServiceLines && payload.getServiceLines().isEmpty()) {
+            throw new ResponseStatusException(BAD_REQUEST, "At least one service is required");
+        }
+        if (hasServiceLines && payload.getServiceLines().stream()
+                .map(com.printcalculator.dto.ServiceLineDto::totalChf)
+                .reduce(BigDecimal.ZERO, BigDecimal::add).compareTo(new BigDecimal("9999999999.99")) > 0) {
+            throw new ResponseStatusException(BAD_REQUEST, "Services total exceeds supported invoice amount");
+        }
+        BigDecimal cadHours = hasServiceLines ? BigDecimal.ZERO : payload.getCadHours().setScale(2, RoundingMode.HALF_UP);
+        if (!hasServiceLines && cadHours.compareTo(BigDecimal.ZERO) <= 0) {
             throw new ResponseStatusException(BAD_REQUEST, "cadHours must be > 0");
         }
 
         BigDecimal cadRate = payload.getCadHourlyRateChf();
-        if (cadRate == null || cadRate.compareTo(BigDecimal.ZERO) <= 0) {
+        if (!hasServiceLines && (cadRate == null || cadRate.compareTo(BigDecimal.ZERO) <= 0)) {
             var policy = pricingRepo.findFirstByIsActiveTrueOrderByValidFromDesc();
             cadRate = policy != null && policy.getCadCostChfPerHour() != null
                     ? policy.getCadCostChfPerHour()
                     : BigDecimal.ZERO;
         }
-        cadRate = cadRate.setScale(2, RoundingMode.HALF_UP);
+        cadRate = hasServiceLines ? BigDecimal.ZERO : cadRate.setScale(2, RoundingMode.HALF_UP);
 
         QuoteSession session;
         if (payload.getSessionId() != null) {
-            session = quoteSessionRepo.findById(payload.getSessionId())
+            session = quoteSessionRepo.findLockedById(payload.getSessionId())
                     .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Session not found"));
         } else {
             session = new QuoteSession();
@@ -368,7 +378,7 @@ public class AdminOperationsControllerService {
             session.setExpiresAt(quoteSessionExpiryPolicy.newExpiry());
         }
 
-        if ("CONVERTED".equals(session.getStatus())) {
+        if ("CONVERTED".equals(session.getStatus()) || session.getConvertedOrderId() != null) {
             throw new ResponseStatusException(CONFLICT, "Session already converted to order");
         }
 
@@ -382,6 +392,16 @@ public class AdminOperationsControllerService {
         }
 
         session.setStatus("CAD_ACTIVE");
+        if (payload.getClientName() != null) {
+            session.setClientName(normalizeInvoiceLabel(payload.getClientName()));
+        }
+        if (payload.getInvoiceName() != null) {
+            session.setInvoiceName(normalizeInvoiceLabel(payload.getInvoiceName()));
+        }
+        if (payload.getCollaborationName() != null) {
+            session.setCollaborationName(normalizeInvoiceLabel(payload.getCollaborationName()));
+        }
+        session.setServiceLines(hasServiceLines ? payload.getServiceLines() : java.util.List.of());
         session.setCadHours(cadHours);
         session.setCadHourlyRateChf(cadRate);
         if (payload.getNotes() != null) {
@@ -391,6 +411,28 @@ public class AdminOperationsControllerService {
 
         QuoteSession saved = quoteSessionRepo.save(session);
         return toCadInvoiceDto(saved);
+    }
+
+    @Transactional
+    public void updateCadInvoiceMetadata(UUID sessionId, AdminCadInvoiceMetadataRequest payload) {
+        QuoteSession session = quoteSessionRepo.findLockedById(sessionId)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Session not found"));
+        if (!isCadSessionRecord(session)) {
+            throw new ResponseStatusException(BAD_REQUEST, "Not a CAD invoice");
+        }
+        session.setClientName(normalizeInvoiceLabel(payload.clientName()));
+        session.setInvoiceName(normalizeInvoiceLabel(payload.invoiceName()));
+        session.setCollaborationName(normalizeInvoiceLabel(payload.collaborationName()));
+        quoteSessionRepo.save(session);
+    }
+
+    private String normalizeInvoiceLabel(String value) {
+        if (value == null || value.isBlank()) return null;
+        String normalized = value.strip();
+        if (normalized.length() > 160) {
+            throw new ResponseStatusException(BAD_REQUEST, "Invoice labels must not exceed 160 characters");
+        }
+        return normalized;
     }
 
     @Transactional
@@ -491,7 +533,7 @@ public class AdminOperationsControllerService {
             return false;
         }
         BigDecimal cadHours = session.getCadHours() != null ? session.getCadHours() : BigDecimal.ZERO;
-        return cadHours.compareTo(BigDecimal.ZERO) > 0 || session.getSourceRequestId() != null;
+        return cadHours.compareTo(BigDecimal.ZERO) > 0 || !session.getServiceLines().isEmpty() || session.getSourceRequestId() != null;
     }
 
     private AdminCadInvoiceDto toCadInvoiceDto(QuoteSession session) {
@@ -499,6 +541,10 @@ public class AdminOperationsControllerService {
         QuoteSessionTotalsService.QuoteSessionTotals totals = quoteSessionTotalsService.compute(session, items);
 
         AdminCadInvoiceDto dto = new AdminCadInvoiceDto();
+        dto.setServiceLines(session.getServiceLines());
+        dto.setClientName(session.getClientName());
+        dto.setInvoiceName(session.getInvoiceName());
+        dto.setCollaborationName(session.getCollaborationName());
         dto.setSessionId(session.getId());
         dto.setSessionStatus(session.getStatus());
         dto.setSourceRequestId(session.getSourceRequestId());

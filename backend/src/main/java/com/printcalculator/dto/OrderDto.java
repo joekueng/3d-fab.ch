@@ -6,6 +6,14 @@ import java.util.List;
 import java.util.UUID;
 
 public class OrderDto {
+    private String invoiceName;
+    public String getInvoiceName() { return invoiceName; }
+    public void setInvoiceName(String name) { invoiceName = name; }
+
+    private java.util.List<com.printcalculator.dto.ServiceLineDto> serviceLines;
+    public java.util.List<com.printcalculator.dto.ServiceLineDto> getServiceLines() { return serviceLines == null ? java.util.List.of() : java.util.List.copyOf(serviceLines); }
+    public void setServiceLines(java.util.List<com.printcalculator.dto.ServiceLineDto> lines) { serviceLines = lines == null ? null : java.util.List.copyOf(lines); }
+
     private String informationToken;
     public String getInformationToken() { return informationToken; }
     public void setInformationToken(String token) { informationToken = token; }

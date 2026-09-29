@@ -201,3 +201,22 @@ opening for an already reported order), then returns to the existing slower refr
 Reads remain serial, pause in hidden tabs, resume on focus and stop on destruction.
 The animation ends on confirmation or expiry; reduced motion keeps the indicator
 static. This only reads order status: it does not increase backend mailbox polling.
+
+## Service invoice administration
+
+The existing `admin/cad-invoices` route is labelled **Invoices and services**.
+Use the shared input/select/textarea/dialog components for editable free-text
+service rows and metadata. Rows can be added or removed without a fixed count,
+and support hourly or one-off fixed prices. The calculator session remains the
+source for printed-product prices.
+
+Group invoices by the exact customer/company and project labels. **New interim
+invoice** carries only those labels into an empty form. It creates a separate
+checkout; it is not an automatic deposit or remaining-balance calculation.
+Customer/project labels stay internal; descriptions and the invoice name are
+customer-facing. Once ordered, only administrative labels can be changed;
+issued document snapshots retain their agreed name and service details.
+
+`e2e/ui-states/service-invoices.spec.ts` exercises these interactions using an
+explicitly simulated API and checks narrow-screen layout. Backend integration
+and pricing tests remain responsible for persistence, amounts and paid access.

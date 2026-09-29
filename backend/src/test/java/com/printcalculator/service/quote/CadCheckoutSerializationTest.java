@@ -36,6 +36,11 @@ class CadCheckoutSerializationTest {
             session.setPricingVersion("v1"); session.setMaterialCode("PLA");
             session.setSetupCostChf(BigDecimal.ZERO); session.setExpiresAt(OffsetDateTime.now().plusDays(30));
             session.setCadHours(new BigDecimal("2.50"));
+            session.setInvoiceName("Prototype iteration");
+            session.setClientName("Internal customer label");
+            session.setCollaborationName("Internal project label");
+            session.setServiceLines(List.of(new com.printcalculator.dto.ServiceLineDto("Finishing",
+                    com.printcalculator.dto.ServiceLineDto.BillingType.FIXED, BigDecimal.ONE, new BigDecimal("45"))));
             entityManager.persist(session); entityManager.flush(); entityManager.clear();
             var proxy = entityManager.getReference(QuoteSession.class, session.getId());
             assertInstanceOf(HibernateProxy.class, proxy);
@@ -72,6 +77,11 @@ class CadCheckoutSerializationTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.session.id").value(session.getId().toString()))
                     .andExpect(jsonPath("$.session.status").value("CAD_ACTIVE"))
+                    .andExpect(jsonPath("$.session.invoiceName").value("Prototype iteration"))
+                    .andExpect(jsonPath("$.session.serviceLines[0].description").value("Finishing"))
+                    .andExpect(jsonPath("$.session.serviceLines[0].unitPriceChf").value(45))
+                    .andExpect(jsonPath("$.session.clientName").doesNotExist())
+                    .andExpect(jsonPath("$.session.collaborationName").doesNotExist())
                     .andExpect(jsonPath("$.session.cadHours").value(2.5))
                     .andExpect(jsonPath("$.session.hibernateLazyInitializer").doesNotExist())
                     .andExpect(jsonPath("$.items[0].quantity").value(3))
