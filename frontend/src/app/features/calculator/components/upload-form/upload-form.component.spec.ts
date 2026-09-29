@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { provideTranslateService, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom, of } from 'rxjs';
 import deTranslations from '../../../../../assets/i18n/de.json';
 import itTranslations from '../../../../../assets/i18n/it.json';
@@ -55,8 +55,9 @@ describe('UploadFormComponent', () => {
     currentLang.set('de');
 
     await TestBed.configureTestingModule({
-      imports: [UploadFormComponent, TranslateModule.forRoot()],
+      imports: [UploadFormComponent],
       providers: [
+        provideTranslateService(),
         provideHttpClient(),
         provideHttpClientTesting(),
         {

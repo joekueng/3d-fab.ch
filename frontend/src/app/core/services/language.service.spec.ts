@@ -1,3 +1,4 @@
+import { signal } from '@angular/core';
 import { Subject } from 'rxjs';
 import {
   DefaultUrlSerializer,
@@ -12,12 +13,14 @@ import { RequestLike } from '../../../core/request-origin';
 describe('LanguageService', () => {
   function createTranslateMock() {
     const onLangChange = new Subject<{ lang: string }>();
+    const currentLang = signal<string | null>(null);
     const translate = {
-      currentLang: '',
+      currentLang: currentLang.asReadonly(),
+      getCurrentLang: () => currentLang(),
       addLangs: jasmine.createSpy('addLangs'),
       setFallbackLang: jasmine.createSpy('setFallbackLang'),
       use: jasmine.createSpy('use').and.callFake((lang: string) => {
-        translate.currentLang = lang;
+        currentLang.set(lang);
         onLangChange.next({ lang });
       }),
       onLangChange,

@@ -14,8 +14,8 @@ The repository has two deployable applications:
 
 | Area | Location | Stack | Responsibility |
 | --- | --- | --- | --- |
-| Backend | `backend/` | Java 21, Spring Boot 3.4, JPA/Hibernate, PostgreSQL | REST API, domain logic, slicing, storage, payments, email |
-| Frontend | `frontend/` | Angular 19 standalone, Angular Material, Three.js, ngx-translate | Public site, calculator, checkout, and admin UI |
+| Backend | `backend/` | Java 21, Spring Boot 4.1, JPA/Hibernate, PostgreSQL | REST API, domain logic, slicing, storage, payments, email |
+| Frontend | `frontend/` | Angular 22 standalone, Angular Material, Three.js, ngx-translate | Public site, calculator, checkout, and admin UI |
 
 Read the nearest `AGENTS.md` before editing. The backend and frontend guides contain the module-specific conventions and verification commands.
 
@@ -38,6 +38,8 @@ Read the nearest `AGENTS.md` before editing. The backend and frontend guides con
 - Document reusable conventions at their source, link them from the relevant agent guide, and verify rendered output against the reference. Mention any necessary exception and validation limitations in the final handoff.
 
 ## Cross-cutting rules
+
+- **External packages and AI-generated APIs:** follow [dependency verification](docs/dependency-policy.md) before adding/updating packages or using a new third-party API. Verify exact names, published versions, ownership, version-specific APIs and compatibility against official sources. Run `node scripts/check-external-packages.mjs`; record sources and checks. Missing network evidence means unverified, never permission to invent packages, versions, imports or flags.
 
 - Preserve the existing controller → service → repository flow. Controllers should validate and map HTTP concerns; services own business rules and transactions.
 - Use DTOs at API boundaries. Apply `@Valid` to request bodies and Bean Validation constraints to DTO fields.

@@ -6,7 +6,7 @@ import {
 } from '@angular/core/testing';
 import { Component, input, PLATFORM_ID } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { provideTranslateService, TranslateService } from '@ngx-translate/core';
 import { NEVER, Subject, of } from 'rxjs';
 import { OrderEventsService, OrderStreamEvent } from './order-events.service';
 import { OrderInformationComponent } from '../order-information/order-information.component';
@@ -247,8 +247,9 @@ class InformationStub {
 describe('OrderComponent rendered timeline', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [OrderComponent, TranslateModule.forRoot()],
+      imports: [OrderComponent],
       providers: [
+        provideTranslateService(),
         { provide: OrderEventsService, useValue: { watch: () => NEVER } },
         {
           provide: ActivatedRoute,

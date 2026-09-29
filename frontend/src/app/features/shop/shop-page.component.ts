@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import {
   catchError,
   combineLatest,
@@ -50,7 +50,7 @@ import { humanizeShopSlug } from './shop-seo-fallback';
   standalone: true,
   imports: [
     CommonModule,
-    TranslateModule,
+    TranslatePipe,
     AppButtonComponent,
     AppCardComponent,
     QuickRequestPanelComponent,

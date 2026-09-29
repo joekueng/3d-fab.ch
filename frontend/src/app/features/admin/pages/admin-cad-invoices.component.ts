@@ -11,7 +11,7 @@ import {
   inject,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AppSelectComponent } from '../../../shared/components/app-select/app-select.component';
 import { AppDialogComponent } from '../../../shared/components/app-dialog/app-dialog.component';
 import {
@@ -95,7 +95,7 @@ interface ManagedItemRow {
   imports: [
     CommonModule,
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     AppSelectComponent,
     AppDialogComponent,
     CopyOnClickDirective,

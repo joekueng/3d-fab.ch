@@ -28,7 +28,7 @@ const commonEngine = new CommonEngine();
  *
  * Example:
  * ```ts
- * app.get('/api/**', (req, res) => {
+ * app.get('/api/{*path}', (req, res) => {
  *   // Handle API request
  * });
  * ```
@@ -37,8 +37,7 @@ const commonEngine = new CommonEngine();
 /**
  * Serve static files from /browser
  */
-app.get(
-  '**',
+app.use(
   express.static(browserDistFolder, {
     maxAge: '1y',
     index: false,
@@ -73,7 +72,7 @@ app.get('/go/:slug', (req, res) => {
   res.type('html').send(renderPublicQrBridgePage(target));
 });
 
-app.get('**', (req, res, next) => {
+app.get('/{*path}', (req, res, next) => {
   const targetPath = resolvePublicRedirectTarget(req.path);
   if (!targetPath) {
     next();
@@ -86,7 +85,7 @@ app.get('**', (req, res, next) => {
 /**
  * Handle all other requests by rendering the Angular application.
  */
-app.get('**', (req, res, next) => {
+app.get('/{*path}', (req, res, next) => {
   const { originalUrl, baseUrl } = req;
   const origin = resolveRequestOrigin(req);
   // CommonEngine does not propagate Angular's response metadata to Express.

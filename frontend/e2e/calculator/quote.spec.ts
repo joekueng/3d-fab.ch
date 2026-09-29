@@ -39,6 +39,7 @@ test('CALC-001: calculator redirects to basic and preserves an uploaded draft ac
 
 test('CALC-002: a real model produces a quote and a resumable session', async ({ page, browser }) => {
   test.setTimeout(240_000);
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.goto('/it/calculator/basic');
   await uploadCube(page);
   await page.locator('app-upload-form app-button[type="submit"] button').click();
@@ -47,16 +48,14 @@ test('CALC-002: a real model produces a quote and a resumable session', async ({
   await expect(page.locator('app-quote-result app-price-breakdown')).toContainText('CHF');
   await expect(page.locator('app-session-email')).toBeVisible();
 
-  const linkResponse = page.waitForResponse((response) =>
-    response.url().includes('/api/quote-sessions/') && response.url().endsWith('/link') && response.request().method() === 'POST',
-  );
   await page.locator('app-session-email .session-links app-button').first().click();
-  const linkResult = await (await linkResponse).json() as { url: string };
-  expect(linkResult.url).toBeTruthy();
+  await expect(page.getByRole('status').filter({ hasText: 'Link copiato.' })).toBeVisible();
+  const link = await page.evaluate(() => navigator.clipboard.readText());
+  expect(link).toBeTruthy();
   const resumed = await browser.newContext();
   try {
     const resumedPage = await resumed.newPage();
-    await resumedPage.goto(new URL(linkResult.url, page.url()).toString());
+    await resumedPage.goto(new URL(link, page.url()).toString());
     await expect(resumedPage.locator('app-quote-result .file-name')).toHaveText('e2e-cube.stl');
   } finally {
     await resumed.close();

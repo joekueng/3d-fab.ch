@@ -20,7 +20,7 @@ import {
   RouterLink,
   RouterLinkActive,
 } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { LanguageService } from '../services/language.service';
 import { routes } from '../../app.routes';
 import {
@@ -48,7 +48,7 @@ interface PageScrollLockState {
     CommonModule,
     RouterLink,
     RouterLinkActive,
-    TranslateModule,
+    TranslatePipe,
     NgOptimizedImage,
   ],
   templateUrl: './navbar.component.html',

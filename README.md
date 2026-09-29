@@ -29,14 +29,18 @@ Before implementing anything, read [AGENTS.md](AGENTS.md), the nearest module gu
 
 ## Technology stack
 
-- **Backend**: Java 21, Spring Boot 3.4, PostgreSQL.
-- **Frontend**: Angular 19, Angular Material, Three.js.
+Dependency changes follow the [external dependency verification policy](docs/dependency-policy.md).
+See the [Node, Angular, Gradle and package upgrade record](docs/plans/dependency-upgrades.md)
+for the selected versions, compatibility decisions and completed verification.
+
+- **Backend**: Java 21, Spring Boot 4.1, PostgreSQL.
+- **Frontend**: Angular 22, Angular Material, Three.js.
 - **Slicer**: OrcaSlicer (invocato via CLI).
 
 ## Prerequisites
 
 * **Java 21** installed.
-* **Node.js 22** and **npm** installed.
+* **Node.js 24.21.0** and **npm** installed.
 * A running **PostgreSQL** instance.
 * **OrcaSlicer** installed on the system.
 * **FFmpeg** installed on the system or included in the backend Docker image.
@@ -56,6 +60,12 @@ waits for them to become ready, and then starts the Spring Boot backend with the
 `local` profile, the Angular frontend, and the static image server on port 8081.
 Press `Ctrl+C` to stop the three local processes. The Docker containers remain
 running and can be stopped separately with `docker compose down`.
+
+To remove local dependencies and build caches and reinstall them before
+starting, run `./start.sh --clean`. It deletes `frontend/node_modules`, the
+Angular caches, and `backend/build`, reinstalls the frontend packages with
+`npm ci`, and refreshes the Gradle dependencies. Local data such as the Docker
+volumes and the storage directories is preserved.
 
 The services are available at:
 

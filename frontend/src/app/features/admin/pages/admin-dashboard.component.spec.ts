@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 import { AdminDashboardComponent } from './admin-dashboard.component';
+import { LanguageService } from '../../../core/services/language.service';
 import {
   AdminOrder,
   AdminOrdersService,
@@ -26,8 +27,13 @@ describe('Admin orders responsive layout', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AdminDashboardComponent, TranslateModule.forRoot()],
+      imports: [AdminDashboardComponent],
       providers: [
+        provideTranslateService(),
+        {
+          provide: LanguageService,
+          useValue: { localizedPath: (path: string) => `/it${path}` },
+        },
         {
           provide: AdminOrdersService,
           useValue: {
@@ -65,6 +71,12 @@ describe('Admin orders responsive layout', () => {
 
   function element(selector: string): HTMLElement {
     return frame.contentDocument!.querySelector<HTMLElement>(selector)!;
+  }
+
+  function waitForFrameLayout(): Promise<void> {
+    return new Promise((resolve) =>
+      frame.contentWindow!.requestAnimationFrame(() => resolve()),
+    );
   }
 
   it('shows the request before sending and records the manual result', () => {
@@ -150,11 +162,13 @@ describe('Admin orders responsive layout', () => {
     expect(element('.filters-toggle').getBoundingClientRect().height).toBe(0);
   });
 
-  it('shows reachable filters and cards without horizontal overflow on a phone', () => {
+  it('shows reachable filters and cards without horizontal overflow on a phone', async () => {
     frame.style.width = '390px';
+    await waitForFrameLayout();
     expect(element('#order-filters').getBoundingClientRect().height).toBe(0);
     element('.filters-toggle').click();
     fixture.detectChanges();
+    await waitForFrameLayout();
     expect(
       element('#order-filters').getBoundingClientRect().height,
     ).toBeGreaterThan(0);
@@ -166,6 +180,7 @@ describe('Admin orders responsive layout', () => {
     );
     fixture.componentInstance.mobileDetailOpen = true;
     fixture.detectChanges();
+    await waitForFrameLayout();
     expect(element('.list-panel').getBoundingClientRect().height).toBe(0);
     expect(
       element('.mobile-back-button').getBoundingClientRect().height,

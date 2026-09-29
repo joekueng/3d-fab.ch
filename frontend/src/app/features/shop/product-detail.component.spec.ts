@@ -1,4 +1,5 @@
-import { DOCUMENT, Location } from '@angular/common';
+import { Location } from '@angular/common';
+import { DOCUMENT } from '@angular/common';
 import { PLATFORM_ID, RESPONSE_INIT, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';

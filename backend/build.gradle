@@ -1,7 +1,7 @@
 plugins {
 	id 'java'
 	id 'application'
-	id 'org.springframework.boot' version '3.4.1'
+	id 'org.springframework.boot' version '4.1.1'
 	id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -22,30 +22,39 @@ repositories {
 	mavenCentral()
 }
 
+dependencyLocking {
+	lockAllConfigurations()
+}
+
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+	// Temporary compatibility bridge while application services migrate to Jackson 3.
+	implementation 'org.springframework.boot:spring-boot-jackson2'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'com.maxmind.geoip2:geoip2:5.0.2'
+	implementation 'com.maxmind.geoip2:geoip2:5.2.0'
 	implementation 'xyz.capybara:clamav-client:2.1.2'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     runtimeOnly 'org.postgresql:postgresql'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.security:spring-security-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
 	testRuntimeOnly 'com.h2database:h2'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
-	implementation 'io.github.openhtmltopdf:openhtmltopdf-pdfbox:1.1.37'
-	implementation 'io.github.openhtmltopdf:openhtmltopdf-svg-support:1.1.37'
+	implementation 'io.github.openhtmltopdf:openhtmltopdf-pdfbox:1.1.87'
+	implementation 'io.github.openhtmltopdf:openhtmltopdf-svg-support:1.1.87'
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'net.codecrete.qrbill:qrbill-generator:3.4.0'
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
+	implementation 'org.eclipse.angus:angus-mail'
 	implementation 'org.apache.james.jdkim:apache-jdkim-library:0.5'
-	implementation 'org.jsoup:jsoup:1.18.3'
-	implementation platform('org.lwjgl:lwjgl-bom:3.3.4')
+	implementation 'org.jsoup:jsoup:1.23.2'
+	implementation platform('org.lwjgl:lwjgl-bom:3.4.3')
 	implementation 'org.lwjgl:lwjgl'
 	implementation 'org.lwjgl:lwjgl-assimp'
 	runtimeOnly 'org.lwjgl:lwjgl::natives-linux'
@@ -63,26 +72,18 @@ tasks.named('test') {
 	useJUnitPlatform()
 	testLogging {
 		events 'failed', 'passed', 'skipped', 'standardOut'
-		exceptionFormat 'full'
-		showExceptions true
-		showCauses true
-		showStackTraces true
+		exceptionFormat = 'full'
+		showExceptions = true
+		showCauses = true
+		showStackTraces = true
 
 		debug {
 			events 'started', 'failed', 'passed', 'skipped', 'standardError', 'standardOut'
-			exceptionFormat 'full'
+			exceptionFormat = 'full'
 		}
 		info.events = debug.events
 		info.exceptionFormat = debug.exceptionFormat
 
-		afterSuite { descriptor, result ->
-			if (!descriptor.parent) {
-				def output = "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} passed, ${result.failedTestCount} failed, ${result.skippedTestCount} skipped)"
-				def startItem = '|  ', endItem = '  |'
-				def repeatLength = startItem.length() + output.length() + endItem.length()
-				println('\n' + ('-' * repeatLength) + '\n' + startItem + output + endItem + '\n' + ('-' * repeatLength))
-			}
-		}
 	}
 }
 

@@ -457,7 +457,7 @@
               <td [attr.data-label]="'CAD_ORGANIZATION.SERVICES' | translate">
                 <details *ngIf="row.serviceLines?.length; else legacyCad">
                   <summary>
-                    {{ row.serviceLines?.length }}
+                    {{ row.serviceLines.length }}
                     {{ "CAD_ORGANIZATION.SERVICES" | translate }}
                   </summary>
                   <ul class="service-details">

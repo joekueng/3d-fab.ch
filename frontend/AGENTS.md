@@ -2,7 +2,7 @@
 
 ## Application map
 
-The Angular 19 application uses standalone components and a Core / Shared / Features structure:
+The Angular 22 application uses standalone components and a Core / Shared / Features structure:
 
 - `src/app/core/` — singleton services, interceptors, i18n, layout, route concerns, and global utilities.
 - `src/app/shared/` — reusable presentational components, directives, and utilities. Keep these free of feature-specific business logic.

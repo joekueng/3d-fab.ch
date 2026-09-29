@@ -80,6 +80,9 @@ during hydration. Preserve the SSR head until the actual route is available.
 The Express `CommonEngine` bridge must explicitly provide the request-local
 `REQUEST` token. The origin interceptor uses its path and headers to route shop
 catalogue reads through `SSR_INTERNAL_API_ORIGIN`, including behind Basic Auth.
+Angular SSR host validation remains enabled: deployments must set the comma-separated
+`NG_ALLOWED_HOSTS` list. `docker-compose.deploy.yml` defaults it to the three known
+public hosts, while the disposable E2E stack explicitly allows loopback hosts.
 Verify this bridge with `npm run build && npm run check:shop-ssr`: it runs the real
 production SSR bundle against a loopback catalogue fixture without
 `SSR_ROUTE_ALL_API_INTERNALLY`, including concurrent locales and API failure status.
@@ -147,7 +150,7 @@ The dev hostname currently requires HTTP Basic Auth. Set `E2E_HTTP_USER` and
 `E2E_HTTP_PASSWORD` locally; the Gitea job reads `DEV_BASIC_AUTH_USER` and
 `DEV_BASIC_AUTH_PASSWORD` repository secrets.
 
-Install Node 22, Docker with Compose, and Chromium once:
+Install Node 24.21.0, Docker with Compose, and Chromium once:
 
 ```bash
 cd frontend

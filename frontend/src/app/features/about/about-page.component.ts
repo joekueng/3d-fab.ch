@@ -7,7 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { interval } from 'rxjs';
 import { AppLocationsComponent } from '../../shared/components/app-locations/app-locations.component';
 import {
@@ -50,7 +50,7 @@ interface PassionChip {
 @Component({
   selector: 'app-about-page',
   standalone: true,
-  imports: [TranslateModule, AppLocationsComponent],
+  imports: [TranslatePipe, AppLocationsComponent],
   templateUrl: './about-page.component.html',
   styleUrl: './about-page.component.scss',
 })

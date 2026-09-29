@@ -24,12 +24,14 @@ test('shop SSR reaches the internal API without the E2E routing override', async
   });
   const previousOrigin = process.env.SSR_INTERNAL_API_ORIGIN;
   const previousOverride = process.env.SSR_ROUTE_ALL_API_INTERNALLY;
+  const previousAllowedHosts = process.env.NG_ALLOWED_HOSTS;
   let frontend;
   try {
     backend.listen(0, '127.0.0.1');
     await once(backend, 'listening');
     process.env.SSR_INTERNAL_API_ORIGIN = `http://127.0.0.1:${backend.address().port}`;
     delete process.env.SSR_ROUTE_ALL_API_INTERNALLY;
+    process.env.NG_ALLOWED_HOSTS = 'public-shop.invalid,127.0.0.1';
     const { default: app } = await import('../dist/frontend/server/server.mjs');
     frontend = app.listen(0, '127.0.0.1');
     await once(frontend, 'listening');
@@ -64,5 +66,7 @@ test('shop SSR reaches the internal API without the E2E routing override', async
     else process.env.SSR_INTERNAL_API_ORIGIN = previousOrigin;
     if (previousOverride === undefined) delete process.env.SSR_ROUTE_ALL_API_INTERNALLY;
     else process.env.SSR_ROUTE_ALL_API_INTERNALLY = previousOverride;
+    if (previousAllowedHosts === undefined) delete process.env.NG_ALLOWED_HOSTS;
+    else process.env.NG_ALLOWED_HOSTS = previousAllowedHosts;
   }
 });

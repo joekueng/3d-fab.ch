@@ -25,7 +25,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
 import { QuoteEstimatorService } from '../calculator/services/quote-estimator.service';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
 import {
   findColorHex,
@@ -115,7 +115,7 @@ interface PublicOrder {
     CommonModule,
     AppButtonComponent,
     AppCardComponent,
-    TranslateModule,
+    TranslatePipe,
     PriceBreakdownComponent,
   ],
   templateUrl: './order.component.html',
@@ -456,7 +456,7 @@ export class OrderComponent implements OnInit, OnDestroy {
   }
 
   getTwintButtonImageUrl(): string {
-    const lang = this.translate.currentLang;
+    const lang = this.translate.getCurrentLang();
     if (lang === 'de') {
       return 'https://go.twint.ch/static/img/button_dark_de.svg';
     }
@@ -632,7 +632,7 @@ export class OrderComponent implements OnInit, OnDestroy {
     source: 'shop' | 'filament',
   ): string | null {
     if (source === 'shop') {
-      return resolveLocalizedColorLabel(this.translate.currentLang, {
+      return resolveLocalizedColorLabel(this.translate.getCurrentLang(), {
         fallback: item.shopVariantColorName,
         it: item.shopVariantColorLabelIt,
         en: item.shopVariantColorLabelEn,
@@ -641,7 +641,7 @@ export class OrderComponent implements OnInit, OnDestroy {
       });
     }
 
-    return resolveLocalizedColorLabel(this.translate.currentLang, {
+    return resolveLocalizedColorLabel(this.translate.getCurrentLang(), {
       fallback: item.filamentColorName ?? item.colorCode,
       it: item.filamentColorLabelIt,
       en: item.filamentColorLabelEn,

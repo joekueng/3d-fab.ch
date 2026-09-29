@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, input } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 export interface PriceBreakdownRow {
   label?: string;
@@ -12,7 +12,7 @@ export interface PriceBreakdownRow {
 @Component({
   selector: 'app-price-breakdown',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: './price-breakdown.component.html',
   styleUrl: './price-breakdown.component.scss',
 })

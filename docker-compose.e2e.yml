@@ -91,6 +91,7 @@ services:
       PORT: "80"
       SSR_INTERNAL_API_ORIGIN: http://backend:8000
       SSR_ROUTE_ALL_API_INTERNALLY: "true"
+      NG_ALLOWED_HOSTS: 127.0.0.1,localhost
     depends_on:
       backend:
         condition: service_healthy
