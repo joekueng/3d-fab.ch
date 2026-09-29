@@ -5,7 +5,7 @@ import {
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AppSelectComponent } from '../../../shared/components/app-select/app-select.component';
 import { AppDialogComponent } from '../../../shared/components/app-dialog/app-dialog.component';
 import {
@@ -44,7 +44,7 @@ interface ServiceLineForm {
   imports: [
     CommonModule,
     FormsModule,
-    TranslateModule,
+    TranslatePipe,
     AppSelectComponent,
     AppDialogComponent,
     CopyOnClickDirective,

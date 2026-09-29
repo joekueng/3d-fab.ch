@@ -1,5 +1,6 @@
 import {
   CommonModule,
+  DOCUMENT,
   NgOptimizedImage,
   isPlatformBrowser,
 } from '@angular/common';
@@ -11,7 +12,6 @@ import {
   computed,
   inject,
   signal,
-  DOCUMENT,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
