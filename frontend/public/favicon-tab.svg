@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='utf-8'?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512"><title>3D Fab — favicon spesso</title><rect width="512" height="512" rx="80" fill="#050505" /><g transform="translate(51.2 -38.4) scale(0.8 1.15)"><g id="lettera-3" transform="translate(24 108.688524590164) scale(3.475409836066) translate(-59.5 -139.5)"><rect x="60" y="140" width="60" height="4" style="paint-order: fill; fill: #ffffff; stroke: #ffffff; stroke-linejoin: round; stroke-width: 1;" />
-    <rect x="60" y="150" width="60" height="4" style="paint-order: fill; fill: #ffffff; stroke: #ffffff; stroke-linejoin: round; stroke-width: 1;" />
-    <rect x="80" y="160" width="40" height="4" style="paint-order: fill; fill: #ffffff; stroke: #ffffff; stroke-linejoin: round; stroke-width: 1;" />
-    <rect x="60" y="170" width="60" height="4" style="paint-order: fill; fill: #ffffff; stroke: #ffffff; stroke-linejoin: round; stroke-width: 1;" />
-    <rect x="60" y="180" width="60" height="4" style="paint-order: fill; fill: #ffffff; stroke: #ffffff; stroke-linejoin: round; stroke-width: 1;" />
-    </g><g id="lettera-D" transform="translate(276 108.688524590164) scale(3.475409836066) translate(-139.5 -139.5)"><rect x="140" y="140" width="45" height="4" style="paint-order: fill; fill: #ffffff; stroke: #ffffff; stroke-linejoin: round; stroke-width: 1;" />
-    <rect x="140" y="150" width="60" height="4" style="paint-order: fill; fill: #ffffff; stroke: #ffffff; stroke-linejoin: round; stroke-width: 1;" />
-    <rect x="140" y="160" width="60" height="4" style="paint-order: fill; fill: #ffffff; stroke: #ffffff; stroke-linejoin: round; stroke-width: 1;" />
-    <rect x="140" y="170" width="60" height="4" style="paint-order: fill; fill: #ffffff; stroke: #ffffff; stroke-linejoin: round; stroke-width: 1;" />
-    <rect x="140" y="180" width="45" height="4" style="paint-order: fill; fill: #ffffff; stroke: #ffffff; stroke-linejoin: round; stroke-width: 1;" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512"><title>3D Fab — favicon spesso</title><rect width="512" height="512" rx="80" fill="#ffffff" /><g id="lettera-3" transform="translate(24 108.688524590164) scale(3.475409836066) translate(-59.5 -139.5)"><rect x="60" y="140" width="60" height="4" style="paint-order: fill; stroke: rgb(0, 0, 0); stroke-linejoin: round; stroke-width: 1;" />
+    <rect x="60" y="150" width="60" height="4" style="paint-order: fill; stroke: rgb(0, 0, 0); stroke-linejoin: round; stroke-width: 1;" />
+    <rect x="80" y="160" width="40" height="4" style="paint-order: fill; stroke: rgb(0, 0, 0); stroke-linejoin: round; stroke-width: 1;" />
+    <rect x="60" y="170" width="60" height="4" style="paint-order: fill; stroke: rgb(0, 0, 0); stroke-linejoin: round; stroke-width: 1;" />
+    <rect x="60" y="180" width="60" height="4" style="paint-order: fill; stroke: rgb(0, 0, 0); stroke-linejoin: round; stroke-width: 1;" />
+    </g><g id="lettera-D" transform="translate(276 108.688524590164) scale(3.475409836066) translate(-139.5 -139.5)"><rect x="140" y="140" width="45" height="4" style="paint-order: fill; stroke: rgb(0, 0, 0); stroke-linejoin: round; stroke-width: 1;" />
+    <rect x="140" y="150" width="60" height="4" style="paint-order: fill; stroke: rgb(0, 0, 0); stroke-linejoin: round; stroke-width: 1;" />
+    <rect x="140" y="160" width="60" height="4" style="paint-order: fill; stroke: rgb(0, 0, 0); stroke-linejoin: round; stroke-width: 1;" />
+    <rect x="140" y="170" width="60" height="4" style="paint-order: fill; stroke: rgb(0, 0, 0); stroke-linejoin: round; stroke-width: 1;" />
+    <rect x="140" y="180" width="45" height="4" style="paint-order: fill; stroke: rgb(0, 0, 0); stroke-linejoin: round; stroke-width: 1;" />
     </g><g id="lettera-F" transform="translate(24 297.081967213115) scale(2.360655737705) translate(-239.5 -139.5)"><rect x="240" y="140" width="60" height="4" style="paint-order: fill; stroke-linejoin: round; stroke-width: 1; fill: rgb(250, 207, 12); stroke: rgb(250, 207, 12);" />
     <rect x="240" y="150" width="60" height="4" style="paint-order: fill; stroke-linejoin: round; stroke-width: 1; fill: rgb(250, 207, 12); stroke: rgb(250, 207, 12);" />
     <rect x="240" y="160" width="60" height="4" style="paint-order: fill; stroke-linejoin: round; stroke-width: 1; fill: rgb(250, 207, 12); stroke: rgb(250, 207, 12);" />
@@ -24,4 +24,4 @@
     <rect x="390" y="160" width="40" height="4" style="paint-order: fill; stroke-linejoin: round; stroke-width: 1; fill: rgb(250, 207, 12); stroke: rgb(250, 207, 12);" />
     <rect x="390" y="170" width="60" height="4" style="paint-order: fill; stroke-linejoin: round; stroke-width: 1; fill: rgb(250, 207, 12); stroke: rgb(250, 207, 12);" />
     <rect x="390" y="180" width="50" height="4" style="paint-order: fill; stroke-linejoin: round; stroke-width: 1; fill: rgb(250, 207, 12); stroke: rgb(250, 207, 12);" />
-  </g></g></svg>
+  </g></svg>
