@@ -2,7 +2,7 @@
 
 ## Orientation
 
-The backend is a Java 21 / Spring Boot 3.4 REST application. The entry point is `BackendApplication.java`. Packages below `com.printcalculator` follow these responsibilities:
+The backend is a Java 21 / Spring Boot 4.1 REST application. The entry point is `BackendApplication.java`. Packages below `com.printcalculator` follow these responsibilities:
 
 - `controller/` — public HTTP endpoints; `controller/admin/` is the authenticated administrative API.
 - `service/` — domain logic. Domain subpackages include `admin`, `email`, `home`, `order`, `payment`, `qr`, `request`, `media`, and `storage`.

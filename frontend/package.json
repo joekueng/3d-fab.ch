@@ -23,7 +23,7 @@
   },
   "private": true,
   "engines": {
-    "node": "^22.0.0"
+    "node": "^24.15.0"
   },
   "dependencies": {
     "@angular/cdk": "22.2.0",
@@ -37,8 +37,8 @@
     "@angular/platform-server": "22.2.0",
     "@angular/router": "22.2.0",
     "@angular/ssr": "22.2.0",
-    "@ngx-translate/core": "^18.0.0",
-    "@ngx-translate/http-loader": "^18.0.0",
+    "@ngx-translate/core": "17.0.0",
+    "@ngx-translate/http-loader": "17.0.0",
     "@types/three": "^0.186.0",
     "escape-html": "^1.0.3",
     "express": "^5.2.1",
@@ -48,23 +48,22 @@
     "zone.js": "~0.16.3"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "22.2.0",
+    "@angular/build": "22.2.0",
     "@angular/cli": "22.2.0",
     "@angular/compiler-cli": "22.2.0",
     "@axe-core/playwright": "^4.13.0",
     "@playwright/test": "^1.63.0",
     "@types/express": "^5.0.6",
     "@types/jasmine": "~6.0.0",
-    "@types/node": "^26.6.3",
+    "@types/node": "^24.19.0",
     "jasmine-core": "~7.0.2",
     "karma": "~6.4.4",
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.1",
     "karma-jasmine": "~5.1.0",
-    "karma-jasmine-html-reporter": "~2.3.0",
-    "typescript": "~7.0.2"
+    "typescript": "~6.0.3"
   },
   "overrides": {
-    "tar": "7.5.6"
+    "tar": "7.5.22"
   }
 }

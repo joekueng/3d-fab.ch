@@ -14,8 +14,8 @@ The repository has two deployable applications:
 
 | Area | Location | Stack | Responsibility |
 | --- | --- | --- | --- |
-| Backend | `backend/` | Java 21, Spring Boot 3.4, JPA/Hibernate, PostgreSQL | REST API, domain logic, slicing, storage, payments, email |
-| Frontend | `frontend/` | Angular 19 standalone, Angular Material, Three.js, ngx-translate | Public site, calculator, checkout, and admin UI |
+| Backend | `backend/` | Java 21, Spring Boot 4.1, JPA/Hibernate, PostgreSQL | REST API, domain logic, slicing, storage, payments, email |
+| Frontend | `frontend/` | Angular 22 standalone, Angular Material, Three.js, ngx-translate | Public site, calculator, checkout, and admin UI |
 
 Read the nearest `AGENTS.md` before editing. The backend and frontend guides contain the module-specific conventions and verification commands.
 

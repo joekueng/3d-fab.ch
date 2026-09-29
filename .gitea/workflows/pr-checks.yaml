@@ -18,10 +18,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node 22
+      - name: Setup Node 24
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "24.21.0"
 
       - name: Apply formatting with Prettier
         shell: bash
@@ -143,10 +143,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node 22
+      - name: Setup Node 24
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "24.21.0"
           cache: "npm"
           cache-dependency-path: "frontend/package-lock.json"
 
@@ -191,10 +191,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node 22
+      - name: Setup Node 24
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "24.21.0"
 
       - name: Check translation parity
         shell: bash
@@ -209,10 +209,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node 22
+      - name: Setup Node 24
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "24.21.0"
           cache: "npm"
           cache-dependency-path: "frontend/package-lock.json"
 

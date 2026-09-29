@@ -1,5 +1,5 @@
-import { DOCUMENT } from '@angular/common';
-import { inject, Injectable } from '@angular/core';
+
+import { inject, Injectable, DOCUMENT } from '@angular/core';
 import { ShopProductDetail, ShopProductVariantOption } from './shop.service';
 
 /** Owned by the product page; uses the same document/origin as SeoService. */

@@ -28,7 +28,7 @@ binary, complete these checks. They apply equally to humans and AI agents.
 
 ## Executable checks
 
-From the repository root, with Node 22 or later and network access:
+From the repository root, with the Node version in `frontend/.nvmrc` and network access:
 
 ```bash
 node scripts/check-external-packages.mjs

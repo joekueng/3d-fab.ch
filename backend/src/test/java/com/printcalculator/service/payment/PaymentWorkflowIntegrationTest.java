@@ -6,8 +6,8 @@ import com.printcalculator.repository.*;
 import com.printcalculator.service.email.PaymentEmailOutbox;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.*;
@@ -38,7 +38,7 @@ class PaymentWorkflowIntegrationTest {
             return org.mockito.Mockito.mock(org.springframework.scheduling.TaskScheduler.class);
         }
         @org.springframework.context.annotation.Bean
-        org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer h2Locks() {
+        org.springframework.boot.hibernate.autoconfigure.HibernatePropertiesCustomizer h2Locks() {
             return properties -> properties.put("hibernate.session_factory.statement_inspector",
                     (org.hibernate.resource.jdbc.spi.StatementInspector) sql -> sql.replace("for no key update", "for update"));
         }

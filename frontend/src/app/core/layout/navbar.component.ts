@@ -1,8 +1,7 @@
 import {
   CommonModule,
-  DOCUMENT,
   NgOptimizedImage,
-  isPlatformBrowser,
+  isPlatformBrowser
 } from '@angular/common';
 import {
   afterNextRender,
@@ -12,6 +11,7 @@ import {
   computed,
   inject,
   signal,
+  DOCUMENT
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {

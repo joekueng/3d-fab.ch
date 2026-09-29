@@ -20,6 +20,11 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "24.21.0"
       - name: Verify registry metadata without installing packages
         run: node scripts/check-external-packages.mjs
+      - name: Audit frontend lockfile
+        working-directory: frontend
+        run: |
+          npm audit --package-lock-only --ignore-scripts
+          npm audit --package-lock-only --ignore-scripts --omit=dev

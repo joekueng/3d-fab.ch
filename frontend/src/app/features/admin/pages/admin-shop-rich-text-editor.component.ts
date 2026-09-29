@@ -1,4 +1,4 @@
-import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   AfterViewInit,
   Component,
@@ -11,6 +11,7 @@ import {
   SimpleChanges,
   ViewChild,
   inject,
+  DOCUMENT
 } from '@angular/core';
 import {
   normalizeRichTextStorageValue,
