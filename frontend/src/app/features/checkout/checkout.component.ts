@@ -1,3 +1,4 @@
+import { ServiceLine } from '../../shared/models/service-line';
 import { AppDialogComponent } from '../../shared/components/app-dialog/app-dialog.component';
 import { FormControl } from '@angular/forms';
 import { LegalConsentComponent } from '../../shared/components/legal-consent/legal-consent.component';
@@ -315,6 +316,10 @@ export class CheckoutComponent implements OnInit {
 
   cadRequestId(): string | null {
     return this.quoteSession()?.session?.sourceRequestId ?? null;
+  }
+
+  serviceLines(): ServiceLine[] {
+    return this.quoteSession()?.session?.serviceLines ?? [];
   }
 
   cadHours(): number {

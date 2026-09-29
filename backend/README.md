@@ -244,3 +244,39 @@ confirmation/reporting using H2 in PostgreSQL mode with only lock SQL adapted.
 Authentication tests generate fresh RSA keys; IMAP and SMTP tests use mocks.
 `PaymentEmailRenderingTest` renders real localized service contexts under
 `build/payment-email-preview/` for visual checking without customer sends.
+
+## Service invoices and interim billing
+
+The existing admin CAD invoice flow also supports general service invoices.
+`POST /api/admin/cad-invoices` accepts `serviceLines`: an ordered list of
+free-text descriptions, `HOURLY` or `FIXED` billing, quantity and CHF unit price.
+There is no application-level row-count limit or predefined service catalogue.
+Hourly quantity and unit price use at most two decimal places; fixed-price rows
+have quantity one. Each line rounds to cents before summing. Providing service
+rows replaces the legacy CAD hours/rate contribution, preventing double charges.
+Print prices, setup and shipping still come from the existing calculator.
+
+Optional `clientName` and `collaborationName` are administrative grouping labels
+(customer/company and project), never public identity or authorization. Exact
+label pairs form groups; these are not staff assignments or a customer CRM.
+Each interim invoice is a separate quote session, checkout and order. The UI
+starts it with the same group labels and empty service rows; it does not copy
+previously billed services or calculate a project's remaining balance.
+
+`invoiceName` and immutable service details are copied to the order on checkout.
+Public checkout, order details and invoice PDFs use that agreed snapshot.
+Converted sessions cannot change financial details. The admin metadata PATCH
+may relabel their grouping/name without rewriting issued documents. Both admin
+updates acquire the session lock used by order creation.
+
+Deployment adds nullable `invoice_name`, `invoice_client_name`,
+`collaboration_name` and JSON `service_lines` to quote sessions; orders add
+nullable `invoice_name` and JSON `service_lines`. Hibernate update and the
+idempotent additions in `db.sql` align these columns. Existing CAD invoices need
+no backfill and retain their previous hours/rate calculation. Keep the existing
+`CAD_ACTIVE` / `isCadOrder` compatibility flags: general service orders reuse
+the paid-deliverable upload/download flow and payment confirmation rules.
+
+Verification covers service-only/mixed totals, request validation with 250 rows,
+Hibernate JSON round trips, immutable order details, existing paid-file gates
+and multi-page invoice rendering.

@@ -519,6 +519,50 @@ class OrderServiceTest {
         assertShippingRejected("QUOTED", "CH", BigDecimal.valueOf(4));
     }
 
+    @Test
+    void servicesOnlyOrderKeepsAgreedDetailsAndAllowsPaidDeliverables() {
+        UUID id = UUID.randomUUID();
+        QuoteSession session = new QuoteSession();
+        session.setId(id);
+        session.setStatus("CAD_ACTIVE");
+        session.setInvoiceName("First iteration");
+        var lines = new java.util.ArrayList<>(List.of(
+                new com.printcalculator.dto.ServiceLineDto("Review meeting", com.printcalculator.dto.ServiceLineDto.BillingType.HOURLY,
+                        new BigDecimal("1.25"), new BigDecimal("80")),
+                new com.printcalculator.dto.ServiceLineDto("Finishing", com.printcalculator.dto.ServiceLineDto.BillingType.FIXED,
+                        BigDecimal.ONE, new BigDecimal("50"))));
+        session.setServiceLines(lines);
+        Customer customer = new Customer(); customer.setEmail("buyer@example.com");
+        when(quoteSessionRepo.findLockedById(id)).thenReturn(Optional.of(session));
+        when(quoteLineItemRepo.findByQuoteSessionId(id)).thenReturn(List.of());
+        when(quoteSessionTotalsService.calculateCadTotal(session)).thenReturn(BigDecimal.ZERO);
+        when(customerRepo.findByEmail("buyer@example.com")).thenReturn(Optional.of(customer));
+        when(orderRepo.save(any(Order.class))).thenAnswer(call -> {
+            Order order = call.getArgument(0);
+            if (order.getId() == null) order.setId(UUID.randomUUID());
+            return order;
+        });
+        when(quoteSessionTotalsService.compute(session, List.of())).thenReturn(
+                new QuoteSessionTotalsService.QuoteSessionTotals(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
+                        new BigDecimal("150"), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
+                        new BigDecimal("150"), BigDecimal.ZERO));
+        Order order = service.createOrderFromQuote(id, buildRequest());
+        assertAmountEquals("150", order.getSubtotalChf());
+        assertAmountEquals("150", order.getTotalChf());
+        assertTrue(order.getIsCadOrder());
+        assertEquals("First iteration", order.getInvoiceName());
+        assertEquals(2, order.getServiceLines().size());
+        session.setServiceLines(List.of());
+        session.setInvoiceName("Changed later");
+        lines.clear();
+        assertEquals(2, order.getServiceLines().size());
+        assertEquals("First iteration", order.getInvoiceName());
+        assertEquals("CONVERTED", session.getStatus());
+        verify(paymentService).getOrCreatePaymentForOrder(order, "OTHER");
+        verify(eventPublisher).publishEvent(any(OrderCreatedEvent.class));
+        assertThrows(IllegalStateException.class, () -> service.createOrderFromQuote(id, buildRequest()));
+    }
+
     private void assertShippingRejected(String status, String country, BigDecimal expected) {
         UUID id = UUID.randomUUID();
         QuoteSession session = new QuoteSession(); session.setId(id);

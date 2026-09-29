@@ -189,6 +189,8 @@ public class OrderControllerService {
         dto.setCadHours(order.getCadHours());
         dto.setCadHourlyRateChf(order.getCadHourlyRateChf());
         dto.setCadTotalChf(order.getCadTotalChf());
+        dto.setServiceLines(order.getServiceLines());
+        dto.setInvoiceName(order.getInvoiceName());
         OrderCadFileService.CadFileSummary cadFileSummary = orderCadFileService.summarize(order);
         dto.setCadFileCount(cadFileSummary != null ? cadFileSummary.fileCount() : 0);
         dto.setCadFileDownloadAvailable(cadFileSummary != null && cadFileSummary.downloadAvailable());

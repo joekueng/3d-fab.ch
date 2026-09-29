@@ -1723,3 +1723,13 @@ create table twint_receipts (
     constraint uq_twint_delivery unique (mailbox_key, uid_validity, message_uid),
     constraint uq_twint_claimed_transaction unique (claimed_transaction_id)
 );
+
+
+-- Optional administrative labels; existing CAD invoices remain ungrouped.
+ALTER TABLE quote_sessions ADD COLUMN IF NOT EXISTS invoice_name varchar(160);
+ALTER TABLE quote_sessions ADD COLUMN IF NOT EXISTS collaboration_name varchar(160);
+
+ALTER TABLE quote_sessions ADD COLUMN IF NOT EXISTS service_lines jsonb;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS service_lines jsonb;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS invoice_name varchar(160);
+ALTER TABLE quote_sessions ADD COLUMN IF NOT EXISTS invoice_client_name varchar(160);

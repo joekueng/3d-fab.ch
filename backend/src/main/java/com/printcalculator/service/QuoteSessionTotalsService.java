@@ -67,7 +67,7 @@ public class QuoteSessionTotalsService {
         BigDecimal printItemsTotal = printItemsBaseTotal.add(globalMachineCost);
 
         BigDecimal cadTotal = calculateCadTotal(session);
-        BigDecimal itemsTotal = printItemsTotal.add(cadTotal);
+        BigDecimal itemsTotal = printItemsTotal.add(cadTotal).add(calculateServicesTotal(session));
 
         BigDecimal standardSetupFee = session.getSetupCostChf() != null
                 ? session.getSetupCostChf()
@@ -101,6 +101,12 @@ public class QuoteSessionTotalsService {
                 shippingQuote,
                 machineHourTiers
         );
+    }
+
+    public BigDecimal calculateServicesTotal(QuoteSession session) {
+        return session == null ? BigDecimal.ZERO : session.getServiceLines().stream()
+                .map(com.printcalculator.dto.ServiceLineDto::totalChf)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     public BigDecimal calculateCadTotal(QuoteSession session) {

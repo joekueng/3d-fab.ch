@@ -52,3 +52,72 @@
     grid-template-columns: 1fr;
   }
 }
+
+.invoice-name {
+  min-width: 10rem;
+  max-width: 20rem;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.invoice-fields {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.service-lines {
+  display: grid;
+  gap: var(--space-3);
+}
+.service-details {
+  max-width: 28rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.service-line h4 {
+  margin: 0 0 var(--space-2);
+}
+
+.service-grid {
+  display: grid;
+  grid-template-columns: minmax(12rem, 18rem) 7rem 10rem minmax(0, 1fr);
+  align-items: end;
+  gap: var(--space-3);
+}
+
+.service-grid--fixed {
+  grid-template-columns: minmax(12rem, 18rem) 10rem minmax(0, 1fr);
+}
+
+.service-line-actions {
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.service-line-actions span {
+  white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+  .service-grid,
+  .service-grid--fixed {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .service-line-actions {
+    grid-column: 1 / -1;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 600px) {
+  .service-grid,
+  .service-grid--fixed {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .service-billing {
+    grid-column: 1 / -1;
+  }
+}
