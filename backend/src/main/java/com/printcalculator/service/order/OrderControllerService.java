@@ -101,6 +101,10 @@ public class OrderControllerService {
         return orderCadFileService.downloadCustomerCadFiles(orderId);
     }
 
+    public ResponseEntity<org.springframework.core.io.Resource> previewCadFile(UUID orderId, UUID fileId) {
+        return orderCadFileService.previewDeliverableImage(orderId, fileId);
+    }
+
     public ResponseEntity<Map<String, String>> getTwintPayment(UUID orderId) {
         Order order = orderRepo.findById(orderId).orElse(null);
         if (order == null) {
@@ -194,6 +198,9 @@ public class OrderControllerService {
         OrderCadFileService.CadFileSummary cadFileSummary = orderCadFileService.summarize(order);
         dto.setCadFileCount(cadFileSummary != null ? cadFileSummary.fileCount() : 0);
         dto.setCadFileDownloadAvailable(cadFileSummary != null && cadFileSummary.downloadAvailable());
+        if (cadFileSummary != null && cadFileSummary.downloadAvailable()) {
+            dto.setCadFiles(orderCadFileService.listDeliverableDtos(order.getId()));
+        }
         dto.setTotalChf(order.getTotalChf());
         dto.setCreatedAt(order.getCreatedAt());
         dto.setPaidAt(order.getPaidAt());

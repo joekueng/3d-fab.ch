@@ -363,6 +363,29 @@ export class QuoteEstimatorService {
     );
   }
 
+  getOrderCadFilePreview(orderId: string, fileId: string): Observable<Blob> {
+    const headers: any = {};
+    return this.http.get(
+      `${environment.apiUrl}/api/orders/${orderId}/cad-files/${fileId}/preview`,
+      {
+        headers,
+        responseType: 'blob',
+      },
+    );
+  }
+
+  getQuoteSessionAttachmentPreview(
+    sessionId: string,
+    attachmentId: string,
+  ): Observable<Blob> {
+    return this.http.get(
+      `${environment.apiUrl}/api/quote-sessions/${sessionId}/attachments/${attachmentId}/preview`,
+      {
+        responseType: 'blob',
+      },
+    );
+  }
+
   getTwintPayment(orderId: string): Observable<any> {
     const headers: any = {};
     return this.http.get(`${environment.apiUrl}/api/orders/${orderId}/twint`, {

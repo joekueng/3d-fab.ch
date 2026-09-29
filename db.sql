@@ -1733,3 +1733,23 @@ ALTER TABLE quote_sessions ADD COLUMN IF NOT EXISTS service_lines jsonb;
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS service_lines jsonb;
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS invoice_name varchar(160);
 ALTER TABLE quote_sessions ADD COLUMN IF NOT EXISTS invoice_client_name varchar(160);
+
+-- Allegati della fattura/sessione CAD (immagini anteprimabili, altri file scaricabili dopo il pagamento).
+CREATE TABLE IF NOT EXISTS quote_session_attachments
+(
+    quote_session_attachment_id uuid PRIMARY KEY     DEFAULT gen_random_uuid(),
+    quote_session_id            uuid        NOT NULL REFERENCES quote_sessions (quote_session_id) ON DELETE CASCADE,
+
+    original_filename           text        NOT NULL,
+    stored_relative_path        text        NOT NULL, -- es: <sessionId>/attachments/<attachmentId>/<uuid>.png
+    stored_filename             text        NOT NULL,
+
+    file_size_bytes             bigint CHECK (file_size_bytes >= 0),
+    mime_type                   text,
+    sha256_hex                  text,
+
+    created_at                  timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS ix_quote_session_attachments_session
+    ON quote_session_attachments (quote_session_id);

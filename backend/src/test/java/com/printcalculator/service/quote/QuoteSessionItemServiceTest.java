@@ -123,6 +123,7 @@ class QuoteSessionItemServiceTest {
         variant.setColorName("White");
 
         PrinterMachine machine = new PrinterMachine();
+        machine.setId(7L);
         machine.setPrinterDisplayName("BambuLab A1");
 
         PrintStats stats = new PrintStats(3600, "1h", 42.0, 1000.0);
@@ -205,6 +206,7 @@ class QuoteSessionItemServiceTest {
         assertEquals(0, BigDecimal.valueOf(80.0).compareTo(saved.getBoundingBoxYMm()));
         assertEquals(0, BigDecimal.valueOf(25.0).compareTo(saved.getBoundingBoxZMm()));
         assertFalse(Boolean.TRUE.equals(saved.getRequiresSplitPrinting()));
+        assertEquals(7L, saved.getPricingBreakdown().get("printerMachineId"));
     }
 
     @Test

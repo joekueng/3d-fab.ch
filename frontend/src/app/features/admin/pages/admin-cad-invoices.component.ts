@@ -3,7 +3,13 @@ import {
   serviceLineTotal,
 } from '../../../shared/models/service-line';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  PLATFORM_ID,
+  inject,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AppSelectComponent } from '../../../shared/components/app-select/app-select.component';
@@ -11,6 +17,11 @@ import { AppDialogComponent } from '../../../shared/components/app-dialog/app-di
 import {
   AdminCadInvoice,
   AdminOperationsService,
+  AdminQuoteItemStats,
+  AdminQuoteItemStatsUpdate,
+  AdminQuoteItemStatsUpdatePayload,
+  AdminQuoteItemsResponse,
+  QuoteSessionAttachment,
 } from '../services/admin-operations.service';
 import { AdminOrdersService } from '../services/admin-orders.service';
 import { CopyOnClickDirective } from '../../../shared/directives/copy-on-click.directive';
@@ -38,6 +49,46 @@ interface ServiceLineForm {
   unitPriceChf: string;
 }
 
+export interface HoursMinutes {
+  hours: number;
+  minutes: number;
+}
+
+export function secondsToHoursMinutes(seconds: number): HoursMinutes {
+  const safeSeconds =
+    Number.isFinite(seconds) && seconds > 0 ? Math.floor(seconds) : 0;
+  const totalMinutes = Math.floor(safeSeconds / 60);
+  return {
+    hours: Math.floor(totalMinutes / 60),
+    minutes: totalMinutes % 60,
+  };
+}
+
+export function hoursMinutesToSeconds(
+  hours: unknown,
+  minutes: unknown,
+): number {
+  const parsedHours = parseDecimalInput(hours);
+  const parsedMinutes = parseDecimalInput(minutes);
+  if (
+    !Number.isInteger(parsedHours) ||
+    parsedHours < 0 ||
+    !Number.isInteger(parsedMinutes) ||
+    parsedMinutes < 0 ||
+    parsedMinutes > 59
+  ) {
+    return Number.NaN;
+  }
+  return parsedHours * 3600 + parsedMinutes * 60;
+}
+
+interface ManagedItemRow {
+  item: AdminQuoteItemStats;
+  hours: string;
+  minutes: string;
+  grams: string;
+}
+
 @Component({
   selector: 'app-admin-cad-invoices',
   standalone: true,
@@ -55,7 +106,7 @@ interface ServiceLineForm {
   templateUrl: './admin-cad-invoices.component.html',
   styleUrl: './admin-cad-invoices.component.scss',
 })
-export class AdminCadInvoicesComponent implements OnInit {
+export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly adminOperationsService = inject(AdminOperationsService);
   private readonly adminOrdersService = inject(AdminOrdersService);
@@ -189,6 +240,27 @@ export class AdminCadInvoicesComponent implements OnInit {
   errorMessage: string | null = null;
   successMessage: string | null = null;
 
+  managedSessionId: string | null = null;
+  managedSessionStatus: string | null = null;
+  managedItemsTotalChf: number | null = null;
+  managedPreviewTotalChf: number | null = null;
+  managedRows: ManagedItemRow[] = [];
+  managedLoading = false;
+  sessionFilesLoaded = false;
+  previewing = false;
+  savingManaged = false;
+  managedPreviewActive = false;
+  managedError: string | null = null;
+
+  sessionAttachments: QuoteSessionAttachment[] = [];
+  pendingAttachmentFiles: File[] = [];
+  attachmentPreviews: Record<string, string> = {};
+  attachmentError: string | null = null;
+  attachmentUploading = false;
+  deletingAttachmentId: string | null = null;
+  readonly attachmentMaxFiles = 15;
+  readonly attachmentMaxFileSizeBytes = 50 * 1024 * 1024;
+
   form = {
     clientName: '',
     invoiceName: '',
@@ -280,6 +352,7 @@ export class AdminCadInvoicesComponent implements OnInit {
           },
         ];
     this.errorMessage = null;
+    this.loadSessionFiles(row.sessionId);
     if (this.isBrowser) window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -294,6 +367,7 @@ export class AdminCadInvoicesComponent implements OnInit {
     };
     this.serviceLines = [this.newServiceLine()];
     this.errorMessage = null;
+    this.clearSessionFiles();
   }
 
   createCadInvoice(): void {
@@ -347,12 +421,20 @@ export class AdminCadInvoicesComponent implements OnInit {
         serviceLines,
       })
       .subscribe({
-        next: () => {
+        next: (created) => {
           this.creating = false;
           this.successMessage = this.translate.instant(
             'CAD_ORGANIZATION.READY',
           );
+          const pendingFiles = [...this.pendingAttachmentFiles];
           this.resetForm();
+          if (created?.sessionId) {
+            this.form.sessionId = created.sessionId;
+            this.loadSessionFiles(created.sessionId);
+            if (pendingFiles.length > 0) {
+              this.uploadAttachments(created.sessionId, pendingFiles);
+            }
+          }
           this.loadCadInvoices();
         },
         error: () => {
@@ -362,6 +444,318 @@ export class AdminCadInvoicesComponent implements OnInit {
           );
         },
       });
+  }
+
+  onSessionIdChange(): void {
+    const sessionId = String(this.form.sessionId ?? '').trim();
+    if (!this.isUuid(sessionId)) {
+      this.clearSessionFiles();
+      return;
+    }
+    if (sessionId === this.managedSessionId) {
+      return;
+    }
+    this.loadSessionFiles(sessionId);
+  }
+
+  manageItems(sessionId: string): void {
+    this.form.sessionId = sessionId;
+    this.loadSessionFiles(sessionId);
+    if (this.isBrowser) window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  loadSessionFiles(sessionId?: string): void {
+    const target = String(sessionId ?? this.form.sessionId ?? '').trim();
+    if (!target) {
+      this.managedError = this.translate.instant(
+        'CAD_ITEM_PRICING.SESSION_REQUIRED',
+      );
+      return;
+    }
+    this.managedSessionId = target;
+    this.sessionFilesLoaded = false;
+    this.managedError = null;
+    this.attachmentError = null;
+    this.successMessage = null;
+    this.attachmentUploading = false;
+    this.deletingAttachmentId = null;
+    this.clearAttachmentPreviews();
+    this.loadManagedItems(target);
+    this.loadSessionAttachments(target);
+  }
+
+  loadSessionAttachments(sessionId?: string): void {
+    const target = String(sessionId ?? this.managedSessionId ?? '').trim();
+    if (!target) {
+      return;
+    }
+    this.adminOperationsService.listQuoteSessionAttachments(target).subscribe({
+      next: (attachments) => {
+        if (this.managedSessionId !== target) {
+          return;
+        }
+        this.sessionAttachments = attachments;
+        this.loadAttachmentPreviews(target);
+      },
+      error: (err) => {
+        if (this.managedSessionId !== target) {
+          return;
+        }
+        this.sessionAttachments = [];
+        this.attachmentError =
+          err?.error?.message ||
+          this.translate.instant('CAD_ITEM_PRICING.ATTACH_ERROR');
+      },
+    });
+  }
+
+  onAttachmentFilesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    const files = Array.from(input?.files ?? []);
+    if (input) {
+      input.value = '';
+    }
+    if (
+      files.length === 0 ||
+      !this.canEditManagedItems() ||
+      this.attachmentUploading
+    ) {
+      return;
+    }
+    if (
+      this.sessionAttachments.length +
+        this.pendingAttachmentFiles.length +
+        files.length >
+      this.attachmentMaxFiles
+    ) {
+      this.attachmentError = this.translate.instant(
+        'CAD_ITEM_PRICING.ATTACH_TOO_MANY',
+        { count: this.attachmentMaxFiles },
+      );
+      return;
+    }
+    const oversized = files.find(
+      (file) => file.size > this.attachmentMaxFileSizeBytes,
+    );
+    if (oversized) {
+      this.attachmentError = this.translate.instant(
+        'CAD_ITEM_PRICING.ATTACH_TOO_LARGE',
+        { name: oversized.name },
+      );
+      return;
+    }
+    this.attachmentError = null;
+
+    if (!this.managedSessionId) {
+      this.pendingAttachmentFiles = [...this.pendingAttachmentFiles, ...files];
+      return;
+    }
+    this.uploadAttachments(this.managedSessionId, files);
+  }
+
+  removePendingAttachment(index: number): void {
+    this.pendingAttachmentFiles = this.pendingAttachmentFiles.filter(
+      (_file, fileIndex) => fileIndex !== index,
+    );
+  }
+
+  private uploadAttachments(sessionId: string, files: File[]): void {
+    if (files.length === 0) {
+      return;
+    }
+    this.attachmentUploading = true;
+    this.attachmentError = null;
+    this.adminOperationsService
+      .uploadQuoteSessionAttachments(sessionId, files)
+      .subscribe({
+        next: () => {
+          if (this.managedSessionId !== sessionId) {
+            return;
+          }
+          this.attachmentUploading = false;
+          this.pendingAttachmentFiles = [];
+          this.successMessage = this.translate.instant(
+            'CAD_ITEM_PRICING.ATTACH_UPLOADED',
+          );
+          this.loadSessionAttachments(sessionId);
+        },
+        error: (err) => {
+          if (this.managedSessionId !== sessionId) {
+            return;
+          }
+          this.attachmentUploading = false;
+          this.attachmentError =
+            err?.error?.message ||
+            this.translate.instant('CAD_ITEM_PRICING.ATTACH_ERROR');
+        },
+      });
+  }
+
+  deleteAttachment(attachment: QuoteSessionAttachment): void {
+    if (!this.managedSessionId || this.deletingAttachmentId) {
+      return;
+    }
+    const sessionId = this.managedSessionId;
+    this.deletingAttachmentId = attachment.id;
+    this.attachmentError = null;
+    this.adminOperationsService
+      .deleteQuoteSessionAttachment(sessionId, attachment.id)
+      .subscribe({
+        next: () => {
+          if (this.managedSessionId !== sessionId) {
+            return;
+          }
+          this.deletingAttachmentId = null;
+          this.revokeAttachmentPreview(attachment.id);
+          this.sessionAttachments = this.sessionAttachments.filter(
+            (item) => item.id !== attachment.id,
+          );
+        },
+        error: (err) => {
+          if (this.managedSessionId !== sessionId) {
+            return;
+          }
+          this.deletingAttachmentId = null;
+          this.attachmentError =
+            err?.error?.message ||
+            this.translate.instant('CAD_ITEM_PRICING.ATTACH_ERROR');
+        },
+      });
+  }
+
+  attachmentPreviewUrl(attachmentId: string): string | null {
+    return this.attachmentPreviews[attachmentId] ?? null;
+  }
+
+  ngOnDestroy(): void {
+    this.clearAttachmentPreviews();
+  }
+
+  private loadManagedItems(sessionId: string): void {
+    this.managedLoading = true;
+    this.managedPreviewActive = false;
+    this.managedPreviewTotalChf = null;
+    this.adminOperationsService.getAdminQuoteItems(sessionId).subscribe({
+      next: (response) => {
+        if (this.managedSessionId !== sessionId) {
+          return;
+        }
+        this.managedLoading = false;
+        this.sessionFilesLoaded = true;
+        this.applyManagedResponse(response);
+      },
+      error: (err) => {
+        if (this.managedSessionId !== sessionId) {
+          return;
+        }
+        this.managedLoading = false;
+        this.sessionFilesLoaded = true;
+        this.managedSessionStatus = null;
+        this.managedItemsTotalChf = null;
+        this.managedRows = [];
+        this.managedError =
+          err?.error?.message ||
+          this.translate.instant('CAD_ITEM_PRICING.LOAD_ERROR');
+      },
+    });
+  }
+
+  private loadAttachmentPreviews(sessionId: string): void {
+    if (!this.isBrowser) {
+      return;
+    }
+    for (const attachment of this.sessionAttachments) {
+      if (!attachment.image || this.attachmentPreviews[attachment.id]) {
+        continue;
+      }
+      this.adminOperationsService
+        .getQuoteSessionAttachmentPreview(sessionId, attachment.id)
+        .subscribe({
+          next: (blob) => {
+            if (
+              !this.isBrowser ||
+              this.managedSessionId !== sessionId ||
+              this.attachmentPreviews[attachment.id]
+            ) {
+              return;
+            }
+            this.attachmentPreviews = {
+              ...this.attachmentPreviews,
+              [attachment.id]: URL.createObjectURL(blob),
+            };
+          },
+          error: () => {},
+        });
+    }
+  }
+
+  private clearAttachmentPreviews(): void {
+    if (this.isBrowser) {
+      for (const url of Object.values(this.attachmentPreviews)) {
+        URL.revokeObjectURL(url);
+      }
+    }
+    this.attachmentPreviews = {};
+  }
+
+  private revokeAttachmentPreview(attachmentId: string): void {
+    const url = this.attachmentPreviews[attachmentId];
+    if (url && this.isBrowser) {
+      URL.revokeObjectURL(url);
+    }
+    const { [attachmentId]: _removed, ...rest } = this.attachmentPreviews;
+    this.attachmentPreviews = rest;
+  }
+
+  private clearSessionFiles(): void {
+    this.managedSessionId = null;
+    this.managedSessionStatus = null;
+    this.managedItemsTotalChf = null;
+    this.managedPreviewTotalChf = null;
+    this.managedRows = [];
+    this.managedPreviewActive = false;
+    this.managedError = null;
+    this.sessionFilesLoaded = false;
+    this.sessionAttachments = [];
+    this.pendingAttachmentFiles = [];
+    this.attachmentError = null;
+    this.attachmentUploading = false;
+    this.deletingAttachmentId = null;
+    this.clearAttachmentPreviews();
+  }
+
+  private isUuid(value: string): boolean {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      value,
+    );
+  }
+
+  onManagedDraftChange(): void {
+    this.managedPreviewActive = false;
+    this.managedPreviewTotalChf = null;
+    this.managedRows = this.managedRows.map((row) => ({
+      ...row,
+      item: { ...row.item, newUnitPriceChf: null },
+    }));
+  }
+
+  canEditManagedItems(): boolean {
+    return this.managedSessionStatus !== 'CONVERTED';
+  }
+
+  isRowEditable(row: ManagedItemRow): boolean {
+    return row.item.editable && this.canEditManagedItems();
+  }
+
+  previewManagedChanges(): void {
+    this.submitManagedChanges(false);
+  }
+
+  saveManagedChanges(): void {
+    if (!this.managedPreviewActive) {
+      return;
+    }
+    this.submitManagedChanges(true);
   }
 
   openCheckout(path: string): void {
@@ -395,6 +789,113 @@ export class AdminCadInvoicesComponent implements OnInit {
           'CAD_ORGANIZATION.DOWNLOAD_ERROR',
         );
       },
+    });
+  }
+
+  private submitManagedChanges(persist: boolean): void {
+    if (this.previewing || this.savingManaged || !this.canEditManagedItems()) {
+      return;
+    }
+    const payload = this.buildManagedPayload(persist);
+    if (!payload) {
+      return;
+    }
+
+    const sessionId =
+      this.managedSessionId ?? String(this.form.sessionId).trim();
+    if (persist) {
+      this.savingManaged = true;
+    } else {
+      this.previewing = true;
+    }
+    this.managedError = null;
+    this.successMessage = null;
+
+    this.adminOperationsService
+      .updateAdminQuoteItemStats(sessionId, payload)
+      .subscribe({
+        next: (response) => {
+          this.previewing = false;
+          this.savingManaged = false;
+          if (persist) {
+            this.successMessage = this.translate.instant(
+              'CAD_ITEM_PRICING.SAVED',
+            );
+            this.managedPreviewActive = false;
+            this.managedPreviewTotalChf = null;
+            this.applyManagedResponse(response);
+            this.loadCadInvoices();
+          } else {
+            this.managedRows = this.managedRows.map((row) => {
+              const updated = response.items.find(
+                (item) => item.id === row.item.id,
+              );
+              return updated ? { ...row, item: updated } : row;
+            });
+            this.managedPreviewActive = true;
+            this.managedPreviewTotalChf = response.grandTotalChf;
+          }
+        },
+        error: (err) => {
+          this.previewing = false;
+          this.savingManaged = false;
+          this.managedError =
+            err?.error?.message ||
+            this.translate.instant(
+              persist
+                ? 'CAD_ITEM_PRICING.SAVE_ERROR'
+                : 'CAD_ITEM_PRICING.PREVIEW_ERROR',
+            );
+        },
+      });
+  }
+
+  private buildManagedPayload(
+    persist: boolean,
+  ): AdminQuoteItemStatsUpdatePayload | null {
+    const items: AdminQuoteItemStatsUpdate[] = [];
+    for (const row of this.managedRows) {
+      if (!row.item.editable) {
+        continue;
+      }
+      const printTimeSeconds = hoursMinutesToSeconds(row.hours, row.minutes);
+      const materialGrams = parseDecimalInput(row.grams);
+      if (
+        !Number.isFinite(printTimeSeconds) ||
+        printTimeSeconds < 1 ||
+        !Number.isFinite(materialGrams) ||
+        materialGrams <= 0
+      ) {
+        this.managedError = this.translate.instant(
+          'CAD_ITEM_PRICING.INVALID_VALUES',
+          { name: row.item.displayName || row.item.id },
+        );
+        return null;
+      }
+      items.push({ itemId: row.item.id, printTimeSeconds, materialGrams });
+    }
+
+    if (items.length === 0) {
+      this.managedError = this.translate.instant(
+        'CAD_ITEM_PRICING.NO_EDITABLE_FILES',
+      );
+      return null;
+    }
+    return { persist, items };
+  }
+
+  private applyManagedResponse(response: AdminQuoteItemsResponse): void {
+    this.managedSessionId = response.sessionId;
+    this.managedSessionStatus = response.sessionStatus;
+    this.managedItemsTotalChf = response.grandTotalChf;
+    this.managedRows = response.items.map((item) => {
+      const parts = secondsToHoursMinutes(item.printTimeSeconds ?? 0);
+      return {
+        item,
+        hours: String(parts.hours),
+        minutes: String(parts.minutes),
+        grams: item.materialGrams != null ? String(item.materialGrams) : '',
+      };
     });
   }
 
