@@ -9,6 +9,9 @@ on:
       - frontend/package-lock.json
       - backend/build.gradle
       - scripts/check-external-packages.mjs
+      - scripts/check-frontend-audit.mjs
+      - scripts/check-frontend-audit.test.mjs
+      - docs/dependency-policy.md
       - .gitea/workflows/dependency-checks.yaml
 
 jobs:
@@ -24,7 +27,8 @@ jobs:
       - name: Verify registry metadata without installing packages
         run: node scripts/check-external-packages.mjs
       - name: Audit frontend lockfile
-        working-directory: frontend
         run: |
-          npm audit --package-lock-only --ignore-scripts
+          node --test scripts/check-frontend-audit.test.mjs
+          cd frontend
           npm audit --package-lock-only --ignore-scripts --omit=dev
+          node ../scripts/check-frontend-audit.mjs

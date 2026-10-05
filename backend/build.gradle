@@ -8,6 +8,11 @@ plugins {
 group = 'com.printcalculator'
 version = '0.0.1-SNAPSHOT'
 
+// Spring Boot 4.1.1's managed versions predate the August 2026 security fixes.
+ext['tomcat.version'] = '11.0.25'
+ext['jackson-2-bom.version'] = '2.21.6'
+ext['jackson-bom.version'] = '3.1.6'
+
 java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(21)

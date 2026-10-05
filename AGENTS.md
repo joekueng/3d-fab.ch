@@ -21,6 +21,9 @@ Read the nearest `AGENTS.md` before editing. The backend and frontend guides con
 
 ## Repository map
 
+For Unraid container identity, storage ownership and scoped E2E image cleanup,
+follow [Docker maintenance](docs/unraid-docker.md).
+
 - `backend/src/main/java/com/printcalculator/` — application code, organized into `controller`, `service`, `repository`, `entity`, `dto`, `security`, `config`, `event`, and `exception`.
 - `backend/src/main/resources/application.properties` — application and persistence configuration. The current schema policy is Hibernate `ddl-auto=update`; coordinate schema changes carefully with production deployment and `db.sql` where applicable.
 - `backend/profiles/` — OrcaSlicer profiles and printer data. Treat profile changes as pricing-sensitive.
@@ -46,6 +49,7 @@ Read the nearest `AGENTS.md` before editing. The backend and frontend guides con
 - Keep schema changes, entity mappings, repositories, services, DTOs, API contracts, and frontend models aligned. The project currently uses Hibernate `ddl-auto=update`, so assess deployment compatibility and data migration needs before changing persistent data.
 - Keep public and admin APIs intentionally separate. Admin endpoints use the established session and CSRF protections; do not weaken them or expose secrets/PII in public responses.
 - Do not add secrets, real credentials, private storage files, or generated build artifacts to version control.
+- Keep security audits, vulnerability reports and threat models private. Store new reports under the ignored `private-security/` directory; never commit or publish them.
 - Preserve user changes already present in the worktree. Keep commits small and module-scoped, for example `feat(shop): add product variants`.
 
 ## High-risk areas

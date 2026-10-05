@@ -140,7 +140,9 @@ public class QuoteController {
         }
 
         // Scan for virus
-        clamAVService.scan(file.getInputStream());
+        try (var inputStream = file.getInputStream()) {
+            clamAVService.scan(inputStream);
+        }
 
         // Fetch Default Active Machine
         PrinterMachine machine = machineRepo.findFirstByIsActiveTrueOrderByIdAsc()

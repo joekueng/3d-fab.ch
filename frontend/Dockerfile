@@ -8,6 +8,7 @@ ARG BUILD_CONFIGURATION=production
 RUN npm run build -- --configuration="${BUILD_CONFIGURATION}"
 
 FROM node:24.21.0-alpine AS runtime
+LABEL ch.printcalculator.project="print-calculator"
 
 WORKDIR /app
 COPY package*.json ./

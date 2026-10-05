@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { createServer } from 'node:http';
+import { createServer, get } from 'node:http';
 import { once } from 'node:events';
 import { test } from 'node:test';
 
@@ -36,6 +36,18 @@ test('shop SSR reaches the internal API without the E2E routing override', async
     frontend = app.listen(0, '127.0.0.1');
     await once(frontend, 'listening');
     const origin = `http://127.0.0.1:${frontend.address().port}`;
+    const bridgeHtml = await new Promise((resolve, reject) => {
+      get({ hostname: '127.0.0.1', port: frontend.address().port, path: '/go/flyer?next=</script><script>alert(1)</script>' }, response => {
+        assert.equal(response.statusCode, 200);
+        let html = '';
+        response.setEncoding('utf8');
+        response.on('data', chunk => { html += chunk; });
+        response.on('end', () => resolve(html));
+        response.on('error', reject);
+      }).on('error', reject);
+    });
+    assert.doesNotMatch(bridgeHtml, /<script>alert\(1\)<\/script>/i);
+    assert.match(bridgeHtml, /\\u003c\/script>/i);
     // The public host must never be contacted for catalogue discovery. No Basic
     // Auth is supplied: this also models a proxy stripping its credentials.
     const options = { headers: { Host: 'public-shop.invalid' }, signal: AbortSignal.timeout(15000) };

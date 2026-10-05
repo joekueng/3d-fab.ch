@@ -39,6 +39,9 @@ for the selected versions, compatibility decisions and completed verification.
 
 ## Prerequisites
 
+For Unraid runtime ownership and safe recovery of old E2E images, see
+[Unraid Docker maintenance](docs/unraid-docker.md).
+
 * **Java 21** installed.
 * **Node.js 24.21.0** and **npm** installed.
 * A running **PostgreSQL** instance.

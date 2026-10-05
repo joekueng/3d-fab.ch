@@ -76,7 +76,9 @@ public class CustomQuoteRequestAttachmentService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Compressed files are not allowed.");
             }
 
-            clamAVService.scan(file.getInputStream());
+            try (InputStream inputStream = file.getInputStream()) {
+                clamAVService.scan(inputStream);
+            }
 
             CustomQuoteRequestAttachment attachment = new CustomQuoteRequestAttachment();
             attachment.setRequest(request);

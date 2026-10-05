@@ -14,8 +14,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @Transactional(readOnly = true)
@@ -56,10 +54,6 @@ public class CustomQuoteRequestControllerService {
         eventPublisher.publishEvent(new CustomQuoteRequestCreatedEvent(request.getId(), attachmentsCount, requestDto.getLanguage()));
 
         return request;
-    }
-
-    public Optional<CustomQuoteRequest> getCustomQuoteRequest(UUID id) {
-        return requestRepo.findById(id);
     }
 
     private void validateConsents(QuoteRequestDto requestDto) {

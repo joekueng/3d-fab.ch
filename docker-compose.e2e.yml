@@ -28,6 +28,7 @@ services:
       - "127.0.0.1:${E2E_MAIL_PORT}:8025"
 
   backend:
+    user: "10001:10001"
     platform: linux/amd64
     build:
       context: ./backend

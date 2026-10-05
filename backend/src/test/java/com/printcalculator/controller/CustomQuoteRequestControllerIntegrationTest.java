@@ -53,6 +53,7 @@ import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -133,6 +134,15 @@ class CustomQuoteRequestControllerIntegrationTest {
         assertTrue(logs.stream().allMatch(log -> emailStatus.equals(log.getStatus())));
         assertEquals(1, logs.stream().filter(log -> EmailAuditService.EVENT_CONTACT_REQUEST_ADMIN.equals(log.getEventType())).count());
         assertEquals(1, logs.stream().filter(log -> EmailAuditService.EVENT_CONTACT_REQUEST_CUSTOMER.equals(log.getEventType())).count());
+    }
+
+    @Test
+    void publicRequestLookupIsNotExposed() throws Exception {
+        UUID requestId = createRequest();
+        assertTrue(requests.existsById(requestId));
+
+        mvc.perform(get("/api/custom-quote-requests/" + requestId))
+                .andExpect(status().isNotFound());
     }
 
     @Test
