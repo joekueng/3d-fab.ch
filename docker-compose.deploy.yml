@@ -1,5 +1,6 @@
 services:
   backend:
+    user: "10001:10001"
     # L'immagine usa il tag specificato nel file .env o passato da riga di comando
     # Nginx esterno deve servire /media/ con un alias verso
     # /mnt/cache/appdata/print-calculator/${ENV}/storage_media/public/

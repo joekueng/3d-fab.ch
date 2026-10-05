@@ -119,37 +119,34 @@ case "${action}" in
       "$ffmpeg_bin" -hide_banner -encoders | grep -Eq "[[:space:]](libaom-av1|librav1e|libsvtav1)[[:space:]]" || { echo "Missing AVIF-capable encoder" >&2; exit 1; }; \
       "$ffmpeg_bin" -hide_banner -muxers | grep -Eq "[[:space:]]avif([[:space:]]|,|$)" || { echo "Missing AVIF muxer" >&2; exit 1; }'
 
+    # Bind mounts keep host ownership. Check them before replacing the running service.
+    for storage_name in storage_quotes storage_orders storage_requests storage_media storage_shop; do
+      storage_path="/mnt/cache/appdata/print-calculator/${ENV}/${storage_name}"
+      if [ ! -d "${storage_path}" ]; then
+        echo "Missing backend storage directory: ${storage_path}" >&2
+        exit 3
+      fi
+      if ! docker run --rm --user 10001:10001 --entrypoint /bin/sh \
+          -v "${storage_path}:/storage:rw" "${BACKEND_IMAGE}" \
+          -c 'test -r /storage && test -w /storage && test -x /storage'; then
+        echo "Backend UID/GID 10001:10001 cannot use ${storage_path}; see backend/README.md" >&2
+        exit 3
+      fi
+    done
+
     echo "Syncing profiles to volume ${PROFILES_VOL} (using safe copy)..."
     docker volume create "${PROFILES_VOL}" >/dev/null
-    
-    # Use create + cp + rm instead of run to avoid starting the container
-    TMP_CONTAINER="tmp_profiles_sync_${ENV}"
-    docker rm -f "${TMP_CONTAINER}" >/dev/null 2>&1 || true
-    docker create --name "${TMP_CONTAINER}" "${BACKEND_IMAGE}"
-    
-    # Create a temporary local directory to help with the sync if needed, 
-    # but docker cp can work directly with volumes in some versions.
-    # To be universal, we copy to a temp path then into volume.
-    docker run --rm -v "${PROFILES_VOL}:/dest" "${BACKEND_IMAGE}" sh -c "rm -rf /dest/*"
-    
-    # Alternative safe sync: run a minimal busybox/sh container to do the copy
-    docker run --rm \
-      -v "${PROFILES_VOL}:/profiles-volume" \
-      "${BACKEND_IMAGE}" \
-      /bin/sh -c "cp -a /app/profiles/. /profiles-volume/" || \
-    docker run --rm \
-      -v "${PROFILES_VOL}:/profiles-volume" \
-      --entrypoint "/bin/sh" \
-      "${BACKEND_IMAGE}" \
-      -c "cp -a /app/profiles/. /profiles-volume/"
-
-    docker rm -f "${TMP_CONTAINER}" >/dev/null 2>&1 || true
+    # The one-shot maintenance container may write the named volume as root.
+    # The application container remains unprivileged and only reads profiles.
+    docker run --rm --user 0:0 --entrypoint /bin/sh \
+      -v "${PROFILES_VOL}:/profiles-volume" "${BACKEND_IMAGE}" \
+      -c 'rm -rf /profiles-volume/* && cp -a /app/profiles/. /profiles-volume/'
 
     echo "Starting services..."
     docker compose --env-file "${base_dir}/.env" -p "${project}" -f "${compose_file}" up -d --remove-orphans --force-recreate
     
     echo "Cleaning up obsolete images..."
-    docker image prune -f
+    docker image prune -f --filter "label=ch.printcalculator.project=print-calculator" --filter "until=168h"
     ;;
   *)
     echo "Invalid action. Use: deploy | setenv | setcompose | setcommon"

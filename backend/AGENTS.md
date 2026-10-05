@@ -30,7 +30,7 @@ Read [README.md](README.md) before extending backend features. For email changes
 
 - Quote calculations combine model inspection, Orca profile resolution, slicing/G-code parsing, print statistics, and pricing policy. Changes require special care around `SlicerService`, `QuoteCalculator`, `QuoteSessionTotalsService`, and related entities.
 - Order/payment changes can emit events consumed by email and invoice flows. Trace the relevant `event` and `event/listener` classes before changing an order status or payment state. For contact-request and order creation, preserve the [email transaction boundaries](README.md#email-transaction-boundaries).
-- Uploads and media must retain file validation, antivirus/storage handling, and access boundaries between `original`, `public`, and `private` assets.
+- Uploads and media must retain file validation, antivirus/storage handling, and access boundaries between `original`, `public`, and `private` assets. Follow [mandatory antivirus scanning](README.md#mandatory-antivirus-scanning): scanner failures must block uploads in every environment.
 - QR location is inferred from backend-observed IP data; proxy-header trust and GeoLite configuration are security-sensitive.
 - SMTP, TWINT, QR-bill, and OpenAI translation integrations must be configuration-driven. Never log credentials or full sensitive request data.
 
@@ -46,6 +46,8 @@ Use the Gradle wrapper from `backend/`:
 Add or update focused unit tests for service logic and controller tests for API validation, authorization, and response contracts. Prefer test fixtures and H2-compatible persistence tests already used by the project. Run a relevant integration flow when changing slicing, uploads, payment state, or the persistent schema.
 
 ## Configuration safety
+
+For backend image changes, follow the [container user and storage permission procedure](README.md#backend-container-user-and-storage-permissions). The production bind mounts need a host-side UID migration before the non-root image starts.
 
 - Do not commit secrets or replace environment-based configuration with hard-coded values.
 - Do not alter production defaults, proxy trust settings, security filters, or file-size limits without understanding their deployment impact.

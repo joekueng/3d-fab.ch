@@ -35,6 +35,13 @@ cleanup() {
   cp "$run_dir/build.log" "$repo_root/frontend/test-results/e2e-build.log" 2>/dev/null || true
   compose logs --no-color > "$repo_root/frontend/test-results/e2e-services.log" 2>&1 || true
   compose down --volumes --remove-orphans >/dev/null 2>&1 || true
+  # Each run builds unique tags; Compose down alone leaves those images behind.
+  for service in backend frontend proxy; do
+    if docker image inspect "${run_id}-${service}:latest" >/dev/null 2>&1; then
+      docker image rm "${run_id}-${service}:latest" >/dev/null 2>&1 ||
+        echo "Could not remove E2E image ${run_id}-${service}:latest; inspect it after the run." >&2
+    fi
+  done
   rm -rf "$run_dir"
   exit "$result"
 }

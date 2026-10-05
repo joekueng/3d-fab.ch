@@ -28,6 +28,39 @@ Use the [repository contribution workflow](../README.md#contributing-and-ai-agen
 
 ## Verification
 
+### Mandatory antivirus scanning
+
+Every public and admin upload requires a successful ClamAV scan before the file is
+accepted, processed or copied into permanent storage. Both `ClamAVService.scan()`
+and `scanRequired()` apply the same policy: infected files are rejected, and a
+disabled, unavailable or failing scanner returns HTTP 503 `ANTIVIRUS_UNAVAILABLE`.
+Do not catch these failures and continue storing the upload.
+
+`CLAMAV_ENABLED` defaults to `true`. Setting it to `false` blocks uploads; there is
+no development bypass. `./start.sh` starts the local scanner and connects the
+backend to `localhost:3310`. Deployment environments must provide a reachable
+`CLAMAV_HOST`/`CLAMAV_PORT` with current virus definitions. Copies of existing
+stored files and application-generated documents do not represent new uploads.
+
+Run the live clean-file/EICAR verification against a local scanner with
+`CLAMAV_LIVE_TEST=true ./gradlew test --tests '*ClamAVRequiredScanTest'`.
+
+### Backend container user and storage permissions
+
+The runtime image runs the API and OrcaSlicer as `printcalc` (UID/GID `10001:10001`). `/app/temp` and the five storage directories are owned by that user in the image. The deployment's host bind mounts replace those image directories, so the host directories must also be readable, writable and traversable by UID 10001. The GeoLite directory is read-only; the named profiles volume is populated by a short-lived root maintenance container and read by the API.
+
+Before deploying the non-root image to an existing environment, inspect and back up its storage directories, then prepare permissions during a maintenance window. For example, on the Docker host for one environment:
+
+```bash
+environment_name=dev # or int / prod
+storage_base="/mnt/cache/appdata/print-calculator/${environment_name}"
+for storage_name in storage_quotes storage_orders storage_requests storage_media storage_shop; do
+  sudo chown -R 10001:10001 "${storage_base}/${storage_name}"
+done
+```
+
+Preserve the public media directory's read and traverse permissions for the external Nginx alias. If the host uses Docker user namespaces or ACLs, map the container UID to its host UID or grant equivalent ACL access instead of using the example `chown`. The deployment script checks each bind mount with UID 10001 before replacing the running backend. After deployment, verify `docker exec print-calculator-backend-${environment_name} id`, health, a quote upload/slice, an order attachment and a media upload. For a newly created disposable E2E stack, Docker initializes named volumes from the image-owned directories.
+
 From this directory, run the narrowest relevant tests first:
 
 ```bash
