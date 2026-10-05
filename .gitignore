@@ -60,3 +60,9 @@ storage_shop
 
 # Qodana local reports/artifacts
 backend/.qodana/
+
+# Private security review artifacts
+/security_best_practices_report.md
+/docs/security-audit-*.md
+/docs/security-audits/
+/private-security/
