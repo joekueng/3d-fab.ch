@@ -83,7 +83,9 @@ public class QuoteSessionItemService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported file type. Allowed: stl, 3mf");
         }
 
-        clamAVService.scan(file.getInputStream());
+        try (InputStream inputStream = file.getInputStream()) {
+            clamAVService.scan(inputStream);
+        }
 
         Path sessionStorageDir = quoteStorageService.sessionStorageDir(session.getId());
         String storedFilename = UUID.randomUUID() + "." + ext;

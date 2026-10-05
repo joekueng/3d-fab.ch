@@ -6,8 +6,6 @@ import com.printcalculator.service.request.CustomQuoteRequestControllerService;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -16,7 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/custom-quote-requests")
@@ -34,12 +31,5 @@ public class CustomQuoteRequestController {
             @RequestPart(value = "files", required = false) List<MultipartFile> files
     ) throws IOException {
         return ResponseEntity.ok(customQuoteRequestControllerService.createCustomQuoteRequest(requestDto, files));
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<CustomQuoteRequest> getCustomQuoteRequest(@PathVariable UUID id) {
-        return customQuoteRequestControllerService.getCustomQuoteRequest(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
     }
 }
