@@ -157,6 +157,8 @@ function isLikelyCrawler(userAgent: string | undefined): boolean {
 
 function renderPublicQrBridgePage(target: string): string {
   const escapedTarget = escapeHtml(target);
+  // Keep URL text from closing the script element before JavaScript parses it.
+  const scriptTarget = JSON.stringify(target).replace(/</g, '\\u003c');
   return `<!doctype html>
 <html lang="it">
   <head>
@@ -165,7 +167,7 @@ function renderPublicQrBridgePage(target: string): string {
     <meta name="robots" content="noindex,nofollow,noarchive" />
     <meta http-equiv="refresh" content="0;url=${escapedTarget}" />
     <script>
-      window.location.replace(${JSON.stringify(target)});
+      window.location.replace(${scriptTarget});
     </script>
   </head>
   <body>
