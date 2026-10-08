@@ -94,33 +94,45 @@ describe('QuoteEstimatorService', () => {
 
   const twoFiles = (): QuoteRequest => ({
     items: ['part-a.stl', 'part-b.stl'].map((name) => ({
-      file: new File(['mesh'], name, { type: 'model/stl' }), quantity: 1,
+      file: new File(['mesh'], name, { type: 'model/stl' }),
+      quantity: 1,
     })),
-    material: 'PLA', quality: 'standard', mode: 'easy',
+    material: 'PLA',
+    quality: 'standard',
+    mode: 'easy',
   });
 
   it('reserves the whole batch and processes files sequentially with its permit', fakeAsync(() => {
     const request = twoFiles();
     let result: QuoteResult | undefined;
-    spyOn(service, 'getQuoteSession').and.returnValue(of({
-      session: { id: 'session-1' }, items: [{ status: 'READY', originalFilename: 'part-a.stl' }],
-    }));
+    spyOn(service, 'getQuoteSession').and.returnValue(
+      of({
+        session: { id: 'session-1' },
+        items: [{ status: 'READY', originalFilename: 'part-a.stl' }],
+      }),
+    );
     service.calculate(request, 'session-1').subscribe((event) => {
       if (typeof event !== 'number') result = event;
     });
     flushMicrotasks();
-    const init = httpTesting.expectOne(`${environment.apiUrl}/api/quote-sessions`);
+    const init = httpTesting.expectOne(
+      `${environment.apiUrl}/api/quote-sessions`,
+    );
     expect(init.request.body.itemCount).toBe(2);
     init.flush({ id: 'session-1', calculationId: 'permit-1' });
     const uploads = `${environment.apiUrl}/api/quote-sessions/session-1/line-items`;
     const first = httpTesting.expectOne(uploads);
     expect(first.request.headers.get('X-Quote-Calculation')).toBe('permit-1');
-    expect(((first.request.body as FormData).get('file') as File).name).toBe('part-a.stl');
+    expect(((first.request.body as FormData).get('file') as File).name).toBe(
+      'part-a.stl',
+    );
     httpTesting.expectNone(uploads);
     first.flush({ status: 'READY' });
     const second = httpTesting.expectOne(uploads);
     expect(second.request.headers.get('X-Quote-Calculation')).toBe('permit-1');
-    expect(((second.request.body as FormData).get('file') as File).name).toBe('part-b.stl');
+    expect(((second.request.body as FormData).get('file') as File).name).toBe(
+      'part-b.stl',
+    );
     second.flush({ status: 'READY' });
     expect(result?.sessionId).toBe('session-1');
     expect(result?.failedItems).toEqual([]);
@@ -128,19 +140,27 @@ describe('QuoteEstimatorService', () => {
 
   it('continues after an individual failure and preserves successful files', fakeAsync(() => {
     let result: QuoteResult | undefined;
-    spyOn(service, 'getQuoteSession').and.returnValue(of({
-      session: { id: 'session-1' }, items: [{ status: 'READY', originalFilename: 'part-b.stl' }],
-    }));
+    spyOn(service, 'getQuoteSession').and.returnValue(
+      of({
+        session: { id: 'session-1' },
+        items: [{ status: 'READY', originalFilename: 'part-b.stl' }],
+      }),
+    );
     service.calculate(twoFiles()).subscribe((event) => {
       if (typeof event !== 'number') result = event;
     });
     flushMicrotasks();
-    httpTesting.expectOne(`${environment.apiUrl}/api/quote-sessions`)
+    httpTesting
+      .expectOne(`${environment.apiUrl}/api/quote-sessions`)
       .flush({ id: 'session-1', calculationId: 'permit-1' });
     const uploads = `${environment.apiUrl}/api/quote-sessions/session-1/line-items`;
-    httpTesting.expectOne(uploads).flush({ code: 'MODEL_PROCESSING_FAILED' }, {
-      status: 422, statusText: 'Unprocessable Entity',
-    });
+    httpTesting.expectOne(uploads).flush(
+      { code: 'MODEL_PROCESSING_FAILED' },
+      {
+        status: 422,
+        statusText: 'Unprocessable Entity',
+      },
+    );
     httpTesting.expectOne(uploads).flush({ status: 'READY' });
     expect(result?.failedItems?.length).toBe(1);
     expect(result?.failedItems?.[0].fileName).toBe('part-a.stl');
@@ -150,7 +170,8 @@ describe('QuoteEstimatorService', () => {
   it('cancels the active upload and never starts queued files after unsubscribe', fakeAsync(() => {
     const subscription = service.calculate(twoFiles()).subscribe();
     flushMicrotasks();
-    httpTesting.expectOne(`${environment.apiUrl}/api/quote-sessions`)
+    httpTesting
+      .expectOne(`${environment.apiUrl}/api/quote-sessions`)
       .flush({ id: 'session-1', calculationId: 'permit-1' });
     const uploads = `${environment.apiUrl}/api/quote-sessions/session-1/line-items`;
     const first = httpTesting.expectOne(uploads);
