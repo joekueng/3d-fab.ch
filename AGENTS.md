@@ -65,3 +65,4 @@ cd frontend && npm run check:i18n && npm run check:ui-reuse
 ```
 
 For externally visible behavior, also exercise the affected API or UI flow. Do not run expensive slicing or deployment operations unless the change needs them.
+

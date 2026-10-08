@@ -91,7 +91,8 @@ class QuoteSessionItemServiceTest {
                 quoteStorageService,
                 settingsService,
                 profileManager,
-                materialPrintCompatibilityService
+                materialPrintCompatibilityService,
+                new com.printcalculator.service.SlicingCapacityService(2, 20, 60)
         );
     }
 
