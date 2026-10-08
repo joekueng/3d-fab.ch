@@ -16,6 +16,7 @@ import com.printcalculator.service.OrcaProfileResolver;
 import com.printcalculator.service.ProfileManager;
 import com.printcalculator.service.QuoteCalculator;
 import com.printcalculator.service.SlicerService;
+import com.printcalculator.service.SlicingCapacityService;
 import com.printcalculator.service.storage.ClamAVService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -40,6 +41,7 @@ public class QuoteSessionItemService {
     private final QuoteLineItemRepository lineItemRepo;
     private final QuoteSessionRepository sessionRepo;
     private final SlicerService slicerService;
+    private final SlicingCapacityService slicingCapacityService;
     private final QuoteCalculator quoteCalculator;
     private final OrcaProfileResolver orcaProfileResolver;
     private final ClamAVService clamAVService;
@@ -57,10 +59,12 @@ public class QuoteSessionItemService {
                                    QuoteStorageService quoteStorageService,
                                    QuoteSessionSettingsService settingsService,
                                    ProfileManager profileManager,
-                                   MaterialPrintCompatibilityService materialPrintCompatibilityService) {
+                                   MaterialPrintCompatibilityService materialPrintCompatibilityService,
+                                   SlicingCapacityService slicingCapacityService) {
         this.lineItemRepo = lineItemRepo;
         this.sessionRepo = sessionRepo;
         this.slicerService = slicerService;
+        this.slicingCapacityService = slicingCapacityService;
         this.quoteCalculator = quoteCalculator;
         this.orcaProfileResolver = orcaProfileResolver;
         this.clamAVService = clamAVService;
@@ -71,6 +75,12 @@ public class QuoteSessionItemService {
     }
 
     public QuoteLineItem addItemToSession(QuoteSession session, MultipartFile file, PrintSettingsDto settings) throws IOException {
+        try (var lease = slicingCapacityService.acquire()) {
+            return processItem(session, file, settings);
+        }
+    }
+
+    private QuoteLineItem processItem(QuoteSession session, MultipartFile file, PrintSettingsDto settings) throws IOException {
         if (file.isEmpty()) {
             throw new IllegalArgumentException("File is empty");
         }

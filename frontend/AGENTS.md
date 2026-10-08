@@ -54,6 +54,8 @@ For live order updates, follow [customer order tracking](README.md#customer-orde
 - Every new visible string requires matching keys and English translations in all locale catalogs. Do not use a translation fallback as a substitute for a missing locale key.
 - Use Angular forms and existing validation/error-display patterns. Do not bypass server-side validation.
 
+For calculator API changes, follow [calculator batch requests](README.md#calculator-batch-requests) and the linked backend admission contract.
+
 ## Verification
 
 From `frontend/`, run the checks relevant to the change:

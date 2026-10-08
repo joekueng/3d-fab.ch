@@ -5,7 +5,7 @@ import {
   HttpEventType,
   HttpResponse,
 } from '@angular/common/http';
-import { Observable, of, from, switchMap, tap, defer } from 'rxjs';
+import { Observable, Subscription, of, from, switchMap, tap, defer, concatMap, catchError } from 'rxjs';
 import { OrderInformationService } from '../../order-information/order-information.service';
 import { environment } from '../../../../environments/environment';
 
@@ -388,21 +388,21 @@ export class QuoteEstimatorService {
     }
 
     return new Observable<number | QuoteResult>((observer) => {
-      const headers: any = {};
-
-      this.http
-        .post<any>(
+      const subscriptions = new Subscription();
+      subscriptions.add(this.http
+        .post<{ id: string; calculationId: string }>(
           `${environment.apiUrl}/api/quote-sessions`,
           {
             information: this.information.draftCredential(),
             ...(reuseSessionId ? { reuseSessionId } : {}),
+            itemCount: request.items.length,
           },
-          { headers },
         )
         .subscribe({
           next: (sessionRes) => {
-            const sessionId = String(sessionRes?.id || '');
-            if (!sessionId) {
+            const sessionId = sessionRes?.id;
+            const calculationId = sessionRes?.calculationId;
+            if (!sessionId || !calculationId) {
               observer.error({
                 fileName: request.items[0]?.file.name || '',
                 code: 'QUOTE_SESSION_INIT_FAILED',
@@ -412,50 +412,24 @@ export class QuoteEstimatorService {
             }
 
             const totalItems = request.items.length;
-            const uploadProgress = new Array(totalItems).fill(0);
-            const uploadResults: {
-              success: boolean;
-              failure?: QuoteCalculationFailure;
-            }[] = new Array(totalItems).fill(null).map(() => ({
-              success: false,
-            }));
-            let completed = 0;
-
-            const emitProgress = () => {
-              const avg = Math.round(
-                uploadProgress.reduce((sum, value) => sum + value, 0) /
-                  totalItems,
-              );
-              observer.next(avg);
-            };
+            const uploadProgress = new Array<number>(totalItems).fill(0);
+            const failures: QuoteCalculationFailure[] = [];
+            let successfulUploads = 0;
+            const emitProgress = () => observer.next(Math.round(
+              uploadProgress.reduce((sum, value) => sum + value, 0) / totalItems,
+            ));
 
             const finalize = () => {
-              emitProgress();
-              if (completed !== totalItems) {
-                return;
-              }
-
-              const successfulUploads = uploadResults.filter(
-                (entry) => entry.success,
-              ).length;
-              const failures = uploadResults
-                .map((entry) => entry.failure)
-                .filter(
-                  (failure): failure is QuoteCalculationFailure => !!failure,
-                );
-
               if (successfulUploads === 0) {
-                observer.error(
-                  failures[0] || {
-                    fileName: request.items[0]?.file.name || '',
-                    code: 'QUOTE_ITEM_PROCESSING_FAILED',
-                    message: '',
-                  },
-                );
+                observer.error(failures[0] || {
+                  fileName: request.items[0]?.file.name || '',
+                  sessionId,
+                  code: 'QUOTE_ITEM_PROCESSING_FAILED',
+                  message: '',
+                } satisfies QuoteCalculationFailure);
                 return;
               }
-
-              this.getQuoteSession(sessionId).subscribe({
+              subscriptions.add(this.getQuoteSession(sessionId).subscribe({
                 next: (sessionData) => {
                   observer.next(100);
                   const result = this.mapSessionToQuoteResult(sessionData);
@@ -464,100 +438,74 @@ export class QuoteEstimatorService {
                   observer.next(result);
                   observer.complete();
                 },
-                error: () => {
-                  observer.error({
-                    fileName: request.items[0]?.file.name || '',
-                    sessionId,
-                    code: 'QUOTE_FINALIZATION_FAILED',
-                    message: '',
-                  } satisfies QuoteCalculationFailure);
-                },
-              });
+                error: () => observer.error({
+                  fileName: request.items[0]?.file.name || '',
+                  sessionId,
+                  code: 'QUOTE_FINALIZATION_FAILED',
+                  message: '',
+                } satisfies QuoteCalculationFailure),
+              }));
             };
 
-            request.items.forEach((item, index) => {
-              const formData = new FormData();
-              formData.append('file', item.file);
-
-              const settings = this.buildSettingsPayload(request, item);
-              const settingsBlob = new Blob([JSON.stringify(settings)], {
-                type: 'application/json',
-              });
-              formData.append('settings', settingsBlob);
-
-              this.http
-                .post<any>(
+            // Keep one file in flight per calculation; the backend also bounds global work.
+            subscriptions.add(from(request.items).pipe(
+              concatMap((item, index) => {
+                const formData = new FormData();
+                formData.append('file', item.file);
+                formData.append('settings', new Blob([
+                  JSON.stringify(this.buildSettingsPayload(request, item)),
+                ], { type: 'application/json' }));
+                return this.http.post<{
+                  status?: string;
+                  originalFilename?: string;
+                  pricingBreakdown?: { errorCode?: string };
+                  errorMessage?: string;
+                }>(
                   `${environment.apiUrl}/api/quote-sessions/${sessionId}/line-items`,
                   formData,
                   {
-                    headers,
+                    headers: { 'X-Quote-Calculation': calculationId },
                     reportProgress: true,
                     observe: 'events',
                   },
-                )
-                .subscribe({
-                  next: (event) => {
-                    if (
-                      event.type === HttpEventType.UploadProgress &&
-                      event.total
-                    ) {
-                      uploadProgress[index] = Math.round(
-                        (100 * event.loaded) / event.total,
-                      );
+                ).pipe(
+                  tap((event) => {
+                    if (event.type === HttpEventType.UploadProgress && event.total) {
+                      uploadProgress[index] = Math.round(100 * event.loaded / event.total);
                       emitProgress();
-                      return;
-                    }
-
-                    if (event.type === HttpEventType.Response) {
+                    } else if (event.type === HttpEventType.Response) {
                       uploadProgress[index] = 100;
-                      const responseItem = event.body;
-                      const success = responseItem?.status === 'READY';
-                      uploadResults[index] = success
-                        ? { success: true }
-                        : {
-                            success: false,
-                            failure: {
-                              fileName:
-                                responseItem?.originalFilename ||
-                                item.file.name,
-                              sessionId,
-                              code:
-                                responseItem?.pricingBreakdown?.errorCode ||
-                                'QUOTE_ITEM_PROCESSING_FAILED',
-                              message: responseItem?.errorMessage || '',
-                            },
-                          };
-                      completed += 1;
-                      finalize();
+                      if (event.body?.status === 'READY') {
+                        successfulUploads += 1;
+                      } else {
+                        failures.push({
+                          fileName: event.body?.originalFilename || item.file.name,
+                          sessionId,
+                          code: event.body?.pricingBreakdown?.errorCode || 'QUOTE_ITEM_PROCESSING_FAILED',
+                          message: event.body?.errorMessage || '',
+                        });
+                      }
+                      emitProgress();
                     }
-                  },
-                  error: (error) => {
+                  }),
+                  catchError((error: unknown) => {
                     uploadProgress[index] = 100;
-                    uploadResults[index] = {
-                      success: false,
-                      failure: {
-                        ...this.normalizeCalculationFailure(
-                          error,
-                          item.file.name,
-                        ),
-                        sessionId,
-                      },
-                    };
-                    completed += 1;
-                    finalize();
-                  },
-                });
-            });
+                    failures.push({
+                      ...this.normalizeCalculationFailure(error, item.file.name),
+                      sessionId,
+                    });
+                    emitProgress();
+                    return of(null);
+                  }),
+                );
+              }),
+            ).subscribe({ complete: finalize, error: (error: unknown) => observer.error(error) }));
           },
-          error: (error) => {
-            observer.error(
-              this.normalizeCalculationFailure(
-                error,
-                request.items[0]?.file.name || '',
-              ),
-            );
-          },
-        });
+          error: (error: unknown) => observer.error(this.normalizeCalculationFailure(
+            error, request.items[0]?.file.name || '',
+          )),
+        }));
+      return () => subscriptions.unsubscribe();
     });
   }
 

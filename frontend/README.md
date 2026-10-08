@@ -108,6 +108,17 @@ Do not invent GTINs, reviews, shipping costs or return policies. Verify rendered
 HTML and variant changes when modifying this code; after deployment validate a
 public product URL with Google's Rich Results Test.
 
+## Calculator batch requests
+
+The calculator sends `itemCount` when creating/reusing a quote session. The backend
+reserves the whole batch before resetting the old quote and returns `calculationId`.
+`QuoteEstimatorService` sends that value in `X-Quote-Calculation` for each file,
+processing files sequentially with `concatMap`. Keep progress, partial failures,
+`Retry-After` handling and cancellation of active/queued HTTP requests intact.
+The server remains responsible for quota and concurrency enforcement. See the
+[backend admission contract](../backend/README.md#calculator-admission-and-slicing-capacity)
+for defaults, legacy compatibility and deployment order.
+
 ## Internationalization (i18n)
 
 Translations are stored in `src/assets/i18n/`.

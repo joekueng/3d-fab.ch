@@ -8,6 +8,7 @@ import com.printcalculator.service.NozzleLayerHeightPolicyService;
 import com.printcalculator.service.QuoteCalculator;
 import com.printcalculator.service.QuoteRateLimitService;
 import com.printcalculator.service.SlicerService;
+import com.printcalculator.service.SlicingCapacityService;
 import com.printcalculator.service.storage.ClamAVService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +30,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 public class QuoteController {
 
     private final SlicerService slicerService;
+    private final SlicingCapacityService slicingCapacityService;
     private final QuoteCalculator quoteCalculator;
     private final PrinterMachineRepository machineRepo;
     private final ClamAVService clamAVService;
@@ -44,8 +46,10 @@ public class QuoteController {
                            PrinterMachineRepository machineRepo,
                            ClamAVService clamAVService,
                            NozzleLayerHeightPolicyService nozzleLayerHeightPolicyService,
-                           QuoteRateLimitService quoteRateLimitService) {
+                           QuoteRateLimitService quoteRateLimitService,
+                           SlicingCapacityService slicingCapacityService) {
         this.slicerService = slicerService;
+        this.slicingCapacityService = slicingCapacityService;
         this.quoteCalculator = quoteCalculator;
         this.machineRepo = machineRepo;
         this.clamAVService = clamAVService;
@@ -132,6 +136,13 @@ public class QuoteController {
     private ResponseEntity<QuoteResult> processRequest(MultipartFile file, String filament, String process,
                                                        Map<String, String> machineOverrides,
                                                        Map<String, String> processOverrides) throws IOException {
+        try (var lease = slicingCapacityService.acquire()) {
+            return processAdmittedRequest(file, filament, process, machineOverrides, processOverrides);
+        }
+    }
+
+    private ResponseEntity<QuoteResult> processAdmittedRequest(MultipartFile file, String filament, String process,
+            Map<String, String> machineOverrides, Map<String, String> processOverrides) throws IOException {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }

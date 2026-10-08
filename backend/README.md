@@ -8,6 +8,64 @@ Before adding an endpoint, service, integration, or document, inspect a comparab
 
 For persistent changes, align entities, repositories, DTOs, frontend models, and migration/deployment expectations; the project currently uses Hibernate schema updates. For external integrations, reuse configuration and error/audit handling rather than adding a separate delivery path.
 
+## Calculator admission and slicing capacity
+
+`POST /api/quote-sessions` accepts an optional positive `itemCount`. Calculator
+clients send the number of model files, including when reusing a session. Before
+clearing any existing quote, `QuoteRateLimitService` atomically reserves one
+calculation and all its files against the caller's IP budgets. Rejected groups
+leave the existing quote intact. Each accepted group returns `calculationId` in
+the session DTO; it is ephemeral and is not persisted or included in later session
+snapshots. Send it as `X-Quote-Calculation` on every line-item upload.
+
+The server binds each permit to the IP, session and reserved file count. Every
+upload attempt consumes one file, including failed attempts; permits cannot be
+replayed after exhaustion and expire after 15 minutes without an upload. Budgets
+count reservations when the calculation starts, not completion times. Abandoned
+or failed groups are not refunded. A group cannot exceed the configured file
+budget. Lightweight session reads, quantity/color updates and checkout do not
+consume these budgets.
+
+Defaults and environment overrides:
+
+| Setting | Default | Purpose |
+| --- | --- | --- |
+| `QUOTE_RATE_LIMIT_MAX_CALCULATIONS` | `5` | Accepted calculation groups per IP/window |
+| `QUOTE_RATE_LIMIT_MAX_FILES` | `75` | Files reserved by groups and legacy requests per IP/window |
+| `QUOTE_RATE_LIMIT_WINDOW_SECONDS` | `60` | Sliding window over accepted admissions |
+| `QUOTE_RATE_LIMIT_MAX_REQUESTS` | `15` | Existing per-file legacy request cap per IP/window |
+| `QUOTE_RATE_LIMIT_TRUST_PROXY_HEADERS` | `false` | Existing opt-in for trusted proxy IP headers |
+| `QUOTE_SLICING_MAX_CONCURRENT` | `2` | Quote jobs running per backend instance |
+| `QUOTE_SLICING_MAX_QUEUED` | `20` | Additional jobs allowed to wait |
+| `QUOTE_SLICING_QUEUE_WAIT_SECONDS` | `60` | Maximum wait for a running slot |
+
+Five calculations of 15 files each fit the default budgets. Requests without
+`itemCount` / `X-Quote-Calculation` remain compatible with the old 15-request cap,
+including `/api/quote` and `/calculate/stl`, and share the 75-file budget. Invalid
+permits never fall back to legacy admission. HTTP 429 returns `Retry-After` based
+on when enough accepted work expires; rejected requests never extend the wait.
+
+`SlicingCapacityService` wraps the full job (scan, storage, conversion, inspection,
+slicing and result), including admin line items and legacy public quotes. It
+releases capacity on success and failure. Full queues, queue timeouts and
+interrupted waits return HTTP 429 with a five-second retry hint. Frontend batches
+upload/process one file at a time, retaining progress and partial-file results;
+unsubscribing cancels pending client requests. An already running server job can
+continue after its client disconnects and retains its capacity slot until it ends.
+
+Both budgets and permits are in memory per instance and reset on restart. Multiple
+replicas need sticky routing for a group's requests or a shared permit/budget
+store. No schema migration or dependency change is required. Deploy the backend
+before the new frontend; old frontend requests remain supported. Tune concurrency
+with measured CPU/RAM use on the deployment host; two jobs is an initial default,
+not a hardware capacity guarantee.
+
+Focused checks:
+
+```bash
+./gradlew test --tests '*QuoteRateLimitServiceTest' --tests '*SlicingCapacityServiceTest' --tests '*QuoteSessionRateLimitControllerTest'
+```
+
 ## Email transaction boundaries
 
 Order and contact-request creation publish domain events inside the service transaction.

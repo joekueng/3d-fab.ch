@@ -34,6 +34,8 @@ Read [README.md](README.md) before extending backend features. For email changes
 - QR location is inferred from backend-observed IP data; proxy-header trust and GeoLite configuration are security-sensitive.
 - SMTP, TWINT, QR-bill, and OpenAI translation integrations must be configuration-driven. Never log credentials or full sensitive request data.
 
+For calculator batches, admission budgets and queue behavior, follow [calculator admission and slicing capacity](README.md#calculator-admission-and-slicing-capacity). Preserve admission before quote reset and session/IP-bound permit consumption.
+
 ## Testing and checks
 
 Use the Gradle wrapper from `backend/`:
