@@ -35,7 +35,7 @@ public class QuoteRateLimitService {
             @Value("${quote.rate-limit.max-requests:15}") int maxRequests,
             @Value("${quote.rate-limit.window-seconds:60}") long windowSeconds,
             @Value("${quote.rate-limit.trust-proxy-headers:false}") boolean trustProxyHeaders,
-            @Value("${quote.rate-limit.max-calculations:5}") int maxCalculations,
+            @Value("${quote.rate-limit.max-calculations:15}") int maxCalculations,
             @Value("${quote.rate-limit.max-files:75}") int maxFiles) {
         this(maxRequests, windowSeconds, trustProxyHeaders, maxCalculations, maxFiles, Clock.systemUTC());
     }
@@ -43,7 +43,7 @@ public class QuoteRateLimitService {
     QuoteRateLimitService(int maxRequests, long windowSeconds, boolean trustProxyHeaders,
                           int maxCalculations, int maxFiles, Clock clock) {
         this.maxRequests = maxRequests > 0 ? maxRequests : 15;
-        this.maxCalculations = maxCalculations > 0 ? maxCalculations : 5;
+        this.maxCalculations = maxCalculations > 0 ? maxCalculations : 15;
         this.maxFiles = maxFiles > 0 ? maxFiles : 75;
         this.windowMillis = windowSeconds > 0 ? windowSeconds * 1000L : 60_000L;
         this.trustProxyHeaders = trustProxyHeaders;

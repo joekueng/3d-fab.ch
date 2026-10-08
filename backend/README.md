@@ -30,7 +30,7 @@ Defaults and environment overrides:
 
 | Setting | Default | Purpose |
 | --- | --- | --- |
-| `QUOTE_RATE_LIMIT_MAX_CALCULATIONS` | `5` | Accepted calculation groups per IP/window |
+| `QUOTE_RATE_LIMIT_MAX_CALCULATIONS` | `15` | Accepted calculation groups per IP/window |
 | `QUOTE_RATE_LIMIT_MAX_FILES` | `75` | Files reserved by groups and legacy requests per IP/window |
 | `QUOTE_RATE_LIMIT_WINDOW_SECONDS` | `60` | Sliding window over accepted admissions |
 | `QUOTE_RATE_LIMIT_MAX_REQUESTS` | `15` | Existing per-file legacy request cap per IP/window |
@@ -39,7 +39,9 @@ Defaults and environment overrides:
 | `QUOTE_SLICING_MAX_QUEUED` | `20` | Additional jobs allowed to wait |
 | `QUOTE_SLICING_QUEUE_WAIT_SECONDS` | `60` | Maximum wait for a running slot |
 
-Five calculations of 15 files each fit the default budgets. Requests without
+With otherwise unused budgets, one or two files allow 15 calculations per window,
+ten files allow seven, and 15 files allow five. Both budgets apply together;
+mixed group sizes consume the same shared file budget. Requests without
 `itemCount` / `X-Quote-Calculation` remain compatible with the old 15-request cap,
 including `/api/quote` and `/calculate/stl`, and share the 75-file budget. Invalid
 permits never fall back to legacy admission. HTTP 429 returns `Retry-After` based

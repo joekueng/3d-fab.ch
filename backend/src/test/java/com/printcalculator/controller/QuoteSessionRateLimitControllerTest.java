@@ -15,6 +15,8 @@ import com.printcalculator.service.quote.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -46,7 +48,7 @@ class QuoteSessionRateLimitControllerTest {
     @Mock private QuoteSessionExpiryPolicy expiry;
     @Mock private QuoteSessionCalculationService calculation;
     @Mock private OrderInformationService information;
-    @Spy private QuoteRateLimitService limits = new QuoteRateLimitService(15, 60, false, 5, 75);
+    @Spy private QuoteRateLimitService limits = new QuoteRateLimitService(15, 60, false, 15, 75);
     @InjectMocks private QuoteSessionController controller;
     private MockMvc mvc;
 
@@ -55,21 +57,21 @@ class QuoteSessionRateLimitControllerTest {
         mvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
 
-    @Test
-    void batchBudgetIsCheckedBeforeExistingQuoteIsCleared() throws Exception {
+    @ParameterizedTest
+    @CsvSource({"1,15", "2,15", "10,7", "15,5"})
+    void batchBudgetIsCheckedBeforeExistingQuoteIsCleared(int fileCount, int allowedCalculations) throws Exception {
         UUID sessionId = UUID.randomUUID();
         QuoteSession session = new QuoteSession();
         session.setId(sessionId);
         when(calculation.prepareForRecalculation(sessionId)).thenReturn(Optional.of(session));
-        for (int i = 0; i < 5; i++) {
-            mvc.perform(post("/api/quote-sessions").contentType(MediaType.APPLICATION_JSON)
-                    .content("{\"reuseSessionId\":\"" + sessionId + "\",\"itemCount\":15}"))
+        String payload = "{\"reuseSessionId\":\"" + sessionId + "\",\"itemCount\":" + fileCount + "}";
+        for (int i = 0; i < allowedCalculations; i++) {
+            mvc.perform(post("/api/quote-sessions").contentType(MediaType.APPLICATION_JSON).content(payload))
                     .andExpect(status().isOk()).andExpect(jsonPath("$.calculationId").isNotEmpty());
         }
-        mvc.perform(post("/api/quote-sessions").contentType(MediaType.APPLICATION_JSON)
-                .content("{\"reuseSessionId\":\"" + sessionId + "\",\"itemCount\":15}"))
+        mvc.perform(post("/api/quote-sessions").contentType(MediaType.APPLICATION_JSON).content(payload))
                 .andExpect(status().isTooManyRequests()).andExpect(header().string("Retry-After", "60"));
-        verify(calculation, times(5)).prepareForRecalculation(sessionId);
+        verify(calculation, times(allowedCalculations)).prepareForRecalculation(sessionId);
         verifyNoInteractions(itemService, storage, sessions);
     }
 

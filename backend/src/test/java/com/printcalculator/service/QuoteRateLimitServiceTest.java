@@ -29,7 +29,7 @@ class QuoteRateLimitServiceTest {
     private static final int MAX_REQUESTS = 3;
 
     private QuoteRateLimitService newService(int maxRequests, boolean trustProxyHeaders) {
-        return new QuoteRateLimitService(maxRequests, 60, trustProxyHeaders, 5, 75);
+        return new QuoteRateLimitService(maxRequests, 60, trustProxyHeaders, 15, 75);
     }
 
     @Test
@@ -113,6 +113,17 @@ class QuoteRateLimitServiceTest {
             }
             assertEquals(HttpStatus.FORBIDDEN, assertThrows(ResponseStatusException.class,
                     () -> service.checkSlicingAllowed(request, sessionId, permit)).getStatusCode());
+        }
+        assertEquals(HttpStatus.TOO_MANY_REQUESTS, assertThrows(ResponseStatusException.class,
+                () -> service.reserveCalculation(request, 1)).getStatusCode());
+    }
+
+    @Test
+    void invalidCalculationLimitFallsBackToFifteenClicks() {
+        QuoteRateLimitService service = new QuoteRateLimitService(15, 60, false, 0, 75);
+        MockHttpServletRequest request = client("203.0.113.10");
+        for (int calculation = 0; calculation < 15; calculation++) {
+            assertDoesNotThrow(() -> service.reserveCalculation(request, 1));
         }
         assertEquals(HttpStatus.TOO_MANY_REQUESTS, assertThrows(ResponseStatusException.class,
                 () -> service.reserveCalculation(request, 1)).getStatusCode());
