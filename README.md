@@ -20,7 +20,7 @@ Before implementing anything, read [AGENTS.md](AGENTS.md), the nearest module gu
 | Transactional email | [Email template README](backend/src/main/resources/templates/email/README.md), shared Thymeleaf fragments and established order emails |
 | Invoices and generated documents | `backend/src/main/resources/templates/invoice.html`, `invoice-logo.svg`, and their existing generation services; retain document-specific layout and formatting |
 
-## Features
+## Features 
 
 * **Real slicing:** Uses the OrcaSlicer engine to estimate print time and material as accurately as possible.
 * **Database-driven quoting:** Calculates prices from configurable database policies for material cost, tiered machine depreciation, electricity, and markup.
