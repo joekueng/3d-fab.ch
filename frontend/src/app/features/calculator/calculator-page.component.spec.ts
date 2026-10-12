@@ -461,6 +461,43 @@ describe('CalculatorPageComponent', () => {
     });
   });
 
+  it('recalculates an oversized file with explicit split consent and its existing settings', () => {
+    const { component, estimator, uploadForm } = createComponent();
+    const request = createDraftRequest();
+    estimator.calculate.and.returnValue(
+      throwError(() => ({
+        fileName: 'part-a.stl',
+        sessionId: 'session-1',
+        code: 'MODEL_OUT_OF_PRINT_VOLUME',
+        message: 'too large',
+      })),
+    );
+    component.onCalculate(request);
+    expect(component.showSplitPrintingOption()).toBeTrue();
+    expect(component.isOutOfVolumeError()).toBeTrue();
+    uploadForm.getCurrentRequestDraft.and.returnValue(request);
+    estimator.calculate.and.returnValue(of(createResult('session-1')));
+    estimator.getQuoteSession.and.returnValue(
+      of({ session: { id: 'session-1' }, items: [] }),
+    );
+    component.onAcceptSplitAndCalculate();
+    expect(uploadForm.setAcceptSplitPrinting).toHaveBeenCalledWith(true);
+    expect(estimator.calculate).toHaveBeenCalledWith(
+      { ...request, acceptSplitPrinting: true },
+      'session-1',
+    );
+    expect(component.error()).toBeFalse();
+    expect(component.result()?.totalPrice).toBe(6);
+  });
+
+  it('does not accept splitting or recalculate for an unrelated processing error', () => {
+    const { component, estimator, uploadForm } = createComponent();
+    component.errorCode.set('MODEL_PROCESSING_FAILED');
+    component.onAcceptSplitAndCalculate();
+    expect(uploadForm.setAcceptSplitPrinting).not.toHaveBeenCalled();
+    expect(estimator.calculate).not.toHaveBeenCalled();
+  });
+
   it('shows partial quote results when some files fail', () => {
     const { component, estimator } = createComponent();
     const request = createDraftRequest();

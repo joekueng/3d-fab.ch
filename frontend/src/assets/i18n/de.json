@@ -793,6 +793,8 @@
     "CUSTOM_QUOTE_TITLE": "Individuelles Angebot erforderlich",
     "CUSTOM_QUOTE_HELP": "Die Datei bleibt gespeichert und muss manuell geprüft werden. Kontaktieren Sie uns: Teilung, Endpreis und Ihre Freigabe vereinbaren wir vorab per E-Mail.",
     "SPLIT_REVIEW_TITLE": "Dieses Modell muss geteilt werden",
+    "SPLIT_ACCEPT_HELP": "Das Modell passt nicht in den verfügbaren Druckraum. Akzeptiere die Aufteilung in mehrere Teile, um das Angebot inklusive des vorgesehenen Zuschlags neu zu berechnen. Falls die Schätzung fehlschlägt, bleibt die Datei zur manuellen Prüfung gespeichert.",
+    "SPLIT_ACCEPT_CALCULATE": "Aufteilung akzeptieren und neu berechnen",
     "SPLIT_REVIEW_HELP": "Das Modell ist größer als der verfügbare Druckraum. Die Datei bleibt gespeichert: Fordern Sie eine Beratung an, damit wir Teilung, Endpreis und Ihre Freigabe per E-Mail abstimmen können.",
     "SPLIT_REQUEST_ACTION": "Modellteilung anfragen",
     "REVIEW_OUT_OF_VOLUME": "Das Modell überschreitet den verfügbaren Druckraum.",

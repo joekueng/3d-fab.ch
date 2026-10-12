@@ -513,6 +513,7 @@ export class QuoteEstimatorService {
                         .post<{
                           status?: string;
                           originalFilename?: string;
+                          errorCode?: string;
                           pricingBreakdown?: { errorCode?: string };
                           errorMessage?: string;
                         }>(
@@ -545,6 +546,7 @@ export class QuoteEstimatorService {
                                     item.file.name,
                                   sessionId,
                                   code:
+                                    event.body?.errorCode ||
                                     event.body?.pricingBreakdown?.errorCode ||
                                     'QUOTE_ITEM_PROCESSING_FAILED',
                                   message: event.body?.errorMessage || '',

@@ -143,19 +143,22 @@
           <p>
             {{
               (isOutOfVolumeError()
-                ? "CALC.SPLIT_REVIEW_HELP"
+                ? "CALC.SPLIT_ACCEPT_HELP"
                 : "CALC.CUSTOM_QUOTE_HELP"
               ) | translate
             }}
           </p>
           <div class="zero-result-action">
+            @if (isOutOfVolumeError()) {
+              <app-button
+                (click)="onAcceptSplitAndCalculate()"
+                [disabled]="loading() || rateLimitSecondsRemaining() > 0"
+              >
+                {{ "CALC.SPLIT_ACCEPT_CALCULATE" | translate }}
+              </app-button>
+            }
             <app-button variant="outline" (click)="onConsult()">
-              {{
-                (isOutOfVolumeError()
-                  ? "CALC.SPLIT_REQUEST_ACTION"
-                  : "QUOTE.CONSULT"
-                ) | translate
-              }}
+              {{ "QUOTE.CONSULT" | translate }}
             </app-button>
           </div>
         </app-card>
