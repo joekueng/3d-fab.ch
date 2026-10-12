@@ -1,4 +1,12 @@
-import { Component, computed, forwardRef, input, signal } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  computed,
+  forwardRef,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import {
   ControlValueAccessor,
   NG_VALUE_ACCESSOR,
@@ -24,6 +32,7 @@ import { CommonModule } from '@angular/common';
   styleUrl: './app-input.component.scss',
 })
 export class AppInputComponent implements ControlValueAccessor {
+  private readonly changeDetector = inject(ChangeDetectorRef);
   label = input<string>('');
   id = input<string>('input-' + Math.random().toString(36).substr(2, 9));
   name = input<string>('');
@@ -53,6 +62,7 @@ export class AppInputComponent implements ControlValueAccessor {
 
   writeValue(obj: any): void {
     this.value = obj ?? '';
+    this.changeDetector.markForCheck();
   }
   registerOnChange(fn: any): void {
     this.onChange = fn;

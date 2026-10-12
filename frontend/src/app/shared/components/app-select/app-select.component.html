@@ -11,6 +11,7 @@
     [id]="id()"
     [attr.name]="name() || null"
     [ngModel]="value"
+    [ngModelOptions]="{ standalone: true }"
     (ngModelChange)="onModelChange($event)"
     (blur)="onTouched()"
     [disabled]="isDisabled()"
