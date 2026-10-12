@@ -1,4 +1,4 @@
-import { PLATFORM_ID } from '@angular/core';
+import { ChangeDetectorRef, PLATFORM_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { TranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
@@ -306,6 +306,10 @@ function createComponent() {
       { provide: AdminOrdersService, useValue: adminOrdersService },
       { provide: TranslateService, useValue: translateService },
       { provide: PLATFORM_ID, useValue: 'browser' },
+      {
+        provide: ChangeDetectorRef,
+        useValue: { markForCheck: jasmine.createSpy('markForCheck') },
+      },
     ],
   });
 

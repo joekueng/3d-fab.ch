@@ -1,4 +1,5 @@
 import {
+  ChangeDetectorRef,
   Component,
   ElementRef,
   Input,
@@ -30,6 +31,7 @@ import {
   styleUrl: './stl-viewer.component.scss',
 })
 export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
+  private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
 
@@ -255,6 +257,7 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
         if (requestId === this.loadSequence) {
           this.loading = false;
           this.activeReader = null;
+          this.changeDetector.markForCheck();
         }
       }
     };
@@ -265,6 +268,7 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
       this.markPreviewUnavailable('Failed to read STL preview blob.');
       this.loading = false;
       this.activeReader = null;
+      this.changeDetector.markForCheck();
     };
     reader.readAsArrayBuffer(file);
   }

@@ -52,6 +52,17 @@ npm run check:ui-reuse
 
 Exercise the affected UI and compare it with the existing reference. Add behavior tests when needed; report what was verified and any remaining limitations.
 
+## Asynchronous view updates
+
+Angular 22 uses OnPush by default. Prefer signals or AsyncPipe for data displayed
+in templates. Components that retain plain fields must inject ChangeDetectorRef
+and call `markForCheck()` when HTTP subscriptions, FileReader callbacks or other
+asynchronous callbacks update those fields, including error/loading states.
+Follow the existing admin filament/QR pages and shared STL viewer. A click must
+never be required to display a completed response. Regression tests should await
+the scheduled view update without manually calling `detectChanges()` after the
+response. Zone-based change detection alone does not mark an OnPush view dirty.
+
 ## Shared feature building blocks
 
 See the [shared component guide](src/app/shared/components/README.md) for modal, color selection, file upload, legal consent, and form-control APIs. Reuse these in both public and admin features. Calculator global/per-file settings share `app-print-settings` within the calculator feature.

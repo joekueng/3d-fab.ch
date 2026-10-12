@@ -54,6 +54,8 @@ For live order updates, follow [customer order tracking](README.md#customer-orde
 - Every new visible string requires matching keys and English translations in all locale catalogs. Do not use a translation fallback as a substitute for a missing locale key.
 - Use Angular forms and existing validation/error-display patterns. Do not bypass server-side validation.
 
+For asynchronous view updates, follow [change detection conventions](README.md#asynchronous-view-updates).
+
 ## Verification
 
 From `frontend/`, run the checks relevant to the change:

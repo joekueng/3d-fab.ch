@@ -1,5 +1,11 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Component, PLATFORM_ID, inject, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  PLATFORM_ID,
+  inject,
+  OnInit,
+} from '@angular/core';
 import {
   AdminOperationsService,
   AdminQuoteSession,
@@ -17,6 +23,7 @@ import { AppButtonComponent } from '../../../shared/components/app-button/app-bu
   styleUrl: './admin-sessions.component.scss',
 })
 export class AdminSessionsComponent implements OnInit {
+  private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly adminOperationsService = inject(AdminOperationsService);
 
@@ -42,10 +49,12 @@ export class AdminSessionsComponent implements OnInit {
     this.loadStatistics();
     this.adminOperationsService.getSessions().subscribe({
       next: (sessions) => {
+        this.changeDetector.markForCheck();
         this.sessions = sessions;
         this.loading = false;
       },
       error: () => {
+        this.changeDetector.markForCheck();
         this.loading = false;
         this.errorMessage = 'Impossibile caricare le sessioni.';
       },
@@ -56,10 +65,12 @@ export class AdminSessionsComponent implements OnInit {
     this.statisticsLoading = true;
     this.adminOperationsService.getSessionStatistics().subscribe({
       next: (statistics) => {
+        this.changeDetector.markForCheck();
         this.statistics = statistics;
         this.statisticsLoading = false;
       },
       error: () => {
+        this.changeDetector.markForCheck();
         this.statistics = null;
         this.statisticsLoading = false;
       },
@@ -86,12 +97,14 @@ export class AdminSessionsComponent implements OnInit {
 
     this.adminOperationsService.deleteSession(session.id).subscribe({
       next: () => {
+        this.changeDetector.markForCheck();
         this.sessions = this.sessions.filter((item) => item.id !== session.id);
         this.deletingSessionIds.delete(session.id);
         this.successMessage = 'Sessione eliminata.';
         this.loadStatistics();
       },
       error: (err) => {
+        this.changeDetector.markForCheck();
         this.deletingSessionIds.delete(session.id);
         this.errorMessage = this.extractErrorMessage(
           err,
@@ -122,6 +135,7 @@ export class AdminSessionsComponent implements OnInit {
     this.loadingDetailSessionIds.add(session.id);
     this.adminOperationsService.getSessionDetail(session.id).subscribe({
       next: (detail) => {
+        this.changeDetector.markForCheck();
         this.sessionDetailsById = {
           ...this.sessionDetailsById,
           [session.id]: detail,
@@ -129,6 +143,7 @@ export class AdminSessionsComponent implements OnInit {
         this.loadingDetailSessionIds.delete(session.id);
       },
       error: (err) => {
+        this.changeDetector.markForCheck();
         this.loadingDetailSessionIds.delete(session.id);
         this.errorMessage = this.extractErrorMessage(
           err,

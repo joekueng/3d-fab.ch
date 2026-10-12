@@ -4,6 +4,7 @@ import {
 } from '../../../shared/models/service-line';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
+  ChangeDetectorRef,
   Component,
   OnDestroy,
   OnInit,
@@ -107,6 +108,7 @@ interface ManagedItemRow {
   styleUrl: './admin-cad-invoices.component.scss',
 })
 export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
+  private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly adminOperationsService = inject(AdminOperationsService);
   private readonly adminOrdersService = inject(AdminOrdersService);
@@ -208,6 +210,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
       .updateCadInvoiceMetadata(this.editingSessionId, this.metadata)
       .subscribe({
         next: () => {
+          this.changeDetector.markForCheck();
           this.savingMetadata = false;
           this.editingSessionId = null;
           this.successMessage = this.translate.instant(
@@ -216,6 +219,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
           this.loadCadInvoices();
         },
         error: () => {
+          this.changeDetector.markForCheck();
           this.savingMetadata = false;
           this.metadataError = this.translate.instant(
             'CAD_ORGANIZATION.SAVE_ERROR',
@@ -279,10 +283,12 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
     this.errorMessage = null;
     this.adminOperationsService.listCadInvoices().subscribe({
       next: (rows) => {
+        this.changeDetector.markForCheck();
         this.invoices = rows;
         this.loading = false;
       },
       error: () => {
+        this.changeDetector.markForCheck();
         this.loading = false;
         this.errorMessage = this.translate.instant(
           'CAD_ORGANIZATION.LOAD_ERROR',
@@ -422,6 +428,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
       })
       .subscribe({
         next: (created) => {
+          this.changeDetector.markForCheck();
           this.creating = false;
           this.successMessage = this.translate.instant(
             'CAD_ORGANIZATION.READY',
@@ -438,6 +445,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
           this.loadCadInvoices();
         },
         error: () => {
+          this.changeDetector.markForCheck();
           this.creating = false;
           this.errorMessage = this.translate.instant(
             'CAD_ORGANIZATION.CREATE_ERROR',
@@ -491,6 +499,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
     }
     this.adminOperationsService.listQuoteSessionAttachments(target).subscribe({
       next: (attachments) => {
+        this.changeDetector.markForCheck();
         if (this.managedSessionId !== target) {
           return;
         }
@@ -498,6 +507,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
         this.loadAttachmentPreviews(target);
       },
       error: (err) => {
+        this.changeDetector.markForCheck();
         if (this.managedSessionId !== target) {
           return;
         }
@@ -569,6 +579,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
       .uploadQuoteSessionAttachments(sessionId, files)
       .subscribe({
         next: () => {
+          this.changeDetector.markForCheck();
           if (this.managedSessionId !== sessionId) {
             return;
           }
@@ -580,6 +591,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
           this.loadSessionAttachments(sessionId);
         },
         error: (err) => {
+          this.changeDetector.markForCheck();
           if (this.managedSessionId !== sessionId) {
             return;
           }
@@ -602,6 +614,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
       .deleteQuoteSessionAttachment(sessionId, attachment.id)
       .subscribe({
         next: () => {
+          this.changeDetector.markForCheck();
           if (this.managedSessionId !== sessionId) {
             return;
           }
@@ -612,6 +625,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
           );
         },
         error: (err) => {
+          this.changeDetector.markForCheck();
           if (this.managedSessionId !== sessionId) {
             return;
           }
@@ -637,6 +651,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
     this.managedPreviewTotalChf = null;
     this.adminOperationsService.getAdminQuoteItems(sessionId).subscribe({
       next: (response) => {
+        this.changeDetector.markForCheck();
         if (this.managedSessionId !== sessionId) {
           return;
         }
@@ -645,6 +660,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
         this.applyManagedResponse(response);
       },
       error: (err) => {
+        this.changeDetector.markForCheck();
         if (this.managedSessionId !== sessionId) {
           return;
         }
@@ -672,6 +688,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
         .getQuoteSessionAttachmentPreview(sessionId, attachment.id)
         .subscribe({
           next: (blob) => {
+            this.changeDetector.markForCheck();
             if (
               !this.isBrowser ||
               this.managedSessionId !== sessionId ||
@@ -779,12 +796,14 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
     if (!orderId) return;
     this.adminOrdersService.downloadOrderInvoice(orderId).subscribe({
       next: (blob) => {
+        this.changeDetector.markForCheck();
         if (!this.isBrowser) {
           return;
         }
         downloadBlobInBrowser(blob, `fattura-cad-${orderId}.pdf`);
       },
       error: () => {
+        this.changeDetector.markForCheck();
         this.errorMessage = this.translate.instant(
           'CAD_ORGANIZATION.DOWNLOAD_ERROR',
         );
@@ -815,6 +834,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
       .updateAdminQuoteItemStats(sessionId, payload)
       .subscribe({
         next: (response) => {
+          this.changeDetector.markForCheck();
           this.previewing = false;
           this.savingManaged = false;
           if (persist) {
@@ -837,6 +857,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
           }
         },
         error: (err) => {
+          this.changeDetector.markForCheck();
           this.previewing = false;
           this.savingManaged = false;
           this.managedError =

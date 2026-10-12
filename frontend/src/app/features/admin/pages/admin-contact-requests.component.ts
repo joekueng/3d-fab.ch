@@ -1,6 +1,12 @@
 import { TranslateService } from '@ngx-translate/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Component, PLATFORM_ID, inject, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  PLATFORM_ID,
+  inject,
+  OnInit,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   AdminContactRequest,
@@ -28,6 +34,7 @@ import { downloadBlobInBrowser } from '../../../core/utils/browser-download';
   styleUrl: './admin-contact-requests.component.scss',
 })
 export class AdminContactRequestsComponent implements OnInit {
+  private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly translate = inject(TranslateService);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly adminOperationsService = inject(AdminOperationsService);
@@ -58,6 +65,7 @@ export class AdminContactRequestsComponent implements OnInit {
     this.successMessage = null;
     this.adminOperationsService.getContactRequests().subscribe({
       next: (requests) => {
+        this.changeDetector.markForCheck();
         this.requests = requests;
         if (requests.length === 0) {
           this.selectedRequest = null;
@@ -73,6 +81,7 @@ export class AdminContactRequestsComponent implements OnInit {
         this.loading = false;
       },
       error: () => {
+        this.changeDetector.markForCheck();
         this.loading = false;
         this.errorMessage = 'Impossibile caricare le richieste di contatto.';
       },
@@ -85,11 +94,13 @@ export class AdminContactRequestsComponent implements OnInit {
     this.errorMessage = null;
     this.adminOperationsService.getContactRequestDetail(requestId).subscribe({
       next: (detail) => {
+        this.changeDetector.markForCheck();
         this.selectedRequest = detail;
         this.selectedStatus = detail.status || '';
         this.detailLoading = false;
       },
       error: () => {
+        this.changeDetector.markForCheck();
         this.detailLoading = false;
         this.errorMessage = 'Impossibile caricare il dettaglio richiesta.';
       },
@@ -114,6 +125,7 @@ export class AdminContactRequestsComponent implements OnInit {
             attachment.originalFilename || `attachment-${attachment.id}`,
           ),
         error: () => {
+          this.changeDetector.markForCheck();
           this.errorMessage = 'Download allegato non riuscito.';
         },
       });
@@ -167,6 +179,7 @@ export class AdminContactRequestsComponent implements OnInit {
       })
       .subscribe({
         next: (updated) => {
+          this.changeDetector.markForCheck();
           this.selectedRequest = updated;
           this.selectedStatus = updated.status || this.selectedStatus;
           this.requests = this.requests.map((request) =>
@@ -181,6 +194,7 @@ export class AdminContactRequestsComponent implements OnInit {
           this.successMessage = 'Stato richiesta aggiornato.';
         },
         error: () => {
+          this.changeDetector.markForCheck();
           this.updatingStatus = false;
           this.errorMessage =
             'Impossibile aggiornare lo stato della richiesta.';
@@ -204,12 +218,14 @@ export class AdminContactRequestsComponent implements OnInit {
       .resendContactRequestEmail(this.selectedRequestId, log.id)
       .subscribe({
         next: (updated) => {
+          this.changeDetector.markForCheck();
           this.resendingEmailLogIds.delete(log.id);
           this.selectedRequest = updated;
           this.selectedStatus = updated.status || this.selectedStatus;
           this.successMessage = 'Email reinviata.';
         },
         error: () => {
+          this.changeDetector.markForCheck();
           this.resendingEmailLogIds.delete(log.id);
           this.errorMessage = 'Reinvio email non riuscito.';
         },

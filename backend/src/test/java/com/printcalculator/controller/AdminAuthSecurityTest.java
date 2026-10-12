@@ -137,6 +137,15 @@ class AdminAuthSecurityTest {
     }
 
     @Test
+    void preflightFromUntrustedOrigin_ShouldReturnForbidden() throws Exception {
+        mockMvc.perform(options("/api/admin/auth/login")
+                        .header(HttpHeaders.ORIGIN, "https://untrusted.example")
+                        .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST"))
+                .andExpect(status().isForbidden())
+                .andExpect(header().doesNotExist(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN));
+    }
+
+    @Test
     void adminAccessWithoutCookie_ShouldReturn401() throws Exception {
         mockMvc.perform(get("/api/admin/auth/me"))
                 .andExpect(status().isUnauthorized());
