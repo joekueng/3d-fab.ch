@@ -5,6 +5,7 @@ import com.printcalculator.service.NozzleLayerHeightPolicyService;
 import com.printcalculator.service.QuoteCalculator;
 import com.printcalculator.service.QuoteRateLimitService;
 import com.printcalculator.service.SlicerService;
+import com.printcalculator.service.SlicingCapacityService;
 import com.printcalculator.service.storage.ClamAVService;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -32,7 +33,8 @@ class QuoteControllerAntivirusTest {
     @ValueSource(strings = {"/api/quote", "/calculate/stl"})
     void disabledScannerRejectsUploadBeforeSlicing(String endpoint) throws Exception {
         var controller = new QuoteController(slicer, calculator, machines,
-                new ClamAVService("localhost", 3310, false), nozzlePolicy, rateLimit);
+                new ClamAVService("localhost", 3310, false), nozzlePolicy, rateLimit,
+                new SlicingCapacityService(1, 0, 0));
         var mvc = MockMvcBuilders.standaloneSetup(controller).build();
         var file = new MockMultipartFile("file", "model.stl", "model/stl",
                 "solid model".getBytes(StandardCharsets.UTF_8));

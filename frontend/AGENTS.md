@@ -56,6 +56,8 @@ For live order updates, follow [customer order tracking](README.md#customer-orde
 
 For asynchronous view updates, follow [change detection conventions](README.md#asynchronous-view-updates).
 
+For calculator API changes, follow [calculator batch requests](README.md#calculator-batch-requests) and the linked backend admission contract.
+
 ## Verification
 
 From `frontend/`, run the checks relevant to the change:

@@ -27,16 +27,21 @@ public record QuoteSessionDto(
         BigDecimal cadHours,
         BigDecimal cadHourlyRateChf,
         String invoiceName,
-        java.util.List<ServiceLineDto> serviceLines) {
+        java.util.List<ServiceLineDto> serviceLines,
+        UUID calculationId) {
     public static QuoteSessionDto from(QuoteSession session) {
-        return from(session, true);
+        return from(session, true, null);
     }
 
     public static QuoteSessionDto forOrderedSessionReuse(QuoteSession session) {
-        return from(session, false);
+        return from(session, false, null);
     }
 
-    private static QuoteSessionDto from(QuoteSession session, boolean includeInformationDraft) {
+    public static QuoteSessionDto forCalculation(QuoteSession session, UUID calculationId) {
+        return from(session, true, calculationId);
+    }
+
+    private static QuoteSessionDto from(QuoteSession session, boolean includeInformationDraft, UUID calculationId) {
         return new QuoteSessionDto(
                 session.getId(),
                 includeInformationDraft ? session.getInformationDraftId() : null,
@@ -58,6 +63,7 @@ public record QuoteSessionDto(
                 session.getCadHours(),
                 session.getCadHourlyRateChf(),
                 session.getInvoiceName(),
-                session.getServiceLines());
+                session.getServiceLines(),
+                calculationId);
     }
 }

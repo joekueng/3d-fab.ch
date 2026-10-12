@@ -38,7 +38,8 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 public class QuoteSessionController {
     public record SessionRequest(
             @jakarta.validation.Valid com.printcalculator.dto.InformationDto.DraftLink information,
-            UUID reuseSessionId
+            UUID reuseSessionId,
+            @jakarta.validation.constraints.Positive Integer itemCount
     ) {}
     private final com.printcalculator.service.information.OrderInformationService informationService;
     private final QuoteSessionRepository sessionRepo;
@@ -85,11 +86,14 @@ public class QuoteSessionController {
     @PostMapping(value = "")
     @Transactional
     public ResponseEntity<com.printcalculator.dto.QuoteSessionDto> createSession(
-            @jakarta.validation.Valid @RequestBody(required = false) SessionRequest payload) {
+            @jakarta.validation.Valid @RequestBody(required = false) SessionRequest payload,
+            HttpServletRequest request) {
+        UUID calculationId = payload != null && payload.itemCount() != null
+                ? quoteRateLimitService.reserveCalculation(request, payload.itemCount()) : null;
         UUID reuseSessionId = payload == null ? null : payload.reuseSessionId();
         var reusableSession = quoteSessionCalculationService.prepareForRecalculation(reuseSessionId);
         if (reusableSession.isPresent()) {
-            return ResponseEntity.ok(com.printcalculator.dto.QuoteSessionDto.from(reusableSession.get()));
+            return calculationResponse(reusableSession.get(), calculationId);
         }
 
         QuoteSession session = new QuoteSession();
@@ -106,7 +110,14 @@ public class QuoteSessionController {
 
         informationService.link(session, payload == null ? null : payload.information());
         session = sessionRepo.save(session);
-        return ResponseEntity.ok(com.printcalculator.dto.QuoteSessionDto.from(session));
+        return calculationResponse(session, calculationId);
+    }
+
+    private ResponseEntity<com.printcalculator.dto.QuoteSessionDto> calculationResponse(QuoteSession session, UUID calculationId) {
+        if (calculationId != null) {
+            quoteRateLimitService.bindCalculation(calculationId, session.getId());
+        }
+        return ResponseEntity.ok(com.printcalculator.dto.QuoteSessionDto.forCalculation(session, calculationId));
     }
 
     @PostMapping(value = "/{id}/line-items", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -114,8 +125,9 @@ public class QuoteSessionController {
     public ResponseEntity<QuoteLineItem> addItemToExistingSession(@PathVariable UUID id,
                                                                    @jakarta.validation.Valid @RequestPart("settings") PrintSettingsDto settings,
                                                                    @RequestPart("file") MultipartFile file,
+                                                                   @RequestHeader(value = "X-Quote-Calculation", required = false) UUID calculationId,
                                                                    HttpServletRequest request) throws IOException {
-        quoteRateLimitService.checkSlicingAllowed(request);
+        quoteRateLimitService.checkSlicingAllowed(request, id, calculationId);
         QuoteSession session = sessionRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Session not found"));
 
