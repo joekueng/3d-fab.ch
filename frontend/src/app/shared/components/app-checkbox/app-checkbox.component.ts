@@ -1,5 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, forwardRef, input, signal } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  computed,
+  forwardRef,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import {
   ControlValueAccessor,
   NG_VALUE_ACCESSOR,
@@ -21,6 +29,7 @@ import {
   styleUrl: './app-checkbox.component.scss',
 })
 export class AppCheckboxComponent implements ControlValueAccessor {
+  private readonly changeDetector = inject(ChangeDetectorRef);
   id = input<string>('checkbox-' + Math.random().toString(36).slice(2, 11));
   name = input<string>('');
   label = input<string>('');
@@ -44,6 +53,7 @@ export class AppCheckboxComponent implements ControlValueAccessor {
 
   writeValue(obj: unknown): void {
     this.checked = !!obj;
+    this.changeDetector.markForCheck();
   }
 
   registerOnChange(fn: (value: boolean) => void): void {

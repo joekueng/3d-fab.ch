@@ -16,3 +16,10 @@ Read [frontend/AGENTS.md](../../../../AGENTS.md) and [frontend/README.md](../../
 Calculator-only settings live in [`features/calculator/components/print-settings`](../../features/calculator/components/print-settings/), not in generic shared UI. Both global and selected-file settings pass the existing `FormGroup` and current option lists into that panel. Preserve the per-file nozzle/layer constraints in the owning form.
 
 Extend a component for reusable behavior rather than copying its markup/styles into a feature. Keep HTML, SCSS, and TypeScript separate. Run `npm run check:ui-reuse`, `npm run check:i18n`, compilation, and relevant browser tests from `frontend/`; compare responsive rendering and long translated content. The reuse check blocks known clones, but is not a general duplication detector.
+
+ControlValueAccessor implementations must notify Angular from `writeValue()` when
+storing values in plain fields. Reactive-form patches (including `emitEvent: false`)
+must update the rendered control under OnPush without emitting a user change.
+The internal ngModel in `app-select` is standalone: the outer formControlName owns
+registration with the reactive form. Verify both model values and rendered controls
+when switching between records that reuse the same FormGroup.
