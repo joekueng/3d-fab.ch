@@ -27,6 +27,7 @@ describe('QuoteEstimatorService', () => {
           provide: OrderInformationService,
           useValue: {
             saveDraft: () => Promise.resolve({ id: 'draft', token: 'key' }),
+            useDraft: () => Promise.resolve(),
             draftCredential: () => ({ id: 'draft', token: 'key' }),
           },
         },
@@ -179,6 +180,81 @@ describe('QuoteEstimatorService', () => {
     expect(first.cancelled).toBeTrue();
     httpTesting.expectNone(uploads);
   }));
+
+  for (const response of [
+    { errorCode: 'MODEL_OUT_OF_PRINT_VOLUME' },
+    { pricingBreakdown: { errorCode: 'MODEL_OUT_OF_PRINT_VOLUME' } },
+  ]) {
+    it(`preserves the oversized-model reason from ${Object.keys(response)[0]}`, fakeAsync(() => {
+      let failure: QuoteCalculationFailure | undefined;
+      const request = { ...twoFiles(), items: twoFiles().items.slice(0, 1) };
+      service
+        .calculate(request)
+        .subscribe({ error: (error) => (failure = error) });
+      flushMicrotasks();
+      httpTesting
+        .expectOne(`${environment.apiUrl}/api/quote-sessions`)
+        .flush({ id: 'session-1', calculationId: 'permit-1' });
+      httpTesting
+        .expectOne(
+          `${environment.apiUrl}/api/quote-sessions/session-1/line-items`,
+        )
+        .flush({ status: 'REVIEW_REQUIRED', ...response });
+      expect(failure?.code).toBe('MODEL_OUT_OF_PRINT_VOLUME');
+      expect(failure?.sessionId).toBe('session-1');
+    }));
+  }
+
+  it('sends split consent to the backend and returns a priced split model', async () => {
+    const request = {
+      ...twoFiles(),
+      items: twoFiles().items.slice(0, 1),
+      acceptSplitPrinting: true,
+    };
+    let result: QuoteResult | undefined;
+    service.calculate(request).subscribe((event) => {
+      if (typeof event !== 'number') result = event;
+    });
+    await Promise.resolve();
+    await Promise.resolve();
+    httpTesting
+      .expectOne(`${environment.apiUrl}/api/quote-sessions`)
+      .flush({ id: 'session-1', calculationId: 'permit-1' });
+    const upload = httpTesting.expectOne(
+      `${environment.apiUrl}/api/quote-sessions/session-1/line-items`,
+    );
+    const settings = JSON.parse(
+      await ((upload.request.body as FormData).get('settings') as Blob).text(),
+    );
+    expect(settings.allowSplitForOversized).toBeTrue();
+    upload.flush({ status: 'READY', requiresSplitPrinting: true });
+    httpTesting
+      .expectOne(`${environment.apiUrl}/api/quote-sessions/session-1/resume`)
+      .flush(null);
+    httpTesting
+      .expectOne(`${environment.apiUrl}/api/quote-sessions/session-1`)
+      .flush({
+        session: { id: 'session-1' },
+        items: [
+          {
+            status: 'READY',
+            originalFilename: 'part-a.stl',
+            requiresSplitPrinting: true,
+            unitPriceChf: 12,
+            printTimeSeconds: 3600,
+            materialGrams: 20,
+            quantity: 1,
+          },
+        ],
+        setupFeeChf: 12,
+        grandTotalChf: 24,
+      });
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(result?.items[0].requiresSplitPrinting).toBeTrue();
+    expect(result?.totalPrice).toBe(24);
+    expect(result?.failedItems).toEqual([]);
+  });
 
   it('maps official pricing inputs used for provisional quantity estimates', () => {
     const result = service.mapSessionToQuoteResult({

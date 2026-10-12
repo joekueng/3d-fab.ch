@@ -822,6 +822,8 @@
     "CUSTOM_QUOTE_TITLE": "Devis personnalisé nécessaire",
     "CUSTOM_QUOTE_HELP": "Le fichier reste enregistré et nécessite une évaluation manuelle. Contactez-nous : nous conviendrons par e-mail de la division éventuelle, du prix final et de votre accord avant de poursuivre.",
     "SPLIT_REVIEW_TITLE": "Ce modèle doit être divisé",
+    "SPLIT_ACCEPT_HELP": "Le modèle ne tient pas dans le volume d’impression disponible. Acceptez sa division en plusieurs pièces pour recalculer le devis, avec le supplément prévu. Si l’estimation échoue, le fichier reste enregistré pour une évaluation manuelle.",
+    "SPLIT_ACCEPT_CALCULATE": "Accepter la division et recalculer",
     "SPLIT_REVIEW_HELP": "Le modèle dépasse le volume d'impression disponible. Le fichier reste enregistré : demandez une consultation afin de convenir par e-mail de sa division, du prix final et de votre accord.",
     "SPLIT_REQUEST_ACTION": "Demander la division du modèle",
     "REVIEW_OUT_OF_VOLUME": "Le modèle dépasse le volume d'impression disponible.",

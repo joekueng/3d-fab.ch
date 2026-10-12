@@ -242,3 +242,14 @@ issued document snapshots retain their agreed name and service details.
 `e2e/ui-states/service-invoices.spec.ts` exercises these interactions using an
 explicitly simulated API and checks narrow-screen layout. Backend integration
 and pricing tests remain responsible for persistence, amounts and paid access.
+
+### Oversized models and split consent
+
+When slicing reports `MODEL_OUT_OF_PRINT_VOLUME`, the calculator offers explicit
+consent and recalculation via `onAcceptSplitAndCalculate()`. Reuse the current
+files, per-file settings and session, and send `allowSplitForOversized: true` only
+after consent. The backend estimates using a virtual build volume and marks the
+priced item `requiresSplitPrinting`, which triggers the configured split surcharge.
+This estimates printing; it does not generate cut geometry. Failed estimates still
+require manual review. Preserve the error code from both upload and session
+responses so generic processing failures cannot hide the consent action.

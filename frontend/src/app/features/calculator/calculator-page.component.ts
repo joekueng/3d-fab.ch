@@ -613,6 +613,21 @@ export class CalculatorPageComponent
     });
   }
 
+  onAcceptSplitAndCalculate(): void {
+    if (
+      this.loading() ||
+      !this.isOutOfVolumeError() ||
+      !this.uploadForm ||
+      this.cadSessionLocked() ||
+      this.rateLimitSecondsRemaining() > 0
+    ) {
+      return;
+    }
+    this.uploadForm.setAcceptSplitPrinting(true);
+    const request = this.uploadForm.getCurrentRequestDraft();
+    this.onCalculate({ ...request, acceptSplitPrinting: true });
+  }
+
   onProceed() {
     const res = this.result();
     if (res && res.sessionId && !this.orderedSessionRequiresFork()) {

@@ -815,6 +815,8 @@
     "CUSTOM_QUOTE_TITLE": "Serve un preventivo personalizzato",
     "CUSTOM_QUOTE_HELP": "Il file resta salvato e richiede una valutazione manuale. Contattaci: concorderemo via email l'eventuale suddivisione, il prezzo definitivo e la tua approvazione prima di procedere.",
     "SPLIT_REVIEW_TITLE": "Il modello richiede una suddivisione",
+    "SPLIT_ACCEPT_HELP": "Il modello non entra nel volume di stampa disponibile. Accetta la suddivisione in più parti per ricalcolare il preventivo, incluso il supplemento previsto. Se la stima non riesce, il file resta salvato per una valutazione manuale.",
+    "SPLIT_ACCEPT_CALCULATE": "Accetto la suddivisione e ricalcola",
     "SPLIT_REVIEW_HELP": "Il modello è più grande del volume di stampa disponibile. Il file resta salvato: richiedi una consulenza e concorderemo con te via email come suddividerlo, il prezzo definitivo e la tua approvazione.",
     "SPLIT_REQUEST_ACTION": "Richiedi la suddivisione",
     "REVIEW_OUT_OF_VOLUME": "Il modello supera il volume di stampa disponibile.",
