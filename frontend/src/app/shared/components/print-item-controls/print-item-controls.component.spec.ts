@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { provideTranslateService, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language.service';
 import { PrintItemControlsComponent } from './print-item-controls.component';
 import itTranslations from '../../../../assets/i18n/it.json';
@@ -7,8 +7,9 @@ import itTranslations from '../../../../assets/i18n/it.json';
 describe('PrintItemControlsComponent', () => {
   it('renders translated controls, commits quantity on blur, and selects material variants', async () => {
     await TestBed.configureTestingModule({
-      imports: [PrintItemControlsComponent, TranslateModule.forRoot()],
+      imports: [PrintItemControlsComponent],
       providers: [
+        provideTranslateService(),
         { provide: LanguageService, useValue: { selectedLang: () => 'it' } },
       ],
     }).compileComponents();

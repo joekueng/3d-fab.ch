@@ -1,7 +1,7 @@
 import { PLATFORM_ID } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 import { LanguageService } from '../../../core/services/language.service';
 import {
@@ -37,8 +37,9 @@ describe('QuickRequestPanelComponent', () => {
     languageService.selectedLang.and.returnValue('it');
 
     await TestBed.configureTestingModule({
-      imports: [QuickRequestPanelComponent, TranslateModule.forRoot()],
+      imports: [QuickRequestPanelComponent],
       providers: [
+        provideTranslateService(),
         provideRouter([]),
         { provide: QuoteRequestService, useValue: quoteRequestService },
         { provide: ContactRequestDraftService, useValue: draftService },

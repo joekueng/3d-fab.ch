@@ -2,7 +2,7 @@
 FROM eclipse-temurin:21-jdk-jammy AS build
 WORKDIR /app
 COPY gradle gradle
-COPY gradlew build.gradle settings.gradle ./
+COPY gradlew build.gradle settings.gradle gradle.lockfile ./
 # Download dependencies first to cache them
 RUN ./gradlew dependencies --no-daemon
 COPY src ./src
@@ -10,6 +10,7 @@ RUN ./gradlew bootJar -x test --no-daemon
 
 # Stage 2: Runtime Environment
 FROM eclipse-temurin:21-jre-jammy
+LABEL ch.printcalculator.project="print-calculator"
 ARG ORCA_VERSION=2.3.1
 ARG ORCA_DOWNLOAD_URL
 ARG FFMPEG_STATIC_URL=https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
@@ -114,5 +115,11 @@ COPY profiles ./profiles
 EXPOSE 8080
 
 COPY entrypoint.sh .
-RUN chmod +x entrypoint.sh
+RUN groupadd --gid 10001 printcalc \
+    && useradd --uid 10001 --gid 10001 --home-dir /home/printcalc --create-home --shell /usr/sbin/nologin printcalc \
+    && install -d -o 10001 -g 10001 /app/temp /app/storage_quotes /app/storage_orders \
+        /app/storage_requests /app/storage_media /app/storage_shop \
+    && chmod +x entrypoint.sh
+ENV HOME=/home/printcalc
+USER 10001:10001
 ENTRYPOINT ["./entrypoint.sh"]

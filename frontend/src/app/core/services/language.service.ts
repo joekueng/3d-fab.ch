@@ -96,10 +96,7 @@ export class LanguageService {
   }
 
   selectedLang(): SupportedLang {
-    const activeLang =
-      typeof this.translate.currentLang === 'string'
-        ? this.translate.currentLang.toLowerCase()
-        : null;
+    const activeLang = this.translate.getCurrentLang()?.toLowerCase() ?? null;
     return this.isSupportedLang(activeLang) ? activeLang : this.currentLang();
   }
 
@@ -206,7 +203,10 @@ export class LanguageService {
   }
 
   private applyLanguage(lang: SupportedLang): void {
-    if (this.currentLang() === lang && this.translate.currentLang === lang) {
+    if (
+      this.currentLang() === lang &&
+      this.translate.getCurrentLang() === lang
+    ) {
       return;
     }
     this.translate.use(lang);

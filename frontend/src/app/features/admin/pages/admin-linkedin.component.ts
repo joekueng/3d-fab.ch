@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
 import {
   AdminLinkedInService,
@@ -10,11 +10,12 @@ import {
 @Component({
   selector: 'app-admin-linkedin',
   standalone: true,
-  imports: [CommonModule, TranslateModule, AppButtonComponent],
+  imports: [CommonModule, TranslatePipe, AppButtonComponent],
   templateUrl: './admin-linkedin.component.html',
   styleUrl: './admin-linkedin.component.scss',
 })
 export class AdminLinkedInComponent implements OnInit {
+  private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly linkedInService = inject(AdminLinkedInService);
 
   status: AdminLinkedInSyncStatus | null = null;
@@ -32,10 +33,12 @@ export class AdminLinkedInComponent implements OnInit {
     this.messageKey = null;
     this.linkedInService.getStatus().subscribe({
       next: (status) => {
+        this.changeDetector.markForCheck();
         this.status = status;
         this.loading = false;
       },
       error: () => {
+        this.changeDetector.markForCheck();
         this.loading = false;
         this.showMessage('ADMIN_LINKEDIN.STATUS_ERROR', true);
       },
@@ -50,6 +53,7 @@ export class AdminLinkedInComponent implements OnInit {
     this.messageKey = null;
     this.linkedInService.refresh().subscribe({
       next: (status) => {
+        this.changeDetector.markForCheck();
         this.status = status;
         this.syncing = false;
         if (!status.enabled || !status.configured) {
@@ -61,6 +65,7 @@ export class AdminLinkedInComponent implements OnInit {
         }
       },
       error: () => {
+        this.changeDetector.markForCheck();
         this.syncing = false;
         this.showMessage('ADMIN_LINKEDIN.SYNC_ERROR', true);
       },

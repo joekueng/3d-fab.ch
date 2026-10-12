@@ -14,6 +14,29 @@ import java.util.UUID;
         @Index(name = "ix_quote_sessions_expires_at",
                 columnList = "expires_at")})
 public class QuoteSession {
+    @Column(name = "invoice_client_name", length = 160)
+    private String clientName;
+    public String getClientName() { return clientName; }
+    public void setClientName(String value) { clientName = value; }
+
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+    @Column(name = "service_lines")
+    private java.util.List<com.printcalculator.dto.ServiceLineDto> serviceLines;
+    public java.util.List<com.printcalculator.dto.ServiceLineDto> getServiceLines() { return serviceLines == null ? java.util.List.of() : java.util.List.copyOf(serviceLines); }
+    public void setServiceLines(java.util.List<com.printcalculator.dto.ServiceLineDto> lines) { serviceLines = lines == null ? null : java.util.List.copyOf(lines); }
+
+    @Column(name = "invoice_name", length = 160)
+    private String invoiceName;
+
+    public String getInvoiceName() { return invoiceName; }
+    public void setInvoiceName(String value) { invoiceName = value; }
+
+    @Column(name = "collaboration_name", length = 160)
+    private String collaborationName;
+
+    public String getCollaborationName() { return collaborationName; }
+    public void setCollaborationName(String value) { collaborationName = value; }
+
     @Column(name = "information_draft_id")
     private UUID informationDraftId;
     public UUID getInformationDraftId() { return informationDraftId; }

@@ -1,5 +1,6 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
+  ChangeDetectorRef,
   Component,
   OnDestroy,
   OnInit,
@@ -105,6 +106,7 @@ const MEDIA_LANGUAGE_LABELS = ADMIN_LANGUAGE_LABELS satisfies Readonly<
   styleUrl: './admin-home-projects.component.scss',
 })
 export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
+  private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly projectService = inject(AdminHomeProjectService);
   private readonly mediaService = inject(AdminMediaService);
@@ -159,6 +161,7 @@ export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.projectService.getProjects().subscribe({
       next: (projects) => {
+        this.changeDetector.markForCheck();
         this.projects = [...projects].sort((left, right) => {
           if ((left.sortOrder ?? 0) !== (right.sortOrder ?? 0)) {
             return (left.sortOrder ?? 0) - (right.sortOrder ?? 0);
@@ -185,6 +188,7 @@ export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
         }
       },
       error: () => {
+        this.changeDetector.markForCheck();
         this.loading = false;
         this.errorMessage = 'Impossibile caricare i progetti home.';
       },
@@ -295,6 +299,7 @@ export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
 
     this.translationService.translateLocalizedText(payload).subscribe({
       next: (response) => {
+        this.changeDetector.markForCheck();
         this.form.translating = false;
         this.applyProjectTranslation(response, payload.overwriteExisting);
         this.successMessage = response.targetLanguages.length
@@ -304,6 +309,7 @@ export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
           : 'Nessun campo da tradurre.';
       },
       error: () => {
+        this.changeDetector.markForCheck();
         this.form.translating = false;
         this.errorMessage = 'Traduzione progetto non riuscita.';
       },
@@ -339,6 +345,7 @@ export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
 
     this.translationService.translateLocalizedText(payload).subscribe({
       next: (response) => {
+        this.changeDetector.markForCheck();
         this.imageForm.translating = false;
         this.applyProjectImageTranslation(response, payload.overwriteExisting);
         this.successMessage = response.targetLanguages.length
@@ -348,6 +355,7 @@ export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
           : 'Nessun campo immagine da tradurre.';
       },
       error: () => {
+        this.changeDetector.markForCheck();
         this.imageForm.translating = false;
         this.errorMessage = 'Traduzione immagine progetto non riuscita.';
       },
@@ -378,12 +386,14 @@ export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
 
     request$.subscribe({
       next: (project) => {
+        this.changeDetector.markForCheck();
         this.successMessage = 'Progetto salvato.';
         this.form.saving = false;
         this.form.id = project.id;
         this.loadProjects();
       },
       error: () => {
+        this.changeDetector.markForCheck();
         this.form.saving = false;
         this.errorMessage = 'Impossibile salvare il progetto.';
       },
@@ -459,12 +469,14 @@ export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: () => {
+          this.changeDetector.markForCheck();
           this.successMessage = 'Immagine progetto caricata.';
           this.imageForm.saving = false;
           this.resetImageForm();
           this.loadProjects();
         },
         error: () => {
+          this.changeDetector.markForCheck();
           this.imageForm.saving = false;
           this.errorMessage = 'Impossibile caricare immagine progetto.';
         },
@@ -500,11 +512,13 @@ export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
       .updateUsage(item.usageId, { sortOrder: Number(sortOrder) || 0 })
       .subscribe({
         next: () => {
+          this.changeDetector.markForCheck();
           this.busyUsageIds.delete(item.usageId);
           this.successMessage = 'Ordine immagine salvato.';
           this.loadProjects();
         },
         error: () => {
+          this.changeDetector.markForCheck();
           this.busyUsageIds.delete(item.usageId);
           this.errorMessage = 'Impossibile salvare ordine immagine.';
         },
@@ -520,11 +534,13 @@ export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
       .updateUsage(item.usageId, { isPrimary: true, isActive: true })
       .subscribe({
         next: () => {
+          this.changeDetector.markForCheck();
           this.busyUsageIds.delete(item.usageId);
           this.successMessage = 'Immagine primaria aggiornata.';
           this.loadProjects();
         },
         error: () => {
+          this.changeDetector.markForCheck();
           this.busyUsageIds.delete(item.usageId);
           this.errorMessage = 'Impossibile aggiornare immagine primaria.';
         },
@@ -540,11 +556,13 @@ export class AdminHomeProjectsComponent implements OnInit, OnDestroy {
       .updateUsage(item.usageId, { isActive: false, isPrimary: false })
       .subscribe({
         next: () => {
+          this.changeDetector.markForCheck();
           this.busyUsageIds.delete(item.usageId);
           this.successMessage = 'Immagine disattivata.';
           this.loadProjects();
         },
         error: () => {
+          this.changeDetector.markForCheck();
           this.busyUsageIds.delete(item.usageId);
           this.errorMessage = 'Impossibile disattivare immagine.';
         },

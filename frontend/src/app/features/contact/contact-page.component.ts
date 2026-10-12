@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { ContactFormComponent } from './components/contact-form/contact-form.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
 import { FeaturePanelComponent } from '../../shared/components/feature-panel/feature-panel.component';
@@ -10,7 +10,7 @@ import { FeaturePanelComponent } from '../../shared/components/feature-panel/fea
   standalone: true,
   imports: [
     CommonModule,
-    TranslateModule,
+    TranslatePipe,
     ContactFormComponent,
     AppCardComponent,
     FeaturePanelComponent,

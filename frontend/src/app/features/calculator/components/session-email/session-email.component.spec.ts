@@ -1,5 +1,5 @@
 import { TestBed, fakeAsync, flushMicrotasks } from '@angular/core/testing';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { of, Subject } from 'rxjs';
 import { signal } from '@angular/core';
 import { SessionEmailComponent } from './session-email.component';
@@ -17,8 +17,9 @@ describe('SessionEmailComponent', () => {
       Promise.resolve(),
     );
     TestBed.configureTestingModule({
-      imports: [SessionEmailComponent, TranslateModule.forRoot()],
+      imports: [SessionEmailComponent],
       providers: [
+        provideTranslateService(),
         { provide: QuoteEstimatorService, useValue: estimator },
         {
           provide: OrderInformationService,
@@ -59,8 +60,9 @@ describe('SessionEmailComponent', () => {
     ]);
     estimator.emailSession.and.returnValue(response);
     TestBed.configureTestingModule({
-      imports: [SessionEmailComponent, TranslateModule.forRoot()],
+      imports: [SessionEmailComponent],
       providers: [
+        provideTranslateService(),
         { provide: QuoteEstimatorService, useValue: estimator },
         {
           provide: OrderInformationService,

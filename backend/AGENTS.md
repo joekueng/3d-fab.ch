@@ -2,7 +2,7 @@
 
 ## Orientation
 
-The backend is a Java 21 / Spring Boot 3.4 REST application. The entry point is `BackendApplication.java`. Packages below `com.printcalculator` follow these responsibilities:
+The backend is a Java 21 / Spring Boot 4.1 REST application. The entry point is `BackendApplication.java`. Packages below `com.printcalculator` follow these responsibilities:
 
 - `controller/` — public HTTP endpoints; `controller/admin/` is the authenticated administrative API.
 - `service/` — domain logic. Domain subpackages include `admin`, `email`, `home`, `order`, `payment`, `qr`, `request`, `media`, and `storage`.
@@ -30,7 +30,7 @@ Read [README.md](README.md) before extending backend features. For email changes
 
 - Quote calculations combine model inspection, Orca profile resolution, slicing/G-code parsing, print statistics, and pricing policy. Changes require special care around `SlicerService`, `QuoteCalculator`, `QuoteSessionTotalsService`, and related entities.
 - Order/payment changes can emit events consumed by email and invoice flows. Trace the relevant `event` and `event/listener` classes before changing an order status or payment state. For contact-request and order creation, preserve the [email transaction boundaries](README.md#email-transaction-boundaries).
-- Uploads and media must retain file validation, antivirus/storage handling, and access boundaries between `original`, `public`, and `private` assets.
+- Uploads and media must retain file validation, antivirus/storage handling, and access boundaries between `original`, `public`, and `private` assets. Follow [mandatory antivirus scanning](README.md#mandatory-antivirus-scanning): scanner failures must block uploads in every environment.
 - QR location is inferred from backend-observed IP data; proxy-header trust and GeoLite configuration are security-sensitive.
 - SMTP, TWINT, QR-bill, and OpenAI translation integrations must be configuration-driven. Never log credentials or full sensitive request data.
 
@@ -49,6 +49,8 @@ Add or update focused unit tests for service logic and controller tests for API 
 
 ## Configuration safety
 
+For backend image changes, follow the [container user and storage permission procedure](README.md#backend-container-user-and-storage-permissions). The production bind mounts need a host-side UID migration before the non-root image starts.
+
 - Do not commit secrets or replace environment-based configuration with hard-coded values.
 - Do not alter production defaults, proxy trust settings, security filters, or file-size limits without understanding their deployment impact.
 - Keep generated files, temporary slicing outputs, uploaded files, and local storage out of source changes.
@@ -56,3 +58,5 @@ Add or update focused unit tests for service logic and controller tests for API 
 For payment automation, follow [payment confirmation and TWINT inbox conventions](README.md#payment-confirmation-and-twint-inbox), including order locks, the transactional email outbox and direct DKIM verification.
 IMAP IDLE is the default acquisition mode when enabled; keep its wait outside database transactions and reuse `TwintMailboxReader.readBatch` for cursor-safe reconciliation. Legacy polling is an explicit alternative, never a concurrent worker.
 For SSE tracking, follow [live order notifications](README.md#live-order-notifications): emit only after commit, preserve the public data boundary, and clean up disconnected streams.
+
+For custom service rows, grouping, interim invoices and schema compatibility, follow [service invoices and interim billing](README.md#service-invoices-and-interim-billing).

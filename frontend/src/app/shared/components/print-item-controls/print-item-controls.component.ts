@@ -1,13 +1,13 @@
 import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { ColorSelectorComponent } from '../color-selector/color-selector.component';
 import { VariantOption } from '../../../features/calculator/services/quote-estimator.service';
 
 @Component({
   selector: 'app-print-item-controls',
   standalone: true,
-  imports: [FormsModule, TranslateModule, ColorSelectorComponent],
+  imports: [FormsModule, TranslatePipe, ColorSelectorComponent],
   templateUrl: './print-item-controls.component.html',
   styleUrl: './print-item-controls.component.scss',
 })

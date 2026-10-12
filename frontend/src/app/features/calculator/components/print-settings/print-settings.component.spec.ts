@@ -1,12 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 import { FormControl, FormGroup } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { PrintSettingsComponent } from './print-settings.component';
 
 describe('PrintSettingsComponent', () => {
   it('updates the supplied form and follows changing options and disabled state', async () => {
     await TestBed.configureTestingModule({
-      imports: [PrintSettingsComponent, TranslateModule.forRoot()],
+      imports: [PrintSettingsComponent],
+      providers: [provideTranslateService()],
     }).compileComponents();
     const fixture = TestBed.createComponent(PrintSettingsComponent);
     const form = new FormGroup({

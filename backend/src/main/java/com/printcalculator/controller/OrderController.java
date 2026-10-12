@@ -78,6 +78,11 @@ public class OrderController {
         return new ResponseEntity<>(stream, response.getHeaders(), response.getStatusCode());
     }
 
+    @GetMapping("/{orderId}/cad-files/{fileId}/preview")
+    public ResponseEntity<Resource> previewCadFile(@PathVariable UUID orderId, @PathVariable UUID fileId) {
+        return orderControllerService.previewCadFile(orderId, fileId);
+    }
+
     @GetMapping("/{orderId}/invoice")
     public ResponseEntity<byte[]> getInvoice(@PathVariable UUID orderId) {
         return ResponseEntity.notFound().build();

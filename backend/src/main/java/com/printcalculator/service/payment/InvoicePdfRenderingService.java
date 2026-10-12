@@ -70,6 +70,7 @@ public class InvoicePdfRenderingService {
             ? order.getOrderNumber()
             : order.getId().toString();
 
+        vars.put("invoiceName", order.getInvoiceName());
         vars.put("invoiceNumber", "INV-" + displayOrderNumber.toUpperCase());
         vars.put("invoiceDate", order.getCreatedAt().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
         vars.put("dueDate", order.getCreatedAt().plusDays(30).format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
@@ -104,6 +105,16 @@ public class InvoicePdfRenderingService {
             cadLine.put("unitPriceFormatted", money(cadHourlyRate));
             cadLine.put("lineTotalFormatted", money(order.getCadTotalChf()));
             invoiceLineItems.add(cadLine);
+        }
+
+        for (var service : order.getServiceLines()) {
+            Map<String, Object> line = new HashMap<>();
+            line.put("description", service.description());
+            line.put("quantity", service.billingType() == com.printcalculator.dto.ServiceLineDto.BillingType.HOURLY
+                    ? formatCadHours(service.quantity()) + " h" : "1");
+            line.put("unitPriceFormatted", money(service.unitPriceChf()));
+            line.put("lineTotalFormatted", money(service.totalChf()));
+            invoiceLineItems.add(line);
         }
 
         Map<String, Object> setupLine = new HashMap<>();

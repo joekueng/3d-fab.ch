@@ -20,15 +20,18 @@ public class CadCheckoutService {
     private final PricingPolicyRepository policies;
     private final QuoteSessionTotalsService totals;
     private final QuoteSessionResponseAssembler assembler;
+    private final QuoteSessionAttachmentService attachments;
 
     public CadCheckoutService(QuoteLineItemRepository items, FilamentVariantRepository variants,
                               PricingPolicyRepository policies, QuoteSessionTotalsService totals,
-                              QuoteSessionResponseAssembler assembler) {
+                              QuoteSessionResponseAssembler assembler,
+                              QuoteSessionAttachmentService attachments) {
         this.items = items;
         this.variants = variants;
         this.policies = policies;
         this.totals = totals;
         this.assembler = assembler;
+        this.attachments = attachments;
     }
 
     @Transactional
@@ -74,6 +77,11 @@ public class CadCheckoutService {
         item.setUpdatedAt(OffsetDateTime.now());
         items.save(item);
         var allItems = items.findByQuoteSessionIdOrderByCreatedAtAsc(sessionId);
-        return assembler.assemble(session, allItems, totals.compute(session, allItems));
+        return assembler.assemble(
+                session,
+                allItems,
+                totals.compute(session, allItems),
+                attachments.listForQuoteResponse(sessionId)
+        );
     }
 }

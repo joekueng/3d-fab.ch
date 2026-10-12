@@ -1,5 +1,6 @@
 import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common';
 import {
+  ChangeDetectorRef,
   Component,
   ElementRef,
   HostListener,
@@ -97,6 +98,7 @@ import {
   styleUrl: './admin-shop.component.scss',
 })
 export class AdminShopComponent implements OnInit, OnDestroy {
+  private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
   private readonly documentRef = inject(DOCUMENT);
@@ -194,6 +196,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       filamentVariants: this.adminOperationsService.getFilamentVariants(),
     }).subscribe({
       next: ({ categories, products, filamentVariants }) => {
+        this.changeDetector.markForCheck();
         this.categories = categories;
         this.products = products;
         this.stockFilamentVariants =
@@ -234,6 +237,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
         }
       },
       error: (error) => {
+        this.changeDetector.markForCheck();
         this.loading = false;
         this.errorMessage = this.extractErrorMessage(
           error,
@@ -251,6 +255,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
 
     this.adminShopService.getProduct(productId).subscribe({
       next: (product) => {
+        this.changeDetector.markForCheck();
         this.selectedProduct = product;
         this.productImages = buildProductImages(
           product,
@@ -262,6 +267,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
         this.detailLoading = false;
       },
       error: (error) => {
+        this.changeDetector.markForCheck();
         this.detailLoading = false;
         this.errorMessage = this.extractErrorMessage(
           error,
@@ -306,6 +312,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
 
     request.subscribe({
       next: (product) => {
+        this.changeDetector.markForCheck();
         this.savingProduct = false;
         this.productMode = 'edit';
         this.selectedProductId = product.id;
@@ -316,6 +323,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
         this.loadWorkspace(product.id);
       },
       error: (error) => {
+        this.changeDetector.markForCheck();
         this.savingProduct = false;
         this.errorMessage = this.extractErrorMessage(
           error,
@@ -344,12 +352,14 @@ export class AdminShopComponent implements OnInit, OnDestroy {
 
     this.adminShopService.deleteProduct(this.selectedProductId).subscribe({
       next: () => {
+        this.changeDetector.markForCheck();
         this.deletingProduct = false;
         this.successMessage = 'Prodotto eliminato.';
         this.startCreateProduct();
         this.loadWorkspace();
       },
       error: (error) => {
+        this.changeDetector.markForCheck();
         this.deletingProduct = false;
         this.errorMessage = this.extractErrorMessage(
           error,
@@ -411,9 +421,11 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     this.errorMessage = null;
     this.adminShopService.getCategory(categoryId).subscribe({
       next: (category) => {
+        this.changeDetector.markForCheck();
         this.loadCategoryIntoForm(category);
       },
       error: (error) => {
+        this.changeDetector.markForCheck();
         this.errorMessage = this.extractErrorMessage(
           error,
           'Impossibile caricare la categoria.',
@@ -449,6 +461,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
 
     request.subscribe({
       next: (category) => {
+        this.changeDetector.markForCheck();
         this.savingCategory = false;
         this.successMessage = this.categoryForm.id
           ? 'Categoria aggiornata.'
@@ -457,6 +470,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
         this.loadWorkspace(this.selectedProductId ?? undefined);
       },
       error: (error) => {
+        this.changeDetector.markForCheck();
         this.savingCategory = false;
         this.errorMessage = this.extractErrorMessage(
           error,
@@ -485,12 +499,14 @@ export class AdminShopComponent implements OnInit, OnDestroy {
 
     this.adminShopService.deleteCategory(this.categoryForm.id).subscribe({
       next: () => {
+        this.changeDetector.markForCheck();
         this.deletingCategory = false;
         this.successMessage = 'Categoria eliminata.';
         this.resetCategoryForm();
         this.loadWorkspace(this.selectedProductId ?? undefined);
       },
       error: (error) => {
+        this.changeDetector.markForCheck();
         this.deletingCategory = false;
         this.errorMessage = this.extractErrorMessage(
           error,
@@ -533,6 +549,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
 
     this.adminShopService.translateProduct(payload).subscribe({
       next: (response) => {
+        this.changeDetector.markForCheck();
         this.translatingProduct = false;
         this.applyProductTranslation(response, payload.overwriteExisting);
         this.successMessage = response.targetLanguages.length
@@ -542,6 +559,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
           : 'Nessun campo da tradurre.';
       },
       error: (error) => {
+        this.changeDetector.markForCheck();
         this.translatingProduct = false;
         this.errorMessage = this.extractErrorMessage(
           error,
@@ -837,6 +855,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       .uploadProductModel(this.selectedProductId, this.modelUploadFile)
       .subscribe({
         next: (product) => {
+          this.changeDetector.markForCheck();
           this.uploadingModel = false;
           this.modelUploadFile = null;
           this.successMessage = 'Modello 3D aggiornato.';
@@ -844,6 +863,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
           this.loadWorkspace(product.id);
         },
         error: (error) => {
+          this.changeDetector.markForCheck();
           this.uploadingModel = false;
           this.errorMessage = this.extractErrorMessage(
             error,
@@ -876,12 +896,14 @@ export class AdminShopComponent implements OnInit, OnDestroy {
 
     this.adminShopService.deleteProductModel(this.selectedProductId).subscribe({
       next: () => {
+        this.changeDetector.markForCheck();
         this.deletingModel = false;
         this.modelUploadFile = null;
         this.successMessage = 'Modello 3D rimosso.';
         this.loadWorkspace(this.selectedProductId ?? undefined);
       },
       error: (error) => {
+        this.changeDetector.markForCheck();
         this.deletingModel = false;
         this.errorMessage = this.extractErrorMessage(
           error,
@@ -1041,6 +1063,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: () => {
+          this.changeDetector.markForCheck();
           this.imageUploadState = {
             ...this.imageUploadState,
             saving: false,
@@ -1049,6 +1072,7 @@ export class AdminShopComponent implements OnInit, OnDestroy {
           this.loadWorkspace(currentProductId);
         },
         error: (error) => {
+          this.changeDetector.markForCheck();
           this.imageUploadState = {
             ...this.imageUploadState,
             saving: false,
@@ -1077,11 +1101,13 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       .updateMediaUsage(item.usageId, { sortOrder: item.draftSortOrder })
       .subscribe({
         next: () => {
+          this.changeDetector.markForCheck();
           this.imageActionIds.delete(item.usageId);
           this.successMessage = 'Ordine immagini aggiornato.';
           this.loadWorkspace(this.selectedProductId ?? undefined);
         },
         error: (error) => {
+          this.changeDetector.markForCheck();
           this.imageActionIds.delete(item.usageId);
           this.errorMessage = this.extractErrorMessage(
             error,
@@ -1104,11 +1130,13 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       .updateMediaUsage(item.usageId, { isPrimary: true, isActive: true })
       .subscribe({
         next: () => {
+          this.changeDetector.markForCheck();
           this.imageActionIds.delete(item.usageId);
           this.successMessage = 'Immagine principale aggiornata.';
           this.loadWorkspace(this.selectedProductId ?? undefined);
         },
         error: (error) => {
+          this.changeDetector.markForCheck();
           this.imageActionIds.delete(item.usageId);
           this.errorMessage = this.extractErrorMessage(
             error,
@@ -1135,11 +1163,13 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       .updateMediaUsage(item.usageId, { isActive: false, isPrimary: false })
       .subscribe({
         next: () => {
+          this.changeDetector.markForCheck();
           this.imageActionIds.delete(item.usageId);
           this.successMessage = 'Immagine rimossa dal prodotto.';
           this.loadWorkspace(this.selectedProductId ?? undefined);
         },
         error: (error) => {
+          this.changeDetector.markForCheck();
           this.imageActionIds.delete(item.usageId);
           this.errorMessage = this.extractErrorMessage(
             error,

@@ -3,6 +3,7 @@ import { OrderInformationComponent } from '../../order-information/order-informa
 import { InformationModel } from '../../order-information/order-information.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
+  ChangeDetectorRef,
   Component,
   HostListener,
   PLATFORM_ID,
@@ -10,7 +11,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import {
   AdminOrder,
   AdminOrderAddress,
@@ -41,7 +42,7 @@ import { firstValueFrom } from 'rxjs';
     AppInputComponent,
     AppSelectComponent,
     StlViewerComponent,
-    TranslateModule,
+    TranslatePipe,
   ],
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.scss',
@@ -50,6 +51,7 @@ export class AdminDashboardComponent implements OnInit {
   private readonly translate = inject(TranslateService);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly adminOrdersService = inject(AdminOrdersService);
+  private readonly changeDetector = inject(ChangeDetectorRef);
 
   orders: AdminOrder[] = [];
   statistics: AdminOrderStatistics | null = null;
@@ -199,10 +201,12 @@ export class AdminDashboardComponent implements OnInit {
           }
         }
         this.loading = false;
+        this.changeDetector.markForCheck();
       },
       error: () => {
         this.loading = false;
         this.errorMessage = 'Impossibile caricare gli ordini.';
+        this.changeDetector.markForCheck();
       },
     });
   }
@@ -213,10 +217,12 @@ export class AdminDashboardComponent implements OnInit {
       next: (statistics) => {
         this.statistics = statistics;
         this.statisticsLoading = false;
+        this.changeDetector.markForCheck();
       },
       error: () => {
         this.statistics = null;
         this.statisticsLoading = false;
+        this.changeDetector.markForCheck();
       },
     });
   }
@@ -268,10 +274,12 @@ export class AdminDashboardComponent implements OnInit {
         this.showPrintDetails =
           this.showPrintDetails && this.hasPrintItems(order);
         this.detailLoading = false;
+        this.changeDetector.markForCheck();
       },
       error: () => {
         this.detailLoading = false;
         this.errorMessage = 'Impossibile caricare il dettaglio ordine.';
+        this.changeDetector.markForCheck();
       },
     });
   }
@@ -1004,6 +1012,7 @@ export class AdminDashboardComponent implements OnInit {
     this.showPrintDetails =
       this.showPrintDetails && this.hasPrintItems(updatedOrder);
     this.loadStatistics();
+    this.changeDetector.markForCheck();
   }
 
   private applyListFiltersAndSelection(): void {

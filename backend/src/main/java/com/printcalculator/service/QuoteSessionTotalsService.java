@@ -13,7 +13,9 @@ import java.math.RoundingMode;
 import java.util.LinkedHashSet;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class QuoteSessionTotalsService {
@@ -36,6 +38,13 @@ public class QuoteSessionTotalsService {
     }
 
     public QuoteSessionTotals compute(QuoteSession session, List<QuoteLineItem> items) {
+        return compute(session, items, Map.of());
+    }
+
+    public QuoteSessionTotals compute(QuoteSession session,
+                                      List<QuoteLineItem> items,
+                                      Map<UUID, ItemStatsOverride> overrides) {
+        Map<UUID, ItemStatsOverride> effectiveOverrides = overrides != null ? overrides : Map.of();
         BigDecimal printItemsBaseTotal = BigDecimal.ZERO;
         BigDecimal totalSeconds = BigDecimal.ZERO;
 
@@ -44,11 +53,15 @@ public class QuoteSessionTotalsService {
                 continue;
             }
             int quantity = normalizeQuantity(item.getQuantity());
-            BigDecimal unitPrice = item.getUnitPriceChf() != null ? item.getUnitPriceChf() : BigDecimal.ZERO;
+            ItemStatsOverride override = item.getId() != null ? effectiveOverrides.get(item.getId()) : null;
+            BigDecimal unitPrice = override != null
+                    ? override.unitPriceChf()
+                    : (item.getUnitPriceChf() != null ? item.getUnitPriceChf() : BigDecimal.ZERO);
             printItemsBaseTotal = printItemsBaseTotal.add(unitPrice.multiply(BigDecimal.valueOf(quantity)));
 
-            if (item.getPrintTimeSeconds() != null && item.getPrintTimeSeconds() > 0) {
-                totalSeconds = totalSeconds.add(BigDecimal.valueOf(item.getPrintTimeSeconds()).multiply(BigDecimal.valueOf(quantity)));
+            Integer printSeconds = override != null ? override.printTimeSeconds() : item.getPrintTimeSeconds();
+            if (printSeconds != null && printSeconds > 0) {
+                totalSeconds = totalSeconds.add(BigDecimal.valueOf(printSeconds).multiply(BigDecimal.valueOf(quantity)));
             }
         }
 
@@ -67,7 +80,7 @@ public class QuoteSessionTotalsService {
         BigDecimal printItemsTotal = printItemsBaseTotal.add(globalMachineCost);
 
         BigDecimal cadTotal = calculateCadTotal(session);
-        BigDecimal itemsTotal = printItemsTotal.add(cadTotal);
+        BigDecimal itemsTotal = printItemsTotal.add(cadTotal).add(calculateServicesTotal(session));
 
         BigDecimal standardSetupFee = session.getSetupCostChf() != null
                 ? session.getSetupCostChf()
@@ -101,6 +114,12 @@ public class QuoteSessionTotalsService {
                 shippingQuote,
                 machineHourTiers
         );
+    }
+
+    public BigDecimal calculateServicesTotal(QuoteSession session) {
+        return session == null ? BigDecimal.ZERO : session.getServiceLines().stream()
+                .map(com.printcalculator.dto.ServiceLineDto::totalChf)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     public BigDecimal calculateCadTotal(QuoteSession session) {
@@ -240,5 +259,8 @@ public class QuoteSessionTotalsService {
                     nozzleChangeCostChf, setupCostChf, shippingCostChf, grandTotalChf, totalPrintSeconds,
                     null, List.of());
         }
+    }
+
+    public record ItemStatsOverride(Integer printTimeSeconds, BigDecimal unitPriceChf) {
     }
 }

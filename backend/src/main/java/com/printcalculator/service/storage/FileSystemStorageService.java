@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import com.printcalculator.exception.StorageException;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -42,21 +41,14 @@ public class FileSystemStorageService implements StorageService {
     public void store(MultipartFile file, Path destinationRelativePath) throws IOException {
         Path destinationFile = resolveInsideStorage(destinationRelativePath);
 
-        // 1. Salva prima il file su disco per evitare problemi di stream con file grandi
-        Files.createDirectories(destinationFile.getParent());
-        file.transferTo(destinationFile.toFile());
-
-        // 2. Scansiona il file appena salvato aprendo un nuovo stream
-        try (InputStream inputStream = new FileInputStream(destinationFile.toFile())) {
+        try (InputStream inputStream = file.getInputStream()) {
             if (!clamAVService.scan(inputStream)) {
-                // Se infetto, cancella il file e solleva eccezione
-                Files.deleteIfExists(destinationFile);
                 throw new StorageException("File rejected by antivirus scanner.");
             }
-        } catch (Exception e) {
-            if (e instanceof StorageException) throw e;
-            // Se l'antivirus fallisce per motivi tecnici, lasciamo il file (fail-open come concordato)
         }
+
+        Files.createDirectories(destinationFile.getParent());
+        file.transferTo(destinationFile.toFile());
     }
 
     @Override

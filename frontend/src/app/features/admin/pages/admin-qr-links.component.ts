@@ -1,5 +1,6 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
+  ChangeDetectorRef,
   Component,
   OnDestroy,
   OnInit,
@@ -70,6 +71,7 @@ export class AdminQrLinksComponent implements OnInit, OnDestroy {
 
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly adminQrService = inject(AdminQrService);
+  private readonly changeDetector = inject(ChangeDetectorRef);
 
   readonly viewModeOptions: ToggleOption[] = [
     { label: 'Statistiche QR', value: 'overview' },
@@ -126,6 +128,7 @@ export class AdminQrLinksComponent implements OnInit, OnDestroy {
       next: (links) => {
         this.qrLinks = links;
         this.loading = false;
+        this.changeDetector.markForCheck();
 
         if (this.viewMode === 'overview') {
           return;
@@ -153,6 +156,7 @@ export class AdminQrLinksComponent implements OnInit, OnDestroy {
       error: () => {
         this.loading = false;
         this.errorMessage = 'Impossibile caricare i QR.';
+        this.changeDetector.markForCheck();
       },
     });
   }
@@ -222,11 +226,13 @@ export class AdminQrLinksComponent implements OnInit, OnDestroy {
           : 'QR creato.';
         this.loadQrLinks(saved.id);
         this.loadOverviewStats(false);
+        this.changeDetector.markForCheck();
       },
       error: (err) => {
         this.saving = false;
         this.errorMessage =
           err?.error?.message || 'Salvataggio QR non riuscito.';
+        this.changeDetector.markForCheck();
       },
     });
   }
@@ -245,6 +251,7 @@ export class AdminQrLinksComponent implements OnInit, OnDestroy {
         }
         this.applyOverviewStats(overview);
         this.overviewLoading = false;
+        this.changeDetector.markForCheck();
       },
       error: () => {
         if (requestSequence !== this.overviewRequestSequence) {
@@ -253,6 +260,7 @@ export class AdminQrLinksComponent implements OnInit, OnDestroy {
         this.overviewLoading = false;
         this.errorMessage =
           'Impossibile caricare le statistiche aggregate dei QR.';
+        this.changeDetector.markForCheck();
       },
     });
   }
@@ -269,10 +277,12 @@ export class AdminQrLinksComponent implements OnInit, OnDestroy {
         this.revokePreviewUrl();
         this.previewUrl = URL.createObjectURL(blob);
         this.previewLoading = false;
+        this.changeDetector.markForCheck();
       },
       error: () => {
         this.previewLoading = false;
         this.errorMessage = "Impossibile generare l'anteprima SVG.";
+        this.changeDetector.markForCheck();
       },
     });
   }
@@ -287,9 +297,11 @@ export class AdminQrLinksComponent implements OnInit, OnDestroy {
       next: (blob) => {
         downloadBlobInBrowser(blob, `${selected.slug}-qr.svg`);
         this.successMessage = 'SVG scaricato.';
+        this.changeDetector.markForCheck();
       },
       error: () => {
         this.errorMessage = 'Download SVG non riuscito.';
+        this.changeDetector.markForCheck();
       },
     });
   }

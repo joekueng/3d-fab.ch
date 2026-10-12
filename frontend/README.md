@@ -52,6 +52,17 @@ npm run check:ui-reuse
 
 Exercise the affected UI and compare it with the existing reference. Add behavior tests when needed; report what was verified and any remaining limitations.
 
+## Asynchronous view updates
+
+Angular 22 uses OnPush by default. Prefer signals or AsyncPipe for data displayed
+in templates. Components that retain plain fields must inject ChangeDetectorRef
+and call `markForCheck()` when HTTP subscriptions, FileReader callbacks or other
+asynchronous callbacks update those fields, including error/loading states.
+Follow the existing admin filament/QR pages and shared STL viewer. A click must
+never be required to display a completed response. Regression tests should await
+the scheduled view update without manually calling `detectChanges()` after the
+response. Zone-based change detection alone does not mark an OnPush view dirty.
+
 ## Shared feature building blocks
 
 See the [shared component guide](src/app/shared/components/README.md) for modal, color selection, file upload, legal consent, and form-control APIs. Reuse these in both public and admin features. Calculator global/per-file settings share `app-print-settings` within the calculator feature.
@@ -80,6 +91,9 @@ during hydration. Preserve the SSR head until the actual route is available.
 The Express `CommonEngine` bridge must explicitly provide the request-local
 `REQUEST` token. The origin interceptor uses its path and headers to route shop
 catalogue reads through `SSR_INTERNAL_API_ORIGIN`, including behind Basic Auth.
+Angular SSR host validation remains enabled: deployments must set the comma-separated
+`NG_ALLOWED_HOSTS` list. `docker-compose.deploy.yml` defaults it to the three known
+public hosts, while the disposable E2E stack explicitly allows loopback hosts.
 Verify this bridge with `npm run build && npm run check:shop-ssr`: it runs the real
 production SSR bundle against a loopback catalogue fixture without
 `SSR_ROUTE_ALL_API_INTERNALLY`, including concurrent locales and API failure status.
@@ -158,7 +172,7 @@ The dev hostname currently requires HTTP Basic Auth. Set `E2E_HTTP_USER` and
 `E2E_HTTP_PASSWORD` locally; the Gitea job reads `DEV_BASIC_AUTH_USER` and
 `DEV_BASIC_AUTH_PASSWORD` repository secrets.
 
-Install Node 22, Docker with Compose, and Chromium once:
+Install Node 24.21.0, Docker with Compose, and Chromium once:
 
 ```bash
 cd frontend
@@ -209,3 +223,22 @@ opening for an already reported order), then returns to the existing slower refr
 Reads remain serial, pause in hidden tabs, resume on focus and stop on destruction.
 The animation ends on confirmation or expiry; reduced motion keeps the indicator
 static. This only reads order status: it does not increase backend mailbox polling.
+
+## Service invoice administration
+
+The existing `admin/cad-invoices` route is labelled **Invoices and services**.
+Use the shared input/select/textarea/dialog components for editable free-text
+service rows and metadata. Rows can be added or removed without a fixed count,
+and support hourly or one-off fixed prices. The calculator session remains the
+source for printed-product prices.
+
+Group invoices by the exact customer/company and project labels. **New interim
+invoice** carries only those labels into an empty form. It creates a separate
+checkout; it is not an automatic deposit or remaining-balance calculation.
+Customer/project labels stay internal; descriptions and the invoice name are
+customer-facing. Once ordered, only administrative labels can be changed;
+issued document snapshots retain their agreed name and service details.
+
+`e2e/ui-states/service-invoices.spec.ts` exercises these interactions using an
+explicitly simulated API and checks narrow-screen layout. Backend integration
+and pricing tests remain responsible for persistence, amounts and paid access.

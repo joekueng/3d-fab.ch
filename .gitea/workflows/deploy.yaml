@@ -34,10 +34,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node 22
+      - name: Setup Node 24
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "24.21.0"
           cache: "npm"
           cache-dependency-path: "frontend/package-lock.json"
 
@@ -94,10 +94,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node 22
+      - name: Setup Node 24
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "24.21.0"
           cache: "npm"
           cache-dependency-path: "frontend/package-lock.json"
 
@@ -178,17 +178,14 @@ jobs:
           docker build -t "$FRONTEND_IMAGE" ./frontend
           docker push "$FRONTEND_IMAGE"
 
-      - name: Cleanup Docker on runner (prevent vdisk growth)
+      - name: Cleanup old dangling Print Calculator images
         if: always()
         shell: bash
         run: |
           set +e
 
-          # Keep recent artifacts, drop old local residue from CI builds.
-          docker container prune -f --filter "until=168h" || true
-          docker image prune -a -f --filter "until=168h" || true
-          docker builder prune -a -f --filter "until=168h" || true
-          docker network prune -f --filter "until=168h" || true
+          # The runner can share its daemon with other Unraid applications.
+          docker image prune -f --filter "label=ch.printcalculator.project=print-calculator" --filter "until=168h" || true
 
   deploy:
     needs: build-and-push
@@ -301,10 +298,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node 22
+      - name: Setup Node 24
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "24.21.0"
           cache: "npm"
           cache-dependency-path: "frontend/package-lock.json"
 

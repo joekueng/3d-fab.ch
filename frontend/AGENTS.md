@@ -2,7 +2,7 @@
 
 ## Application map
 
-The Angular 19 application uses standalone components and a Core / Shared / Features structure:
+The Angular 22 application uses standalone components and a Core / Shared / Features structure:
 
 - `src/app/core/` — singleton services, interceptors, i18n, layout, route concerns, and global utilities.
 - `src/app/shared/` — reusable presentational components, directives, and utilities. Keep these free of feature-specific business logic.
@@ -54,6 +54,8 @@ For live order updates, follow [customer order tracking](README.md#customer-orde
 - Every new visible string requires matching keys and English translations in all locale catalogs. Do not use a translation fallback as a substitute for a missing locale key.
 - Use Angular forms and existing validation/error-display patterns. Do not bypass server-side validation.
 
+For asynchronous view updates, follow [change detection conventions](README.md#asynchronous-view-updates).
+
 For calculator API changes, follow [calculator batch requests](README.md#calculator-batch-requests) and the linked backend admission contract.
 
 ## Verification
@@ -80,3 +82,5 @@ rg -n "<(input|select|textarea|button)\\b" src/app/features/admin/pages --glob '
 ```
 
 Raw controls found by the second command are allowed only for the special-purpose exceptions above. Verify responsive behavior for user-facing UI changes.
+
+For editable service rows and interim invoice groups, follow [service invoice administration](README.md#service-invoice-administration).

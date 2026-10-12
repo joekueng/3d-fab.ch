@@ -146,6 +146,45 @@ class InvoicePdfRenderingServiceTest {
         java.nio.file.Files.write(java.nio.file.Path.of("build", "invoice-paid.pdf"), paid);
     }
 
+    @Test
+    void rendersNamedCustomServicesAcrossPages() throws Exception {
+        var resolver = new org.thymeleaf.templateresolver.ClassLoaderTemplateResolver();
+        resolver.setPrefix("templates/"); resolver.setSuffix(".html");
+        resolver.setTemplateMode("HTML"); resolver.setCharacterEncoding("UTF-8");
+        var engine = new org.thymeleaf.spring6.SpringTemplateEngine(); engine.setTemplateResolver(resolver);
+        var order = new Order();
+        order.setId(UUID.randomUUID());
+        order.setInvoiceName("Product development - iteration 2");
+        order.setCreatedAt(OffsetDateTime.parse("2026-09-28T10:00:00+02:00"));
+        order.setPreferredLanguage("it");
+        order.setBillingFirstName("Example"); order.setBillingLastName("Customer");
+        order.setBillingAddressLine1("Test street 1"); order.setBillingZip("6900");
+        order.setBillingCity("Lugano"); order.setBillingCountryCode("CH");
+        var lines = new java.util.ArrayList<com.printcalculator.dto.ServiceLineDto>();
+        lines.add(new com.printcalculator.dto.ServiceLineDto("Progettazione e revisione del prototipo",
+                com.printcalculator.dto.ServiceLineDto.BillingType.HOURLY,
+                new BigDecimal("1.25"), new BigDecimal("85.50")));
+        for (int i = 1; i <= 35; i++) {
+            lines.add(new com.printcalculator.dto.ServiceLineDto("Lavorazione personalizzata " + i
+                    + " - Finitura, assemblaggio e verifica dimensionale del prodotto.",
+                    com.printcalculator.dto.ServiceLineDto.BillingType.FIXED, BigDecimal.ONE, new BigDecimal("50")));
+        }
+        order.setServiceLines(lines);
+        order.setTotalChf(new BigDecimal("1856.88"));
+        order.setSubtotalChf(order.getTotalChf());
+        var bytes = new InvoicePdfRenderingService(engine).generateDocumentPdf(order, List.of(), false, null, null);
+        try (var document = org.apache.pdfbox.Loader.loadPDF(bytes)) {
+            assertTrue(document.getNumberOfPages() > 1);
+            var text = new org.apache.pdfbox.text.PDFTextStripper().getText(document);
+            assertTrue(text.contains("Product development - iteration 2"), text);
+            assertTrue(text.contains("1.25 h"), text);
+            assertTrue(text.contains("CHF 106.88"), text);
+            assertTrue(text.contains("Lavorazione personalizzata 35"), text);
+            assertTrue(text.contains("CHF 1'856.88"), text);
+        }
+        java.nio.file.Files.write(java.nio.file.Path.of("build", "invoice-services.pdf"), bytes);
+    }
+
     private static class CapturingInvoicePdfRenderingService extends InvoicePdfRenderingService {
         private Map<String, Object> capturedVariables;
 

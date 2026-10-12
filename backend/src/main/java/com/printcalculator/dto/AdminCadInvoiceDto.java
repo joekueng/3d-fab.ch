@@ -5,6 +5,24 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 public class AdminCadInvoiceDto {
+    private String clientName;
+    public String getClientName() { return clientName; }
+    public void setClientName(String value) { clientName = value; }
+
+    private java.util.List<com.printcalculator.dto.ServiceLineDto> serviceLines;
+    public java.util.List<com.printcalculator.dto.ServiceLineDto> getServiceLines() { return serviceLines == null ? java.util.List.of() : java.util.List.copyOf(serviceLines); }
+    public void setServiceLines(java.util.List<com.printcalculator.dto.ServiceLineDto> lines) { serviceLines = lines == null ? null : java.util.List.copyOf(lines); }
+
+    private String invoiceName;
+
+    public String getInvoiceName() { return invoiceName; }
+    public void setInvoiceName(String value) { invoiceName = value; }
+
+    private String collaborationName;
+
+    public String getCollaborationName() { return collaborationName; }
+    public void setCollaborationName(String value) { collaborationName = value; }
+
     private UUID sessionId;
     private String sessionStatus;
     private UUID sourceRequestId;

@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { finalize } from 'rxjs';
 import { ShopProductSummary, ShopService } from '../../services/shop.service';
 import { ShopRouteService } from '../../services/shop-route.service';
@@ -9,7 +9,7 @@ import { ShopRouteService } from '../../services/shop-route.service';
 @Component({
   selector: 'app-product-card',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslateModule],
+  imports: [CommonModule, RouterLink, TranslatePipe],
   templateUrl: './product-card.component.html',
   styleUrl: './product-card.component.scss',
 })

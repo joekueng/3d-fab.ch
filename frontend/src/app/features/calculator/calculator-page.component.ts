@@ -12,7 +12,7 @@ import {
   PLATFORM_ID,
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { forkJoin, of, Subscription } from 'rxjs';
 import { catchError, filter, map, take } from 'rxjs/operators';
 
@@ -68,7 +68,7 @@ type PendingSessionRestore = {
   standalone: true,
   imports: [
     CommonModule,
-    TranslateModule,
+    TranslatePipe,
     AppCardComponent,
     AppAlertComponent,
     AppButtonComponent,

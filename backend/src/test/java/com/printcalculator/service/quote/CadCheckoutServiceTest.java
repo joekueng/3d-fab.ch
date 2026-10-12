@@ -17,7 +17,8 @@ class CadCheckoutServiceTest {
     final PricingPolicyRepository policies = mock(PricingPolicyRepository.class);
     final QuoteSessionTotalsService totals = mock(QuoteSessionTotalsService.class);
     final QuoteSessionResponseAssembler assembler = mock(QuoteSessionResponseAssembler.class);
-    final CadCheckoutService service = new CadCheckoutService(items, variants, policies, totals, assembler);
+    final QuoteSessionAttachmentService attachments = mock(QuoteSessionAttachmentService.class);
+    final CadCheckoutService service = new CadCheckoutService(items, variants, policies, totals, assembler, attachments);
     final QuoteSession session = new QuoteSession();
     final QuoteLineItem item = new QuoteLineItem();
     final FilamentVariant black = variant(1L, "PLA", "Black", "20");
@@ -42,7 +43,7 @@ class CadCheckoutServiceTest {
         assertEquals(new BigDecimal("6.50"), item.getUnitPriceChf());
         assertEquals("Red", item.getColorCode());
         verify(totals).compute(session, List.of(item));
-        verify(assembler).assemble(eq(session), eq(List.of(item)), isNull());
+        verify(assembler).assemble(eq(session), eq(List.of(item)), isNull(), eq(List.of()));
         for (int i = 0; i < 5; i++) {
             service.update(session.getId(), item.getId(), new CadCheckoutItemRequest(3, 1L));
             assertEquals(new BigDecimal("5.00"), item.getUnitPriceChf());

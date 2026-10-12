@@ -2,6 +2,8 @@ package com.printcalculator.controller.admin;
 
 import com.printcalculator.dto.AdminCadInvoiceCreateRequest;
 import com.printcalculator.dto.AdminCadInvoiceDto;
+import com.printcalculator.dto.AdminCadInvoiceMetadataRequest;
+import jakarta.validation.Valid;
 import com.printcalculator.dto.AdminContactRequestDetailDto;
 import com.printcalculator.dto.AdminContactRequestDto;
 import com.printcalculator.dto.AdminFilamentStockDto;
@@ -94,9 +96,19 @@ public class AdminOperationsController {
     @PostMapping("/cad-invoices")
     @Transactional
     public ResponseEntity<AdminCadInvoiceDto> createOrUpdateCadInvoice(
-            @RequestBody AdminCadInvoiceCreateRequest payload
+            @Valid @RequestBody AdminCadInvoiceCreateRequest payload
     ) {
         return ResponseEntity.ok(adminOperationsControllerService.createOrUpdateCadInvoice(payload));
+    }
+
+    @PatchMapping("/cad-invoices/{sessionId}/metadata")
+    @Transactional
+    public ResponseEntity<Void> updateCadInvoiceMetadata(
+            @PathVariable UUID sessionId,
+            @Valid @RequestBody AdminCadInvoiceMetadataRequest payload
+    ) {
+        adminOperationsControllerService.updateCadInvoiceMetadata(sessionId, payload);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/sessions/{sessionId}")

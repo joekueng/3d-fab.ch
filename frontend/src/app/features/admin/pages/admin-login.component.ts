@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -20,6 +20,7 @@ const SUPPORTED_LANGS = new Set(['it', 'en', 'de', 'fr']);
   styleUrl: './admin-login.component.scss',
 })
 export class AdminLoginComponent implements OnDestroy {
+  private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly authService = inject(AdminAuthService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -44,6 +45,7 @@ export class AdminLoginComponent implements OnDestroy {
 
     this.authService.login(this.password).subscribe({
       next: (response: AdminAuthResponse) => {
+        this.changeDetector.markForCheck();
         this.loading = false;
         if (!response?.authenticated) {
           this.handleLoginFailure(response?.retryAfterSeconds);
@@ -60,6 +62,7 @@ export class AdminLoginComponent implements OnDestroy {
         void this.router.navigate(['/', this.resolveLang(), 'admin', 'orders']);
       },
       error: (error: HttpErrorResponse) => {
+        this.changeDetector.markForCheck();
         this.loading = false;
         this.handleLoginFailure(this.extractRetryAfterSeconds(error));
       },

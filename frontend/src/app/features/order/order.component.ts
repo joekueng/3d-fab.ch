@@ -1,3 +1,7 @@
+import {
+  ServiceLine,
+  serviceLineTotal,
+} from '../../shared/models/service-line';
 import { OrderInformationComponent } from '../order-information/order-information.component';
 import {
   OrderInformationService,
@@ -21,7 +25,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
 import { QuoteEstimatorService } from '../calculator/services/quote-estimator.service';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
 import {
   findColorHex,
@@ -74,7 +78,17 @@ interface PublicOrderItem {
   lineTotalChf?: number;
 }
 
+interface PublicOrderCadFile {
+  id: string;
+  originalFilename: string;
+  mimeType?: string;
+  fileSizeBytes?: number;
+  createdAt?: string;
+}
+
 interface PublicOrder {
+  invoiceName?: string;
+  serviceLines?: ServiceLine[];
   id: string;
   orderNumber?: string;
   status?: string;
@@ -89,6 +103,7 @@ interface PublicOrder {
   cadTotalChf?: number;
   cadFileCount?: number;
   cadFileDownloadAvailable?: boolean;
+  cadFiles?: PublicOrderCadFile[];
   items?: PublicOrderItem[];
 }
 
@@ -100,7 +115,7 @@ interface PublicOrder {
     CommonModule,
     AppButtonComponent,
     AppCardComponent,
-    TranslateModule,
+    TranslatePipe,
     PriceBreakdownComponent,
   ],
   templateUrl: './order.component.html',
@@ -146,6 +161,7 @@ export class OrderComponent implements OnInit, OnDestroy {
   error = signal<string | null>(null);
   twintOpenUrl = signal<string | null>(null);
   twintQrUrl = signal<string | null>(null);
+  cadPreviews = signal<Record<string, string>>({});
 
   ngOnInit(): void {
     this.orderId = this.route.snapshot.paramMap.get('orderId');
@@ -186,6 +202,7 @@ export class OrderComponent implements OnInit, OnDestroy {
     this.destroyed = true;
     this.closeEvents();
     clearTimeout(this.refreshTimer);
+    this.revokeCadPreviews();
   }
 
   @HostListener('document:visibilitychange')
@@ -278,6 +295,7 @@ export class OrderComponent implements OnInit, OnDestroy {
         next: (order) => {
           if (version !== this.requestVersion) return;
           this.order.set(order);
+          this.loadCadPreviews(order);
           this.syncEvents();
           this.error.set(null);
           this.loading.set(false);
@@ -355,6 +373,58 @@ export class OrderComponent implements OnInit, OnDestroy {
     });
   }
 
+  cadPreviewUrl(fileId: string): string | null {
+    return this.cadPreviews()[fileId] ?? null;
+  }
+
+  isImageMime(mimeType?: string): boolean {
+    return (
+      mimeType === 'image/png' ||
+      mimeType === 'image/jpeg' ||
+      mimeType === 'image/webp'
+    );
+  }
+
+  private loadCadPreviews(order: PublicOrder | null): void {
+    if (
+      !this.isBrowser ||
+      !this.orderId ||
+      !order?.cadFileDownloadAvailable ||
+      !Array.isArray(order.cadFiles)
+    ) {
+      return;
+    }
+    for (const file of order.cadFiles) {
+      if (!this.isImageMime(file.mimeType) || this.cadPreviews()[file.id]) {
+        continue;
+      }
+      this.quoteService
+        .getOrderCadFilePreview(this.orderId, file.id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (blob) => {
+            if (!this.isBrowser || this.cadPreviews()[file.id]) {
+              return;
+            }
+            this.cadPreviews.update((prev) => ({
+              ...prev,
+              [file.id]: URL.createObjectURL(blob),
+            }));
+          },
+          error: () => {},
+        });
+    }
+  }
+
+  private revokeCadPreviews(): void {
+    if (this.isBrowser) {
+      for (const url of Object.values(this.cadPreviews())) {
+        URL.revokeObjectURL(url);
+      }
+    }
+    this.cadPreviews.set({});
+  }
+
   loadTwintPayment() {
     if (!this.orderId) return;
     this.quoteService.getTwintPayment(this.orderId).subscribe({
@@ -386,7 +456,7 @@ export class OrderComponent implements OnInit, OnDestroy {
   }
 
   getTwintButtonImageUrl(): string {
-    const lang = this.translate.currentLang;
+    const lang = this.translate.getCurrentLang();
     if (lang === 'de') {
       return 'https://go.twint.ch/static/img/button_dark_de.svg';
     }
@@ -469,6 +539,14 @@ export class OrderComponent implements OnInit, OnDestroy {
         amount: order?.cadTotalChf ?? 0,
         visible: (order?.cadTotalChf ?? 0) > 0,
       },
+      ...(order?.serviceLines || []).map((line) => ({
+        label:
+          line.description +
+          (line.billingType === 'HOURLY' ? ' (' + line.quantity + ' h)' : ''),
+        amount:
+          line.lineTotalChf ??
+          serviceLineTotal(line.quantity, line.unitPriceChf),
+      })),
       {
         labelKey: 'PAYMENT.SHIPPING',
         amount: order?.shippingCostChf ?? 0,
@@ -554,7 +632,7 @@ export class OrderComponent implements OnInit, OnDestroy {
     source: 'shop' | 'filament',
   ): string | null {
     if (source === 'shop') {
-      return resolveLocalizedColorLabel(this.translate.currentLang, {
+      return resolveLocalizedColorLabel(this.translate.getCurrentLang(), {
         fallback: item.shopVariantColorName,
         it: item.shopVariantColorLabelIt,
         en: item.shopVariantColorLabelEn,
@@ -563,7 +641,7 @@ export class OrderComponent implements OnInit, OnDestroy {
       });
     }
 
-    return resolveLocalizedColorLabel(this.translate.currentLang, {
+    return resolveLocalizedColorLabel(this.translate.getCurrentLang(), {
       fallback: item.filamentColorName ?? item.colorCode,
       it: item.filamentColorLabelIt,
       en: item.filamentColorLabelEn,
@@ -587,6 +665,9 @@ export class OrderComponent implements OnInit, OnDestroy {
   }
 
   orderKindLabel(order: PublicOrder | null): string {
+    if (order?.serviceLines?.length && !order.items?.length) {
+      return this.translate.instant('CAD_ORGANIZATION.SERVICES');
+    }
     switch (this.orderKind(order)) {
       case 'SHOP':
         return this.translate.instant('ORDER.TYPE_SHOP');

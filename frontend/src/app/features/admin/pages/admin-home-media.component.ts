@@ -1,5 +1,6 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
+  ChangeDetectorRef,
   Component,
   OnDestroy,
   OnInit,
@@ -114,6 +115,7 @@ const MEDIA_LANGUAGE_LABELS = ADMIN_LANGUAGE_LABELS satisfies Readonly<
   styleUrl: './admin-home-media.component.scss',
 })
 export class AdminHomeMediaComponent implements OnInit, OnDestroy {
+  private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly adminMediaService = inject(AdminMediaService);
   private readonly adminTranslationService = inject(AdminTranslationService);
@@ -368,6 +370,7 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
 
     this.adminMediaService.listAssets().subscribe({
       next: (assets) => {
+        this.changeDetector.markForCheck();
         this.sections = this.sectionConfigs.map((config) => ({
           ...config,
           items: this.buildSectionItems(assets, config),
@@ -380,6 +383,7 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
         });
       },
       error: (error) => {
+        this.changeDetector.markForCheck();
         this.loading = false;
         this.errorMessage = this.extractErrorMessage(
           error,
@@ -532,6 +536,7 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: () => {
+          this.changeDetector.markForCheck();
           formState.saving = false;
           this.successMessage = formState.replacingUsageId
             ? 'Media sostituito.'
@@ -539,6 +544,7 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
           this.loadMedia();
         },
         error: (error) => {
+          this.changeDetector.markForCheck();
           formState.saving = false;
           this.errorMessage = this.extractErrorMessage(
             error,
@@ -570,6 +576,7 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
 
     this.adminTranslationService.translateLocalizedText(payload).subscribe({
       next: (response) => {
+        this.changeDetector.markForCheck();
         formState.translating = false;
         this.applyMediaTranslation(
           formState,
@@ -583,6 +590,7 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
           : 'Nessun campo da tradurre.';
       },
       error: (error) => {
+        this.changeDetector.markForCheck();
         formState.translating = false;
         this.errorMessage = this.extractErrorMessage(
           error,
@@ -615,11 +623,13 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
       .updateUsage(item.usageId, { isPrimary: true, isActive: true })
       .subscribe({
         next: () => {
+          this.changeDetector.markForCheck();
           this.actingUsageIds.delete(item.usageId);
           this.successMessage = 'Media principale aggiornato.';
           this.loadMedia();
         },
         error: (error) => {
+          this.changeDetector.markForCheck();
           this.actingUsageIds.delete(item.usageId);
           this.errorMessage = this.extractErrorMessage(
             error,
@@ -645,11 +655,13 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
       .updateUsage(item.usageId, { sortOrder: item.draftSortOrder })
       .subscribe({
         next: () => {
+          this.changeDetector.markForCheck();
           this.actingUsageIds.delete(item.usageId);
           this.successMessage = 'Ordine media aggiornato.';
           this.loadMedia();
         },
         error: (error) => {
+          this.changeDetector.markForCheck();
           this.actingUsageIds.delete(item.usageId);
           this.errorMessage = this.extractErrorMessage(
             error,
@@ -672,11 +684,13 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
       .updateUsage(item.usageId, { isActive: false, isPrimary: false })
       .subscribe({
         next: () => {
+          this.changeDetector.markForCheck();
           this.actingUsageIds.delete(item.usageId);
           this.successMessage = 'Media disattivato.';
           this.loadMedia();
         },
         error: (error) => {
+          this.changeDetector.markForCheck();
           this.actingUsageIds.delete(item.usageId);
           this.errorMessage = this.extractErrorMessage(
             error,

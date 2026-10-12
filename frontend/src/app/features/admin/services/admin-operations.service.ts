@@ -1,3 +1,4 @@
+import { ServiceLine } from '../../../shared/models/service-line';
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -185,14 +186,22 @@ export interface AdminQuoteSessionDetail {
 }
 
 export interface AdminCreateCadInvoicePayload {
+  serviceLines?: ServiceLine[];
+  clientName?: string;
+  invoiceName?: string;
+  collaborationName?: string;
   sessionId?: string;
   sourceRequestId?: string;
-  cadHours: number;
+  cadHours?: number;
   cadHourlyRateChf?: number;
   notes?: string;
 }
 
 export interface AdminCadInvoice {
+  serviceLines?: ServiceLine[];
+  clientName?: string;
+  invoiceName?: string;
+  collaborationName?: string;
   sessionId: string;
   sessionStatus: string;
   sourceRequestId?: string;
@@ -207,6 +216,52 @@ export interface AdminCadInvoice {
   convertedOrderStatus?: string;
   checkoutPath: string;
   notes?: string;
+  createdAt: string;
+}
+
+export interface AdminQuoteItemStats {
+  id: string;
+  displayName?: string;
+  quantity: number;
+  printTimeSeconds?: number | null;
+  materialGrams?: number | null;
+  unitPriceChf?: number | null;
+  newUnitPriceChf?: number | null;
+  status: string;
+  lineItemType: string;
+  editable: boolean;
+}
+
+export interface AdminQuoteItemsResponse {
+  sessionId: string;
+  sessionStatus: string;
+  items: AdminQuoteItemStats[];
+  printItemsTotalChf: number;
+  globalMachineCostChf: number;
+  cadTotalChf: number;
+  itemsTotalChf: number;
+  setupCostChf: number;
+  shippingCostChf: number;
+  grandTotalChf: number;
+}
+
+export interface AdminQuoteItemStatsUpdate {
+  itemId: string;
+  printTimeSeconds: number;
+  materialGrams: number;
+}
+
+export interface AdminQuoteItemStatsUpdatePayload {
+  persist: boolean;
+  items: AdminQuoteItemStatsUpdate[];
+}
+
+export interface QuoteSessionAttachment {
+  id: string;
+  originalFilename: string;
+  mimeType?: string;
+  fileSizeBytes?: number;
+  image: boolean;
   createdAt: string;
 }
 
@@ -370,6 +425,21 @@ export class AdminOperationsService {
     });
   }
 
+  updateCadInvoiceMetadata(
+    sessionId: string,
+    payload: {
+      invoiceName: string;
+      collaborationName: string;
+      clientName: string;
+    },
+  ): Observable<void> {
+    return this.http.patch<void>(
+      `${this.baseUrl}/cad-invoices/${sessionId}/metadata`,
+      payload,
+      { withCredentials: true },
+    );
+  }
+
   createCadInvoice(
     payload: AdminCreateCadInvoicePayload,
   ): Observable<AdminCadInvoice> {
@@ -377,6 +447,68 @@ export class AdminOperationsService {
       `${this.baseUrl}/cad-invoices`,
       payload,
       { withCredentials: true },
+    );
+  }
+
+  getAdminQuoteItems(sessionId: string): Observable<AdminQuoteItemsResponse> {
+    return this.http.get<AdminQuoteItemsResponse>(
+      `${this.baseUrl}/quote-sessions/${sessionId}/items`,
+      { withCredentials: true },
+    );
+  }
+
+  updateAdminQuoteItemStats(
+    sessionId: string,
+    payload: AdminQuoteItemStatsUpdatePayload,
+  ): Observable<AdminQuoteItemsResponse> {
+    return this.http.post<AdminQuoteItemsResponse>(
+      `${this.baseUrl}/quote-sessions/${sessionId}/items/print-stats`,
+      payload,
+      { withCredentials: true },
+    );
+  }
+
+  listQuoteSessionAttachments(
+    sessionId: string,
+  ): Observable<QuoteSessionAttachment[]> {
+    return this.http.get<QuoteSessionAttachment[]>(
+      `${this.baseUrl}/quote-sessions/${sessionId}/attachments`,
+      { withCredentials: true },
+    );
+  }
+
+  uploadQuoteSessionAttachments(
+    sessionId: string,
+    files: File[],
+  ): Observable<QuoteSessionAttachment[]> {
+    const formData = new FormData();
+    for (const file of files) {
+      formData.append('files', file);
+    }
+    return this.http.post<QuoteSessionAttachment[]>(
+      `${this.baseUrl}/quote-sessions/${sessionId}/attachments`,
+      formData,
+      { withCredentials: true },
+    );
+  }
+
+  deleteQuoteSessionAttachment(
+    sessionId: string,
+    attachmentId: string,
+  ): Observable<void> {
+    return this.http.delete<void>(
+      `${this.baseUrl}/quote-sessions/${sessionId}/attachments/${attachmentId}`,
+      { withCredentials: true },
+    );
+  }
+
+  getQuoteSessionAttachmentPreview(
+    sessionId: string,
+    attachmentId: string,
+  ): Observable<Blob> {
+    return this.http.get(
+      `${this.baseUrl}/quote-sessions/${sessionId}/attachments/${attachmentId}/preview`,
+      { withCredentials: true, responseType: 'blob' },
     );
   }
 }

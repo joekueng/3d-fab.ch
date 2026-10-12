@@ -1,6 +1,6 @@
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { provideTranslateService, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom, of } from 'rxjs';
 import enTranslations from '../../../assets/i18n/en.json';
 import itTranslations from '../../../assets/i18n/it.json';
@@ -37,8 +37,9 @@ describe('MaterialsPageComponent', () => {
     publicMediaService.getUsageCollections.and.returnValue(of({}));
 
     await TestBed.configureTestingModule({
-      imports: [MaterialsPageComponent, TranslateModule.forRoot()],
+      imports: [MaterialsPageComponent],
       providers: [
+        provideTranslateService(),
         { provide: PublicMediaService, useValue: publicMediaService },
         { provide: LanguageService, useValue: languageServiceStub },
       ],

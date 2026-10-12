@@ -14,12 +14,15 @@ The repository has two deployable applications:
 
 | Area | Location | Stack | Responsibility |
 | --- | --- | --- | --- |
-| Backend | `backend/` | Java 21, Spring Boot 3.4, JPA/Hibernate, PostgreSQL | REST API, domain logic, slicing, storage, payments, email |
-| Frontend | `frontend/` | Angular 19 standalone, Angular Material, Three.js, ngx-translate | Public site, calculator, checkout, and admin UI |
+| Backend | `backend/` | Java 21, Spring Boot 4.1, JPA/Hibernate, PostgreSQL | REST API, domain logic, slicing, storage, payments, email |
+| Frontend | `frontend/` | Angular 22 standalone, Angular Material, Three.js, ngx-translate | Public site, calculator, checkout, and admin UI |
 
 Read the nearest `AGENTS.md` before editing. The backend and frontend guides contain the module-specific conventions and verification commands.
 
 ## Repository map
+
+For Unraid container identity, storage ownership and scoped E2E image cleanup,
+follow [Docker maintenance](docs/unraid-docker.md).
 
 - `backend/src/main/java/com/printcalculator/` — application code, organized into `controller`, `service`, `repository`, `entity`, `dto`, `security`, `config`, `event`, and `exception`.
 - `backend/src/main/resources/application.properties` — application and persistence configuration. The current schema policy is Hibernate `ddl-auto=update`; coordinate schema changes carefully with production deployment and `db.sql` where applicable.
@@ -39,11 +42,14 @@ Read the nearest `AGENTS.md` before editing. The backend and frontend guides con
 
 ## Cross-cutting rules
 
+- **External packages and AI-generated APIs:** follow [dependency verification](docs/dependency-policy.md) before adding/updating packages or using a new third-party API. Verify exact names, published versions, ownership, version-specific APIs and compatibility against official sources. Run `node scripts/check-external-packages.mjs`; record sources and checks. Missing network evidence means unverified, never permission to invent packages, versions, imports or flags.
+
 - Preserve the existing controller → service → repository flow. Controllers should validate and map HTTP concerns; services own business rules and transactions.
 - Use DTOs at API boundaries. Apply `@Valid` to request bodies and Bean Validation constraints to DTO fields.
 - Keep schema changes, entity mappings, repositories, services, DTOs, API contracts, and frontend models aligned. The project currently uses Hibernate `ddl-auto=update`, so assess deployment compatibility and data migration needs before changing persistent data.
 - Keep public and admin APIs intentionally separate. Admin endpoints use the established session and CSRF protections; do not weaken them or expose secrets/PII in public responses.
 - Do not add secrets, real credentials, private storage files, or generated build artifacts to version control.
+- Keep security audits, vulnerability reports and threat models private. Store new reports under the ignored `private-security/` directory; never commit or publish them.
 - Preserve user changes already present in the worktree. Keep commits small and module-scoped, for example `feat(shop): add product variants`.
 
 ## High-risk areas
@@ -65,4 +71,3 @@ cd frontend && npm run check:i18n && npm run check:ui-reuse
 ```
 
 For externally visible behavior, also exercise the affected API or UI flow. Do not run expensive slicing or deployment operations unless the change needs them.
-

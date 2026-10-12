@@ -34,7 +34,7 @@ h1 { font-size: 26pt; letter-spacing: -0.5pt; margin: 0; font-weight: bold; }
 .items .description { }
 .items .qty { text-align: center; }
 .items .numeric { text-align: right; white-space: nowrap; }
-.item-name { font-weight: bold; overflow-wrap: break-word; }
+.item-name { white-space: pre-line; font-weight: bold; overflow-wrap: break-word; }
 .settings { margin-top: 2mm; font-size: 8pt; line-height: 1.6; color: #555; }
 .summary { page-break-inside: avoid; margin-top: 6mm; }
 .totals { margin-left: 69mm; width: 105mm; font-size: 9pt; }
@@ -63,6 +63,7 @@ h1 { font-size: 26pt; letter-spacing: -0.5pt; margin: 0; font-weight: bold; }
 <td><div th:if="${shippingDisplayName != null}"><div class="eyebrow" th:text="${labels.shipping}"></div><div class="customer-name" th:text="${shippingDisplayName}"></div><div th:text="${shippingAddressLine1}"></div><div th:text="${shippingAddressLine2}"></div></div></td>
 </tr></table>
 <table class="title"><tr><td style="width:65%"><h1 th:text="${labels.invoice}"></h1><div class="reference" th:text="${invoiceNumber}"></div></td><td class="paid" th:unless="${isConfirmation}" th:text="${labels.paid}"></td></tr></table>
+<div class="reference" th:if="${invoiceName != null}" th:text="${invoiceName}"></div>
 <table class="meta"><colgroup><col style="width:52mm"/><col style="width:52mm"/><col style="width:70mm"/></colgroup><tr>
 <td><div class="meta-label" th:text="${labels.date}"></div><span th:text="${invoiceDate}"></span></td>
 <td><div class="meta-label" th:text="${labels.due}"></div><span th:text="${dueDate}"></span></td>

@@ -15,6 +15,21 @@ fail() {
   exit 1
 }
 
+usage() {
+  cat <<'EOF'
+Usage: ./start.sh [--clean]
+
+Starts PostgreSQL, ClamAV, the backend, the frontend, and the image server.
+
+Options:
+  --clean, -c  Remove frontend dependencies and build caches plus the backend
+               build output, reinstall frontend packages with npm ci, and
+               refresh Gradle dependencies before starting. Local data
+               (Docker volumes and storage directories) is preserved.
+  --help, -h   Show this help.
+EOF
+}
+
 require_command() {
   command -v "$1" >/dev/null 2>&1 || fail "Required command not found: $1"
 }
@@ -107,12 +122,59 @@ start_local_service() {
   LOCAL_NAMES+=("$name")
 }
 
+clean_environment() {
+  log "Cleaning dependencies and build caches (local data is preserved)..."
+
+  rm -rf \
+    "$PROJECT_ROOT/.angular" \
+    "$PROJECT_ROOT/frontend/.angular" \
+    "$PROJECT_ROOT/frontend/node_modules" \
+    "$PROJECT_ROOT/frontend/dist" \
+    "$PROJECT_ROOT/frontend/out-tsc" \
+    "$PROJECT_ROOT/frontend/playwright-report" \
+    "$PROJECT_ROOT/frontend/test-results"
+
+  log "Cleaning the backend build and refreshing Gradle dependencies..."
+  (
+    cd "$PROJECT_ROOT/backend" || exit 1
+    ./gradlew clean classes --refresh-dependencies
+  ) || fail "Gradle clean failed."
+
+  log "Reinstalling frontend dependencies with npm ci..."
+  (
+    cd "$PROJECT_ROOT/frontend" || exit 1
+    npm ci
+  ) || fail "npm ci failed."
+}
+
+CLEAN=0
+for argument in "$@"; do
+  case "$argument" in
+    --clean|-c)
+      CLEAN=1
+      ;;
+    --help|-h)
+      usage
+      exit 0
+      ;;
+    *)
+      usage >&2
+      fail "Unknown argument: $argument"
+      ;;
+  esac
+done
+
 require_command docker
 require_command java
 require_command npm
 require_command python3
 
 cd "$PROJECT_ROOT" || fail "Could not enter project directory."
+
+if [ "$CLEAN" -eq 1 ]; then
+  clean_environment
+fi
+
 ensure_docker
 
 log "Starting PostgreSQL and ClamAV containers if needed..."

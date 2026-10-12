@@ -43,7 +43,7 @@ For the fullstack calculator path, pin an OrcaSlicer build and compatible reposi
 
 1. Extend the existing config with explicit suite selection and browser projects. Keep `e2e:local` as the visible authoring workflow; make CI headless without `slowMo`, and disable accidental server reuse in CI.
 2. Add an E2E tsconfig and typecheck command; `tsconfig.app.json` alone does not establish that browser test files compile correctly.
-3. Add a disposable Compose/harness setup for the complete stack, health/readiness checks, bounded startup timeouts, log capture, seed and teardown. Confirm runner support for Docker, service networking, Java 21, Node 22, and browser dependencies before wiring the required CI gate.
+3. Add a disposable Compose/harness setup for the complete stack, health/readiness checks, bounded startup timeouts, log capture, seed and teardown. Confirm runner support for Docker, service networking, Java 21, the Node version in `frontend/.nvmrc`, and browser dependencies before wiring the required CI gate.
 4. Create baseline fixtures and typed API helpers. Prefer existing authenticated admin/public APIs for setup; use a local seed runner for inaccessible states and pricing/profile reference data. Avoid adding an unauthenticated reset endpoint to the deployable application.
 5. Create a coverage manifest mapping each route, action and important state below to a stable scenario ID, spec, suite, fixture, priority and implementation status. Mark conditional or unavailable capabilities explicitly. Add a route-inventory check so new routes require a coverage decision.
 6. Ignore reports, results, downloaded files, local mail and authentication state. Upload failure evidence only as CI artifacts with bounded retention.

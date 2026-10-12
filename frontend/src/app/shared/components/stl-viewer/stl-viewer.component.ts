@@ -1,4 +1,5 @@
 import {
+  ChangeDetectorRef,
   Component,
   ElementRef,
   Input,
@@ -11,7 +12,7 @@ import {
   inject,
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import * as THREE from 'three';
 // @ts-ignore
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
@@ -25,11 +26,12 @@ import {
 @Component({
   selector: 'app-stl-viewer',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: './stl-viewer.component.html',
   styleUrl: './stl-viewer.component.scss',
 })
 export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
+  private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
 
@@ -255,6 +257,7 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
         if (requestId === this.loadSequence) {
           this.loading = false;
           this.activeReader = null;
+          this.changeDetector.markForCheck();
         }
       }
     };
@@ -265,6 +268,7 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
       this.markPreviewUnavailable('Failed to read STL preview blob.');
       this.loading = false;
       this.activeReader = null;
+      this.changeDetector.markForCheck();
     };
     reader.readAsArrayBuffer(file);
   }

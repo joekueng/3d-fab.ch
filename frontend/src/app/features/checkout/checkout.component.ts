@@ -1,3 +1,4 @@
+import { ServiceLine } from '../../shared/models/service-line';
 import { AppDialogComponent } from '../../shared/components/app-dialog/app-dialog.component';
 import { FormControl } from '@angular/forms';
 import { LegalConsentComponent } from '../../shared/components/legal-consent/legal-consent.component';
@@ -9,6 +10,7 @@ import {
 import {
   Component,
   inject,
+  OnDestroy,
   OnInit,
   signal,
   Inject,
@@ -23,7 +25,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import {
   MaterialOption,
   VariantOption,
@@ -60,7 +62,7 @@ import {
     CommonModule,
     ReactiveFormsModule,
     PrintItemControlsComponent,
-    TranslateModule,
+    TranslatePipe,
     AppInputComponent,
     AppButtonComponent,
     AppCardComponent,
@@ -71,7 +73,7 @@ import {
   templateUrl: './checkout.component.html',
   styleUrls: ['./checkout.component.scss'],
 })
-export class CheckoutComponent implements OnInit {
+export class CheckoutComponent implements OnInit, OnDestroy {
   get legalConsentControl(): FormControl {
     return this.checkoutForm.get('acceptLegal') as FormControl;
   }
@@ -106,6 +108,7 @@ export class CheckoutComponent implements OnInit {
   previewFiles = signal<Record<string, File>>({});
   previewLoading = signal<Record<string, boolean>>({});
   previewErrors = signal<Record<string, boolean>>({});
+  attachmentPreviews = signal<Record<string, string>>({});
   previewModalOpen = signal(false);
   selectedPreviewFile = signal<File | null>(null);
   selectedPreviewName = signal('');
@@ -237,6 +240,7 @@ export class CheckoutComponent implements OnInit {
         } else {
           this.resetPreviewState();
         }
+        this.loadAttachmentPreviews(session);
         this.loading = false;
       },
       error: (err) => {
@@ -302,6 +306,7 @@ export class CheckoutComponent implements OnInit {
       .subscribe({
         next: (session) => {
           this.quoteSession.set(session);
+          this.loadAttachmentPreviews(session);
           this.itemEditError.set(false);
           this.updatingItem.set(false);
         },
@@ -315,6 +320,10 @@ export class CheckoutComponent implements OnInit {
 
   cadRequestId(): string | null {
     return this.quoteSession()?.session?.sourceRequestId ?? null;
+  }
+
+  serviceLines(): ServiceLine[] {
+    return this.quoteSession()?.session?.serviceLines ?? [];
   }
 
   cadHours(): number {
@@ -560,6 +569,57 @@ export class CheckoutComponent implements OnInit {
     }
   }
 
+  cadAttachments(): any[] {
+    const attachments = this.quoteSession()?.attachments;
+    return Array.isArray(attachments) ? attachments : [];
+  }
+
+  attachmentPreviewUrl(attachmentId: string): string | null {
+    return this.attachmentPreviews()[attachmentId] ?? null;
+  }
+
+  ngOnDestroy(): void {
+    this.revokeAttachmentPreviews();
+  }
+
+  private loadAttachmentPreviews(session: any): void {
+    if (!this.isBrowser || !this.sessionId) {
+      return;
+    }
+    const attachments = Array.isArray(session?.attachments)
+      ? session.attachments
+      : [];
+    for (const attachment of attachments) {
+      const id = String(attachment?.id ?? '');
+      if (!id || !attachment?.image || this.attachmentPreviews()[id]) {
+        continue;
+      }
+      this.quoteService
+        .getQuoteSessionAttachmentPreview(this.sessionId, id)
+        .subscribe({
+          next: (blob) => {
+            if (!this.isBrowser || this.attachmentPreviews()[id]) {
+              return;
+            }
+            this.attachmentPreviews.update((prev) => ({
+              ...prev,
+              [id]: URL.createObjectURL(blob),
+            }));
+          },
+          error: () => {},
+        });
+    }
+  }
+
+  private revokeAttachmentPreviews(): void {
+    if (this.isBrowser) {
+      for (const url of Object.values(this.attachmentPreviews())) {
+        URL.revokeObjectURL(url);
+      }
+    }
+    this.attachmentPreviews.set({});
+  }
+
   private isCadSessionData(session: any): boolean {
     return session?.session?.status === 'CAD_ACTIVE';
   }
@@ -568,6 +628,7 @@ export class CheckoutComponent implements OnInit {
     this.previewFiles.set({});
     this.previewLoading.set({});
     this.previewErrors.set({});
+    this.revokeAttachmentPreviews();
     this.closePreview();
   }
 

@@ -1,13 +1,14 @@
 import { TestBed } from '@angular/core/testing';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language.service';
 import { ColorSelectorComponent } from './color-selector.component';
 
 describe('ColorSelectorComponent', () => {
   it('distinguishes product variants with the same color name and emits their opaque ids', async () => {
     await TestBed.configureTestingModule({
-      imports: [ColorSelectorComponent, TranslateModule.forRoot()],
+      imports: [ColorSelectorComponent],
       providers: [
+        provideTranslateService(),
         { provide: LanguageService, useValue: { selectedLang: () => 'it' } },
       ],
     }).compileComponents();

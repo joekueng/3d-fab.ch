@@ -93,7 +93,9 @@ public class QuoteSessionItemService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported file type. Allowed: stl, 3mf");
         }
 
-        clamAVService.scan(file.getInputStream());
+        try (InputStream inputStream = file.getInputStream()) {
+            clamAVService.scan(inputStream);
+        }
 
         Path sessionStorageDir = quoteStorageService.sessionStorageDir(session.getId());
         String storedFilename = UUID.randomUUID() + "." + ext;
@@ -216,6 +218,7 @@ public class QuoteSessionItemService {
                             file.getOriginalFilename(),
                             settings,
                             selectedVariant,
+                            machine,
                             nozzleDiameter,
                             layerHeight,
                             stats,
@@ -379,6 +382,7 @@ public class QuoteSessionItemService {
                                         String originalFilename,
                                         PrintSettingsDto settings,
                                         FilamentVariant selectedVariant,
+                                        PrinterMachine machine,
                                         BigDecimal nozzleDiameter,
                                         BigDecimal layerHeight,
                                         PrintStats stats,
@@ -417,6 +421,9 @@ public class QuoteSessionItemService {
         breakdown.put("machine_cost", result.getTotalPrice());
         breakdown.put("setup_fee", 0);
         breakdown.put("requiresSplitPrinting", requiresSplitPrinting);
+        if (machine != null && machine.getId() != null) {
+            breakdown.put("printerMachineId", machine.getId());
+        }
         breakdown.put("shippingOrientations", com.printcalculator.service.ShippingGeometry.inspect(
                 convertedPersistentPath != null ? convertedPersistentPath : persistentPath));
         if (convertedPersistentPath != null) {

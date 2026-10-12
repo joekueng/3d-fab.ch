@@ -11,6 +11,17 @@ import java.util.UUID;
 @Table(name = "orders", indexes = {@Index(name = "ix_orders_status",
         columnList = "status")})
 public class Order {
+    @Column(name = "invoice_name", length = 160)
+    private String invoiceName;
+    public String getInvoiceName() { return invoiceName; }
+    public void setInvoiceName(String name) { invoiceName = name; }
+
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+    @Column(name = "service_lines")
+    private java.util.List<com.printcalculator.dto.ServiceLineDto> serviceLines;
+    public java.util.List<com.printcalculator.dto.ServiceLineDto> getServiceLines() { return serviceLines == null ? java.util.List.of() : java.util.List.copyOf(serviceLines); }
+    public void setServiceLines(java.util.List<com.printcalculator.dto.ServiceLineDto> lines) { serviceLines = lines == null ? null : java.util.List.copyOf(lines); }
+
     @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
     @Column(name = "shipping_quote_snapshot")
     private java.util.Map<String, Object> shippingQuoteSnapshot;

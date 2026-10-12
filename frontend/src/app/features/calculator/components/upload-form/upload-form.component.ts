@@ -16,7 +16,7 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AppDropzoneComponent } from '../../../../shared/components/app-dropzone/app-dropzone.component';
 import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
@@ -58,7 +58,7 @@ import {
     PrintSettingsComponent,
     CommonModule,
     ReactiveFormsModule,
-    TranslateModule,
+    TranslatePipe,
     AppDropzoneComponent,
     AppButtonComponent,
     AppCheckboxComponent,

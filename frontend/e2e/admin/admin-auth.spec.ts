@@ -6,7 +6,7 @@ const adminPages = [
   ['filament-stock', 'Stock filamenti'],
   ['contact-requests', 'Richieste di contatto'],
   ['sessions', 'Sessioni quote'],
-  ['cad-invoices', 'Fatture CAD'],
+  ['cad-invoices', 'Fatture e prestazioni'],
   ['qr', 'QR tracciati'],
   ['media', 'Media'],
   ['home-projects', 'Progetti home'],

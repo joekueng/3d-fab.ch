@@ -9,8 +9,6 @@ import xyz.capybara.clamav.ClamavClient;
 import xyz.capybara.clamav.commands.scan.result.ScanResult;
 
 import java.io.InputStream;
-import java.util.Collection;
-import java.util.Map;
 
 @Service
 public class ClamAVService {
@@ -38,7 +36,7 @@ public class ClamAVService {
         this.clamavClient = client;
     }
 
-    /** Required for private order attachments: scanner outages must never approve a file. */
+    /** Scanner outages and disabled scanning must never approve an upload. */
     public boolean scanRequired(InputStream inputStream) {
         if (!enabled || clamavClient == null) {
             throw new org.springframework.web.server.ResponseStatusException(
@@ -55,33 +53,14 @@ public class ClamAVService {
         } catch (VirusDetectedException | org.springframework.web.server.ResponseStatusException e) {
             throw e;
         } catch (Exception e) {
-            logger.error("Required attachment scan failed", e);
+            logger.error("Required antivirus scan failed", e);
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE, "ANTIVIRUS_UNAVAILABLE");
         }
     }
 
+    /** All callers use the same mandatory scan policy. */
     public boolean scan(InputStream inputStream) {
-        if (!enabled || clamavClient == null) {
-            return true;
-        }
-        try {
-            ScanResult result = clamavClient.scan(inputStream);
-            if (result instanceof ScanResult.OK) {
-                return true;
-            } else if (result instanceof ScanResult.VirusFound) {
-                Map<String, Collection<String>> viruses = ((ScanResult.VirusFound) result).getFoundViruses();
-                logger.warn("VIRUS DETECTED: {}", viruses);
-                throw new VirusDetectedException("Virus detected in the uploaded file: " + viruses);
-            } else {
-                logger.warn("Unknown scan result: {}. Allowing file (FAIL-OPEN)", result);
-                return true;
-            }
-        } catch (VirusDetectedException e) {
-            throw e;
-        } catch (Exception e) {
-            logger.error("Error scanning file with ClamAV. Allowing file (FAIL-OPEN)", e);
-            return true;
-        }
+        return scanRequired(inputStream);
     }
 }

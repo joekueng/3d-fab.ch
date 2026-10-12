@@ -198,7 +198,7 @@ class AdminOperationsControllerServiceTest {
         session.setId(sessionId);
         session.setStatus("CONVERTED");
 
-        when(quoteSessionRepo.findById(sessionId)).thenReturn(Optional.of(session));
+        when(quoteSessionRepo.findLockedById(sessionId)).thenReturn(Optional.of(session));
 
         AdminCadInvoiceCreateRequest payload = new AdminCadInvoiceCreateRequest();
         payload.setSessionId(sessionId);
@@ -245,6 +245,9 @@ class AdminOperationsControllerServiceTest {
         payload.setCadHours(new BigDecimal("2.5"));
         payload.setCadHourlyRateChf(null);
         payload.setNotes("  Custom CAD work  ");
+        payload.setInvoiceName("  First prototype  ");
+        payload.setClientName("  Example company  ");
+        payload.setCollaborationName("  Device development  ");
 
         AdminCadInvoiceDto dto = service.createOrUpdateCadInvoice(payload);
 
@@ -252,7 +255,64 @@ class AdminOperationsControllerServiceTest {
         assertEquals(new BigDecimal("2.50"), dto.getCadHours());
         assertEquals(new BigDecimal("85.00"), dto.getCadHourlyRateChf());
         assertEquals("Custom CAD work", dto.getNotes());
+        assertEquals("First prototype", dto.getInvoiceName());
+        assertEquals("Example company", dto.getClientName());
+        assertEquals("Device development", dto.getCollaborationName());
         assertEquals(new BigDecimal("212.50"), dto.getCadTotalChf());
+    }
+
+    @Test
+    void metadataCanChangeAfterCheckoutWithoutChangingOrderPrices() {
+        UUID id = UUID.randomUUID();
+        QuoteSession session = new QuoteSession();
+        session.setStatus("CONVERTED");
+        session.setCadHours(new BigDecimal("2"));
+        session.setCadHourlyRateChf(new BigDecimal("90"));
+        when(quoteSessionRepo.findLockedById(id)).thenReturn(Optional.of(session));
+
+        service.updateCadInvoiceMetadata(id, new com.printcalculator.dto.AdminCadInvoiceMetadataRequest(
+                "  Iteration 1  ", " ACME ", " Product A "));
+        assertEquals("Iteration 1", session.getInvoiceName());
+        assertEquals("ACME", session.getClientName());
+        assertEquals("Product A", session.getCollaborationName());
+        assertEquals(new BigDecimal("2"), session.getCadHours());
+        assertEquals(new BigDecimal("90"), session.getCadHourlyRateChf());
+        org.mockito.Mockito.verifyNoInteractions(orderRepo);
+
+        service.updateCadInvoiceMetadata(id, new com.printcalculator.dto.AdminCadInvoiceMetadataRequest(" ", null, ""));
+        org.junit.jupiter.api.Assertions.assertNull(session.getInvoiceName());
+        org.junit.jupiter.api.Assertions.assertNull(session.getClientName());
+        org.junit.jupiter.api.Assertions.assertNull(session.getCollaborationName());
+    }
+
+    @Test
+    void serviceRowsReplaceLegacyCadAndRemainListedAfterConversion() {
+        UUID id = UUID.randomUUID();
+        QuoteSession session = new QuoteSession();
+        session.setId(id);
+        session.setStatus("CAD_ACTIVE");
+        session.setCadHours(new BigDecimal("8"));
+        session.setCadHourlyRateChf(new BigDecimal("100"));
+        var line = new com.printcalculator.dto.ServiceLineDto("Meeting and revisions",
+                com.printcalculator.dto.ServiceLineDto.BillingType.FIXED, BigDecimal.ONE, new BigDecimal("150"));
+        AdminCadInvoiceCreateRequest payload = new AdminCadInvoiceCreateRequest();
+        payload.setSessionId(id);
+        payload.setServiceLines(List.of(line));
+        when(quoteSessionRepo.findLockedById(id)).thenReturn(Optional.of(session));
+        when(quoteSessionRepo.save(session)).thenReturn(session);
+        when(quoteLineItemRepo.findByQuoteSessionId(id)).thenReturn(List.of());
+        when(quoteSessionTotalsService.compute(session, List.of())).thenReturn(
+                new QuoteSessionTotalsService.QuoteSessionTotals(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
+                        new BigDecimal("150"), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
+                        new BigDecimal("150"), BigDecimal.ZERO));
+        var result = service.createOrUpdateCadInvoice(payload);
+        assertEquals(List.of(line), result.getServiceLines());
+        assertEquals(BigDecimal.ZERO, session.getCadHours());
+        assertEquals(BigDecimal.ZERO, session.getCadHourlyRateChf());
+        session.setStatus("CONVERTED");
+        when(quoteSessionRepo.findByStatusInOrderByCreatedAtDesc(List.of("CAD_ACTIVE", "CONVERTED")))
+                .thenReturn(List.of(session));
+        assertEquals(1, service.getCadInvoices().size());
     }
 
     @Test

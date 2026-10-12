@@ -47,8 +47,169 @@
   flex-wrap: wrap;
 }
 
+.session-files {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-card);
+}
+
+.session-files h3 {
+  margin: 0;
+}
+
+.manage-warning {
+  margin: 0;
+  color: #8a241d;
+  font-weight: 600;
+}
+
+.manage-summary p {
+  margin: 0;
+}
+
+.manage-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.managed-items-table app-input {
+  display: block;
+  min-width: 90px;
+}
+
+.file-cell {
+  max-width: 260px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.attachment-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.attachment-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.attachment-thumb {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+}
+
+.attachment-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attachment-upload {
+  display: flex;
+  justify-content: flex-start;
+}
+
 @media (max-width: 880px) {
   .form-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.invoice-name {
+  min-width: 10rem;
+  max-width: 20rem;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.invoice-fields {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.service-lines {
+  display: grid;
+  gap: var(--space-3);
+}
+.service-details {
+  max-width: 28rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.service-line h4 {
+  margin: 0 0 var(--space-2);
+}
+
+.service-grid {
+  display: grid;
+  grid-template-columns: minmax(12rem, 18rem) 7rem 10rem minmax(0, 1fr);
+  align-items: end;
+  gap: var(--space-3);
+}
+
+.service-grid--fixed {
+  grid-template-columns: minmax(12rem, 18rem) 10rem minmax(0, 1fr);
+}
+
+.service-line-actions {
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.service-line-actions span {
+  white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+  .service-grid,
+  .service-grid--fixed {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .service-line-actions {
+    grid-column: 1 / -1;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 600px) {
+  .service-grid,
+  .service-grid--fixed {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .service-billing {
+    grid-column: 1 / -1;
+  }
+}
+
+.attachment-note {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.invoice-attachments {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.invoice-attachments h3 {
+  margin: 0;
 }

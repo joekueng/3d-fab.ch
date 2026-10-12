@@ -97,7 +97,8 @@ public class OrderService {
                 .filter(item -> !"REVIEW_REQUIRED".equalsIgnoreCase(item.getStatus()))
                 .toList();
         informationService.validateModelsForCheckout(session, quoteItems);
-        if (quoteItems.isEmpty() && quoteSessionTotalsService.calculateCadTotal(session).compareTo(BigDecimal.ZERO) <= 0) {
+        if (quoteItems.isEmpty() && quoteSessionTotalsService.calculateCadTotal(session).compareTo(BigDecimal.ZERO) <= 0
+                && session.getServiceLines().isEmpty()) {
             throw new IllegalStateException("Quote session has no orderable items");
         }
         quoteItems.stream()
@@ -209,6 +210,8 @@ public class OrderService {
         order.setCadHours(session.getCadHours() != null ? session.getCadHours() : BigDecimal.ZERO);
         order.setCadHourlyRateChf(session.getCadHourlyRateChf() != null ? session.getCadHourlyRateChf() : BigDecimal.ZERO);
         order.setCadTotalChf(cadTotal);
+        order.setServiceLines(session.getServiceLines());
+        order.setInvoiceName(session.getInvoiceName());
 
         order = orderRepo.save(order);
 
@@ -302,7 +305,8 @@ public class OrderService {
             subtotal = subtotal.add(oItem.getLineTotalChf());
         }
 
-        order.setSubtotalChf(subtotal.add(cadTotal));
+        order.setSubtotalChf(subtotal.add(cadTotal).add(session.getServiceLines().stream()
+                .map(com.printcalculator.dto.ServiceLineDto::totalChf).reduce(BigDecimal.ZERO, BigDecimal::add)));
         
         BigDecimal total = order.getSubtotalChf()
                 .add(order.getSetupCostChf())

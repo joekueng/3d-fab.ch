@@ -8,7 +8,7 @@ import {
   inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import {
   PRODUCT_COLORS,
   getColorHex,
@@ -29,7 +29,7 @@ export interface ColorSelectorGroup {
 @Component({
   selector: 'app-color-selector',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: './color-selector.component.html',
   styleUrl: './color-selector.component.scss',
 })

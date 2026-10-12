@@ -155,6 +155,20 @@ class CustomQuoteRequestAttachmentServiceTest {
         assertEquals("solid model", Files.readString(absolutePath, StandardCharsets.UTF_8));
     }
 
+    @Test
+    void storeAttachments_whenScannerUnavailable_shouldNotPersist() throws Exception {
+        CustomQuoteRequest request = buildRequest();
+        lastRequestIdForCleanup = request.getId();
+        MockMultipartFile file = new MockMultipartFile(
+                "files", "part.stl", "model/stl", "solid model".getBytes(StandardCharsets.UTF_8));
+        when(clamAVService.scan(any())).thenThrow(
+                new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "ANTIVIRUS_UNAVAILABLE"));
+
+        assertEquals(HttpStatus.SERVICE_UNAVAILABLE, assertThrows(ResponseStatusException.class,
+                () -> service.storeAttachments(request, List.of(file))).getStatusCode());
+        verifyNoInteractions(attachmentRepo);
+    }
+
     private CustomQuoteRequest buildRequest() {
         CustomQuoteRequest request = new CustomQuoteRequest();
         request.setId(UUID.randomUUID());

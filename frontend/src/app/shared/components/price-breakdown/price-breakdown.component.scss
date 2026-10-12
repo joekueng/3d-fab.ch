@@ -29,3 +29,14 @@
   font-weight: 700;
   color: var(--color-text);
 }
+
+.price-row > span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.price-row > span:last-child {
+  flex-shrink: 0;
+  white-space: nowrap;
+}

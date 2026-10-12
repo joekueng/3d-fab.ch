@@ -15,7 +15,6 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -77,19 +76,6 @@ class CustomQuoteRequestControllerServiceTest {
         verify(requestRepo).save(any(CustomQuoteRequest.class));
         verify(attachmentService).storeAttachments(saved, files);
         verify(eventPublisher).publishEvent(new CustomQuoteRequestCreatedEvent(requestId, 2, "de-CH"));
-    }
-
-    @Test
-    void getCustomQuoteRequest_shouldDelegateToRepository() {
-        UUID requestId = UUID.randomUUID();
-        CustomQuoteRequest request = new CustomQuoteRequest();
-        request.setId(requestId);
-        when(requestRepo.findById(requestId)).thenReturn(Optional.of(request));
-
-        Optional<CustomQuoteRequest> result = service.getCustomQuoteRequest(requestId);
-
-        assertEquals(Optional.of(request), result);
-        verify(requestRepo).findById(requestId);
     }
 
     private QuoteRequestDto buildRequest(boolean acceptTerms, boolean acceptPrivacy) {
