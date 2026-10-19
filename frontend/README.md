@@ -253,3 +253,10 @@ priced item `requiresSplitPrinting`, which triggers the configured split surchar
 This estimates printing; it does not generate cut geometry. Failed estimates still
 require manual review. Preserve the error code from both upload and session
 responses so generic processing failures cannot hide the consent action.
+
+For partial quotes, keep oversized files explicitly excluded from the total until
+recalculation succeeds. Use the existing warning banner to explain the two steps:
+select the split-consent checkbox, then calculate the quote again. Label these
+files as requiring splitting; reserve manual-review copy for failed estimates.
+Keep the checkbox label concise; the split-review card explains the surcharge
+and manual-review fallback. Stack its full-width action buttons with a consistent gap.

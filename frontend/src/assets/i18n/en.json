@@ -700,6 +700,8 @@
     "LAYER_HEIGHT": "Layer Height",
     "SUPPORT": "Supports",
     "SUPPORT_DESC": "Enable supports for overhangs",
+    "SPLIT_RECALCULATE_HELP": "To include them in the total, accept splitting by selecting the checkbox below the files, then click “Calculate Quote”.",
+    "FILE_SPLIT_REQUIRED": "Splitting required",
     "SPLIT_ACCEPT_LABEL": "I accept that oversized models may be split for printing",
     "SPLIT_RESULT_NOTE": "This quote includes the CHF 10 supplement for splitting oversized models. The original file remains attached to the order.",
     "CALCULATE": "Calculate Quote",
@@ -786,8 +788,8 @@
     "SPLIT_REQUEST_ACTION": "Request model splitting",
     "REVIEW_OUT_OF_VOLUME": "The model exceeds the available print volume.",
     "REVIEW_PROCESSING_FAILED": "The file could not be analysed automatically. It remains saved for manual review.",
-    "REVIEW_PARTIAL_SINGLE": "{{fileName}} requires manual review and is not included in the total. {{reason}}",
-    "REVIEW_PARTIAL_MULTIPLE": "{{count}} files require manual review and are not included in the total: {{fileNames}}. {{reason}}",
+    "REVIEW_PARTIAL_SINGLE": "{{fileName}} is not included in the total. {{reason}}",
+    "REVIEW_PARTIAL_MULTIPLE": "{{count}} files are not included in the total: {{fileNames}}. {{reason}}",
     "FILE_REVIEW_REQUIRED": "Review required"
   },
   "SHOP": {

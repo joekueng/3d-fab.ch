@@ -43,7 +43,12 @@
               }}</span>
               @if (item.reviewLevel) {
                 <span class="review-badge">
-                  {{ "CALC.FILE_REVIEW_REQUIRED" | translate }}
+                  {{
+                    (item.reviewLevel === "warning"
+                      ? "CALC.FILE_SPLIT_REQUIRED"
+                      : "CALC.FILE_REVIEW_REQUIRED"
+                    ) | translate
+                  }}
                 </span>
               }
             </div>

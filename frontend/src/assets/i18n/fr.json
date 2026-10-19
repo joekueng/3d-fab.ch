@@ -744,6 +744,8 @@
     "NOZZLE": "Diamètre de buse",
     "SUPPORT": "Supports",
     "SUPPORT_DESC": "Activer les supports pour les surplombs",
+    "SPLIT_RECALCULATE_HELP": "Pour les inclure dans le total, acceptez la division en cochant la case sous les fichiers, puis cliquez sur « Calculer le devis ».",
+    "FILE_SPLIT_REQUIRED": "Division requise",
     "SPLIT_ACCEPT_LABEL": "J'accepte que les modèles trop grands soient divisés pour l'impression",
     "SPLIT_RESULT_NOTE": "Ce devis inclut le supplément de CHF 10 pour diviser les modèles trop grands. Le fichier original reste associé à la commande.",
     "CALCULATE": "Calculer le devis",
@@ -828,8 +830,8 @@
     "SPLIT_REQUEST_ACTION": "Demander la division du modèle",
     "REVIEW_OUT_OF_VOLUME": "Le modèle dépasse le volume d'impression disponible.",
     "REVIEW_PROCESSING_FAILED": "Le fichier n'a pas pu être analysé automatiquement. Il reste enregistré pour une évaluation manuelle.",
-    "REVIEW_PARTIAL_SINGLE": "{{fileName}} nécessite une évaluation manuelle et n'est pas inclus dans le total. {{reason}}",
-    "REVIEW_PARTIAL_MULTIPLE": "{{count}} fichiers nécessitent une évaluation manuelle et ne sont pas inclus dans le total : {{fileNames}}. {{reason}}",
+    "REVIEW_PARTIAL_SINGLE": "{{fileName}} n'est pas inclus dans le total. {{reason}}",
+    "REVIEW_PARTIAL_MULTIPLE": "{{count}} fichiers ne sont pas inclus dans le total : {{fileNames}}. {{reason}}",
     "FILE_REVIEW_REQUIRED": "Évaluation requise"
   },
   "QUOTE": {

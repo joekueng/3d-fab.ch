@@ -121,17 +121,20 @@ export class CalculatorPageComponent
   isOutOfVolumeError = computed(
     () => this.errorCode() === 'MODEL_OUT_OF_PRINT_VOLUME',
   );
-  showSplitPrintingOption = computed(() => {
-    const result = this.result();
-
-    return (
+  hasOversizedFailures = computed(
+    () =>
       this.errorCode() === 'MODEL_OUT_OF_PRINT_VOLUME' ||
-      (result?.failedItems || []).some(
+      (this.result()?.failedItems || []).some(
         (failure) => failure.code === 'MODEL_OUT_OF_PRINT_VOLUME',
-      ) ||
-      (result?.items || []).some((item) => item.requiresSplitPrinting === true)
-    );
-  });
+      ),
+  );
+  showSplitPrintingOption = computed(
+    () =>
+      this.hasOversizedFailures() ||
+      (this.result()?.items || []).some(
+        (item) => item.requiresSplitPrinting === true,
+      ),
+  );
   readonly faqIds = [
     'FILES',
     'MODE',

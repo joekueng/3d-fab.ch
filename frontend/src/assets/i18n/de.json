@@ -713,6 +713,8 @@
     "LAYER_HEIGHT": "Schichthöhe",
     "SUPPORT": "Stützstrukturen",
     "SUPPORT_DESC": "Stützen für Überhänge aktivieren",
+    "SPLIT_RECALCULATE_HELP": "Um sie in die Summe aufzunehmen, akzeptiere die Teilung über das Kontrollkästchen unter den Dateien und klicke dann auf „Angebot berechnen“.",
+    "FILE_SPLIT_REQUIRED": "Teilung erforderlich",
     "SPLIT_ACCEPT_LABEL": "Ich akzeptiere, dass zu große Modelle für den Druck geteilt werden",
     "SPLIT_RESULT_NOTE": "Dieses Angebot enthält den Zuschlag von CHF 10 für die Teilung zu großer Modelle. Die Originaldatei bleibt der Bestellung zugeordnet.",
     "CALCULATE": "Angebot berechnen",
@@ -799,8 +801,8 @@
     "SPLIT_REQUEST_ACTION": "Modellteilung anfragen",
     "REVIEW_OUT_OF_VOLUME": "Das Modell überschreitet den verfügbaren Druckraum.",
     "REVIEW_PROCESSING_FAILED": "Die Datei konnte nicht automatisch analysiert werden. Sie bleibt für eine manuelle Prüfung gespeichert.",
-    "REVIEW_PARTIAL_SINGLE": "{{fileName}} muss manuell geprüft werden und ist nicht in der Summe enthalten. {{reason}}",
-    "REVIEW_PARTIAL_MULTIPLE": "{{count}} Dateien müssen manuell geprüft werden und sind nicht in der Summe enthalten: {{fileNames}}. {{reason}}",
+    "REVIEW_PARTIAL_SINGLE": "{{fileName}} ist nicht in der Summe enthalten. {{reason}}",
+    "REVIEW_PARTIAL_MULTIPLE": "{{count}} Dateien sind nicht in der Summe enthalten: {{fileNames}}. {{reason}}",
     "FILE_REVIEW_REQUIRED": "Prüfung erforderlich"
   },
   "SHOP": {

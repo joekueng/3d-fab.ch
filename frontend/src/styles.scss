@@ -2,12 +2,12 @@
 @use "./styles/theme";
 @use "./styles/patterns";
 @use "./styles/shop-product-detail-overrides";
+@use "./styles/ui";
+@use "./styles/admin";
 
 .color-selector-backdrop {
   background: transparent;
 }
-@use "./styles/ui";
-@use "./styles/admin";
 
 /* Reset / Base */
 *,

@@ -737,6 +737,8 @@
     "NOZZLE": "Diametro Ugello",
     "SUPPORT": "Supporti",
     "SUPPORT_DESC": "Abilita supporti per sporgenze",
+    "SPLIT_RECALCULATE_HELP": "Per includerli nel totale, accetta la suddivisione selezionando la casella sotto i file, poi premi «Calcola Preventivo».",
+    "FILE_SPLIT_REQUIRED": "Richiede suddivisione",
     "SPLIT_ACCEPT_LABEL": "Accetto che i modelli troppo grandi vengano suddivisi per la stampa",
     "SPLIT_RESULT_NOTE": "Il preventivo include il supplemento di CHF 10 per suddividere i modelli troppo grandi. Il file originale resta associato all'ordine.",
     "CALCULATE": "Calcola Preventivo",
@@ -821,8 +823,8 @@
     "SPLIT_REQUEST_ACTION": "Richiedi la suddivisione",
     "REVIEW_OUT_OF_VOLUME": "Il modello supera il volume di stampa disponibile.",
     "REVIEW_PROCESSING_FAILED": "Non è stato possibile analizzare automaticamente il file. Il file resta salvato per una valutazione manuale.",
-    "REVIEW_PARTIAL_SINGLE": "{{fileName}} richiede una valutazione manuale e non è incluso nel totale. {{reason}}",
-    "REVIEW_PARTIAL_MULTIPLE": "{{count}} file richiedono una valutazione manuale e non sono inclusi nel totale: {{fileNames}}. {{reason}}",
+    "REVIEW_PARTIAL_SINGLE": "{{fileName}} non è incluso nel totale. {{reason}}",
+    "REVIEW_PARTIAL_MULTIPLE": "{{count}} file non sono inclusi nel totale: {{fileNames}}. {{reason}}",
     "FILE_REVIEW_REQUIRED": "Richiede valutazione"
   },
   "QUOTE": {
