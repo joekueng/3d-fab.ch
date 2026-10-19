@@ -2,6 +2,10 @@
 @use "./styles/theme";
 @use "./styles/patterns";
 @use "./styles/shop-product-detail-overrides";
+
+.color-selector-backdrop {
+  background: transparent;
+}
 @use "./styles/ui";
 @use "./styles/admin";
 

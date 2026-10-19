@@ -1,9 +1,7 @@
 <div class="color-selector-container" (keydown.escape)="close()">
-  @if (isOpen() && !disabled()) {
-    <div class="backdrop" (click)="close()"></div>
-  }
-
   <button
+    cdkOverlayOrigin
+    #colorTrigger="cdkOverlayOrigin"
     type="button"
     [disabled]="disabled()"
     [attr.aria-label]="getCurrentLabel() | translate"
@@ -25,7 +23,19 @@
     }
   </button>
 
-  @if (isOpen() && !disabled()) {
+  <ng-template
+    cdkConnectedOverlay
+    [cdkConnectedOverlayOrigin]="colorTrigger"
+    [cdkConnectedOverlayOpen]="isOpen() && !disabled()"
+    [cdkConnectedOverlayPositions]="popupPositions"
+    [cdkConnectedOverlayPush]="true"
+    [cdkConnectedOverlayViewportMargin]="12"
+    [cdkConnectedOverlayScrollStrategy]="scrollStrategy"
+    [cdkConnectedOverlayHasBackdrop]="true"
+    cdkConnectedOverlayBackdropClass="color-selector-backdrop"
+    (backdropClick)="close()"
+    (detach)="close()"
+  >
     <div class="color-popup">
       @for (category of categories(); track category.name) {
         <div class="category">
@@ -69,5 +79,5 @@
         </div>
       }
     </div>
-  }
+  </ng-template>
 </div>

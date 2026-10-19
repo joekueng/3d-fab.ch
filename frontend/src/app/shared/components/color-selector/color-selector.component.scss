@@ -4,17 +4,6 @@
   // margin-left: 10px; // Handled by parent now
 }
 
-.backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 999;
-  background: transparent;
-  cursor: default;
-}
-
 .color-circle {
   width: 20px; /* Reduced from 24px */
   height: 20px;
@@ -65,21 +54,11 @@
     border-color: transparent transparent white transparent;
   }
 
-  /* Mobile Fixed Positioning */
   @media (max-width: 768px) {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
     width: 280px; /* Provide enough width for touch targets */
     max-width: 90vw; /* Safety constraint */
     max-height: min(72vh, 420px);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); /* Stronger shadow for modal feel */
-
-    /* Hide arrow on mobile since it's detached from trigger */
-    &::before {
-      display: none;
-    }
   }
 }
 

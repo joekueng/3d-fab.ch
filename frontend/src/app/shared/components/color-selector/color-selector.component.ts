@@ -8,6 +8,12 @@ import {
   inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import {
+  ConnectedPosition,
+  Overlay,
+  OverlayModule,
+  RepositionScrollStrategy,
+} from '@angular/cdk/overlay';
 import { TranslatePipe } from '@ngx-translate/core';
 import {
   PRODUCT_COLORS,
@@ -29,12 +35,31 @@ export interface ColorSelectorGroup {
 @Component({
   selector: 'app-color-selector',
   standalone: true,
-  imports: [CommonModule, TranslatePipe],
+  imports: [CommonModule, OverlayModule, TranslatePipe],
   templateUrl: './color-selector.component.html',
   styleUrl: './color-selector.component.scss',
 })
 export class ColorSelectorComponent {
   private readonly languageService = inject(LanguageService);
+  private readonly overlay = inject(Overlay);
+  readonly scrollStrategy: RepositionScrollStrategy =
+    this.overlay.scrollStrategies.reposition();
+  readonly popupPositions: ConnectedPosition[] = [
+    {
+      originX: 'start',
+      originY: 'bottom',
+      overlayX: 'start',
+      overlayY: 'top',
+      offsetY: 8,
+    },
+    {
+      originX: 'start',
+      originY: 'top',
+      overlayX: 'start',
+      overlayY: 'bottom',
+      offsetY: -8,
+    },
+  ];
   disabled = input(false);
   selectedColor = input<string>('Black');
   selectedVariantId = input<string | number | null>(null);
