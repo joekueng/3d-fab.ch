@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page, type Route } from '@playwright/test';
 
 // Closed cube, exported in metres. Conversion must produce a 10 mm part.
 const obj = Buffer.from([
@@ -31,13 +31,46 @@ function dimensions(stl: Buffer): number[] {
   );
 }
 
-async function upload(page: Page, name: string, buffer: Buffer) {
-  const preview = page.waitForResponse(response =>
-    response.url().endsWith('/api/model-previews') && response.request().method() === 'POST',
+interface PreviewSnapshot {
+  status: number;
+  body: Buffer;
+}
+
+async function capturePreview(
+  page: Page,
+  action: () => Promise<unknown>,
+): Promise<PreviewSnapshot> {
+  const path = '**/api/model-previews';
+  let snapshot: PreviewSnapshot | undefined;
+  const forward = async (route: Route) => {
+    // Forward the original multipart request once to the real backend. Chromium
+    // can discard blob response bodies from its debugging protocol even while
+    // the application receives them. Retain the real bytes before delivery.
+    const response = await route.fetch();
+    snapshot = { status: response.status(), body: await response.body() };
+    await route.fulfill({ response, body: snapshot.body });
+  };
+  await page.route(path, forward, { times: 1 });
+  try {
+    await Promise.all([
+      page.waitForResponse(response =>
+        response.url().endsWith('/api/model-previews') && response.request().method() === 'POST',
+      ),
+      action(),
+    ]);
+    if (!snapshot) throw new Error('The real model preview response was not captured');
+    return snapshot;
+  } finally {
+    await page.unroute(path, forward);
+  }
+}
+
+async function upload(page: Page, name: string, buffer: Buffer): Promise<PreviewSnapshot> {
+  const preview = await capturePreview(page, () =>
+    page.locator('app-upload-form app-dropzone input[type="file"]').setInputFiles({
+      name, mimeType: 'application/octet-stream', buffer,
+    }),
   );
-  await page.locator('app-upload-form app-dropzone input[type="file"]').setInputFiles({
-    name, mimeType: 'application/octet-stream', buffer,
-  });
   await expect(page.locator('.file-card .file-name')).toHaveText(name);
   return preview;
 }
@@ -69,17 +102,18 @@ test('CALC-003: real OBJ recovers from wrong units and retains size, original an
   test.setTimeout(300_000);
   await page.goto('/it/calculator/basic');
   const preview = await upload(page, 'metres.obj', obj);
-  expect(preview.ok()).toBe(true);
-  for (const side of dimensions(await preview.body())) expect(side).toBeCloseTo(0.01, 5);
+  expect(preview.status).toBe(200);
+  for (const side of dimensions(preview.body)) expect(side).toBeCloseTo(0.01, 5);
   const small = await calculate(page);
   expect(small.item.status).toBe('REVIEW_REQUIRED');
   expect(small.item.errorCode).toBe('MODEL_TOO_SMALL');
   await expect(page.locator('app-upload-form app-button[type="submit"] button')).toBeEnabled();
-  const rescaled = page.waitForResponse(response => response.url().endsWith('/api/model-previews'));
-  await page.locator('.model-unit-field select').selectOption({ label: 'm' });
-  const rescaledResponse = await rescaled;
-  expect(rescaledResponse.ok()).toBe(true);
-  for (const side of dimensions(await rescaledResponse.body())) expect(side).toBeCloseTo(10, 3);
+  const rescaled = await capturePreview(page, () =>
+    page.locator('.model-unit-field select').selectOption({ label: 'm' }),
+  );
+  expect(rescaled.status).toBe(200);
+  for (const side of dimensions(rescaled.body)) expect(side).toBeCloseTo(10, 3);
+  await expect(page.locator('app-stl-viewer .dims-overlay')).toHaveText('10 x 10 x 10 mm');
 
   const result = await calculate(page);
   expect(result.sessionId).toBe(small.sessionId);
@@ -101,6 +135,7 @@ test('CALC-003: real OBJ recovers from wrong units and retains size, original an
     await expect(resumed.locator('.file-card .file-name')).toHaveText('metres.obj');
     await expect(resumed.locator('.model-unit-field select option:checked')).toHaveText('m');
     await expect(resumed.locator('app-stl-viewer canvas')).toBeVisible();
+    await expect(resumed.locator('app-stl-viewer .dims-overlay')).toHaveText('10 x 10 x 10 mm');
     await expect(resumed.locator('app-quote-result')).toBeVisible();
     expect(errors).toEqual([]);
   } finally {
@@ -114,9 +149,10 @@ for (const extension of ['step', 'stp']) {
     const original = await readFile('e2e/fixtures/cube.step');
     await page.goto('/it/calculator/basic');
     const preview = await upload(page, `cube.${extension}`, original);
-    expect(preview.ok()).toBe(true);
-    for (const side of dimensions(await preview.body())) expect(side).toBeCloseTo(10, 3);
+    expect(preview.status).toBe(200);
+    for (const side of dimensions(preview.body)) expect(side).toBeCloseTo(10, 3);
     await expect(page.locator('app-stl-viewer canvas')).toBeVisible();
+    await expect(page.locator('app-stl-viewer .dims-overlay')).toHaveText('10 x 10 x 10 mm');
     await expect(page.locator('.model-unit-field')).toHaveCount(0);
     const { sessionId, item } = await calculate(page);
     expect(item.status).toBe('READY');
@@ -131,7 +167,7 @@ test('CALC-005: invalid STEP remains available for review after preview and quot
   await page.goto('/it/calculator/basic');
   const original = Buffer.from('invalid synthetic CAD');
   const preview = await upload(page, 'broken.step', original);
-  expect(preview.status()).toBe(422);
+  expect(preview.status).toBe(422);
   await expect(page.locator('.preview-status')).toBeVisible();
   const { sessionId, item } = await calculate(page);
   expect(item.status).toBe('REVIEW_REQUIRED');

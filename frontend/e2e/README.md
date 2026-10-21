@@ -84,5 +84,15 @@ E2E_TEST_GREP='CALC-003|CALC-004|CALC-005|ADMIN-CAD-' bash scripts/e2e/run.sh fu
 API snapshots are read through `page.request` after the UI mutation completes;
 session identity is taken from the affected request URL or the read-only session
 field. This avoids depending on the lifetime of a browser response body during
-Angular navigation. Keep failing regressions active: a confirmed defect must not
-be hidden with retries or skips.
+Angular navigation. For transient binary model previews, `capturePreview` forwards
+the original browser request once with
+[`route.fetch()`](https://playwright.dev/docs/api/class-route#route-fetch), retains
+the real backend status/body and delivers that same response with
+[`route.fulfill()`](https://playwright.dev/docs/api/class-route#route-fulfill).
+These APIs are present in the pinned Playwright 1.63.0 types. No preview is
+fabricated or requested a second time. Do not read these blobs through the
+browser debugging protocol: Chromium may no longer retain them. Check both the
+retained STL bounds and the viewer's rendered dimensions so forwarding cannot
+hide a failure to consume the preview in the application.
+Keep failing regressions active: a confirmed defect must not be hidden with
+retries or skips.
