@@ -60,6 +60,8 @@ For oversized models, follow [split consent and recalculation](README.md#oversiz
 
 For calculator API changes, follow [calculator batch requests](README.md#calculator-batch-requests) and the linked backend admission contract.
 
+For model formats and generated STL previews, follow [model uploads and previews](README.md#model-uploads-and-previews).
+
 ## Verification
 
 From `frontend/`, run the checks relevant to the change:

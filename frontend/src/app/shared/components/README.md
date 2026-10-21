@@ -13,6 +13,11 @@ Read [frontend/AGENTS.md](../../../../AGENTS.md) and [frontend/README.md](../../
 | File selection/drop | `app-dropzone`: set `accept`, `multiple`, `disabled`, `label`, and `subtext`; handle `filesDropped` in the feature. Use `showFileNames=false` when the feature already owns the preview list. File validation, attachment persistence, preview URLs, and removal belong to the feature. The native `accept` attribute is only a picker hint. |
 | Quantity and color for print items | `app-print-item-controls`, already shared by calculator and checkout. |
 
+`app-select size="small"` provides the 34 px inline control used alongside print
+quantity/color controls. Use `[compact]="true"` to remove the usual field bottom
+margin. Keep the localized label and Angular form binding; feature SCSS owns
+positioning (for example a per-file unit selector aligned to the card's right).
+
 Calculator-only settings live in [`features/calculator/components/print-settings`](../../features/calculator/components/print-settings/), not in generic shared UI. Both global and selected-file settings pass the existing `FormGroup` and current option lists into that panel. Preserve the per-file nozzle/layer constraints in the owning form.
 
 Extend a component for reusable behavior rather than copying its markup/styles into a feature. Keep HTML, SCSS, and TypeScript separate. Run `npm run check:ui-reuse`, `npm run check:i18n`, compilation, and relevant browser tests from `frontend/`; compare responsive rendering and long translated content. The reuse check blocks known clones, but is not a general duplication detector.

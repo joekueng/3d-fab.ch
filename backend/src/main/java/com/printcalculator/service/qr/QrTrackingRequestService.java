@@ -1,5 +1,7 @@
 package com.printcalculator.service.qr;
 
+import com.printcalculator.security.IpAddressUtils;
+
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -35,8 +35,9 @@ services:
       platforms:
         - linux/amd64
       args:
-        ORCA_VERSION: "2.2.0"
-        ORCA_DOWNLOAD_URL: https://github.com/OrcaSlicer/OrcaSlicer/releases/download/v2.2.0/OrcaSlicer_Linux_V2.2.0.AppImage
+        ORCA_VERSION: "2.3.2"
+        ORCA_DOWNLOAD_URL: https://github.com/OrcaSlicer/OrcaSlicer/releases/download/v2.3.2/OrcaSlicer_Linux_AppImage_Ubuntu2404_V2.3.2.AppImage
+        ORCA_SHA256: c64336ceec37d941766e675cbaaaf5124e184402bf18177fbf81ba5102734ad8
     environment:
       DB_URL: jdbc:postgresql://db:5432/printcalc_e2e
       DB_USERNAME: e2e

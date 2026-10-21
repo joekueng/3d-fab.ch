@@ -1,5 +1,6 @@
 package com.printcalculator.service.quote;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.printcalculator.dto.PrintSettingsDto;
 import com.printcalculator.entity.FilamentMaterialType;
 import com.printcalculator.entity.FilamentVariant;
@@ -20,6 +21,8 @@ import com.printcalculator.service.SlicerService;
 import com.printcalculator.service.storage.ClamAVService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -96,8 +99,9 @@ class QuoteSessionItemServiceTest {
         );
     }
 
-    @Test
-    void addItemToSession_with3mfSlicesOriginalProjectAndFallsBackToConvertedPreviewDimensions() throws Exception {
+    @ParameterizedTest
+    @CsvSource({"3mf,false", "obj,false", "step,false", "stp,false", "obj,true"})
+    void addItemToSession_preservesOriginalAndStoresConvertedStlForPreview(String extension, boolean fallback) throws Exception {
         QuoteSession session = new QuoteSession();
         session.setId(UUID.randomUUID());
         session.setStatus("ACTIVE");
@@ -111,7 +115,7 @@ class QuoteSessionItemServiceTest {
 
         MockMultipartFile file = new MockMultipartFile(
                 "file",
-                "fixture.3mf",
+                "fixture." + extension,
                 "application/octet-stream",
                 "dummy-3mf".getBytes(StandardCharsets.UTF_8)
         );
@@ -125,12 +129,16 @@ class QuoteSessionItemServiceTest {
 
         PrinterMachine machine = new PrinterMachine();
         machine.setId(7L);
-        machine.setPrinterDisplayName("BambuLab A1");
+        machine.setPrinterDisplayName(fallback ? "BambuLab P2S" : "BambuLab A1");
+        String machineProfile = fallback ? "Bambu Lab P2S 0.4 nozzle" : "Bambu Lab A1 0.4 nozzle";
+        String filamentProfile = fallback ? "Bambu PLA Basic @BBL P2S" : "Bambu PLA Basic @BBL A1";
+        String processProfile = fallback ? "0.20mm Standard @BBL P2S" : "0.20mm Standard @BBL A1";
 
-        PrintStats stats = new PrintStats(3600, "1h", 42.0, 1000.0);
+        PrintStats stats = fallback ? new PrintStats(546, "9m 6s", 42, 1000)
+                : new PrintStats(3600, "1h", 42.0, 1000.0);
         QuoteResult result = new QuoteResult(12.5, "CHF", stats);
 
-        when(quoteStorageService.getSafeExtension(file.getOriginalFilename(), "")).thenReturn("3mf");
+        when(quoteStorageService.getSafeExtension(file.getOriginalFilename(), "")).thenReturn(extension);
         when(quoteStorageService.sessionStorageDir(session.getId())).thenReturn(tempDir);
         when(quoteStorageService.resolveSessionPath(eq(tempDir), anyString()))
                 .thenAnswer(invocation -> tempDir.resolve(invocation.getArgument(1, String.class)));
@@ -146,24 +154,43 @@ class QuoteSessionItemServiceTest {
                 .thenReturn(new QuoteSessionSettingsService.NozzleLayerSettings(nozzle, layer));
         when(settingsService.resolveFilamentVariant(settings)).thenReturn(variant);
         when(settingsService.resolveQuality(settings, layer)).thenReturn("standard");
-        when(settingsService.resolvePrinterMachineCandidates(settings.getPrinterMachineId(), nozzle, layer, "standard"))
-                .thenReturn(java.util.List.of(machine));
-        when(profileManager.findCompatibleProcessProfileName("Bambu Lab A1 0.4 nozzle", layer, "standard"))
-                .thenReturn(Optional.of("0.20mm Standard @BBL A1"));
+        if (fallback) {
+            var a1 = new PrinterMachine();
+            a1.setId(1L);
+            when(settingsService.resolvePrinterMachineCandidates(settings.getPrinterMachineId(), nozzle, layer, "standard"))
+                    .thenReturn(java.util.List.of(a1, machine));
+            when(orcaProfileResolver.resolve(a1, nozzle, variant)).thenReturn(new OrcaProfileResolver.ResolvedProfiles(
+                    "Bambu Lab A1 0.4 nozzle", "Bambu PLA Basic @BBL A1", null));
+            when(profileManager.findCompatibleProcessProfileName("Bambu Lab A1 0.4 nozzle", layer, "standard"))
+                    .thenReturn(Optional.of("0.20mm Standard @BBL A1"));
+            when(slicerService.slice(any(File.class), eq("Bambu Lab A1 0.4 nozzle"),
+                    eq("Bambu PLA Basic @BBL A1"), eq("0.20mm Standard @BBL A1"), isNull(), anyMap()))
+                    .thenThrow(new java.io.IOException("A1 unavailable"));
+        } else {
+            when(settingsService.resolvePrinterMachineCandidates(settings.getPrinterMachineId(), nozzle, layer, "standard"))
+                    .thenReturn(java.util.List.of(machine));
+        }
+        when(profileManager.findCompatibleProcessProfileName(machineProfile, layer, "standard"))
+                .thenReturn(Optional.of(processProfile));
         when(orcaProfileResolver.resolve(machine, nozzle, variant))
                 .thenReturn(new OrcaProfileResolver.ResolvedProfiles(
-                        "Bambu Lab A1 0.4 nozzle",
-                        "Bambu PLA Basic @BBL A1",
+                        machineProfile,
+                        filamentProfile,
                         null
                 ));
 
-        when(slicerService.convert3mfToPersistentStl(any(File.class), any(Path.class)))
-                .thenAnswer(invocation -> invocation.getArgument(1, Path.class));
+        if ("3mf".equals(extension)) {
+            when(slicerService.convert3mfToPersistentStl(any(File.class), any(Path.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(1, Path.class));
+        } else {
+            when(slicerService.convertModelToPersistentStl(any(File.class), any(Path.class), any()))
+                    .thenAnswer(invocation -> invocation.getArgument(1, Path.class));
+        }
         when(slicerService.slice(
                 any(File.class),
-                eq("Bambu Lab A1 0.4 nozzle"),
-                eq("Bambu PLA Basic @BBL A1"),
-                eq("0.20mm Standard @BBL A1"),
+                eq(machineProfile),
+                eq(filamentProfile),
+                eq(processProfile),
                 isNull(),
                 anyMap()
         )).thenReturn(stats);
@@ -175,33 +202,42 @@ class QuoteSessionItemServiceTest {
                     }
                     return Optional.of(new ModelDimensions(120.0, 80.0, 25.0));
                 });
-        when(quoteCalculator.calculate(stats, "BambuLab A1", variant)).thenReturn(result);
+        when(quoteCalculator.calculate(stats, machine.getPrinterDisplayName(), variant)).thenReturn(result);
         when(sessionRepo.save(any(QuoteSession.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(lineItemRepo.save(any(QuoteLineItem.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         QuoteLineItem saved = service.addItemToSession(session, file, settings);
 
         verify(materialPrintCompatibilityService).validate(variant, nozzle, layer);
+        verify(quoteCalculator).calculate(stats, machine.getPrinterDisplayName(), variant);
+        assertEquals(stats.printTimeSeconds(), saved.getPrintTimeSeconds().longValue());
+        assertFalse(saved.getPricingBreakdown().containsKey("quoteTimeFactor"));
+        assertFalse(saved.getPricingBreakdown().containsKey("quoteTimeCalibration"));
+        assertEquals(42, saved.getMaterialGrams().doubleValue());
+        assertEquals(12.5, saved.getUnitPriceChf().doubleValue());
 
         ArgumentCaptor<File> sliceInputCaptor = ArgumentCaptor.forClass(File.class);
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Map<String, String>> processOverridesCaptor = ArgumentCaptor.forClass(Map.class);
         verify(slicerService).slice(
                 sliceInputCaptor.capture(),
-                eq("Bambu Lab A1 0.4 nozzle"),
-                eq("Bambu PLA Basic @BBL A1"),
-                eq("0.20mm Standard @BBL A1"),
+                eq(machineProfile),
+                eq(filamentProfile),
+                eq(processProfile),
                 isNull(),
                 processOverridesCaptor.capture()
         );
 
-        assertTrue(sliceInputCaptor.getValue().getName().endsWith(".3mf"));
+        assertTrue(sliceInputCaptor.getValue().getName().endsWith("3mf".equals(extension) ? ".3mf" : ".stl"));
         assertEquals("1", processOverridesCaptor.getValue().get("enable_support"));
 
         ArgumentCaptor<File> inspectCaptor = ArgumentCaptor.forClass(File.class);
-        verify(slicerService, times(2)).inspectModelDimensions(inspectCaptor.capture());
-        assertTrue(inspectCaptor.getAllValues().get(0).getName().endsWith(".3mf"));
-        assertTrue(inspectCaptor.getAllValues().get(1).getName().endsWith(".stl"));
+        verify(slicerService, times(("3mf".equals(extension) ? 2 : 1) + (fallback ? 1 : 0)))
+                .inspectModelDimensions(inspectCaptor.capture());
+        assertTrue(inspectCaptor.getValue().getName().endsWith(".stl"));
+        assertEquals(file.getOriginalFilename(), saved.getOriginalFilename());
+        assertTrue(saved.getStoredPath().endsWith("." + extension));
+        assertTrue(saved.getPricingBreakdown().get("convertedStoredPath").toString().endsWith(".stl"));
 
         assertEquals(0, BigDecimal.valueOf(120.0).compareTo(saved.getBoundingBoxXMm()));
         assertEquals(0, BigDecimal.valueOf(80.0).compareTo(saved.getBoundingBoxYMm()));

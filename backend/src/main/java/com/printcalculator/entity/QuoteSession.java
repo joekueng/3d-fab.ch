@@ -14,6 +14,12 @@ import java.util.UUID;
         @Index(name = "ix_quote_sessions_expires_at",
                 columnList = "expires_at")})
 public class QuoteSession {
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    @Column(name = "deleted_redirect_path", length = 1000)
+    private String deletedRedirectPath;
+    public String getDeletedRedirectPath() { return deletedRedirectPath; }
+    public void setDeletedRedirectPath(String path) { deletedRedirectPath = path; }
+
     @Column(name = "invoice_client_name", length = 160)
     private String clientName;
     public String getClientName() { return clientName; }

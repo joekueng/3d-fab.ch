@@ -101,6 +101,9 @@ public class QuoteSessionEmailService {
     public com.printcalculator.dto.InformationDto.Credential resume(UUID id) {
         return transactions.execute(status -> {
             var session = sessions.findLockedById(id).orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
+            if ("CAD_DELETED".equals(session.getStatus()) && session.getDeletedRedirectPath() != null) {
+                return null;
+            }
             if (session.getExpiresAt() == null || !session.getExpiresAt().isAfter(OffsetDateTime.now())) {
                 throw new ResponseStatusException(GONE, "SESSION_UNAVAILABLE");
             }

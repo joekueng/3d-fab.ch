@@ -681,7 +681,7 @@
       "ITEMS": {
         "FILES": {
           "Q": "Welche Dateien kann ich hochladen?",
-          "A": "Sie koennen STL- oder 3MF-Dateien hochladen. Wenn Sie ein Modell von einer externen Plattform herunterladen, stellen Sie sicher, dass es sich wirklich um eine 3D-Datei und nicht nur um Bilder oder Dokumentation handelt."
+          "A": "Du kannst STL-, 3MF-, OBJ- oder STEP/STP-Dateien hochladen. Wenn du ein Modell von einer externen Plattform herunterlädst, prüfe, ob es eine druckfertige 3D-Datei und nicht nur Bilder oder eine Anleitung ist."
         },
         "MODE": {
           "Q": "Wie waehle ich zwischen Basis und Erweitert?",
@@ -702,7 +702,7 @@
       }
     },
     "UPLOAD_LABEL": "Ziehen Sie Ihre 3D-Datei hierher",
-    "UPLOAD_SUB": "Wir unterstützen STL, 3MF bis 50MB",
+    "UPLOAD_SUB": "STL, 3MF, OBJ und STEP/STP · bis zu 200 MB",
     "MATERIAL": "Material",
     "QUALITY": "Qualität",
     "QUANTITY": "Menge",
@@ -739,12 +739,11 @@
     "BENEFITS_2": "Ausgewählte Materialien und Qualitätskontrolle",
     "BENEFITS_3": "CAD-Beratung, falls die Datei Änderungen benötigt",
     "ERR_FILE_REQUIRED": "Die Datei ist erforderlich.",
-    "STEP_WARNING": "Die 3D-Vorschau ist nur für STL-Dateien verfügbar.",
     "REMOVE_FILE": "Datei entfernen",
     "FALLBACK_MATERIAL": "PLA (Fallback)",
     "FALLBACK_QUALITY_STANDARD": "Standard",
     "ERR_FILE_TOO_LARGE": "Einige Dateien überschreiten das 200MB-Limit und wurden nicht hinzugefügt.",
-    "ERR_INVALID_FILE_TYPE": "Sie können nur Dateien vom Typ .stl oder .3mf hochladen.",
+    "ERR_INVALID_FILE_TYPE": "Du kannst STL-, 3MF-, OBJ- oder STEP/STP-Dateien hochladen.",
     "PRINT_SPEED": "Druckgeschwindigkeit",
     "COLOR": "Farbe",
     "ANALYZING_TITLE": "Analyse läuft...",
@@ -801,6 +800,8 @@
     "SPLIT_REQUEST_ACTION": "Modellteilung anfragen",
     "REVIEW_OUT_OF_VOLUME": "Das Modell überschreitet den verfügbaren Druckraum.",
     "REVIEW_PROCESSING_FAILED": "Die Datei konnte nicht automatisch analysiert werden. Sie bleibt für eine manuelle Prüfung gespeichert.",
+    "REVIEW_TOO_SMALL": "Das Modell ist für die gewählte Düse zu klein. Prüfe die Einheiten und exportiere es in Millimetern.",
+    "MODEL_UNIT": "Einheit",
     "REVIEW_PARTIAL_SINGLE": "{{fileName}} ist nicht in der Summe enthalten. {{reason}}",
     "REVIEW_PARTIAL_MULTIPLE": "{{count}} Dateien sind nicht in der Summe enthalten: {{fileNames}}. {{reason}}",
     "FILE_REVIEW_REQUIRED": "Prüfung erforderlich"
@@ -1541,6 +1542,21 @@
     "COPYING": "Link wird gespeichert…",
     "COPIED": "Link kopiert. Damit kannst du die gesamte Sitzung wieder öffnen.",
     "COPY_ERROR": "Automatisches Kopieren ist nicht verfügbar. Markiere und kopiere den Link unten."
+  },
+  "CAD_DELETE": {
+    "DELETE": "Löschen",
+    "TITLE": "Rechnung löschen",
+    "WARNING": "Die Rechnung, Dateien und Anhänge werden gelöscht. Wählen Sie, was mit dem bereits geteilten Link geschieht.",
+    "LINK_ACTION": "Bisheriger Link",
+    "NEW_INVOICE": "Link für eine neue Rechnung verwenden",
+    "REDIRECT": "Zu einer Seite der Website weiterleiten",
+    "REUSE_HINT": "Eine neue leere Rechnung mit demselben Link wird geöffnet. Bis zum Speichern zeigt der bisherige Link keine Rechnung an.",
+    "TARGET": "Zielseite (interner Pfad)",
+    "CONFIRM": "Löschen bestätigen",
+    "CANCEL": "Abbrechen",
+    "DONE": "Rechnung gelöscht. Die Einstellungen für den bisherigen Link wurden gespeichert.",
+    "ERROR": "Die Rechnung konnte nicht gelöscht werden. Prüfen Sie das Ziel und ob sie bereits mit einer Bestellung verknüpft ist.",
+    "STABLE_LINK": "Der Rechnungslink bleibt bei Änderungen gleich. Verwenden Sie Neue Rechnung für eine separate Rechnung."
   },
   "CAD_ORGANIZATION": {
     "TITLE": "Rechnungen und Leistungen",

@@ -710,7 +710,7 @@
       "ITEMS": {
         "FILES": {
           "Q": "Quels fichiers puis-je charger ?",
-          "A": "Vous pouvez charger des fichiers STL ou 3MF. Si vous telechargez un modele depuis un portail externe, verifiez qu il s agit bien d un vrai fichier 3D et pas seulement d images ou de documentation."
+          "A": "Vous pouvez téléverser des fichiers STL, 3MF, OBJ ou STEP/STP. Si vous téléchargez un modèle depuis un site externe, vérifiez qu’il s’agit d’un fichier 3D prêt à imprimer et pas seulement d’images ou de documentation."
         },
         "MODE": {
           "Q": "Comment choisir entre Base et Avancee ?",
@@ -731,7 +731,7 @@
       }
     },
     "UPLOAD_LABEL": "Glissez votre fichier 3D ici",
-    "UPLOAD_SUB": "Nous prenons en charge STL, 3MF jusqu'à 50MB",
+    "UPLOAD_SUB": "STL, 3MF, OBJ et STEP/STP · jusqu’à 200 Mo",
     "MATERIAL": "Matériau",
     "QUALITY": "Qualité",
     "PRINT_SPEED": "Vitesse d'impression",
@@ -812,12 +812,11 @@
     "SETUP_NOTE": "* Inclut {{cost}} comme coût de setup",
     "SHIPPING_NOTE": "* Les frais de livraison sont estimés selon les dimensions et le poids emballés, puis confirmés à la commande.",
     "SHIPPING_UNAVAILABLE": "La livraison n’est pas comprise dans ce total. Terminez le calcul ou demandez une consultation pour un devis de livraison.",
-    "STEP_WARNING": "La prévisualisation 3D est disponible uniquement pour les fichiers STL.",
     "REMOVE_FILE": "Supprimer le fichier",
     "FALLBACK_MATERIAL": "PLA (fallback)",
     "FALLBACK_QUALITY_STANDARD": "Standard",
     "ERR_FILE_TOO_LARGE": "Certains fichiers dépassent la limite de 200MB et n'ont pas été ajoutés.",
-    "ERR_INVALID_FILE_TYPE": "Vous pouvez téléverser uniquement des fichiers .stl ou .3mf.",
+    "ERR_INVALID_FILE_TYPE": "Vous pouvez téléverser des fichiers STL, 3MF, OBJ ou STEP/STP.",
     "ERROR_ZERO_PRICE": "Un problème est survenu pendant le calcul. Essayez un autre format ou contactez-nous directement via Demander une consultation.",
     "ZERO_RESULT_TITLE": "Résultat invalide",
     "ZERO_RESULT_HELP": "Le calcul a renvoyé des valeurs nulles invalides. Essayez un autre format de fichier ou contactez-nous directement via Demander une consultation.",
@@ -830,6 +829,8 @@
     "SPLIT_REQUEST_ACTION": "Demander la division du modèle",
     "REVIEW_OUT_OF_VOLUME": "Le modèle dépasse le volume d'impression disponible.",
     "REVIEW_PROCESSING_FAILED": "Le fichier n'a pas pu être analysé automatiquement. Il reste enregistré pour une évaluation manuelle.",
+    "REVIEW_TOO_SMALL": "Le modèle est trop petit pour la buse sélectionnée. Vérifiez les unités et exportez-le en millimètres.",
+    "MODEL_UNIT": "Unité",
     "REVIEW_PARTIAL_SINGLE": "{{fileName}} n'est pas inclus dans le total. {{reason}}",
     "REVIEW_PARTIAL_MULTIPLE": "{{count}} fichiers ne sont pas inclus dans le total : {{fileNames}}. {{reason}}",
     "FILE_REVIEW_REQUIRED": "Évaluation requise"
@@ -1536,6 +1537,21 @@
     "COPYING": "Enregistrement du lien…",
     "COPIED": "Lien copié. Utilisez-le pour rouvrir la session complète.",
     "COPY_ERROR": "La copie automatique est indisponible. Sélectionnez et copiez le lien ci-dessous."
+  },
+  "CAD_DELETE": {
+    "DELETE": "Supprimer",
+    "TITLE": "Supprimer la facture",
+    "WARNING": "La facture, les fichiers et les pièces jointes seront supprimés. Choisissez le devenir du lien déjà partagé.",
+    "LINK_ACTION": "Ancien lien",
+    "NEW_INVOICE": "Utiliser le lien pour une nouvelle facture",
+    "REDIRECT": "Rediriger vers une page du site",
+    "REUSE_HINT": "Une nouvelle facture vide sera ouverte avec le même lien. Tant qu’elle n’est pas enregistrée, l’ancien lien n’affichera aucune facture.",
+    "TARGET": "Page de destination (chemin interne)",
+    "CONFIRM": "Confirmer la suppression",
+    "CANCEL": "Annuler",
+    "DONE": "Facture supprimée. Les paramètres de l’ancien lien ont été enregistrés.",
+    "ERROR": "Impossible de supprimer la facture. Vérifiez la destination et qu’elle n’est pas déjà liée à une commande.",
+    "STABLE_LINK": "Le lien de cette facture reste identique lors des modifications. Utilisez Nouvelle facture pour créer une facture distincte."
   },
   "CAD_ORGANIZATION": {
     "TITLE": "Factures et prestations",

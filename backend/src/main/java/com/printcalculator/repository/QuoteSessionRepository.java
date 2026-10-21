@@ -21,7 +21,7 @@ public interface QuoteSessionRepository extends JpaRepository<QuoteSession, UUID
 
     Optional<QuoteSession> findByIdAndSessionType(UUID id, String sessionType);
 
-    @Query("select count(s) from QuoteSession s")
+    @Query("select count(s) from QuoteSession s where s.status <> 'CAD_DELETED'")
     long countAllForStatistics();
 
     @Query("""

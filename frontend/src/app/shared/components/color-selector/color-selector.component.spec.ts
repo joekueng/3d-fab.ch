@@ -1,9 +1,11 @@
 import { TestBed } from '@angular/core/testing';
+import { OverlayContainer } from '@angular/cdk/overlay';
 import { provideTranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language.service';
 import { ColorSelectorComponent } from './color-selector.component';
 
 describe('ColorSelectorComponent', () => {
+  afterEach(() => TestBed.inject(OverlayContainer).ngOnDestroy());
   it('distinguishes product variants with the same color name and emits their opaque ids', async () => {
     await TestBed.configureTestingModule({
       imports: [ColorSelectorComponent],
@@ -49,14 +51,15 @@ describe('ColorSelectorComponent', () => {
     const element: HTMLElement = fixture.nativeElement;
     element.querySelector<HTMLButtonElement>('.trigger')!.click();
     fixture.detectChanges();
-    const options = element.querySelectorAll<HTMLButtonElement>('.color-item');
+    const overlay = TestBed.inject(OverlayContainer).getContainerElement();
+    const options = overlay.querySelectorAll<HTMLButtonElement>('.color-item');
     expect(options.length).toBe(3);
     options[2].click();
     expect(selected).not.toHaveBeenCalled();
     options[0].click();
     fixture.detectChanges();
     expect(selected).toHaveBeenCalledWith('product-a');
-    expect(element.querySelector('.color-popup')).toBeNull();
+    expect(overlay.querySelector('.color-popup')).toBeNull();
     fixture.componentRef.setInput('disabled', true);
     fixture.detectChanges();
     expect(

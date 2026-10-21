@@ -5,6 +5,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
+/** Administrative order response. Public endpoints must use {@link PublicOrderDto}. */
 public class OrderDto {
     private String invoiceName;
     public String getInvoiceName() { return invoiceName; }

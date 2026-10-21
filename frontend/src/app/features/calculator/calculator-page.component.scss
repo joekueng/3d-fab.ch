@@ -11,11 +11,11 @@
 
 .content-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-6);
   scroll-margin-top: calc(64px + var(--space-4));
   @media (min-width: 768px) {
-    grid-template-columns: 1.5fr 1fr;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
     gap: var(--space-8);
   }
 }

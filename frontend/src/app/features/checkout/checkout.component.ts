@@ -233,6 +233,21 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     this.resetPreviewState();
     this.quoteService.getQuoteSession(this.sessionId).subscribe({
       next: (session) => {
+        if (
+          typeof session?.redirectPath === 'string' &&
+          session.redirectPath.startsWith('/') &&
+          !session.redirectPath.startsWith('//') &&
+          !session.redirectPath.includes('\\')
+        ) {
+          this.loading = false;
+          void this.router.navigateByUrl(
+            '/' +
+              this.languageService.selectedLang() +
+              (session.redirectPath === '/' ? '' : session.redirectPath),
+            { replaceUrl: true },
+          );
+          return;
+        }
         this.error = null;
         this.quoteSession.set(session);
         if (Array.isArray(session?.items) && session.items.length > 0) {

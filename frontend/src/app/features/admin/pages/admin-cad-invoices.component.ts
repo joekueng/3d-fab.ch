@@ -115,6 +115,85 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
 
   private readonly translate = inject(TranslateService);
   invoices: AdminCadInvoice[] = [];
+  draftSessionId: string | null = null;
+  invoiceToDelete: AdminCadInvoice | null = null;
+  deleteLinkAction: 'NEW_INVOICE' | 'REDIRECT' = 'NEW_INVOICE';
+  deleteTargetPath = '/';
+  deletingInvoice = false;
+  deleteError: string | null = null;
+
+  get deletionLinkUrl(): string {
+    return this.invoiceToDelete
+      ? this.toCheckoutUrl(this.invoiceToDelete.checkoutPath)
+      : '';
+  }
+
+  get draftIsConverted(): boolean {
+    const row = this.invoices.find(
+      (invoice) => invoice.sessionId === this.draftSessionId,
+    );
+    return Boolean(row?.convertedOrderId || row?.sessionStatus === 'CONVERTED');
+  }
+
+  get deleteLinkOptions(): { label: string; value: string }[] {
+    return ['NEW_INVOICE', 'REDIRECT'].map((value) => ({
+      label: this.translate.instant('CAD_DELETE.' + value),
+      value,
+    }));
+  }
+
+  requestDeleteInvoice(row: AdminCadInvoice): void {
+    if (
+      row.convertedOrderId ||
+      row.sessionStatus !== 'CAD_ACTIVE' ||
+      this.creating
+    )
+      return;
+    this.invoiceToDelete = row;
+    this.deleteLinkAction = 'NEW_INVOICE';
+    this.deleteTargetPath = '/';
+    this.deleteError = null;
+  }
+
+  closeDeleteInvoice(): void {
+    if (!this.deletingInvoice) this.invoiceToDelete = null;
+  }
+
+  confirmDeleteInvoice(): void {
+    if (!this.invoiceToDelete || this.deletingInvoice) return;
+    const id = this.invoiceToDelete.sessionId;
+    const action = this.deleteLinkAction;
+    this.deletingInvoice = true;
+    this.deleteError = null;
+    this.adminOperationsService
+      .deleteCadInvoice(id, {
+        linkAction: action,
+        targetPath:
+          action === 'REDIRECT' ? this.deleteTargetPath.trim() : undefined,
+      })
+      .subscribe({
+        next: () => {
+          this.changeDetector.markForCheck();
+          this.deletingInvoice = false;
+          this.invoiceToDelete = null;
+          if (action === 'NEW_INVOICE') {
+            this.resetForm();
+            this.draftSessionId = id;
+            this.form.sessionId = id;
+            if (this.isBrowser) window.scrollTo({ top: 0, behavior: 'smooth' });
+          } else if (this.draftSessionId === id || this.form.sessionId === id) {
+            this.resetForm();
+          }
+          this.successMessage = this.translate.instant('CAD_DELETE.DONE');
+          this.loadCadInvoices();
+        },
+        error: () => {
+          this.changeDetector.markForCheck();
+          this.deletingInvoice = false;
+          this.deleteError = this.translate.instant('CAD_DELETE.ERROR');
+        },
+      });
+  }
   editingSessionId: string | null = null;
   metadata = { invoiceName: '', collaborationName: '', clientName: '' };
   savingMetadata = false;
@@ -335,6 +414,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
   }
 
   editInvoice(row: AdminCadInvoice): void {
+    this.draftSessionId = row.sessionId;
     this.form = {
       invoiceName: row.invoiceName || '',
       clientName: row.clientName || '',
@@ -363,6 +443,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
   }
 
   resetForm(): void {
+    this.draftSessionId = null;
     this.form = {
       clientName: '',
       invoiceName: '',
@@ -377,7 +458,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
   }
 
   createCadInvoice(): void {
-    if (this.creating) return;
+    if (this.creating || this.draftIsConverted) return;
     if (!this.validLabels(this.form)) {
       this.errorMessage = this.translate.instant('CAD_ORGANIZATION.TOO_LONG');
       return;
@@ -416,46 +497,57 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
     this.creating = true;
     this.errorMessage = null;
     this.successMessage = null;
-    this.adminOperationsService
-      .createCadInvoice({
-        clientName: this.form.clientName.trim(),
-        invoiceName: this.form.invoiceName.trim(),
-        collaborationName: this.form.collaborationName.trim(),
-        sessionId: this.form.sessionId.trim() || undefined,
-        sourceRequestId: this.form.sourceRequestId.trim() || undefined,
-        notes: this.form.notes.trim(),
-        serviceLines,
-      })
-      .subscribe({
-        next: (created) => {
-          this.changeDetector.markForCheck();
-          this.creating = false;
-          this.successMessage = this.translate.instant(
-            'CAD_ORGANIZATION.READY',
-          );
-          const pendingFiles = [...this.pendingAttachmentFiles];
-          this.resetForm();
-          if (created?.sessionId) {
-            this.form.sessionId = created.sessionId;
-            this.loadSessionFiles(created.sessionId);
-            if (pendingFiles.length > 0) {
-              this.uploadAttachments(created.sessionId, pendingFiles);
-            }
+    const payload = {
+      clientName: this.form.clientName.trim(),
+      invoiceName: this.form.invoiceName.trim(),
+      collaborationName: this.form.collaborationName.trim(),
+      sessionId: this.draftSessionId || this.form.sessionId.trim() || undefined,
+      sourceRequestId: this.form.sourceRequestId.trim() || undefined,
+      notes: this.form.notes.trim(),
+      serviceLines,
+    };
+    const save = this.draftSessionId
+      ? this.adminOperationsService.updateCadInvoice(
+          this.draftSessionId,
+          payload,
+        )
+      : this.adminOperationsService.createCadInvoice(payload);
+    save.subscribe({
+      next: (created) => {
+        this.changeDetector.markForCheck();
+        this.creating = false;
+        const pendingFiles = [...this.pendingAttachmentFiles];
+        if (created?.sessionId) {
+          this.pendingAttachmentFiles = [];
+          this.editInvoice(created);
+          if (pendingFiles.length > 0) {
+            this.uploadAttachments(created.sessionId, pendingFiles);
           }
-          this.loadCadInvoices();
-        },
-        error: () => {
-          this.changeDetector.markForCheck();
-          this.creating = false;
-          this.errorMessage = this.translate.instant(
-            'CAD_ORGANIZATION.CREATE_ERROR',
-          );
-        },
-      });
+        }
+        this.successMessage = this.translate.instant('CAD_ORGANIZATION.READY');
+        this.loadCadInvoices();
+      },
+      error: () => {
+        this.changeDetector.markForCheck();
+        this.creating = false;
+        this.errorMessage = this.translate.instant(
+          'CAD_ORGANIZATION.CREATE_ERROR',
+        );
+      },
+    });
   }
 
   onSessionIdChange(): void {
+    if (this.draftSessionId) {
+      this.form.sessionId = this.draftSessionId;
+      return;
+    }
     const sessionId = String(this.form.sessionId ?? '').trim();
+    const invoice = this.invoices.find((row) => row.sessionId === sessionId);
+    if (invoice) {
+      this.editInvoice(invoice);
+      return;
+    }
     if (!this.isUuid(sessionId)) {
       this.clearSessionFiles();
       return;
@@ -467,6 +559,11 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
   }
 
   manageItems(sessionId: string): void {
+    const invoice = this.invoices.find((row) => row.sessionId === sessionId);
+    if (invoice) {
+      this.editInvoice(invoice);
+      return;
+    }
     this.form.sessionId = sessionId;
     this.loadSessionFiles(sessionId);
     if (this.isBrowser) window.scrollTo({ top: 0, behavior: 'smooth' });

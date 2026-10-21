@@ -96,6 +96,38 @@ class AdminOrderControllerSecurityTest {
     }
 
     @Test
+    void orderDetails_withoutAdminCookie_shouldReturn401() throws Exception {
+        mockMvc.perform(get("/api/admin/orders/{id}", UUID.randomUUID()))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void orderDetails_withAdminCookie_returnsAdministrativeCustomerFields() throws Exception {
+        UUID orderId = UUID.randomUUID();
+        var dto = new com.printcalculator.dto.OrderDto();
+        dto.setId(orderId);
+        dto.setCustomerEmail("customer@example.com");
+        dto.setCustomerPhone("+41910000000");
+        var address = new com.printcalculator.dto.AddressDto();
+        address.setFirstName("Test");
+        address.setAddressLine1("Via Test 1");
+        dto.setBillingAddress(address);
+        dto.setShippingAddress(address);
+        when(adminOrderControllerService.getOrder(orderId)).thenReturn(dto);
+
+        mockMvc.perform(get("/api/admin/orders/{id}", orderId).cookie(loginAndExtractCookie()))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
+                        .jsonPath("$.customerEmail").value("customer@example.com"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
+                        .jsonPath("$.customerPhone").value("+41910000000"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
+                        .jsonPath("$.billingAddress.firstName").value("Test"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
+                        .jsonPath("$.shippingAddress.addressLine1").value("Via Test 1"));
+    }
+
+    @Test
     void confirmationDocument_withoutAdminCookie_shouldReturn401() throws Exception {
         UUID orderId = UUID.randomUUID();
 

@@ -133,6 +133,26 @@ The server remains responsible for quota and concurrency enforcement. See the
 [backend admission contract](../backend/README.md#calculator-admission-and-slicing-capacity)
 for defaults, legacy compatibility and deployment order.
 
+### Model uploads and previews
+
+The calculator accepts STL, 3MF, OBJ and STEP/STP files up to the existing 200 MB upload
+limit. STL previews stay local. On selection, other formats request an STL from
+`POST /api/model-previews`; show the existing viewer loading/unavailable text
+while waiting or on failure. Preview failures must not prevent quoting. Cancel
+the pending preview when selection changes, and cache the result by the original
+`File` identity and selected unit so files with identical names stay independent.
+
+OBJ cards expose a compact shared `app-select` for file units (`mm`, `cm`, `m`,
+`in`). Send `modelUnit` in both preview FormData and per-file quote settings.
+Changing units invalidates that item's preview/review message, refreshes its
+preview, and requires recalculation before checkout. Preserve the unit in drafts,
+session restoration and recalculation signatures. Do not apply global print
+settings or guessed unit conversions to this per-file value.
+
+Keep the original file in requests and drafts. Generated preview files belong in
+`previewFile`, never in `file`. Restored sessions use the stored converted STL.
+See the [backend conversion contract](../backend/README.md#model-conversion-and-previews).
+
 ## Internationalization (i18n)
 
 Translations are stored in `src/assets/i18n/`.
@@ -242,6 +262,22 @@ issued document snapshots retain their agreed name and service details.
 `e2e/ui-states/service-invoices.spec.ts` exercises these interactions using an
 explicitly simulated API and checks narrow-screen layout. Backend integration
 and pricing tests remain responsible for persistence, amounts and paid access.
+
+Keep the currently edited invoice ID separately from the form's optional source
+session field. Once an invoice is selected or saved, show that ID read-only and
+send content updates to `PUT /cad-invoices/{id}`. Keep the returned content in
+the form so saving again cannot accidentally replace it with blank service rows.
+Only the explicit new/interim-invoice action clears this identity.
+
+Draft deletion uses `app-dialog` and a required old-link decision. Cancel/Escape
+make no request. `NEW_INVOICE` opens an empty replacement form with the reserved
+ID; `REDIRECT` accepts a public site path and clears the deleted draft editor.
+Keep errors in the dialog and block duplicate confirmation while saving. Issued
+order snapshots remain protected. Checkout and saved calculator links follow a
+deleted invoice's public redirect in the selected language with history replacement,
+before mapping the response to a quote. Accept only internal paths, rejecting
+protocol-relative URLs and backslashes. Browser scenarios UI-INVOICE-004/005 and
+ADMIN-CAD-001/002 cover stable identity, confirmation, replacement and redirect.
 
 ### Oversized models and split consent
 

@@ -144,8 +144,6 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.06;
     this.controls.enablePan = false;
-    this.controls.minDistance = 10;
-    this.controls.maxDistance = 600;
     this.controls.addEventListener('start', () => {
       this.autoRotate = false;
     });
@@ -242,6 +240,11 @@ export class StlViewerComponent implements OnInit, OnDestroy, OnChanges {
         let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
         cameraZ *= 1.72;
 
+        // Fit the view in model units, including meshes smaller than one mm.
+        this.controls.minDistance = maxDim * 0.05;
+        this.controls.maxDistance = maxDim * 20;
+        this.camera.near = Math.max(maxDim / 1000, 0.000001);
+        this.camera.far = Math.max(maxDim * 100, 1);
         this.camera.position.set(
           cameraZ * 0.68,
           cameraZ * 0.62,

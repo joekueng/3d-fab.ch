@@ -4,6 +4,7 @@ import com.printcalculator.dto.QuoteRequestDto;
 import com.printcalculator.entity.CustomQuoteRequest;
 import com.printcalculator.event.CustomQuoteRequestCreatedEvent;
 import com.printcalculator.repository.CustomQuoteRequestRepository;
+import com.printcalculator.service.LegalConsentService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -22,17 +23,20 @@ public class CustomQuoteRequestControllerService {
     private final CustomQuoteRequestRepository requestRepo;
     private final CustomQuoteRequestAttachmentService attachmentService;
     private final ApplicationEventPublisher eventPublisher;
+    private final LegalConsentService legalConsentService;
 
     public CustomQuoteRequestControllerService(CustomQuoteRequestRepository requestRepo,
                                                CustomQuoteRequestAttachmentService attachmentService,
-                                               ApplicationEventPublisher eventPublisher) {
+                                               ApplicationEventPublisher eventPublisher,
+                                               LegalConsentService legalConsentService) {
         this.requestRepo = requestRepo;
         this.attachmentService = attachmentService;
         this.eventPublisher = eventPublisher;
+        this.legalConsentService = legalConsentService;
     }
 
     @Transactional(rollbackFor = IOException.class)
-    public CustomQuoteRequest createCustomQuoteRequest(QuoteRequestDto requestDto, List<MultipartFile> files) throws IOException {
+    public CustomQuoteRequest createCustomQuoteRequest(QuoteRequestDto requestDto, List<MultipartFile> files, String clientIp) throws IOException {
         validateConsents(requestDto);
 
         CustomQuoteRequest request = new CustomQuoteRequest();
@@ -49,6 +53,7 @@ public class CustomQuoteRequestControllerService {
         request.setUpdatedAt(OffsetDateTime.now());
 
         request = requestRepo.save(request);
+        legalConsentService.recordContactRequest(request, requestDto.isAcceptTerms(), requestDto.isAcceptPrivacy(), requestDto.getLanguage(), clientIp);
 
         int attachmentsCount = attachmentService.storeAttachments(request, files);
         eventPublisher.publishEvent(new CustomQuoteRequestCreatedEvent(request.getId(), attachmentsCount, requestDto.getLanguage()));

@@ -3,6 +3,7 @@ package com.printcalculator.controller.admin;
 import com.printcalculator.dto.AdminCadInvoiceCreateRequest;
 import com.printcalculator.dto.AdminCadInvoiceDto;
 import com.printcalculator.dto.AdminCadInvoiceMetadataRequest;
+import com.printcalculator.dto.AdminCadInvoiceDeleteRequest;
 import jakarta.validation.Valid;
 import com.printcalculator.dto.AdminContactRequestDetailDto;
 import com.printcalculator.dto.AdminContactRequestDto;
@@ -108,6 +109,23 @@ public class AdminOperationsController {
             @Valid @RequestBody AdminCadInvoiceMetadataRequest payload
     ) {
         adminOperationsControllerService.updateCadInvoiceMetadata(sessionId, payload);
+        return ResponseEntity.noContent().build();
+    }
+
+    @org.springframework.web.bind.annotation.PutMapping("/cad-invoices/{sessionId}")
+    @Transactional
+    public ResponseEntity<AdminCadInvoiceDto> updateCadInvoice(
+            @PathVariable UUID sessionId, @Valid @RequestBody AdminCadInvoiceCreateRequest payload) {
+        // The URL identifies an edit, even if the optional body sessionId was removed or changed.
+        payload.setSessionId(sessionId);
+        return ResponseEntity.ok(adminOperationsControllerService.createOrUpdateCadInvoice(payload));
+    }
+
+    @PostMapping("/cad-invoices/{sessionId}/delete")
+    @Transactional
+    public ResponseEntity<Void> deleteCadInvoice(
+            @PathVariable UUID sessionId, @Valid @RequestBody AdminCadInvoiceDeleteRequest payload) {
+        adminOperationsControllerService.deleteCadInvoice(sessionId, payload);
         return ResponseEntity.noContent().build();
     }
 

@@ -65,3 +65,34 @@ Navigation specs use `openNavigation` from `e2e/navigation.ts` before interactin
 with header links. It opens the actual mobile menu when the responsive toggle
 is visible; desktop keeps its normal navigation. Follow the link and check that
 the menu closes before interacting with footer links or page content.
+
+Calculator conversion coverage is in `calculator/conversion.spec.ts` (CALC-003–005).
+It uses a synthetic OBJ cube in metres and `fixtures/cube.step`, a synthetic 10 mm
+OpenCascade box. The same STEP fixture is uploaded under both STEP and STP names.
+These cases exercise real scanning, conversion and slicing; they compare physical
+STL bounds and downloaded original bytes, preserve OBJ units after session resume,
+and retain invalid CAD files for review. No external CAD file or customer data is used.
+`admin/cad-invoice-lifecycle.spec.ts` (ADMIN-CAD-001/002) exercises real persistence,
+anonymous/CSRF rejection, editing, deletion, replacement and both saved-link entry points.
+
+Run these against a fresh disposable stack from the repository root:
+
+```bash
+E2E_TEST_GREP='CALC-003|CALC-004|CALC-005|ADMIN-CAD-' bash scripts/e2e/run.sh fullstack
+```
+
+API snapshots are read through `page.request` after the UI mutation completes;
+session identity is taken from the affected request URL or the read-only session
+field. This avoids depending on the lifetime of a browser response body during
+Angular navigation. For transient binary model previews, `capturePreview` forwards
+the original browser request once with
+[`route.fetch()`](https://playwright.dev/docs/api/class-route#route-fetch), retains
+the real backend status/body and delivers that same response with
+[`route.fulfill()`](https://playwright.dev/docs/api/class-route#route-fulfill).
+These APIs are present in the pinned Playwright 1.63.0 types. No preview is
+fabricated or requested a second time. Do not read these blobs through the
+browser debugging protocol: Chromium may no longer retain them. Check both the
+retained STL bounds and the viewer's rendered dimensions so forwarding cannot
+hide a failure to consume the preview in the application.
+Keep failing regressions active: a confirmed defect must not be hidden with
+retries or skips.

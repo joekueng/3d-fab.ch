@@ -108,6 +108,8 @@ public class QuoteSessionResponseAssembler {
         dto.put("filamentColorLabelFr", item.getFilamentVariant() != null ? item.getFilamentVariant().getColorLabelFr() : null);
         dto.put("materialCode", item.getMaterialCode());
         dto.put("quality", item.getQuality());
+        dto.put("modelUnit", item.getPricingBreakdown() != null
+                ? item.getPricingBreakdown().getOrDefault("modelUnit", "mm") : "mm");
         dto.put("nozzleDiameterMm", item.getNozzleDiameterMm());
         dto.put("layerHeightMm", item.getLayerHeightMm());
         dto.put("infillPercent", item.getInfillPercent());

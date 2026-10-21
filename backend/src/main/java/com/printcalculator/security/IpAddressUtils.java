@@ -1,4 +1,4 @@
-package com.printcalculator.service.qr;
+package com.printcalculator.security;
 
 import org.springframework.security.web.util.matcher.IpAddressMatcher;
 
@@ -9,7 +9,7 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
 
-final class IpAddressUtils {
+public final class IpAddressUtils {
 
     private IpAddressUtils() {
     }
@@ -22,7 +22,7 @@ final class IpAddressUtils {
         return resolveClientIp(null, forwardedFor, realIp, remoteAddress, trustProxyHeaders, trustedProxyMatchers);
     }
 
-    static String resolveClientIp(String forwarded,
+    public static String resolveClientIp(String forwarded,
                                   String forwardedFor,
                                   String realIp,
                                   String remoteAddress,
@@ -66,7 +66,7 @@ final class IpAddressUtils {
         return "unknown";
     }
 
-    static List<IpAddressMatcher> parseTrustedProxyMatchers(String trustedProxyNetworks) {
+    public static List<IpAddressMatcher> parseTrustedProxyMatchers(String trustedProxyNetworks) {
         return Arrays.stream(String.valueOf(trustedProxyNetworks == null ? "" : trustedProxyNetworks).split(","))
                 .map(String::trim)
                 .filter(value -> !value.isBlank())
@@ -74,7 +74,7 @@ final class IpAddressUtils {
                 .toList();
     }
 
-    static String normalizeIp(String candidate) {
+    public static String normalizeIp(String candidate) {
         String normalized = normalizeCandidate(candidate);
         if (normalized == null) {
             return null;
@@ -87,7 +87,7 @@ final class IpAddressUtils {
         }
     }
 
-    static boolean isPublicIp(String candidate) {
+    public static boolean isPublicIp(String candidate) {
         String normalized = normalizeIp(candidate);
         if (normalized == null) {
             return false;
@@ -115,7 +115,7 @@ final class IpAddressUtils {
         }
     }
 
-    static boolean isTrustedProxy(String remoteAddress, List<IpAddressMatcher> trustedProxyMatchers) {
+    public static boolean isTrustedProxy(String remoteAddress, List<IpAddressMatcher> trustedProxyMatchers) {
         if (remoteAddress == null || trustedProxyMatchers == null || trustedProxyMatchers.isEmpty()) {
             return false;
         }
@@ -135,22 +135,14 @@ final class IpAddressUtils {
             return null;
         }
 
-        String fallbackUntrustedIp = null;
         for (int i = normalizedChain.size() - 1; i >= 0; i--) {
             String candidate = normalizedChain.get(i);
             if (isTrustedProxy(candidate, trustedProxyMatchers)) {
                 continue;
             }
-            if (fallbackUntrustedIp == null) {
-                fallbackUntrustedIp = candidate;
-            }
-            if (isPublicIp(candidate)) {
-                return candidate;
-            }
-        }
-
-        if (fallbackUntrustedIp != null) {
-            return fallbackUntrustedIp;
+            // Stop at the trust boundary, including private peers: any earlier
+            // address may be a client-supplied prefix rather than an audit identity.
+            return candidate;
         }
 
         return normalizedChain.get(0);

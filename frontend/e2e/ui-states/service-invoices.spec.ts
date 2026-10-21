@@ -4,6 +4,103 @@ import {
   AdminCreateCadInvoicePayload,
 } from '../../src/app/features/admin/services/admin-operations.service';
 
+test('UI-INVOICE-004: simulated editing and replacement preserve the shared link', async ({ page }, testInfo) => {
+  const id = '66666666-6666-6666-6666-666666666666';
+  let invoice: AdminCadInvoice | null = {
+    sessionId: id, sessionStatus: 'CAD_ACTIVE', invoiceName: 'Link stabile',
+    cadHours: 0, cadHourlyRateChf: 0, cadTotalChf: 0, printItemsTotalChf: 0,
+    setupCostChf: 0, shippingCostChf: 0, grandTotalChf: 20,
+    checkoutPath: `/checkout/cad?session=${id}`, createdAt: '2026-10-20T12:00:00Z',
+    serviceLines: [{ description: 'Design', billingType: 'FIXED', quantity: 1, unitPriceChf: 20 }],
+  };
+  let deleteCalls = 0;
+  let updates = 0;
+  await page.route('**/api/**', async route => {
+    const path = new URL(route.request().url()).pathname;
+    const method = route.request().method();
+    if (path.endsWith('/auth/me')) return route.fulfill({ json: { authenticated: true } });
+    if (path.endsWith('/cad-invoices')) {
+      expect(method).toBe('GET');
+      return route.fulfill({ json: invoice ? [invoice] : [] });
+    }
+    if (path.endsWith(`/cad-invoices/${id}`) && method === 'PUT') {
+      updates++;
+      const body = route.request().postDataJSON() as AdminCreateCadInvoicePayload;
+      expect(body.sessionId).toBe(id);
+      invoice = { ...body, sessionId: id, sessionStatus: 'CAD_ACTIVE', cadHours: 0,
+        cadHourlyRateChf: 0, cadTotalChf: 0, printItemsTotalChf: 0, setupCostChf: 0,
+        shippingCostChf: 0, grandTotalChf: 30, checkoutPath: `/checkout/cad?session=${id}`,
+        createdAt: '2026-10-20T12:00:00Z' };
+      return route.fulfill({ json: invoice });
+    }
+    if (path.endsWith('/delete')) {
+      deleteCalls++;
+      expect(route.request().postDataJSON()).toEqual(deleteCalls === 1
+        ? { linkAction: 'NEW_INVOICE' }
+        : { linkAction: 'REDIRECT', targetPath: '/contact' });
+      invoice = null;
+      return route.fulfill({ status: 204 });
+    }
+    if (path.endsWith('/items')) return route.fulfill({ json: {
+      sessionId: id, sessionStatus: 'CAD_ACTIVE', items: [], grandTotalChf: 30,
+    } });
+    return route.fulfill({ json: [] });
+  });
+  await page.goto('/it/admin/cad-invoices');
+  await page.getByRole('button', { name: 'Modifica prestazioni', exact: true }).click();
+  const sessionField = page.getByLabel('ID sessione calcolatore (opzionale)');
+  await expect(sessionField).toHaveAttribute('readonly', '');
+  await page.getByLabel('Importo CHF', { exact: true }).fill('30');
+  await page.getByRole('button', { name: 'Salva e prepara checkout', exact: true }).click();
+  await expect(sessionField).toHaveValue(id);
+  expect(updates).toBe(1);
+  await expect(page.getByLabel('Descrizione e dettagli', { exact: true })).toHaveValue('Design');
+  await page.getByRole('button', { name: 'Elimina', exact: true }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  expect(deleteCalls).toBe(0);
+  await page.getByRole('dialog').getByRole('button', { name: 'Annulla', exact: true }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  expect(deleteCalls).toBe(0);
+  await page.getByRole('button', { name: 'Elimina', exact: true }).click();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath('cad-delete-mobile.png'), fullPage: true });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await page.getByRole('dialog').getByRole('button', { name: 'Conferma eliminazione', exact: true }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  expect(deleteCalls).toBe(1);
+  await expect(sessionField).toHaveValue(id);
+  await expect(page.getByLabel('Descrizione e dettagli', { exact: true })).toHaveValue('');
+  await page.getByLabel('Descrizione e dettagli', { exact: true }).fill('Nuova prestazione');
+  await page.getByLabel('Ore', { exact: true }).fill('1');
+  await page.getByLabel('Tariffa CHF/h', { exact: true }).fill('30');
+  await page.getByRole('button', { name: 'Salva e prepara checkout', exact: true }).click();
+  await expect(page.locator('table.cad-invoices-table tbody tr')).toHaveCount(1);
+  await expect(page.getByLabel('Descrizione e dettagli', { exact: true })).toHaveValue('Nuova prestazione');
+  expect(updates).toBe(2);
+  await expect(sessionField).toHaveValue(id);
+  await page.getByRole('button', { name: 'Elimina', exact: true }).click();
+  await page.getByRole('dialog').getByLabel('Gestione del vecchio link')
+    .selectOption({ label: 'Reindirizza a una pagina del sito' });
+  await page.getByRole('dialog').getByLabel('Pagina di destinazione (percorso interno)').fill('/contact');
+  await page.screenshot({ path: testInfo.outputPath('cad-delete-redirect-mobile.png'), fullPage: true });
+  await page.getByRole('dialog').getByRole('button', { name: 'Conferma eliminazione', exact: true }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(sessionField).toHaveValue('');
+  expect(deleteCalls).toBe(2);
+});
+
+test('UI-INVOICE-005: simulated deleted link redirects to a public page', async ({ page }) => {
+  await page.route('**/api/**', async route => {
+    const path = new URL(route.request().url()).pathname;
+    if (path.endsWith('/resume')) return route.fulfill({ json: null });
+    if (path === '/api/quote-sessions/deleted-cad') return route.fulfill({ json: { redirectPath: '/contact' } });
+    return route.fulfill({ json: [] });
+  });
+  await page.goto('/it/checkout/cad?session=deleted-cad');
+  await expect(page).toHaveURL(/\/it\/contact$/);
+});
+
 test('UI-INVOICE-001: simulated API supports custom rows, grouping and interim invoices', async ({
   page,
 }, testInfo) => {

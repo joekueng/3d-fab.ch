@@ -16,6 +16,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class QuoteSessionEmailServiceTest {
+    @Test void deletedRedirectDoesNotRecoverInstructionsOrExpireItsDestination() {
+        session.setStatus("CAD_DELETED");
+        session.setDeletedRedirectPath("/contact");
+        session.setExpiresAt(OffsetDateTime.now().minusMonths(1));
+        assertNull(service.resume(session.getId()));
+        verifyNoInteractions(information);
+    }
     private final QuoteSessionRepository repo = mock(QuoteSessionRepository.class);
     private final OrderInformationService information = mock(OrderInformationService.class);
     private final EmailNotificationService mail = mock(EmailNotificationService.class);
