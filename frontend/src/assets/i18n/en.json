@@ -668,7 +668,7 @@
       "ITEMS": {
         "FILES": {
           "Q": "Which files can I upload?",
-          "A": "You can upload STL or 3MF files. If you download a model from an external portal, make sure it is an actual 3D file and not just images or documentation."
+          "A": "You can upload STL, 3MF, OBJ or STEP/STP files. If you download a model from an external site, check that it is a ready-to-print 3D file rather than just images or documentation."
         },
         "MODE": {
           "Q": "How do I choose between Basic and Advanced?",
@@ -689,7 +689,7 @@
       }
     },
     "UPLOAD_LABEL": "Drag your 3D file here",
-    "UPLOAD_SUB": "Supports STL, 3MF up to 50MB",
+    "UPLOAD_SUB": "STL, 3MF, OBJ and STEP/STP · up to 200 MB",
     "MATERIAL": "Material",
     "QUALITY": "Quality",
     "QUANTITY": "Quantity",
@@ -726,12 +726,11 @@
     "BENEFITS_2": "Selected materials and quality control",
     "BENEFITS_3": "CAD consultation if file needs modifications",
     "ERR_FILE_REQUIRED": "File is required.",
-    "STEP_WARNING": "3D preview is available only for STL files.",
     "REMOVE_FILE": "Remove file",
     "FALLBACK_MATERIAL": "PLA (fallback)",
     "FALLBACK_QUALITY_STANDARD": "Standard",
     "ERR_FILE_TOO_LARGE": "Some files exceed the 200MB limit and were not added.",
-    "ERR_INVALID_FILE_TYPE": "You can upload only .stl or .3mf files.",
+    "ERR_INVALID_FILE_TYPE": "You can upload STL, 3MF, OBJ or STEP/STP files.",
     "PRINT_SPEED": "Print speed",
     "COLOR": "Color",
     "ANALYZING_TITLE": "Analysis in progress...",
@@ -788,6 +787,8 @@
     "SPLIT_REQUEST_ACTION": "Request model splitting",
     "REVIEW_OUT_OF_VOLUME": "The model exceeds the available print volume.",
     "REVIEW_PROCESSING_FAILED": "The file could not be analysed automatically. It remains saved for manual review.",
+    "REVIEW_TOO_SMALL": "The model is too small for the selected nozzle. Check the units and export it in millimetres.",
+    "MODEL_UNIT": "Units",
     "REVIEW_PARTIAL_SINGLE": "{{fileName}} is not included in the total. {{reason}}",
     "REVIEW_PARTIAL_MULTIPLE": "{{count}} files are not included in the total: {{fileNames}}. {{reason}}",
     "FILE_REVIEW_REQUIRED": "Review required"

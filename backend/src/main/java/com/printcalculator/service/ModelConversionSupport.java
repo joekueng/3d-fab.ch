@@ -41,13 +41,46 @@ import static org.lwjgl.assimp.Assimp.aiProcess_SortByPType;
 import static org.lwjgl.assimp.Assimp.aiProcess_Triangulate;
 import static org.lwjgl.assimp.Assimp.aiReleaseImport;
 
-final class ThreeMfConversionSupport {
-    private static final Logger logger = Logger.getLogger(ThreeMfConversionSupport.class.getName());
+final class ModelConversionSupport {
+    private static final Logger logger = Logger.getLogger(ModelConversionSupport.class.getName());
 
     private final String trustedAssimpPath;
 
-    ThreeMfConversionSupport(String trustedAssimpPath) {
+    ModelConversionSupport(String trustedAssimpPath) {
         this.trustedAssimpPath = trustedAssimpPath;
+    }
+
+    Path convertMeshToPersistentStl(File inputModel, Path destinationStl) throws IOException {
+        return convertMeshToPersistentStl(inputModel, destinationStl, 1);
+    }
+
+    Path convertMeshToPersistentStl(File inputModel, Path destinationStl, double millimetresPerUnit) throws IOException {
+        Path tempDir = Files.createTempDirectory("mesh_convert_");
+        try {
+            Path source = inputModel.toPath();
+            if (inputModel.getName().toLowerCase(java.util.Locale.ROOT).endsWith(".obj")) {
+                // Preview and printing use geometry only; never resolve uploaded MTL paths.
+                source = tempDir.resolve("geometry.obj");
+                try (var reader = Files.newBufferedReader(inputModel.toPath(), StandardCharsets.UTF_8);
+                     var writer = Files.newBufferedWriter(source, StandardCharsets.UTF_8)) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        if (!line.stripLeading().startsWith("mtllib")) {
+                            writer.write(line);
+                            writer.newLine();
+                        }
+                    }
+                }
+            }
+            Files.createDirectories(destinationStl.toAbsolutePath().getParent());
+            convertToStlWithLwjglAssimp(source, destinationStl, millimetresPerUnit);
+            return destinationStl;
+        } catch (IOException | RuntimeException | LinkageError failure) {
+            Files.deleteIfExists(destinationStl);
+            throw new ModelProcessingException("MODEL_CONVERSION_FAILED", "Unable to convert this model to STL.", failure);
+        } finally {
+            SlicerFileSupport.deleteRecursively(tempDir, logger);
+        }
     }
 
     Path convert3mfToPersistentStl(File input3mf, Path destinationStl) throws IOException {
@@ -94,7 +127,7 @@ final class ThreeMfConversionSupport {
 
         Path lwjglConvertedStl = conversionOutputDir.resolve("converted-lwjgl.stl");
         try {
-            long lwjglTriangles = convert3mfToStlWithLwjglAssimp(input3mf.toPath(), lwjglConvertedStl);
+            long lwjglTriangles = convertToStlWithLwjglAssimp(input3mf.toPath(), lwjglConvertedStl);
             if (lwjglTriangles > 0 && hasRenderableGeometry(lwjglConvertedStl)) {
                 logger.info("Converted 3MF to STL via LWJGL Assimp. Triangles: " + lwjglTriangles);
                 return List.of(lwjglConvertedStl.toString());
@@ -158,12 +191,16 @@ final class ThreeMfConversionSupport {
         );
     }
 
-    private long convert3mfToStlWithLwjglAssimp(Path input3mf, Path outputStl) throws IOException {
+    private long convertToStlWithLwjglAssimp(Path inputModel, Path outputStl) throws IOException {
+        return convertToStlWithLwjglAssimp(inputModel, outputStl, 1);
+    }
+
+    private long convertToStlWithLwjglAssimp(Path inputModel, Path outputStl, double scale) throws IOException {
         int flags = aiProcess_Triangulate
                 | aiProcess_JoinIdenticalVertices
                 | aiProcess_PreTransformVertices
                 | aiProcess_SortByPType;
-        AIScene scene = aiImportFile(input3mf.toString(), flags);
+        AIScene scene = aiImportFile(inputModel.toString(), flags);
         if (scene == null) {
             throw new IOException("LWJGL Assimp import failed: " + aiGetErrorString());
         }
@@ -211,9 +248,9 @@ final class ThreeMfConversionSupport {
                         continue;
                     }
 
-                    Vec3 p1 = toVec3(vertices.get(i0));
-                    Vec3 p2 = toVec3(vertices.get(i1));
-                    Vec3 p3 = toVec3(vertices.get(i2));
+                    Vec3 p1 = scaledVertex(vertices.get(i0), scale);
+                    Vec3 p2 = scaledVertex(vertices.get(i1), scale);
+                    Vec3 p3 = scaledVertex(vertices.get(i2), scale);
                     writeAsciiFacet(writer, p1, p2, p3);
                     triangleCount++;
                 }
@@ -470,6 +507,10 @@ final class ThreeMfConversionSupport {
 
     private Vec3 toVec3(AIVector3D v) {
         return new Vec3(v.x(), v.y(), v.z());
+    }
+
+    private Vec3 scaledVertex(AIVector3D v, double scale) {
+        return new Vec3(v.x() * scale, v.y() * scale, v.z() * scale);
     }
 
     private Vec3 computeNormal(Vec3 a, Vec3 b, Vec3 c) {

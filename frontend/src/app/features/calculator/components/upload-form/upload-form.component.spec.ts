@@ -1,9 +1,9 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { signal } from '@angular/core';
+import { Component, input, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideTranslateService, TranslateService } from '@ngx-translate/core';
-import { firstValueFrom, of } from 'rxjs';
+import { NEVER, Subject, firstValueFrom, of } from 'rxjs';
 import deTranslations from '../../../../../assets/i18n/de.json';
 import itTranslations from '../../../../../assets/i18n/it.json';
 import { LanguageService } from '../../../../core/services/language.service';
@@ -12,11 +12,20 @@ import {
   QuoteEstimatorService,
 } from '../../services/quote-estimator.service';
 import { UploadFormComponent } from './upload-form.component';
+import { ModelPreviewService } from '../../services/model-preview.service';
+import { StlViewerComponent } from '../../../../shared/components/stl-viewer/stl-viewer.component';
+
+@Component({ selector: 'app-stl-viewer', standalone: true, template: '' })
+class PreviewViewerStub {
+  file = input<Blob | null>(null);
+  color = input<string>('');
+}
 
 describe('UploadFormComponent', () => {
   let fixture: ComponentFixture<UploadFormComponent>;
   let component: UploadFormComponent;
   let translate: TranslateService;
+  let previews: jasmine.SpyObj<ModelPreviewService>;
 
   const currentLang = signal<'it' | 'en' | 'de' | 'fr'>('de');
   const languageServiceStub = {
@@ -76,6 +85,8 @@ describe('UploadFormComponent', () => {
 
   beforeEach(async () => {
     currentLang.set('de');
+    previews = jasmine.createSpyObj<ModelPreviewService>('ModelPreviewService', ['createStlPreview']);
+    previews.createStlPreview.and.returnValue(NEVER);
 
     await TestBed.configureTestingModule({
       imports: [UploadFormComponent],
@@ -88,8 +99,14 @@ describe('UploadFormComponent', () => {
           useValue: { getOptions: () => of(options) },
         },
         { provide: LanguageService, useValue: languageServiceStub },
+        { provide: ModelPreviewService, useValue: previews },
       ],
-    }).compileComponents();
+    })
+      .overrideComponent(UploadFormComponent, {
+        remove: { imports: [StlViewerComponent] },
+        add: { imports: [PreviewViewerStub] },
+      })
+      .compileComponents();
 
     translate = TestBed.inject(TranslateService);
     translate.setFallbackLang('it');
@@ -236,5 +253,105 @@ describe('UploadFormComponent', () => {
     expect(component.nozzleDiameters().map((option) => option.value)).toContain(
       0.8,
     );
+  });
+
+  for (const extension of ['3mf', 'obj', 'step', 'stp']) {
+    it(`converts a ${extension} before calculating and keeps the uploaded original`, async () => {
+      fixture.autoDetectChanges();
+      const response = new Subject<Blob>();
+      previews.createStlPreview.and.returnValue(response);
+      const original = new File(['original project'], `assembly.${extension}`);
+
+      component.onFilesDropped([original]);
+      fixture.detectChanges();
+      expect(component.previewLoading()).toBeTrue();
+      expect(previews.createStlPreview).toHaveBeenCalledOnceWith(original, 'mm');
+
+      response.next(new Blob(['solid preview'], { type: 'model/stl' }));
+      response.complete();
+      await fixture.whenStable();
+
+      expect(component.previewLoading()).toBeFalse();
+      expect(component.canPreviewSelectedFile()).toBeTrue();
+      expect(component.getSelectedPreviewFile()?.name).toBe('assembly.stl');
+      expect(component.getCurrentRequestDraft().items[0].file).toBe(original);
+      expect(fixture.nativeElement.querySelector('app-stl-viewer')).not.toBeNull();
+    });
+  }
+
+  it('cancels stale previews and distinguishes files with identical names', () => {
+    const firstResponse = new Subject<Blob>();
+    const secondResponse = new Subject<Blob>();
+    previews.createStlPreview.and.returnValues(firstResponse, secondResponse, NEVER);
+    const first = new File(['first project'], 'same.3mf');
+    const second = new File(['second project'], 'same.3mf');
+    component.onFilesDropped([first]);
+    component.onFilesDropped([second]);
+    expect(firstResponse.observed).toBeFalse();
+    firstResponse.next(new Blob(['stale']));
+    expect(component.items()[0].previewFile).toBeUndefined();
+    secondResponse.next(new Blob(['correct preview']));
+    secondResponse.complete();
+    const preview = component.getSelectedPreviewFile();
+    component.selectFile(first);
+    component.selectFile(second);
+    expect(component.getSelectedPreviewFile()).toBe(preview);
+    expect(previews.createStlPreview.calls.allArgs().filter(([file]) => file === second).length).toBe(1);
+    expect(component.items().map((item) => item.file)).toEqual([first, second]);
+  });
+
+  it('retains an OBJ for quoting when its preview fails', () => {
+    const response = new Subject<Blob>();
+    previews.createStlPreview.and.returnValue(response);
+    const original = new File(['v 0 0 0'], 'part.obj');
+    component.onFilesDropped([original]);
+    response.error(new Error('conversion unavailable'));
+    expect(component.previewLoading()).toBeFalse();
+    expect(component.canPreviewSelectedFile()).toBeFalse();
+    expect(component.getCurrentRequestDraft().items[0].file).toBe(original);
+  });
+
+  it('changes OBJ preview and quote units together and caches each unit separately', () => {
+    const millimetres = new Subject<Blob>();
+    const metres = new Subject<Blob>();
+    previews.createStlPreview.and.returnValues(millimetres, metres);
+    const original = new File(['v 0 0 0'], 'part.obj');
+    component.onFilesDropped([original]);
+    millimetres.next(new Blob(['millimetre preview']));
+    const smallPreview = component.getSelectedPreviewFile();
+    component.setItemReviewStateByIndex(0, 'error', 'too small');
+    component.updateItemModelUnit(0, 'm');
+    expect(component.getSelectedPreviewFile()).toBeNull();
+    expect(component.items()[0].reviewLevel).toBeUndefined();
+    expect(previews.createStlPreview).toHaveBeenCalledWith(original, 'm');
+    expect(component.getCurrentRequestDraft().items[0].modelUnit).toBe('m');
+    metres.next(new Blob(['metre preview']));
+    expect(component.items()[0].previewUnit).toBe('m');
+    expect(component.getSelectedPreviewFile()).not.toBe(smallPreview);
+    component.updateItemModelUnit(0, 'mm');
+    expect(component.getSelectedPreviewFile()).toBe(smallPreview);
+    expect(previews.createStlPreview.calls.count()).toBe(2);
+    expect(component.getCurrentRequestDraft().items[0].file).toBe(original);
+  });
+
+  it('discards a restored preview when its units do not match the selected units', () => {
+    const original = new File(['project'], 'part.obj');
+    component.setFiles([original], { autoSelect: false });
+    component.setPreviewFileByIndex(0, new File(['old'], 'part.stl'), 'mm');
+    component.setItemPrintSettingsByIndex(0, { modelUnit: 'm' });
+    component.selectFile(original);
+    expect(component.getSelectedPreviewFile()).toBeNull();
+    expect(previews.createStlPreview).toHaveBeenCalledWith(original, 'm');
+  });
+
+  it('reuses local and restored STL previews without another upload', () => {
+    const original = new File(['project'], 'part.3mf');
+    const preview = new File(['solid preview'], 'part.stl');
+    component.setFiles([original], { autoSelect: false });
+    component.setPreviewFileByIndex(0, preview);
+    component.selectFile(original);
+    component.onFilesDropped([new File(['solid local'], 'local.stl')]);
+    expect(component.canPreviewSelectedFile()).toBeTrue();
+    expect(previews.createStlPreview).not.toHaveBeenCalled();
   });
 });

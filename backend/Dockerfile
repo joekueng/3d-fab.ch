@@ -27,6 +27,7 @@ RUN set -eux; \
     squashfs-tools \
     ca-certificates \
     assimp-utils \
+    python3-venv \
     libgl1 \
     libopengl0 \
     libglu1-mesa \
@@ -64,6 +65,13 @@ RUN set -eux; \
     rm -rf /tmp/ffmpeg-*-amd64-static; \
     rm -rf /var/lib/apt/lists/*
 
+# Install the STEP converter in its own Python environment.
+COPY step-requirements.txt /tmp/step-requirements.txt
+RUN /usr/bin/python3 -m venv /opt/step-converter \
+    && /opt/step-converter/bin/pip install --no-cache-dir --require-hashes --only-binary=:all: -r /tmp/step-requirements.txt \
+    && /opt/step-converter/bin/python -I -c "from OCP.STEPControl import STEPControl_Reader; from OCP.StlAPI import StlAPI_Writer" \
+    && rm /tmp/step-requirements.txt
+
 # Install OrcaSlicer
 WORKDIR /opt
 RUN set -eux; \
@@ -88,6 +96,7 @@ ENV PATH="/opt/orcaslicer/usr/bin:${PATH}"
 # Set Slicer Path env variable for Java app
 ENV SLICER_PATH="/opt/orcaslicer/AppRun"
 ENV ASSIMP_PATH="assimp"
+ENV STEP_PYTHON_PATH="/opt/step-converter/bin/python"
 # Use ffmpeg selected at image build time (system or static fallback) for media generation.
 ENV MEDIA_FFMPEG_PATH="/usr/local/bin/ffmpeg-media"
 

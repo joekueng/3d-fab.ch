@@ -56,6 +56,9 @@ public class QuoteStorageService {
         return switch (ext) {
             case "stl" -> "stl";
             case "3mf" -> "3mf";
+            case "obj" -> "obj";
+            case "step" -> "step";
+            case "stp" -> "stp";
             default -> fallback;
         };
     }

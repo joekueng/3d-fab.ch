@@ -69,6 +69,7 @@ public class QuoteController {
             @RequestParam(value = "layer_height", required = false) Double layerHeight,
             @RequestParam(value = "nozzle_diameter", required = false) Double nozzleDiameter,
             @RequestParam(value = "support_enabled", required = false) Boolean supportEnabled,
+            @RequestParam(value = "modelUnit", required = false, defaultValue = "mm") String modelUnit,
             HttpServletRequest request
             ) throws IOException {
 
@@ -120,7 +121,7 @@ public class QuoteController {
             // For now, we trust the override key works on the base profile.
         }
 
-        return processRequest(file, filament, actualProcess, machineOverrides, processOverrides);
+        return processRequest(file, filament, actualProcess, machineOverrides, processOverrides, modelUnit);
     }
 
     @PostMapping("/calculate/stl")
@@ -130,24 +131,25 @@ public class QuoteController {
     ) throws IOException {
         quoteRateLimitService.checkSlicingAllowed(request);
         // Legacy endpoint uses defaults
-        return processRequest(file, DEFAULT_FILAMENT, DEFAULT_PROCESS, null, null);
+        return processRequest(file, DEFAULT_FILAMENT, DEFAULT_PROCESS, null, null, "mm");
     }
 
     private ResponseEntity<QuoteResult> processRequest(MultipartFile file, String filament, String process,
                                                        Map<String, String> machineOverrides,
-                                                       Map<String, String> processOverrides) throws IOException {
+                                                       Map<String, String> processOverrides, String modelUnit) throws IOException {
+        com.printcalculator.model.ModelUnit.parse(modelUnit);
         try (var lease = slicingCapacityService.acquire()) {
-            return processAdmittedRequest(file, filament, process, machineOverrides, processOverrides);
+            return processAdmittedRequest(file, filament, process, machineOverrides, processOverrides, modelUnit);
         }
     }
 
     private ResponseEntity<QuoteResult> processAdmittedRequest(MultipartFile file, String filament, String process,
-            Map<String, String> machineOverrides, Map<String, String> processOverrides) throws IOException {
+            Map<String, String> machineOverrides, Map<String, String> processOverrides, String modelUnit) throws IOException {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
         if (!isSupportedInputFile(file)) {
-            throw new ResponseStatusException(BAD_REQUEST, "Unsupported file type. Allowed: stl, 3mf");
+            throw new ResponseStatusException(BAD_REQUEST, "Unsupported file type. Allowed: stl, 3mf, obj, step, stp");
         }
 
         // Scan for virus
@@ -161,12 +163,21 @@ public class QuoteController {
 
         // Save uploaded file temporarily
         Path tempInput = Files.createTempFile("upload_", "_" + file.getOriginalFilename());
+        Path convertedInput = null;
         try {
             file.transferTo(tempInput.toFile());
 
+            Path slicerInput = tempInput;
+            String originalName = file.getOriginalFilename().toLowerCase(Locale.ROOT);
+            if (originalName.endsWith(".obj") || originalName.endsWith(".step") || originalName.endsWith(".stp")) {
+                convertedInput = Files.createTempFile("converted_", ".stl");
+                slicerService.convertModelToPersistentStl(tempInput.toFile(), convertedInput, modelUnit);
+                slicerInput = convertedInput;
+            }
+
             String slicerMachineProfile = "bambu_a1"; // TODO: Add to PrinterMachine entity
 
-            PrintStats stats = slicerService.slice(tempInput.toFile(), slicerMachineProfile, filament, process, machineOverrides, processOverrides);
+            PrintStats stats = slicerService.slice(slicerInput.toFile(), slicerMachineProfile, filament, process, machineOverrides, processOverrides);
             
             // Calculate Quote (Pass machine display name for pricing lookup)
             QuoteResult result = quoteCalculator.calculate(stats, machine.getPrinterDisplayName(), filament);
@@ -178,6 +189,9 @@ public class QuoteController {
             return ResponseEntity.internalServerError().build();
         } finally {
             Files.deleteIfExists(tempInput);
+            if (convertedInput != null) {
+                Files.deleteIfExists(convertedInput);
+            }
         }
     }
 
@@ -188,6 +202,7 @@ public class QuoteController {
         }
 
         String normalized = originalFilename.toLowerCase(Locale.ROOT);
-        return normalized.endsWith(".stl") || normalized.endsWith(".3mf");
+        return normalized.endsWith(".stl") || normalized.endsWith(".3mf") || normalized.endsWith(".obj")
+                || normalized.endsWith(".step") || normalized.endsWith(".stp");
     }
 }

@@ -49,6 +49,7 @@ type TrackedPrintSettings = {
 
 type TrackedPrintItemState = {
   fileName: string;
+  modelUnit?: string;
   settings: TrackedPrintSettings;
 };
 
@@ -116,7 +117,8 @@ export class CalculatorPageComponent
       this.error() &&
       (this.errorCode() === 'MODEL_REQUIRES_CUSTOM_QUOTE' ||
         this.errorCode() === 'MODEL_OUT_OF_PRINT_VOLUME' ||
-        this.errorCode() === 'MODEL_PROCESSING_FAILED'),
+        this.errorCode() === 'MODEL_PROCESSING_FAILED' ||
+        this.errorCode() === 'MODEL_CONVERSION_FAILED'),
   );
   isOutOfVolumeError = computed(
     () => this.errorCode() === 'MODEL_OUT_OF_PRINT_VOLUME',
@@ -805,10 +807,12 @@ export class CalculatorPageComponent
     const requiresManualReview =
       this.errorCode() === 'MODEL_OUT_OF_PRINT_VOLUME' ||
       this.errorCode() === 'MODEL_PROCESSING_FAILED' ||
+      this.errorCode() === 'MODEL_CONVERSION_FAILED' ||
       (this.result()?.failedItems || []).some(
         (failure) =>
           failure.code === 'MODEL_OUT_OF_PRINT_VOLUME' ||
-          failure.code === 'MODEL_PROCESSING_FAILED',
+          failure.code === 'MODEL_PROCESSING_FAILED' ||
+          failure.code === 'MODEL_CONVERSION_FAILED',
       );
     if (requiresManualReview) {
       details += `- ${this.translate.instant('CALC.CONSULTATION.MANUAL_REVIEW')}\n`;
@@ -945,7 +949,13 @@ export class CalculatorPageComponent
     if (failure.code === 'MODEL_OUT_OF_PRINT_VOLUME') {
       return this.translate.instant('CALC.REVIEW_OUT_OF_VOLUME');
     }
-    if (failure.code === 'MODEL_PROCESSING_FAILED') {
+    if (failure.code === 'MODEL_TOO_SMALL') {
+      return this.translate.instant('CALC.REVIEW_TOO_SMALL');
+    }
+    if (
+      failure.code === 'MODEL_PROCESSING_FAILED' ||
+      failure.code === 'MODEL_CONVERSION_FAILED'
+    ) {
       return this.translate.instant('CALC.REVIEW_PROCESSING_FAILED');
     }
     if (failure.code === 'MODEL_REQUIRES_CUSTOM_QUOTE') {
@@ -1094,7 +1104,7 @@ export class CalculatorPageComponent
       } else {
         this.uploadForm.setFiles(payload.files, { autoSelect: false });
         payload.previewFiles.forEach((preview) => {
-          this.uploadForm.setPreviewFileByIndex(preview.index, preview.file);
+          this.uploadForm.setPreviewFileByIndex(preview.index, preview.file, payload.items[preview.index]?.modelUnit ?? 'mm');
         });
         this.uploadForm.patchSettings(payload.session);
       }
@@ -1139,6 +1149,7 @@ export class CalculatorPageComponent
           baselineSessionSettings,
         );
         this.uploadForm.setItemPrintSettingsByIndex(index, {
+          modelUnit: item.modelUnit ?? 'mm',
           material: tracked.material.toUpperCase(),
           quality: tracked.quality,
           nozzleDiameter: tracked.nozzleDiameter,
@@ -1332,6 +1343,7 @@ export class CalculatorPageComponent
   ): TrackedPrintItemState[] {
     return req.items.map((item) => ({
       fileName: this.normalizeFileName(item.file?.name || ''),
+      modelUnit: item.modelUnit ?? 'mm',
       settings: this.toTrackedSettingsFromItem(req, item),
     }));
   }
@@ -1343,6 +1355,7 @@ export class CalculatorPageComponent
     const fallback = defaultSettings ?? this.defaultTrackedSettings();
     return items.map((item) => ({
       fileName: this.normalizeFileName(item?.originalFilename || ''),
+      modelUnit: item?.modelUnit ?? 'mm',
       settings: this.toTrackedSettingsFromSessionItem(item, fallback),
     }));
   }
@@ -1387,6 +1400,7 @@ export class CalculatorPageComponent
 
     const currentItemStates = draft.items.map((item) => ({
       fileName: this.normalizeFileName(item.file?.name || ''),
+      modelUnit: item.modelUnit ?? 'mm',
       settings: this.toTrackedSettingsFromItem(draft, item),
     }));
 
@@ -1433,6 +1447,7 @@ export class CalculatorPageComponent
     const settings = item.settings;
     return [
       item.fileName,
+      item.modelUnit ?? 'mm',
       settings.mode,
       settings.material,
       settings.quality,

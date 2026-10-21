@@ -703,7 +703,7 @@
       "ITEMS": {
         "FILES": {
           "Q": "Che file posso caricare?",
-          "A": "Puoi caricare file STL o 3MF. Se scarichi un modello da un portale esterno, verifica che sia gia un file 3D pronto e non solo immagini o documentazione."
+          "A": "Puoi caricare file STL, 3MF, OBJ o STEP/STP. Se scarichi un modello da un portale esterno, verifica che sia già un file 3D pronto e non solo immagini o documentazione."
         },
         "MODE": {
           "Q": "Come scelgo tra Base e Avanzata?",
@@ -724,7 +724,7 @@
       }
     },
     "UPLOAD_LABEL": "Trascina il tuo file 3D qui",
-    "UPLOAD_SUB": "Supportiamo STL, 3MF fino a 50MB",
+    "UPLOAD_SUB": "STL, 3MF, OBJ e STEP/STP · fino a 200 MB",
     "MATERIAL": "Materiale",
     "QUALITY": "Qualità",
     "PRINT_SPEED": "Velocità di Stampa",
@@ -805,12 +805,11 @@
     "SETUP_NOTE": "* Include {{cost}} come costo di setup",
     "SHIPPING_NOTE": "* La spedizione è stimata in base a dimensioni e peso imballati e confermata al checkout.",
     "SHIPPING_UNAVAILABLE": "La spedizione non è inclusa in questo totale. Completa il calcolo o richiedi una consulenza per un preventivo di spedizione.",
-    "STEP_WARNING": "La visualizzazione 3D è disponibile solo per i file STL",
     "REMOVE_FILE": "Rimuovi file",
     "FALLBACK_MATERIAL": "PLA (fallback)",
     "FALLBACK_QUALITY_STANDARD": "Standard",
     "ERR_FILE_TOO_LARGE": "Alcuni file superano il limite di 200MB e non sono stati aggiunti.",
-    "ERR_INVALID_FILE_TYPE": "Puoi caricare solo file .stl o .3mf.",
+    "ERR_INVALID_FILE_TYPE": "Puoi caricare file STL, 3MF, OBJ o STEP/STP.",
     "ERROR_ZERO_PRICE": "Qualcosa è andato storto nel calcolo. Prova un altro formato o contattaci direttamente con Richiedi Consulenza.",
     "ZERO_RESULT_TITLE": "Risultato non valido",
     "ZERO_RESULT_HELP": "Il calcolo ha restituito valori non validi (0). Prova con un altro formato file oppure contattaci direttamente con Richiedi Consulenza.",
@@ -823,6 +822,8 @@
     "SPLIT_REQUEST_ACTION": "Richiedi la suddivisione",
     "REVIEW_OUT_OF_VOLUME": "Il modello supera il volume di stampa disponibile.",
     "REVIEW_PROCESSING_FAILED": "Non è stato possibile analizzare automaticamente il file. Il file resta salvato per una valutazione manuale.",
+    "REVIEW_TOO_SMALL": "Il modello è troppo piccolo per l’ugello selezionato. Controlla le unità ed esportalo in millimetri.",
+    "MODEL_UNIT": "Unità",
     "REVIEW_PARTIAL_SINGLE": "{{fileName}} non è incluso nel totale. {{reason}}",
     "REVIEW_PARTIAL_MULTIPLE": "{{count}} file non sono inclusi nel totale: {{fileNames}}. {{reason}}",
     "FILE_REVIEW_REQUIRED": "Richiede valutazione"

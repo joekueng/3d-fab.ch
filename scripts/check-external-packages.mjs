@@ -60,6 +60,36 @@ for (const match of build.matchAll(/id\s+['"]([^'"]+)['"]\s+version\s+['"]([^'"]
   });
 }
 
+// STEP conversion uses a separate, fully pinned Python environment.
+const pythonRequirements = read('backend/step-requirements.txt')
+  .replace(/\\\r?\n\s*/g, ' ')
+  .split(/\r?\n/)
+  .map((line) => line.trim())
+  .filter((line) => line && !line.startsWith('#'))
+  .map((line) => {
+    const match = line.match(/^([\w.-]+)==([\w.+-]+)((?:\s+--hash=sha256:[a-f0-9]{64})+)$/);
+    requireThat(match, `Unsupported or unpinned Python requirement: ${line}`);
+    return { name: match[1], version: match[2], hashes: [...match[3].matchAll(/sha256:([a-f0-9]{64})/g)].map((hash) => hash[1]) };
+  });
+requireThat(pythonRequirements.length > 0, 'No pinned STEP converter requirements found');
+const normalizePythonName = (name) => name.toLowerCase().replace(/[_.-]+/g, '-');
+const pythonVersions = new Map(pythonRequirements.map(({ name, version }) => [normalizePythonName(name), version]));
+for (const { name, version, hashes } of pythonRequirements) {
+  check(`pypi ${name}:${version}`, async () => {
+    const metadata = await (await request(`https://pypi.org/pypi/${encodeURIComponent(name)}/${encodeURIComponent(version)}/json`)).json();
+    requireThat(normalizePythonName(metadata.info?.name ?? '') === normalizePythonName(name)
+      && metadata.info?.version === version, 'PyPI identity mismatch');
+    const published = new Set(metadata.urls.filter((file) => !file.yanked && file.filename.endsWith('.whl')).map((file) => file.digests?.sha256));
+    requireThat(hashes.every((hash) => published.has(hash)), 'Locked wheel hash differs from PyPI metadata');
+    for (const dependency of metadata.info.requires_dist ?? []) {
+      const pin = dependency.match(/^([\w.-]+)==([\w.+-]+)$/);
+      requireThat(pin && pythonVersions.get(normalizePythonName(pin[1])) === pin[2],
+        `Python dependency is not locked: ${dependency}`);
+    }
+    return `verified wheel hashes; Python ${metadata.info.requires_python ?? 'unspecified'}`;
+  });
+}
+
 // Limit requests to avoid hammering registries; collect every failure.
 for (let offset = 0; offset < checks.length; offset += 4) {
   const batch = checks.slice(offset, offset + 4);
@@ -74,6 +104,6 @@ for (let offset = 0; offset < checks.length; offset += 4) {
   });
 }
 console.log(`${checks.length - failures.length}/${checks.length} metadata checks passed.`);
-console.log('Scope: direct locked npm packages, literal versioned Maven coordinates, versioned Gradle plugins.');
+console.log('Scope: direct locked npm packages, literal versioned Maven coordinates, versioned Gradle plugins, pinned STEP Python wheels.');
 console.log('Publication is not proof of trusted ownership, API compatibility or absence of vulnerabilities.');
 process.exitCode = failures.length ? 1 : 0;

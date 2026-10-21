@@ -33,20 +33,23 @@ public class SlicerService {
     private final GCodeParser gCodeParser;
     private final ObjectMapper mapper;
     private final SlicerModelInspector modelInspector;
-    private final ThreeMfConversionSupport threeMfConversionSupport;
+    private final ModelConversionSupport modelConversionSupport;
+    private final StepConversionService stepConversionService;
 
     public SlicerService(
             @Value("${slicer.path}") String slicerPath,
             @Value("${assimp.path:assimp}") String assimpPath,
             ProfileManager profileManager,
             GCodeParser gCodeParser,
-            ObjectMapper mapper) {
+            ObjectMapper mapper,
+            StepConversionService stepConversionService) {
         this.trustedSlicerPath = SlicerFileSupport.normalizeExecutablePath(slicerPath, "slicer.path");
         this.profileManager = profileManager;
         this.gCodeParser = gCodeParser;
         this.mapper = mapper;
+        this.stepConversionService = stepConversionService;
         this.modelInspector = new SlicerModelInspector(trustedSlicerPath);
-        this.threeMfConversionSupport = new ThreeMfConversionSupport(
+        this.modelConversionSupport = new ModelConversionSupport(
                 SlicerFileSupport.normalizeExecutablePath(assimpPath, "assimp.path")
         );
     }
@@ -91,6 +94,7 @@ public class SlicerService {
         }
         SlicerProfilePreparation.prepare(machineProfile, filamentProfile, processProfile,
                 !inputStl.getName().toLowerCase(java.util.Locale.ROOT).endsWith(".3mf"));
+        validateMinimumModelSize(inputStl, machineProfile);
         oversizedEstimateDimensions.ifPresent(dimensions -> applyOversizedEstimateVolume(machineProfile, dimensions));
 
         Path tempDir = Files.createTempDirectory("slicer_job_");
@@ -228,6 +232,25 @@ public class SlicerService {
         }
     }
 
+    private void validateMinimumModelSize(File inputModel, ObjectNode machineProfile) throws ModelProcessingException {
+        // Mesh formats have no declared units. Do not silently enlarge uploaded geometry.
+        if (!inputModel.getName().toLowerCase(java.util.Locale.ROOT).endsWith(".stl")) {
+            return;
+        }
+        JsonNode nozzle = machineProfile.path("nozzle_diameter");
+        double nozzleMm = (nozzle.isArray() ? nozzle.path(0) : nozzle).asDouble(0);
+        if (nozzleMm <= 0) return;
+        Optional<ModelDimensions> inspected = inspectModelDimensions(inputModel);
+        if (inspected.isPresent()) {
+            ModelDimensions dimensions = inspected.get();
+            double largestDimension = Math.max(dimensions.xMm(), Math.max(dimensions.yMm(), dimensions.zMm()));
+            if (largestDimension < nozzleMm) {
+                throw new ModelProcessingException("MODEL_TOO_SMALL",
+                        "The model is smaller than the selected nozzle. Check its units and export it in millimetres.");
+            }
+        }
+    }
+
     private void applyOversizedEstimateVolume(ObjectNode machineProfile, ModelDimensions dimensions) {
         double marginMm = 50.0;
         double sideMm = Math.max(dimensions.xMm(), dimensions.yMm()) + marginMm;
@@ -269,7 +292,26 @@ public class SlicerService {
     }
 
     public Path convert3mfToPersistentStl(File input3mf, Path destinationStl) throws IOException {
-        return threeMfConversionSupport.convert3mfToPersistentStl(input3mf, destinationStl);
+        return modelConversionSupport.convert3mfToPersistentStl(input3mf, destinationStl);
+    }
+
+    public Path convertModelToPersistentStl(File inputModel, Path destinationStl) throws IOException {
+        return convertModelToPersistentStl(inputModel, destinationStl, "mm");
+    }
+
+    public Path convertModelToPersistentStl(File inputModel, Path destinationStl, String modelUnit) throws IOException {
+        String name = inputModel.getName().toLowerCase(java.util.Locale.ROOT);
+        if (name.endsWith(".3mf")) {
+            return convert3mfToPersistentStl(inputModel, destinationStl);
+        }
+        if (name.endsWith(".obj")) {
+            return modelConversionSupport.convertMeshToPersistentStl(inputModel, destinationStl,
+                    com.printcalculator.model.ModelUnit.parse(modelUnit).millimetres());
+        }
+        if (name.endsWith(".step") || name.endsWith(".stp")) {
+            return stepConversionService.convertToPersistentStl(inputModel, destinationStl);
+        }
+        throw new ModelProcessingException("MODEL_CONVERSION_FAILED", "Unsupported model conversion format.");
     }
 
     private ProcessBuilder buildSliceProcess(SliceAttempt attempt,
@@ -373,7 +415,7 @@ public class SlicerService {
         variants.add(new SlicerInputVariant(List.of(inputModelPath), "original 3MF project"));
 
         try {
-            List<String> convertedStlPaths = threeMfConversionSupport.convert3mfToStlInputPaths(inputModel, tempDir);
+            List<String> convertedStlPaths = modelConversionSupport.convert3mfToStlInputPaths(inputModel, tempDir);
             logger.info("Prepared converted 3MF fallback with " + convertedStlPaths.size() + " STL file(s) for slicing.");
             variants.add(new SlicerInputVariant(convertedStlPaths, "converted 3MF geometry"));
         } catch (InterruptedException e) {

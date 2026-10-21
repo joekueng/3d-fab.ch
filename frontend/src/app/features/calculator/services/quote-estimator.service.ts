@@ -19,7 +19,10 @@ import {
 import { OrderInformationService } from '../../order-information/order-information.service';
 import { environment } from '../../../../environments/environment';
 
+export type ModelUnit = 'mm' | 'cm' | 'm' | 'in';
+
 export interface QuoteRequestItem {
+  modelUnit?: ModelUnit;
   clientModelKey?: string;
   file: File;
   quantity: number;
@@ -56,6 +59,7 @@ export interface PendingCalculatorDraft {
 }
 
 export interface QuoteItem {
+  modelUnit?: ModelUnit;
   id?: string;
   clientModelKey?: string;
   fileName: string;
@@ -210,6 +214,7 @@ export class QuoteEstimatorService {
         switchMap((credential) =>
           this.http
             .get<{
+              redirectPath?: string;
               session: {
                 informationDraftId?: string;
                 notes?: string;
@@ -219,6 +224,7 @@ export class QuoteEstimatorService {
             }>(`${environment.apiUrl}/api/quote-sessions/${sessionId}`)
             .pipe(
               switchMap((data) => {
+                if (data.redirectPath) return of(data);
                 const alreadyOrdered =
                   data.session.status === 'CONVERTED' ||
                   Boolean(data.session.convertedOrderId);
@@ -750,6 +756,7 @@ export class QuoteEstimatorService {
       items: items.map((item: any) => ({
         id: item?.id,
         clientModelKey: item?.clientModelKey,
+        modelUnit: item?.modelUnit ?? 'mm',
         fileName: item?.originalFilename,
         unitPrice: Number(item?.unitPriceChf || 0),
         baseUnitPrice:
@@ -814,6 +821,7 @@ export class QuoteEstimatorService {
 
     return {
       clientModelKey: item.clientModelKey,
+      modelUnit: item.modelUnit ?? 'mm',
       complexityMode: request.mode === 'easy' ? 'BASIC' : 'ADVANCED',
       quantity: this.normalizeQuantity(item.quantity),
       material: String(item.material || request.material || 'PLA'),

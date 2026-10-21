@@ -133,6 +133,26 @@ The server remains responsible for quota and concurrency enforcement. See the
 [backend admission contract](../backend/README.md#calculator-admission-and-slicing-capacity)
 for defaults, legacy compatibility and deployment order.
 
+### Model uploads and previews
+
+The calculator accepts STL, 3MF, OBJ and STEP/STP files up to the existing 200 MB upload
+limit. STL previews stay local. On selection, other formats request an STL from
+`POST /api/model-previews`; show the existing viewer loading/unavailable text
+while waiting or on failure. Preview failures must not prevent quoting. Cancel
+the pending preview when selection changes, and cache the result by the original
+`File` identity and selected unit so files with identical names stay independent.
+
+OBJ cards expose a compact shared `app-select` for file units (`mm`, `cm`, `m`,
+`in`). Send `modelUnit` in both preview FormData and per-file quote settings.
+Changing units invalidates that item's preview/review message, refreshes its
+preview, and requires recalculation before checkout. Preserve the unit in drafts,
+session restoration and recalculation signatures. Do not apply global print
+settings or guessed unit conversions to this per-file value.
+
+Keep the original file in requests and drafts. Generated preview files belong in
+`previewFile`, never in `file`. Restored sessions use the stored converted STL.
+See the [backend conversion contract](../backend/README.md#model-conversion-and-previews).
+
 ## Internationalization (i18n)
 
 Translations are stored in `src/assets/i18n/`.

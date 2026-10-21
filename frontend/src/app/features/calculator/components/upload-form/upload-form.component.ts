@@ -12,15 +12,18 @@ import {
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
+  FormsModule,
   FormBuilder,
   FormGroup,
   Validators,
 } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Subscription } from 'rxjs';
 import { AppDropzoneComponent } from '../../../../shared/components/app-dropzone/app-dropzone.component';
 import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
 import { AppCheckboxComponent } from '../../../../shared/components/app-checkbox/app-checkbox.component';
+import { AppSelectComponent } from '../../../../shared/components/app-select/app-select.component';
 import { StlViewerComponent } from '../../../../shared/components/stl-viewer/stl-viewer.component';
 import { PrintItemControlsComponent } from '../../../../shared/components/print-item-controls/print-item-controls.component';
 import {
@@ -31,9 +34,11 @@ import {
   SimpleOption,
   MaterialOption,
   VariantOption,
+  ModelUnit,
 } from '../../services/quote-estimator.service';
 import { getColorHex } from '../../../../core/constants/colors.const';
 import { LanguageService } from '../../../../core/services/language.service';
+import { ModelPreviewService } from '../../services/model-preview.service';
 import {
   FormItem,
   ItemPrintSettingsUpdate,
@@ -58,10 +63,12 @@ import {
     PrintSettingsComponent,
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     TranslatePipe,
     AppDropzoneComponent,
     AppButtonComponent,
     AppCheckboxComponent,
+    AppSelectComponent,
     StlViewerComponent,
     PrintItemControlsComponent,
   ],
@@ -95,6 +102,7 @@ export class UploadFormComponent implements OnInit {
   }>();
 
   private estimator = inject(QuoteEstimatorService);
+  private readonly modelPreview = inject(ModelPreviewService);
   private fb = inject(FormBuilder);
   private translate = inject(TranslateService);
   private destroyRef = inject(DestroyRef);
@@ -104,7 +112,14 @@ export class UploadFormComponent implements OnInit {
 
   items = signal<FormItem[]>([]);
   selectedFile = signal<File | null>(null);
+  previewLoading = signal(false);
   sameSettingsForAll = signal(true);
+  private previewSubscription: Subscription | null = null;
+  private readonly previewCache = new WeakMap<File, Map<ModelUnit, File | null>>();
+  readonly modelUnitOptions = ['mm', 'cm', 'm', 'in'].map((unit) => ({
+    label: unit,
+    value: unit,
+  }));
 
   materials = signal<SimpleOption[]>([]);
   qualities = signal<SimpleOption[]>([]);
@@ -124,8 +139,8 @@ export class UploadFormComponent implements OnInit {
   private readonly technicalMaterialMinLayerHeight = 0.12;
   private readonly technicalMaterialBlockedNozzles = [0.2, 0.8];
 
-  acceptedFormats = '.stl,.3mf';
-  private readonly allowedExtensions = ['stl', '3mf'] as const;
+  acceptedFormats = '.stl,.3mf,.obj,.step,.stp';
+  private readonly allowedExtensions = ['stl', '3mf', 'obj', 'step', 'stp'] as const;
 
   constructor() {
     this.form = this.fb.group({
@@ -245,6 +260,24 @@ export class UploadFormComponent implements OnInit {
     return name.endsWith('.stl');
   }
 
+  isObjFile(file: File): boolean {
+    return file.name.toLowerCase().endsWith('.obj');
+  }
+
+  updateItemModelUnit(index: number, value: unknown): void {
+    if (value !== 'mm' && value !== 'cm' && value !== 'm' && value !== 'in') return;
+    const item = this.items()[index];
+    if (!item || !this.isObjFile(item.file) || (item.modelUnit ?? 'mm') === value) return;
+    this.items.update((items) => items.map((entry, i) => i === index
+      ? { ...entry, modelUnit: value, previewFile: undefined, previewUnit: undefined, reviewLevel: undefined, reviewMessage: undefined }
+      : entry));
+    this.selectedFile.set(item.file);
+    this.loadSelectedPreview(item.file);
+    this.loadSelectedItemSettingsIntoForm();
+    this.emitPrintSettingsChange();
+    this.emitItemSettingsDiffChange();
+  }
+
   isSupportedFile(file: File | null): boolean {
     if (!file) return false;
 
@@ -260,11 +293,17 @@ export class UploadFormComponent implements OnInit {
     const selected = this.selectedFile();
     if (!selected) return null;
     const item = this.items().find((i) => i.file === selected);
-    return item ? item.previewFile || item.file : null;
+    if (!item) return null;
+    if (item.previewFile && (item.previewUnit ?? 'mm') === (item.modelUnit ?? 'mm')) {
+      return item.previewFile;
+    }
+    return this.isStlFile(item.file) ? item.file : null;
   }
 
   getPreviewFilesByIndex(): Array<File | null> {
-    return this.items().map((item) => item.previewFile ?? null);
+    return this.items().map((item) =>
+      (item.previewUnit ?? 'mm') === (item.modelUnit ?? 'mm') ? item.previewFile ?? null : null,
+    );
   }
 
   getSelectedItemIndex(): number {
@@ -445,8 +484,65 @@ export class UploadFormComponent implements OnInit {
   selectFile(file: File) {
     if (this.selectedFile() !== file) {
       this.selectedFile.set(file);
+      this.loadSelectedPreview(file);
     }
     this.loadSelectedItemSettingsIntoForm();
+  }
+
+  private cancelPreview(): void {
+    this.previewSubscription?.unsubscribe();
+    this.previewSubscription = null;
+    this.previewLoading.set(false);
+  }
+
+  private loadSelectedPreview(file: File): void {
+    this.cancelPreview();
+    const item = this.items().find((entry) => entry.file === file);
+    if (!item || this.isStlFile(file)) return;
+
+    const unit = item.modelUnit ?? 'mm';
+    if (item.previewFile && (item.previewUnit ?? 'mm') === unit) return;
+    let unitCache = this.previewCache.get(file);
+    if (!unitCache) {
+      unitCache = new Map();
+      this.previewCache.set(file, unitCache);
+    }
+    const cache = unitCache;
+    if (cache.has(unit)) {
+      const cached = cache.get(unit);
+      if (cached) this.setPreviewForFile(file, cached, unit);
+      return;
+    }
+
+    this.previewLoading.set(true);
+    this.previewSubscription = this.modelPreview
+      .createStlPreview(file, unit)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (blob) => {
+          const preview = new File(
+            [blob],
+            file.name.replace(/\.[^.]+$/, '') + '.stl',
+            { type: 'model/stl' },
+          );
+          cache.set(unit, preview);
+          this.setPreviewForFile(file, preview, unit);
+          this.previewLoading.set(false);
+        },
+        error: () => {
+          cache.set(unit, null);
+          this.previewLoading.set(false);
+        },
+      });
+  }
+
+  private setPreviewForFile(file: File, previewFile: File, previewUnit: ModelUnit): void {
+    this.items.update((current) =>
+      current.map((item) =>
+        item.file === file && (item.modelUnit ?? 'mm') === previewUnit
+          ? { ...item, previewFile, previewUnit } : item,
+      ),
+    );
   }
 
   getSelectedFileColor(): string {
@@ -525,6 +621,7 @@ export class UploadFormComponent implements OnInit {
     if (nextSelected) {
       this.selectFile(nextSelected);
     } else if (this.items().length === 0) {
+      this.cancelPreview();
       this.selectedFile.set(null);
     }
 
@@ -593,6 +690,8 @@ export class UploadFormComponent implements OnInit {
   }
 
   setFiles(files: File[], options?: { autoSelect?: boolean }) {
+    this.cancelPreview();
+    this.selectedFile.set(null);
     const defaults = this.getCurrentGlobalItemDefaults();
     const selection = this.getDefaultVariantSelection(defaults.material);
     const autoSelect = options?.autoSelect ?? true;
@@ -629,13 +728,13 @@ export class UploadFormComponent implements OnInit {
     this.emitItemSettingsDiffChange();
   }
 
-  setPreviewFileByIndex(index: number, previewFile: File) {
+  setPreviewFileByIndex(index: number, previewFile: File, previewUnit: ModelUnit = 'mm') {
     if (!Number.isInteger(index) || index < 0) return;
 
     this.items.update((current) => {
       if (index >= current.length) return current;
       return current.map((item, idx) =>
-        idx === index ? { ...item, previewFile } : item,
+        idx === index ? { ...item, previewFile, previewUnit } : item,
       );
     });
   }
@@ -740,7 +839,7 @@ export class UploadFormComponent implements OnInit {
     );
     options?.previewFiles?.forEach((previewFile, index) => {
       if (previewFile) {
-        this.setPreviewFileByIndex(index, previewFile);
+        this.setPreviewFileByIndex(index, previewFile, request.items[index]?.modelUnit ?? 'mm');
       }
     });
     this.patchSettings({
@@ -770,6 +869,7 @@ export class UploadFormComponent implements OnInit {
         );
       this.updateItemQuantityByIndex(index, Number(item.quantity || 1));
       this.setItemPrintSettingsByIndex(index, {
+        modelUnit: item.modelUnit ?? 'mm',
         material: item.material ?? request.material,
         quality: item.quality ?? request.quality,
         nozzleDiameter: item.nozzleDiameter ?? request.nozzleDiameter,
@@ -951,6 +1051,7 @@ export class UploadFormComponent implements OnInit {
       const preset = easyModePresetForQuality(quality);
       return {
         clientModelKey: item.clientKey,
+        modelUnit: item.modelUnit ?? 'mm',
         file: item.file,
         quantity: normalizeQuantity(item.quantity),
         material: item.material || defaults.material,
@@ -967,6 +1068,7 @@ export class UploadFormComponent implements OnInit {
 
     return {
       clientModelKey: item.clientKey,
+      modelUnit: item.modelUnit ?? 'mm',
       file: item.file,
       quantity: normalizeQuantity(item.quantity),
       material: item.material || defaults.material,

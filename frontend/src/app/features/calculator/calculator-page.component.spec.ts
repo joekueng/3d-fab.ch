@@ -733,6 +733,7 @@ describe('CalculatorPageComponent', () => {
     expect(uploadForm.setPreviewFileByIndex).toHaveBeenCalledWith(
       1,
       jasmine.any(File),
+      'mm',
     );
     expect(uploadForm.selectFile.calls.mostRecent().args[0].name).toBe(
       'legacy.stl',
@@ -930,6 +931,7 @@ describe('CalculatorPageComponent', () => {
     expect(uploadForm.setPreviewFileByIndex).toHaveBeenCalledWith(
       0,
       jasmine.any(File),
+      'mm',
     );
     expect(uploadForm.patchSettings).toHaveBeenCalled();
     expect(uploadForm.updateItemQuantityByIndex).toHaveBeenCalledWith(0, 2);

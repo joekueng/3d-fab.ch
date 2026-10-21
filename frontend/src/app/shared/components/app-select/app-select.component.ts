@@ -38,6 +38,7 @@ export class AppSelectComponent implements ControlValueAccessor {
   id = input<string>('select-' + Math.random().toString(36).substr(2, 9));
   name = input<string>('');
   compact = input<boolean>(false);
+  size = input<'default' | 'small'>('default');
   options = input<{ label: string; value: any }[]>([]);
   error = input<string | null>(null);
   required = input<boolean>(false);

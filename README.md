@@ -61,6 +61,8 @@ From the repository root, run:
 The command starts or creates the PostgreSQL and ClamAV Docker containers,
 waits for them to become ready, and then starts the Spring Boot backend with the
 `local` profile, the Angular frontend, and the static image server on port 8081.
+It also prepares the pinned STEP/STP converter in `backend/venv` on first start
+(Python 3.10–3.14 and internet access are required for that installation).
 Press `Ctrl+C` to stop the three local processes. The Docker containers remain
 running and can be stopped separately with `docker compose down`.
 

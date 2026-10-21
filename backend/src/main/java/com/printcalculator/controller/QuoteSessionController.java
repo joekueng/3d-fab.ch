@@ -274,11 +274,8 @@ public class QuoteSessionController {
             return ResponseEntity.badRequest().build();
         }
 
-        if (!"stl".equals(quoteStorageService.getSafeExtension(item.getOriginalFilename(), ""))) {
-            return ResponseEntity.notFound().build();
-        }
-
-        String targetStoredPath = item.getStoredPath();
+        String convertedPath = quoteStorageService.extractConvertedStoredPath(item);
+        String targetStoredPath = convertedPath != null ? convertedPath : item.getStoredPath();
         if (targetStoredPath == null || targetStoredPath.isBlank()) {
             return ResponseEntity.notFound().build();
         }

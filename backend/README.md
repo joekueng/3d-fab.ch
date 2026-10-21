@@ -68,6 +68,95 @@ Focused checks:
 ./gradlew test --tests '*QuoteRateLimitServiceTest' --tests '*SlicingCapacityServiceTest' --tests '*QuoteSessionRateLimitControllerTest'
 ```
 
+## Model conversion and previews
+
+Calculator uploads accept STL, 3MF, OBJ and STEP/STP. Preserve original files and names in
+quote/order storage. 3MF quoting continues slicing the original project with its
+existing conversion fallbacks; OBJ and STEP/STP quoting use a generated STL. Store generated
+STLs in the existing `convertedStoredPath` pricing metadata, with no schema change.
+`/line-items/{id}/stl-preview` serves that STL when available and verifies that the
+item and stored path belong to the requested session.
+
+`POST /api/model-previews` accepts one multipart `file` and returns `model/stl`
+without creating a quote session or retaining files. It scans the upload before
+conversion, uses the existing quote admission and slicing capacity controls, and
+always cleans temporary files. Preview requests consume the legacy request/file
+budget, but do not reserve calculations. Uploads retain the 200 MB limit; previews
+are bounded at 75 MiB, matching the browser viewer. Failure leaves quoting available.
+
+`ModelConversionSupport` reuses the installed LWJGL Assimp 3.4.3 binding and its
+existing triangulation/transform flags; OBJ imports remove material-library
+references because only geometry is used. OBJ coordinates use the per-file
+`modelUnit` (`mm`, `cm`, `m`, `in`, default `mm`). Preview and quote conversion
+apply the same factor (1, 10, 1000, 25.4) to the generated STL only. Preserve
+`modelUnit` in pricing metadata and the session response, including review items,
+so reopening a session cannot reset its physical size. STL remains in millimetres;
+3MF and STEP retain their declared units. 3MF conversion retains the existing Assimp/CLI/XML
+fallbacks. OBJ support is documented in
+the [official Assimp format list](https://github.com/assimp/assimp/blob/master/doc/Fileformats.md)
+(checked 2026-10-21); conversion tests exercise the installed native binding.
+
+The viewer fits its camera and zoom limits to the actual model bounds, including
+submillimetre meshes. Before slicing an STL (including converted OBJ/STEP), reject
+geometry whose largest dimension is below the selected nozzle diameter with
+`MODEL_TOO_SMALL`. This avoids sending microscopic meshes to OrcaSlicer; retain
+the original and generated preview for review. Never infer metres from small OBJ
+coordinates or silently resize a customer's part.
+
+STEP/STP conversion uses `StepConversionService` and the bundled
+`model-conversion/step_to_stl.py` script in an isolated Python subprocess. The
+Docker image installs `cadquery-ocp-novtk==7.9.3.1.1` and
+`cadquery-ocp-proxy==7.9.3.1.1` in `/opt/step-converter`; `step-requirements.txt`
+pins all versions and published wheel hashes. This pinned release supplies
+Python 3.10 wheels used by the previous Ubuntu 22.04 runtime. The same pinned
+release also supports Python 3.12 in the current Ubuntu 24.04 runtime; no CAD
+dependency upgrade accompanies the Orca update. Java and Node dependencies are unchanged.
+
+The converter transfers all STEP roots, normalizes declared units to millimetres,
+meshes with 0.05 mm linear and 0.1 radian angular deflection, and exports binary
+STL. Preview and quoting use this same conversion. Only a complete STL is copied
+into session storage; failures preserve the uploaded original for consultation.
+Timeout, interruption and errors terminate the child process and clean temporary
+files. Deploy the rebuilt backend image before enabling STEP/STP in the frontend.
+
+| Setting | Default | Purpose |
+| --- | --- | --- |
+| `STEP_PYTHON_PATH` | `venv/bin/python` under the backend working directory; `/opt/step-converter/bin/python` in Docker | Python interpreter with the pinned CAD packages |
+| `STEP_CONVERSION_TIMEOUT_SECONDS` | `120` | Maximum time for one STEP conversion |
+
+`./start.sh` prepares the pinned environment automatically and sets
+`STEP_PYTHON_PATH`. Manual local startup defaults to `venv/bin/python` under
+the backend working directory; the deployed image keeps `/opt/step-converter`.
+For a manual local start with Python 3.10–3.14, run:
+
+```bash
+bash scripts/setup-step-converter.sh
+export STEP_PYTHON_PATH="$PWD/venv/bin/python"
+"$STEP_PYTHON_PATH" scripts/check_step_conversion.py
+```
+
+The native check generates STEP/STP fixtures and verifies dimensions, units,
+volume, curved surfaces, multiple bodies and invalid files. When OrcaSlicer is
+available at `SLICER_PATH`, it also checks the generated STL through `--info`.
+The existing limits of the browser viewer still apply to every preview.
+
+Dependency evidence, checked 2026-10-21: the
+[CadQuery wheel build system](https://github.com/CadQuery/ocp-build-system) documents
+the `novtk` variant and its proxy dependency; the
+[selected PyPI release](https://pypi.org/project/cadquery-ocp-novtk/7.9.3.1.1/)
+provides CPython 3.10+ wheels for Linux amd64/arm64 and macOS. OCP is licensed
+under Apache-2.0; its bundled OpenCascade libraries retain their upstream licenses.
+Verified the installed `STEPControl_Reader`, `BRepMesh_IncrementalMesh` and
+`StlAPI_Writer` APIs against the release and exercised them in the amd64 runtime.
+Run `node scripts/check-external-packages.mjs` from the repository root to validate
+the lock metadata alongside the existing dependency manifests.
+
+Verification on 2026-10-21: the external-package check passed all 45 metadata
+checks; native STEP checks passed all six cases, including OrcaSlicer `--info`.
+The backend suite passed with 491 tests (one skipped), and all 72 calculator
+frontend tests passed. TypeScript, i18n parity and UI reuse checks also passed.
+The browser upload flow and a rebuilt production image were not rerun in this check.
+
 ## CLI printer profiles and usable volume
 
 `SlicerProfilePreparation` changes only temporary job profiles. Raw meshes use
@@ -85,7 +174,6 @@ the model bounds exceed the physical profile volume, allowing 0.001 mm for STL
 float noise. The A1 and P2S profiles therefore include the full 256 × 256 × 256 mm;
 249, 250 and 256 mm cubes do not require splitting, while 257 and 270 mm cubes do.
 An unrelated slicer failure inside the volume must remain a processing failure.
-
 
 ## Email transaction boundaries
 
@@ -137,7 +225,6 @@ keys and unique constraints; matching reference DDL is in `../db.sql`. No existi
 orders or requests are backfilled because their acceptance timestamps/versions
 were not recorded. A plain calculator upload, preview or saved session does not
 submit the required terms/privacy checkbox and creates no such record.
-
 
 ## Customer-facing output
 
