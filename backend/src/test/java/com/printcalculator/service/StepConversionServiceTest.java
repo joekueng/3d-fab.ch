@@ -19,6 +19,30 @@ class StepConversionServiceTest {
     @TempDir Path tempDir;
 
     @Test
+    void passesPathsAsSeparateLiteralArgumentsWithoutShellExpansion() throws Exception {
+        Path interpreter = Files.writeString(tempDir.resolve("python executable"), """
+                #!/bin/sh
+                printf '%s\\n' "$@" > arguments.txt
+                """);
+        assertTrue(interpreter.toFile().setExecutable(true));
+        var converter = new StepConversionService(interpreter.toString(), 2);
+        Path script = tempDir.resolve("converter script.py");
+        Path input = tempDir.resolve("input $(touch injected); 'quoted'.step");
+        Path output = tempDir.resolve("output preview.stl");
+
+        Process process = converter.startConversion(script, input, output, tempDir);
+        try {
+            assertTrue(process.waitFor(2, TimeUnit.SECONDS));
+            assertEquals(0, process.exitValue());
+            assertEquals(java.util.List.of("-I", script.toString(), input.toString(), output.toString()),
+                    Files.readAllLines(tempDir.resolve("arguments.txt")));
+            assertFalse(Files.exists(tempDir.resolve("injected")));
+        } finally {
+            if (process.isAlive()) process.destroyForcibly();
+        }
+    }
+
+    @Test
     void publishesOnlyACompleteStlAndPreservesTheOriginal() throws Exception {
         var converter = spy(new StepConversionService("unused-python", 2));
         var process = mock(Process.class);

@@ -322,6 +322,21 @@ export class CalculatorPageComponent
     this.loading.set(true);
     this.estimator.getQuoteSession(sessionId).subscribe({
       next: (data) => {
+        if (
+          typeof data?.redirectPath === 'string' &&
+          data.redirectPath.startsWith('/') &&
+          !data.redirectPath.startsWith('//') &&
+          !data.redirectPath.includes('\\')
+        ) {
+          this.loading.set(false);
+          void this.router.navigateByUrl(
+            '/' +
+              this.languageService.selectedLang() +
+              (data.redirectPath === '/' ? '' : data.redirectPath),
+            { replaceUrl: true },
+          );
+          return;
+        }
         // 1. Map to Result
         const result = this.estimator.mapSessionToQuoteResult(data);
         if (this.isInvalidQuote(result)) {

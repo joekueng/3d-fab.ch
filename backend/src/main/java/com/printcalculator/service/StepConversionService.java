@@ -74,8 +74,14 @@ public class StepConversionService {
     }
 
     Process startConversion(Path script, Path input, Path output, Path workingDirectory) throws IOException {
-        var builder = new ProcessBuilder(List.of(pythonPath, "-I", script.toString(),
-                input.toString(), output.toString()));
+        var builder = new ProcessBuilder();
+        // Keep the configured interpreter and each path in separate argv entries.
+        List<String> command = builder.command();
+        command.add(pythonPath);
+        command.add("-I");
+        command.add(SlicerFileSupport.requireSafeArgument(script.toString(), "STEP conversion script path"));
+        command.add(SlicerFileSupport.requireSafeArgument(input.toString(), "STEP input path"));
+        command.add(SlicerFileSupport.requireSafeArgument(output.toString(), "STEP output path"));
         builder.directory(workingDirectory.toFile());
         builder.redirectErrorStream(true);
         builder.redirectOutput(workingDirectory.resolve("conversion.log").toFile());

@@ -140,6 +140,10 @@ STL. Preview and quoting use this same conversion. Only a complete STL is copied
 into session storage; failures preserve the uploaded original for consultation.
 Timeout, interruption and errors terminate the child process and clean temporary
 files. Deploy the rebuilt backend image before enabling STEP/STP in the frontend.
+Launch the configured interpreter with `-I` and separate script/input/output
+arguments, validated with the shared CLI argument helper; never build a shell
+command from model paths. `StepConversionServiceTest` checks literal argument
+boundaries with spaces and shell metacharacters as well as conversion cleanup.
 
 | Setting | Default | Purpose |
 | --- | --- | --- |
@@ -226,6 +230,9 @@ acceptance uses the connecting address by default. To resolve `X-Forwarded-For`,
 `LEGAL_CONSENT_TRUSTED_PROXY_NETWORKS` to the connecting proxies' IPs/CIDRs.
 Both settings are required; headers from untrusted peers are ignored, including
 private peers. Configure only actual proxies that sanitize incoming headers.
+For a trusted connecting proxy, walk the chain from right to left and stop at
+the first address outside the configured proxy networks, including private
+addresses. Never cross that boundary to select an earlier public address for audit.
 Invalid/unavailable IPs and existing records retain a null `client_ip`; no
 historical IP is inferred. Browser/user-agent data is not collected.
 

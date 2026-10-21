@@ -273,9 +273,11 @@ Draft deletion uses `app-dialog` and a required old-link decision. Cancel/Escape
 make no request. `NEW_INVOICE` opens an empty replacement form with the reserved
 ID; `REDIRECT` accepts a public site path and clears the deleted draft editor.
 Keep errors in the dialog and block duplicate confirmation while saving. Issued
-order snapshots remain protected. Checkout follows a deleted invoice's public
-redirect in the selected language with history replacement. Browser scenarios
-UI-INVOICE-004/005 cover stable identity, confirmation, replacement and redirect.
+order snapshots remain protected. Checkout and saved calculator links follow a
+deleted invoice's public redirect in the selected language with history replacement,
+before mapping the response to a quote. Accept only internal paths, rejecting
+protocol-relative URLs and backslashes. Browser scenarios UI-INVOICE-004/005 and
+ADMIN-CAD-001/002 cover stable identity, confirmation, replacement and redirect.
 
 ### Oversized models and split consent
 

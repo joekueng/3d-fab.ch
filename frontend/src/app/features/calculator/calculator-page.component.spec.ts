@@ -91,9 +91,13 @@ describe('CalculatorPageComponent', () => {
     );
     estimator.getPendingCalculatorDraft.and.returnValue(null);
     const routerEvents = new Subject<Event>();
-    const router = jasmine.createSpyObj<Router>('Router', ['navigate'], {
-      events: routerEvents.asObservable(),
-    });
+    const router = jasmine.createSpyObj<Router>(
+      'Router',
+      ['navigate', 'navigateByUrl'],
+      {
+        events: routerEvents.asObservable(),
+      },
+    );
     const route = {
       data: of({}),
       queryParams: of(queryParams),
@@ -174,6 +178,46 @@ describe('CalculatorPageComponent', () => {
       route,
       uploadForm,
     };
+  }
+
+  for (const [redirectPath, destination] of [
+    ['/contact', '/it/contact'],
+    ['/', '/it'],
+  ]) {
+    it(`follows a deleted invoice redirect to ${destination} before mapping the quote`, () => {
+      const { component, estimator, router } = createComponent();
+      estimator.getQuoteSession.and.returnValue(of({ redirectPath }));
+
+      component.loadSession('deleted-invoice');
+
+      expect(router.navigateByUrl).toHaveBeenCalledWith(destination, {
+        replaceUrl: true,
+      });
+      expect(estimator.mapSessionToQuoteResult).not.toHaveBeenCalled();
+      expect(component.loading()).toBeFalse();
+    });
+  }
+
+  for (const redirectPath of [
+    '//example.test',
+    'https://example.test',
+    '/\\example.test',
+  ]) {
+    it(`rejects the unsafe deleted invoice redirect ${redirectPath}`, () => {
+      const { component, estimator, router } = createComponent();
+      estimator.getQuoteSession.and.returnValue(of({ redirectPath }));
+      estimator.mapSessionToQuoteResult.and.returnValue({
+        ...createResult('deleted-invoice'),
+        items: [],
+        totalPrice: 0,
+      });
+
+      component.loadSession('deleted-invoice');
+
+      expect(router.navigateByUrl).not.toHaveBeenCalled();
+      expect(component.loading()).toBeFalse();
+      expect(component.error()).toBeTrue();
+    });
   }
 
   it('minimizes loading scroll and reveals mobile results after router restoration', fakeAsync(() => {

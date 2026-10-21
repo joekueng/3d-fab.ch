@@ -135,22 +135,14 @@ public final class IpAddressUtils {
             return null;
         }
 
-        String fallbackUntrustedIp = null;
         for (int i = normalizedChain.size() - 1; i >= 0; i--) {
             String candidate = normalizedChain.get(i);
             if (isTrustedProxy(candidate, trustedProxyMatchers)) {
                 continue;
             }
-            if (fallbackUntrustedIp == null) {
-                fallbackUntrustedIp = candidate;
-            }
-            if (isPublicIp(candidate)) {
-                return candidate;
-            }
-        }
-
-        if (fallbackUntrustedIp != null) {
-            return fallbackUntrustedIp;
+            // Stop at the trust boundary, including private peers: any earlier
+            // address may be a client-supplied prefix rather than an audit identity.
+            return candidate;
         }
 
         return normalizedChain.get(0);
