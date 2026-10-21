@@ -123,22 +123,32 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
   deleteError: string | null = null;
 
   get deletionLinkUrl(): string {
-    return this.invoiceToDelete ? this.toCheckoutUrl(this.invoiceToDelete.checkoutPath) : '';
+    return this.invoiceToDelete
+      ? this.toCheckoutUrl(this.invoiceToDelete.checkoutPath)
+      : '';
   }
 
   get draftIsConverted(): boolean {
-    const row = this.invoices.find(invoice => invoice.sessionId === this.draftSessionId);
+    const row = this.invoices.find(
+      (invoice) => invoice.sessionId === this.draftSessionId,
+    );
     return Boolean(row?.convertedOrderId || row?.sessionStatus === 'CONVERTED');
   }
 
   get deleteLinkOptions(): { label: string; value: string }[] {
-    return ['NEW_INVOICE', 'REDIRECT'].map(value => ({
-      label: this.translate.instant('CAD_DELETE.' + value), value,
+    return ['NEW_INVOICE', 'REDIRECT'].map((value) => ({
+      label: this.translate.instant('CAD_DELETE.' + value),
+      value,
     }));
   }
 
   requestDeleteInvoice(row: AdminCadInvoice): void {
-    if (row.convertedOrderId || row.sessionStatus !== 'CAD_ACTIVE' || this.creating) return;
+    if (
+      row.convertedOrderId ||
+      row.sessionStatus !== 'CAD_ACTIVE' ||
+      this.creating
+    )
+      return;
     this.invoiceToDelete = row;
     this.deleteLinkAction = 'NEW_INVOICE';
     this.deleteTargetPath = '/';
@@ -155,31 +165,34 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
     const action = this.deleteLinkAction;
     this.deletingInvoice = true;
     this.deleteError = null;
-    this.adminOperationsService.deleteCadInvoice(id, {
-      linkAction: action,
-      targetPath: action === 'REDIRECT' ? this.deleteTargetPath.trim() : undefined,
-    }).subscribe({
-      next: () => {
-        this.changeDetector.markForCheck();
-        this.deletingInvoice = false;
-        this.invoiceToDelete = null;
-        if (action === 'NEW_INVOICE') {
-          this.resetForm();
-          this.draftSessionId = id;
-          this.form.sessionId = id;
-          if (this.isBrowser) window.scrollTo({ top: 0, behavior: 'smooth' });
-        } else if (this.draftSessionId === id || this.form.sessionId === id) {
-          this.resetForm();
-        }
-        this.successMessage = this.translate.instant('CAD_DELETE.DONE');
-        this.loadCadInvoices();
-      },
-      error: () => {
-        this.changeDetector.markForCheck();
-        this.deletingInvoice = false;
-        this.deleteError = this.translate.instant('CAD_DELETE.ERROR');
-      },
-    });
+    this.adminOperationsService
+      .deleteCadInvoice(id, {
+        linkAction: action,
+        targetPath:
+          action === 'REDIRECT' ? this.deleteTargetPath.trim() : undefined,
+      })
+      .subscribe({
+        next: () => {
+          this.changeDetector.markForCheck();
+          this.deletingInvoice = false;
+          this.invoiceToDelete = null;
+          if (action === 'NEW_INVOICE') {
+            this.resetForm();
+            this.draftSessionId = id;
+            this.form.sessionId = id;
+            if (this.isBrowser) window.scrollTo({ top: 0, behavior: 'smooth' });
+          } else if (this.draftSessionId === id || this.form.sessionId === id) {
+            this.resetForm();
+          }
+          this.successMessage = this.translate.instant('CAD_DELETE.DONE');
+          this.loadCadInvoices();
+        },
+        error: () => {
+          this.changeDetector.markForCheck();
+          this.deletingInvoice = false;
+          this.deleteError = this.translate.instant('CAD_DELETE.ERROR');
+        },
+      });
   }
   editingSessionId: string | null = null;
   metadata = { invoiceName: '', collaborationName: '', clientName: '' };
@@ -494,7 +507,10 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
       serviceLines,
     };
     const save = this.draftSessionId
-      ? this.adminOperationsService.updateCadInvoice(this.draftSessionId, payload)
+      ? this.adminOperationsService.updateCadInvoice(
+          this.draftSessionId,
+          payload,
+        )
       : this.adminOperationsService.createCadInvoice(payload);
     save.subscribe({
       next: (created) => {
@@ -527,7 +543,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
       return;
     }
     const sessionId = String(this.form.sessionId ?? '').trim();
-    const invoice = this.invoices.find(row => row.sessionId === sessionId);
+    const invoice = this.invoices.find((row) => row.sessionId === sessionId);
     if (invoice) {
       this.editInvoice(invoice);
       return;
@@ -543,7 +559,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
   }
 
   manageItems(sessionId: string): void {
-    const invoice = this.invoices.find(row => row.sessionId === sessionId);
+    const invoice = this.invoices.find((row) => row.sessionId === sessionId);
     if (invoice) {
       this.editInvoice(invoice);
       return;

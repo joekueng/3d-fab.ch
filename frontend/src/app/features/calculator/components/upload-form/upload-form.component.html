@@ -75,7 +75,10 @@
               />
 
               @if (isObjFile(item.file)) {
-                <div class="model-unit-field" (click)="$event.stopPropagation()">
+                <div
+                  class="model-unit-field"
+                  (click)="$event.stopPropagation()"
+                >
                   <app-select
                     [label]="'CALC.MODEL_UNIT' | translate"
                     [compact]="true"

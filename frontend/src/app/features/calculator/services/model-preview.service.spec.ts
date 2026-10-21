@@ -1,12 +1,17 @@
 import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import {
+  HttpTestingController,
+  provideHttpClientTesting,
+} from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { environment } from '../../../../environments/environment';
 import { ModelPreviewService } from './model-preview.service';
 
 describe('ModelPreviewService', () => {
   it('uploads the original model and returns the generated STL blob', () => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     const service = TestBed.inject(ModelPreviewService);
     const http = TestBed.inject(HttpTestingController);
     const original = new File(['project'], 'part.3mf');

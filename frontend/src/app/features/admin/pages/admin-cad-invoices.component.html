@@ -55,7 +55,7 @@
           [label]="'CAD_ORGANIZATION.SESSION' | translate"
         ></app-input>
         <p class="ui-copy-subtitle notes-field" *ngIf="draftSessionId">
-          {{ 'CAD_DELETE.STABLE_LINK' | translate }}
+          {{ "CAD_DELETE.STABLE_LINK" | translate }}
         </p>
         <app-input
           name="sourceRequestId"
@@ -548,12 +548,14 @@
                   >{{ "CAD_ORGANIZATION.DOWNLOAD" | translate }}</app-button
                 >
                 <app-button
-                  *ngIf="!row.convertedOrderId && row.sessionStatus === 'CAD_ACTIVE'"
+                  *ngIf="
+                    !row.convertedOrderId && row.sessionStatus === 'CAD_ACTIVE'
+                  "
                   type="button"
                   [disabled]="creating || deletingInvoice"
                   variant="ghost-danger"
                   (click)="requestDeleteInvoice(row)"
-                  >{{ 'CAD_DELETE.DELETE' | translate }}</app-button
+                  >{{ "CAD_DELETE.DELETE" | translate }}</app-button
                 >
               </td>
             </tr>
@@ -570,10 +572,16 @@
   [closeLabel]="'CAD_ORGANIZATION.CLOSE' | translate"
   (dismissed)="closeDeleteInvoice()"
 >
-  <p>{{ 'CAD_DELETE.WARNING' | translate }}</p>
-  <p class="service-details">{{ invoiceToDelete.invoiceName || invoiceToDelete.sessionId }}</p>
-  <p class="service-details" [appCopyOnClick]="deletionLinkUrl">{{ deletionLinkUrl }}</p>
-  <p class="ui-banner ui-banner--error" role="alert" *ngIf="deleteError">{{ deleteError }}</p>
+  <p>{{ "CAD_DELETE.WARNING" | translate }}</p>
+  <p class="service-details">
+    {{ invoiceToDelete.invoiceName || invoiceToDelete.sessionId }}
+  </p>
+  <p class="service-details" [appCopyOnClick]="deletionLinkUrl">
+    {{ deletionLinkUrl }}
+  </p>
+  <p class="ui-banner ui-banner--error" role="alert" *ngIf="deleteError">
+    {{ deleteError }}
+  </p>
   <app-select
     name="deleteLinkAction"
     [(ngModel)]="deleteLinkAction"
@@ -581,7 +589,9 @@
     [disabled]="deletingInvoice"
     [label]="'CAD_DELETE.LINK_ACTION' | translate"
   ></app-select>
-  <p *ngIf="deleteLinkAction === 'NEW_INVOICE'">{{ 'CAD_DELETE.REUSE_HINT' | translate }}</p>
+  <p *ngIf="deleteLinkAction === 'NEW_INVOICE'">
+    {{ "CAD_DELETE.REUSE_HINT" | translate }}
+  </p>
   <app-input
     *ngIf="deleteLinkAction === 'REDIRECT'"
     name="deleteTargetPath"
@@ -591,11 +601,21 @@
     placeholder="/contact"
   ></app-input>
   <div class="actions">
-    <app-button type="button" variant="danger" (click)="confirmDeleteInvoice()" [loading]="deletingInvoice">
-      {{ 'CAD_DELETE.CONFIRM' | translate }}
+    <app-button
+      type="button"
+      variant="danger"
+      (click)="confirmDeleteInvoice()"
+      [loading]="deletingInvoice"
+    >
+      {{ "CAD_DELETE.CONFIRM" | translate }}
     </app-button>
-    <app-button type="button" variant="ghost" (click)="closeDeleteInvoice()" [disabled]="deletingInvoice">
-      {{ 'CAD_DELETE.CANCEL' | translate }}
+    <app-button
+      type="button"
+      variant="ghost"
+      (click)="closeDeleteInvoice()"
+      [disabled]="deletingInvoice"
+    >
+      {{ "CAD_DELETE.CANCEL" | translate }}
     </app-button>
   </div>
 </app-dialog>

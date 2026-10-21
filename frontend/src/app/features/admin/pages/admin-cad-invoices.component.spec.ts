@@ -29,8 +29,10 @@ describe('parseDecimalInput', () => {
     component.form.sessionId = '';
     component.createCadInvoice();
     expect(adminOperationsService.createCadInvoice).not.toHaveBeenCalled();
-    expect(adminOperationsService.updateCadInvoice).toHaveBeenCalledWith(SESSION_ID,
-      jasmine.objectContaining({ sessionId: SESSION_ID }));
+    expect(adminOperationsService.updateCadInvoice).toHaveBeenCalledWith(
+      SESSION_ID,
+      jasmine.objectContaining({ sessionId: SESSION_ID }),
+    );
     expect(component.form.sessionId).toBe(SESSION_ID);
     expect(component.serviceLines[0].description).toBe('Design');
   });
@@ -39,8 +41,12 @@ describe('parseDecimalInput', () => {
     const { component, adminOperationsService } = createComponent();
     adminOperationsService.getAdminQuoteItems.and.returnValue(of(response()));
     const draft = invoiceFixture();
-    const converted = { ...draft, sessionId: '77777777-7777-7777-7777-777777777777',
-      sessionStatus: 'CONVERTED', convertedOrderId: 'order-1' };
+    const converted = {
+      ...draft,
+      sessionId: '77777777-7777-7777-7777-777777777777',
+      sessionStatus: 'CONVERTED',
+      convertedOrderId: 'order-1',
+    };
     component.invoices = [draft, converted];
     component.editInvoice(draft);
     component.manageItems(converted.sessionId);
@@ -61,8 +67,10 @@ describe('parseDecimalInput', () => {
     component.requestDeleteInvoice(invoice);
     adminOperationsService.deleteCadInvoice.and.returnValue(of(void 0));
     component.confirmDeleteInvoice();
-    expect(adminOperationsService.deleteCadInvoice).toHaveBeenCalledWith(SESSION_ID,
-      { linkAction: 'NEW_INVOICE', targetPath: undefined });
+    expect(adminOperationsService.deleteCadInvoice).toHaveBeenCalledWith(
+      SESSION_ID,
+      { linkAction: 'NEW_INVOICE', targetPath: undefined },
+    );
     expect(component.draftSessionId).toBe(SESSION_ID);
     expect(component.form.sessionId).toBe(SESSION_ID);
     expect(component.serviceLines[0].description).toBe('');
@@ -74,7 +82,9 @@ describe('parseDecimalInput', () => {
     component.requestDeleteInvoice(invoiceFixture());
     component.deleteLinkAction = 'REDIRECT';
     component.deleteTargetPath = '/contact';
-    adminOperationsService.deleteCadInvoice.and.returnValue(throwError(() => new Error('conflict')));
+    adminOperationsService.deleteCadInvoice.and.returnValue(
+      throwError(() => new Error('conflict')),
+    );
     component.confirmDeleteInvoice();
     expect(component.invoiceToDelete).not.toBeNull();
     expect(component.deleteError).toBeTruthy();
@@ -432,10 +442,24 @@ function imageAttachment(): QuoteSessionAttachment {
 
 function invoiceFixture(): AdminCadInvoice {
   return {
-    sessionId: SESSION_ID, sessionStatus: 'CAD_ACTIVE', cadHours: 0,
-    cadHourlyRateChf: 0, cadTotalChf: 0, printItemsTotalChf: 0,
-    setupCostChf: 0, shippingCostChf: 0, grandTotalChf: 10,
-    checkoutPath: '/checkout/cad?session=' + SESSION_ID, createdAt: '2026-10-20T12:00:00Z',
-    serviceLines: [{ description: 'Design', billingType: 'FIXED', quantity: 1, unitPriceChf: 10 }],
+    sessionId: SESSION_ID,
+    sessionStatus: 'CAD_ACTIVE',
+    cadHours: 0,
+    cadHourlyRateChf: 0,
+    cadTotalChf: 0,
+    printItemsTotalChf: 0,
+    setupCostChf: 0,
+    shippingCostChf: 0,
+    grandTotalChf: 10,
+    checkoutPath: '/checkout/cad?session=' + SESSION_ID,
+    createdAt: '2026-10-20T12:00:00Z',
+    serviceLines: [
+      {
+        description: 'Design',
+        billingType: 'FIXED',
+        quantity: 1,
+        unitPriceChf: 10,
+      },
+    ],
   };
 }

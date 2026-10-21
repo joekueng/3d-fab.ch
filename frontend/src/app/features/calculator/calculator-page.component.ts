@@ -1104,7 +1104,11 @@ export class CalculatorPageComponent
       } else {
         this.uploadForm.setFiles(payload.files, { autoSelect: false });
         payload.previewFiles.forEach((preview) => {
-          this.uploadForm.setPreviewFileByIndex(preview.index, preview.file, payload.items[preview.index]?.modelUnit ?? 'mm');
+          this.uploadForm.setPreviewFileByIndex(
+            preview.index,
+            preview.file,
+            payload.items[preview.index]?.modelUnit ?? 'mm',
+          );
         });
         this.uploadForm.patchSettings(payload.session);
       }

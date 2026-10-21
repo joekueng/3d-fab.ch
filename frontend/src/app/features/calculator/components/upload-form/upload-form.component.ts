@@ -115,7 +115,10 @@ export class UploadFormComponent implements OnInit {
   previewLoading = signal(false);
   sameSettingsForAll = signal(true);
   private previewSubscription: Subscription | null = null;
-  private readonly previewCache = new WeakMap<File, Map<ModelUnit, File | null>>();
+  private readonly previewCache = new WeakMap<
+    File,
+    Map<ModelUnit, File | null>
+  >();
   readonly modelUnitOptions = ['mm', 'cm', 'm', 'in'].map((unit) => ({
     label: unit,
     value: unit,
@@ -140,7 +143,13 @@ export class UploadFormComponent implements OnInit {
   private readonly technicalMaterialBlockedNozzles = [0.2, 0.8];
 
   acceptedFormats = '.stl,.3mf,.obj,.step,.stp';
-  private readonly allowedExtensions = ['stl', '3mf', 'obj', 'step', 'stp'] as const;
+  private readonly allowedExtensions = [
+    'stl',
+    '3mf',
+    'obj',
+    'step',
+    'stp',
+  ] as const;
 
   constructor() {
     this.form = this.fb.group({
@@ -265,12 +274,29 @@ export class UploadFormComponent implements OnInit {
   }
 
   updateItemModelUnit(index: number, value: unknown): void {
-    if (value !== 'mm' && value !== 'cm' && value !== 'm' && value !== 'in') return;
+    if (value !== 'mm' && value !== 'cm' && value !== 'm' && value !== 'in')
+      return;
     const item = this.items()[index];
-    if (!item || !this.isObjFile(item.file) || (item.modelUnit ?? 'mm') === value) return;
-    this.items.update((items) => items.map((entry, i) => i === index
-      ? { ...entry, modelUnit: value, previewFile: undefined, previewUnit: undefined, reviewLevel: undefined, reviewMessage: undefined }
-      : entry));
+    if (
+      !item ||
+      !this.isObjFile(item.file) ||
+      (item.modelUnit ?? 'mm') === value
+    )
+      return;
+    this.items.update((items) =>
+      items.map((entry, i) =>
+        i === index
+          ? {
+              ...entry,
+              modelUnit: value,
+              previewFile: undefined,
+              previewUnit: undefined,
+              reviewLevel: undefined,
+              reviewMessage: undefined,
+            }
+          : entry,
+      ),
+    );
     this.selectedFile.set(item.file);
     this.loadSelectedPreview(item.file);
     this.loadSelectedItemSettingsIntoForm();
@@ -294,7 +320,10 @@ export class UploadFormComponent implements OnInit {
     if (!selected) return null;
     const item = this.items().find((i) => i.file === selected);
     if (!item) return null;
-    if (item.previewFile && (item.previewUnit ?? 'mm') === (item.modelUnit ?? 'mm')) {
+    if (
+      item.previewFile &&
+      (item.previewUnit ?? 'mm') === (item.modelUnit ?? 'mm')
+    ) {
       return item.previewFile;
     }
     return this.isStlFile(item.file) ? item.file : null;
@@ -302,7 +331,9 @@ export class UploadFormComponent implements OnInit {
 
   getPreviewFilesByIndex(): Array<File | null> {
     return this.items().map((item) =>
-      (item.previewUnit ?? 'mm') === (item.modelUnit ?? 'mm') ? item.previewFile ?? null : null,
+      (item.previewUnit ?? 'mm') === (item.modelUnit ?? 'mm')
+        ? (item.previewFile ?? null)
+        : null,
     );
   }
 
@@ -536,11 +567,16 @@ export class UploadFormComponent implements OnInit {
       });
   }
 
-  private setPreviewForFile(file: File, previewFile: File, previewUnit: ModelUnit): void {
+  private setPreviewForFile(
+    file: File,
+    previewFile: File,
+    previewUnit: ModelUnit,
+  ): void {
     this.items.update((current) =>
       current.map((item) =>
         item.file === file && (item.modelUnit ?? 'mm') === previewUnit
-          ? { ...item, previewFile, previewUnit } : item,
+          ? { ...item, previewFile, previewUnit }
+          : item,
       ),
     );
   }
@@ -728,7 +764,11 @@ export class UploadFormComponent implements OnInit {
     this.emitItemSettingsDiffChange();
   }
 
-  setPreviewFileByIndex(index: number, previewFile: File, previewUnit: ModelUnit = 'mm') {
+  setPreviewFileByIndex(
+    index: number,
+    previewFile: File,
+    previewUnit: ModelUnit = 'mm',
+  ) {
     if (!Number.isInteger(index) || index < 0) return;
 
     this.items.update((current) => {
@@ -839,7 +879,11 @@ export class UploadFormComponent implements OnInit {
     );
     options?.previewFiles?.forEach((previewFile, index) => {
       if (previewFile) {
-        this.setPreviewFileByIndex(index, previewFile, request.items[index]?.modelUnit ?? 'mm');
+        this.setPreviewFileByIndex(
+          index,
+          previewFile,
+          request.items[index]?.modelUnit ?? 'mm',
+        );
       }
     });
     this.patchSettings({

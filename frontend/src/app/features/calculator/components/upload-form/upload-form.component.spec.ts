@@ -85,7 +85,10 @@ describe('UploadFormComponent', () => {
 
   beforeEach(async () => {
     currentLang.set('de');
-    previews = jasmine.createSpyObj<ModelPreviewService>('ModelPreviewService', ['createStlPreview']);
+    previews = jasmine.createSpyObj<ModelPreviewService>(
+      'ModelPreviewService',
+      ['createStlPreview'],
+    );
     previews.createStlPreview.and.returnValue(NEVER);
 
     await TestBed.configureTestingModule({
@@ -265,7 +268,10 @@ describe('UploadFormComponent', () => {
       component.onFilesDropped([original]);
       fixture.detectChanges();
       expect(component.previewLoading()).toBeTrue();
-      expect(previews.createStlPreview).toHaveBeenCalledOnceWith(original, 'mm');
+      expect(previews.createStlPreview).toHaveBeenCalledOnceWith(
+        original,
+        'mm',
+      );
 
       response.next(new Blob(['solid preview'], { type: 'model/stl' }));
       response.complete();
@@ -275,14 +281,20 @@ describe('UploadFormComponent', () => {
       expect(component.canPreviewSelectedFile()).toBeTrue();
       expect(component.getSelectedPreviewFile()?.name).toBe('assembly.stl');
       expect(component.getCurrentRequestDraft().items[0].file).toBe(original);
-      expect(fixture.nativeElement.querySelector('app-stl-viewer')).not.toBeNull();
+      expect(
+        fixture.nativeElement.querySelector('app-stl-viewer'),
+      ).not.toBeNull();
     });
   }
 
   it('cancels stale previews and distinguishes files with identical names', () => {
     const firstResponse = new Subject<Blob>();
     const secondResponse = new Subject<Blob>();
-    previews.createStlPreview.and.returnValues(firstResponse, secondResponse, NEVER);
+    previews.createStlPreview.and.returnValues(
+      firstResponse,
+      secondResponse,
+      NEVER,
+    );
     const first = new File(['first project'], 'same.3mf');
     const second = new File(['second project'], 'same.3mf');
     component.onFilesDropped([first]);
@@ -296,7 +308,11 @@ describe('UploadFormComponent', () => {
     component.selectFile(first);
     component.selectFile(second);
     expect(component.getSelectedPreviewFile()).toBe(preview);
-    expect(previews.createStlPreview.calls.allArgs().filter(([file]) => file === second).length).toBe(1);
+    expect(
+      previews.createStlPreview.calls
+        .allArgs()
+        .filter(([file]) => file === second).length,
+    ).toBe(1);
     expect(component.items().map((item) => item.file)).toEqual([first, second]);
   });
 
