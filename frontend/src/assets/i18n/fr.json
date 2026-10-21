@@ -1537,6 +1537,21 @@
     "COPIED": "Lien copié. Utilisez-le pour rouvrir la session complète.",
     "COPY_ERROR": "La copie automatique est indisponible. Sélectionnez et copiez le lien ci-dessous."
   },
+  "CAD_DELETE": {
+    "DELETE": "Supprimer",
+    "TITLE": "Supprimer la facture",
+    "WARNING": "La facture, les fichiers et les pièces jointes seront supprimés. Choisissez le devenir du lien déjà partagé.",
+    "LINK_ACTION": "Ancien lien",
+    "NEW_INVOICE": "Utiliser le lien pour une nouvelle facture",
+    "REDIRECT": "Rediriger vers une page du site",
+    "REUSE_HINT": "Une nouvelle facture vide sera ouverte avec le même lien. Tant qu’elle n’est pas enregistrée, l’ancien lien n’affichera aucune facture.",
+    "TARGET": "Page de destination (chemin interne)",
+    "CONFIRM": "Confirmer la suppression",
+    "CANCEL": "Annuler",
+    "DONE": "Facture supprimée. Les paramètres de l’ancien lien ont été enregistrés.",
+    "ERROR": "Impossible de supprimer la facture. Vérifiez la destination et qu’elle n’est pas déjà liée à une commande.",
+    "STABLE_LINK": "Le lien de cette facture reste identique lors des modifications. Utilisez Nouvelle facture pour créer une facture distincte."
+  },
   "CAD_ORGANIZATION": {
     "TITLE": "Factures et prestations",
     "CLIENT": "Client / entreprise (référence interne)",

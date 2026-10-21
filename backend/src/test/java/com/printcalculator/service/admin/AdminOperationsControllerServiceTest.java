@@ -75,6 +75,10 @@ class AdminOperationsControllerServiceTest {
     private EmailAuditService emailAuditService;
     @Mock
     private CustomQuoteRequestNotificationService contactRequestNotificationService;
+    @Mock
+    private com.printcalculator.repository.QuoteSessionAttachmentRepository sessionAttachmentRepo;
+    @Mock
+    private com.printcalculator.service.qr.QrLinkSupportService linkSupport;
 
     @InjectMocks
     private AdminOperationsControllerService service;
@@ -331,5 +335,93 @@ class AdminOperationsControllerServiceTest {
 
         assertEquals(HttpStatus.CONFLICT, ex.getStatusCode());
         verify(quoteSessionRepo, never()).delete(any(QuoteSession.class));
+    }
+
+    @Test
+    void deletingDraftReservesItsLinkAndRemovesItsContent() {
+        UUID id = UUID.randomUUID();
+        QuoteSession session = new QuoteSession();
+        session.setId(id);
+        session.setStatus("CAD_ACTIVE");
+        session.setNotes("Private instructions");
+        session.setClientName("Customer");
+        session.setInformationDraftId(UUID.randomUUID());
+        when(quoteSessionRepo.findLockedById(id)).thenReturn(Optional.of(session));
+        when(sessionAttachmentRepo.findByQuoteSessionIdOrderByCreatedAtAsc(id)).thenReturn(List.of());
+
+        service.deleteCadInvoice(id, new com.printcalculator.dto.AdminCadInvoiceDeleteRequest(
+                com.printcalculator.dto.AdminCadInvoiceDeleteRequest.LinkAction.NEW_INVOICE, null));
+
+        assertEquals("CAD_DELETED", session.getStatus());
+        assertEquals(id, session.getId());
+        org.junit.jupiter.api.Assertions.assertNull(session.getNotes());
+        org.junit.jupiter.api.Assertions.assertNull(session.getClientName());
+        org.junit.jupiter.api.Assertions.assertNull(session.getInformationDraftId());
+        org.junit.jupiter.api.Assertions.assertNull(session.getDeletedRedirectPath());
+        assertEquals(List.of(), session.getServiceLines());
+        verify(quoteLineItemRepo).deleteByQuoteSession_Id(id);
+        verify(sessionAttachmentRepo).deleteAll(List.of());
+        verify(quoteSessionRepo, never()).delete(any());
+    }
+
+    @Test
+    void deletingDraftRedirectsThroughExistingPublicPathRules() {
+        UUID id = UUID.randomUUID();
+        QuoteSession session = new QuoteSession();
+        session.setId(id);
+        session.setStatus("CAD_ACTIVE");
+        when(quoteSessionRepo.findLockedById(id)).thenReturn(Optional.of(session));
+        when(linkSupport.normalizeTargetPath("/it/contact")).thenReturn("/contact");
+        when(sessionAttachmentRepo.findByQuoteSessionIdOrderByCreatedAtAsc(id)).thenReturn(List.of());
+        service.deleteCadInvoice(id, new com.printcalculator.dto.AdminCadInvoiceDeleteRequest(
+                com.printcalculator.dto.AdminCadInvoiceDeleteRequest.LinkAction.REDIRECT, "/it/contact"));
+        assertEquals("CAD_DELETED", session.getStatus());
+        assertEquals("/contact", session.getDeletedRedirectPath());
+    }
+
+    @Test
+    void deletionRejectsOrderedInvoicesAndUnsafeTargetsBeforeRemovingAnything() {
+        UUID id = UUID.randomUUID();
+        QuoteSession session = new QuoteSession();
+        session.setId(id);
+        session.setStatus("CONVERTED");
+        when(quoteSessionRepo.findLockedById(id)).thenReturn(Optional.of(session));
+        var request = new com.printcalculator.dto.AdminCadInvoiceDeleteRequest(
+                com.printcalculator.dto.AdminCadInvoiceDeleteRequest.LinkAction.REDIRECT, "/checkout/cad");
+        assertEquals(HttpStatus.CONFLICT, assertThrows(ResponseStatusException.class,
+                () -> service.deleteCadInvoice(id, request)).getStatusCode());
+        session.setStatus("CAD_ACTIVE");
+        when(linkSupport.normalizeTargetPath("/checkout/cad")).thenReturn("/checkout/cad");
+        assertEquals(HttpStatus.BAD_REQUEST, assertThrows(ResponseStatusException.class,
+                () -> service.deleteCadInvoice(id, request)).getStatusCode());
+        org.mockito.Mockito.verifyNoInteractions(quoteLineItemRepo, sessionAttachmentRepo);
+    }
+
+    @Test
+    void updateKeepsSessionIdWhenReusingADeletedInvoiceLink() {
+        UUID id = UUID.randomUUID();
+        QuoteSession session = new QuoteSession();
+        session.setId(id);
+        session.setStatus("CAD_DELETED");
+        var payload = new AdminCadInvoiceCreateRequest();
+        payload.setSessionId(id);
+        payload.setCadHours(BigDecimal.ONE);
+        payload.setCadHourlyRateChf(new BigDecimal("80"));
+        when(quoteSessionRepo.findLockedById(id)).thenReturn(Optional.of(session));
+        when(quoteSessionRepo.save(session)).thenReturn(session);
+        when(quoteSessionExpiryPolicy.newExpiry()).thenReturn(OffsetDateTime.now().plusMonths(3));
+        when(quoteLineItemRepo.findByQuoteSessionId(id)).thenReturn(List.of());
+        when(quoteSessionTotalsService.compute(session, List.of())).thenReturn(
+                new QuoteSessionTotalsService.QuoteSessionTotals(BigDecimal.ZERO, BigDecimal.ZERO,
+                        new BigDecimal("80"), new BigDecimal("80"), BigDecimal.ZERO, BigDecimal.ZERO,
+                        BigDecimal.ZERO, BigDecimal.ZERO, new BigDecimal("80"), BigDecimal.ZERO));
+        var result = service.createOrUpdateCadInvoice(payload);
+        assertEquals(id, result.getSessionId());
+        assertEquals("/checkout/cad?session=" + id, result.getCheckoutPath());
+        assertEquals("CAD_ACTIVE", session.getStatus());
+        session.setStatus("CAD_DELETED");
+        session.setDeletedRedirectPath("/contact");
+        assertEquals(HttpStatus.CONFLICT, assertThrows(ResponseStatusException.class,
+                () -> service.createOrUpdateCadInvoice(payload)).getStatusCode());
     }
 }

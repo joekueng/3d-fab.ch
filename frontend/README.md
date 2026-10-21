@@ -243,6 +243,20 @@ issued document snapshots retain their agreed name and service details.
 explicitly simulated API and checks narrow-screen layout. Backend integration
 and pricing tests remain responsible for persistence, amounts and paid access.
 
+Keep the currently edited invoice ID separately from the form's optional source
+session field. Once an invoice is selected or saved, show that ID read-only and
+send content updates to `PUT /cad-invoices/{id}`. Keep the returned content in
+the form so saving again cannot accidentally replace it with blank service rows.
+Only the explicit new/interim-invoice action clears this identity.
+
+Draft deletion uses `app-dialog` and a required old-link decision. Cancel/Escape
+make no request. `NEW_INVOICE` opens an empty replacement form with the reserved
+ID; `REDIRECT` accepts a public site path and clears the deleted draft editor.
+Keep errors in the dialog and block duplicate confirmation while saving. Issued
+order snapshots remain protected. Checkout follows a deleted invoice's public
+redirect in the selected language with history replacement. Browser scenarios
+UI-INVOICE-004/005 cover stable identity, confirmation, replacement and redirect.
+
 ### Oversized models and split consent
 
 When slicing reports `MODEL_OUT_OF_PRINT_VOLUME`, the calculator offers explicit

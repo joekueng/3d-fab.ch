@@ -82,6 +82,10 @@ public class OrderService {
         QuoteSession session = quoteSessionRepo.findLockedById(quoteSessionId)
                 .orElseThrow(() -> new RuntimeException("Quote Session not found"));
 
+        if ("CAD_DELETED".equals(session.getStatus())) {
+            throw new IllegalStateException("Cannot order a deleted invoice");
+        }
+
         if (session.getConvertedOrderId() != null
                 || orderRepo.existsBySourceQuoteSession_Id(quoteSessionId)) {
             throw new IllegalStateException("Quote session already converted to order");

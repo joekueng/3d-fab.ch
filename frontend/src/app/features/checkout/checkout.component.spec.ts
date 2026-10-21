@@ -10,6 +10,14 @@ import { QuoteEstimatorService } from '../calculator/services/quote-estimator.se
 import { LanguageService } from '../../core/services/language.service';
 
 describe('CheckoutComponent', () => {
+  it('follows a deleted invoice redirect in the current language', () => {
+    const { component, quoteService, router } = createComponent();
+    quoteService.getQuoteSession.and.returnValue(of({ redirectPath: '/contact' }));
+    component.sessionId = 'deleted-invoice';
+    component.loadSessionDetails();
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/it/contact', { replaceUrl: true });
+    expect(component.quoteSession()).toBeNull();
+  });
   it('requires a shipping quote before order submission', () => {
     const { component } = createComponent();
     component.quoteSession.set({ shippingQuote: { status: 'MANUAL_QUOTE' } });
@@ -93,7 +101,7 @@ describe('CheckoutComponent', () => {
         },
         {
           provide: Router,
-          useValue: jasmine.createSpyObj<Router>('Router', ['navigate']),
+          useValue: jasmine.createSpyObj<Router>('Router', ['navigate', 'navigateByUrl']),
         },
         {
           provide: ActivatedRoute,

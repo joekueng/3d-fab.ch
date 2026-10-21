@@ -392,3 +392,27 @@ the paid-deliverable upload/download flow and payment confirmation rules.
 Verification covers service-only/mixed totals, request validation with 250 rows,
 Hibernate JSON round trips, immutable order details, existing paid-file gates
 and multi-page invoice rendering.
+
+CAD content edits use `PUT /api/admin/cad-invoices/{sessionId}`. The path ID is
+authoritative even if `sessionId` is missing or different in the body. The existing
+POST remains the creation / calculator-session association contract. Ordinary
+content and metadata edits keep the same session and checkout URL.
+
+`POST /api/admin/cad-invoices/{sessionId}/delete` requires `linkAction`:
+`NEW_INVOICE` reserves the existing UUID for a blank replacement; `REDIRECT`
+requires a public `targetPath`, normalized with the existing QR path rules.
+Destinations cannot be external, contain query strings, or point back to checkout.
+Converted or otherwise order-linked invoices cannot be deleted. Deletion takes
+the same session lock as checkout, removes print rows and invoice attachments,
+clears labels/notes and detaches customer instructions. A `CAD_DELETED` record
+retains the link reservation; it is excluded from invoice/session lists, session
+counts and expiry cleanup. No previous invoice details are returned from it.
+Public checkout receives only a `redirectPath` or HTTP 410, both without caching.
+Resume returns no customer credentials for a redirect, including after expiry;
+checkout of a deleted record is rejected even from a stale browser tab.
+
+Saving the replacement reactivates the reserved UUID and renews its expiry.
+Until then the old checkout is unavailable. A redirect reservation cannot be
+reactivated by an ordinary edit. The new nullable `deleted_redirect_path` column
+is additive under Hibernate schema update; matching DDL is in `db.sql` and needs
+no backfill. Existing instructions retain their normal draft retention policy.

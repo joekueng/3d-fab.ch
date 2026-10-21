@@ -54,6 +54,16 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
+    @Test
+    void deletedInvoiceCannotBeOrderedFromAnAlreadyOpenCheckout() {
+        UUID id = UUID.randomUUID();
+        QuoteSession session = new QuoteSession();
+        session.setStatus("CAD_DELETED");
+        when(quoteSessionRepo.findLockedById(id)).thenReturn(Optional.of(session));
+        assertThrows(IllegalStateException.class,
+                () -> service.createOrderFromQuote(id, buildRequest()));
+        verify(orderRepo, never()).save(any());
+    }
 
     @Mock
     private OrderRepository orderRepo;

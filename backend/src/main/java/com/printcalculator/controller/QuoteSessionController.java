@@ -122,7 +122,7 @@ public class QuoteSessionController {
 
     @PostMapping(value = "/{id}/line-items", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Transactional
-    public ResponseEntity<QuoteLineItem> addItemToExistingSession(@PathVariable UUID id,
+    public ResponseEntity<?> addItemToExistingSession(@PathVariable UUID id,
                                                                    @jakarta.validation.Valid @RequestPart("settings") PrintSettingsDto settings,
                                                                    @RequestPart("file") MultipartFile file,
                                                                    @RequestHeader(value = "X-Quote-Calculation", required = false) UUID calculationId,
@@ -130,6 +130,10 @@ public class QuoteSessionController {
         quoteRateLimitService.checkSlicingAllowed(request, id, calculationId);
         QuoteSession session = sessionRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Session not found"));
+
+        if ("CAD_DELETED".equals(session.getStatus())) {
+            throw new ResponseStatusException(org.springframework.http.HttpStatus.GONE, "Invoice deleted");
+        }
 
         QuoteLineItem item = quoteSessionItemService.addItemToSession(session, file, settings);
         return ResponseEntity.ok(item);
@@ -181,6 +185,15 @@ public class QuoteSessionController {
     public ResponseEntity<Map<String, Object>> getQuoteSession(@PathVariable UUID id) {
         QuoteSession session = sessionRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Session not found"));
+        if ("CAD_DELETED".equals(session.getStatus())) {
+            if (session.getDeletedRedirectPath() == null) {
+                return ResponseEntity.status(org.springframework.http.HttpStatus.GONE)
+                        .cacheControl(org.springframework.http.CacheControl.noStore())
+                        .body(Map.of("message", "Invoice deleted"));
+            }
+            return ResponseEntity.ok().cacheControl(org.springframework.http.CacheControl.noStore())
+                    .body(Map.of("redirectPath", session.getDeletedRedirectPath()));
+        }
 
         List<QuoteLineItem> items = lineItemRepo.findByQuoteSessionIdOrderByCreatedAtAsc(id);
         QuoteSessionTotalsService.QuoteSessionTotals totals = quoteSessionTotalsService.compute(session, items);

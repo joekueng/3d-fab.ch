@@ -1542,6 +1542,21 @@
     "COPIED": "Link kopiert. Damit kannst du die gesamte Sitzung wieder öffnen.",
     "COPY_ERROR": "Automatisches Kopieren ist nicht verfügbar. Markiere und kopiere den Link unten."
   },
+  "CAD_DELETE": {
+    "DELETE": "Löschen",
+    "TITLE": "Rechnung löschen",
+    "WARNING": "Die Rechnung, Dateien und Anhänge werden gelöscht. Wählen Sie, was mit dem bereits geteilten Link geschieht.",
+    "LINK_ACTION": "Bisheriger Link",
+    "NEW_INVOICE": "Link für eine neue Rechnung verwenden",
+    "REDIRECT": "Zu einer Seite der Website weiterleiten",
+    "REUSE_HINT": "Eine neue leere Rechnung mit demselben Link wird geöffnet. Bis zum Speichern zeigt der bisherige Link keine Rechnung an.",
+    "TARGET": "Zielseite (interner Pfad)",
+    "CONFIRM": "Löschen bestätigen",
+    "CANCEL": "Abbrechen",
+    "DONE": "Rechnung gelöscht. Die Einstellungen für den bisherigen Link wurden gespeichert.",
+    "ERROR": "Die Rechnung konnte nicht gelöscht werden. Prüfen Sie das Ziel und ob sie bereits mit einer Bestellung verknüpft ist.",
+    "STABLE_LINK": "Der Rechnungslink bleibt bei Änderungen gleich. Verwenden Sie Neue Rechnung für eine separate Rechnung."
+  },
   "CAD_ORGANIZATION": {
     "TITLE": "Rechnungen und Leistungen",
     "CLIENT": "Kunde / Firma (interne Referenz)",

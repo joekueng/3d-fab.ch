@@ -1753,3 +1753,6 @@ CREATE TABLE IF NOT EXISTS quote_session_attachments
 
 CREATE INDEX IF NOT EXISTS ix_quote_session_attachments_session
     ON quote_session_attachments (quote_session_id);
+
+-- Deleted CAD invoices retain only their link reservation / public-page redirect.
+ALTER TABLE quote_sessions ADD COLUMN IF NOT EXISTS deleted_redirect_path varchar(1000);

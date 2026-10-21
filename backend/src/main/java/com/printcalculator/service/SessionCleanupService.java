@@ -38,7 +38,8 @@ public class SessionCleanupService {
         int deletedCount = 0;
         for (QuoteSession session : oldSessions) {
             // CAD_ACTIVE sessions are managed manually from back-office and must be preserved.
-            if ("CONVERTED".equals(session.getStatus()) || "CAD_ACTIVE".equals(session.getStatus())) {
+            if ("CONVERTED".equals(session.getStatus()) || "CAD_ACTIVE".equals(session.getStatus())
+                    || "CAD_DELETED".equals(session.getStatus())) {
                 continue;
             }
 

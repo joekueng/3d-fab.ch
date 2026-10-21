@@ -1529,6 +1529,21 @@
     "COPIED": "Link copied. Use it to reopen the complete session.",
     "COPY_ERROR": "Automatic copying is unavailable. Select and copy the link below."
   },
+  "CAD_DELETE": {
+    "DELETE": "Delete",
+    "TITLE": "Delete invoice",
+    "WARNING": "The invoice, files and attachments will be deleted. Choose what happens to the shared link.",
+    "LINK_ACTION": "Existing link",
+    "NEW_INVOICE": "Use the link for a new invoice",
+    "REDIRECT": "Redirect to a site page",
+    "REUSE_HINT": "A new empty invoice will open with the same link. Until it is saved, the existing link will not display an invoice.",
+    "TARGET": "Destination page (internal path)",
+    "CONFIRM": "Confirm deletion",
+    "CANCEL": "Cancel",
+    "DONE": "Invoice deleted. The existing link settings have been saved.",
+    "ERROR": "Unable to delete the invoice. Check the destination and ensure it is not linked to an order.",
+    "STABLE_LINK": "This invoice link stays the same when editing. Use New invoice to create a separate invoice."
+  },
   "CAD_ORGANIZATION": {
     "TITLE": "Invoices and services",
     "CLIENT": "Customer / company (internal reference)",

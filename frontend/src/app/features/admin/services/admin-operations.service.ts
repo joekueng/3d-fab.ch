@@ -450,6 +450,14 @@ export class AdminOperationsService {
     );
   }
 
+  updateCadInvoice(sessionId: string, payload: AdminCreateCadInvoicePayload): Observable<AdminCadInvoice> {
+    return this.http.put<AdminCadInvoice>(`${this.baseUrl}/cad-invoices/${sessionId}`, payload, { withCredentials: true });
+  }
+
+  deleteCadInvoice(sessionId: string, payload: { linkAction: 'NEW_INVOICE' | 'REDIRECT'; targetPath?: string }): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/cad-invoices/${sessionId}/delete`, payload, { withCredentials: true });
+  }
+
   getAdminQuoteItems(sessionId: string): Observable<AdminQuoteItemsResponse> {
     return this.http.get<AdminQuoteItemsResponse>(
       `${this.baseUrl}/quote-sessions/${sessionId}/items`,

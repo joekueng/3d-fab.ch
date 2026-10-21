@@ -1530,6 +1530,21 @@
     "COPIED": "Link copiato. Puoi usarlo per riaprire tutta la sessione.",
     "COPY_ERROR": "Copia automatica non disponibile. Seleziona e copia il link qui sotto."
   },
+  "CAD_DELETE": {
+    "DELETE": "Elimina",
+    "TITLE": "Elimina fattura",
+    "WARNING": "La fattura, i file e gli allegati verranno eliminati. Scegli come gestire il link già condiviso.",
+    "LINK_ACTION": "Gestione del vecchio link",
+    "NEW_INVOICE": "Associa il link a una nuova fattura",
+    "REDIRECT": "Reindirizza a una pagina del sito",
+    "REUSE_HINT": "Si aprirà una nuova fattura vuota con lo stesso link. Fino al salvataggio il vecchio link non mostrerà alcuna fattura.",
+    "TARGET": "Pagina di destinazione (percorso interno)",
+    "CONFIRM": "Conferma eliminazione",
+    "CANCEL": "Annulla",
+    "DONE": "Fattura eliminata. La gestione del vecchio link è stata salvata.",
+    "ERROR": "Impossibile eliminare la fattura. Controlla la destinazione e che non sia già collegata a un ordine.",
+    "STABLE_LINK": "Il link di questa fattura resta invariato durante le modifiche. Per creare una fattura distinta usa Nuova fattura."
+  },
   "CAD_ORGANIZATION": {
     "TITLE": "Fatture e prestazioni",
     "CLIENT": "Cliente / azienda (riferimento interno)",
