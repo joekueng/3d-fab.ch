@@ -1,0 +1,3407 @@
+{
+  "schemaVersion" : 3,
+  "version" : "p2s-a1-2026-10-20-v3",
+  "reference" : "Bambu Lab A1",
+  "sourceRuntime" : "Mac OS X/aarch64",
+  "inventorySha256" : "59d3d980e7b4adee4b73c9b06f54d633ea544a8b62d990608fff6c7ce8ad376c",
+  "validationMedianErrorPercent" : 3.2973621103117523,
+  "validationMaxErrorPercent" : 41.76334106728539,
+  "rules" : [ {
+    "id" : "9ff1299892c99bc5",
+    "material" : "PETG",
+    "nozzleMm" : 0.2,
+    "layerMm" : 0.08,
+    "a1Machine" : "Bambu Lab A1 0.2 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.2 nozzle",
+    "a1Filament" : "Generic PETG",
+    "p2sFilament" : "Generic PETG",
+    "a1Process" : "0.08mm High Quality @BBL A1 0.2 nozzle",
+    "p2sProcess" : "0.08mm High Quality @BBL P2S 0.2 nozzle",
+    "qualities" : [ "draft", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "bb2e9ef103eb23499e739c7595addc582a0737c0b11a5f58900482b431ccd335",
+      "p2sMachine" : "59aea0e395a1ac94a50a695505686ca2cb0f42a4ec7964f235a8a476d942b9a4",
+      "a1Filament" : "f7f636d61b7a22bcf869e25d47783d02bdda8b3c1b0896a6cac762202e810257",
+      "p2sFilament" : "f7f636d61b7a22bcf869e25d47783d02bdda8b3c1b0896a6cac762202e810257",
+      "a1Process" : "c24cdcd467b4f137024dbffb99242a0a0515a57b63c6f71e62aa40b8d747d046",
+      "p2sProcess" : "a579154e8ff910a13f7273965cb0f84f4ecd98a9d7c5d3343d7fe74caf72d809"
+    },
+    "curve" : {
+      "startupSeconds" : 455,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 36.544,
+        "a1SecondsPerLayer" : 40.59
+      }, {
+        "p2sSecondsPerLayer" : 66.932,
+        "a1SecondsPerLayer" : 71.125
+      }, {
+        "p2sSecondsPerLayer" : 111.052,
+        "a1SecondsPerLayer" : 120.752
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 36.544,
+    "maxSecondsPerLayer" : 111.052,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 1.2155415671803782,
+    "validationMedianErrorPercent" : 0.807294691601812,
+    "enabled" : true
+  }, {
+    "id" : "1b3fa55c7f08946f",
+    "material" : "PETG",
+    "nozzleMm" : 0.2,
+    "layerMm" : 0.08,
+    "a1Machine" : "Bambu Lab A1 0.2 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.2 nozzle",
+    "a1Filament" : "Generic PETG",
+    "p2sFilament" : "Generic PETG",
+    "a1Process" : "0.08mm Optimal @BBL A1 0.2 nozzle",
+    "p2sProcess" : "0.08mm High Quality @BBL P2S 0.2 nozzle",
+    "qualities" : [ "standard" ],
+    "profileHashes" : {
+      "a1Machine" : "bb2e9ef103eb23499e739c7595addc582a0737c0b11a5f58900482b431ccd335",
+      "p2sMachine" : "59aea0e395a1ac94a50a695505686ca2cb0f42a4ec7964f235a8a476d942b9a4",
+      "a1Filament" : "f7f636d61b7a22bcf869e25d47783d02bdda8b3c1b0896a6cac762202e810257",
+      "p2sFilament" : "f7f636d61b7a22bcf869e25d47783d02bdda8b3c1b0896a6cac762202e810257",
+      "a1Process" : "bc96804087dd0f13103e393dc07a40708bd90532197592ffc124897932fae073",
+      "p2sProcess" : "a579154e8ff910a13f7273965cb0f84f4ecd98a9d7c5d3343d7fe74caf72d809"
+    },
+    "curve" : {
+      "startupSeconds" : 409,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 36.544,
+        "a1SecondsPerLayer" : 33.505
+      }, {
+        "p2sSecondsPerLayer" : 66.932,
+        "a1SecondsPerLayer" : 67.078
+      }, {
+        "p2sSecondsPerLayer" : 111.052,
+        "a1SecondsPerLayer" : 115.632
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 36.544,
+    "maxSecondsPerLayer" : 111.052,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.002948721729123527,
+    "validationMaxErrorPercent" : 11.629524156429017,
+    "validationMedianErrorPercent" : 5.514995802701539,
+    "enabled" : false
+  }, {
+    "id" : "1739084090102227",
+    "material" : "PETG",
+    "nozzleMm" : 0.2,
+    "layerMm" : 0.1,
+    "a1Machine" : "Bambu Lab A1 0.2 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.2 nozzle",
+    "a1Filament" : "Generic PETG",
+    "p2sFilament" : "Generic PETG",
+    "a1Process" : "0.10mm Standard @BBL A1 0.2 nozzle",
+    "p2sProcess" : "0.10mm Standard @BBL P2S 0.2 nozzle",
+    "qualities" : [ "draft", "standard" ],
+    "profileHashes" : {
+      "a1Machine" : "bb2e9ef103eb23499e739c7595addc582a0737c0b11a5f58900482b431ccd335",
+      "p2sMachine" : "59aea0e395a1ac94a50a695505686ca2cb0f42a4ec7964f235a8a476d942b9a4",
+      "a1Filament" : "f7f636d61b7a22bcf869e25d47783d02bdda8b3c1b0896a6cac762202e810257",
+      "p2sFilament" : "f7f636d61b7a22bcf869e25d47783d02bdda8b3c1b0896a6cac762202e810257",
+      "a1Process" : "e45172a2a5eefee1e9b9853e016b42c90e1aa4f53dd28d857fac5794c4d44ef6",
+      "p2sProcess" : "6e5ba8c227ad54533da34eafdd4733fe59173eefec7254d929baf1cd855bbb35"
+    },
+    "curve" : {
+      "startupSeconds" : 400,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 31.1925,
+        "a1SecondsPerLayer" : 32.74
+      }, {
+        "p2sSecondsPerLayer" : 65.35625,
+        "a1SecondsPerLayer" : 68.29625
+      }, {
+        "p2sSecondsPerLayer" : 112.665,
+        "a1SecondsPerLayer" : 121.66
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 31.1925,
+    "maxSecondsPerLayer" : 112.665,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 2.6740563938670636,
+    "validationMedianErrorPercent" : 1.5025406028866262,
+    "enabled" : true
+  }, {
+    "id" : "394767fb4713273f",
+    "material" : "PETG",
+    "nozzleMm" : 0.2,
+    "layerMm" : 0.1,
+    "a1Machine" : "Bambu Lab A1 0.2 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.2 nozzle",
+    "a1Filament" : "Generic PETG",
+    "p2sFilament" : "Generic PETG",
+    "a1Process" : "0.10mm High Quality @BBL A1 0.2 nozzle",
+    "p2sProcess" : "0.10mm Standard @BBL P2S 0.2 nozzle",
+    "qualities" : [ "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "bb2e9ef103eb23499e739c7595addc582a0737c0b11a5f58900482b431ccd335",
+      "p2sMachine" : "59aea0e395a1ac94a50a695505686ca2cb0f42a4ec7964f235a8a476d942b9a4",
+      "a1Filament" : "f7f636d61b7a22bcf869e25d47783d02bdda8b3c1b0896a6cac762202e810257",
+      "p2sFilament" : "f7f636d61b7a22bcf869e25d47783d02bdda8b3c1b0896a6cac762202e810257",
+      "a1Process" : "51fe0a06da5df17c896df6869def3701ba8c47ff5907d61dd2ab1bc71d018836",
+      "p2sProcess" : "6e5ba8c227ad54533da34eafdd4733fe59173eefec7254d929baf1cd855bbb35"
+    },
+    "curve" : {
+      "startupSeconds" : 438,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 31.1925,
+        "a1SecondsPerLayer" : 39.5225
+      }, {
+        "p2sSecondsPerLayer" : 65.35625,
+        "a1SecondsPerLayer" : 72.1025
+      }, {
+        "p2sSecondsPerLayer" : 112.665,
+        "a1SecondsPerLayer" : 126.71
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 31.1925,
+    "maxSecondsPerLayer" : 112.665,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 9.010339734121132,
+    "validationMedianErrorPercent" : 3.0703936777403795,
+    "enabled" : true
+  }, {
+    "id" : "309d7f6a1135c6ac",
+    "material" : "PETG",
+    "nozzleMm" : 0.2,
+    "layerMm" : 0.12,
+    "a1Machine" : "Bambu Lab A1 0.2 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.2 nozzle",
+    "a1Filament" : "Generic PETG",
+    "p2sFilament" : "Generic PETG",
+    "a1Process" : "0.12mm Draft @BBL A1 0.2 nozzle",
+    "p2sProcess" : "0.12mm Balanced Quality @BBL P2S 0.2 nozzle",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "bb2e9ef103eb23499e739c7595addc582a0737c0b11a5f58900482b431ccd335",
+      "p2sMachine" : "59aea0e395a1ac94a50a695505686ca2cb0f42a4ec7964f235a8a476d942b9a4",
+      "a1Filament" : "f7f636d61b7a22bcf869e25d47783d02bdda8b3c1b0896a6cac762202e810257",
+      "p2sFilament" : "f7f636d61b7a22bcf869e25d47783d02bdda8b3c1b0896a6cac762202e810257",
+      "a1Process" : "33026511edefca505f21dbcf350ad4fdd9abdb592b852951fb69885e8b445afb",
+      "p2sProcess" : "6913b2da1fbe59f65507c3d5da2009940f88531936746cb8382526c39de3f36b"
+    },
+    "curve" : {
+      "startupSeconds" : 394,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 34.48275862068966,
+        "a1SecondsPerLayer" : 35.784107946026985
+      }, {
+        "p2sSecondsPerLayer" : 68.02848575712144,
+        "a1SecondsPerLayer" : 71.29535232383807
+      }, {
+        "p2sSecondsPerLayer" : 118.87425149700599,
+        "a1SecondsPerLayer" : 129.32335329341316
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 34.48275862068966,
+    "maxSecondsPerLayer" : 118.87425149700599,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 4.193504179799923,
+    "validationMedianErrorPercent" : 2.046044906237765,
+    "enabled" : true
+  }, {
+    "id" : "f2d30c2edd2eca6a",
+    "material" : "PLA",
+    "nozzleMm" : 0.2,
+    "layerMm" : 0.08,
+    "a1Machine" : "Bambu Lab A1 0.2 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.2 nozzle",
+    "a1Filament" : "Generic PLA",
+    "p2sFilament" : "Generic PLA",
+    "a1Process" : "0.08mm High Quality @BBL A1 0.2 nozzle",
+    "p2sProcess" : "0.08mm High Quality @BBL P2S 0.2 nozzle",
+    "qualities" : [ "draft", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "bb2e9ef103eb23499e739c7595addc582a0737c0b11a5f58900482b431ccd335",
+      "p2sMachine" : "59aea0e395a1ac94a50a695505686ca2cb0f42a4ec7964f235a8a476d942b9a4",
+      "a1Filament" : "0e7a26acbd5314522850d515f5a6ff26da9865847bcabae0f322f7a94f9a1372",
+      "p2sFilament" : "0e7a26acbd5314522850d515f5a6ff26da9865847bcabae0f322f7a94f9a1372",
+      "a1Process" : "c24cdcd467b4f137024dbffb99242a0a0515a57b63c6f71e62aa40b8d747d046",
+      "p2sProcess" : "a579154e8ff910a13f7273965cb0f84f4ecd98a9d7c5d3343d7fe74caf72d809"
+    },
+    "curve" : {
+      "startupSeconds" : 456,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 35.801,
+        "a1SecondsPerLayer" : 38.753
+      }, {
+        "p2sSecondsPerLayer" : 66.188,
+        "a1SecondsPerLayer" : 69.286
+      }, {
+        "p2sSecondsPerLayer" : 108.064,
+        "a1SecondsPerLayer" : 113.348
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 35.801,
+    "maxSecondsPerLayer" : 108.064,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.002550499897990832,
+    "validationMaxErrorPercent" : 2.660006969450579,
+    "validationMedianErrorPercent" : 0.3135564156582227,
+    "enabled" : true
+  }, {
+    "id" : "ebcfbccc20659e01",
+    "material" : "PLA",
+    "nozzleMm" : 0.2,
+    "layerMm" : 0.08,
+    "a1Machine" : "Bambu Lab A1 0.2 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.2 nozzle",
+    "a1Filament" : "Generic PLA",
+    "p2sFilament" : "Generic PLA",
+    "a1Process" : "0.08mm Optimal @BBL A1 0.2 nozzle",
+    "p2sProcess" : "0.08mm High Quality @BBL P2S 0.2 nozzle",
+    "qualities" : [ "standard" ],
+    "profileHashes" : {
+      "a1Machine" : "bb2e9ef103eb23499e739c7595addc582a0737c0b11a5f58900482b431ccd335",
+      "p2sMachine" : "59aea0e395a1ac94a50a695505686ca2cb0f42a4ec7964f235a8a476d942b9a4",
+      "a1Filament" : "0e7a26acbd5314522850d515f5a6ff26da9865847bcabae0f322f7a94f9a1372",
+      "p2sFilament" : "0e7a26acbd5314522850d515f5a6ff26da9865847bcabae0f322f7a94f9a1372",
+      "a1Process" : "bc96804087dd0f13103e393dc07a40708bd90532197592ffc124897932fae073",
+      "p2sProcess" : "a579154e8ff910a13f7273965cb0f84f4ecd98a9d7c5d3343d7fe74caf72d809"
+    },
+    "curve" : {
+      "startupSeconds" : 409,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 35.801,
+        "a1SecondsPerLayer" : 31.667
+      }, {
+        "p2sSecondsPerLayer" : 66.188,
+        "a1SecondsPerLayer" : 65.24
+      }, {
+        "p2sSecondsPerLayer" : 108.064,
+        "a1SecondsPerLayer" : 108.232
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 35.801,
+    "maxSecondsPerLayer" : 108.064,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 13.282926330847044,
+    "validationMedianErrorPercent" : 6.084079510542761,
+    "enabled" : false
+  }, {
+    "id" : "d84336d2bdf7035e",
+    "material" : "PLA",
+    "nozzleMm" : 0.2,
+    "layerMm" : 0.1,
+    "a1Machine" : "Bambu Lab A1 0.2 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.2 nozzle",
+    "a1Filament" : "Generic PLA",
+    "p2sFilament" : "Generic PLA",
+    "a1Process" : "0.10mm Standard @BBL A1 0.2 nozzle",
+    "p2sProcess" : "0.10mm Standard @BBL P2S 0.2 nozzle",
+    "qualities" : [ "draft", "standard" ],
+    "profileHashes" : {
+      "a1Machine" : "bb2e9ef103eb23499e739c7595addc582a0737c0b11a5f58900482b431ccd335",
+      "p2sMachine" : "59aea0e395a1ac94a50a695505686ca2cb0f42a4ec7964f235a8a476d942b9a4",
+      "a1Filament" : "0e7a26acbd5314522850d515f5a6ff26da9865847bcabae0f322f7a94f9a1372",
+      "p2sFilament" : "0e7a26acbd5314522850d515f5a6ff26da9865847bcabae0f322f7a94f9a1372",
+      "a1Process" : "e45172a2a5eefee1e9b9853e016b42c90e1aa4f53dd28d857fac5794c4d44ef6",
+      "p2sProcess" : "6e5ba8c227ad54533da34eafdd4733fe59173eefec7254d929baf1cd855bbb35"
+    },
+    "curve" : {
+      "startupSeconds" : 401,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 30.26375,
+        "a1SecondsPerLayer" : 30.4425
+      }, {
+        "p2sSecondsPerLayer" : 64.42625,
+        "a1SecondsPerLayer" : 65.9975
+      }, {
+        "p2sSecondsPerLayer" : 108.935,
+        "a1SecondsPerLayer" : 112.405
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 30.26375,
+    "maxSecondsPerLayer" : 108.935,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.004039751151330151,
+    "validationMaxErrorPercent" : 4.631296846865707,
+    "validationMedianErrorPercent" : 3.6031691353771933,
+    "enabled" : true
+  }, {
+    "id" : "2ef3844bef1fe3fc",
+    "material" : "PLA",
+    "nozzleMm" : 0.2,
+    "layerMm" : 0.1,
+    "a1Machine" : "Bambu Lab A1 0.2 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.2 nozzle",
+    "a1Filament" : "Generic PLA",
+    "p2sFilament" : "Generic PLA",
+    "a1Process" : "0.10mm High Quality @BBL A1 0.2 nozzle",
+    "p2sProcess" : "0.10mm Standard @BBL P2S 0.2 nozzle",
+    "qualities" : [ "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "bb2e9ef103eb23499e739c7595addc582a0737c0b11a5f58900482b431ccd335",
+      "p2sMachine" : "59aea0e395a1ac94a50a695505686ca2cb0f42a4ec7964f235a8a476d942b9a4",
+      "a1Filament" : "0e7a26acbd5314522850d515f5a6ff26da9865847bcabae0f322f7a94f9a1372",
+      "p2sFilament" : "0e7a26acbd5314522850d515f5a6ff26da9865847bcabae0f322f7a94f9a1372",
+      "a1Process" : "51fe0a06da5df17c896df6869def3701ba8c47ff5907d61dd2ab1bc71d018836",
+      "p2sProcess" : "6e5ba8c227ad54533da34eafdd4733fe59173eefec7254d929baf1cd855bbb35"
+    },
+    "curve" : {
+      "startupSeconds" : 438,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 30.26375,
+        "a1SecondsPerLayer" : 37.225
+      }, {
+        "p2sSecondsPerLayer" : 64.42625,
+        "a1SecondsPerLayer" : 69.805
+      }, {
+        "p2sSecondsPerLayer" : 108.935,
+        "a1SecondsPerLayer" : 117.46
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 30.26375,
+    "maxSecondsPerLayer" : 108.935,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 7.4597089657330695,
+    "validationMedianErrorPercent" : 2.686947809454421,
+    "enabled" : true
+  }, {
+    "id" : "f690e22d49ad0db9",
+    "material" : "PLA",
+    "nozzleMm" : 0.2,
+    "layerMm" : 0.12,
+    "a1Machine" : "Bambu Lab A1 0.2 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.2 nozzle",
+    "a1Filament" : "Generic PLA",
+    "p2sFilament" : "Generic PLA",
+    "a1Process" : "0.12mm Draft @BBL A1 0.2 nozzle",
+    "p2sProcess" : "0.12mm Balanced Quality @BBL P2S 0.2 nozzle",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "bb2e9ef103eb23499e739c7595addc582a0737c0b11a5f58900482b431ccd335",
+      "p2sMachine" : "59aea0e395a1ac94a50a695505686ca2cb0f42a4ec7964f235a8a476d942b9a4",
+      "a1Filament" : "0e7a26acbd5314522850d515f5a6ff26da9865847bcabae0f322f7a94f9a1372",
+      "p2sFilament" : "0e7a26acbd5314522850d515f5a6ff26da9865847bcabae0f322f7a94f9a1372",
+      "a1Process" : "33026511edefca505f21dbcf350ad4fdd9abdb592b852951fb69885e8b445afb",
+      "p2sProcess" : "6913b2da1fbe59f65507c3d5da2009940f88531936746cb8382526c39de3f36b"
+    },
+    "curve" : {
+      "startupSeconds" : 394,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 33.3688155922039,
+        "a1SecondsPerLayer" : 33.02998500749625
+      }, {
+        "p2sSecondsPerLayer" : 66.91454272863568,
+        "a1SecondsPerLayer" : 68.53973013493254
+      }, {
+        "p2sSecondsPerLayer" : 114.40119760479043,
+        "a1SecondsPerLayer" : 118.24550898203593
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 33.3688155922039,
+    "maxSecondsPerLayer" : 114.40119760479043,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 6.483636536360615,
+    "validationMedianErrorPercent" : 4.107723730993262,
+    "enabled" : true
+  }, {
+    "id" : "0c9bec4e35554d22",
+    "material" : "PLA TOUGH",
+    "nozzleMm" : 0.2,
+    "layerMm" : 0.08,
+    "a1Machine" : "Bambu Lab A1 0.2 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.2 nozzle",
+    "a1Filament" : "Bambu PLA Tough @BBL A1",
+    "p2sFilament" : "Bambu PLA Tough @BBL A1",
+    "a1Process" : "0.08mm High Quality @BBL A1 0.2 nozzle",
+    "p2sProcess" : "0.08mm High Quality @BBL P2S 0.2 nozzle",
+    "qualities" : [ "draft", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "bb2e9ef103eb23499e739c7595addc582a0737c0b11a5f58900482b431ccd335",
+      "p2sMachine" : "59aea0e395a1ac94a50a695505686ca2cb0f42a4ec7964f235a8a476d942b9a4",
+      "a1Filament" : "987273063bac649ed743978718d6febde4713d65070aefa609c9a8f455f99931",
+      "p2sFilament" : "987273063bac649ed743978718d6febde4713d65070aefa609c9a8f455f99931",
+      "a1Process" : "c24cdcd467b4f137024dbffb99242a0a0515a57b63c6f71e62aa40b8d747d046",
+      "p2sProcess" : "a579154e8ff910a13f7273965cb0f84f4ecd98a9d7c5d3343d7fe74caf72d809"
+    },
+    "curve" : {
+      "startupSeconds" : 456,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 35.801,
+        "a1SecondsPerLayer" : 38.753
+      }, {
+        "p2sSecondsPerLayer" : 66.188,
+        "a1SecondsPerLayer" : 69.286
+      }, {
+        "p2sSecondsPerLayer" : 108.064,
+        "a1SecondsPerLayer" : 113.348
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 35.801,
+    "maxSecondsPerLayer" : 108.064,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.002550499897990832,
+    "validationMaxErrorPercent" : 2.660006969450579,
+    "validationMedianErrorPercent" : 0.3135564156582227,
+    "enabled" : true
+  }, {
+    "id" : "26358e2ae8f0ad81",
+    "material" : "PLA TOUGH",
+    "nozzleMm" : 0.2,
+    "layerMm" : 0.08,
+    "a1Machine" : "Bambu Lab A1 0.2 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.2 nozzle",
+    "a1Filament" : "Bambu PLA Tough @BBL A1",
+    "p2sFilament" : "Bambu PLA Tough @BBL A1",
+    "a1Process" : "0.08mm Optimal @BBL A1 0.2 nozzle",
+    "p2sProcess" : "0.08mm High Quality @BBL P2S 0.2 nozzle",
+    "qualities" : [ "standard" ],
+    "profileHashes" : {
+      "a1Machine" : "bb2e9ef103eb23499e739c7595addc582a0737c0b11a5f58900482b431ccd335",
+      "p2sMachine" : "59aea0e395a1ac94a50a695505686ca2cb0f42a4ec7964f235a8a476d942b9a4",
+      "a1Filament" : "987273063bac649ed743978718d6febde4713d65070aefa609c9a8f455f99931",
+      "p2sFilament" : "987273063bac649ed743978718d6febde4713d65070aefa609c9a8f455f99931",
+      "a1Process" : "bc96804087dd0f13103e393dc07a40708bd90532197592ffc124897932fae073",
+      "p2sProcess" : "a579154e8ff910a13f7273965cb0f84f4ecd98a9d7c5d3343d7fe74caf72d809"
+    },
+    "curve" : {
+      "startupSeconds" : 409,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 35.801,
+        "a1SecondsPerLayer" : 31.667
+      }, {
+        "p2sSecondsPerLayer" : 66.188,
+        "a1SecondsPerLayer" : 65.24
+      }, {
+        "p2sSecondsPerLayer" : 108.064,
+        "a1SecondsPerLayer" : 108.232
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 35.801,
+    "maxSecondsPerLayer" : 108.064,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 13.282926330847044,
+    "validationMedianErrorPercent" : 6.084079510542761,
+    "enabled" : false
+  }, {
+    "id" : "3c4fc171109906d9",
+    "material" : "PLA TOUGH",
+    "nozzleMm" : 0.2,
+    "layerMm" : 0.1,
+    "a1Machine" : "Bambu Lab A1 0.2 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.2 nozzle",
+    "a1Filament" : "Bambu PLA Tough @BBL A1",
+    "p2sFilament" : "Bambu PLA Tough @BBL A1",
+    "a1Process" : "0.10mm Standard @BBL A1 0.2 nozzle",
+    "p2sProcess" : "0.10mm Standard @BBL P2S 0.2 nozzle",
+    "qualities" : [ "draft", "standard" ],
+    "profileHashes" : {
+      "a1Machine" : "bb2e9ef103eb23499e739c7595addc582a0737c0b11a5f58900482b431ccd335",
+      "p2sMachine" : "59aea0e395a1ac94a50a695505686ca2cb0f42a4ec7964f235a8a476d942b9a4",
+      "a1Filament" : "987273063bac649ed743978718d6febde4713d65070aefa609c9a8f455f99931",
+      "p2sFilament" : "987273063bac649ed743978718d6febde4713d65070aefa609c9a8f455f99931",
+      "a1Process" : "e45172a2a5eefee1e9b9853e016b42c90e1aa4f53dd28d857fac5794c4d44ef6",
+      "p2sProcess" : "6e5ba8c227ad54533da34eafdd4733fe59173eefec7254d929baf1cd855bbb35"
+    },
+    "curve" : {
+      "startupSeconds" : 401,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 30.26375,
+        "a1SecondsPerLayer" : 30.4425
+      }, {
+        "p2sSecondsPerLayer" : 64.42625,
+        "a1SecondsPerLayer" : 65.9975
+      }, {
+        "p2sSecondsPerLayer" : 108.935,
+        "a1SecondsPerLayer" : 112.405
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 30.26375,
+    "maxSecondsPerLayer" : 108.935,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.004039751151330151,
+    "validationMaxErrorPercent" : 4.631296846865707,
+    "validationMedianErrorPercent" : 3.6031691353771933,
+    "enabled" : true
+  }, {
+    "id" : "784d2defe98a20d3",
+    "material" : "PLA TOUGH",
+    "nozzleMm" : 0.2,
+    "layerMm" : 0.1,
+    "a1Machine" : "Bambu Lab A1 0.2 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.2 nozzle",
+    "a1Filament" : "Bambu PLA Tough @BBL A1",
+    "p2sFilament" : "Bambu PLA Tough @BBL A1",
+    "a1Process" : "0.10mm High Quality @BBL A1 0.2 nozzle",
+    "p2sProcess" : "0.10mm Standard @BBL P2S 0.2 nozzle",
+    "qualities" : [ "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "bb2e9ef103eb23499e739c7595addc582a0737c0b11a5f58900482b431ccd335",
+      "p2sMachine" : "59aea0e395a1ac94a50a695505686ca2cb0f42a4ec7964f235a8a476d942b9a4",
+      "a1Filament" : "987273063bac649ed743978718d6febde4713d65070aefa609c9a8f455f99931",
+      "p2sFilament" : "987273063bac649ed743978718d6febde4713d65070aefa609c9a8f455f99931",
+      "a1Process" : "51fe0a06da5df17c896df6869def3701ba8c47ff5907d61dd2ab1bc71d018836",
+      "p2sProcess" : "6e5ba8c227ad54533da34eafdd4733fe59173eefec7254d929baf1cd855bbb35"
+    },
+    "curve" : {
+      "startupSeconds" : 438,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 30.26375,
+        "a1SecondsPerLayer" : 37.225
+      }, {
+        "p2sSecondsPerLayer" : 64.42625,
+        "a1SecondsPerLayer" : 69.805
+      }, {
+        "p2sSecondsPerLayer" : 108.935,
+        "a1SecondsPerLayer" : 117.46
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 30.26375,
+    "maxSecondsPerLayer" : 108.935,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 7.4597089657330695,
+    "validationMedianErrorPercent" : 2.686947809454421,
+    "enabled" : true
+  }, {
+    "id" : "a743e468d96cc166",
+    "material" : "PLA TOUGH",
+    "nozzleMm" : 0.2,
+    "layerMm" : 0.12,
+    "a1Machine" : "Bambu Lab A1 0.2 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.2 nozzle",
+    "a1Filament" : "Bambu PLA Tough @BBL A1",
+    "p2sFilament" : "Bambu PLA Tough @BBL A1",
+    "a1Process" : "0.12mm Draft @BBL A1 0.2 nozzle",
+    "p2sProcess" : "0.12mm Balanced Quality @BBL P2S 0.2 nozzle",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "bb2e9ef103eb23499e739c7595addc582a0737c0b11a5f58900482b431ccd335",
+      "p2sMachine" : "59aea0e395a1ac94a50a695505686ca2cb0f42a4ec7964f235a8a476d942b9a4",
+      "a1Filament" : "987273063bac649ed743978718d6febde4713d65070aefa609c9a8f455f99931",
+      "p2sFilament" : "987273063bac649ed743978718d6febde4713d65070aefa609c9a8f455f99931",
+      "a1Process" : "33026511edefca505f21dbcf350ad4fdd9abdb592b852951fb69885e8b445afb",
+      "p2sProcess" : "6913b2da1fbe59f65507c3d5da2009940f88531936746cb8382526c39de3f36b"
+    },
+    "curve" : {
+      "startupSeconds" : 394,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 33.3688155922039,
+        "a1SecondsPerLayer" : 33.02998500749625
+      }, {
+        "p2sSecondsPerLayer" : 66.91454272863568,
+        "a1SecondsPerLayer" : 68.53973013493254
+      }, {
+        "p2sSecondsPerLayer" : 114.40119760479043,
+        "a1SecondsPerLayer" : 118.24550898203593
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 33.3688155922039,
+    "maxSecondsPerLayer" : 114.40119760479043,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 6.483636536360615,
+    "validationMedianErrorPercent" : 4.107723730993262,
+    "enabled" : true
+  }, {
+    "id" : "b147d0b6b36a1534",
+    "material" : "PETG",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.08,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PETG Basic @BBL A1",
+    "p2sFilament" : "Generic PETG @BBL P2S",
+    "a1Process" : "0.08mm Extra Fine @BBL A1",
+    "p2sProcess" : "0.08mm High Quality @BBL P2S",
+    "qualities" : [ "draft", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "476ae3170b8f198ce7ac2f1508e3833fcf8ab732a987d62611833d4a32821d28",
+      "p2sFilament" : "cc56ec86c0983145eb7140cd357bd6e6aafe7e06f6c58830621548ff3f32bc0f",
+      "a1Process" : "f8471c68d123bc8f3794fa99535c08a339a288bfb4704ac0cbac94ee8d7bc11c",
+      "p2sProcess" : "0ea2ffbe994498ea36cdb7b3badaf32499282f86ed36f0f476bae8e6db7c3cec"
+    },
+    "curve" : {
+      "startupSeconds" : 376,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 23.5995995995996,
+        "a1SecondsPerLayer" : 17.72272272272272
+      }, {
+        "p2sSecondsPerLayer" : 28.43043043043043,
+        "a1SecondsPerLayer" : 19.086086086086087
+      }, {
+        "p2sSecondsPerLayer" : 48.441767068273094,
+        "a1SecondsPerLayer" : 31.755020080321284
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 23.5995995995996,
+    "maxSecondsPerLayer" : 48.441767068273094,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.005530973451328691,
+    "validationMaxErrorPercent" : 2.2275258552108212,
+    "validationMedianErrorPercent" : 2.0107044698394416,
+    "enabled" : true
+  }, {
+    "id" : "afe8ee871892ae8e",
+    "material" : "PETG",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.08,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PETG Basic @BBL A1",
+    "p2sFilament" : "Generic PETG @BBL P2S",
+    "a1Process" : "0.08mm High Quality @BBL A1",
+    "p2sProcess" : "0.08mm High Quality @BBL P2S",
+    "qualities" : [ "standard" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "476ae3170b8f198ce7ac2f1508e3833fcf8ab732a987d62611833d4a32821d28",
+      "p2sFilament" : "cc56ec86c0983145eb7140cd357bd6e6aafe7e06f6c58830621548ff3f32bc0f",
+      "a1Process" : "90f5279ba2a6633cf7ac7d6f64cf362d70e241d56e2c6894cd36961b802496c2",
+      "p2sProcess" : "0ea2ffbe994498ea36cdb7b3badaf32499282f86ed36f0f476bae8e6db7c3cec"
+    },
+    "curve" : {
+      "startupSeconds" : 409,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 23.5995995995996,
+        "a1SecondsPerLayer" : 26.61861861861862
+      }, {
+        "p2sSecondsPerLayer" : 28.43043043043043,
+        "a1SecondsPerLayer" : 31.33233233233233
+      }, {
+        "p2sSecondsPerLayer" : 48.441767068273094,
+        "a1SecondsPerLayer" : 51.47791164658634
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 23.5995995995996,
+    "maxSecondsPerLayer" : 48.441767068273094,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.003703703703705763,
+    "validationMaxErrorPercent" : 7.058901653496252,
+    "validationMedianErrorPercent" : 3.368073207930866,
+    "enabled" : true
+  }, {
+    "id" : "aa4891545c254560",
+    "material" : "PETG",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.12,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PETG Basic @BBL A1",
+    "p2sFilament" : "Generic PETG @BBL P2S",
+    "a1Process" : "0.12mm Fine @BBL A1",
+    "p2sProcess" : "0.12mm High Quality @BBL P2S",
+    "qualities" : [ "draft" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "476ae3170b8f198ce7ac2f1508e3833fcf8ab732a987d62611833d4a32821d28",
+      "p2sFilament" : "cc56ec86c0983145eb7140cd357bd6e6aafe7e06f6c58830621548ff3f32bc0f",
+      "a1Process" : "6631b086bbb0a0383b7e8f55bd5afe392890ba1fddfdf6c8709472db888bcef6",
+      "p2sProcess" : "84058183429397d1a436d65d8cdd22eb0b86ed4007f8ddca3a09a158943c0de7"
+    },
+    "curve" : {
+      "startupSeconds" : 372,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 22.737237237237238,
+        "a1SecondsPerLayer" : 17.863363363363362
+      }, {
+        "p2sSecondsPerLayer" : 25.79129129129129,
+        "a1SecondsPerLayer" : 22.944444444444443
+      }, {
+        "p2sSecondsPerLayer" : 44.13253012048193,
+        "a1SecondsPerLayer" : 39.21686746987952
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 22.737237237237238,
+    "maxSecondsPerLayer" : 44.13253012048193,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 23.616803278688526,
+    "validationMedianErrorPercent" : 13.198805724287032,
+    "enabled" : false
+  }, {
+    "id" : "b820ce0cee5036f0",
+    "material" : "PETG",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.12,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PETG Basic @BBL A1",
+    "p2sFilament" : "Generic PETG @BBL P2S",
+    "a1Process" : "0.12mm High Quality @BBL A1",
+    "p2sProcess" : "0.12mm High Quality @BBL P2S",
+    "qualities" : [ "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "476ae3170b8f198ce7ac2f1508e3833fcf8ab732a987d62611833d4a32821d28",
+      "p2sFilament" : "cc56ec86c0983145eb7140cd357bd6e6aafe7e06f6c58830621548ff3f32bc0f",
+      "a1Process" : "77b6505f366e8d7d1995d243501058dc637554bb9797b7e7e11343279b19d357",
+      "p2sProcess" : "84058183429397d1a436d65d8cdd22eb0b86ed4007f8ddca3a09a158943c0de7"
+    },
+    "curve" : {
+      "startupSeconds" : 394,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 22.737237237237238,
+        "a1SecondsPerLayer" : 25.713213213213212
+      }, {
+        "p2sSecondsPerLayer" : 25.79129129129129,
+        "a1SecondsPerLayer" : 28.677177177177178
+      }, {
+        "p2sSecondsPerLayer" : 44.13253012048193,
+        "a1SecondsPerLayer" : 47.16867469879518
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 22.737237237237238,
+    "maxSecondsPerLayer" : 44.13253012048193,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 7.9708756466756014,
+    "validationMedianErrorPercent" : 3.5582822085889587,
+    "enabled" : true
+  }, {
+    "id" : "2a2f5627856b87df",
+    "material" : "PETG",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.16,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PETG Basic @BBL A1",
+    "p2sFilament" : "Generic PETG @BBL P2S",
+    "a1Process" : "0.16mm High Quality @BBL A1",
+    "p2sProcess" : "0.16mm Standard @BBL P2S",
+    "qualities" : [ "draft" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "476ae3170b8f198ce7ac2f1508e3833fcf8ab732a987d62611833d4a32821d28",
+      "p2sFilament" : "cc56ec86c0983145eb7140cd357bd6e6aafe7e06f6c58830621548ff3f32bc0f",
+      "a1Process" : "45e11b9fdd8175c99fbade974f3634b287f17a6aa10a717039f76cd9f6c530a6",
+      "p2sProcess" : "3b741acb2133c65b6c996cbe8470079df5775f67f8a4eb1ce65b5a2eaacf5168"
+    },
+    "curve" : {
+      "startupSeconds" : 386,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 15.53,
+        "a1SecondsPerLayer" : 25.638
+      }, {
+        "p2sSecondsPerLayer" : 19.98,
+        "a1SecondsPerLayer" : 32.196
+      }, {
+        "p2sSecondsPerLayer" : 39.008,
+        "a1SecondsPerLayer" : 56.368
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 15.53,
+    "maxSecondsPerLayer" : 39.008,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.006066120715797485,
+    "validationMaxErrorPercent" : 27.898089171974515,
+    "validationMedianErrorPercent" : 10.151878497202249,
+    "enabled" : false
+  }, {
+    "id" : "148c7e92f9cf9559",
+    "material" : "PETG",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.16,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PETG Basic @BBL A1",
+    "p2sFilament" : "Generic PETG @BBL P2S",
+    "a1Process" : "0.16mm Optimal @BBL A1",
+    "p2sProcess" : "0.16mm Standard @BBL P2S",
+    "qualities" : [ "standard" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "476ae3170b8f198ce7ac2f1508e3833fcf8ab732a987d62611833d4a32821d28",
+      "p2sFilament" : "cc56ec86c0983145eb7140cd357bd6e6aafe7e06f6c58830621548ff3f32bc0f",
+      "a1Process" : "f7f3bd63620c39c909e4beecf3b8046c4e23dcd0000d384db77799d8165bfb4c",
+      "p2sProcess" : "3b741acb2133c65b6c996cbe8470079df5775f67f8a4eb1ce65b5a2eaacf5168"
+    },
+    "curve" : {
+      "startupSeconds" : 372,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 15.53,
+        "a1SecondsPerLayer" : 18.32
+      }, {
+        "p2sSecondsPerLayer" : 19.98,
+        "a1SecondsPerLayer" : 28.082
+      }, {
+        "p2sSecondsPerLayer" : 39.008,
+        "a1SecondsPerLayer" : 51.024
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 15.53,
+    "maxSecondsPerLayer" : 39.008,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.010492078480739409,
+    "validationMaxErrorPercent" : 8.741219756940577,
+    "validationMedianErrorPercent" : 5.9171597633136175,
+    "enabled" : true
+  }, {
+    "id" : "d56a516f9a1b57e1",
+    "material" : "PETG",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.16,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PETG Basic @BBL A1",
+    "p2sFilament" : "Generic PETG @BBL P2S",
+    "a1Process" : "0.16mm High Quality @BBL A1",
+    "p2sProcess" : "0.16mm High Quality @BBL P2S",
+    "qualities" : [ "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "476ae3170b8f198ce7ac2f1508e3833fcf8ab732a987d62611833d4a32821d28",
+      "p2sFilament" : "cc56ec86c0983145eb7140cd357bd6e6aafe7e06f6c58830621548ff3f32bc0f",
+      "a1Process" : "45e11b9fdd8175c99fbade974f3634b287f17a6aa10a717039f76cd9f6c530a6",
+      "p2sProcess" : "3131406a88974ea8a359d261163b5c18aa2725f7edf1f8d4c68b8e48a9b9c8a8"
+    },
+    "curve" : {
+      "startupSeconds" : 386,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 22.466,
+        "a1SecondsPerLayer" : 25.638
+      }, {
+        "p2sSecondsPerLayer" : 25.706,
+        "a1SecondsPerLayer" : 32.196
+      }, {
+        "p2sSecondsPerLayer" : 46.696,
+        "a1SecondsPerLayer" : 56.368
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 22.466,
+    "maxSecondsPerLayer" : 46.696,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.006066120715797485,
+    "validationMaxErrorPercent" : 8.900675024108008,
+    "validationMedianErrorPercent" : 3.6363636363636376,
+    "enabled" : true
+  }, {
+    "id" : "95c00ca2cd9e6a73",
+    "material" : "PETG",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.2,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PETG Basic @BBL A1",
+    "p2sFilament" : "Generic PETG @BBL P2S",
+    "a1Process" : "0.20mm Standard @BBL A1",
+    "p2sProcess" : "0.20mm Standard @BBL P2S",
+    "qualities" : [ "draft", "standard" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "476ae3170b8f198ce7ac2f1508e3833fcf8ab732a987d62611833d4a32821d28",
+      "p2sFilament" : "cc56ec86c0983145eb7140cd357bd6e6aafe7e06f6c58830621548ff3f32bc0f",
+      "a1Process" : "c37e4d21efb6b3255096f1e913b996e4da6443dbbd59ab1879293b9d8bb4cc5e",
+      "p2sProcess" : "ecfcd461ed04d0a0a73c1b438f5902ca0ada9c385f25a904070ee1cd50cc8248"
+    },
+    "curve" : {
+      "startupSeconds" : 372,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 16.3425,
+        "a1SecondsPerLayer" : 21.7325
+      }, {
+        "p2sSecondsPerLayer" : 24.3125,
+        "a1SecondsPerLayer" : 33.585
+      }, {
+        "p2sSecondsPerLayer" : 46.0,
+        "a1SecondsPerLayer" : 60.21
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 16.3425,
+    "maxSecondsPerLayer" : 46.0,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.011032656663734208,
+    "validationMaxErrorPercent" : 6.859311150029179,
+    "validationMedianErrorPercent" : 4.905835852127405,
+    "enabled" : true
+  }, {
+    "id" : "6a6aaddad0022ce8",
+    "material" : "PETG",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.2,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PETG Basic @BBL A1",
+    "p2sFilament" : "Generic PETG @BBL P2S",
+    "a1Process" : "0.20mm Standard @BBL A1",
+    "p2sProcess" : "0.20mm High Quality @BBL P2S",
+    "qualities" : [ "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "476ae3170b8f198ce7ac2f1508e3833fcf8ab732a987d62611833d4a32821d28",
+      "p2sFilament" : "cc56ec86c0983145eb7140cd357bd6e6aafe7e06f6c58830621548ff3f32bc0f",
+      "a1Process" : "c37e4d21efb6b3255096f1e913b996e4da6443dbbd59ab1879293b9d8bb4cc5e",
+      "p2sProcess" : "80acfe355cc1b2c6098db860cdc13d1333fe1366df805d67009b5a25ceea562e"
+    },
+    "curve" : {
+      "startupSeconds" : 372,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 24.165,
+        "a1SecondsPerLayer" : 21.7325
+      }, {
+        "p2sSecondsPerLayer" : 29.4425,
+        "a1SecondsPerLayer" : 33.585
+      }, {
+        "p2sSecondsPerLayer" : 52.87,
+        "a1SecondsPerLayer" : 60.21
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 24.165,
+    "maxSecondsPerLayer" : 52.87,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.011032656663734208,
+    "validationMaxErrorPercent" : 20.621716287215406,
+    "validationMedianErrorPercent" : 20.084765716976694,
+    "enabled" : false
+  }, {
+    "id" : "37fa6688f7e22f17",
+    "material" : "PETG",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.24,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PETG Basic @BBL A1",
+    "p2sFilament" : "Generic PETG @BBL P2S",
+    "a1Process" : "0.24mm Draft @BBL A1",
+    "p2sProcess" : "0.24mm Standard @BBL P2S",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "476ae3170b8f198ce7ac2f1508e3833fcf8ab732a987d62611833d4a32821d28",
+      "p2sFilament" : "cc56ec86c0983145eb7140cd357bd6e6aafe7e06f6c58830621548ff3f32bc0f",
+      "a1Process" : "c41191b4015f4503840d7598d4f9b7f328356c26ef5784072c261d23b9ada9ac",
+      "p2sProcess" : "aafe9e2636fc4373bfb33b81e97d6b4a0809547e53446728e3a223642e996315"
+    },
+    "curve" : {
+      "startupSeconds" : 371,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 16.197604790419163,
+        "a1SecondsPerLayer" : 22.952095808383234
+      }, {
+        "p2sSecondsPerLayer" : 28.952095808383234,
+        "a1SecondsPerLayer" : 39.58982035928144
+      }, {
+        "p2sSecondsPerLayer" : 56.333333333333336,
+        "a1SecondsPerLayer" : 73.22619047619048
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 16.197604790419163,
+    "maxSecondsPerLayer" : 56.333333333333336,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0153303694619078,
+    "validationMaxErrorPercent" : 4.118035674961473,
+    "validationMedianErrorPercent" : 3.3225657591139823,
+    "enabled" : true
+  }, {
+    "id" : "fd921eeac809d3cf",
+    "material" : "PLA",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.08,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PLA Basic @BBL A1",
+    "p2sFilament" : "Bambu PLA Basic @BBL P2S",
+    "a1Process" : "0.08mm Extra Fine @BBL A1",
+    "p2sProcess" : "0.08mm High Quality @BBL P2S",
+    "qualities" : [ "draft", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "cfacdf38b395fc1550a0f30f4c2cfc2f264d00e52534deef9aaec45e45d55403",
+      "p2sFilament" : "ef54da7c5a8c0a6c596e8c451c685a7ccf4d472cc037cc0fdcb3b708dfabbac6",
+      "a1Process" : "f8471c68d123bc8f3794fa99535c08a339a288bfb4704ac0cbac94ee8d7bc11c",
+      "p2sProcess" : "0ea2ffbe994498ea36cdb7b3badaf32499282f86ed36f0f476bae8e6db7c3cec"
+    },
+    "curve" : {
+      "startupSeconds" : 376,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 23.30830830830831,
+        "a1SecondsPerLayer" : 14.95095095095095
+      }, {
+        "p2sSecondsPerLayer" : 28.13913913913914,
+        "a1SecondsPerLayer" : 16.60960960960961
+      }, {
+        "p2sSecondsPerLayer" : 47.261044176706825,
+        "a1SecondsPerLayer" : 26.87550200803213
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 23.30830830830831,
+    "maxSecondsPerLayer" : 47.261044176706825,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 5.819723901470719,
+    "validationMedianErrorPercent" : 5.672206189670614,
+    "enabled" : true
+  }, {
+    "id" : "f1b88dff0d21b5d2",
+    "material" : "PLA",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.08,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PLA Basic @BBL A1",
+    "p2sFilament" : "Bambu PLA Basic @BBL P2S",
+    "a1Process" : "0.08mm High Quality @BBL A1",
+    "p2sProcess" : "0.08mm High Quality @BBL P2S",
+    "qualities" : [ "standard" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "cfacdf38b395fc1550a0f30f4c2cfc2f264d00e52534deef9aaec45e45d55403",
+      "p2sFilament" : "ef54da7c5a8c0a6c596e8c451c685a7ccf4d472cc037cc0fdcb3b708dfabbac6",
+      "a1Process" : "90f5279ba2a6633cf7ac7d6f64cf362d70e241d56e2c6894cd36961b802496c2",
+      "p2sProcess" : "0ea2ffbe994498ea36cdb7b3badaf32499282f86ed36f0f476bae8e6db7c3cec"
+    },
+    "curve" : {
+      "startupSeconds" : 410,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 23.30830830830831,
+        "a1SecondsPerLayer" : 26.326326326326328
+      }, {
+        "p2sSecondsPerLayer" : 28.13913913913914,
+        "a1SecondsPerLayer" : 31.04004004004004
+      }, {
+        "p2sSecondsPerLayer" : 47.261044176706825,
+        "a1SecondsPerLayer" : 50.29317269076305
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 23.30830830830831,
+    "maxSecondsPerLayer" : 47.261044176706825,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.003182888789865501,
+    "validationMaxErrorPercent" : 3.521037244184577,
+    "validationMedianErrorPercent" : 3.1285589870704067,
+    "enabled" : true
+  }, {
+    "id" : "088c2ce6d9a34830",
+    "material" : "PLA",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.12,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PLA Basic @BBL A1",
+    "p2sFilament" : "Bambu PLA Basic @BBL P2S",
+    "a1Process" : "0.12mm Fine @BBL A1",
+    "p2sProcess" : "0.12mm High Quality @BBL P2S",
+    "qualities" : [ "draft" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "cfacdf38b395fc1550a0f30f4c2cfc2f264d00e52534deef9aaec45e45d55403",
+      "p2sFilament" : "ef54da7c5a8c0a6c596e8c451c685a7ccf4d472cc037cc0fdcb3b708dfabbac6",
+      "a1Process" : "6631b086bbb0a0383b7e8f55bd5afe392890ba1fddfdf6c8709472db888bcef6",
+      "p2sProcess" : "84058183429397d1a436d65d8cdd22eb0b86ed4007f8ddca3a09a158943c0de7"
+    },
+    "curve" : {
+      "startupSeconds" : 371,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 22.3003003003003,
+        "a1SecondsPerLayer" : 14.903903903903904
+      }, {
+        "p2sSecondsPerLayer" : 25.352852852852852,
+        "a1SecondsPerLayer" : 16.71171171171171
+      }, {
+        "p2sSecondsPerLayer" : 42.36144578313253,
+        "a1SecondsPerLayer" : 27.572289156626507
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 22.3003003003003,
+    "maxSecondsPerLayer" : 42.36144578313253,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.02020610224288122,
+    "validationMaxErrorPercent" : 17.837338262476898,
+    "validationMedianErrorPercent" : 4.115717268118102,
+    "enabled" : false
+  }, {
+    "id" : "80ad0c7cfebd69d2",
+    "material" : "PLA",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.12,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PLA Basic @BBL A1",
+    "p2sFilament" : "Bambu PLA Basic @BBL P2S",
+    "a1Process" : "0.12mm High Quality @BBL A1",
+    "p2sProcess" : "0.12mm High Quality @BBL P2S",
+    "qualities" : [ "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "cfacdf38b395fc1550a0f30f4c2cfc2f264d00e52534deef9aaec45e45d55403",
+      "p2sFilament" : "ef54da7c5a8c0a6c596e8c451c685a7ccf4d472cc037cc0fdcb3b708dfabbac6",
+      "a1Process" : "77b6505f366e8d7d1995d243501058dc637554bb9797b7e7e11343279b19d357",
+      "p2sProcess" : "84058183429397d1a436d65d8cdd22eb0b86ed4007f8ddca3a09a158943c0de7"
+    },
+    "curve" : {
+      "startupSeconds" : 394,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 22.3003003003003,
+        "a1SecondsPerLayer" : 25.28078078078078
+      }, {
+        "p2sSecondsPerLayer" : 25.352852852852852,
+        "a1SecondsPerLayer" : 28.24024024024024
+      }, {
+        "p2sSecondsPerLayer" : 42.36144578313253,
+        "a1SecondsPerLayer" : 45.397590361445786
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 22.3003003003003,
+    "maxSecondsPerLayer" : 42.36144578313253,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 3.8249130701574874,
+    "validationMedianErrorPercent" : 1.7560880954690994,
+    "enabled" : true
+  }, {
+    "id" : "3e825109eab83f04",
+    "material" : "PLA",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.16,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PLA Basic @BBL A1",
+    "p2sFilament" : "Bambu PLA Basic @BBL P2S",
+    "a1Process" : "0.16mm High Quality @BBL A1",
+    "p2sProcess" : "0.16mm Standard @BBL P2S",
+    "qualities" : [ "draft" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "cfacdf38b395fc1550a0f30f4c2cfc2f264d00e52534deef9aaec45e45d55403",
+      "p2sFilament" : "ef54da7c5a8c0a6c596e8c451c685a7ccf4d472cc037cc0fdcb3b708dfabbac6",
+      "a1Process" : "45e11b9fdd8175c99fbade974f3634b287f17a6aa10a717039f76cd9f6c530a6",
+      "p2sProcess" : "3b741acb2133c65b6c996cbe8470079df5775f67f8a4eb1ce65b5a2eaacf5168"
+    },
+    "curve" : {
+      "startupSeconds" : 387,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 10.85,
+        "a1SecondsPerLayer" : 24.876
+      }, {
+        "p2sSecondsPerLayer" : 15.54,
+        "a1SecondsPerLayer" : 27.536
+      }, {
+        "p2sSecondsPerLayer" : 30.312,
+        "a1SecondsPerLayer" : 46.664
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 10.85,
+    "maxSecondsPerLayer" : 30.312,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 41.76334106728539,
+    "validationMedianErrorPercent" : 17.52362118215778,
+    "enabled" : false
+  }, {
+    "id" : "33ac91faf63104a8",
+    "material" : "PLA",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.16,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PLA Basic @BBL A1",
+    "p2sFilament" : "Bambu PLA Basic @BBL P2S",
+    "a1Process" : "0.16mm Optimal @BBL A1",
+    "p2sProcess" : "0.16mm Standard @BBL P2S",
+    "qualities" : [ "standard" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "cfacdf38b395fc1550a0f30f4c2cfc2f264d00e52534deef9aaec45e45d55403",
+      "p2sFilament" : "ef54da7c5a8c0a6c596e8c451c685a7ccf4d472cc037cc0fdcb3b708dfabbac6",
+      "a1Process" : "f7f3bd63620c39c909e4beecf3b8046c4e23dcd0000d384db77799d8165bfb4c",
+      "p2sProcess" : "3b741acb2133c65b6c996cbe8470079df5775f67f8a4eb1ce65b5a2eaacf5168"
+    },
+    "curve" : {
+      "startupSeconds" : 369,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 10.85,
+        "a1SecondsPerLayer" : 14.824
+      }, {
+        "p2sSecondsPerLayer" : 15.54,
+        "a1SecondsPerLayer" : 18.118
+      }, {
+        "p2sSecondsPerLayer" : 30.312,
+        "a1SecondsPerLayer" : 32.04
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 10.85,
+    "maxSecondsPerLayer" : 30.312,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.010605578534306215,
+    "validationMaxErrorPercent" : 9.47986577181208,
+    "validationMedianErrorPercent" : 7.92575132586919,
+    "enabled" : true
+  }, {
+    "id" : "a4c52d22474bc5b6",
+    "material" : "PLA",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.16,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PLA Basic @BBL A1",
+    "p2sFilament" : "Bambu PLA Basic @BBL P2S",
+    "a1Process" : "0.16mm High Quality @BBL A1",
+    "p2sProcess" : "0.16mm High Quality @BBL P2S",
+    "qualities" : [ "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "cfacdf38b395fc1550a0f30f4c2cfc2f264d00e52534deef9aaec45e45d55403",
+      "p2sFilament" : "ef54da7c5a8c0a6c596e8c451c685a7ccf4d472cc037cc0fdcb3b708dfabbac6",
+      "a1Process" : "45e11b9fdd8175c99fbade974f3634b287f17a6aa10a717039f76cd9f6c530a6",
+      "p2sProcess" : "3131406a88974ea8a359d261163b5c18aa2725f7edf1f8d4c68b8e48a9b9c8a8"
+    },
+    "curve" : {
+      "startupSeconds" : 387,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 21.884,
+        "a1SecondsPerLayer" : 24.876
+      }, {
+        "p2sSecondsPerLayer" : 24.648,
+        "a1SecondsPerLayer" : 27.536
+      }, {
+        "p2sSecondsPerLayer" : 43.648,
+        "a1SecondsPerLayer" : 46.664
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 21.884,
+    "maxSecondsPerLayer" : 43.648,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 4.0760869565217295,
+    "validationMedianErrorPercent" : 2.6682134570765736,
+    "enabled" : true
+  }, {
+    "id" : "514cb2bc314d8fe9",
+    "material" : "PLA",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.2,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PLA Basic @BBL A1",
+    "p2sFilament" : "Bambu PLA Basic @BBL P2S",
+    "a1Process" : "0.20mm Standard @BBL A1",
+    "p2sProcess" : "0.20mm Standard @BBL P2S",
+    "qualities" : [ "draft", "standard" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "cfacdf38b395fc1550a0f30f4c2cfc2f264d00e52534deef9aaec45e45d55403",
+      "p2sFilament" : "ef54da7c5a8c0a6c596e8c451c685a7ccf4d472cc037cc0fdcb3b708dfabbac6",
+      "a1Process" : "c37e4d21efb6b3255096f1e913b996e4da6443dbbd59ab1879293b9d8bb4cc5e",
+      "p2sProcess" : "ecfcd461ed04d0a0a73c1b438f5902ca0ada9c385f25a904070ee1cd50cc8248"
+    },
+    "curve" : {
+      "startupSeconds" : 368,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 12.2025,
+        "a1SecondsPerLayer" : 16.345
+      }, {
+        "p2sSecondsPerLayer" : 16.6525,
+        "a1SecondsPerLayer" : 20.32
+      }, {
+        "p2sSecondsPerLayer" : 31.5,
+        "a1SecondsPerLayer" : 35.91
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 12.2025,
+    "maxSecondsPerLayer" : 31.5,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 6.905710491367856,
+    "validationMedianErrorPercent" : 6.617792748167228,
+    "enabled" : true
+  }, {
+    "id" : "c9b90f8cd476a236",
+    "material" : "PLA",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.2,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PLA Basic @BBL A1",
+    "p2sFilament" : "Bambu PLA Basic @BBL P2S",
+    "a1Process" : "0.20mm Standard @BBL A1",
+    "p2sProcess" : "0.20mm High Quality @BBL P2S",
+    "qualities" : [ "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "cfacdf38b395fc1550a0f30f4c2cfc2f264d00e52534deef9aaec45e45d55403",
+      "p2sFilament" : "ef54da7c5a8c0a6c596e8c451c685a7ccf4d472cc037cc0fdcb3b708dfabbac6",
+      "a1Process" : "c37e4d21efb6b3255096f1e913b996e4da6443dbbd59ab1879293b9d8bb4cc5e",
+      "p2sProcess" : "80acfe355cc1b2c6098db860cdc13d1333fe1366df805d67009b5a25ceea562e"
+    },
+    "curve" : {
+      "startupSeconds" : 368,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 23.4375,
+        "a1SecondsPerLayer" : 16.345
+      }, {
+        "p2sSecondsPerLayer" : 25.7925,
+        "a1SecondsPerLayer" : 20.32
+      }, {
+        "p2sSecondsPerLayer" : 44.89,
+        "a1SecondsPerLayer" : 35.91
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 23.4375,
+    "maxSecondsPerLayer" : 44.89,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 24.370913413909257,
+    "validationMedianErrorPercent" : 13.760144274120833,
+    "enabled" : false
+  }, {
+    "id" : "24a8dcea19f3763b",
+    "material" : "PLA",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.24,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PLA Basic @BBL A1",
+    "p2sFilament" : "Bambu PLA Basic @BBL P2S",
+    "a1Process" : "0.24mm Draft @BBL A1",
+    "p2sProcess" : "0.24mm Standard @BBL P2S",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "cfacdf38b395fc1550a0f30f4c2cfc2f264d00e52534deef9aaec45e45d55403",
+      "p2sFilament" : "ef54da7c5a8c0a6c596e8c451c685a7ccf4d472cc037cc0fdcb3b708dfabbac6",
+      "a1Process" : "c41191b4015f4503840d7598d4f9b7f328356c26ef5784072c261d23b9ada9ac",
+      "p2sProcess" : "aafe9e2636fc4373bfb33b81e97d6b4a0809547e53446728e3a223642e996315"
+    },
+    "curve" : {
+      "startupSeconds" : 368,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 12.044910179640718,
+        "a1SecondsPerLayer" : 16.092814371257486
+      }, {
+        "p2sSecondsPerLayer" : 19.119760479041915,
+        "a1SecondsPerLayer" : 22.805389221556887
+      }, {
+        "p2sSecondsPerLayer" : 36.916666666666664,
+        "a1SecondsPerLayer" : 41.583333333333336
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 12.044910179640718,
+    "maxSecondsPerLayer" : 36.916666666666664,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.012525050100209434,
+    "validationMaxErrorPercent" : 5.391828533154719,
+    "validationMedianErrorPercent" : 5.139664804469279,
+    "enabled" : true
+  }, {
+    "id" : "26aae3422da2a863",
+    "material" : "PLA TOUGH",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.08,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PLA Tough @BBL A1",
+    "p2sFilament" : "Bambu PLA Tough @BBL P2S",
+    "a1Process" : "0.08mm Extra Fine @BBL A1",
+    "p2sProcess" : "0.08mm High Quality @BBL P2S",
+    "qualities" : [ "draft", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "987273063bac649ed743978718d6febde4713d65070aefa609c9a8f455f99931",
+      "p2sFilament" : "cb6137e8f5ebd97a381b0577d63fdda9da555d29752e170880e666817fe086f3",
+      "a1Process" : "f8471c68d123bc8f3794fa99535c08a339a288bfb4704ac0cbac94ee8d7bc11c",
+      "p2sProcess" : "0ea2ffbe994498ea36cdb7b3badaf32499282f86ed36f0f476bae8e6db7c3cec"
+    },
+    "curve" : {
+      "startupSeconds" : 376,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 23.30830830830831,
+        "a1SecondsPerLayer" : 14.95095095095095
+      }, {
+        "p2sSecondsPerLayer" : 28.13913913913914,
+        "a1SecondsPerLayer" : 16.60960960960961
+      }, {
+        "p2sSecondsPerLayer" : 47.261044176706825,
+        "a1SecondsPerLayer" : 26.87550200803213
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 23.30830830830831,
+    "maxSecondsPerLayer" : 47.261044176706825,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 5.819723901470719,
+    "validationMedianErrorPercent" : 5.672206189670614,
+    "enabled" : true
+  }, {
+    "id" : "a1a445afd82c1973",
+    "material" : "PLA TOUGH",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.08,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PLA Tough @BBL A1",
+    "p2sFilament" : "Bambu PLA Tough @BBL P2S",
+    "a1Process" : "0.08mm High Quality @BBL A1",
+    "p2sProcess" : "0.08mm High Quality @BBL P2S",
+    "qualities" : [ "standard" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "987273063bac649ed743978718d6febde4713d65070aefa609c9a8f455f99931",
+      "p2sFilament" : "cb6137e8f5ebd97a381b0577d63fdda9da555d29752e170880e666817fe086f3",
+      "a1Process" : "90f5279ba2a6633cf7ac7d6f64cf362d70e241d56e2c6894cd36961b802496c2",
+      "p2sProcess" : "0ea2ffbe994498ea36cdb7b3badaf32499282f86ed36f0f476bae8e6db7c3cec"
+    },
+    "curve" : {
+      "startupSeconds" : 410,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 23.30830830830831,
+        "a1SecondsPerLayer" : 26.326326326326328
+      }, {
+        "p2sSecondsPerLayer" : 28.13913913913914,
+        "a1SecondsPerLayer" : 31.04004004004004
+      }, {
+        "p2sSecondsPerLayer" : 47.261044176706825,
+        "a1SecondsPerLayer" : 50.29317269076305
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 23.30830830830831,
+    "maxSecondsPerLayer" : 47.261044176706825,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.003182888789865501,
+    "validationMaxErrorPercent" : 3.521037244184577,
+    "validationMedianErrorPercent" : 3.1285589870704067,
+    "enabled" : true
+  }, {
+    "id" : "02e51f6722b83a51",
+    "material" : "PLA TOUGH",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.12,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PLA Tough @BBL A1",
+    "p2sFilament" : "Bambu PLA Tough @BBL P2S",
+    "a1Process" : "0.12mm Fine @BBL A1",
+    "p2sProcess" : "0.12mm High Quality @BBL P2S",
+    "qualities" : [ "draft" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "987273063bac649ed743978718d6febde4713d65070aefa609c9a8f455f99931",
+      "p2sFilament" : "cb6137e8f5ebd97a381b0577d63fdda9da555d29752e170880e666817fe086f3",
+      "a1Process" : "6631b086bbb0a0383b7e8f55bd5afe392890ba1fddfdf6c8709472db888bcef6",
+      "p2sProcess" : "84058183429397d1a436d65d8cdd22eb0b86ed4007f8ddca3a09a158943c0de7"
+    },
+    "curve" : {
+      "startupSeconds" : 371,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 22.3003003003003,
+        "a1SecondsPerLayer" : 14.903903903903904
+      }, {
+        "p2sSecondsPerLayer" : 25.352852852852852,
+        "a1SecondsPerLayer" : 16.71171171171171
+      }, {
+        "p2sSecondsPerLayer" : 42.36144578313253,
+        "a1SecondsPerLayer" : 27.572289156626507
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 22.3003003003003,
+    "maxSecondsPerLayer" : 42.36144578313253,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.02020610224288122,
+    "validationMaxErrorPercent" : 17.837338262476898,
+    "validationMedianErrorPercent" : 4.115717268118102,
+    "enabled" : false
+  }, {
+    "id" : "c89a0bd900375105",
+    "material" : "PLA TOUGH",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.12,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PLA Tough @BBL A1",
+    "p2sFilament" : "Bambu PLA Tough @BBL P2S",
+    "a1Process" : "0.12mm High Quality @BBL A1",
+    "p2sProcess" : "0.12mm High Quality @BBL P2S",
+    "qualities" : [ "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "987273063bac649ed743978718d6febde4713d65070aefa609c9a8f455f99931",
+      "p2sFilament" : "cb6137e8f5ebd97a381b0577d63fdda9da555d29752e170880e666817fe086f3",
+      "a1Process" : "77b6505f366e8d7d1995d243501058dc637554bb9797b7e7e11343279b19d357",
+      "p2sProcess" : "84058183429397d1a436d65d8cdd22eb0b86ed4007f8ddca3a09a158943c0de7"
+    },
+    "curve" : {
+      "startupSeconds" : 394,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 22.3003003003003,
+        "a1SecondsPerLayer" : 25.28078078078078
+      }, {
+        "p2sSecondsPerLayer" : 25.352852852852852,
+        "a1SecondsPerLayer" : 28.24024024024024
+      }, {
+        "p2sSecondsPerLayer" : 42.36144578313253,
+        "a1SecondsPerLayer" : 45.397590361445786
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 22.3003003003003,
+    "maxSecondsPerLayer" : 42.36144578313253,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 3.8249130701574874,
+    "validationMedianErrorPercent" : 1.7560880954690994,
+    "enabled" : true
+  }, {
+    "id" : "1519b799bf0d6a4e",
+    "material" : "PLA TOUGH",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.16,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PLA Tough @BBL A1",
+    "p2sFilament" : "Bambu PLA Tough @BBL P2S",
+    "a1Process" : "0.16mm High Quality @BBL A1",
+    "p2sProcess" : "0.16mm Standard @BBL P2S",
+    "qualities" : [ "draft" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "987273063bac649ed743978718d6febde4713d65070aefa609c9a8f455f99931",
+      "p2sFilament" : "cb6137e8f5ebd97a381b0577d63fdda9da555d29752e170880e666817fe086f3",
+      "a1Process" : "45e11b9fdd8175c99fbade974f3634b287f17a6aa10a717039f76cd9f6c530a6",
+      "p2sProcess" : "3b741acb2133c65b6c996cbe8470079df5775f67f8a4eb1ce65b5a2eaacf5168"
+    },
+    "curve" : {
+      "startupSeconds" : 387,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 10.85,
+        "a1SecondsPerLayer" : 24.876
+      }, {
+        "p2sSecondsPerLayer" : 15.54,
+        "a1SecondsPerLayer" : 27.536
+      }, {
+        "p2sSecondsPerLayer" : 30.312,
+        "a1SecondsPerLayer" : 46.664
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 10.85,
+    "maxSecondsPerLayer" : 30.312,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 41.76334106728539,
+    "validationMedianErrorPercent" : 17.52362118215778,
+    "enabled" : false
+  }, {
+    "id" : "b9af24e8d8f0fd99",
+    "material" : "PLA TOUGH",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.16,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PLA Tough @BBL A1",
+    "p2sFilament" : "Bambu PLA Tough @BBL P2S",
+    "a1Process" : "0.16mm Optimal @BBL A1",
+    "p2sProcess" : "0.16mm Standard @BBL P2S",
+    "qualities" : [ "standard" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "987273063bac649ed743978718d6febde4713d65070aefa609c9a8f455f99931",
+      "p2sFilament" : "cb6137e8f5ebd97a381b0577d63fdda9da555d29752e170880e666817fe086f3",
+      "a1Process" : "f7f3bd63620c39c909e4beecf3b8046c4e23dcd0000d384db77799d8165bfb4c",
+      "p2sProcess" : "3b741acb2133c65b6c996cbe8470079df5775f67f8a4eb1ce65b5a2eaacf5168"
+    },
+    "curve" : {
+      "startupSeconds" : 369,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 10.85,
+        "a1SecondsPerLayer" : 14.824
+      }, {
+        "p2sSecondsPerLayer" : 15.54,
+        "a1SecondsPerLayer" : 18.118
+      }, {
+        "p2sSecondsPerLayer" : 30.312,
+        "a1SecondsPerLayer" : 32.04
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 10.85,
+    "maxSecondsPerLayer" : 30.312,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.010605578534306215,
+    "validationMaxErrorPercent" : 9.47986577181208,
+    "validationMedianErrorPercent" : 7.92575132586919,
+    "enabled" : true
+  }, {
+    "id" : "71dbdaa12d7fd310",
+    "material" : "PLA TOUGH",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.16,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PLA Tough @BBL A1",
+    "p2sFilament" : "Bambu PLA Tough @BBL P2S",
+    "a1Process" : "0.16mm High Quality @BBL A1",
+    "p2sProcess" : "0.16mm High Quality @BBL P2S",
+    "qualities" : [ "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "987273063bac649ed743978718d6febde4713d65070aefa609c9a8f455f99931",
+      "p2sFilament" : "cb6137e8f5ebd97a381b0577d63fdda9da555d29752e170880e666817fe086f3",
+      "a1Process" : "45e11b9fdd8175c99fbade974f3634b287f17a6aa10a717039f76cd9f6c530a6",
+      "p2sProcess" : "3131406a88974ea8a359d261163b5c18aa2725f7edf1f8d4c68b8e48a9b9c8a8"
+    },
+    "curve" : {
+      "startupSeconds" : 387,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 21.884,
+        "a1SecondsPerLayer" : 24.876
+      }, {
+        "p2sSecondsPerLayer" : 24.648,
+        "a1SecondsPerLayer" : 27.536
+      }, {
+        "p2sSecondsPerLayer" : 43.648,
+        "a1SecondsPerLayer" : 46.664
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 21.884,
+    "maxSecondsPerLayer" : 43.648,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 4.0760869565217295,
+    "validationMedianErrorPercent" : 2.6682134570765736,
+    "enabled" : true
+  }, {
+    "id" : "1050ba8c7a56b9a0",
+    "material" : "PLA TOUGH",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.2,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PLA Tough @BBL A1",
+    "p2sFilament" : "Bambu PLA Tough @BBL P2S",
+    "a1Process" : "0.20mm Standard @BBL A1",
+    "p2sProcess" : "0.20mm Standard @BBL P2S",
+    "qualities" : [ "draft", "standard" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "987273063bac649ed743978718d6febde4713d65070aefa609c9a8f455f99931",
+      "p2sFilament" : "cb6137e8f5ebd97a381b0577d63fdda9da555d29752e170880e666817fe086f3",
+      "a1Process" : "c37e4d21efb6b3255096f1e913b996e4da6443dbbd59ab1879293b9d8bb4cc5e",
+      "p2sProcess" : "ecfcd461ed04d0a0a73c1b438f5902ca0ada9c385f25a904070ee1cd50cc8248"
+    },
+    "curve" : {
+      "startupSeconds" : 368,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 12.2025,
+        "a1SecondsPerLayer" : 16.345
+      }, {
+        "p2sSecondsPerLayer" : 16.6525,
+        "a1SecondsPerLayer" : 20.32
+      }, {
+        "p2sSecondsPerLayer" : 31.5,
+        "a1SecondsPerLayer" : 35.91
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 12.2025,
+    "maxSecondsPerLayer" : 31.5,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 6.905710491367856,
+    "validationMedianErrorPercent" : 6.617792748167228,
+    "enabled" : true
+  }, {
+    "id" : "d2b2bc36d2e27d6e",
+    "material" : "PLA TOUGH",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.2,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PLA Tough @BBL A1",
+    "p2sFilament" : "Bambu PLA Tough @BBL P2S",
+    "a1Process" : "0.20mm Standard @BBL A1",
+    "p2sProcess" : "0.20mm High Quality @BBL P2S",
+    "qualities" : [ "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "987273063bac649ed743978718d6febde4713d65070aefa609c9a8f455f99931",
+      "p2sFilament" : "cb6137e8f5ebd97a381b0577d63fdda9da555d29752e170880e666817fe086f3",
+      "a1Process" : "c37e4d21efb6b3255096f1e913b996e4da6443dbbd59ab1879293b9d8bb4cc5e",
+      "p2sProcess" : "80acfe355cc1b2c6098db860cdc13d1333fe1366df805d67009b5a25ceea562e"
+    },
+    "curve" : {
+      "startupSeconds" : 368,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 23.4375,
+        "a1SecondsPerLayer" : 16.345
+      }, {
+        "p2sSecondsPerLayer" : 25.7925,
+        "a1SecondsPerLayer" : 20.32
+      }, {
+        "p2sSecondsPerLayer" : 44.89,
+        "a1SecondsPerLayer" : 35.91
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 23.4375,
+    "maxSecondsPerLayer" : 44.89,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 24.370913413909257,
+    "validationMedianErrorPercent" : 13.760144274120833,
+    "enabled" : false
+  }, {
+    "id" : "b25fd8659fe3381c",
+    "material" : "PLA TOUGH",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.24,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu PLA Tough @BBL A1",
+    "p2sFilament" : "Bambu PLA Tough @BBL P2S",
+    "a1Process" : "0.24mm Draft @BBL A1",
+    "p2sProcess" : "0.24mm Standard @BBL P2S",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "987273063bac649ed743978718d6febde4713d65070aefa609c9a8f455f99931",
+      "p2sFilament" : "cb6137e8f5ebd97a381b0577d63fdda9da555d29752e170880e666817fe086f3",
+      "a1Process" : "c41191b4015f4503840d7598d4f9b7f328356c26ef5784072c261d23b9ada9ac",
+      "p2sProcess" : "aafe9e2636fc4373bfb33b81e97d6b4a0809547e53446728e3a223642e996315"
+    },
+    "curve" : {
+      "startupSeconds" : 368,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 12.044910179640718,
+        "a1SecondsPerLayer" : 16.092814371257486
+      }, {
+        "p2sSecondsPerLayer" : 19.119760479041915,
+        "a1SecondsPerLayer" : 22.805389221556887
+      }, {
+        "p2sSecondsPerLayer" : 36.916666666666664,
+        "a1SecondsPerLayer" : 41.583333333333336
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 12.044910179640718,
+    "maxSecondsPerLayer" : 36.916666666666664,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.012525050100209434,
+    "validationMaxErrorPercent" : 5.391828533154719,
+    "validationMedianErrorPercent" : 5.139664804469279,
+    "enabled" : true
+  }, {
+    "id" : "b39f12d51f539cc0",
+    "material" : "TPU",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.08,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu TPU 95A @BBL A1",
+    "p2sFilament" : "Bambu TPU 95A @BBL P2S",
+    "a1Process" : "0.08mm Extra Fine @BBL A1",
+    "p2sProcess" : "0.08mm High Quality @BBL P2S",
+    "qualities" : [ "draft", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "c3013f18c91bf196e231ce05c968631c411c2581e75e66156e6103b12015e69e",
+      "p2sFilament" : "60eb9163d29544691fa6c2446f7ca65eb553aaae9bb899ced481480df46cf65e",
+      "a1Process" : "f8471c68d123bc8f3794fa99535c08a339a288bfb4704ac0cbac94ee8d7bc11c",
+      "p2sProcess" : "0ea2ffbe994498ea36cdb7b3badaf32499282f86ed36f0f476bae8e6db7c3cec"
+    },
+    "curve" : {
+      "startupSeconds" : 387,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 24.06206206206206,
+        "a1SecondsPerLayer" : 21.153153153153152
+      }, {
+        "p2sSecondsPerLayer" : 35.171171171171174,
+        "a1SecondsPerLayer" : 34.793793793793796
+      }, {
+        "p2sSecondsPerLayer" : 61.799196787148595,
+        "a1SecondsPerLayer" : 60.678714859437754
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 24.06206206206206,
+    "maxSecondsPerLayer" : 61.799196787148595,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0028451930463524455,
+    "validationMaxErrorPercent" : 15.638197289631261,
+    "validationMedianErrorPercent" : 10.835795292099492,
+    "enabled" : false
+  }, {
+    "id" : "d610c678314c0d19",
+    "material" : "TPU",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.08,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu TPU 95A @BBL A1",
+    "p2sFilament" : "Bambu TPU 95A @BBL P2S",
+    "a1Process" : "0.08mm High Quality @BBL A1",
+    "p2sProcess" : "0.08mm High Quality @BBL P2S",
+    "qualities" : [ "standard" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "c3013f18c91bf196e231ce05c968631c411c2581e75e66156e6103b12015e69e",
+      "p2sFilament" : "60eb9163d29544691fa6c2446f7ca65eb553aaae9bb899ced481480df46cf65e",
+      "a1Process" : "90f5279ba2a6633cf7ac7d6f64cf362d70e241d56e2c6894cd36961b802496c2",
+      "p2sProcess" : "0ea2ffbe994498ea36cdb7b3badaf32499282f86ed36f0f476bae8e6db7c3cec"
+    },
+    "curve" : {
+      "startupSeconds" : 409,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 24.06206206206206,
+        "a1SecondsPerLayer" : 27.05105105105105
+      }, {
+        "p2sSecondsPerLayer" : 35.171171171171174,
+        "a1SecondsPerLayer" : 38.05905905905906
+      }, {
+        "p2sSecondsPerLayer" : 61.799196787148595,
+        "a1SecondsPerLayer" : 64.81124497991968
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 24.06206206206206,
+    "maxSecondsPerLayer" : 61.799196787148595,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.006043026347590796,
+    "validationMaxErrorPercent" : 2.8901200369344515,
+    "validationMedianErrorPercent" : 1.690862510674629,
+    "enabled" : true
+  }, {
+    "id" : "6b3fa3849e2501fc",
+    "material" : "TPU",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.12,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu TPU 95A @BBL A1",
+    "p2sFilament" : "Bambu TPU 95A @BBL P2S",
+    "a1Process" : "0.12mm Fine @BBL A1",
+    "p2sProcess" : "0.12mm High Quality @BBL P2S",
+    "qualities" : [ "draft" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "c3013f18c91bf196e231ce05c968631c411c2581e75e66156e6103b12015e69e",
+      "p2sFilament" : "60eb9163d29544691fa6c2446f7ca65eb553aaae9bb899ced481480df46cf65e",
+      "a1Process" : "6631b086bbb0a0383b7e8f55bd5afe392890ba1fddfdf6c8709472db888bcef6",
+      "p2sProcess" : "84058183429397d1a436d65d8cdd22eb0b86ed4007f8ddca3a09a158943c0de7"
+    },
+    "curve" : {
+      "startupSeconds" : 388,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 27.174174174174173,
+        "a1SecondsPerLayer" : 27.057057057057058
+      }, {
+        "p2sSecondsPerLayer" : 47.010510510510514,
+        "a1SecondsPerLayer" : 48.15765765765766
+      }, {
+        "p2sSecondsPerLayer" : 82.46385542168674,
+        "a1SecondsPerLayer" : 83.3012048192771
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 27.174174174174173,
+    "maxSecondsPerLayer" : 82.46385542168674,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.007034822370743932,
+    "validationMaxErrorPercent" : 7.642308449871971,
+    "validationMedianErrorPercent" : 3.1884816753926737,
+    "enabled" : true
+  }, {
+    "id" : "eabc7c636b3d8927",
+    "material" : "TPU",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.12,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu TPU 95A @BBL A1",
+    "p2sFilament" : "Bambu TPU 95A @BBL P2S",
+    "a1Process" : "0.12mm High Quality @BBL A1",
+    "p2sProcess" : "0.12mm High Quality @BBL P2S",
+    "qualities" : [ "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "c3013f18c91bf196e231ce05c968631c411c2581e75e66156e6103b12015e69e",
+      "p2sFilament" : "60eb9163d29544691fa6c2446f7ca65eb553aaae9bb899ced481480df46cf65e",
+      "a1Process" : "77b6505f366e8d7d1995d243501058dc637554bb9797b7e7e11343279b19d357",
+      "p2sProcess" : "84058183429397d1a436d65d8cdd22eb0b86ed4007f8ddca3a09a158943c0de7"
+    },
+    "curve" : {
+      "startupSeconds" : 394,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 27.174174174174173,
+        "a1SecondsPerLayer" : 30.17117117117117
+      }, {
+        "p2sSecondsPerLayer" : 47.010510510510514,
+        "a1SecondsPerLayer" : 49.906906906906904
+      }, {
+        "p2sSecondsPerLayer" : 82.46385542168674,
+        "a1SecondsPerLayer" : 85.50602409638554
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 27.174174174174173,
+    "maxSecondsPerLayer" : 82.46385542168674,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 2.1823117886603294,
+    "validationMedianErrorPercent" : 0.29145728643216184,
+    "enabled" : true
+  }, {
+    "id" : "bf76855b93c44f65",
+    "material" : "TPU",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.16,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu TPU 95A @BBL A1",
+    "p2sFilament" : "Bambu TPU 95A @BBL P2S",
+    "a1Process" : "0.16mm High Quality @BBL A1",
+    "p2sProcess" : "0.16mm Standard @BBL P2S",
+    "qualities" : [ "draft" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "c3013f18c91bf196e231ce05c968631c411c2581e75e66156e6103b12015e69e",
+      "p2sFilament" : "60eb9163d29544691fa6c2446f7ca65eb553aaae9bb899ced481480df46cf65e",
+      "a1Process" : "45e11b9fdd8175c99fbade974f3634b287f17a6aa10a717039f76cd9f6c530a6",
+      "p2sProcess" : "3b741acb2133c65b6c996cbe8470079df5775f67f8a4eb1ce65b5a2eaacf5168"
+    },
+    "curve" : {
+      "startupSeconds" : 387,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 30.026,
+        "a1SecondsPerLayer" : 33.944
+      }, {
+        "p2sSecondsPerLayer" : 60.18,
+        "a1SecondsPerLayer" : 63.608
+      }, {
+        "p2sSecondsPerLayer" : 112.168,
+        "a1SecondsPerLayer" : 116.016
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 30.026,
+    "maxSecondsPerLayer" : 112.168,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0031063618290305683,
+    "validationMaxErrorPercent" : 2.0908968670162675,
+    "validationMedianErrorPercent" : 1.8795968400980634,
+    "enabled" : true
+  }, {
+    "id" : "ea9a40a60cafaa5c",
+    "material" : "TPU",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.16,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu TPU 95A @BBL A1",
+    "p2sFilament" : "Bambu TPU 95A @BBL P2S",
+    "a1Process" : "0.16mm Optimal @BBL A1",
+    "p2sProcess" : "0.16mm Standard @BBL P2S",
+    "qualities" : [ "standard" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "c3013f18c91bf196e231ce05c968631c411c2581e75e66156e6103b12015e69e",
+      "p2sFilament" : "60eb9163d29544691fa6c2446f7ca65eb553aaae9bb899ced481480df46cf65e",
+      "a1Process" : "f7f3bd63620c39c909e4beecf3b8046c4e23dcd0000d384db77799d8165bfb4c",
+      "p2sProcess" : "3b741acb2133c65b6c996cbe8470079df5775f67f8a4eb1ce65b5a2eaacf5168"
+    },
+    "curve" : {
+      "startupSeconds" : 387,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 30.026,
+        "a1SecondsPerLayer" : 33.208
+      }, {
+        "p2sSecondsPerLayer" : 60.18,
+        "a1SecondsPerLayer" : 63.084
+      }, {
+        "p2sSecondsPerLayer" : 112.168,
+        "a1SecondsPerLayer" : 115.32
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 30.026,
+    "maxSecondsPerLayer" : 112.168,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 1.6771488469601747,
+    "validationMedianErrorPercent" : 1.1501293044780203,
+    "enabled" : true
+  }, {
+    "id" : "1cbb573a8ea2854d",
+    "material" : "TPU",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.16,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu TPU 95A @BBL A1",
+    "p2sFilament" : "Bambu TPU 95A @BBL P2S",
+    "a1Process" : "0.16mm High Quality @BBL A1",
+    "p2sProcess" : "0.16mm High Quality @BBL P2S",
+    "qualities" : [ "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "c3013f18c91bf196e231ce05c968631c411c2581e75e66156e6103b12015e69e",
+      "p2sFilament" : "60eb9163d29544691fa6c2446f7ca65eb553aaae9bb899ced481480df46cf65e",
+      "a1Process" : "45e11b9fdd8175c99fbade974f3634b287f17a6aa10a717039f76cd9f6c530a6",
+      "p2sProcess" : "3131406a88974ea8a359d261163b5c18aa2725f7edf1f8d4c68b8e48a9b9c8a8"
+    },
+    "curve" : {
+      "startupSeconds" : 387,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 30.926,
+        "a1SecondsPerLayer" : 33.944
+      }, {
+        "p2sSecondsPerLayer" : 60.71,
+        "a1SecondsPerLayer" : 63.608
+      }, {
+        "p2sSecondsPerLayer" : 113.0,
+        "a1SecondsPerLayer" : 116.016
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 30.926,
+    "maxSecondsPerLayer" : 113.0,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0031063618290305683,
+    "validationMaxErrorPercent" : 1.7252338145827606,
+    "validationMedianErrorPercent" : 0.5469366289771127,
+    "enabled" : true
+  }, {
+    "id" : "0911f60b82892469",
+    "material" : "TPU",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.2,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu TPU 95A @BBL A1",
+    "p2sFilament" : "Bambu TPU 95A @BBL P2S",
+    "a1Process" : "0.20mm Standard @BBL A1",
+    "p2sProcess" : "0.20mm Standard @BBL P2S",
+    "qualities" : [ "draft", "standard" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "c3013f18c91bf196e231ce05c968631c411c2581e75e66156e6103b12015e69e",
+      "p2sFilament" : "60eb9163d29544691fa6c2446f7ca65eb553aaae9bb899ced481480df46cf65e",
+      "a1Process" : "c37e4d21efb6b3255096f1e913b996e4da6443dbbd59ab1879293b9d8bb4cc5e",
+      "p2sProcess" : "ecfcd461ed04d0a0a73c1b438f5902ca0ada9c385f25a904070ee1cd50cc8248"
+    },
+    "curve" : {
+      "startupSeconds" : 387,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 38.02,
+        "a1SecondsPerLayer" : 41.0125
+      }, {
+        "p2sSecondsPerLayer" : 74.3475,
+        "a1SecondsPerLayer" : 77.03
+      }, {
+        "p2sSecondsPerLayer" : 134.86,
+        "a1SecondsPerLayer" : 137.95
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 38.02,
+    "maxSecondsPerLayer" : 134.86,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.005954862144941231,
+    "validationMaxErrorPercent" : 1.3443537143995155,
+    "validationMedianErrorPercent" : 0.7043255549231686,
+    "enabled" : true
+  }, {
+    "id" : "5f6d609d16851663",
+    "material" : "TPU",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.2,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu TPU 95A @BBL A1",
+    "p2sFilament" : "Bambu TPU 95A @BBL P2S",
+    "a1Process" : "0.20mm Standard @BBL A1",
+    "p2sProcess" : "0.20mm High Quality @BBL P2S",
+    "qualities" : [ "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "c3013f18c91bf196e231ce05c968631c411c2581e75e66156e6103b12015e69e",
+      "p2sFilament" : "60eb9163d29544691fa6c2446f7ca65eb553aaae9bb899ced481480df46cf65e",
+      "a1Process" : "c37e4d21efb6b3255096f1e913b996e4da6443dbbd59ab1879293b9d8bb4cc5e",
+      "p2sProcess" : "80acfe355cc1b2c6098db860cdc13d1333fe1366df805d67009b5a25ceea562e"
+    },
+    "curve" : {
+      "startupSeconds" : 387,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 38.8025,
+        "a1SecondsPerLayer" : 41.0125
+      }, {
+        "p2sSecondsPerLayer" : 74.8175,
+        "a1SecondsPerLayer" : 77.03
+      }, {
+        "p2sSecondsPerLayer" : 135.54,
+        "a1SecondsPerLayer" : 137.95
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 38.8025,
+    "maxSecondsPerLayer" : 135.54,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.005954862144941231,
+    "validationMaxErrorPercent" : 1.2248556064528904,
+    "validationMedianErrorPercent" : 0.6900967558338023,
+    "enabled" : true
+  }, {
+    "id" : "c84b8507d7c7e1c5",
+    "material" : "TPU",
+    "nozzleMm" : 0.4,
+    "layerMm" : 0.24,
+    "a1Machine" : "Bambu Lab A1 0.4 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.4 nozzle",
+    "a1Filament" : "Bambu TPU 95A @BBL A1",
+    "p2sFilament" : "Bambu TPU 95A @BBL P2S",
+    "a1Process" : "0.24mm Draft @BBL A1",
+    "p2sProcess" : "0.24mm Standard @BBL P2S",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "cf0fa6339ea88b3c2418795f5fbdff287db2247449412510617978183329fec5",
+      "p2sMachine" : "ab182c6e5e540c3d9b6e5570a5d0c6bc629177ebf6e10f835beb2ae717440c58",
+      "a1Filament" : "c3013f18c91bf196e231ce05c968631c411c2581e75e66156e6103b12015e69e",
+      "p2sFilament" : "60eb9163d29544691fa6c2446f7ca65eb553aaae9bb899ced481480df46cf65e",
+      "a1Process" : "c41191b4015f4503840d7598d4f9b7f328356c26ef5784072c261d23b9ada9ac",
+      "p2sProcess" : "aafe9e2636fc4373bfb33b81e97d6b4a0809547e53446728e3a223642e996315"
+    },
+    "curve" : {
+      "startupSeconds" : 387,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 42.535928143712574,
+        "a1SecondsPerLayer" : 45.538922155688624
+      }, {
+        "p2sSecondsPerLayer" : 90.39221556886227,
+        "a1SecondsPerLayer" : 93.02694610778443
+      }, {
+        "p2sSecondsPerLayer" : 167.67857142857142,
+        "a1SecondsPerLayer" : 170.72619047619048
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 42.535928143712574,
+    "maxSecondsPerLayer" : 167.67857142857142,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.006789327177680882,
+    "validationMaxErrorPercent" : 1.1498516320474828,
+    "validationMedianErrorPercent" : 0.7937075437969288,
+    "enabled" : true
+  }, {
+    "id" : "b2827cecaced6c4b",
+    "material" : "PETG",
+    "nozzleMm" : 0.6,
+    "layerMm" : 0.18,
+    "a1Machine" : "Bambu Lab A1 0.6 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.6 nozzle",
+    "a1Filament" : "Generic PETG",
+    "p2sFilament" : "Generic PETG @BBL P2S",
+    "a1Process" : "0.18mm Fine @BBL A1 0.6 nozzle",
+    "p2sProcess" : "0.18mm Balanced Quality @BBL P2S 0.6 nozzle",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "3d505372dea9f86f323847b20fe6fa992756a4f8d0df290c9262110b2ad304fb",
+      "p2sMachine" : "a9e024bc215e0e70b8432e1c7048edb196f18bbda8c365d35fd0e2037373e55c",
+      "a1Filament" : "f7f636d61b7a22bcf869e25d47783d02bdda8b3c1b0896a6cac762202e810257",
+      "p2sFilament" : "cc56ec86c0983145eb7140cd357bd6e6aafe7e06f6c58830621548ff3f32bc0f",
+      "a1Process" : "41abc4634f995670025b976e73d5d5136c2b86eb58d893f68e808630e836c822",
+      "p2sProcess" : "6c244be38580f385856eeb533e848609ff83be6e8c9e6b1ff98ab67ec6bad110"
+    },
+    "curve" : {
+      "startupSeconds" : 369,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 18.6981981981982,
+        "a1SecondsPerLayer" : 21.56756756756757
+      }, {
+        "p2sSecondsPerLayer" : 23.11036036036036,
+        "a1SecondsPerLayer" : 28.78828828828829
+      }, {
+        "p2sSecondsPerLayer" : 43.50909090909091,
+        "a1SecondsPerLayer" : 50.35454545454545
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 18.6981981981982,
+    "maxSecondsPerLayer" : 43.50909090909091,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 8.103807075529446,
+    "validationMedianErrorPercent" : 7.522356654392426,
+    "enabled" : true
+  }, {
+    "id" : "265771e2dea4b180",
+    "material" : "PETG",
+    "nozzleMm" : 0.6,
+    "layerMm" : 0.24,
+    "a1Machine" : "Bambu Lab A1 0.6 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.6 nozzle",
+    "a1Filament" : "Generic PETG",
+    "p2sFilament" : "Generic PETG @BBL P2S",
+    "a1Process" : "0.24mm Optimal @BBL A1 0.6 nozzle",
+    "p2sProcess" : "0.24mm Balanced Quality @BBL P2S 0.6 nozzle",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "3d505372dea9f86f323847b20fe6fa992756a4f8d0df290c9262110b2ad304fb",
+      "p2sMachine" : "a9e024bc215e0e70b8432e1c7048edb196f18bbda8c365d35fd0e2037373e55c",
+      "a1Filament" : "f7f636d61b7a22bcf869e25d47783d02bdda8b3c1b0896a6cac762202e810257",
+      "p2sFilament" : "cc56ec86c0983145eb7140cd357bd6e6aafe7e06f6c58830621548ff3f32bc0f",
+      "a1Process" : "7de3bd02dbffd0e8d3ef9ba5228e46fbda27c37a770cf8c54dcdb5274eb69f79",
+      "p2sProcess" : "d42e1cbb44e3e0222a8690873ed65f6f25a680352e560ae62a326f5e7848a821"
+    },
+    "curve" : {
+      "startupSeconds" : 369,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 22.02102102102102,
+        "a1SecondsPerLayer" : 24.84984984984985
+      }, {
+        "p2sSecondsPerLayer" : 30.40840840840841,
+        "a1SecondsPerLayer" : 33.234234234234236
+      }, {
+        "p2sSecondsPerLayer" : 57.51807228915663,
+        "a1SecondsPerLayer" : 60.65060240963855
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 22.02102102102102,
+    "maxSecondsPerLayer" : 57.51807228915663,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.008743551630674418,
+    "validationMaxErrorPercent" : 2.9679144385026834,
+    "validationMedianErrorPercent" : 0.8331823944937478,
+    "enabled" : true
+  }, {
+    "id" : "2464835b1b589bb9",
+    "material" : "PETG",
+    "nozzleMm" : 0.6,
+    "layerMm" : 0.3,
+    "a1Machine" : "Bambu Lab A1 0.6 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.6 nozzle",
+    "a1Filament" : "Generic PETG",
+    "p2sFilament" : "Generic PETG @BBL P2S",
+    "a1Process" : "0.30mm Standard @BBL A1 0.6 nozzle",
+    "p2sProcess" : "0.30mm Standard @BBL P2S 0.6 nozzle",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "3d505372dea9f86f323847b20fe6fa992756a4f8d0df290c9262110b2ad304fb",
+      "p2sMachine" : "a9e024bc215e0e70b8432e1c7048edb196f18bbda8c365d35fd0e2037373e55c",
+      "a1Filament" : "f7f636d61b7a22bcf869e25d47783d02bdda8b3c1b0896a6cac762202e810257",
+      "p2sFilament" : "cc56ec86c0983145eb7140cd357bd6e6aafe7e06f6c58830621548ff3f32bc0f",
+      "a1Process" : "8b5760c70b0dc9a75eb8ebc8e41ec1a592aba17989974e19f0477b8cfd357955",
+      "p2sProcess" : "9bcba1974da101ecb3ce2ddd09186dbbdf80277693bf53fd2ee0830d1afd0a0b"
+    },
+    "curve" : {
+      "startupSeconds" : 369,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 25.213483146067414,
+        "a1SecondsPerLayer" : 28.03370786516854
+      }, {
+        "p2sSecondsPerLayer" : 37.550561797752806,
+        "a1SecondsPerLayer" : 40.30337078651685
+      }, {
+        "p2sSecondsPerLayer" : 71.23880597014926,
+        "a1SecondsPerLayer" : 74.34328358208955
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 25.213483146067414,
+    "maxSecondsPerLayer" : 71.23880597014926,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.012730744748568057,
+    "validationMaxErrorPercent" : 2.301028695181384,
+    "validationMedianErrorPercent" : 1.2414056531703688,
+    "enabled" : true
+  }, {
+    "id" : "34c62b0fcf660af7",
+    "material" : "PLA",
+    "nozzleMm" : 0.6,
+    "layerMm" : 0.18,
+    "a1Machine" : "Bambu Lab A1 0.6 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.6 nozzle",
+    "a1Filament" : "Generic PLA",
+    "p2sFilament" : "Bambu PLA Basic @BBL P2S 0.6 nozzle",
+    "a1Process" : "0.18mm Fine @BBL A1 0.6 nozzle",
+    "p2sProcess" : "0.18mm Balanced Quality @BBL P2S 0.6 nozzle",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "3d505372dea9f86f323847b20fe6fa992756a4f8d0df290c9262110b2ad304fb",
+      "p2sMachine" : "a9e024bc215e0e70b8432e1c7048edb196f18bbda8c365d35fd0e2037373e55c",
+      "a1Filament" : "0e7a26acbd5314522850d515f5a6ff26da9865847bcabae0f322f7a94f9a1372",
+      "p2sFilament" : "4986dd6db6ddd8ddbc8527356bf4fbff7f2872c617e445bb71a56d011113b5be",
+      "a1Process" : "41abc4634f995670025b976e73d5d5136c2b86eb58d893f68e808630e836c822",
+      "p2sProcess" : "6c244be38580f385856eeb533e848609ff83be6e8c9e6b1ff98ab67ec6bad110"
+    },
+    "curve" : {
+      "startupSeconds" : 370,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 13.813063063063064,
+        "a1SecondsPerLayer" : 21.065315315315317
+      }, {
+        "p2sSecondsPerLayer" : 14.711711711711711,
+        "a1SecondsPerLayer" : 28.195945945945947
+      }, {
+        "p2sSecondsPerLayer" : 28.145454545454545,
+        "a1SecondsPerLayer" : 47.78181818181818
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 13.813063063063064,
+    "maxSecondsPerLayer" : 28.145454545454545,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 18.62646985238929,
+    "validationMedianErrorPercent" : 17.17171717171717,
+    "enabled" : false
+  }, {
+    "id" : "53facc1a5360bd35",
+    "material" : "PLA",
+    "nozzleMm" : 0.6,
+    "layerMm" : 0.24,
+    "a1Machine" : "Bambu Lab A1 0.6 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.6 nozzle",
+    "a1Filament" : "Generic PLA",
+    "p2sFilament" : "Bambu PLA Basic @BBL P2S 0.6 nozzle",
+    "a1Process" : "0.24mm Optimal @BBL A1 0.6 nozzle",
+    "p2sProcess" : "0.24mm Balanced Quality @BBL P2S 0.6 nozzle",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "3d505372dea9f86f323847b20fe6fa992756a4f8d0df290c9262110b2ad304fb",
+      "p2sMachine" : "a9e024bc215e0e70b8432e1c7048edb196f18bbda8c365d35fd0e2037373e55c",
+      "a1Filament" : "0e7a26acbd5314522850d515f5a6ff26da9865847bcabae0f322f7a94f9a1372",
+      "p2sFilament" : "4986dd6db6ddd8ddbc8527356bf4fbff7f2872c617e445bb71a56d011113b5be",
+      "a1Process" : "7de3bd02dbffd0e8d3ef9ba5228e46fbda27c37a770cf8c54dcdb5274eb69f79",
+      "p2sProcess" : "d42e1cbb44e3e0222a8690873ed65f6f25a680352e560ae62a326f5e7848a821"
+    },
+    "curve" : {
+      "startupSeconds" : 369,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 15.504504504504505,
+        "a1SecondsPerLayer" : 24.216216216216218
+      }, {
+        "p2sSecondsPerLayer" : 18.91891891891892,
+        "a1SecondsPerLayer" : 33.006006006006004
+      }, {
+        "p2sSecondsPerLayer" : 36.36144578313253,
+        "a1SecondsPerLayer" : 58.036144578313255
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 15.504504504504505,
+    "maxSecondsPerLayer" : 36.36144578313253,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.01927896664738471,
+    "validationMaxErrorPercent" : 12.251323887219122,
+    "validationMedianErrorPercent" : 12.075264888564119,
+    "enabled" : false
+  }, {
+    "id" : "a073ecde18e4ad7d",
+    "material" : "PLA",
+    "nozzleMm" : 0.6,
+    "layerMm" : 0.3,
+    "a1Machine" : "Bambu Lab A1 0.6 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.6 nozzle",
+    "a1Filament" : "Generic PLA",
+    "p2sFilament" : "Bambu PLA Basic @BBL P2S 0.6 nozzle",
+    "a1Process" : "0.30mm Standard @BBL A1 0.6 nozzle",
+    "p2sProcess" : "0.30mm Standard @BBL P2S 0.6 nozzle",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "3d505372dea9f86f323847b20fe6fa992756a4f8d0df290c9262110b2ad304fb",
+      "p2sMachine" : "a9e024bc215e0e70b8432e1c7048edb196f18bbda8c365d35fd0e2037373e55c",
+      "a1Filament" : "0e7a26acbd5314522850d515f5a6ff26da9865847bcabae0f322f7a94f9a1372",
+      "p2sFilament" : "4986dd6db6ddd8ddbc8527356bf4fbff7f2872c617e445bb71a56d011113b5be",
+      "a1Process" : "8b5760c70b0dc9a75eb8ebc8e41ec1a592aba17989974e19f0477b8cfd357955",
+      "p2sProcess" : "9bcba1974da101ecb3ce2ddd09186dbbdf80277693bf53fd2ee0830d1afd0a0b"
+    },
+    "curve" : {
+      "startupSeconds" : 369,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 17.217228464419474,
+        "a1SecondsPerLayer" : 27.235955056179776
+      }, {
+        "p2sSecondsPerLayer" : 22.970037453183522,
+        "a1SecondsPerLayer" : 40.03370786516854
+      }, {
+        "p2sSecondsPerLayer" : 44.52238805970149,
+        "a1SecondsPerLayer" : 71.14925373134328
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 17.217228464419474,
+    "maxSecondsPerLayer" : 44.52238805970149,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.009042408897730336,
+    "validationMaxErrorPercent" : 12.023121387283242,
+    "validationMedianErrorPercent" : 11.278792692613182,
+    "enabled" : false
+  }, {
+    "id" : "22cb4221d1d17247",
+    "material" : "PLA TOUGH",
+    "nozzleMm" : 0.6,
+    "layerMm" : 0.18,
+    "a1Machine" : "Bambu Lab A1 0.6 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.6 nozzle",
+    "a1Filament" : "Bambu PLA Tough @BBL A1",
+    "p2sFilament" : "Bambu PLA Tough @BBL P2S",
+    "a1Process" : "0.18mm Fine @BBL A1 0.6 nozzle",
+    "p2sProcess" : "0.18mm Balanced Quality @BBL P2S 0.6 nozzle",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "3d505372dea9f86f323847b20fe6fa992756a4f8d0df290c9262110b2ad304fb",
+      "p2sMachine" : "a9e024bc215e0e70b8432e1c7048edb196f18bbda8c365d35fd0e2037373e55c",
+      "a1Filament" : "987273063bac649ed743978718d6febde4713d65070aefa609c9a8f455f99931",
+      "p2sFilament" : "cb6137e8f5ebd97a381b0577d63fdda9da555d29752e170880e666817fe086f3",
+      "a1Process" : "41abc4634f995670025b976e73d5d5136c2b86eb58d893f68e808630e836c822",
+      "p2sProcess" : "6c244be38580f385856eeb533e848609ff83be6e8c9e6b1ff98ab67ec6bad110"
+    },
+    "curve" : {
+      "startupSeconds" : 369,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 14.018018018018019,
+        "a1SecondsPerLayer" : 19.833333333333332
+      }, {
+        "p2sSecondsPerLayer" : 14.846846846846846,
+        "a1SecondsPerLayer" : 27.306306306306308
+      }, {
+        "p2sSecondsPerLayer" : 28.29090909090909,
+        "a1SecondsPerLayer" : 45.372727272727275
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 14.018018018018019,
+    "maxSecondsPerLayer" : 28.29090909090909,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.018653236336507728,
+    "validationMaxErrorPercent" : 21.070422535211275,
+    "validationMedianErrorPercent" : 20.75471698113207,
+    "enabled" : false
+  }, {
+    "id" : "7912c5dde79b1f77",
+    "material" : "PLA TOUGH",
+    "nozzleMm" : 0.6,
+    "layerMm" : 0.24,
+    "a1Machine" : "Bambu Lab A1 0.6 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.6 nozzle",
+    "a1Filament" : "Bambu PLA Tough @BBL A1",
+    "p2sFilament" : "Bambu PLA Tough @BBL P2S",
+    "a1Process" : "0.24mm Optimal @BBL A1 0.6 nozzle",
+    "p2sProcess" : "0.24mm Balanced Quality @BBL P2S 0.6 nozzle",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "3d505372dea9f86f323847b20fe6fa992756a4f8d0df290c9262110b2ad304fb",
+      "p2sMachine" : "a9e024bc215e0e70b8432e1c7048edb196f18bbda8c365d35fd0e2037373e55c",
+      "a1Filament" : "987273063bac649ed743978718d6febde4713d65070aefa609c9a8f455f99931",
+      "p2sFilament" : "cb6137e8f5ebd97a381b0577d63fdda9da555d29752e170880e666817fe086f3",
+      "a1Process" : "7de3bd02dbffd0e8d3ef9ba5228e46fbda27c37a770cf8c54dcdb5274eb69f79",
+      "p2sProcess" : "d42e1cbb44e3e0222a8690873ed65f6f25a680352e560ae62a326f5e7848a821"
+    },
+    "curve" : {
+      "startupSeconds" : 368,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 15.70870870870871,
+        "a1SecondsPerLayer" : 19.88888888888889
+      }, {
+        "p2sSecondsPerLayer" : 19.057057057057058,
+        "a1SecondsPerLayer" : 28.30930930930931
+      }, {
+        "p2sSecondsPerLayer" : 36.493975903614455,
+        "a1SecondsPerLayer" : 48.55421686746988
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 15.70870870870871,
+    "maxSecondsPerLayer" : 36.493975903614455,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.01430615164521587,
+    "validationMaxErrorPercent" : 16.573325036299526,
+    "validationMedianErrorPercent" : 15.813876469614174,
+    "enabled" : false
+  }, {
+    "id" : "4b7ac203329029ca",
+    "material" : "PLA TOUGH",
+    "nozzleMm" : 0.6,
+    "layerMm" : 0.3,
+    "a1Machine" : "Bambu Lab A1 0.6 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.6 nozzle",
+    "a1Filament" : "Bambu PLA Tough @BBL A1",
+    "p2sFilament" : "Bambu PLA Tough @BBL P2S",
+    "a1Process" : "0.30mm Standard @BBL A1 0.6 nozzle",
+    "p2sProcess" : "0.30mm Standard @BBL P2S 0.6 nozzle",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "3d505372dea9f86f323847b20fe6fa992756a4f8d0df290c9262110b2ad304fb",
+      "p2sMachine" : "a9e024bc215e0e70b8432e1c7048edb196f18bbda8c365d35fd0e2037373e55c",
+      "a1Filament" : "987273063bac649ed743978718d6febde4713d65070aefa609c9a8f455f99931",
+      "p2sFilament" : "cb6137e8f5ebd97a381b0577d63fdda9da555d29752e170880e666817fe086f3",
+      "a1Process" : "8b5760c70b0dc9a75eb8ebc8e41ec1a592aba17989974e19f0477b8cfd357955",
+      "p2sProcess" : "9bcba1974da101ecb3ce2ddd09186dbbdf80277693bf53fd2ee0830d1afd0a0b"
+    },
+    "curve" : {
+      "startupSeconds" : 367,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 17.419475655430713,
+        "a1SecondsPerLayer" : 20.591760299625467
+      }, {
+        "p2sSecondsPerLayer" : 23.10486891385768,
+        "a1SecondsPerLayer" : 29.771535580524343
+      }, {
+        "p2sSecondsPerLayer" : 44.64179104477612,
+        "a1SecondsPerLayer" : 53.08955223880597
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 17.419475655430713,
+    "maxSecondsPerLayer" : 44.64179104477612,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.017053206002737298,
+    "validationMaxErrorPercent" : 12.456747404844293,
+    "validationMedianErrorPercent" : 10.16781836130306,
+    "enabled" : false
+  }, {
+    "id" : "ef35ee94b21fd410",
+    "material" : "TPU",
+    "nozzleMm" : 0.6,
+    "layerMm" : 0.18,
+    "a1Machine" : "Bambu Lab A1 0.6 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.6 nozzle",
+    "a1Filament" : "Generic TPU",
+    "p2sFilament" : "Bambu TPU 95A @BBL P2S",
+    "a1Process" : "0.18mm Fine @BBL A1 0.6 nozzle",
+    "p2sProcess" : "0.18mm Balanced Quality @BBL P2S 0.6 nozzle",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "3d505372dea9f86f323847b20fe6fa992756a4f8d0df290c9262110b2ad304fb",
+      "p2sMachine" : "a9e024bc215e0e70b8432e1c7048edb196f18bbda8c365d35fd0e2037373e55c",
+      "a1Filament" : "467fff57f9703c2062f8936770110841d6c76c9c67b0c7759341f4d719b84b57",
+      "p2sFilament" : "60eb9163d29544691fa6c2446f7ca65eb553aaae9bb899ced481480df46cf65e",
+      "a1Process" : "41abc4634f995670025b976e73d5d5136c2b86eb58d893f68e808630e836c822",
+      "p2sProcess" : "6c244be38580f385856eeb533e848609ff83be6e8c9e6b1ff98ab67ec6bad110"
+    },
+    "curve" : {
+      "startupSeconds" : 391,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 45.61486486486486,
+        "a1SecondsPerLayer" : 53.98198198198198
+      }, {
+        "p2sSecondsPerLayer" : 72.49324324324324,
+        "a1SecondsPerLayer" : 84.16891891891892
+      }, {
+        "p2sSecondsPerLayer" : 131.01818181818183,
+        "a1SecondsPerLayer" : 149.9
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 45.61486486486486,
+    "maxSecondsPerLayer" : 131.01818181818183,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 1.1668611435239118,
+    "validationMedianErrorPercent" : 0.7502806167661191,
+    "enabled" : true
+  }, {
+    "id" : "9bfa38e4d071fbef",
+    "material" : "TPU",
+    "nozzleMm" : 0.6,
+    "layerMm" : 0.24,
+    "a1Machine" : "Bambu Lab A1 0.6 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.6 nozzle",
+    "a1Filament" : "Generic TPU",
+    "p2sFilament" : "Bambu TPU 95A @BBL P2S",
+    "a1Process" : "0.24mm Optimal @BBL A1 0.6 nozzle",
+    "p2sProcess" : "0.24mm Balanced Quality @BBL P2S 0.6 nozzle",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "3d505372dea9f86f323847b20fe6fa992756a4f8d0df290c9262110b2ad304fb",
+      "p2sMachine" : "a9e024bc215e0e70b8432e1c7048edb196f18bbda8c365d35fd0e2037373e55c",
+      "a1Filament" : "467fff57f9703c2062f8936770110841d6c76c9c67b0c7759341f4d719b84b57",
+      "p2sFilament" : "60eb9163d29544691fa6c2446f7ca65eb553aaae9bb899ced481480df46cf65e",
+      "a1Process" : "7de3bd02dbffd0e8d3ef9ba5228e46fbda27c37a770cf8c54dcdb5274eb69f79",
+      "p2sProcess" : "d42e1cbb44e3e0222a8690873ed65f6f25a680352e560ae62a326f5e7848a821"
+    },
+    "curve" : {
+      "startupSeconds" : 391,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 59.651651651651655,
+        "a1SecondsPerLayer" : 69.74474474474475
+      }, {
+        "p2sSecondsPerLayer" : 97.3963963963964,
+        "a1SecondsPerLayer" : 111.91591591591592
+      }, {
+        "p2sSecondsPerLayer" : 175.9156626506024,
+        "a1SecondsPerLayer" : 200.33734939759037
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 59.651651651651655,
+    "maxSecondsPerLayer" : 175.9156626506024,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 0.9001768204468741,
+    "validationMedianErrorPercent" : 0.6066120715802148,
+    "enabled" : true
+  }, {
+    "id" : "c665e58a82cf181b",
+    "material" : "TPU",
+    "nozzleMm" : 0.6,
+    "layerMm" : 0.3,
+    "a1Machine" : "Bambu Lab A1 0.6 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.6 nozzle",
+    "a1Filament" : "Generic TPU",
+    "p2sFilament" : "Bambu TPU 95A @BBL P2S",
+    "a1Process" : "0.30mm Standard @BBL A1 0.6 nozzle",
+    "p2sProcess" : "0.30mm Standard @BBL P2S 0.6 nozzle",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "3d505372dea9f86f323847b20fe6fa992756a4f8d0df290c9262110b2ad304fb",
+      "p2sMachine" : "a9e024bc215e0e70b8432e1c7048edb196f18bbda8c365d35fd0e2037373e55c",
+      "a1Filament" : "467fff57f9703c2062f8936770110841d6c76c9c67b0c7759341f4d719b84b57",
+      "p2sFilament" : "60eb9163d29544691fa6c2446f7ca65eb553aaae9bb899ced481480df46cf65e",
+      "a1Process" : "8b5760c70b0dc9a75eb8ebc8e41ec1a592aba17989974e19f0477b8cfd357955",
+      "p2sProcess" : "9bcba1974da101ecb3ce2ddd09186dbbdf80277693bf53fd2ee0830d1afd0a0b"
+    },
+    "curve" : {
+      "startupSeconds" : 390,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 73.26966292134831,
+        "a1SecondsPerLayer" : 85.05992509363296
+      }, {
+        "p2sSecondsPerLayer" : 121.75280898876404,
+        "a1SecondsPerLayer" : 139.2996254681648
+      }, {
+        "p2sSecondsPerLayer" : 219.82089552238807,
+        "a1SecondsPerLayer" : 249.76119402985074
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 73.26966292134831,
+    "maxSecondsPerLayer" : 219.82089552238807,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.005839416058395219,
+    "validationMaxErrorPercent" : 0.6704361873990372,
+    "validationMedianErrorPercent" : 0.5940594059405946,
+    "enabled" : true
+  }, {
+    "id" : "feac79ca6b4d3460",
+    "material" : "PETG",
+    "nozzleMm" : 0.8,
+    "layerMm" : 0.24,
+    "a1Machine" : "Bambu Lab A1 0.8 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.8 nozzle",
+    "a1Filament" : "Generic PETG",
+    "p2sFilament" : "Generic PETG @BBL P2S",
+    "a1Process" : "0.24mm Fine @BBL A1 0.8 nozzle",
+    "p2sProcess" : "0.24mm Balanced Quality @BBL P2S 0.8 nozzle",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "d3afa0eae1c666f617de2949623588a7287d554cbb0df69bb771e2108a444736",
+      "p2sMachine" : "02bf111976bc8de508c99715910ab8ddca18560fc570472f613fedca82300ce4",
+      "a1Filament" : "f7f636d61b7a22bcf869e25d47783d02bdda8b3c1b0896a6cac762202e810257",
+      "p2sFilament" : "cc56ec86c0983145eb7140cd357bd6e6aafe7e06f6c58830621548ff3f32bc0f",
+      "a1Process" : "e2fe6c9245f5701e30c971ea16e78055eeb3e951db8a3145f0b5c7d25abcb22e",
+      "p2sProcess" : "3ca03f9ca6c7281b6702b0223863a253c47782ca5e481a58f75a94e8a51b07cf"
+    },
+    "curve" : {
+      "startupSeconds" : 370,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 20.153153153153152,
+        "a1SecondsPerLayer" : 21.936936936936938
+      }, {
+        "p2sSecondsPerLayer" : 33.17717717717718,
+        "a1SecondsPerLayer" : 35.273273273273276
+      }, {
+        "p2sSecondsPerLayer" : 60.98795180722892,
+        "a1SecondsPerLayer" : 62.42168674698795
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 20.153153153153152,
+    "maxSecondsPerLayer" : 60.98795180722892,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.013031013812869752,
+    "validationMaxErrorPercent" : 3.292181069958844,
+    "validationMedianErrorPercent" : 3.2492851572653914,
+    "enabled" : true
+  }, {
+    "id" : "f6fa46014cc28e89",
+    "material" : "PETG",
+    "nozzleMm" : 0.8,
+    "layerMm" : 0.32,
+    "a1Machine" : "Bambu Lab A1 0.8 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.8 nozzle",
+    "a1Filament" : "Generic PETG",
+    "p2sFilament" : "Generic PETG @BBL P2S",
+    "a1Process" : "0.32mm Optimal @BBL A1 0.8 nozzle",
+    "p2sProcess" : "0.32mm Balanced Quality @BBL P2S 0.8 nozzle",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "d3afa0eae1c666f617de2949623588a7287d554cbb0df69bb771e2108a444736",
+      "p2sMachine" : "02bf111976bc8de508c99715910ab8ddca18560fc570472f613fedca82300ce4",
+      "a1Filament" : "f7f636d61b7a22bcf869e25d47783d02bdda8b3c1b0896a6cac762202e810257",
+      "p2sFilament" : "cc56ec86c0983145eb7140cd357bd6e6aafe7e06f6c58830621548ff3f32bc0f",
+      "a1Process" : "fdcb26eb8bbfa4e95336833fb251c3c53c5044d4ae0ce322391ba330c565da47",
+      "p2sProcess" : "dfc9b4d58e281e89a101f9ff8c340d755be55c16446710882c4ec1b8fe5935b4"
+    },
+    "curve" : {
+      "startupSeconds" : 369,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 25.84,
+        "a1SecondsPerLayer" : 27.608
+      }, {
+        "p2sSecondsPerLayer" : 43.628,
+        "a1SecondsPerLayer" : 45.608
+      }, {
+        "p2sSecondsPerLayer" : 81.56451612903226,
+        "a1SecondsPerLayer" : 82.64516129032258
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 25.84,
+    "maxSecondsPerLayer" : 81.56451612903226,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.008494733265373977,
+    "validationMaxErrorPercent" : 2.516212710765231,
+    "validationMedianErrorPercent" : 2.460360852925092,
+    "enabled" : true
+  }, {
+    "id" : "5cc435db08464ff0",
+    "material" : "PETG",
+    "nozzleMm" : 0.8,
+    "layerMm" : 0.4,
+    "a1Machine" : "Bambu Lab A1 0.8 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.8 nozzle",
+    "a1Filament" : "Generic PETG",
+    "p2sFilament" : "Generic PETG @BBL P2S",
+    "a1Process" : "0.40mm Standard @BBL A1 0.8 nozzle",
+    "p2sProcess" : "0.40mm Standard @BBL P2S 0.8 nozzle",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "d3afa0eae1c666f617de2949623588a7287d554cbb0df69bb771e2108a444736",
+      "p2sMachine" : "02bf111976bc8de508c99715910ab8ddca18560fc570472f613fedca82300ce4",
+      "a1Filament" : "f7f636d61b7a22bcf869e25d47783d02bdda8b3c1b0896a6cac762202e810257",
+      "p2sFilament" : "cc56ec86c0983145eb7140cd357bd6e6aafe7e06f6c58830621548ff3f32bc0f",
+      "a1Process" : "4aba3afbcb68f0d2559e394b0c81f479f6c203b6342ef717df78259accf04210",
+      "p2sProcess" : "73e09a7905e826672187dc9f91ac88bcc4bac6becd0b4bd73c38c87db3e787e8"
+    },
+    "curve" : {
+      "startupSeconds" : 369,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 31.23,
+        "a1SecondsPerLayer" : 33.015
+      }, {
+        "p2sSecondsPerLayer" : 54.29,
+        "a1SecondsPerLayer" : 56.355
+      }, {
+        "p2sSecondsPerLayer" : 104.82,
+        "a1SecondsPerLayer" : 105.92
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 31.23,
+    "maxSecondsPerLayer" : 104.82,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.017649135192376875,
+    "validationMaxErrorPercent" : 2.361821280740206,
+    "validationMedianErrorPercent" : 1.6581872997927238,
+    "enabled" : true
+  }, {
+    "id" : "5aea2bf829ecb2c9",
+    "material" : "PLA",
+    "nozzleMm" : 0.8,
+    "layerMm" : 0.24,
+    "a1Machine" : "Bambu Lab A1 0.8 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.8 nozzle",
+    "a1Filament" : "Generic PLA",
+    "p2sFilament" : "Bambu PLA Basic @BBL P2S 0.8 nozzle",
+    "a1Process" : "0.24mm Fine @BBL A1 0.8 nozzle",
+    "p2sProcess" : "0.24mm Balanced Quality @BBL P2S 0.8 nozzle",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "d3afa0eae1c666f617de2949623588a7287d554cbb0df69bb771e2108a444736",
+      "p2sMachine" : "02bf111976bc8de508c99715910ab8ddca18560fc570472f613fedca82300ce4",
+      "a1Filament" : "0e7a26acbd5314522850d515f5a6ff26da9865847bcabae0f322f7a94f9a1372",
+      "p2sFilament" : "deb0076beb41e44683bda78f1baac16853eca479297ae926553fb273747a0c45",
+      "a1Process" : "e2fe6c9245f5701e30c971ea16e78055eeb3e951db8a3145f0b5c7d25abcb22e",
+      "p2sProcess" : "3ca03f9ca6c7281b6702b0223863a253c47782ca5e481a58f75a94e8a51b07cf"
+    },
+    "curve" : {
+      "startupSeconds" : 370,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 11.96996996996997,
+        "a1SecondsPerLayer" : 21.71171171171171
+      }, {
+        "p2sSecondsPerLayer" : 20.255255255255257,
+        "a1SecondsPerLayer" : 35.42042042042042
+      }, {
+        "p2sSecondsPerLayer" : 36.86746987951807,
+        "a1SecondsPerLayer" : 60.975903614457835
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 11.96996996996997,
+    "maxSecondsPerLayer" : 36.86746987951807,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 6.0774879716383845,
+    "validationMedianErrorPercent" : 1.2513312034078794,
+    "enabled" : true
+  }, {
+    "id" : "26b54f67006b43e7",
+    "material" : "PLA",
+    "nozzleMm" : 0.8,
+    "layerMm" : 0.32,
+    "a1Machine" : "Bambu Lab A1 0.8 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.8 nozzle",
+    "a1Filament" : "Generic PLA",
+    "p2sFilament" : "Bambu PLA Basic @BBL P2S 0.8 nozzle",
+    "a1Process" : "0.32mm Optimal @BBL A1 0.8 nozzle",
+    "p2sProcess" : "0.32mm Balanced Quality @BBL P2S 0.8 nozzle",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "d3afa0eae1c666f617de2949623588a7287d554cbb0df69bb771e2108a444736",
+      "p2sMachine" : "02bf111976bc8de508c99715910ab8ddca18560fc570472f613fedca82300ce4",
+      "a1Filament" : "0e7a26acbd5314522850d515f5a6ff26da9865847bcabae0f322f7a94f9a1372",
+      "p2sFilament" : "deb0076beb41e44683bda78f1baac16853eca479297ae926553fb273747a0c45",
+      "a1Process" : "fdcb26eb8bbfa4e95336833fb251c3c53c5044d4ae0ce322391ba330c565da47",
+      "p2sProcess" : "dfc9b4d58e281e89a101f9ff8c340d755be55c16446710882c4ec1b8fe5935b4"
+    },
+    "curve" : {
+      "startupSeconds" : 370,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 15.152,
+        "a1SecondsPerLayer" : 27.296
+      }, {
+        "p2sSecondsPerLayer" : 26.26,
+        "a1SecondsPerLayer" : 45.82
+      }, {
+        "p2sSecondsPerLayer" : 48.854838709677416,
+        "a1SecondsPerLayer" : 80.74193548387096
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 15.152,
+    "maxSecondsPerLayer" : 48.854838709677416,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.013902405116095196,
+    "validationMaxErrorPercent" : 5.556958827986858,
+    "validationMedianErrorPercent" : 1.1597404390445876,
+    "enabled" : true
+  }, {
+    "id" : "dda27024d0d88600",
+    "material" : "PLA",
+    "nozzleMm" : 0.8,
+    "layerMm" : 0.4,
+    "a1Machine" : "Bambu Lab A1 0.8 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.8 nozzle",
+    "a1Filament" : "Generic PLA",
+    "p2sFilament" : "Bambu PLA Basic @BBL P2S 0.8 nozzle",
+    "a1Process" : "0.40mm Standard @BBL A1 0.8 nozzle",
+    "p2sProcess" : "0.40mm Standard @BBL P2S 0.8 nozzle",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "d3afa0eae1c666f617de2949623588a7287d554cbb0df69bb771e2108a444736",
+      "p2sMachine" : "02bf111976bc8de508c99715910ab8ddca18560fc570472f613fedca82300ce4",
+      "a1Filament" : "0e7a26acbd5314522850d515f5a6ff26da9865847bcabae0f322f7a94f9a1372",
+      "p2sFilament" : "deb0076beb41e44683bda78f1baac16853eca479297ae926553fb273747a0c45",
+      "a1Process" : "4aba3afbcb68f0d2559e394b0c81f479f6c203b6342ef717df78259accf04210",
+      "p2sProcess" : "73e09a7905e826672187dc9f91ac88bcc4bac6becd0b4bd73c38c87db3e787e8"
+    },
+    "curve" : {
+      "startupSeconds" : 370,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 18.15,
+        "a1SecondsPerLayer" : 32.605
+      }, {
+        "p2sSecondsPerLayer" : 32.355,
+        "a1SecondsPerLayer" : 56.64
+      }, {
+        "p2sSecondsPerLayer" : 62.42,
+        "a1SecondsPerLayer" : 103.72
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 18.15,
+    "maxSecondsPerLayer" : 62.42,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0,
+    "validationMaxErrorPercent" : 5.333017302678367,
+    "validationMedianErrorPercent" : 1.4800335101926798,
+    "enabled" : true
+  }, {
+    "id" : "4709a2972d825b4c",
+    "material" : "PLA TOUGH",
+    "nozzleMm" : 0.8,
+    "layerMm" : 0.24,
+    "a1Machine" : "Bambu Lab A1 0.8 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.8 nozzle",
+    "a1Filament" : "Bambu PLA Tough @BBL A1",
+    "p2sFilament" : "Bambu PLA Tough @BBL P2S",
+    "a1Process" : "0.24mm Fine @BBL A1 0.8 nozzle",
+    "p2sProcess" : "0.24mm Balanced Quality @BBL P2S 0.8 nozzle",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "d3afa0eae1c666f617de2949623588a7287d554cbb0df69bb771e2108a444736",
+      "p2sMachine" : "02bf111976bc8de508c99715910ab8ddca18560fc570472f613fedca82300ce4",
+      "a1Filament" : "987273063bac649ed743978718d6febde4713d65070aefa609c9a8f455f99931",
+      "p2sFilament" : "cb6137e8f5ebd97a381b0577d63fdda9da555d29752e170880e666817fe086f3",
+      "a1Process" : "e2fe6c9245f5701e30c971ea16e78055eeb3e951db8a3145f0b5c7d25abcb22e",
+      "p2sProcess" : "3ca03f9ca6c7281b6702b0223863a253c47782ca5e481a58f75a94e8a51b07cf"
+    },
+    "curve" : {
+      "startupSeconds" : 367,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 12.156156156156156,
+        "a1SecondsPerLayer" : 13.954954954954955
+      }, {
+        "p2sSecondsPerLayer" : 20.3993993993994,
+        "a1SecondsPerLayer" : 24.25825825825826
+      }, {
+        "p2sSecondsPerLayer" : 36.7710843373494,
+        "a1SecondsPerLayer" : 40.55421686746988
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 12.156156156156156,
+    "maxSecondsPerLayer" : 36.7710843373494,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.0267952840300012,
+    "validationMaxErrorPercent" : 10.972744360902254,
+    "validationMedianErrorPercent" : 8.298911002628607,
+    "enabled" : false
+  }, {
+    "id" : "232e9ddf2956c34f",
+    "material" : "PLA TOUGH",
+    "nozzleMm" : 0.8,
+    "layerMm" : 0.32,
+    "a1Machine" : "Bambu Lab A1 0.8 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.8 nozzle",
+    "a1Filament" : "Bambu PLA Tough @BBL A1",
+    "p2sFilament" : "Bambu PLA Tough @BBL P2S",
+    "a1Process" : "0.32mm Optimal @BBL A1 0.8 nozzle",
+    "p2sProcess" : "0.32mm Balanced Quality @BBL P2S 0.8 nozzle",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "d3afa0eae1c666f617de2949623588a7287d554cbb0df69bb771e2108a444736",
+      "p2sMachine" : "02bf111976bc8de508c99715910ab8ddca18560fc570472f613fedca82300ce4",
+      "a1Filament" : "987273063bac649ed743978718d6febde4713d65070aefa609c9a8f455f99931",
+      "p2sFilament" : "cb6137e8f5ebd97a381b0577d63fdda9da555d29752e170880e666817fe086f3",
+      "a1Process" : "fdcb26eb8bbfa4e95336833fb251c3c53c5044d4ae0ce322391ba330c565da47",
+      "p2sProcess" : "dfc9b4d58e281e89a101f9ff8c340d755be55c16446710882c4ec1b8fe5935b4"
+    },
+    "curve" : {
+      "startupSeconds" : 366,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 15.336,
+        "a1SecondsPerLayer" : 17.116
+      }, {
+        "p2sSecondsPerLayer" : 26.38,
+        "a1SecondsPerLayer" : 28.496
+      }, {
+        "p2sSecondsPerLayer" : 48.645161290322584,
+        "a1SecondsPerLayer" : 49.87096774193548
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 15.336,
+    "maxSecondsPerLayer" : 48.645161290322584,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.028910089621281276,
+    "validationMaxErrorPercent" : 4.051863857374394,
+    "validationMedianErrorPercent" : 4.007707129094418,
+    "enabled" : true
+  }, {
+    "id" : "c1faec098a25e056",
+    "material" : "PLA TOUGH",
+    "nozzleMm" : 0.8,
+    "layerMm" : 0.4,
+    "a1Machine" : "Bambu Lab A1 0.8 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.8 nozzle",
+    "a1Filament" : "Bambu PLA Tough @BBL A1",
+    "p2sFilament" : "Bambu PLA Tough @BBL P2S",
+    "a1Process" : "0.40mm Standard @BBL A1 0.8 nozzle",
+    "p2sProcess" : "0.40mm Standard @BBL P2S 0.8 nozzle",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "d3afa0eae1c666f617de2949623588a7287d554cbb0df69bb771e2108a444736",
+      "p2sMachine" : "02bf111976bc8de508c99715910ab8ddca18560fc570472f613fedca82300ce4",
+      "a1Filament" : "987273063bac649ed743978718d6febde4713d65070aefa609c9a8f455f99931",
+      "p2sFilament" : "cb6137e8f5ebd97a381b0577d63fdda9da555d29752e170880e666817fe086f3",
+      "a1Process" : "4aba3afbcb68f0d2559e394b0c81f479f6c203b6342ef717df78259accf04210",
+      "p2sProcess" : "73e09a7905e826672187dc9f91ac88bcc4bac6becd0b4bd73c38c87db3e787e8"
+    },
+    "curve" : {
+      "startupSeconds" : 366,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 18.33,
+        "a1SecondsPerLayer" : 20.135
+      }, {
+        "p2sSecondsPerLayer" : 32.445,
+        "a1SecondsPerLayer" : 34.615
+      }, {
+        "p2sSecondsPerLayer" : 62.12,
+        "a1SecondsPerLayer" : 63.32
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 18.33,
+    "maxSecondsPerLayer" : 62.12,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.02830455703368706,
+    "validationMaxErrorPercent" : 3.730797366495975,
+    "validationMedianErrorPercent" : 2.681118083285794,
+    "enabled" : true
+  }, {
+    "id" : "f25ba020d5992a28",
+    "material" : "TPU",
+    "nozzleMm" : 0.8,
+    "layerMm" : 0.24,
+    "a1Machine" : "Bambu Lab A1 0.8 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.8 nozzle",
+    "a1Filament" : "Generic TPU",
+    "p2sFilament" : "Bambu TPU 95A @BBL P2S",
+    "a1Process" : "0.24mm Fine @BBL A1 0.8 nozzle",
+    "p2sProcess" : "0.24mm Balanced Quality @BBL P2S 0.8 nozzle",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "d3afa0eae1c666f617de2949623588a7287d554cbb0df69bb771e2108a444736",
+      "p2sMachine" : "02bf111976bc8de508c99715910ab8ddca18560fc570472f613fedca82300ce4",
+      "a1Filament" : "467fff57f9703c2062f8936770110841d6c76c9c67b0c7759341f4d719b84b57",
+      "p2sFilament" : "60eb9163d29544691fa6c2446f7ca65eb553aaae9bb899ced481480df46cf65e",
+      "a1Process" : "e2fe6c9245f5701e30c971ea16e78055eeb3e951db8a3145f0b5c7d25abcb22e",
+      "p2sProcess" : "3ca03f9ca6c7281b6702b0223863a253c47782ca5e481a58f75a94e8a51b07cf"
+    },
+    "curve" : {
+      "startupSeconds" : 391,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 64.11711711711712,
+        "a1SecondsPerLayer" : 74.05705705705705
+      }, {
+        "p2sSecondsPerLayer" : 107.76876876876877,
+        "a1SecondsPerLayer" : 123.28828828828829
+      }, {
+        "p2sSecondsPerLayer" : 193.34939759036143,
+        "a1SecondsPerLayer" : 218.81927710843374
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 64.11711711711712,
+    "maxSecondsPerLayer" : 193.34939759036143,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.003991856612506339,
+    "validationMaxErrorPercent" : 0.9634478193719209,
+    "validationMedianErrorPercent" : 0.7127974558613914,
+    "enabled" : true
+  }, {
+    "id" : "94a06c6dda98453c",
+    "material" : "TPU",
+    "nozzleMm" : 0.8,
+    "layerMm" : 0.32,
+    "a1Machine" : "Bambu Lab A1 0.8 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.8 nozzle",
+    "a1Filament" : "Generic TPU",
+    "p2sFilament" : "Bambu TPU 95A @BBL P2S",
+    "a1Process" : "0.32mm Optimal @BBL A1 0.8 nozzle",
+    "p2sProcess" : "0.32mm Balanced Quality @BBL P2S 0.8 nozzle",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "d3afa0eae1c666f617de2949623588a7287d554cbb0df69bb771e2108a444736",
+      "p2sMachine" : "02bf111976bc8de508c99715910ab8ddca18560fc570472f613fedca82300ce4",
+      "a1Filament" : "467fff57f9703c2062f8936770110841d6c76c9c67b0c7759341f4d719b84b57",
+      "p2sFilament" : "60eb9163d29544691fa6c2446f7ca65eb553aaae9bb899ced481480df46cf65e",
+      "a1Process" : "fdcb26eb8bbfa4e95336833fb251c3c53c5044d4ae0ce322391ba330c565da47",
+      "p2sProcess" : "dfc9b4d58e281e89a101f9ff8c340d755be55c16446710882c4ec1b8fe5935b4"
+    },
+    "curve" : {
+      "startupSeconds" : 390,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 83.34,
+        "a1SecondsPerLayer" : 95.624
+      }, {
+        "p2sSecondsPerLayer" : 143.68,
+        "a1SecondsPerLayer" : 163.576
+      }, {
+        "p2sSecondsPerLayer" : 261.06451612903226,
+        "a1SecondsPerLayer" : 294.64516129032256
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 83.34,
+    "maxSecondsPerLayer" : 261.06451612903226,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.002422187235073814,
+    "validationMaxErrorPercent" : 0.713349832581156,
+    "validationMedianErrorPercent" : 0.5593220338983018,
+    "enabled" : true
+  }, {
+    "id" : "b4dcf8d626e7513f",
+    "material" : "TPU",
+    "nozzleMm" : 0.8,
+    "layerMm" : 0.4,
+    "a1Machine" : "Bambu Lab A1 0.8 nozzle",
+    "p2sMachine" : "Bambu Lab P2S 0.8 nozzle",
+    "a1Filament" : "Generic TPU",
+    "p2sFilament" : "Bambu TPU 95A @BBL P2S",
+    "a1Process" : "0.40mm Standard @BBL A1 0.8 nozzle",
+    "p2sProcess" : "0.40mm Standard @BBL P2S 0.8 nozzle",
+    "qualities" : [ "draft", "standard", "extra_fine" ],
+    "profileHashes" : {
+      "a1Machine" : "d3afa0eae1c666f617de2949623588a7287d554cbb0df69bb771e2108a444736",
+      "p2sMachine" : "02bf111976bc8de508c99715910ab8ddca18560fc570472f613fedca82300ce4",
+      "a1Filament" : "467fff57f9703c2062f8936770110841d6c76c9c67b0c7759341f4d719b84b57",
+      "p2sFilament" : "60eb9163d29544691fa6c2446f7ca65eb553aaae9bb899ced481480df46cf65e",
+      "a1Process" : "4aba3afbcb68f0d2559e394b0c81f479f6c203b6342ef717df78259accf04210",
+      "p2sProcess" : "73e09a7905e826672187dc9f91ac88bcc4bac6becd0b4bd73c38c87db3e787e8"
+    },
+    "curve" : {
+      "startupSeconds" : 391,
+      "knots" : [ {
+        "p2sSecondsPerLayer" : 101.53,
+        "a1SecondsPerLayer" : 116.1
+      }, {
+        "p2sSecondsPerLayer" : 180.78,
+        "a1SecondsPerLayer" : 205.445
+      }, {
+        "p2sSecondsPerLayer" : 338.54,
+        "a1SecondsPerLayer" : 381.94
+      } ]
+    },
+    "calibrationSamples" : 3,
+    "validationSamples" : 3,
+    "minModelSeconds" : 1800,
+    "minSecondsPerLayer" : 101.53,
+    "maxSecondsPerLayer" : 338.54,
+    "preparationSource" : "A1 total-minus-model slicer estimate; not physically timed",
+    "calibrationMaxErrorPercent" : 0.002410858506718405,
+    "validationMaxErrorPercent" : 0.6562922868741605,
+    "validationMedianErrorPercent" : 0.3415883859948732,
+    "enabled" : true
+  } ]
+}

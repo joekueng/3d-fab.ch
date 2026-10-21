@@ -1,0 +1,27 @@
+{
+  "version": "p2s-a1-2026-10-20-v1",
+  "reference": "Bambu Lab A1",
+  "machineProfile": "Bambu Lab P2S 0.4 nozzle",
+  "nozzleMm": 0.4,
+  "layerMm": 0.2,
+  "materials": {
+    "PLA": {
+      "filamentProfile": "Bambu PLA Basic @BBL P2S",
+      "modelFactor": 1.04349,
+      "secondsPerLayer": 2.49553,
+      "startupSeconds": 368,
+      "layerCorrectionFactorCap": 0.55,
+      "coolingSecondsPerLayer": 0,
+      "coolingModelFactorCap": 0
+    },
+    "PETG": {
+      "filamentProfile": "Generic PETG @BBL P2S",
+      "modelFactor": 1.20461,
+      "secondsPerLayer": -1.38153,
+      "startupSeconds": 372,
+      "layerCorrectionFactorCap": 0,
+      "coolingSecondsPerLayer": 13.25,
+      "coolingModelFactorCap": 2.3
+    }
+  }
+}
