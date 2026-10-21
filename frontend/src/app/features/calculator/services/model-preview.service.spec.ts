@@ -9,7 +9,9 @@ import { ModelPreviewService } from './model-preview.service';
 
 describe('ModelPreviewService', () => {
   it('sends explicit OBJ units and cancels a pending conversion on unsubscribe', () => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     const service = TestBed.inject(ModelPreviewService);
     const http = TestBed.inject(HttpTestingController);
     const file = new File(['v 0 0 0'], 'part.obj');

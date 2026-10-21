@@ -43,19 +43,30 @@ describe('QuoteEstimatorService', () => {
 
   it('sends each OBJ unit with its original file and the calculation permit', async () => {
     const file = new File(['v 0 0 0'], 'inches.obj');
-    const subscription = service.calculate({
-      items: [{ file, quantity: 1, modelUnit: 'in' }],
-      material: 'PLA', quality: 'standard', mode: 'easy',
-    }).subscribe();
+    const subscription = service
+      .calculate({
+        items: [{ file, quantity: 1, modelUnit: 'in' }],
+        material: 'PLA',
+        quality: 'standard',
+        mode: 'easy',
+      })
+      .subscribe();
     await Promise.resolve();
     await Promise.resolve();
-    httpTesting.expectOne(`${environment.apiUrl}/api/quote-sessions`)
+    httpTesting
+      .expectOne(`${environment.apiUrl}/api/quote-sessions`)
       .flush({ id: 'units-session', calculationId: 'units-permit' });
-    const upload = httpTesting.expectOne(`${environment.apiUrl}/api/quote-sessions/units-session/line-items`);
+    const upload = httpTesting.expectOne(
+      `${environment.apiUrl}/api/quote-sessions/units-session/line-items`,
+    );
     const multipart = upload.request.body as FormData;
     expect(multipart.get('file')).toBe(file);
-    expect(upload.request.headers.get('X-Quote-Calculation')).toBe('units-permit');
-    const settings = JSON.parse(await (multipart.get('settings') as Blob).text()) as { modelUnit: string };
+    expect(upload.request.headers.get('X-Quote-Calculation')).toBe(
+      'units-permit',
+    );
+    const settings = JSON.parse(
+      await (multipart.get('settings') as Blob).text(),
+    ) as { modelUnit: string };
     expect(settings.modelUnit).toBe('in');
     subscription.unsubscribe();
     expect(upload.cancelled).toBeTrue();
