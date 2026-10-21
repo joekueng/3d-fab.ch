@@ -9,10 +9,11 @@ COPY src ./src
 RUN ./gradlew bootJar -x test --no-daemon
 
 # Stage 2: Runtime Environment
-FROM eclipse-temurin:21-jre-jammy
+FROM eclipse-temurin:21-jre-noble
 LABEL ch.printcalculator.project="print-calculator"
-ARG ORCA_VERSION=2.3.1
+ARG ORCA_VERSION=2.3.2
 ARG ORCA_DOWNLOAD_URL
+ARG ORCA_SHA256=c64336ceec37d941766e675cbaaaf5124e184402bf18177fbf81ba5102734ad8
 ARG FFMPEG_STATIC_URL=https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
 
 # Install system dependencies for OrcaSlicer and media processing.
@@ -27,10 +28,15 @@ RUN set -eux; \
     ca-certificates \
     assimp-utils \
     libgl1 \
-    libglib2.0-0 \
-    libgtk-3-0 \
+    libopengl0 \
+    libglu1-mesa \
+    libsm6 \
+    libice6 \
+    libmspack0t64 \
+    libglib2.0-0t64 \
+    libgtk-3-0t64 \
     libdbus-1-3 \
-    libwebkit2gtk-4.0-37; \
+    libwebkit2gtk-4.1-0; \
     check_ffmpeg_support() { \
       ffmpeg_bin="$1"; \
       "$ffmpeg_bin" -hide_banner -encoders > /tmp/ffmpeg-encoders.txt 2>&1 || return 1; \
@@ -61,30 +67,9 @@ RUN set -eux; \
 # Install OrcaSlicer
 WORKDIR /opt
 RUN set -eux; \
-    ORCA_URL="${ORCA_DOWNLOAD_URL:-}"; \
-    if [ -n "${ORCA_URL}" ]; then \
-      wget -q "${ORCA_URL}" -O OrcaSlicer.AppImage; \
-    else \
-      CANDIDATES="\
-https://github.com/OrcaSlicer/OrcaSlicer/releases/download/v${ORCA_VERSION}/OrcaSlicer_Linux_AppImage_Ubuntu2204_V${ORCA_VERSION}.AppImage \
-https://github.com/SoftFever/OrcaSlicer/releases/download/v${ORCA_VERSION}/OrcaSlicer_Linux_AppImage_Ubuntu2204_V${ORCA_VERSION}.AppImage \
-https://github.com/SoftFever/OrcaSlicer/releases/download/v2.2.0/OrcaSlicer_Linux_V2.2.0.AppImage"; \
-      ok=0; \
-      for url in $CANDIDATES; do \
-        if wget -q --spider "$url"; then \
-          echo "Using OrcaSlicer URL: $url"; \
-          wget -q "$url" -O OrcaSlicer.AppImage; \
-          ok=1; \
-          break; \
-        fi; \
-      done; \
-      if [ "$ok" -ne 1 ]; then \
-        echo "Failed to find OrcaSlicer AppImage for version ${ORCA_VERSION}" >&2; \
-        echo "Tried URLs:" >&2; \
-        for url in $CANDIDATES; do echo " - $url" >&2; done; \
-        exit 1; \
-      fi; \
-    fi \
+    ORCA_URL="${ORCA_DOWNLOAD_URL:-https://github.com/OrcaSlicer/OrcaSlicer/releases/download/v${ORCA_VERSION}/OrcaSlicer_Linux_AppImage_Ubuntu2404_V${ORCA_VERSION}.AppImage}"; \
+    wget -q "$ORCA_URL" -O OrcaSlicer.AppImage; \
+    echo "$ORCA_SHA256  OrcaSlicer.AppImage" | sha256sum -c - \
     && rm -rf /opt/orcaslicer \
     && offset=''; \
     for candidate in $(LC_ALL=C grep -abo 'hsqs' OrcaSlicer.AppImage | cut -d: -f1); do \

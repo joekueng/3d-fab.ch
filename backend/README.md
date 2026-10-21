@@ -68,6 +68,25 @@ Focused checks:
 ./gradlew test --tests '*QuoteRateLimitServiceTest' --tests '*SlicingCapacityServiceTest' --tests '*QuoteSessionRateLimitControllerTest'
 ```
 
+## CLI printer profiles and usable volume
+
+`SlicerProfilePreparation` changes only temporary job profiles. Raw meshes use
+Textured PEI Plate when the filament supports it and no explicit plate was set;
+this avoids Orca's implicit Cool Plate rejecting PETG. Existing 3MF project plate
+selection is retained. For single-extruder P2S presets, choose the first/default
+extruder variant explicitly: Orca 2.3.2 can crash while expanding the Standard /
+High Flow alternatives. Preserve temperatures, flow limits, speeds and acceleration;
+never collapse actual multiple extruders or change the source presets.
+
+Pass `--arrange 0` explicitly on the first slice. Omitting it enables Orca's
+automatic arrangement with a 1 mm bed-edge inset. Retry arrangement/orientation
+only when needed. Classify placement failures as requiring splitting only when
+the model bounds exceed the physical profile volume, allowing 0.001 mm for STL
+float noise. The A1 and P2S profiles therefore include the full 256 × 256 × 256 mm;
+249, 250 and 256 mm cubes do not require splitting, while 257 and 270 mm cubes do.
+An unrelated slicer failure inside the volume must remain a processing failure.
+
+
 ## Email transaction boundaries
 
 Order and contact-request creation publish domain events inside the service transaction.

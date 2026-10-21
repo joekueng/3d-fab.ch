@@ -11,6 +11,17 @@ import static org.junit.jupiter.api.Assertions.*;
 class SlicerServiceTest {
 
     @Test
+    void splitThresholdIncludesTheFull256MillimetresAndIgnoresFloatNoise() {
+        var volume = new PrintableVolume(256, 256, 256);
+        for (double side : new double[]{249, 250, 256, 256.000008}) {
+            assertFalse(SlicerModelInspector.exceedsPrintableVolume(new ModelDimensions(side, side, side), volume));
+        }
+        for (double side : new double[]{257, 270}) {
+            assertTrue(SlicerModelInspector.exceedsPrintableVolume(new ModelDimensions(side, side, side), volume));
+        }
+    }
+
+    @Test
     void stripKnownModelExtension_handlesStlAnd3mf() {
         assertEquals("part", SlicerService.stripKnownModelExtension("part.stl"));
         assertEquals("plate-layout", SlicerService.stripKnownModelExtension("plate-layout.3mf"));

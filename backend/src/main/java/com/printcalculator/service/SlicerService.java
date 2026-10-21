@@ -89,6 +89,8 @@ public class SlicerService {
         if (processOverrides != null) {
             processOverrides.forEach(processProfile::put);
         }
+        SlicerProfilePreparation.prepare(machineProfile, filamentProfile, processProfile,
+                !inputStl.getName().toLowerCase(java.util.Locale.ROOT).endsWith(".3mf"));
         oversizedEstimateDimensions.ifPresent(dimensions -> applyOversizedEstimateVolume(machineProfile, dimensions));
 
         Path tempDir = Files.createTempDirectory("slicer_job_");
@@ -173,7 +175,9 @@ public class SlicerService {
                             continue;
                         }
 
-                        lastFailure = isOutOfVolumeError(output)
+                        boolean oversized = isOutOfVolumeError(output)
+                                && isLargerThanPrintableVolume(inputStl, machineProfile);
+                        lastFailure = oversized
                                 ? buildOutOfVolumeFailure(inputStl, machineName, machineProfile)
                                 : new ModelProcessingException(
                                 "SLICER_EXECUTION_FAILED",
@@ -277,6 +281,8 @@ public class SlicerService {
         ProcessBuilder processBuilder = new ProcessBuilder();
         List<String> command = processBuilder.command();
         command.add(trustedSlicerPath);
+        command.add("--debug");
+        command.add("2");
         command.add("--load-settings");
         command.add(machineProfilePath);
         command.add("--load-settings");
@@ -284,10 +290,10 @@ public class SlicerService {
         command.add("--load-filaments");
         command.add(filamentProfilePath);
         command.add("--ensure-on-bed");
-        if (attempt.arrange()) {
-            command.add("--arrange");
-            command.add("1");
-        }
+        // Omitting this flag enables automatic arrangement, whose 1 mm edge
+        // margin rejects models that use the printer's full physical volume.
+        command.add("--arrange");
+        command.add(attempt.arrange() ? "1" : "0");
         if (attempt.allowRotations()) {
             command.add("--allow-rotations");
         }
@@ -324,8 +330,14 @@ public class SlicerService {
 
         String normalized = errorLog.toLowerCase();
         return normalized.contains("nothing to be sliced")
-                || normalized.contains("no object is fully inside the print volume")
-                || normalized.contains("calc_exclude_triangles");
+                || normalized.contains("no object is fully inside the print volume");
+    }
+
+    private boolean isLargerThanPrintableVolume(File input, ObjectNode machineProfile) {
+        Optional<ModelDimensions> dimensions = inspectModelDimensions(input);
+        Optional<PrintableVolume> volume = extractPrintableVolume(machineProfile);
+        return dimensions.isPresent() && volume.isPresent()
+                && SlicerModelInspector.exceedsPrintableVolume(dimensions.get(), volume.get());
     }
 
     static List<SliceAttempt> buildSliceAttempts() {

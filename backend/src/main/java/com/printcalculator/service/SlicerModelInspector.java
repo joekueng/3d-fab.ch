@@ -177,6 +177,18 @@ final class SlicerModelInspector {
         return message.toString();
     }
 
+    static boolean exceedsPrintableVolume(ModelDimensions dimensions, PrintableVolume volume) {
+        double[] sides = {dimensions.xMm(), dimensions.yMm(), dimensions.zMm()};
+        double[] limits = {volume.xMm(), volume.yMm(), volume.zMm()};
+        java.util.Arrays.sort(sides);
+        java.util.Arrays.sort(limits);
+        for (int i = 0; i < sides.length; i++) {
+            // STL coordinates and native --info output have float rounding noise.
+            if (sides[i] > limits[i] + 0.001) return true;
+        }
+        return false;
+    }
+
     private static Double extractDouble(Pattern pattern, String text) {
         Matcher matcher = pattern.matcher(text);
         if (!matcher.find()) {
