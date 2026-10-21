@@ -3,7 +3,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { Component, input, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideTranslateService, TranslateService } from '@ngx-translate/core';
-import { NEVER, Subject, firstValueFrom, of } from 'rxjs';
+import { NEVER, Subject, firstValueFrom, of, finalize } from 'rxjs';
 import deTranslations from '../../../../../assets/i18n/de.json';
 import itTranslations from '../../../../../assets/i18n/it.json';
 import { LanguageService } from '../../../../core/services/language.service';
@@ -358,6 +358,36 @@ describe('UploadFormComponent', () => {
     component.selectFile(original);
     expect(component.getSelectedPreviewFile()).toBeNull();
     expect(previews.createStlPreview).toHaveBeenCalledWith(original, 'm');
+  });
+
+  it('cancels conversion when the selected file is removed and ignores its late response', () => {
+    const response = new Subject<Blob>();
+    const cancelled = jasmine.createSpy('cancelled');
+    previews.createStlPreview.and.returnValue(response.pipe(finalize(cancelled)));
+    const original = new File(['CAD'], 'part.step');
+    component.onFilesDropped([original]);
+    component.removeItem(0);
+    expect(cancelled).toHaveBeenCalled();
+    response.next(new Blob(['late preview']));
+    expect(component.items()).toEqual([]);
+    expect(component.selectedFile()).toBeNull();
+    expect(component.previewLoading()).toBeFalse();
+  });
+
+  it('preserves different OBJ units and matching previews through a draft restore', () => {
+    const first = new File(['first'], 'first.obj');
+    const second = new File(['second'], 'second.obj');
+    component.setFiles([first, second], { autoSelect: false });
+    component.setItemPrintSettingsByIndex(0, { modelUnit: 'm' });
+    component.setItemPrintSettingsByIndex(1, { modelUnit: 'in' });
+    const previewsByIndex = [new File(['metres'], 'first.stl'), new File(['inches'], 'second.stl')];
+    const draft = component.getCurrentRequestDraft();
+    component.restoreRequestDraft(draft, { selectedFileName: 'first.obj', previewFiles: previewsByIndex });
+    expect(component.getCurrentRequestDraft().items.map(item => item.modelUnit)).toEqual(['m', 'in']);
+    expect(component.getSelectedPreviewFile()).toBe(previewsByIndex[0]);
+    component.selectFile(second);
+    expect(component.getSelectedPreviewFile()).toBe(previewsByIndex[1]);
+    expect(previews.createStlPreview).not.toHaveBeenCalled();
   });
 
   it('reuses local and restored STL previews without another upload', () => {

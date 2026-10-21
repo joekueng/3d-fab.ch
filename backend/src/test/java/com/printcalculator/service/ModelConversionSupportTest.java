@@ -3,6 +3,8 @@ package com.printcalculator.service;
 import com.printcalculator.exception.ModelProcessingException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -15,6 +17,28 @@ import static org.junit.jupiter.api.Assertions.*;
 class ModelConversionSupportTest {
     @TempDir Path tempDir;
     private final ModelConversionSupport converter = new ModelConversionSupport("missing-assimp");
+
+    @ParameterizedTest
+    @CsvSource({"mm,1", "cm,10", "m,1000", "in,25.4"})
+    void everySupportedObjUnitProducesTheExpectedPhysicalBounds(String unit, double scale) throws Exception {
+        String geometry = "v -1 -2 -3\nv 1 -2 -3\nv -1 2 3\nf 1 2 3\n";
+        Path input = Files.writeString(tempDir.resolve("units.obj"), geometry);
+        Path output = tempDir.resolve("units.stl");
+        converter.convertMeshToPersistentStl(input.toFile(), output,
+                com.printcalculator.model.ModelUnit.parse(unit).millimetres());
+
+        var vertices = Files.readString(output).lines().map(String::trim)
+                .filter(line -> line.startsWith("vertex "))
+                .map(line -> java.util.Arrays.stream(line.substring(7).split(" "))
+                        .mapToDouble(Double::parseDouble).toArray()).toList();
+        for (int axis = 0; axis < 3; axis++) {
+            final int coordinate = axis;
+            double min = vertices.stream().mapToDouble(v -> v[coordinate]).min().orElseThrow();
+            double max = vertices.stream().mapToDouble(v -> v[coordinate]).max().orElseThrow();
+            assertEquals(2 * (axis + 1) * scale, max - min, 0.001);
+        }
+        assertEquals(geometry, Files.readString(input));
+    }
 
     @Test
     void objUnitsScaleTheGeneratedMeshWithoutChangingTheOriginal() throws Exception {

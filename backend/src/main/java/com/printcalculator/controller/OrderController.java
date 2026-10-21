@@ -1,7 +1,7 @@
 package com.printcalculator.controller;
 
 import com.printcalculator.dto.CreateOrderRequest;
-import com.printcalculator.dto.OrderDto;
+import com.printcalculator.dto.PublicOrderDto;
 import com.printcalculator.service.order.OrderControllerService;
 import com.printcalculator.service.LegalConsentRequestService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,7 +35,7 @@ public class OrderController {
 
     @PostMapping("/from-quote/{quoteSessionId}")
     @Transactional
-    public ResponseEntity<OrderDto> createOrderFromQuote(
+    public ResponseEntity<PublicOrderDto> createOrderFromQuote(
             @PathVariable UUID quoteSessionId,
             @Valid @RequestBody CreateOrderRequest request,
             HttpServletRequest httpRequest
@@ -45,7 +45,7 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
-    public ResponseEntity<OrderDto> getOrder(@PathVariable UUID orderId) {
+    public ResponseEntity<PublicOrderDto> getOrder(@PathVariable UUID orderId) {
         return orderControllerService.getOrder(orderId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -53,7 +53,7 @@ public class OrderController {
 
     @PostMapping("/{orderId}/payments/report")
     @Transactional
-    public ResponseEntity<OrderDto> reportPayment(
+    public ResponseEntity<PublicOrderDto> reportPayment(
             @PathVariable UUID orderId,
             @RequestBody Map<String, String> payload
     ) {

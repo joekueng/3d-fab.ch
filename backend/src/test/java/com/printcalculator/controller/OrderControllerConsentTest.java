@@ -1,7 +1,7 @@
 package com.printcalculator.controller;
 
 import com.printcalculator.dto.CreateOrderRequest;
-import com.printcalculator.dto.OrderDto;
+import com.printcalculator.dto.PublicOrderDto;
 import com.printcalculator.service.LegalConsentRequestService;
 import com.printcalculator.service.order.OrderControllerService;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ class OrderControllerConsentTest {
         var controller = new OrderController(service, new LegalConsentRequestService(false, ""));
         UUID sessionId = UUID.randomUUID();
         when(service.createOrderFromQuote(eq(sessionId), any(CreateOrderRequest.class), eq("203.0.113.42")))
-                .thenReturn(new OrderDto());
+                .thenReturn(new PublicOrderDto());
 
         MockMvcBuilders.standaloneSetup(controller).build().perform(
                         post("/api/orders/from-quote/{id}", sessionId)

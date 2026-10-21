@@ -8,6 +8,28 @@ Before adding an endpoint, service, integration, or document, inspect a comparab
 
 For persistent changes, align entities, repositories, DTOs, frontend models, and migration/deployment expectations; the project currently uses Hibernate schema updates. For external integrations, reuse configuration and error/audit handling rather than adding a separate delivery path.
 
+## Public and admin order responses
+
+The public order endpoints (`GET /api/orders/{id}`, order creation and payment
+reporting) return `PublicOrderDto`. This independent DTO excludes customer email,
+phone, billing/shipping addresses, customer type, internal contact-request IDs
+and admin email logs in every order status. Keep it separate from `OrderDto`,
+which is reserved for authenticated `/api/admin/orders` endpoints. Shared item
+and deliverable DTOs contain the product/print details needed by both interfaces.
+The checkout response still supplies the information-area credential; order GET
+and payment-report responses do not populate it.
+
+Checkout requests still collect customer data for fulfilment, emails and document
+generation. `GET /api/orders/{id}/confirmation` serves the QR payment PDF only for
+`PENDING_PAYMENT` orders without `paidAt`. If a payment record exists, it must be
+`PENDING` or `REPORTED` without `receivedAt`. Other states and missing orders return
+`404` with `Cache-Control: no-store`, so direct UUID links cannot retrieve the
+document after payment. The page already hides the download outside
+`PENDING_PAYMENT`. Email attachments and authenticated admin document downloads
+use their separate generation paths and remain available after payment.
+Information-area access is unchanged; its messages and attachments may contain
+customer-provided personal data.
+
 ## Calculator admission and slicing capacity
 
 `POST /api/quote-sessions` accepts an optional positive `itemCount`. Calculator

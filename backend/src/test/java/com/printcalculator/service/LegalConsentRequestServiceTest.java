@@ -12,6 +12,21 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 class LegalConsentRequestServiceTest {
     @ParameterizedTest
     @CsvSource({
+            "X-Forwarded-For,'198.51.100.99, 192.168.50.42'",
+            "Forwarded,'for=198.51.100.99, for=192.168.50.42'"
+    })
+    void stopsAtTheFirstUntrustedHopEvenWhenItIsPrivate(String header, String value) {
+        var request = new MockHttpServletRequest();
+        request.setRemoteAddr("10.0.0.2");
+        // The trusted proxy appends the real peer after a client-supplied prefix.
+        request.addHeader(header, value);
+
+        assertEquals("192.168.50.42",
+                new LegalConsentRequestService(true, "10.0.0.2/32").resolveClientIp(request));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
             "false,'',203.0.113.42",
             "true,'',203.0.113.42",
             "false,10.0.0.0/8,10.0.0.2",

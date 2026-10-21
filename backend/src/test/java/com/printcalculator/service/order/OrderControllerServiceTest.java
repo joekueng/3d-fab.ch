@@ -1,6 +1,6 @@
 package com.printcalculator.service.order;
 
-import com.printcalculator.dto.OrderDto;
+import com.printcalculator.dto.PublicOrderDto;
 import com.printcalculator.entity.Order;
 import com.printcalculator.entity.OrderItem;
 import com.printcalculator.repository.OrderItemRepository;
@@ -28,7 +28,6 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -61,7 +60,7 @@ class OrderControllerServiceTest {
     private OrderControllerService service;
 
     @Test
-    void getOrder_withShippedStatus_shouldRedactPersonalData() {
+    void getOrder_withShippedStatus_preservesTrackingDetails() {
         UUID orderId = UUID.randomUUID();
         Order order = buildOrder(orderId, "SHIPPED");
         OffsetDateTime paidAt = OffsetDateTime.parse("2026-04-21T09:15:00+02:00");
@@ -71,14 +70,13 @@ class OrderControllerServiceTest {
         when(orderItemRepo.findByOrder_Id(orderId)).thenReturn(List.of());
         when(paymentRepo.findByOrder_Id(orderId)).thenReturn(Optional.empty());
 
-        Optional<OrderDto> result = service.getOrder(orderId);
+        Optional<PublicOrderDto> result = service.getOrder(orderId);
 
         assertTrue(result.isPresent());
-        OrderDto dto = result.get();
-        assertNull(dto.getCustomerEmail());
-        assertNull(dto.getCustomerPhone());
-        assertNull(dto.getBillingAddress());
-        assertNull(dto.getShippingAddress());
+        PublicOrderDto dto = result.get();
+        assertEquals(orderId, dto.getId());
+        assertEquals("SHIPPED", dto.getStatus());
+        assertEquals("CHF", dto.getCurrency());
         assertEquals(paidAt, dto.getPaidAt());
     }
 

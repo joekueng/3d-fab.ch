@@ -26,6 +26,9 @@ Read [README.md](README.md) before extending backend features. For email changes
 - Use constructor injection and existing project patterns. Do not introduce a second dependency-injection style.
 - Return safe, minimal public data. Keep administrative and public contracts separate, and never treat an identifier alone as authorization.
 
+For separate public/admin order DTOs and the scope of the JSON response boundary,
+follow [public and admin order responses](README.md#public-and-admin-order-responses).
+
 ## Domain dependencies to preserve
 
 - Quote calculations combine model inspection, Orca profile resolution, slicing/G-code parsing, print statistics, and pricing policy. Changes require special care around `SlicerService`, `QuoteCalculator`, `QuoteSessionTotalsService`, and related entities.

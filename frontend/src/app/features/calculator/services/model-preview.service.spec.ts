@@ -8,6 +8,20 @@ import { environment } from '../../../../environments/environment';
 import { ModelPreviewService } from './model-preview.service';
 
 describe('ModelPreviewService', () => {
+  it('sends explicit OBJ units and cancels a pending conversion on unsubscribe', () => {
+    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    const service = TestBed.inject(ModelPreviewService);
+    const http = TestBed.inject(HttpTestingController);
+    const file = new File(['v 0 0 0'], 'part.obj');
+    const subscription = service.createStlPreview(file, 'in').subscribe();
+    const request = http.expectOne(`${environment.apiUrl}/api/model-previews`);
+    expect((request.request.body as FormData).get('modelUnit')).toBe('in');
+    expect((request.request.body as FormData).get('file')).toBe(file);
+    subscription.unsubscribe();
+    expect(request.cancelled).toBeTrue();
+    http.verify();
+  });
+
   it('uploads the original model and returns the generated STL blob', () => {
     TestBed.configureTestingModule({
       providers: [provideHttpClient(), provideHttpClientTesting()],
