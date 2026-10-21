@@ -54,7 +54,10 @@ describe('PrintItemControlsComponent', () => {
     expect(quantity).toHaveBeenCalledWith(3);
     element.querySelector<HTMLButtonElement>('.trigger')!.click();
     fixture.detectChanges();
-    TestBed.inject(OverlayContainer).getContainerElement().querySelector<HTMLElement>('.color-item')!.click();
+    TestBed.inject(OverlayContainer)
+      .getContainerElement()
+      .querySelector<HTMLElement>('.color-item')!
+      .click();
     expect(color).toHaveBeenCalledWith({
       colorName: 'Nero',
       filamentVariantId: 12,

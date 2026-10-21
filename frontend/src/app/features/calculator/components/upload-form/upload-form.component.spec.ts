@@ -363,7 +363,9 @@ describe('UploadFormComponent', () => {
   it('cancels conversion when the selected file is removed and ignores its late response', () => {
     const response = new Subject<Blob>();
     const cancelled = jasmine.createSpy('cancelled');
-    previews.createStlPreview.and.returnValue(response.pipe(finalize(cancelled)));
+    previews.createStlPreview.and.returnValue(
+      response.pipe(finalize(cancelled)),
+    );
     const original = new File(['CAD'], 'part.step');
     component.onFilesDropped([original]);
     component.removeItem(0);
@@ -380,10 +382,18 @@ describe('UploadFormComponent', () => {
     component.setFiles([first, second], { autoSelect: false });
     component.setItemPrintSettingsByIndex(0, { modelUnit: 'm' });
     component.setItemPrintSettingsByIndex(1, { modelUnit: 'in' });
-    const previewsByIndex = [new File(['metres'], 'first.stl'), new File(['inches'], 'second.stl')];
+    const previewsByIndex = [
+      new File(['metres'], 'first.stl'),
+      new File(['inches'], 'second.stl'),
+    ];
     const draft = component.getCurrentRequestDraft();
-    component.restoreRequestDraft(draft, { selectedFileName: 'first.obj', previewFiles: previewsByIndex });
-    expect(component.getCurrentRequestDraft().items.map(item => item.modelUnit)).toEqual(['m', 'in']);
+    component.restoreRequestDraft(draft, {
+      selectedFileName: 'first.obj',
+      previewFiles: previewsByIndex,
+    });
+    expect(
+      component.getCurrentRequestDraft().items.map((item) => item.modelUnit),
+    ).toEqual(['m', 'in']);
     expect(component.getSelectedPreviewFile()).toBe(previewsByIndex[0]);
     component.selectFile(second);
     expect(component.getSelectedPreviewFile()).toBe(previewsByIndex[1]);
