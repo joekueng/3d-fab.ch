@@ -97,6 +97,48 @@ can only reference committed orders/requests. Keep this boundary even when email
 disabled, because skipped attempts are audited too. Attachment I/O failures roll back
 contact-request creation, and rolled-back requests must not trigger notifications.
 
+## Legal acceptance records
+
+`LegalConsentService` records the existing required terms/privacy checkboxes in
+`legal_consents`, following the order/contact-request foreign-key pattern used by
+`EmailLog`. Each new checkout (shop, calculator or CAD/services) and each submitted
+contact/custom-quote request has one record with exactly one parent, a server UTC
+timestamp, both acceptance flags, the submitted email snapshot, normalized language,
+document versions and client IP (IPv4/IPv6). The parent identifies the submission
+and its customer; calculator orders also retain their source quote session.
+Records are not included in public API responses.
+
+Controllers obtain the IP from `LegalConsentRequestService` and pass it through
+the existing service calls; request bodies cannot supply the audit IP. The shared
+`security/IpAddressUtils` retains the QR parser/normalization behavior. Legal
+acceptance uses the connecting address by default. To resolve `X-Forwarded-For`,
+`Forwarded` or `X-Real-IP`, set `LEGAL_CONSENT_TRUST_PROXY_HEADERS=true` and
+`LEGAL_CONSENT_TRUSTED_PROXY_NETWORKS` to the connecting proxies' IPs/CIDRs.
+Both settings are required; headers from untrusted peers are ignored, including
+private peers. Configure only actual proxies that sanitize incoming headers.
+Invalid/unavailable IPs and existing records retain a null `client_ip`; no
+historical IP is inferred. Browser/user-agent data is not collected.
+
+Creation joins the submission transaction (`MANDATORY`): persistence failures abort
+the submission, and failed orders/attachment uploads leave no acceptance record.
+Existing validation still rejects missing/false flags. Unique constraints prevent
+duplicate acceptance records for the same order or contact request. Records have
+no update API and their mapped columns are not updatable.
+
+The version constants in `LegalConsentService` match the currently published
+`LEGAL.TERMS.META.VERSION`, `LEGAL.TERMS_UPDATE_DATE` and
+`LEGAL.PRIVACY_UPDATE_DATE` in all frontend catalogs. Change these constants with
+the corresponding documents whenever the legal text changes, preserving prior
+versions in source history. An already open older client cannot attest a separate
+document version: the record identifies the server's published version at submission.
+
+Deployment is additive: Hibernate `ddl-auto=update` creates the new table, foreign
+keys and unique constraints; matching reference DDL is in `../db.sql`. No existing
+orders or requests are backfilled because their acceptance timestamps/versions
+were not recorded. A plain calculator upload, preview or saved session does not
+submit the required terms/privacy checkbox and creates no such record.
+
+
 ## Customer-facing output
 
 - **Emails:** read the [template guide](src/main/resources/templates/email/README.md). New transactional messages reuse the shared layout fragments and the established localized context/SMTP flow.

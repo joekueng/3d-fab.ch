@@ -19,7 +19,8 @@ class CadDownloadControllerTest {
         doReturn(ResponseEntity.ok().header("Content-Disposition", "attachment; filename=files.zip")
                 .contentType(org.springframework.http.MediaType.parseMediaType("application/zip")).body(stream))
                 .when(service).downloadCadFiles(id);
-        var mvc = MockMvcBuilders.standaloneSetup(new OrderController(service)).build();
+        var mvc = MockMvcBuilders.standaloneSetup(new OrderController(service,
+                new com.printcalculator.service.LegalConsentRequestService(false, ""))).build();
         var result = mvc.perform(get("/api/orders/{id}/cad-files/download", id))
                 .andExpect(request().asyncStarted()).andReturn();
         mvc.perform(asyncDispatch(result)).andExpect(status().isOk())

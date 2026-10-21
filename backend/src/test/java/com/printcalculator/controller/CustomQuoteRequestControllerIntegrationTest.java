@@ -5,6 +5,9 @@ import com.printcalculator.dto.QuoteRequestDto;
 import com.printcalculator.event.listener.CustomQuoteRequestEmailListener;
 import com.printcalculator.repository.CustomQuoteRequestRepository;
 import com.printcalculator.repository.EmailLogRepository;
+import com.printcalculator.repository.LegalConsentRepository;
+import com.printcalculator.service.LegalConsentService;
+import com.printcalculator.service.LegalConsentRequestService;
 import com.printcalculator.service.email.EmailAuditService;
 import com.printcalculator.service.email.EmailNotificationService;
 import com.printcalculator.service.email.EmailSendResult;
@@ -46,6 +49,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -69,7 +74,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "app.mail.contact-request.customer.enabled=true"
 }, showSql = false)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({CustomQuoteRequestController.class, CustomQuoteRequestControllerService.class,
+@Import({CustomQuoteRequestController.class, CustomQuoteRequestControllerService.class, LegalConsentService.class,
+        LegalConsentRequestService.class,
         CustomQuoteRequestEmailListener.class,
         CustomQuoteRequestNotificationService.class, ContactRequestLocalizationService.class,
         EmailAuditService.class, CustomQuoteRequestControllerIntegrationTest.Configuration.class})
@@ -78,7 +84,7 @@ class CustomQuoteRequestControllerIntegrationTest {
     @TestConfiguration
     @EnableJpaRepositories(basePackageClasses = CustomQuoteRequestRepository.class,
             excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX,
-                    pattern = "com\\.printcalculator\\.repository\\.(?!(CustomQuoteRequestRepository|EmailLogRepository)$).*"))
+                    pattern = "com\\.printcalculator\\.repository\\.(?!(CustomQuoteRequestRepository|EmailLogRepository|LegalConsentRepository)$).*"))
     static class Configuration {
         @Bean
         TaskExecutor taskExecutor() {
@@ -91,6 +97,7 @@ class CustomQuoteRequestControllerIntegrationTest {
     @Autowired private CustomQuoteRequestControllerService service;
     @Autowired private CustomQuoteRequestRepository requests;
     @Autowired private EmailLogRepository emailLogs;
+    @Autowired private LegalConsentRepository consents;
     @Autowired private PlatformTransactionManager transactionManager;
     @MockitoBean private CustomQuoteRequestAttachmentService attachments;
     @MockitoBean private EmailNotificationService emailSender;
@@ -108,6 +115,7 @@ class CustomQuoteRequestControllerIntegrationTest {
     @AfterEach
     void cleanUp() {
         emailLogs.deleteAll();
+        consents.deleteAll();
         requests.deleteAll();
     }
 
@@ -122,13 +130,27 @@ class CustomQuoteRequestControllerIntegrationTest {
         when(emailSender.sendEmail(anyString(), anyString(), anyString(), anyMap())).thenReturn(result);
 
         var response = mvc.perform(multipart("/api/custom-quote-requests")
-                        .file(requestPart(customerType)))
+                        .file(requestPart(customerType))
+                        .header("X-Forwarded-For", "198.51.100.99")
+                        .with(request -> { request.setRemoteAddr("203.0.113.42"); return request; }))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("PENDING"))
                 .andReturn().getResponse();
 
         UUID requestId = UUID.fromString(mapper.readTree(response.getContentAsString()).get("id").asText());
         assertTrue(requests.existsById(requestId));
+        var consent = consents.findByContactRequest_Id(requestId).orElseThrow();
+        assertTrue(consent.isTermsAccepted());
+        assertTrue(consent.isPrivacyAccepted());
+        assertEquals("it", consent.getLanguage());
+        assertEquals("customer@example.test", consent.getEmail());
+        assertEquals("203.0.113.42", consent.getClientIp());
+        assertEquals(LegalConsentService.TERMS_VERSION, consent.getTermsVersion());
+        assertEquals(LegalConsentService.PRIVACY_VERSION, consent.getPrivacyVersion());
+        assertTrue(consent.getAcceptedAt().isAfter(OffsetDateTime.now().minusMinutes(1)),
+                () -> "Persisted acceptance timestamp: " + consent.getAcceptedAt());
+        assertNull(consent.getOrder());
+        assertFalse(mapper.readTree(response.getContentAsString()).has("legalConsent"));
         var logs = emailLogs.findByContactRequest_IdOrderByAttemptedAtDesc(requestId);
         assertEquals(2, logs.size());
         assertTrue(logs.stream().allMatch(log -> emailStatus.equals(log.getStatus())));
@@ -166,6 +188,7 @@ class CustomQuoteRequestControllerIntegrationTest {
         });
 
         assertEquals(0, requests.count());
+        assertEquals(0, consents.count());
         assertEquals(0, emailLogs.count());
         verifyNoInteractions(emailSender);
     }
@@ -174,9 +197,10 @@ class CustomQuoteRequestControllerIntegrationTest {
     void attachmentIoFailureRollsBackRequestAndDoesNotSendNotifications() throws Exception {
         when(attachments.storeAttachments(any(), any())).thenThrow(new IOException("Test storage failure"));
 
-        assertThrows(IOException.class, () -> service.createCustomQuoteRequest(requestDto(), List.of()));
+        assertThrows(IOException.class, () -> service.createCustomQuoteRequest(requestDto(), List.of(), "203.0.113.42"));
 
         assertEquals(0, requests.count());
+        assertEquals(0, consents.count());
         assertEquals(0, emailLogs.count());
         verifyNoInteractions(emailSender);
     }
@@ -191,11 +215,27 @@ class CustomQuoteRequestControllerIntegrationTest {
                 .andExpect(jsonPath("$.status").value("PENDING"));
 
         assertEquals(1, requests.count());
+        assertEquals(1, consents.count());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"false,true", "true,false", "false,false"})
+    void missingConsentRejectsSubmissionWithoutPersisting(boolean acceptTerms, boolean acceptPrivacy) throws Exception {
+        QuoteRequestDto dto = requestDto();
+        dto.setAcceptTerms(acceptTerms);
+        dto.setAcceptPrivacy(acceptPrivacy);
+        var part = new MockMultipartFile("request", "blob", "application/json", mapper.writeValueAsBytes(dto));
+
+        mvc.perform(multipart("/api/custom-quote-requests").file(part)).andExpect(status().isBadRequest());
+
+        assertEquals(0, requests.count());
+        assertEquals(0, consents.count());
+        verifyNoInteractions(emailSender, attachments);
     }
 
     private UUID createRequest() {
         try {
-            return service.createCustomQuoteRequest(requestDto(), List.of()).getId();
+            return service.createCustomQuoteRequest(requestDto(), List.of(), "203.0.113.42").getId();
         } catch (IOException ex) {
             throw new AssertionError(ex);
         }

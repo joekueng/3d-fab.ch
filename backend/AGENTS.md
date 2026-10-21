@@ -41,6 +41,9 @@ For native CLI compatibility and full-bed fit checks, follow
 
 ## Testing and checks
 
+For terms/privacy acceptance persistence, document versions and additive schema
+deployment, follow [legal acceptance records](README.md#legal-acceptance-records).
+
 Use the Gradle wrapper from `backend/`:
 
 ```bash

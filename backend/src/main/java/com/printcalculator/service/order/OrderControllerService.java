@@ -71,8 +71,8 @@ public class OrderControllerService {
     }
 
     @Transactional
-    public OrderDto createOrderFromQuote(UUID quoteSessionId, CreateOrderRequest request) {
-        Order order = orderService.createOrderFromQuote(quoteSessionId, request);
+    public OrderDto createOrderFromQuote(UUID quoteSessionId, CreateOrderRequest request, String clientIp) {
+        Order order = orderService.createOrderFromQuote(quoteSessionId, request, clientIp);
         List<OrderItem> items = orderItemRepo.findByOrder_Id(order.getId());
         OrderDto dto = convertToDto(order, items);
         dto.setInformationToken(order.getInformationToken());

@@ -7,6 +7,7 @@ import com.printcalculator.repository.OrderRepository;
 import com.printcalculator.repository.PaymentRepository;
 import com.printcalculator.service.payment.InvoicePdfRenderingService;
 import com.printcalculator.service.OrderService;
+import com.printcalculator.service.LegalConsentRequestService;
 import com.printcalculator.service.order.OrderCadFileService;
 import com.printcalculator.service.order.OrderControllerService;
 import com.printcalculator.service.payment.PaymentService;
@@ -66,7 +67,7 @@ class OrderControllerPrivacyTest {
                 paymentRepo,
                 orderCadFileService
         );
-        controller = new OrderController(orderControllerService);
+        controller = new OrderController(orderControllerService, new LegalConsentRequestService(false, ""));
     }
 
     @Test

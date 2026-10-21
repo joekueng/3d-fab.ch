@@ -3,6 +3,8 @@ package com.printcalculator.controller;
 import com.printcalculator.dto.CreateOrderRequest;
 import com.printcalculator.dto.OrderDto;
 import com.printcalculator.service.order.OrderControllerService;
+import com.printcalculator.service.LegalConsentRequestService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.core.io.Resource;
@@ -24,18 +26,22 @@ import java.util.UUID;
 public class OrderController {
 
     private final OrderControllerService orderControllerService;
+    private final LegalConsentRequestService legalConsentRequestService;
 
-    public OrderController(OrderControllerService orderControllerService) {
+    public OrderController(OrderControllerService orderControllerService, LegalConsentRequestService legalConsentRequestService) {
         this.orderControllerService = orderControllerService;
+        this.legalConsentRequestService = legalConsentRequestService;
     }
 
     @PostMapping("/from-quote/{quoteSessionId}")
     @Transactional
     public ResponseEntity<OrderDto> createOrderFromQuote(
             @PathVariable UUID quoteSessionId,
-            @Valid @RequestBody CreateOrderRequest request
+            @Valid @RequestBody CreateOrderRequest request,
+            HttpServletRequest httpRequest
     ) {
-        return ResponseEntity.ok(orderControllerService.createOrderFromQuote(quoteSessionId, request));
+        return ResponseEntity.ok(orderControllerService.createOrderFromQuote(quoteSessionId, request,
+                legalConsentRequestService.resolveClientIp(httpRequest)));
     }
 
     @GetMapping("/{orderId}")

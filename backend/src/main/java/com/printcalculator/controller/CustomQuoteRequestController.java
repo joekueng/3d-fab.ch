@@ -3,6 +3,8 @@ package com.printcalculator.controller;
 import com.printcalculator.dto.QuoteRequestDto;
 import com.printcalculator.entity.CustomQuoteRequest;
 import com.printcalculator.service.request.CustomQuoteRequestControllerService;
+import com.printcalculator.service.LegalConsentRequestService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,16 +22,21 @@ import java.util.List;
 public class CustomQuoteRequestController {
 
     private final CustomQuoteRequestControllerService customQuoteRequestControllerService;
+    private final LegalConsentRequestService legalConsentRequestService;
 
-    public CustomQuoteRequestController(CustomQuoteRequestControllerService customQuoteRequestControllerService) {
+    public CustomQuoteRequestController(CustomQuoteRequestControllerService customQuoteRequestControllerService,
+                                        LegalConsentRequestService legalConsentRequestService) {
         this.customQuoteRequestControllerService = customQuoteRequestControllerService;
+        this.legalConsentRequestService = legalConsentRequestService;
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CustomQuoteRequest> createCustomQuoteRequest(
             @Valid @RequestPart("request") QuoteRequestDto requestDto,
-            @RequestPart(value = "files", required = false) List<MultipartFile> files
+            @RequestPart(value = "files", required = false) List<MultipartFile> files,
+            HttpServletRequest httpRequest
     ) throws IOException {
-        return ResponseEntity.ok(customQuoteRequestControllerService.createCustomQuoteRequest(requestDto, files));
+        return ResponseEntity.ok(customQuoteRequestControllerService.createCustomQuoteRequest(requestDto, files,
+                legalConsentRequestService.resolveClientIp(httpRequest)));
     }
 }

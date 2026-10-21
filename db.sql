@@ -1754,5 +1754,25 @@ CREATE TABLE IF NOT EXISTS quote_session_attachments
 CREATE INDEX IF NOT EXISTS ix_quote_session_attachments_session
     ON quote_session_attachments (quote_session_id);
 
+-- New submissions only: historical acceptance cannot be reconstructed.
+CREATE TABLE IF NOT EXISTS legal_consents
+(
+    legal_consent_id    uuid PRIMARY KEY,
+    order_id            uuid REFERENCES orders (order_id),
+    contact_request_id  uuid REFERENCES custom_quote_requests (request_id),
+    accepted_at         timestamptz NOT NULL,
+    terms_accepted      boolean NOT NULL,
+    privacy_accepted    boolean NOT NULL,
+    terms_version       varchar(64) NOT NULL,
+    privacy_version     varchar(64) NOT NULL,
+    language            varchar(2) NOT NULL,
+    email               text NOT NULL,
+    client_ip           varchar(45),
+    CONSTRAINT uq_legal_consents_order UNIQUE (order_id),
+    CONSTRAINT uq_legal_consents_contact_request UNIQUE (contact_request_id)
+);
+
+ALTER TABLE legal_consents ADD COLUMN IF NOT EXISTS client_ip varchar(45);
+
 -- Deleted CAD invoices retain only their link reservation / public-page redirect.
 ALTER TABLE quote_sessions ADD COLUMN IF NOT EXISTS deleted_redirect_path varchar(1000);

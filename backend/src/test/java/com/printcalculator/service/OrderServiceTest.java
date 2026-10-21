@@ -61,7 +61,7 @@ class OrderServiceTest {
         session.setStatus("CAD_DELETED");
         when(quoteSessionRepo.findLockedById(id)).thenReturn(Optional.of(session));
         assertThrows(IllegalStateException.class,
-                () -> service.createOrderFromQuote(id, buildRequest()));
+                () -> service.createOrderFromQuote(id, buildRequest(), "203.0.113.42"));
         verify(orderRepo, never()).save(any());
     }
 
@@ -89,6 +89,8 @@ class OrderServiceTest {
     private QuoteSessionTotalsService quoteSessionTotalsService;
     @Mock
     private MaterialPrintCompatibilityService materialPrintCompatibilityService;
+    @Mock
+    private LegalConsentService legalConsentService;
 
     @Mock
     private com.printcalculator.service.information.OrderInformationService informationService;
@@ -108,7 +110,7 @@ class OrderServiceTest {
 
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class,
-                () -> service.createOrderFromQuote(sessionId, buildRequest())
+                () -> service.createOrderFromQuote(sessionId, buildRequest(), "203.0.113.42")
         );
 
         assertEquals("Quote session already converted to order", exception.getMessage());
@@ -135,7 +137,7 @@ class OrderServiceTest {
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> service.createOrderFromQuote(sessionId, buildRequest())
+                () -> service.createOrderFromQuote(sessionId, buildRequest(), "203.0.113.42")
         );
 
         assertEquals("invalid technical material settings", exception.getMessage());
@@ -255,8 +257,9 @@ class OrderServiceTest {
 
         CreateOrderRequest request = buildRequest();
         request.setLanguage("fr");
-        Order order = service.createOrderFromQuote(sessionId, request);
+        Order order = service.createOrderFromQuote(sessionId, request, "203.0.113.42");
         assertEquals("fr", order.getPreferredLanguage());
+        verify(legalConsentService).recordOrder(order, true, true, "fr", "203.0.113.42");
 
         assertEquals(orderId, order.getId());
         assertEquals("SHOP", order.getSourceType());
@@ -390,7 +393,7 @@ class OrderServiceTest {
                 .thenReturn("pdf".getBytes(StandardCharsets.UTF_8));
         when(paymentService.getOrCreatePaymentForOrder(any(Order.class), eq("OTHER"))).thenReturn(new Payment());
 
-        Order order = service.createOrderFromQuote(sessionId, buildRequest());
+        Order order = service.createOrderFromQuote(sessionId, buildRequest(), "203.0.113.42");
 
         assertEquals(orderId, order.getId());
         assertEquals("CONVERTED", session.getStatus());
@@ -479,7 +482,7 @@ class OrderServiceTest {
 
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class,
-                () -> service.createOrderFromQuote(sessionId, buildRequest())
+                () -> service.createOrderFromQuote(sessionId, buildRequest(), "203.0.113.42")
         );
 
         assertEquals(
@@ -556,7 +559,7 @@ class OrderServiceTest {
                 new QuoteSessionTotalsService.QuoteSessionTotals(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
                         new BigDecimal("150"), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
                         new BigDecimal("150"), BigDecimal.ZERO));
-        Order order = service.createOrderFromQuote(id, buildRequest());
+        Order order = service.createOrderFromQuote(id, buildRequest(), "203.0.113.42");
         assertAmountEquals("150", order.getSubtotalChf());
         assertAmountEquals("150", order.getTotalChf());
         assertTrue(order.getIsCadOrder());
@@ -569,8 +572,9 @@ class OrderServiceTest {
         assertEquals("First iteration", order.getInvoiceName());
         assertEquals("CONVERTED", session.getStatus());
         verify(paymentService).getOrCreatePaymentForOrder(order, "OTHER");
+        verify(legalConsentService).recordOrder(order, true, true, "it", "203.0.113.42");
         verify(eventPublisher).publishEvent(any(OrderCreatedEvent.class));
-        assertThrows(IllegalStateException.class, () -> service.createOrderFromQuote(id, buildRequest()));
+        assertThrows(IllegalStateException.class, () -> service.createOrderFromQuote(id, buildRequest(), "203.0.113.42"));
     }
 
     private void assertShippingRejected(String status, String country, BigDecimal expected) {
@@ -589,7 +593,7 @@ class OrderServiceTest {
         CreateOrderRequest request = buildRequest(); request.getBillingAddress().setCountryCode(country);
         request.setExpectedShippingCostChf(expected);
         org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
-                () -> service.createOrderFromQuote(id,request));
+                () -> service.createOrderFromQuote(id,request, "203.0.113.42"));
         verify(orderRepo,never()).save(any(Order.class));
         verify(eventPublisher,never()).publishEvent(any(OrderCreatedEvent.class));
         verify(paymentService,never()).getOrCreatePaymentForOrder(any(Order.class),eq("OTHER"));
