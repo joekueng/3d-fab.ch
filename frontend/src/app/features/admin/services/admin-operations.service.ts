@@ -17,6 +17,12 @@ export interface AdminFilamentStockRow {
   active: boolean;
 }
 
+export interface AdminTranslateFilamentColorsResponse {
+  translatedColors: number;
+  filamentVariants: number;
+  shopVariants: number;
+}
+
 export interface AdminFilamentMaterialType {
   id: number;
   materialCode: string;
@@ -269,6 +275,15 @@ export interface QuoteSessionAttachment {
   providedIn: 'root',
 })
 export class AdminOperationsService {
+  getSessionItemPreview(sessionId: string, itemId: string): Observable<Blob> {
+    return this.http.get(
+      `${this.baseUrl}/sessions/${sessionId}/items/${itemId}/stl-preview`,
+      {
+        withCredentials: true,
+        responseType: 'blob',
+      },
+    );
+  }
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/api/admin`;
 
@@ -290,6 +305,14 @@ export class AdminOperationsService {
     return this.http.get<AdminFilamentVariant[]>(
       `${this.baseUrl}/filaments/variants`,
       { withCredentials: true },
+    );
+  }
+
+  translateFilamentColors(): Observable<AdminTranslateFilamentColorsResponse> {
+    return this.http.post<AdminTranslateFilamentColorsResponse>(
+      `${this.baseUrl}/filaments/translate-colors`,
+      {},
+      {withCredentials: true},
     );
   }
 

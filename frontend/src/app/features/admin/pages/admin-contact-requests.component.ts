@@ -19,6 +19,12 @@ import { CopyOnClickDirective } from '../../../shared/directives/copy-on-click.d
 import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
 import { AppSelectComponent } from '../../../shared/components/app-select/app-select.component';
 import { downloadBlobInBrowser } from '../../../core/utils/browser-download';
+import {
+  ModelPreviewDialogComponent
+} from '../../../shared/components/model-preview-dialog/model-preview-dialog.component';
+import {ModelPreviewService} from '../../calculator/services/model-preview.service';
+import {TranslatePipe} from '@ngx-translate/core';
+import {Observable, of, switchMap} from 'rxjs';
 
 @Component({
   selector: 'app-admin-contact-requests',
@@ -29,11 +35,40 @@ import { downloadBlobInBrowser } from '../../../core/utils/browser-download';
     CopyOnClickDirective,
     AppButtonComponent,
     AppSelectComponent,
+    ModelPreviewDialogComponent,
+    TranslatePipe,
   ],
   templateUrl: './admin-contact-requests.component.html',
   styleUrl: './admin-contact-requests.component.scss',
 })
 export class AdminContactRequestsComponent implements OnInit {
+  preview: { filename: string; source: Observable<Blob> } | null = null;
+  private readonly modelPreviews = inject(ModelPreviewService);
+
+  canPreview(filename: string): boolean {
+    return /\.(stl|3mf|obj|step|stp)$/i.test(filename.trim());
+  }
+
+  openPreview(attachment: AdminContactRequestAttachment): void {
+    if (!this.selectedRequest || !this.canPreview(attachment.originalFilename))
+      return;
+    const filename = attachment.originalFilename;
+    this.preview = {
+      filename,
+      source: this.adminOperationsService
+        .downloadContactRequestAttachment(
+          this.selectedRequest.id,
+          attachment.id,
+        )
+        .pipe(
+          switchMap((blob) =>
+            /\.stl$/i.test(filename.trim())
+              ? of(blob)
+              : this.modelPreviews.createStlPreview(new File([blob], filename)),
+          ),
+        ),
+    };
+  }
   private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly translate = inject(TranslateService);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));

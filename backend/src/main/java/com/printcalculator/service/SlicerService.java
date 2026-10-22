@@ -212,7 +212,19 @@ public class SlicerService {
                         throw lastFailure;
                     }
 
-                    return gCodeParser.parse(gcodeFile);
+                    PrintStats stats = gCodeParser.parse(gcodeFile);
+                    if (stats.printTimeSeconds() <= 0 || !Double.isFinite(stats.filamentWeightGrams())
+                            || stats.filamentWeightGrams() <= 0) {
+                        lastFailure = new ModelProcessingException("SLICER_STATS_UNAVAILABLE",
+                                "Slicing did not return valid print time and material weight. Recalculate the quote or request a consultation.");
+                        if (hasMoreInputVariants) {
+                            logger.warning("Slicing statistics are incomplete for " + inputVariant.label()
+                                    + ". Retrying with fallback geometry.");
+                            break;
+                        }
+                        throw lastFailure;
+                    }
+                    return stats;
                 }
             }
 

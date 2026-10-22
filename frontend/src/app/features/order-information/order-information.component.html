@@ -1,13 +1,35 @@
 <app-card [bodyPadding]="compact() ? 'var(--space-3)' : ''">
-  <h3>
-    {{ "INFORMATION.TITLE" | translate }}
-    @if (!orderId()) {
-      <span>{{ "INFORMATION.OPTIONAL" | translate }}</span>
+  <div class="information-header">
+    <div>
+      <h3>
+        {{ "INFORMATION.TITLE" | translate }}
+        @if (!orderId()) {
+          <span>{{ "INFORMATION.OPTIONAL" | translate }}</span>
+        }
+      </h3>
+      @if (!orderId()) {
+        <p class="ui-form-hint">{{ summary }}</p>
+      }
+    </div>
+    @if (!admin() && !expanded()) {
+      <app-button
+        (click)="toggle()"
+        [attr.aria-expanded]="false"
+        [disabled]="disabled"
+        type="button"
+        variant="secondary"
+      >
+        {{
+          (orderId()
+              ? "INFORMATION.ADD"
+              : text || attachments.length || files.length
+                ? "INFORMATION.EDIT"
+                : "INFORMATION.ADD_EMPTY"
+          ) | translate
+        }}
+      </app-button>
     }
-  </h3>
-  @if (!orderId()) {
-    <p class="ui-form-hint">{{ summary }}</p>
-  }
+  </div>
   @if (!orderId() && review() && !expanded()) {
     <p class="instruction-text">{{ text }}</p>
     @if (model) {
@@ -17,7 +39,7 @@
       @for (file of attachments; track file.id) {
         <div class="attachment ui-subpanel">
           @if (previews()[file.id]) {
-            <img [src]="previews()[file.id]" [alt]="file.name" />
+            <app-image-preview [alt]="file.name" [src]="previews()[file.id]"/>
           }
           <span
             >{{ file.name }} · {{ file.size / 1024 | number: "1.0-0" }} KB</span
@@ -33,7 +55,7 @@
       @for (file of files; track file) {
         <div class="attachment ui-subpanel">
           @if (file.type.startsWith("image/")) {
-            <img [src]="preview(file)" [alt]="file.name" />
+            <app-image-preview [alt]="file.name" [src]="preview(file)"/>
           }
           <span
             >{{ file.name }} · {{ file.size / 1024 | number: "1.0-0" }} KB</span
@@ -58,7 +80,10 @@
         @for (file of entry.attachments; track file.id) {
           <div class="attachment ui-subpanel">
             @if (previews()[file.id]) {
-              <img [src]="previews()[file.id]" [alt]="file.name" />
+              <app-image-preview
+                [alt]="file.name"
+                [src]="previews()[file.id]"
+              />
             }
             <span
               >{{ file.name }} ·
@@ -90,24 +115,6 @@
       }}</app-button>
     }
   } @else {
-    @if (!expanded()) {
-      <app-button
-        type="button"
-        variant="secondary"
-        [disabled]="disabled"
-        (click)="toggle()"
-        [attr.aria-expanded]="false"
-      >
-        {{
-          (orderId()
-            ? "INFORMATION.ADD"
-            : text || attachments.length || files.length
-              ? "INFORMATION.EDIT"
-              : "INFORMATION.ADD_EMPTY"
-          ) | translate
-        }}
-      </app-button>
-    }
     @if (expanded()) {
       <div class="information-editor">
         <app-textarea
@@ -163,7 +170,10 @@
               @for (file of attachments; track file.id) {
                 <div class="attachment ui-subpanel">
                   @if (previews()[file.id]) {
-                    <img [src]="previews()[file.id]" [alt]="file.name" />
+                    <app-image-preview
+                      [alt]="file.name"
+                      [src]="previews()[file.id]"
+                    />
                   }
                   <span
                     >{{ file.name }} ·
@@ -181,7 +191,10 @@
               @for (file of files; track file) {
                 <div class="attachment ui-subpanel">
                   @if (file.type.startsWith("image/")) {
-                    <img [src]="preview(file)" [alt]="file.name" />
+                    <app-image-preview
+                      [alt]="file.name"
+                      [src]="preview(file)"
+                    />
                   }
                   <span
                     >{{ file.name }} ·

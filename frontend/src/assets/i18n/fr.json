@@ -133,7 +133,10 @@
         },
         "hdt": {
           "LABEL": "Resistance thermique",
-          "LABEL_LINES": ["Resistance", "thermique"],
+          "LABEL_LINES": [
+            "Resistance",
+            "thermique"
+          ],
           "DESCRIPTION": "HDT : temperature de deformation du materiau (C).",
           "UNIT": "C"
         }
@@ -325,7 +328,12 @@
           "Sensible a l'humidite pendant l'impression et le stockage.",
           "Rigidite tres faible et resistance thermique limitee."
         ],
-        "IDEAL_FOR": ["Joints", "Bumpers", "Grips", "Capots antichoc"],
+        "IDEAL_FOR": [
+          "Joints",
+          "Bumpers",
+          "Grips",
+          "Capots antichoc"
+        ],
         "SOURCES": {
           "wikipedia-tpu": {
             "LABEL": "Wikipedia - Polyurethane thermoplastique"
@@ -810,8 +818,9 @@
     "PROCESSING": "Traitement...",
     "NOTES_PLACEHOLDER": "Instructions spécifiques...",
     "SETUP_NOTE": "* Inclut {{cost}} comme coût de setup",
-    "SHIPPING_NOTE": "* Les frais de livraison sont estimés selon les dimensions et le poids emballés, puis confirmés à la commande.",
-    "SHIPPING_UNAVAILABLE": "La livraison n’est pas comprise dans ce total. Terminez le calcul ou demandez une consultation pour un devis de livraison.",
+    "SHIPPING_NOTE": "* Les frais de livraison sont calculés à cette étape selon les dimensions et le poids emballés.",
+    "SHIPPING_UNAVAILABLE": "La livraison ne peut pas être calculée car il manque des poids ou dimensions valides. Recalculez le devis ; si le problème persiste, demandez une consultation.",
+    "SHIPPING_MANUAL_QUOTE": "Les dimensions ou le poids de cette commande nécessitent un devis de livraison personnalisé. Demandez une consultation.",
     "REMOVE_FILE": "Supprimer le fichier",
     "FALLBACK_MATERIAL": "PLA (fallback)",
     "FALLBACK_QUALITY_STANDARD": "Standard",
@@ -865,6 +874,12 @@
     "SUBMIT": "Continuer",
     "SUMMARY_TITLE": "Récapitulatif",
     "DEFAULT_COLOR": "Par défaut"
+  },
+  "IMAGE_PREVIEW": {
+    "OPEN": "Agrandir l’image : {{name}}",
+    "CLOSE": "Fermer",
+    "ZOOM": "Taille originale",
+    "FIT": "Adapter à l’écran"
   },
   "COMMON": {
     "REQUIRED": "Champ obligatoire",
@@ -1276,6 +1291,7 @@
     "REMOVE_FILE": "Supprimer le fichier joint"
   },
   "CHECKOUT": {
+    "CUSTOMIZE_ITEM": "Choisissez la quantité et la couleur",
     "COLOR": "Couleur",
     "ERR_UPDATE_ITEM": "Impossible de mettre à jour la pièce. Vérifiez la quantité et la couleur et réessayez.",
     "TITLE": "Checkout",
@@ -1301,6 +1317,8 @@
     "PLACE_ORDER": "Envoyer la commande",
     "PROCESSING": "Traitement...",
     "SUMMARY_TITLE": "Récapitulatif de la commande",
+    "SUMMARY_EXPAND": "Agrandir le récapitulatif",
+    "SUMMARY_CLOSE": "Fermer le récapitulatif",
     "SUBTOTAL": "Sous-total",
     "ITEMS_BASE_SUBTOTAL": "Sous-total de base des articles",
     "MACHINE_COST": "Coût machine",
@@ -1651,5 +1669,17 @@
     "ATTACH_AFTER_PAYMENT": "Téléchargeable après le paiement",
     "ATTACH_REQUIRES_SESSION": "Enregistrez la facture pour télécharger les pièces jointes.",
     "ATTACH_PENDING": "Sera téléchargé lors de l'enregistrement"
+  },
+  "ADMIN_TRANSLATION": {
+    "SOURCE_LANGUAGE": "Langue source",
+    "OVERWRITE": "Remplacer les traductions existantes",
+    "TRANSLATE": "Traduire",
+    "TRANSLATING": "Traduction…",
+    "HINT": "Remplissez les champs dans la langue source. Les traductions sont ajoutées au formulaire : enregistrez pour les appliquer.",
+    "ERROR": "Échec de la traduction. Veuillez réessayer.",
+    "UPDATED": "Traductions ajoutées au formulaire. Enregistrez pour les appliquer.",
+    "EMPTY": "Aucun champ à traduire ou à mettre à jour.",
+    "COLORS_HINT": "Traduit toutes les couleurs enregistrées depuis l’italien, remplace EN, DE et FR et enregistre les traductions pour les filaments et la boutique.",
+    "COLORS_SAVED": "Traductions des couleurs enregistrées pour les filaments et la boutique."
   }
 }

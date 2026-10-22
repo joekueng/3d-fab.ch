@@ -52,6 +52,24 @@ export const scenarioCatalog: Record<string, {
   'UI-INVOICE-003': { spec: 'ui-states/service-invoices.spec.ts', priority: 'standard', fixture: 'synthetic-stack' },
   'UI-INVOICE-004': { spec: 'ui-states/service-invoices.spec.ts', priority: 'critical', fixture: 'synthetic-stack' },
   'UI-INVOICE-005': { spec: 'ui-states/service-invoices.spec.ts', priority: 'standard', fixture: 'synthetic-stack' },
+  'UI-INVOICE-006': {spec: 'ui-states/service-invoices.spec.ts', priority: 'standard', fixture: 'synthetic-stack'},
+  'UI-INVOICE-007': {spec: 'ui-states/service-invoices.spec.ts', priority: 'standard', fixture: 'synthetic-stack'},
+  'UI-INVOICE-008': {spec: 'ui-states/service-invoices.spec.ts', priority: 'standard', fixture: 'synthetic-stack'},
+  'UI-ADMIN-PREVIEW-001': {
+    spec: 'ui-states/admin-model-previews.spec.ts',
+    priority: 'standard',
+    fixture: 'synthetic-stack'
+  },
+  'UI-ADMIN-TRANSLATION-001': {
+    spec: 'ui-states/admin-translations.spec.ts',
+    priority: 'standard',
+    fixture: 'synthetic-stack'
+  },
+  'UI-ADMIN-TRANSLATION-002': {
+    spec: 'ui-states/admin-translations.spec.ts',
+    priority: 'standard',
+    fixture: 'synthetic-stack'
+  },
   'UI-001': { spec: 'ui-states/catalog-failure.spec.ts', priority: 'standard', fixture: 'synthetic-stack' },
 };
 

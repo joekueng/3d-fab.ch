@@ -133,7 +133,10 @@
         },
         "hdt": {
           "LABEL": "Resistenza termica",
-          "LABEL_LINES": ["Resistenza", "termica"],
+          "LABEL_LINES": [
+            "Resistenza",
+            "termica"
+          ],
           "DESCRIPTION": "HDT: temperatura di deformazione del materiale (C).",
           "UNIT": "C"
         }
@@ -325,7 +328,12 @@
           "Sensibile all umidita durante stampa e conservazione.",
           "Rigidita molto bassa e resistenza termica limitata."
         ],
-        "IDEAL_FOR": ["Guarnizioni", "Bumper", "Grip", "Cover antiurto"],
+        "IDEAL_FOR": [
+          "Guarnizioni",
+          "Bumper",
+          "Grip",
+          "Cover antiurto"
+        ],
         "SOURCES": {
           "wikipedia-tpu": {
             "LABEL": "Wikipedia - Poliuretano termoplastico"
@@ -353,7 +361,11 @@
           "Fragile sotto urto.",
           "Scarsa resistenza al calore e all UV prolungato."
         ],
-        "IDEAL_FOR": ["Mockup", "Prototipi rapidi", "Pezzi estetici indoor"],
+        "IDEAL_FOR": [
+          "Mockup",
+          "Prototipi rapidi",
+          "Pezzi estetici indoor"
+        ],
         "SOURCES": {
           "wikipedia-pla": {
             "LABEL": "Wikipedia - Acido polilattico"
@@ -373,7 +385,10 @@
           "Layer 0.16-0.24 mm mantiene effetto opaco uniforme.",
           "Raffreddamento costante aiuta la texture superficiale."
         ],
-        "PROS": ["Aspetto opaco pulito.", "Stampa semplice come il PLA base."],
+        "PROS": [
+          "Aspetto opaco pulito.",
+          "Stampa semplice come il PLA base."
+        ],
         "CONS": [
           "Proprieta meccaniche limitate per uso strutturale.",
           "Sensibile al calore come altri PLA."
@@ -803,8 +818,9 @@
     "PROCESSING": "Elaborazione...",
     "NOTES_PLACEHOLDER": "Istruzioni specifiche...",
     "SETUP_NOTE": "* Include {{cost}} come costo di setup",
-    "SHIPPING_NOTE": "* La spedizione è stimata in base a dimensioni e peso imballati e confermata al checkout.",
-    "SHIPPING_UNAVAILABLE": "La spedizione non è inclusa in questo totale. Completa il calcolo o richiedi una consulenza per un preventivo di spedizione.",
+    "SHIPPING_NOTE": "* La spedizione viene calcolata in questo passaggio in base alle dimensioni e al peso dell’imballaggio.",
+    "SHIPPING_UNAVAILABLE": "La spedizione non può essere calcolata perché mancano dati validi su peso o dimensioni dei pezzi. Ricalcola il preventivo; se il problema persiste, richiedi una consulenza.",
+    "SHIPPING_MANUAL_QUOTE": "Le dimensioni o il peso dell’ordine richiedono un preventivo di spedizione personalizzato. Richiedi una consulenza.",
     "REMOVE_FILE": "Rimuovi file",
     "FALLBACK_MATERIAL": "PLA (fallback)",
     "FALLBACK_QUALITY_STANDARD": "Standard",
@@ -858,6 +874,12 @@
     "SUBMIT": "Procedi",
     "SUMMARY_TITLE": "Riepilogo",
     "DEFAULT_COLOR": "Predefinito"
+  },
+  "IMAGE_PREVIEW": {
+    "OPEN": "Ingrandisci immagine: {{name}}",
+    "CLOSE": "Chiudi",
+    "ZOOM": "Dimensioni originali",
+    "FIT": "Adatta allo schermo"
   },
   "COMMON": {
     "REQUIRED": "Campo obbligatorio",
@@ -1269,6 +1291,7 @@
     "REMOVE_FILE": "Rimuovi file allegato"
   },
   "CHECKOUT": {
+    "CUSTOMIZE_ITEM": "Scegli quantità e colore",
     "COLOR": "Colore",
     "ERR_UPDATE_ITEM": "Impossibile aggiornare il pezzo. Verifica quantità e colore e riprova.",
     "TITLE": "Checkout",
@@ -1294,6 +1317,8 @@
     "PLACE_ORDER": "Invia Ordine",
     "PROCESSING": "Elaborazione...",
     "SUMMARY_TITLE": "Riepilogo Ordine",
+    "SUMMARY_EXPAND": "Ingrandisci riepilogo",
+    "SUMMARY_CLOSE": "Chiudi riepilogo",
     "SUBTOTAL": "Subtotale",
     "ITEMS_BASE_SUBTOTAL": "Costo Base Articoli",
     "MACHINE_COST": "Costo Macchina",
@@ -1644,5 +1669,17 @@
     "ATTACH_AFTER_PAYMENT": "Scaricabile dopo il pagamento",
     "ATTACH_REQUIRES_SESSION": "Salva la fattura per caricare gli allegati.",
     "ATTACH_PENDING": "Verrà caricato al salvataggio"
+  },
+  "ADMIN_TRANSLATION": {
+    "SOURCE_LANGUAGE": "Lingua di partenza",
+    "OVERWRITE": "Sovrascrivi traduzioni esistenti",
+    "TRANSLATE": "Traduci",
+    "TRANSLATING": "Traduco…",
+    "HINT": "Compila i campi nella lingua di partenza. Le traduzioni vengono inserite nel modulo: salva per applicarle.",
+    "ERROR": "Traduzione non riuscita. Riprova.",
+    "UPDATED": "Traduzioni inserite nel modulo. Salva per applicarle.",
+    "EMPTY": "Nessun campo da tradurre o aggiornare.",
+    "COLORS_HINT": "Traduce tutti i colori salvati dall’italiano, sostituisce EN, DE e FR e salva le traduzioni per filamenti e shop.",
+    "COLORS_SAVED": "Traduzioni dei colori salvate per filamenti e shop."
   }
 }

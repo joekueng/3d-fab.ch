@@ -14,15 +14,44 @@ import {
 } from '../services/admin-operations.service';
 import { CopyOnClickDirective } from '../../../shared/directives/copy-on-click.directive';
 import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
+import {
+  ModelPreviewDialogComponent
+} from '../../../shared/components/model-preview-dialog/model-preview-dialog.component';
+import {TranslatePipe} from '@ngx-translate/core';
+import {Observable} from 'rxjs';
 
 @Component({
   selector: 'app-admin-sessions',
   standalone: true,
-  imports: [CommonModule, CopyOnClickDirective, AppButtonComponent],
+  imports: [
+    CommonModule,
+    CopyOnClickDirective,
+    AppButtonComponent,
+    ModelPreviewDialogComponent,
+    TranslatePipe,
+  ],
   templateUrl: './admin-sessions.component.html',
   styleUrl: './admin-sessions.component.scss',
 })
 export class AdminSessionsComponent implements OnInit {
+  preview: { filename: string; source: Observable<Blob> } | null = null;
+
+  canPreview(filename: string): boolean {
+    return /\.(stl|3mf|obj|step|stp)$/i.test(filename.trim());
+  }
+
+  openPreview(
+    sessionId: string,
+    item: { id: string; originalFilename: string },
+  ): void {
+    this.preview = {
+      filename: item.originalFilename,
+      source: this.adminOperationsService.getSessionItemPreview(
+        sessionId,
+        item.id,
+      ),
+    };
+  }
   private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly adminOperationsService = inject(AdminOperationsService);

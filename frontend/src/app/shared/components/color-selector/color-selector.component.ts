@@ -68,6 +68,8 @@ export class ColorSelectorComponent {
 
   groups = input<ColorSelectorGroup[] | null>(null);
   showLabel = input(false);
+  field = input(false);
+  compact = input(false);
   subtitle = input('');
   variantSelected = output<string | number>();
   isOpen = signal(false);
@@ -155,6 +157,13 @@ export class ColorSelectorComponent {
     if (normalized === 'glossy') return 'COLOR.CATEGORY_GLOSSY';
     if (normalized === 'matte') return 'COLOR.CATEGORY_MATTE';
     return 'COLOR.AVAILABLE_COLORS';
+  }
+
+  onEscape(event: Event): void {
+    if (!this.isOpen()) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this.close();
   }
 
   close() {

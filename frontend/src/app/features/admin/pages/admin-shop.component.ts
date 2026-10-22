@@ -80,6 +80,11 @@ import {
   validateMediaTranslations,
 } from './admin-shop-image.util';
 import { AdminLanguageToolbarComponent } from '../../../shared/components/admin-language-toolbar/admin-language-toolbar.component';
+import {AdminTranslateActionComponent} from '../components/admin-translate-action/admin-translate-action.component';
+import {
+  AdminLocalizedTextFieldPayload,
+  AdminTranslateLocalizedTextResponse,
+} from '../services/admin-translation.service';
 import {
   AdminLanguageStatus,
   buildAdminLanguageStatusMap,
@@ -93,6 +98,7 @@ import {
     FormsModule,
     AdminShopRichTextEditorComponent,
     AdminLanguageToolbarComponent,
+    AdminTranslateActionComponent,
   ],
   templateUrl: './admin-shop.component.html',
   styleUrl: './admin-shop.component.scss',
@@ -528,6 +534,55 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       this.categoryForm.names[this.activeContentLanguage] ||
       this.categoryForm.names['it'];
     this.categoryForm.slug = this.slugify(source);
+  }
+
+  categoryTranslationFields(): Record<string, AdminLocalizedTextFieldPayload> {
+    return {
+      name: {required: true, values: this.categoryForm.names},
+      description: {required: false, values: this.categoryForm.descriptions},
+      seoTitle: {required: false, values: this.categoryForm.seoTitles},
+      seoDescription: {
+        required: false,
+        values: this.categoryForm.seoDescriptions,
+      },
+    };
+  }
+
+  applyCategoryTranslation(
+    response: AdminTranslateLocalizedTextResponse,
+  ): void {
+    for (const [key, field] of Object.entries(
+      this.categoryTranslationFields(),
+    )) {
+      mergeLocalizedTextMap(field.values, response.fields[key], {
+        overwriteExisting: true,
+      });
+    }
+  }
+
+  imageTranslationFields(): Record<string, AdminLocalizedTextFieldPayload> {
+    const valuesFor = (
+      field: keyof AdminMediaTranslation,
+    ): Record<AdminMediaLanguage, string> => ({
+      it: this.imageUploadState.translations.it[field],
+      en: this.imageUploadState.translations.en[field],
+      de: this.imageUploadState.translations.de[field],
+      fr: this.imageUploadState.translations.fr[field],
+    });
+    return {
+      title: {required: true, values: valuesFor('title')},
+      altText: {required: true, values: valuesFor('altText')},
+    };
+  }
+
+  applyImageTranslation(response: AdminTranslateLocalizedTextResponse): void {
+    for (const language of this.mediaLanguages) {
+      for (const field of ['title', 'altText'] as const) {
+        const translated = response.fields[field]?.[language];
+        if (translated !== undefined)
+          this.imageUploadState.translations[language][field] = translated;
+      }
+    }
   }
 
   translateProductFromCurrentLanguage(): void {

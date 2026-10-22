@@ -2,9 +2,11 @@ package com.printcalculator.controller.admin;
 
 import com.printcalculator.dto.AdminFilamentMaterialTypeDto;
 import com.printcalculator.dto.AdminFilamentVariantDto;
+import com.printcalculator.dto.AdminTranslateFilamentColorsResponse;
 import com.printcalculator.dto.AdminUpsertFilamentMaterialTypeRequest;
 import com.printcalculator.dto.AdminUpsertFilamentVariantRequest;
 import com.printcalculator.service.admin.AdminFilamentControllerService;
+import com.printcalculator.service.admin.AdminFilamentColorTranslationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,9 +26,18 @@ import java.util.List;
 public class AdminFilamentController {
 
     private final AdminFilamentControllerService adminFilamentControllerService;
+    private final AdminFilamentColorTranslationService colorTranslationService;
 
-    public AdminFilamentController(AdminFilamentControllerService adminFilamentControllerService) {
+    public AdminFilamentController(AdminFilamentControllerService adminFilamentControllerService,
+                                   AdminFilamentColorTranslationService colorTranslationService) {
         this.adminFilamentControllerService = adminFilamentControllerService;
+        this.colorTranslationService = colorTranslationService;
+    }
+
+    @PostMapping("/translate-colors")
+    @Transactional
+    public ResponseEntity<AdminTranslateFilamentColorsResponse> translateColors() {
+        return ResponseEntity.ok(colorTranslationService.translateColors());
     }
 
     @GetMapping("/materials")

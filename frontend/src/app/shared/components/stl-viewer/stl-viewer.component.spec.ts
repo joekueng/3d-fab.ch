@@ -63,6 +63,35 @@ describe('StlViewerComponent asynchronous loading', () => {
     ).toContain('10 x 10 x 0 mm');
   });
 
+  it('renders a square thumbnail without dimensions and applies the initial zoom', async () => {
+    const {fixture, readFinished} = setup();
+    fixture.componentRef.setInput('aspectRatio', 1);
+    fixture.componentRef.setInput('initialZoom', 1.35);
+    fixture.componentRef.setInput('showDimensions', false);
+    fixture.componentRef.setInput('file', new Blob([STL]));
+    await fixture.whenStable();
+    await readFinished;
+    await fixture.whenStable();
+    const container = fixture.nativeElement.querySelector(
+      '.viewer-container',
+    ) as HTMLElement;
+    expect(container.style.aspectRatio).toBe('1 / 1');
+    expect(container.style.height).toBe('auto');
+    expect(fixture.nativeElement.querySelector('.dims-overlay')).toBeNull();
+    const camera = (
+      fixture.componentInstance as unknown as {
+        camera: THREE.PerspectiveCamera;
+      }
+    ).camera;
+    const originalFramingDistance =
+      (10 / 2 / Math.tan(THREE.MathUtils.degToRad(50) / 2)) * 1.72;
+    expect(camera.position.z).toBeCloseTo(
+      (originalFramingDistance * 1.08) / 1.35,
+      4,
+    );
+    expect(fixture.componentInstance.loadError).toBeFalse();
+  });
+
   it('renders unavailable previews after parsing rejects the file', async () => {
     spyOn(console, 'warn');
     const { fixture, readFinished } = setup();

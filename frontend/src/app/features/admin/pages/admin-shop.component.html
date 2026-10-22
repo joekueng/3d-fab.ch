@@ -243,6 +243,17 @@
               </label>
             </div>
 
+            <app-admin-translate-action
+              #categoryTranslator
+              (sourceLanguageChange)="setActiveContentLanguage($event)"
+              (translated)="applyCategoryTranslation($event)"
+              [context]="'Shop category: ' + categoryForm.slug"
+              [disabled]="savingCategory || deletingCategory"
+              [fields]="categoryTranslationFields()"
+              [sourceLanguage]="activeContentLanguage"
+              [target]="categoryForm.names"
+            />
+
             <app-admin-language-toolbar
               title="Lingua contenuti categoria"
               description="IT / EN / DE / FR"
@@ -353,7 +364,7 @@
                 type="button"
                 class="ui-button"
                 (click)="saveCategory()"
-                [disabled]="savingCategory"
+                [disabled]="savingCategory || categoryTranslator.busy()"
               >
                 {{ savingCategory ? "Salvataggio..." : "Salva categoria" }}
               </button>
@@ -1025,12 +1036,27 @@
                 </div>
               </div>
 
+              <app-admin-translate-action
+                #imageTranslator
+                (sourceLanguageChange)="setActiveImageLanguage($event)"
+                (translated)="applyImageTranslation($event)"
+                [context]="'Shop product image: ' + productForm.slug"
+                [disabled]="imageUploadState.saving"
+                [fields]="imageTranslationFields()"
+                [sourceLanguage]="imageUploadState.activeLanguage"
+                [target]="imageUploadState.translations"
+              />
+
               <div class="ui-actions">
                 <button
                   type="button"
                   class="ui-button"
                   (click)="uploadProductImage()"
-                  [disabled]="imageUploadState.saving || !imageUploadState.file"
+                  [disabled]="
+                    imageUploadState.saving ||
+                    imageTranslator.busy() ||
+                    !imageUploadState.file
+                  "
                 >
                   {{
                     imageUploadState.saving

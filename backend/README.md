@@ -106,6 +106,22 @@ always cleans temporary files. Preview requests consume the legacy request/file
 budget, but do not reserve calculations. Uploads retain the 200 MB limit; previews
 are bounded at 75 MiB, matching the browser viewer. Failure leaves quoting available.
 
+Admin session previews use `GET /api/admin/sessions/{sessionId}/items/{itemId}/stl-preview`.
+`AdminSessionPreviewService` checks item ownership and the existing session storage
+boundary, serves the stored converted STL (or the original STL), and returns
+`no-store`. Missing or non-STL previews return 404; reads never trigger slicing.
+Deploy this additive endpoint before the frontend session preview action. No
+schema or stored-file migration is needed.
+
+`GCodeParser` sums comma-separated per-filament weights and lengths, including unused
+slots, and prefers Orca's explicit total weight when present. Repeated metadata
+lines replace the previous snapshot. This matches OrcaSlicer’s
+[G-code exporter](https://github.com/OrcaSlicer/OrcaSlicer/blob/v2.3.2/src/libslic3r/GCode.cpp)
+(verified 2026-10-22). Invalid or zero material/time statistics trigger the existing
+geometry fallback or a processing error; they must never create READY items with
+zero weight and an indefinitely pending shipping quote. Existing affected sessions
+need recalculation to replace their stored zero-weight results.
+
 `ModelConversionSupport` reuses the installed LWJGL Assimp 3.4.3 binding and its
 existing triangulation/transform flags; OBJ imports remove material-library
 references because only geometry is used. OBJ coordinates use the per-file
@@ -254,6 +270,23 @@ keys and unique constraints; matching reference DDL is in `../db.sql`. No existi
 orders or requests are backfilled because their acceptance timestamps/versions
 were not recorded. A plain calculator upload, preview or saved session does not
 submit the required terms/privacy checkbox and creates no such record.
+
+## Filament and shop color translations
+
+`POST /api/admin/filaments/translate-colors` uses the existing admin session/CSRF
+protection and `AdminLocalizedTextTranslationService`. The source is always the
+saved Italian color label (legacy fallback: `colorName`); EN/DE/FR are overwritten.
+`AdminFilamentColorTranslationService` deduplicates Italian labels, translates in
+batches of 25, validates all three target languages, and applies all batches in one
+transaction only after every translation succeeds. It covers inactive filaments
+and shop variants too. Existing shop variants matching material, internal color name
+and hex use the filament's Italian source; shop-only colors use their own source.
+Italian labels, internal names, IDs, stock and prices remain unchanged. Existing
+columns are reused, so no schema migration is required. The public options/catalogue,
+cart and order DTOs already expose the localized labels and receive the saved updates
+on their next read. New products continue to copy color labels from filament stock.
+Repository updates write only EN/DE/FR and check that the Italian source is unchanged;
+concurrent stock/price edits are preserved, and source changes abort with HTTP 409.
 
 ## Customer-facing output
 

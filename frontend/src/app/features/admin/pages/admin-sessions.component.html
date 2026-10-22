@@ -192,7 +192,18 @@
                   </thead>
                   <tbody>
                     <tr *ngFor="let item of detail.items">
-                      <td data-label="File">{{ item.originalFilename }}</td>
+                      <td data-label="File">
+                        {{ item.originalFilename }}
+                        @if (canPreview(item.originalFilename)) {
+                          <app-button
+                            (click)="openPreview(session.id, item)"
+                            type="button"
+                            variant="secondary"
+                          >
+                            {{ "ADMIN_ORDERS.OPEN_3D_PREVIEW" | translate }}
+                          </app-button>
+                        }
+                      </td>
                       <td data-label="Qta">{{ item.quantity }}</td>
                       <td data-label="Tempo">
                         {{ formatPrintTime(item.printTimeSeconds) }}
@@ -236,3 +247,11 @@
 <ng-template #loadingTpl>
   <p>Caricamento sessioni...</p>
 </ng-template>
+
+@if (preview; as model) {
+  <app-model-preview-dialog
+    (dismissed)="preview = null"
+    [filename]="model.filename"
+    [source]="model.source"
+  />
+}

@@ -9,7 +9,8 @@ import {
   AdminUpsertFilamentMaterialTypePayload,
   AdminUpsertFilamentVariantPayload,
 } from '../services/admin-operations.service';
-import { forkJoin } from 'rxjs';
+import {forkJoin, switchMap} from 'rxjs';
+import {TranslatePipe, TranslateService} from '@ngx-translate/core';
 import { getColorHex } from '../../../core/constants/colors.const';
 import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
 import { AppCheckboxComponent } from '../../../shared/components/app-checkbox/app-checkbox.component';
@@ -27,6 +28,7 @@ import { AppSelectComponent } from '../../../shared/components/app-select/app-se
     AppCheckboxComponent,
     AppInputComponent,
     AppSelectComponent,
+    TranslatePipe,
   ],
   templateUrl: './admin-filament-stock.component.html',
   styleUrl: './admin-filament-stock.component.scss',
@@ -34,6 +36,7 @@ import { AppSelectComponent } from '../../../shared/components/app-select/app-se
 export class AdminFilamentStockComponent implements OnInit {
   private readonly adminOperationsService = inject(AdminOperationsService);
   private readonly changeDetector = inject(ChangeDetectorRef);
+  translatingColors = false;
   readonly finishTypeOptions = [
     { label: 'GLOSSY', value: 'GLOSSY' },
     { label: 'MATTE', value: 'MATTE' },
@@ -46,6 +49,7 @@ export class AdminFilamentStockComponent implements OnInit {
   materials: AdminFilamentMaterialType[] = [];
   variants: AdminFilamentVariant[] = [];
   loading = false;
+  private readonly translate = inject(TranslateService);
   quickInsertCollapsed = false;
   materialsCollapsed = true;
   creatingMaterial = false;
@@ -89,6 +93,7 @@ export class AdminFilamentStockComponent implements OnInit {
   }
 
   loadData(): void {
+    if (this.translatingColors) return;
     this.loading = true;
     this.errorMessage = null;
     this.successMessage = null;
@@ -124,7 +129,7 @@ export class AdminFilamentStockComponent implements OnInit {
   }
 
   createMaterial(): void {
-    if (this.creatingMaterial) {
+    if (this.creatingMaterial || this.translatingColors) {
       return;
     }
 
@@ -169,7 +174,7 @@ export class AdminFilamentStockComponent implements OnInit {
   }
 
   saveMaterial(material: AdminFilamentMaterialType): void {
-    if (this.savingMaterialIds.has(material.id)) {
+    if (this.savingMaterialIds.has(material.id) || this.translatingColors) {
       return;
     }
 
@@ -221,7 +226,7 @@ export class AdminFilamentStockComponent implements OnInit {
   }
 
   createVariant(): void {
-    if (this.creatingVariant) {
+    if (this.creatingVariant || this.translatingColors) {
       return;
     }
 
@@ -268,7 +273,7 @@ export class AdminFilamentStockComponent implements OnInit {
   }
 
   saveVariant(variant: AdminFilamentVariant): void {
-    if (this.savingVariantIds.has(variant.id)) {
+    if (this.savingVariantIds.has(variant.id) || this.translatingColors) {
       return;
     }
 
@@ -358,7 +363,11 @@ export class AdminFilamentStockComponent implements OnInit {
 
   confirmDeleteVariant(): void {
     const variant = this.variantToDelete;
-    if (!variant || this.deletingVariantIds.has(variant.id)) {
+    if (
+      !variant ||
+      this.deletingVariantIds.has(variant.id) ||
+      this.translatingColors
+    ) {
       return;
     }
 
@@ -399,6 +408,60 @@ export class AdminFilamentStockComponent implements OnInit {
       label: material.materialCode,
       value: material.id,
     }));
+  }
+
+  canTranslateColors(): boolean {
+    return (
+      !this.loading &&
+      !this.translatingColors &&
+      !this.creatingMaterial &&
+      !this.creatingVariant &&
+      !this.savingMaterialIds.size &&
+      !this.savingVariantIds.size &&
+      !this.deletingVariantIds.size
+    );
+  }
+
+  translateColors(): void {
+    if (!this.canTranslateColors()) return;
+    this.translatingColors = true;
+    this.errorMessage = null;
+    this.successMessage = null;
+    this.adminOperationsService
+      .translateFilamentColors()
+      .pipe(switchMap(() => this.adminOperationsService.getFilamentVariants()))
+      .subscribe({
+        next: (translated) => {
+          const labelsById = new Map(
+            translated.map((variant) => [variant.id, variant]),
+          );
+          // Refresh color translations while retaining other unsaved form values.
+          this.variants = this.variants.map((variant) => {
+            const updated = labelsById.get(variant.id);
+            return updated
+              ? {
+                ...variant,
+                colorLabelEn: updated.colorLabelEn,
+                colorLabelDe: updated.colorLabelDe,
+                colorLabelFr: updated.colorLabelFr,
+              }
+              : variant;
+          });
+          this.translatingColors = false;
+          this.successMessage = this.translate.instant(
+            'ADMIN_TRANSLATION.COLORS_SAVED',
+          );
+          this.changeDetector.markForCheck();
+        },
+        error: (error: unknown) => {
+          this.translatingColors = false;
+          this.errorMessage = this.extractErrorMessage(
+            error,
+            this.translate.instant('ADMIN_TRANSLATION.ERROR'),
+          );
+          this.changeDetector.markForCheck();
+        },
+      });
   }
 
   private toVariantPayload(

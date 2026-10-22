@@ -10,6 +10,109 @@ import { QuoteEstimatorService } from '../calculator/services/quote-estimator.se
 import { LanguageService } from '../../core/services/language.service';
 
 describe('CheckoutComponent', () => {
+  it('resolves saved color labels in every locale even when the filament is no longer in the palette', () => {
+    const item = {
+      colorCode: 'Internal Black',
+      filamentColorLabelIt: 'Nero',
+      filamentColorLabelEn: 'Black',
+      filamentColorLabelDe: 'Schwarz',
+      filamentColorLabelFr: 'Noir',
+    };
+    for (const [language, expected] of Object.entries({
+      it: 'Nero',
+      en: 'Black',
+      de: 'Schwarz',
+      fr: 'Noir',
+    })) {
+      const {component} = createComponent('browser', {}, language);
+      expect(component.itemColorLabel(item)).toBe(expected);
+    }
+  });
+  it('uses the filament palette translation for print colors and shop labels for products', () => {
+    const {component} = createComponent();
+    component.materialOptions.set([
+      {
+        code: 'PLA',
+        label: 'PLA',
+        isTechnical: false,
+        variants: [
+          {
+            id: 42,
+            name: 'Internal filament name',
+            colorName: 'Black',
+            colorLabelIt: 'Nero opaco',
+            colorLabelEn: 'Matte black',
+            colorLabelDe: 'Mattschwarz',
+            colorLabelFr: 'Noir mat',
+            hexColor: '#111111',
+            finishType: 'MATTE',
+            stockSpools: 1,
+            stockFilamentGrams: 1000,
+            isOutOfStock: false,
+          },
+        ],
+      },
+    ]);
+    expect(
+      component.itemColorLabel({filamentVariantId: 42, colorCode: 'Black'}),
+    ).toBe('Nero opaco');
+    expect(
+      component.itemColorLabel({materialCode: 'PLA', colorCode: 'Black'}),
+    ).toBe('Nero opaco');
+    expect(
+      component.itemColorLabel({
+        shopVariantColorName: 'Black',
+        shopVariantColorLabelIt: 'Nero shop',
+      }),
+    ).toBe('Nero shop');
+  });
+  it('keeps the same summary key when the server replaces an item after a color change', () => {
+    const {component} = createComponent();
+    const original = {id: 'part-1', quantity: 1, filamentVariantId: 1};
+    const updated = {...original, filamentVariantId: 2};
+    expect(component.trackSummaryItem(0, original)).toBe(
+      component.trackSummaryItem(0, updated),
+    );
+    expect(component.trackSummaryItem(0, original)).not.toBe(
+      component.trackSummaryItem(1, {id: 'part-2'}),
+    );
+  });
+  it('loads the stored STL preview for every supported original model format', () => {
+    const {component, quoteService} = createComponent();
+    const formats = ['stl', 'obj', '3mf', 'step', 'STP'];
+    const items = formats.map((format, index) => ({
+      id: `model-${index}`,
+      originalFilename: `part.${format}`,
+    }));
+    quoteService.getQuoteSession.and.returnValue(
+      of({
+        session: {id: 'formats', status: 'CAD_ACTIVE'},
+        items: [
+          ...items,
+          {id: 'pdf', originalFilename: 'notes.pdf'},
+          {
+            id: 'shop',
+            originalFilename: 'shop.stl',
+            lineItemType: 'SHOP_PRODUCT',
+          },
+        ],
+      }),
+    );
+    quoteService.getLineItemStlPreview.and.returnValue(
+      of(new Blob(['solid preview\nendsolid preview'])),
+    );
+    component.sessionId = 'formats';
+    component.loadSessionDetails();
+    expect(quoteService.getLineItemStlPreview).toHaveBeenCalledTimes(5);
+    for (const item of items) {
+      expect(quoteService.getLineItemStlPreview).toHaveBeenCalledWith(
+        'formats',
+        item.id,
+      );
+      expect(component.previewFile(item)?.name).toMatch(/\.stl$/i);
+      expect(component.hasPreviewError(item)).toBeFalse();
+    }
+  });
   it('follows a deleted invoice redirect in the current language', () => {
     const { component, quoteService, router } = createComponent();
     quoteService.getQuoteSession.and.returnValue(
@@ -73,6 +176,7 @@ describe('CheckoutComponent', () => {
   function createComponent(
     platformId: Object = 'browser',
     queryParams: Record<string, unknown> = {},
+    language = 'it',
   ) {
     TestBed.resetTestingModule();
 
@@ -119,7 +223,7 @@ describe('CheckoutComponent', () => {
         {
           provide: LanguageService,
           useValue: {
-            selectedLang: () => 'it',
+            selectedLang: () => language,
           },
         },
         {

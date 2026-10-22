@@ -1,3 +1,4 @@
+import {ImagePreviewComponent} from '../../shared/components/image-preview/image-preview.component';
 import { LanguageService } from '../../core/services/language.service';
 import { CopyOnClickDirective } from '../../shared/directives/copy-on-click.directive';
 import {
@@ -30,6 +31,7 @@ import {
   selector: 'app-order-information',
   standalone: true,
   imports: [
+    ImagePreviewComponent,
     CommonModule,
     FormsModule,
     TranslatePipe,

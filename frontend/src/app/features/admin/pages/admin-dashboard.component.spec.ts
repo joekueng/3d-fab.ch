@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {Component, input} from '@angular/core';
+import {StlViewerComponent} from '../../../shared/components/stl-viewer/stl-viewer.component';
 import { provideTranslateService } from '@ngx-translate/core';
-import { of } from 'rxjs';
+import {of, Subject} from 'rxjs';
 import { AdminDashboardComponent } from './admin-dashboard.component';
 import { LanguageService } from '../../../core/services/language.service';
 import {
@@ -8,6 +10,13 @@ import {
   AdminOrdersService,
   ReviewRequestPreview,
 } from '../services/admin-orders.service';
+
+@Component({selector: 'app-stl-viewer', template: ''})
+class StlViewerStubComponent {
+  readonly file = input<Blob | null>(null);
+  readonly color = input('');
+  readonly height = input(0);
+}
 
 describe('Admin orders responsive layout', () => {
   let fixture: ComponentFixture<AdminDashboardComponent>;
@@ -42,10 +51,16 @@ describe('Admin orders responsive layout', () => {
             getStatistics: () => of(null),
             previewReviewRequest: () => of(null),
             sendReviewRequest: () => of(order),
+            downloadOrderItemFile: () => of(new Blob()),
           },
         },
       ],
-    }).compileComponents();
+    })
+      .overrideComponent(AdminDashboardComponent, {
+        remove: {imports: [StlViewerComponent]},
+        add: {imports: [StlViewerStubComponent]},
+      })
+      .compileComponents();
     fixture = TestBed.createComponent(AdminDashboardComponent);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -78,6 +93,56 @@ describe('Admin orders responsive layout', () => {
       frame.contentWindow!.requestAnimationFrame(() => resolve()),
     );
   }
+
+  it('shows an asynchronous model response without another click', async () => {
+    fixture.autoDetectChanges();
+    const response = new Subject<Blob>();
+    spyOn(
+      TestBed.inject(AdminOrdersService),
+      'downloadOrderItemFile',
+    ).and.returnValue(response);
+    const item = {
+      id: 'model',
+      originalFilename: 'model.stl',
+    } as import('../services/admin-orders.service').AdminOrderItem;
+    fixture.componentInstance.selectedOrder = order;
+    fixture.componentInstance.openPreview(item);
+    fixture.changeDetectorRef.markForCheck();
+    fixture.detectChanges();
+    expect(
+      frame.contentDocument!.querySelector('.preview-loading'),
+    ).not.toBeNull();
+    response.next(
+      new Blob(['solid preview\nendsolid preview'], {type: 'model/stl'}),
+    );
+    await fixture.whenStable();
+    expect(frame.contentDocument!.querySelector('.preview-loading')).toBeNull();
+    expect(
+      frame.contentDocument!.querySelector('app-stl-viewer'),
+    ).not.toBeNull();
+  });
+
+  it('shows an asynchronous model error without another click', async () => {
+    fixture.autoDetectChanges();
+    const response = new Subject<Blob>();
+    spyOn(
+      TestBed.inject(AdminOrdersService),
+      'downloadOrderItemFile',
+    ).and.returnValue(response);
+    fixture.componentInstance.selectedOrder = order;
+    fixture.componentInstance.openPreview({
+      id: 'model',
+      originalFilename: 'model.stl',
+    } as import('../services/admin-orders.service').AdminOrderItem);
+    fixture.changeDetectorRef.markForCheck();
+    fixture.detectChanges();
+    response.error(new Error('Missing model'));
+    await fixture.whenStable();
+    expect(frame.contentDocument!.querySelector('.preview-loading')).toBeNull();
+    expect(
+      frame.contentDocument!.querySelector('app-dialog .ui-banner--error'),
+    ).not.toBeNull();
+  });
 
   it('shows the request before sending and records the manual result', () => {
     const service = TestBed.inject(AdminOrdersService);

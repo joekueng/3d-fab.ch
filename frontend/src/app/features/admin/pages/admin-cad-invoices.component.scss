@@ -31,7 +31,8 @@
 }
 
 .create-actions {
-  margin-top: var(--space-3);
+  margin-top: var(--space-4);
+  align-items: center;
 }
 
 .notes-cell {
@@ -99,6 +100,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  flex-wrap: wrap;
 }
 
 .attachment-thumb {
@@ -112,14 +114,15 @@
 .attachment-name {
   flex: 1;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .attachment-upload {
   display: flex;
   justify-content: flex-start;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
 }
 
 @media (max-width: 880px) {
@@ -200,7 +203,7 @@
 .attachment-note {
   color: var(--color-text-muted);
   font-size: 0.85rem;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .invoice-attachments {
@@ -212,4 +215,15 @@
 
 .invoice-attachments h3 {
   margin: 0;
+}
+
+@media (max-width: 640px) {
+  .attachment-upload {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .attachment-row .attachment-name {
+    flex-basis: 100%;
+  }
 }

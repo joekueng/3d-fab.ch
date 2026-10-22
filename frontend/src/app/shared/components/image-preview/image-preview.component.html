@@ -1,0 +1,34 @@
+<button
+  (click)="open.set(true)"
+  [attr.aria-label]="'IMAGE_PREVIEW.OPEN' | translate: { name: alt() }"
+  aria-haspopup="dialog"
+  class="image-trigger"
+  type="button"
+>
+  <img [alt]="alt()" [src]="src()"/>
+</button>
+
+@if (open()) {
+  <app-dialog
+    (dismissed)="close()"
+    [closeLabel]="'IMAGE_PREVIEW.CLOSE' | translate"
+    [fullscreenOnMobile]="true"
+    [title]="alt()"
+    size="large"
+  >
+    <div class="image-actions">
+      <app-button
+        (click)="zoomed.set(!zoomed())"
+        type="button"
+        variant="secondary"
+      >
+        {{
+          (zoomed() ? "IMAGE_PREVIEW.FIT" : "IMAGE_PREVIEW.ZOOM") | translate
+        }}
+      </app-button>
+    </div>
+    <div [class.image-viewport--zoomed]="zoomed()" class="image-viewport">
+      <img [alt]="alt()" [src]="src()"/>
+    </div>
+  </app-dialog>
+}
