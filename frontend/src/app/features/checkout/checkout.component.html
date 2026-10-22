@@ -12,7 +12,7 @@
       class="mobile-summary-open"
     >
       <span>{{ "CHECKOUT.SUMMARY_TITLE" | translate }}</span>
-      <ng-container *ngTemplateOutlet="summaryExpandAction"/>
+      <ng-container *ngTemplateOutlet="summaryExpandAction" />
     </div>
   </div>
 
@@ -222,8 +222,8 @@
               <p class="ui-banner">
                 {{
                   (quoteSession()?.shippingQuote?.status === "MANUAL_QUOTE"
-                      ? "CALC.SHIPPING_MANUAL_QUOTE"
-                      : "CALC.SHIPPING_UNAVAILABLE"
+                    ? "CALC.SHIPPING_MANUAL_QUOTE"
+                    : "CALC.SHIPPING_UNAVAILABLE"
                   ) | translate
                 }}
               </p>
@@ -338,7 +338,7 @@
         </div>
         <div class="item-specs">
           <span *ngIf="!isCadSession() || isShopItem(item)"
-          >{{ "CHECKOUT.QTY" | translate }}: {{ item.quantity }}</span
+            >{{ "CHECKOUT.QTY" | translate }}: {{ item.quantity }}</span
           >
           <span *ngIf="showItemMaterial(item)">
             {{ "CHECKOUT.MATERIAL" | translate }}:
@@ -362,8 +362,8 @@
               class="color-dot"
             ></span>
             <span class="color-name">{{
-                itemColorLabel(item) | translate
-              }}</span>
+              itemColorLabel(item) | translate
+            }}</span>
           </span>
           <span *ngIf="showItemPrintMetrics(item)" class="item-print-metrics">
             {{ item.printTimeSeconds / 3600 | number: "1.1-1" }}h ·
@@ -421,8 +421,8 @@
                   [showDimensions]="expanded"
                 ></app-stl-viewer>
                 <span class="preview-pill">{{
-                    "CHECKOUT.PREVIEW_OPEN" | translate
-                  }}</span>
+                  "CHECKOUT.PREVIEW_OPEN" | translate
+                }}</span>
               </div>
             </button>
           </ng-container>
@@ -459,8 +459,8 @@
           <div class="item-specs-sub">
             {{
               (line.billingType === "HOURLY"
-                  ? "CAD_ORGANIZATION.HOURLY"
-                  : "CAD_ORGANIZATION.FIXED"
+                ? "CAD_ORGANIZATION.HOURLY"
+                : "CAD_ORGANIZATION.FIXED"
               ) | translate
             }}
             · {{ line.quantity }} ×
@@ -469,16 +469,16 @@
         </div>
         <div class="item-price">
           <span class="item-total-price">{{
-              line.lineTotalChf ?? line.quantity * line.unitPriceChf
-                | currency: "CHF"
-            }}</span>
+            line.lineTotalChf ?? line.quantity * line.unitPriceChf
+              | currency: "CHF"
+          }}</span>
         </div>
       </div>
       <div *ngIf="cadTotal() > 0" class="summary-item cad-summary-item">
         <div class="item-details">
           <span class="item-name">{{
-              "CHECKOUT.CAD_SERVICE" | translate
-            }}</span>
+            "CHECKOUT.CAD_SERVICE" | translate
+          }}</span>
           <div class="item-specs-sub">{{ cadHours() }}h</div>
         </div>
         <div class="item-price">

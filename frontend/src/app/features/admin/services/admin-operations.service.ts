@@ -312,7 +312,7 @@ export class AdminOperationsService {
     return this.http.post<AdminTranslateFilamentColorsResponse>(
       `${this.baseUrl}/filaments/translate-colors`,
       {},
-      {withCredentials: true},
+      { withCredentials: true },
     );
   }
 

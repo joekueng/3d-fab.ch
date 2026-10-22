@@ -1,8 +1,8 @@
-import {provideZonelessChangeDetection} from '@angular/core';
-import {TestBed} from '@angular/core/testing';
-import {provideTranslateService} from '@ngx-translate/core';
-import {Subject} from 'rxjs';
-import {AdminTranslateActionComponent} from './admin-translate-action.component';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { provideTranslateService } from '@ngx-translate/core';
+import { Subject } from 'rxjs';
+import { AdminTranslateActionComponent } from './admin-translate-action.component';
 import {
   AdminTranslateLocalizedTextResponse,
   AdminTranslationService,
@@ -21,15 +21,15 @@ describe('AdminTranslateActionComponent', () => {
       providers: [
         provideZonelessChangeDetection(),
         provideTranslateService(),
-        {provide: AdminTranslationService, useValue: service},
+        { provide: AdminTranslationService, useValue: service },
       ],
     });
     const fixture = TestBed.createComponent(AdminTranslateActionComponent);
-    const values = {it: 'Nero', en: 'Old English', de: 'Alt', fr: 'Ancien'};
+    const values = { it: 'Nero', en: 'Old English', de: 'Alt', fr: 'Ancien' };
     fixture.componentRef.setInput('target', values);
     fixture.componentRef.setInput('context', 'Filament colors');
     fixture.componentRef.setInput('fields', {
-      colorLabel: {required: true, values},
+      colorLabel: { required: true, values },
     });
     fixture.autoDetectChanges();
     fixture.componentInstance.overwriteExisting = overwriteExisting;
@@ -59,7 +59,7 @@ describe('AdminTranslateActionComponent', () => {
   };
 
   it('overwrites other languages when explicitly selected and preserves the source', async () => {
-    const {fixture, component, service, response, emitted} = setup(true);
+    const { fixture, component, service, response, emitted } = setup(true);
     await fixture.whenStable();
     fixture.nativeElement.querySelector('button').click();
     expect(service.translateLocalizedText).toHaveBeenCalledOnceWith(
@@ -72,7 +72,7 @@ describe('AdminTranslateActionComponent', () => {
     await fixture.whenStable();
     expect(emitted).toHaveBeenCalledWith(
       jasmine.objectContaining({
-        fields: {colorLabel: {en: 'Black', de: 'Schwarz', fr: 'Noir'}},
+        fields: { colorLabel: { en: 'Black', de: 'Schwarz', fr: 'Noir' } },
       }),
     );
     expect(component.busy()).toBeFalse();
@@ -82,7 +82,7 @@ describe('AdminTranslateActionComponent', () => {
   });
 
   it('requires an Italian source and prevents duplicate requests', () => {
-    const {component, values, service} = setup(true);
+    const { component, values, service } = setup(true);
     values.it = ' ';
     component.translate();
     expect(service.translateLocalizedText).not.toHaveBeenCalled();
@@ -93,12 +93,12 @@ describe('AdminTranslateActionComponent', () => {
   });
 
   it('keeps existing values by default and translates populated optional fields', () => {
-    const {fixture, component, values, response, service, emitted} = setup();
+    const { fixture, component, values, response, service, emitted } = setup();
     fixture.componentRef.setInput('fields', {
-      colorLabel: {required: true, values},
+      colorLabel: { required: true, values },
       description: {
         required: false,
-        values: {it: 'Opaco', en: '', de: '', fr: ''},
+        values: { it: 'Opaco', en: '', de: '', fr: '' },
       },
     });
     fixture.detectChanges();
@@ -106,29 +106,29 @@ describe('AdminTranslateActionComponent', () => {
     expect(
       service.translateLocalizedText.calls.mostRecent().args[0].fields[
         'description'
-        ].required,
+      ].required,
     ).toBeTrue();
     response.next({
       ...translated,
-      fields: {...translated.fields, description: {en: 'Matte'}},
+      fields: { ...translated.fields, description: { en: 'Matte' } },
     });
     expect(emitted.calls.mostRecent().args[0].fields).toEqual({
-      description: {en: 'Matte'},
+      description: { en: 'Matte' },
     });
   });
 
   it('preserves edits made while the request is in progress', () => {
-    const {component, values, response, emitted} = setup(true);
+    const { component, values, response, emitted } = setup(true);
     component.translate();
     values.en = 'Manually edited';
     response.next(translated);
     expect(emitted.calls.mostRecent().args[0].fields).toEqual({
-      colorLabel: {de: 'Schwarz', fr: 'Noir'},
+      colorLabel: { de: 'Schwarz', fr: 'Noir' },
     });
   });
 
   it('discards translations when the source changes or the editor switches records', async () => {
-    const {fixture, component, values, response, emitted} = setup(true);
+    const { fixture, component, values, response, emitted } = setup(true);
     component.translate();
     values.it = 'Bianco';
     response.next(translated);
@@ -143,7 +143,7 @@ describe('AdminTranslateActionComponent', () => {
   });
 
   it('renders asynchronous errors and allows retry', async () => {
-    const {fixture, component, response} = setup(true);
+    const { fixture, component, response } = setup(true);
     component.translate();
     response.error(new Error('Unavailable'));
     await fixture.whenStable();

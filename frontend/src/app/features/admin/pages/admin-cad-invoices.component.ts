@@ -848,7 +848,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
     this.managedPreviewActive = false;
     this.managedPreviewTotalChf = null;
     for (const row of this.managedRows) {
-      row.item = {...row.item, newUnitPriceChf: null};
+      row.item = { ...row.item, newUnitPriceChf: null };
     }
   }
 

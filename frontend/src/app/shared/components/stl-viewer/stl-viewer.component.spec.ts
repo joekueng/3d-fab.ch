@@ -64,7 +64,7 @@ describe('StlViewerComponent asynchronous loading', () => {
   });
 
   it('renders a square thumbnail without dimensions and applies the initial zoom', async () => {
-    const {fixture, readFinished} = setup();
+    const { fixture, readFinished } = setup();
     fixture.componentRef.setInput('aspectRatio', 1);
     fixture.componentRef.setInput('initialZoom', 1.35);
     fixture.componentRef.setInput('showDimensions', false);

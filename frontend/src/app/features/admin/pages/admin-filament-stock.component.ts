@@ -9,8 +9,8 @@ import {
   AdminUpsertFilamentMaterialTypePayload,
   AdminUpsertFilamentVariantPayload,
 } from '../services/admin-operations.service';
-import {forkJoin, switchMap} from 'rxjs';
-import {TranslatePipe, TranslateService} from '@ngx-translate/core';
+import { forkJoin, switchMap } from 'rxjs';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { getColorHex } from '../../../core/constants/colors.const';
 import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
 import { AppCheckboxComponent } from '../../../shared/components/app-checkbox/app-checkbox.component';
@@ -440,11 +440,11 @@ export class AdminFilamentStockComponent implements OnInit {
             const updated = labelsById.get(variant.id);
             return updated
               ? {
-                ...variant,
-                colorLabelEn: updated.colorLabelEn,
-                colorLabelDe: updated.colorLabelDe,
-                colorLabelFr: updated.colorLabelFr,
-              }
+                  ...variant,
+                  colorLabelEn: updated.colorLabelEn,
+                  colorLabelDe: updated.colorLabelDe,
+                  colorLabelFr: updated.colorLabelFr,
+                }
               : variant;
           });
           this.translatingColors = false;

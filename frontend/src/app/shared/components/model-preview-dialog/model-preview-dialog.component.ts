@@ -7,11 +7,11 @@ import {
   output,
   signal,
 } from '@angular/core';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {TranslatePipe} from '@ngx-translate/core';
-import {Observable} from 'rxjs';
-import {AppDialogComponent} from '../app-dialog/app-dialog.component';
-import {StlViewerComponent} from '../stl-viewer/stl-viewer.component';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { TranslatePipe } from '@ngx-translate/core';
+import { Observable } from 'rxjs';
+import { AppDialogComponent } from '../app-dialog/app-dialog.component';
+import { StlViewerComponent } from '../stl-viewer/stl-viewer.component';
 
 @Component({
   selector: 'app-model-preview-dialog',

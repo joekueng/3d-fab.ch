@@ -164,10 +164,7 @@
         },
         "hdt": {
           "LABEL": "Thermische Bestandigkeit",
-          "LABEL_LINES": [
-            "Thermische",
-            "Bestandigkeit"
-          ],
+          "LABEL_LINES": ["Thermische", "Bestandigkeit"],
           "DESCRIPTION": "HDT: Warmeformbestandigkeit des Materials (C).",
           "UNIT": "C"
         }

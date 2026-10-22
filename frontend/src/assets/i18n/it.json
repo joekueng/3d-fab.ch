@@ -133,10 +133,7 @@
         },
         "hdt": {
           "LABEL": "Resistenza termica",
-          "LABEL_LINES": [
-            "Resistenza",
-            "termica"
-          ],
+          "LABEL_LINES": ["Resistenza", "termica"],
           "DESCRIPTION": "HDT: temperatura di deformazione del materiale (C).",
           "UNIT": "C"
         }
@@ -328,12 +325,7 @@
           "Sensibile all umidita durante stampa e conservazione.",
           "Rigidita molto bassa e resistenza termica limitata."
         ],
-        "IDEAL_FOR": [
-          "Guarnizioni",
-          "Bumper",
-          "Grip",
-          "Cover antiurto"
-        ],
+        "IDEAL_FOR": ["Guarnizioni", "Bumper", "Grip", "Cover antiurto"],
         "SOURCES": {
           "wikipedia-tpu": {
             "LABEL": "Wikipedia - Poliuretano termoplastico"
@@ -361,11 +353,7 @@
           "Fragile sotto urto.",
           "Scarsa resistenza al calore e all UV prolungato."
         ],
-        "IDEAL_FOR": [
-          "Mockup",
-          "Prototipi rapidi",
-          "Pezzi estetici indoor"
-        ],
+        "IDEAL_FOR": ["Mockup", "Prototipi rapidi", "Pezzi estetici indoor"],
         "SOURCES": {
           "wikipedia-pla": {
             "LABEL": "Wikipedia - Acido polilattico"
@@ -385,10 +373,7 @@
           "Layer 0.16-0.24 mm mantiene effetto opaco uniforme.",
           "Raffreddamento costante aiuta la texture superficiale."
         ],
-        "PROS": [
-          "Aspetto opaco pulito.",
-          "Stampa semplice come il PLA base."
-        ],
+        "PROS": ["Aspetto opaco pulito.", "Stampa semplice come il PLA base."],
         "CONS": [
           "Proprieta meccaniche limitate per uso strutturale.",
           "Sensibile al calore come altri PLA."

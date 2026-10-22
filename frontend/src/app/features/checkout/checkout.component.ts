@@ -1,4 +1,4 @@
-import {ImagePreviewComponent} from '../../shared/components/image-preview/image-preview.component';
+import { ImagePreviewComponent } from '../../shared/components/image-preview/image-preview.component';
 import { ServiceLine } from '../../shared/models/service-line';
 import { AppDialogComponent } from '../../shared/components/app-dialog/app-dialog.component';
 import { FormControl } from '@angular/forms';

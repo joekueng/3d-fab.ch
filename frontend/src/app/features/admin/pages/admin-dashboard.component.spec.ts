@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import {Component, input} from '@angular/core';
-import {StlViewerComponent} from '../../../shared/components/stl-viewer/stl-viewer.component';
+import { Component, input } from '@angular/core';
+import { StlViewerComponent } from '../../../shared/components/stl-viewer/stl-viewer.component';
 import { provideTranslateService } from '@ngx-translate/core';
-import {of, Subject} from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { AdminDashboardComponent } from './admin-dashboard.component';
 import { LanguageService } from '../../../core/services/language.service';
 import {
@@ -11,7 +11,7 @@ import {
   ReviewRequestPreview,
 } from '../services/admin-orders.service';
 
-@Component({selector: 'app-stl-viewer', template: ''})
+@Component({ selector: 'app-stl-viewer', template: '' })
 class StlViewerStubComponent {
   readonly file = input<Blob | null>(null);
   readonly color = input('');
@@ -57,8 +57,8 @@ describe('Admin orders responsive layout', () => {
       ],
     })
       .overrideComponent(AdminDashboardComponent, {
-        remove: {imports: [StlViewerComponent]},
-        add: {imports: [StlViewerStubComponent]},
+        remove: { imports: [StlViewerComponent] },
+        add: { imports: [StlViewerStubComponent] },
       })
       .compileComponents();
     fixture = TestBed.createComponent(AdminDashboardComponent);
@@ -113,7 +113,7 @@ describe('Admin orders responsive layout', () => {
       frame.contentDocument!.querySelector('.preview-loading'),
     ).not.toBeNull();
     response.next(
-      new Blob(['solid preview\nendsolid preview'], {type: 'model/stl'}),
+      new Blob(['solid preview\nendsolid preview'], { type: 'model/stl' }),
     );
     await fixture.whenStable();
     expect(frame.contentDocument!.querySelector('.preview-loading')).toBeNull();

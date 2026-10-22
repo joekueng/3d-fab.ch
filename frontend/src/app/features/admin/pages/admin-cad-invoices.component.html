@@ -110,7 +110,7 @@
                 </tr>
               </thead>
               <tbody>
-              <tr *ngFor="let row of managedRows; trackBy: trackManagedRow">
+                <tr *ngFor="let row of managedRows; trackBy: trackManagedRow">
                   <td
                     class="file-cell"
                     [attr.data-label]="'CAD_ITEM_PRICING.FILE' | translate"
@@ -389,7 +389,7 @@
             {{
               (attachmentUploading
                 ? "CAD_ITEM_PRICING.ATTACH_UPLOADING"
-                  : "CAD_ITEM_PRICING.ATTACH_ADD"
+                : "CAD_ITEM_PRICING.ATTACH_ADD"
               ) | translate
             }}
           </app-button>

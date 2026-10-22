@@ -1,7 +1,7 @@
-import {Component, input, signal} from '@angular/core';
-import {TranslatePipe} from '@ngx-translate/core';
-import {AppButtonComponent} from '../app-button/app-button.component';
-import {AppDialogComponent} from '../app-dialog/app-dialog.component';
+import { Component, input, signal } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
+import { AppButtonComponent } from '../app-button/app-button.component';
+import { AppDialogComponent } from '../app-dialog/app-dialog.component';
 
 @Component({
   selector: 'app-image-preview',

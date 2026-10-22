@@ -11,7 +11,7 @@
       {{ "ADMIN_ORDERS.PREVIEW_ERROR" | translate }}
     </p>
   } @else if (file(); as preview) {
-    <app-stl-viewer [color]="color()" [file]="preview" [height]="520"/>
+    <app-stl-viewer [color]="color()" [file]="preview" [height]="520" />
   } @else {
     <p class="preview-loading">
       {{ "ADMIN_ORDERS.PREVIEW_LOADING" | translate }}

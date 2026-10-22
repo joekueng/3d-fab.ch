@@ -14,11 +14,9 @@ import {
 } from '../services/admin-operations.service';
 import { CopyOnClickDirective } from '../../../shared/directives/copy-on-click.directive';
 import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
-import {
-  ModelPreviewDialogComponent
-} from '../../../shared/components/model-preview-dialog/model-preview-dialog.component';
-import {TranslatePipe} from '@ngx-translate/core';
-import {Observable} from 'rxjs';
+import { ModelPreviewDialogComponent } from '../../../shared/components/model-preview-dialog/model-preview-dialog.component';
+import { TranslatePipe } from '@ngx-translate/core';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-admin-sessions',

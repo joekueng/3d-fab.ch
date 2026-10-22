@@ -164,10 +164,7 @@
         },
         "hdt": {
           "LABEL": "Heat resistance",
-          "LABEL_LINES": [
-            "Heat",
-            "resistance"
-          ],
+          "LABEL_LINES": ["Heat", "resistance"],
           "DESCRIPTION": "HDT: heat deflection temperature of the material (C).",
           "UNIT": "C"
         }
@@ -359,12 +356,7 @@
           "Sensitive to moisture during printing and storage.",
           "Very low stiffness and limited heat resistance."
         ],
-        "IDEAL_FOR": [
-          "Gaskets",
-          "Bumpers",
-          "Grips",
-          "Impact-resistant covers"
-        ],
+        "IDEAL_FOR": ["Gaskets", "Bumpers", "Grips", "Impact-resistant covers"],
         "SOURCES": {
           "wikipedia-tpu": {
             "LABEL": "Wikipedia - Thermoplastic polyurethane"
@@ -392,11 +384,7 @@
           "Brittle under impact.",
           "Poor resistance to heat and prolonged UV exposure."
         ],
-        "IDEAL_FOR": [
-          "Mockups",
-          "Quick prototypes",
-          "Indoor visual parts"
-        ],
+        "IDEAL_FOR": ["Mockups", "Quick prototypes", "Indoor visual parts"],
         "SOURCES": {
           "wikipedia-pla": {
             "LABEL": "Wikipedia - Polylactic acid"
@@ -424,11 +412,7 @@
           "Limited mechanical properties for structural use.",
           "Heat sensitive like other PLA materials."
         ],
-        "IDEAL_FOR": [
-          "Display objects",
-          "Product design",
-          "Aesthetic mockups"
-        ],
+        "IDEAL_FOR": ["Display objects", "Product design", "Aesthetic mockups"],
         "SOURCES": {
           "wikipedia-pla": {
             "LABEL": "Wikipedia - Polylactic acid"

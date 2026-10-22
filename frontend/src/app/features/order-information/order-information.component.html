@@ -21,10 +21,10 @@
       >
         {{
           (orderId()
-              ? "INFORMATION.ADD"
-              : text || attachments.length || files.length
-                ? "INFORMATION.EDIT"
-                : "INFORMATION.ADD_EMPTY"
+            ? "INFORMATION.ADD"
+            : text || attachments.length || files.length
+              ? "INFORMATION.EDIT"
+              : "INFORMATION.ADD_EMPTY"
           ) | translate
         }}
       </app-button>
@@ -39,7 +39,7 @@
       @for (file of attachments; track file.id) {
         <div class="attachment ui-subpanel">
           @if (previews()[file.id]) {
-            <app-image-preview [alt]="file.name" [src]="previews()[file.id]"/>
+            <app-image-preview [alt]="file.name" [src]="previews()[file.id]" />
           }
           <span
             >{{ file.name }} · {{ file.size / 1024 | number: "1.0-0" }} KB</span
@@ -55,7 +55,7 @@
       @for (file of files; track file) {
         <div class="attachment ui-subpanel">
           @if (file.type.startsWith("image/")) {
-            <app-image-preview [alt]="file.name" [src]="preview(file)"/>
+            <app-image-preview [alt]="file.name" [src]="preview(file)" />
           }
           <span
             >{{ file.name }} · {{ file.size / 1024 | number: "1.0-0" }} KB</span

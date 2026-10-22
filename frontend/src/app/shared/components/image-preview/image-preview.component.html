@@ -5,7 +5,7 @@
   class="image-trigger"
   type="button"
 >
-  <img [alt]="alt()" [src]="src()"/>
+  <img [alt]="alt()" [src]="src()" />
 </button>
 
 @if (open()) {
@@ -28,7 +28,7 @@
       </app-button>
     </div>
     <div [class.image-viewport--zoomed]="zoomed()" class="image-viewport">
-      <img [alt]="alt()" [src]="src()"/>
+      <img [alt]="alt()" [src]="src()" />
     </div>
   </app-dialog>
 }

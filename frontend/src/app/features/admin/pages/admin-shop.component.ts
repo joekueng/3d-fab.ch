@@ -80,7 +80,7 @@ import {
   validateMediaTranslations,
 } from './admin-shop-image.util';
 import { AdminLanguageToolbarComponent } from '../../../shared/components/admin-language-toolbar/admin-language-toolbar.component';
-import {AdminTranslateActionComponent} from '../components/admin-translate-action/admin-translate-action.component';
+import { AdminTranslateActionComponent } from '../components/admin-translate-action/admin-translate-action.component';
 import {
   AdminLocalizedTextFieldPayload,
   AdminTranslateLocalizedTextResponse,
@@ -538,9 +538,9 @@ export class AdminShopComponent implements OnInit, OnDestroy {
 
   categoryTranslationFields(): Record<string, AdminLocalizedTextFieldPayload> {
     return {
-      name: {required: true, values: this.categoryForm.names},
-      description: {required: false, values: this.categoryForm.descriptions},
-      seoTitle: {required: false, values: this.categoryForm.seoTitles},
+      name: { required: true, values: this.categoryForm.names },
+      description: { required: false, values: this.categoryForm.descriptions },
+      seoTitle: { required: false, values: this.categoryForm.seoTitles },
       seoDescription: {
         required: false,
         values: this.categoryForm.seoDescriptions,
@@ -570,8 +570,8 @@ export class AdminShopComponent implements OnInit, OnDestroy {
       fr: this.imageUploadState.translations.fr[field],
     });
     return {
-      title: {required: true, values: valuesFor('title')},
-      altText: {required: true, values: valuesFor('altText')},
+      title: { required: true, values: valuesFor('title') },
+      altText: { required: true, values: valuesFor('altText') },
     };
   }
 

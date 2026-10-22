@@ -19,12 +19,10 @@ import { CopyOnClickDirective } from '../../../shared/directives/copy-on-click.d
 import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
 import { AppSelectComponent } from '../../../shared/components/app-select/app-select.component';
 import { downloadBlobInBrowser } from '../../../core/utils/browser-download';
-import {
-  ModelPreviewDialogComponent
-} from '../../../shared/components/model-preview-dialog/model-preview-dialog.component';
-import {ModelPreviewService} from '../../calculator/services/model-preview.service';
-import {TranslatePipe} from '@ngx-translate/core';
-import {Observable, of, switchMap} from 'rxjs';
+import { ModelPreviewDialogComponent } from '../../../shared/components/model-preview-dialog/model-preview-dialog.component';
+import { ModelPreviewService } from '../../calculator/services/model-preview.service';
+import { TranslatePipe } from '@ngx-translate/core';
+import { Observable, of, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-admin-contact-requests',

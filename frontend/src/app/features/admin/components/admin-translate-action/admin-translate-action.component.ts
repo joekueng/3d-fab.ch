@@ -8,12 +8,12 @@ import {
   output,
   signal,
 } from '@angular/core';
-import {FormsModule} from '@angular/forms';
-import {TranslatePipe} from '@ngx-translate/core';
-import {Subscription, take} from 'rxjs';
-import {AppButtonComponent} from '../../../../shared/components/app-button/app-button.component';
-import {AppCheckboxComponent} from '../../../../shared/components/app-checkbox/app-checkbox.component';
-import {AppSelectComponent} from '../../../../shared/components/app-select/app-select.component';
+import { FormsModule } from '@angular/forms';
+import { TranslatePipe } from '@ngx-translate/core';
+import { Subscription, take } from 'rxjs';
+import { AppButtonComponent } from '../../../../shared/components/app-button/app-button.component';
+import { AppCheckboxComponent } from '../../../../shared/components/app-checkbox/app-checkbox.component';
+import { AppSelectComponent } from '../../../../shared/components/app-select/app-select.component';
 import {
   ADMIN_LANGUAGE_LABELS,
   ADMIN_LOCALIZED_LANGUAGES,
@@ -40,9 +40,9 @@ import {
 })
 export class AdminTranslateActionComponent implements OnChanges, OnDestroy {
   // Use a draft's identity, such as its names/translations map, to cancel on record changes.
-  @Input({required: true}) target!: object;
-  @Input({required: true}) context = '';
-  @Input({required: true}) fields: Record<
+  @Input({ required: true }) target!: object;
+  @Input({ required: true }) context = '';
+  @Input({ required: true }) fields: Record<
     string,
     AdminLocalizedTextFieldPayload
   > = {};
@@ -107,7 +107,7 @@ export class AdminTranslateActionComponent implements OnChanges, OnDestroy {
             // Populated optional fields must also trigger translation when required fields are already complete.
             required:
               field.required !== false || !!field.values[sourceLanguage].trim(),
-            values: {...field.values},
+            values: { ...field.values },
           },
         ]),
       ),
@@ -126,7 +126,7 @@ export class AdminTranslateActionComponent implements OnChanges, OnDestroy {
             if (
               !current ||
               current.values[payload.sourceLanguage] !==
-              requested.values[payload.sourceLanguage]
+                requested.values[payload.sourceLanguage]
             )
               continue;
             for (const language of response.targetLanguages) {
@@ -142,7 +142,7 @@ export class AdminTranslateActionComponent implements OnChanges, OnDestroy {
             }
           }
           this.busy.set(false);
-          this.translated.emit({...response, fields});
+          this.translated.emit({ ...response, fields });
           this.status.set(Object.keys(fields).length ? 'updated' : 'empty');
         },
         error: () => {

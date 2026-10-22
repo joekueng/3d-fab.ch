@@ -1,4 +1,4 @@
-import {ImagePreviewComponent} from '../../shared/components/image-preview/image-preview.component';
+import { ImagePreviewComponent } from '../../shared/components/image-preview/image-preview.component';
 import { LanguageService } from '../../core/services/language.service';
 import { CopyOnClickDirective } from '../../shared/directives/copy-on-click.directive';
 import {

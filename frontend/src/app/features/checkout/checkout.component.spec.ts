@@ -24,12 +24,12 @@ describe('CheckoutComponent', () => {
       de: 'Schwarz',
       fr: 'Noir',
     })) {
-      const {component} = createComponent('browser', {}, language);
+      const { component } = createComponent('browser', {}, language);
       expect(component.itemColorLabel(item)).toBe(expected);
     }
   });
   it('uses the filament palette translation for print colors and shop labels for products', () => {
-    const {component} = createComponent();
+    const { component } = createComponent();
     component.materialOptions.set([
       {
         code: 'PLA',
@@ -54,10 +54,10 @@ describe('CheckoutComponent', () => {
       },
     ]);
     expect(
-      component.itemColorLabel({filamentVariantId: 42, colorCode: 'Black'}),
+      component.itemColorLabel({ filamentVariantId: 42, colorCode: 'Black' }),
     ).toBe('Nero opaco');
     expect(
-      component.itemColorLabel({materialCode: 'PLA', colorCode: 'Black'}),
+      component.itemColorLabel({ materialCode: 'PLA', colorCode: 'Black' }),
     ).toBe('Nero opaco');
     expect(
       component.itemColorLabel({
@@ -67,18 +67,18 @@ describe('CheckoutComponent', () => {
     ).toBe('Nero shop');
   });
   it('keeps the same summary key when the server replaces an item after a color change', () => {
-    const {component} = createComponent();
-    const original = {id: 'part-1', quantity: 1, filamentVariantId: 1};
-    const updated = {...original, filamentVariantId: 2};
+    const { component } = createComponent();
+    const original = { id: 'part-1', quantity: 1, filamentVariantId: 1 };
+    const updated = { ...original, filamentVariantId: 2 };
     expect(component.trackSummaryItem(0, original)).toBe(
       component.trackSummaryItem(0, updated),
     );
     expect(component.trackSummaryItem(0, original)).not.toBe(
-      component.trackSummaryItem(1, {id: 'part-2'}),
+      component.trackSummaryItem(1, { id: 'part-2' }),
     );
   });
   it('loads the stored STL preview for every supported original model format', () => {
-    const {component, quoteService} = createComponent();
+    const { component, quoteService } = createComponent();
     const formats = ['stl', 'obj', '3mf', 'step', 'STP'];
     const items = formats.map((format, index) => ({
       id: `model-${index}`,
@@ -86,10 +86,10 @@ describe('CheckoutComponent', () => {
     }));
     quoteService.getQuoteSession.and.returnValue(
       of({
-        session: {id: 'formats', status: 'CAD_ACTIVE'},
+        session: { id: 'formats', status: 'CAD_ACTIVE' },
         items: [
           ...items,
-          {id: 'pdf', originalFilename: 'notes.pdf'},
+          { id: 'pdf', originalFilename: 'notes.pdf' },
           {
             id: 'shop',
             originalFilename: 'shop.stl',

@@ -133,10 +133,7 @@
         },
         "hdt": {
           "LABEL": "Resistance thermique",
-          "LABEL_LINES": [
-            "Resistance",
-            "thermique"
-          ],
+          "LABEL_LINES": ["Resistance", "thermique"],
           "DESCRIPTION": "HDT : temperature de deformation du materiau (C).",
           "UNIT": "C"
         }
@@ -328,12 +325,7 @@
           "Sensible a l'humidite pendant l'impression et le stockage.",
           "Rigidite tres faible et resistance thermique limitee."
         ],
-        "IDEAL_FOR": [
-          "Joints",
-          "Bumpers",
-          "Grips",
-          "Capots antichoc"
-        ],
+        "IDEAL_FOR": ["Joints", "Bumpers", "Grips", "Capots antichoc"],
         "SOURCES": {
           "wikipedia-tpu": {
             "LABEL": "Wikipedia - Polyurethane thermoplastique"
