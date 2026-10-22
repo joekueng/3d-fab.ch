@@ -28,7 +28,7 @@
 
   <div class="setup-note">
     @if (shippingUnavailable()) {
-      <p class="ui-banner">{{ "CALC.SHIPPING_UNAVAILABLE" | translate }}</p>
+      <p class="ui-banner">{{ shippingMessageKey() | translate }}</p>
     }
     <small class="shipping-note" style="color: #666">{{
       "CALC.SHIPPING_NOTE" | translate

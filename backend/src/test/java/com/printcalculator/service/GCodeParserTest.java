@@ -11,6 +11,53 @@ import static org.junit.jupiter.api.Assertions.*;
 class GCodeParserTest {
 
     @Test
+    void multiFilament3mfStatisticsRemainUsableForShipping() throws IOException {
+        var path = java.nio.file.Files.createTempFile("multi_filament", ".gcode");
+        try {
+            java.nio.file.Files.writeString(path, """
+                    ; estimated printing time (normal mode) = 3h 48m
+                    ; filament used [g] = 0.00, 42.50, 10.25
+                    ; filament used [mm] = 0.00, 12000.00, 3000.00
+                    ; filament used [g] = 0.00, 42.50, 10.25
+                    """);
+            var stats = new GCodeParser().parse(path.toFile());
+            assertEquals(52.75, stats.filamentWeightGrams(), 0.001);
+            assertEquals(15000, stats.filamentLengthMm(), 0.001);
+            var item = new com.printcalculator.entity.QuoteLineItem();
+            item.setId(java.util.UUID.randomUUID());
+            item.setStatus("READY");
+            item.setQuantity(1);
+            item.setMaterialGrams(java.math.BigDecimal.valueOf(stats.filamentWeightGrams()));
+            item.setBoundingBoxXMm(java.math.BigDecimal.valueOf(100));
+            item.setBoundingBoxYMm(java.math.BigDecimal.valueOf(60));
+            item.setBoundingBoxZMm(java.math.BigDecimal.valueOf(20));
+            var shipping = new ShippingQuoteService(3, ShippingQuoteService.DEFAULT_PROFILES).quote(java.util.List.of(item));
+            assertEquals("QUOTED", shipping.status());
+            assertEquals(new java.math.BigDecimal("4.00"), shipping.costChf());
+        } finally {
+            java.nio.file.Files.deleteIfExists(path);
+        }
+    }
+
+    @Test
+    void explicitTotalTakesPriorityWithoutDoubleCountingFilaments() throws IOException {
+        var path = java.nio.file.Files.createTempFile("filament_total", ".gcode");
+        try {
+            java.nio.file.Files.writeString(path, """
+                    ; total filament used [g] = 52.76
+                    ; filament used [g] = 0, 42.50, 10.25
+                    ; filament used [g] = NaN, 1
+                    ; filament used [mm] = 1, -2
+                    """);
+            var stats = new GCodeParser().parse(path.toFile());
+            assertEquals(52.76, stats.filamentWeightGrams(), 0.001);
+            assertEquals(0, stats.filamentLengthMm());
+        } finally {
+            java.nio.file.Files.deleteIfExists(path);
+        }
+    }
+
+    @Test
     void parse_validGcode_returnsCorrectStats() throws IOException {
         // Arrange
         File tempFile = File.createTempFile("test", ".gcode");

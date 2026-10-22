@@ -37,6 +37,9 @@ follow [public and admin order responses](README.md#public-and-admin-order-respo
 - QR location is inferred from backend-observed IP data; proxy-header trust and GeoLite configuration are security-sensitive.
 - SMTP, TWINT, QR-bill, and OpenAI translation integrations must be configuration-driven. Never log credentials or full sensitive request data.
 
+For the bulk Italian color translation action and propagation to existing shop
+variants, follow [filament and shop color translations](README.md#filament-and-shop-color-translations).
+
 For calculator batches, admission budgets and queue behavior, follow [calculator admission and slicing capacity](README.md#calculator-admission-and-slicing-capacity). Preserve admission before quote reset and session/IP-bound permit consumption.
 
 For accepted calculator formats, temporary preview conversion and original-file retention,

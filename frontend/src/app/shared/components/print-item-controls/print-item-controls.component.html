@@ -1,6 +1,11 @@
-<div class="card-controls" (click)="$event.stopPropagation()">
+<div
+  (click)="$event.stopPropagation()"
+  [class.card-controls--compact]="compact()"
+  [class.card-controls--stacked]="stacked()"
+  class="card-controls"
+>
   <label class="qty-group">
-    <span>{{ "CALC.QTY_SHORT" | translate }}</span>
+    <span>{{ quantityLabelKey() | translate }}</span>
     <input
       type="number"
       min="1"
@@ -22,6 +27,9 @@
       [selectedVariantId]="variantId()"
       [variants]="variants()"
       [disabled]="disabled() || !variants().length"
+      [compact]="compact()"
+      [field]="stacked()"
+      [showLabel]="showColorLabel()"
       (colorSelected)="colorChange.emit($event)"
     />
   </div>

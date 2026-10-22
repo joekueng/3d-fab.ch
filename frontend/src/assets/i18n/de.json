@@ -786,8 +786,9 @@
     "PROCESSING": "Verarbeitung...",
     "NOTES_PLACEHOLDER": "Spezifische Anweisungen...",
     "SETUP_NOTE": "* Beinhaltet {{cost}} als Einrichtungskosten",
-    "SHIPPING_NOTE": "* Versandkosten werden anhand der verpackten Masse und des Gewichts geschätzt und an der Kasse bestätigt.",
-    "SHIPPING_UNAVAILABLE": "Versand ist in dieser Summe nicht enthalten. Schliessen Sie die Berechnung ab oder fragen Sie die Versandkosten über eine Beratung an.",
+    "SHIPPING_NOTE": "* Die Versandkosten werden in diesem Schritt anhand der verpackten Masse und des Gewichts berechnet.",
+    "SHIPPING_UNAVAILABLE": "Die Versandkosten können nicht berechnet werden, da gültige Gewichts- oder Massangaben fehlen. Berechnen Sie das Angebot erneut. Falls das Problem weiterhin besteht, fragen Sie eine Beratung an.",
+    "SHIPPING_MANUAL_QUOTE": "Die Masse oder das Gewicht dieser Bestellung erfordern ein individuelles Versandangebot. Fragen Sie eine Beratung an.",
     "ERROR_ZERO_PRICE": "Bei der Berechnung ist etwas schiefgelaufen. Versuche ein anderes Format oder kontaktiere uns direkt über \"Beratung anfragen\".",
     "ZERO_RESULT_TITLE": "Ungültiges Ergebnis",
     "ZERO_RESULT_HELP": "Die Berechnung hat ungültige Werte (0) geliefert. Versuche ein anderes Dateiformat oder kontaktiere uns direkt über \"Beratung anfragen\".",
@@ -1210,6 +1211,7 @@
     "HERO_SUBTITLE": "Wir sind hier, um Ihnen zu helfen. Füllen Sie das untenstehende Formular für jede Anfrage aus."
   },
   "CHECKOUT": {
+    "CUSTOMIZE_ITEM": "Menge und Farbe wählen",
     "COLOR": "Farbe",
     "ERR_UPDATE_ITEM": "Der Artikel konnte nicht aktualisiert werden. Bitte Menge und Farbe prüfen und erneut versuchen.",
     "TITLE": "Checkout",
@@ -1235,6 +1237,8 @@
     "PLACE_ORDER": "Bestellung absenden",
     "PROCESSING": "Verarbeitung...",
     "SUMMARY_TITLE": "Bestellübersicht",
+    "SUMMARY_EXPAND": "Bestellübersicht vergrößern",
+    "SUMMARY_CLOSE": "Übersicht schließen",
     "SUBTOTAL": "Zwischensumme",
     "ITEMS_BASE_SUBTOTAL": "Artikelbasis-Zwischensumme",
     "MACHINE_COST": "Maschinenkosten",
@@ -1483,6 +1487,12 @@
       "MATTE_GRAY": "Matt Grau"
     }
   },
+  "IMAGE_PREVIEW": {
+    "OPEN": "Bild vergrößern: {{name}}",
+    "CLOSE": "Schließen",
+    "ZOOM": "Originalgröße",
+    "FIT": "An Bildschirm anpassen"
+  },
   "COMMON": {
     "REQUIRED": "Pflichtfeld",
     "INVALID_EMAIL": "Ungültige E-Mail",
@@ -1656,5 +1666,17 @@
     "ATTACH_AFTER_PAYMENT": "Nach der Zahlung herunterladbar",
     "ATTACH_REQUIRES_SESSION": "Speichern Sie die Rechnung, um Anhänge hochzuladen.",
     "ATTACH_PENDING": "Wird beim Speichern hochgeladen"
+  },
+  "ADMIN_TRANSLATION": {
+    "SOURCE_LANGUAGE": "Ausgangssprache",
+    "OVERWRITE": "Vorhandene Übersetzungen überschreiben",
+    "TRANSLATE": "Übersetzen",
+    "TRANSLATING": "Wird übersetzt…",
+    "HINT": "Fülle die Felder in der Ausgangssprache aus. Die Übersetzungen werden ins Formular eingefügt: Speichere, um sie zu übernehmen.",
+    "ERROR": "Übersetzung fehlgeschlagen. Bitte erneut versuchen.",
+    "UPDATED": "Übersetzungen ins Formular eingefügt. Speichere, um sie zu übernehmen.",
+    "EMPTY": "Keine Felder zu übersetzen oder zu aktualisieren.",
+    "COLORS_HINT": "Übersetzt alle gespeicherten Farben aus dem Italienischen, ersetzt EN, DE und FR und speichert die Übersetzungen für Filamente und Shop.",
+    "COLORS_SAVED": "Farbübersetzungen für Filamente und Shop gespeichert."
   }
 }

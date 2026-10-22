@@ -151,6 +151,16 @@ settings or guessed unit conversions to this per-file value.
 
 Keep the original file in requests and drafts. Generated preview files belong in
 `previewFile`, never in `file`. Restored sessions use the stored converted STL.
+Checkout reuses that stored STL through `getLineItemStlPreview` for all five
+supported extensions. Do not restrict previews to original `.stl` filenames or
+upload models again when opening the summary. Item headers pair the name with
+the line total; the next row groups material, print time and weight. The expanded
+summary uses two columns on desktop and one on mobile, with square model previews.
+Both summary views place stacked quantity/color fields beside the thumbnail;
+the expand icon sits beside its heading and opens the same complete summary.
+Track print summary cards by their persistent item ID. Updating CAD quantity or
+color returns a new session object; retaining cards avoids recreating WebGL
+viewers and preserves the scroll position and 3D camera while applying colors.
 See the [backend conversion contract](../backend/README.md#model-conversion-and-previews).
 
 ## Internationalization (i18n)
@@ -163,6 +173,26 @@ Translations are stored in `src/assets/i18n/`.
 - `fr.json` (French)
 
 To add a language, create the JSON file, update the supported-language types and `LanguageService` in `src/app/core/services/language.service.ts`, and update the static translation loader. Run `npm run check:i18n` before committing.
+
+## Admin content translation
+
+Reuse `AdminTranslationService` and the existing localized-text backend for admin
+content. `features/admin/components/admin-translate-action` supplies source language,
+optional overwrite, loading/error feedback, and draft-only results for category
+content/SEO and product image title/alt text. Identify each draft with its names or
+translations map so switching records cancels pending results. Responses preserve
+the source and edits made while translating; saving remains the owning form's job.
+Populated optional fields participate even when required fields are already complete.
+
+Filament colors use the page-header **Translate** action beside **Refresh** instead:
+`POST /api/admin/filaments/translate-colors` always translates saved Italian labels,
+overwrites EN/DE/FR, and persists filament and existing shop variant labels together.
+Save Italian changes/new colors before running it. Keep internal color names/IDs and
+hex values stable; public selectors, shop, cart and orders consume the existing locale
+labels. Checkout print summaries use the session's localized labels, with filament
+options by ID as a fallback.
+Browser scenarios `UI-ADMIN-TRANSLATION-001/002` use simulated APIs and cover the
+header action, overwrite results, failure recovery, category/image editors and mobile.
 
 ## Customer order tracking
 

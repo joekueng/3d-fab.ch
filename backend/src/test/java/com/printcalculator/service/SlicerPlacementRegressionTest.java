@@ -57,6 +57,22 @@ class SlicerPlacementRegressionTest {
         assertEquals("synthetic input", Files.readString(input));
     }
 
+    @Test
+    void successfulCliWithMissingWeightCannotProduceAReadyQuote() throws Exception {
+        Path executable = Files.writeString(tempDir.resolve("slicer"), """
+                #!/bin/sh
+                echo '; estimated printing time = 3h 48m' > part.gcode
+                echo '; filament used [g] = 0' >> part.gcode
+                exit 0
+                """);
+        assertTrue(executable.toFile().setExecutable(true));
+        var slicer = configuredSlicer(executable, 20);
+        Path input = Files.writeString(tempDir.resolve("part.stl"), "synthetic input");
+        var failure = assertThrows(ModelProcessingException.class,
+                () -> slicer.slice(input.toFile(), "machine", "filament", "process", null, null));
+        assertEquals("SLICER_STATS_UNAVAILABLE", failure.getCode());
+    }
+
     private SlicerService configuredSlicer(Path executable, double side) throws Exception {
         var mapper = new ObjectMapper();
         var profiles = mock(ProfileManager.class);
@@ -68,7 +84,7 @@ class SlicerPlacementRegressionTest {
         when(profiles.getMergedProfile("filament", "filament")).thenReturn(mapper.createObjectNode());
         when(profiles.getMergedProfile("process", "process")).thenReturn(mapper.createObjectNode());
         var slicer = spy(new SlicerService(executable.toString(), "unused-assimp", profiles,
-                mock(GCodeParser.class), mapper, mock(StepConversionService.class)));
+                new GCodeParser(), mapper, mock(StepConversionService.class)));
         doReturn(Optional.of(new ModelDimensions(side, side, side))).when(slicer).inspectModelDimensions(any());
         return slicer;
     }

@@ -1,0 +1,44 @@
+<div class="ui-language-toolbar">
+  <app-select
+    (ngModelChange)="selectSource($event)"
+    [compact]="true"
+    [disabled]="disabled || busy()"
+    [label]="'ADMIN_TRANSLATION.SOURCE_LANGUAGE' | translate"
+    [ngModelOptions]="{ standalone: true }"
+    [ngModel]="sourceLanguage"
+    [options]="languageOptions"
+  />
+  <app-checkbox
+    [(ngModel)]="overwriteExisting"
+    [disabled]="disabled || busy()"
+    [label]="'ADMIN_TRANSLATION.OVERWRITE' | translate"
+    [ngModelOptions]="{ standalone: true }"
+  />
+  <app-button
+    (click)="translate()"
+    [disabled]="!canTranslate()"
+    [loading]="busy()"
+    type="button"
+    variant="ghost"
+  >
+    {{
+      (busy() ? "ADMIN_TRANSLATION.TRANSLATING" : "ADMIN_TRANSLATION.TRANSLATE")
+        | translate
+    }}
+  </app-button>
+</div>
+<p class="ui-copy-subtitle">{{ "ADMIN_TRANSLATION.HINT" | translate }}</p>
+@if (status() === "error") {
+  <p class="ui-banner ui-banner--error" role="alert">
+    {{ "ADMIN_TRANSLATION.ERROR" | translate }}
+  </p>
+} @else if (status()) {
+  <p class="ui-banner ui-banner--success" role="status">
+    {{
+      (status() === "updated"
+        ? "ADMIN_TRANSLATION.UPDATED"
+        : "ADMIN_TRANSLATION.EMPTY"
+      ) | translate
+    }}
+  </p>
+}

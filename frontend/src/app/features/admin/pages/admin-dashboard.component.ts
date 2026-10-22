@@ -533,6 +533,7 @@ export class AdminDashboardComponent implements OnInit {
           if (this.previewRequestedItemId !== item.id) {
             return;
           }
+          this.changeDetector.markForCheck();
           this.previewFile = blob;
           this.previewLoading = false;
         },
@@ -540,6 +541,7 @@ export class AdminDashboardComponent implements OnInit {
           if (this.previewRequestedItemId !== item.id) {
             return;
           }
+          this.changeDetector.markForCheck();
           this.previewLoading = false;
           this.previewError = true;
         },

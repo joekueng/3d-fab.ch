@@ -847,10 +847,13 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
   onManagedDraftChange(): void {
     this.managedPreviewActive = false;
     this.managedPreviewTotalChf = null;
-    this.managedRows = this.managedRows.map((row) => ({
-      ...row,
-      item: { ...row.item, newUnitPriceChf: null },
-    }));
+    for (const row of this.managedRows) {
+      row.item = { ...row.item, newUnitPriceChf: null };
+    }
+  }
+
+  trackManagedRow(_index: number, row: ManagedItemRow): string {
+    return row.item.id;
   }
 
   canEditManagedItems(): boolean {

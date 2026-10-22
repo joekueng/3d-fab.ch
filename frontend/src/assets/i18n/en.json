@@ -773,8 +773,9 @@
     "PROCESSING": "Processing...",
     "NOTES_PLACEHOLDER": "Specific instructions...",
     "SETUP_NOTE": "* Includes {{cost}} as setup cost",
-    "SHIPPING_NOTE": "* Shipping is estimated from packed dimensions and weight. Confirmed at checkout.",
-    "SHIPPING_UNAVAILABLE": "Shipping is not included in this total. Complete the calculation or request a consultation for a shipping quote.",
+    "SHIPPING_NOTE": "* Shipping is calculated at this step from the packed dimensions and weight.",
+    "SHIPPING_UNAVAILABLE": "Shipping cannot be calculated because valid part weights or dimensions are missing. Recalculate the quote; if the problem persists, request a consultation.",
+    "SHIPPING_MANUAL_QUOTE": "This order’s dimensions or weight require a custom shipping quote. Request a consultation.",
     "ERROR_ZERO_PRICE": "Something went wrong during the calculation. Try another format or contact us directly via Request Consultation.",
     "ZERO_RESULT_TITLE": "Invalid Result",
     "ZERO_RESULT_HELP": "The calculation returned invalid zero values. Try another file format or contact us directly via Request Consultation.",
@@ -1197,6 +1198,7 @@
     "HERO_SUBTITLE": "We are here to help you. Fill in the form below for any request."
   },
   "CHECKOUT": {
+    "CUSTOMIZE_ITEM": "Choose quantity and color",
     "COLOR": "Color",
     "ERR_UPDATE_ITEM": "Could not update the item. Check quantity and color and try again.",
     "TITLE": "Checkout",
@@ -1222,6 +1224,8 @@
     "PLACE_ORDER": "Place Order",
     "PROCESSING": "Processing...",
     "SUMMARY_TITLE": "Order Summary",
+    "SUMMARY_EXPAND": "Expand order summary",
+    "SUMMARY_CLOSE": "Close summary",
     "SUBTOTAL": "Subtotal",
     "ITEMS_BASE_SUBTOTAL": "Items Subtotal",
     "MACHINE_COST": "Machine Cost",
@@ -1470,6 +1474,12 @@
       "MATTE_GRAY": "Matte Gray"
     }
   },
+  "IMAGE_PREVIEW": {
+    "OPEN": "Enlarge image: {{name}}",
+    "CLOSE": "Close",
+    "ZOOM": "Original size",
+    "FIT": "Fit to screen"
+  },
   "COMMON": {
     "REQUIRED": "Required field",
     "INVALID_EMAIL": "Invalid email",
@@ -1643,5 +1653,17 @@
     "ATTACH_AFTER_PAYMENT": "Downloadable after payment",
     "ATTACH_REQUIRES_SESSION": "Save the invoice to upload attachments.",
     "ATTACH_PENDING": "Will be uploaded when saving"
+  },
+  "ADMIN_TRANSLATION": {
+    "SOURCE_LANGUAGE": "Source language",
+    "OVERWRITE": "Overwrite existing translations",
+    "TRANSLATE": "Translate",
+    "TRANSLATING": "Translating…",
+    "HINT": "Fill in the source language fields. Translations are added to the form: save to apply them.",
+    "ERROR": "Translation failed. Please try again.",
+    "UPDATED": "Translations added to the form. Save to apply them.",
+    "EMPTY": "No fields to translate or update.",
+    "COLORS_HINT": "Translates all saved colors from Italian, replaces EN, DE and FR, and saves the translations for filaments and the shop.",
+    "COLORS_SAVED": "Color translations saved for filaments and the shop."
   }
 }

@@ -1,7 +1,10 @@
 <div
   class="viewer-container"
   #rendererContainer
-  [style.height.px]="height"
+  [style.aspect-ratio]="aspectRatio"
+  [style.height]="
+    aspectRatio ? 'auto' : 'var(--stl-viewer-height, ' + height + 'px)'
+  "
   [style.border-radius]="borderRadius"
 >
   @if (loading) {
@@ -15,7 +18,7 @@
       <span>{{ "STL_VIEWER.UNAVAILABLE" | translate }}</span>
     </div>
   }
-  @if (file && !loading && !loadError) {
+  @if (showDimensions && file && !loading && !loadError) {
     <div class="dims-overlay">
       {{ dimensions.x }} x {{ dimensions.y }} x {{ dimensions.z }} mm
     </div>
