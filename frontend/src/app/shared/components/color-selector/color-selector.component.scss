@@ -4,17 +4,6 @@
   // margin-left: 10px; // Handled by parent now
 }
 
-.backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 999;
-  background: transparent;
-  cursor: default;
-}
-
 .color-circle {
   width: 20px; /* Reduced from 24px */
   height: 20px;
@@ -65,21 +54,11 @@
     border-color: transparent transparent white transparent;
   }
 
-  /* Mobile Fixed Positioning */
   @media (max-width: 768px) {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
     width: 280px; /* Provide enough width for touch targets */
     max-width: 90vw; /* Safety constraint */
     max-height: min(72vh, 420px);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); /* Stronger shadow for modal feel */
-
-    /* Hide arrow on mobile since it's detached from trigger */
-    &::before {
-      display: none;
-    }
   }
 }
 
@@ -196,9 +175,72 @@
 .trigger-copy small {
   color: var(--color-text-muted);
 }
+
+.color-selector-container--field {
+  display: block;
+
+  .trigger {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 40px;
+    gap: var(--space-2);
+    padding: var(--space-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-bg-card);
+    color: var(--color-text);
+    font-size: 0.9rem;
+
+    &:hover,
+    &:focus-visible {
+      border-color: var(--color-brand);
+    }
+  }
+
+  .color-circle {
+    flex-shrink: 0;
+  }
+
+  .trigger-copy {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .trigger-chevron {
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+}
+
 .color-item {
   border: 0;
   background: transparent;
   padding: 0;
   font: inherit;
+}
+
+.color-selector-container--compact {
+  .trigger {
+    width: fit-content;
+    max-width: 100%;
+    min-height: 32px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-size: 0.85rem;
+
+    &:focus-visible {
+      outline: 2px solid var(--color-brand);
+      outline-offset: 2px;
+    }
+  }
+
+  .trigger-copy strong {
+    font-weight: 500;
+  }
+
+  .trigger-chevron {
+    margin-left: var(--space-1);
+  }
 }

@@ -44,6 +44,7 @@ public class OrderService {
     private final PaymentService paymentService;
     private final QuoteSessionTotalsService quoteSessionTotalsService;
     private final MaterialPrintCompatibilityService materialPrintCompatibilityService;
+    private final LegalConsentService legalConsentService;
 
     public OrderService(OrderRepository orderRepo,
                         OrderItemRepository orderItemRepo,
@@ -57,7 +58,9 @@ public class OrderService {
                         PaymentService paymentService,
                         QuoteSessionTotalsService quoteSessionTotalsService,
                         MaterialPrintCompatibilityService materialPrintCompatibilityService,
-                        com.printcalculator.service.information.OrderInformationService informationService) {
+                        com.printcalculator.service.information.OrderInformationService informationService,
+                        LegalConsentService legalConsentService) {
+        this.legalConsentService = legalConsentService;
         this.informationService = informationService;
         this.orderRepo = orderRepo;
         this.orderItemRepo = orderItemRepo;
@@ -74,13 +77,16 @@ public class OrderService {
     }
 
     @Transactional
-    public Order createOrderFromQuote(UUID quoteSessionId, CreateOrderRequest request) {
+    public Order createOrderFromQuote(UUID quoteSessionId, CreateOrderRequest request, String clientIp) {
         if (!request.isAcceptTerms() || !request.isAcceptPrivacy()) {
             throw new IllegalArgumentException("Accettazione Termini e Privacy obbligatoria.");
         }
 
         QuoteSession session = quoteSessionRepo.findLockedById(quoteSessionId)
                 .orElseThrow(() -> new RuntimeException("Quote Session not found"));
+        if ("CAD_DELETED".equals(session.getStatus())) {
+            throw new IllegalStateException("Cannot order a deleted invoice");
+        }
 
         if (session.getConvertedOrderId() != null
                 || orderRepo.existsBySourceQuoteSession_Id(quoteSessionId)) {
@@ -92,7 +98,14 @@ public class OrderService {
         }
         informationService.validateCheckout(session, request.getInformationToken());
 
-        List<QuoteLineItem> quoteItems = quoteLineItemRepo.findByQuoteSessionId(quoteSessionId);
+        QuoteSession printSource = session.getPrintSource();
+        if (printSource != null && !printSource.getId().equals(session.getId())) {
+            // Serialize checkout with recalculation or price edits of the selected source.
+            printSource = quoteSessionRepo.findLockedById(printSource.getId())
+                    .orElseThrow(() -> new IllegalStateException("Calculator session not found"));
+        }
+        List<QuoteLineItem> quoteItems = printSource == null ? List.of()
+                : quoteLineItemRepo.findByQuoteSessionId(printSource.getId());
         quoteItems = quoteItems.stream()
                 .filter(item -> !"REVIEW_REQUIRED".equalsIgnoreCase(item.getStatus()))
                 .toList();
@@ -284,7 +297,7 @@ public class OrderService {
 
             oItem = orderItemRepo.save(oItem);
 
-            Path sourcePath = resolveStoredQuotePath(qItem.getStoredPath(), session.getId());
+            Path sourcePath = resolveStoredQuotePath(qItem.getStoredPath(), qItem.getQuoteSession().getId());
             if (sourcePath == null || !Files.exists(sourcePath)) {
                 if (requiresStoredSourceFile(qItem)) {
                     throw new IllegalStateException("Source file not available for quote line item " + qItem.getId());
@@ -322,6 +335,7 @@ public class OrderService {
         generateAndSaveDocuments(order, savedItems);
 
         Order savedOrder = orderRepo.save(order);
+        legalConsentService.recordOrder(savedOrder, request.isAcceptTerms(), request.isAcceptPrivacy(), request.getLanguage(), clientIp);
 
         // ALWAYS initialize payment as PENDING
         paymentService.getOrCreatePaymentForOrder(savedOrder, "OTHER");

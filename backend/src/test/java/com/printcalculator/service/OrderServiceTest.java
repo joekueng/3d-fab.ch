@@ -54,6 +54,16 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
+    @Test
+    void deletedInvoiceCannotBeOrderedFromAnAlreadyOpenCheckout() {
+        UUID id = UUID.randomUUID();
+        QuoteSession session = new QuoteSession();
+        session.setStatus("CAD_DELETED");
+        when(quoteSessionRepo.findLockedById(id)).thenReturn(Optional.of(session));
+        assertThrows(IllegalStateException.class,
+                () -> service.createOrderFromQuote(id, buildRequest(), "203.0.113.42"));
+        verify(orderRepo, never()).save(any());
+    }
 
     @Mock
     private OrderRepository orderRepo;
@@ -79,6 +89,8 @@ class OrderServiceTest {
     private QuoteSessionTotalsService quoteSessionTotalsService;
     @Mock
     private MaterialPrintCompatibilityService materialPrintCompatibilityService;
+    @Mock
+    private LegalConsentService legalConsentService;
 
     @Mock
     private com.printcalculator.service.information.OrderInformationService informationService;
@@ -98,7 +110,7 @@ class OrderServiceTest {
 
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class,
-                () -> service.createOrderFromQuote(sessionId, buildRequest())
+                () -> service.createOrderFromQuote(sessionId, buildRequest(), "203.0.113.42")
         );
 
         assertEquals("Quote session already converted to order", exception.getMessage());
@@ -113,6 +125,7 @@ class OrderServiceTest {
         session.setStatus("ACTIVE");
 
         QuoteLineItem qItem = new QuoteLineItem();
+        qItem.setQuoteSession(session);
         qItem.setLineItemType("PRINT_FILE");
         qItem.setNozzleDiameterMm(new BigDecimal("0.20"));
         qItem.setLayerHeightMm(new BigDecimal("0.120"));
@@ -125,7 +138,7 @@ class OrderServiceTest {
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> service.createOrderFromQuote(sessionId, buildRequest())
+                () -> service.createOrderFromQuote(sessionId, buildRequest(), "203.0.113.42")
         );
 
         assertEquals("invalid technical material settings", exception.getMessage());
@@ -245,8 +258,9 @@ class OrderServiceTest {
 
         CreateOrderRequest request = buildRequest();
         request.setLanguage("fr");
-        Order order = service.createOrderFromQuote(sessionId, request);
+        Order order = service.createOrderFromQuote(sessionId, request, "203.0.113.42");
         assertEquals("fr", order.getPreferredLanguage());
+        verify(legalConsentService).recordOrder(order, true, true, "fr", "203.0.113.42");
 
         assertEquals(orderId, order.getId());
         assertEquals("SHOP", order.getSourceType());
@@ -380,7 +394,7 @@ class OrderServiceTest {
                 .thenReturn("pdf".getBytes(StandardCharsets.UTF_8));
         when(paymentService.getOrCreatePaymentForOrder(any(Order.class), eq("OTHER"))).thenReturn(new Payment());
 
-        Order order = service.createOrderFromQuote(sessionId, buildRequest());
+        Order order = service.createOrderFromQuote(sessionId, buildRequest(), "203.0.113.42");
 
         assertEquals(orderId, order.getId());
         assertEquals("CONVERTED", session.getStatus());
@@ -469,7 +483,7 @@ class OrderServiceTest {
 
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class,
-                () -> service.createOrderFromQuote(sessionId, buildRequest())
+                () -> service.createOrderFromQuote(sessionId, buildRequest(), "203.0.113.42")
         );
 
         assertEquals(
@@ -546,7 +560,7 @@ class OrderServiceTest {
                 new QuoteSessionTotalsService.QuoteSessionTotals(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
                         new BigDecimal("150"), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
                         new BigDecimal("150"), BigDecimal.ZERO));
-        Order order = service.createOrderFromQuote(id, buildRequest());
+        Order order = service.createOrderFromQuote(id, buildRequest(), "203.0.113.42");
         assertAmountEquals("150", order.getSubtotalChf());
         assertAmountEquals("150", order.getTotalChf());
         assertTrue(order.getIsCadOrder());
@@ -559,8 +573,55 @@ class OrderServiceTest {
         assertEquals("First iteration", order.getInvoiceName());
         assertEquals("CONVERTED", session.getStatus());
         verify(paymentService).getOrCreatePaymentForOrder(order, "OTHER");
+        verify(legalConsentService).recordOrder(order, true, true, "it", "203.0.113.42");
         verify(eventPublisher).publishEvent(any(OrderCreatedEvent.class));
-        assertThrows(IllegalStateException.class, () -> service.createOrderFromQuote(id, buildRequest()));
+        assertThrows(IllegalStateException.class, () -> service.createOrderFromQuote(id, buildRequest(), "203.0.113.42"));
+    }
+
+    @Test
+    void linkedCalculatorOrderCopiesTheSelectedFileFromItsOriginalStorageOwner() throws Exception {
+        var invoice = new QuoteSession(); invoice.setId(UUID.randomUUID()); invoice.setStatus("CAD_ACTIVE");
+        invoice.setSessionType("PRINT_QUOTE"); invoice.setInvoiceName("Stable invoice");
+        invoice.setServiceLines(List.of(new com.printcalculator.dto.ServiceLineDto("Design",
+                com.printcalculator.dto.ServiceLineDto.BillingType.FIXED, BigDecimal.ONE, new BigDecimal("50"))));
+        var source = new QuoteSession(); source.setId(UUID.randomUUID()); source.setStatus("ACTIVE");
+        invoice.setCalculatorSession(source);
+        Path dir = Path.of("storage_quotes").toAbsolutePath().resolve(source.getId().toString());
+        Files.createDirectories(dir);
+        Path file = Files.writeString(dir.resolve("replacement.stl"), "solid replacement\nendsolid replacement");
+        try {
+            var item = new QuoteLineItem(); item.setId(UUID.randomUUID()); item.setQuoteSession(source);
+            item.setStatus("READY"); item.setLineItemType("PRINT_FILE"); item.setOriginalFilename("replacement.stl");
+            item.setQuantity(1); item.setUnitPriceChf(BigDecimal.TEN); item.setStoredPath(file.toString());
+            var customer = new Customer(); customer.setId(UUID.randomUUID()); customer.setEmail("buyer@example.com");
+            when(quoteSessionRepo.findLockedById(invoice.getId())).thenReturn(Optional.of(invoice));
+            when(quoteSessionRepo.findLockedById(source.getId())).thenReturn(Optional.of(source));
+            when(quoteLineItemRepo.findByQuoteSessionId(source.getId())).thenReturn(List.of(item));
+            when(customerRepo.findByEmail("buyer@example.com")).thenReturn(Optional.of(customer));
+            when(orderRepo.save(any())).thenAnswer(call -> {
+                Order order = call.getArgument(0); if (order.getId() == null) order.setId(UUID.randomUUID()); return order;
+            });
+            when(orderItemRepo.save(any())).thenAnswer(call -> {
+                OrderItem saved = call.getArgument(0); if (saved.getId() == null) saved.setId(UUID.randomUUID()); return saved;
+            });
+            when(quoteSessionTotalsService.compute(invoice, List.of(item))).thenReturn(
+                    new QuoteSessionTotalsService.QuoteSessionTotals(BigDecimal.TEN, BigDecimal.ZERO, BigDecimal.ZERO,
+                            new BigDecimal("60"), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
+                            new BigDecimal("60"), BigDecimal.ZERO));
+            when(qrBillService.generateQrBillSvg(any())).thenReturn("<svg/>".getBytes(StandardCharsets.UTF_8));
+            when(invoiceService.generateDocumentPdf(any(), any(), eq(true), eq(qrBillService), isNull()))
+                    .thenReturn("pdf".getBytes(StandardCharsets.UTF_8));
+            Order order = service.createOrderFromQuote(invoice.getId(), buildRequest(), "203.0.113.42");
+            assertEquals(invoice, order.getSourceQuoteSession());
+            assertEquals("Stable invoice", order.getInvoiceName());
+            assertAmountEquals("60", order.getTotalChf());
+            assertEquals("ACTIVE", source.getStatus());
+            assertTrue(Files.exists(file));
+            verify(storageService).store(eq(file), any(Path.class));
+            verify(quoteLineItemRepo, never()).findByQuoteSessionId(invoice.getId());
+        } finally {
+            Files.deleteIfExists(file); Files.deleteIfExists(dir);
+        }
     }
 
     private void assertShippingRejected(String status, String country, BigDecimal expected) {
@@ -579,7 +640,7 @@ class OrderServiceTest {
         CreateOrderRequest request = buildRequest(); request.getBillingAddress().setCountryCode(country);
         request.setExpectedShippingCostChf(expected);
         org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
-                () -> service.createOrderFromQuote(id,request));
+                () -> service.createOrderFromQuote(id,request, "203.0.113.42"));
         verify(orderRepo,never()).save(any(Order.class));
         verify(eventPublisher,never()).publishEvent(any(OrderCreatedEvent.class));
         verify(paymentService,never()).getOrCreatePaymentForOrder(any(Order.class),eq("OTHER"));

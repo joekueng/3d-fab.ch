@@ -44,6 +44,21 @@ public class QuoteSessionTotalsService {
     public QuoteSessionTotals compute(QuoteSession session,
                                       List<QuoteLineItem> items,
                                       Map<UUID, ItemStatsOverride> overrides) {
+        return compute(session, items, overrides, session.getPrintSource());
+    }
+
+    /** Admin source editing must still preview original rows after an invoice is detached or relinked. */
+    public QuoteSessionTotals computeCalculatorSource(QuoteSession session, List<QuoteLineItem> items) {
+        return computeCalculatorSource(session, items, Map.of());
+    }
+
+    public QuoteSessionTotals computeCalculatorSource(QuoteSession session, List<QuoteLineItem> items,
+                                                       Map<UUID, ItemStatsOverride> overrides) {
+        return compute(session, items, overrides, session);
+    }
+
+    private QuoteSessionTotals compute(QuoteSession session, List<QuoteLineItem> items,
+                                       Map<UUID, ItemStatsOverride> overrides, QuoteSession source) {
         Map<UUID, ItemStatsOverride> effectiveOverrides = overrides != null ? overrides : Map.of();
         BigDecimal printItemsBaseTotal = BigDecimal.ZERO;
         BigDecimal totalSeconds = BigDecimal.ZERO;
@@ -82,8 +97,8 @@ public class QuoteSessionTotalsService {
         BigDecimal cadTotal = calculateCadTotal(session);
         BigDecimal itemsTotal = printItemsTotal.add(cadTotal).add(calculateServicesTotal(session));
 
-        BigDecimal standardSetupFee = session.getSetupCostChf() != null
-                ? session.getSetupCostChf()
+        BigDecimal standardSetupFee = source != null && source.getSetupCostChf() != null
+                ? source.getSetupCostChf()
                 : BigDecimal.ZERO;
         BigDecimal splitSetupFee = hasSplitPrintingItems(items)
                 ? quoteCalculator.calculateSplitModelSetupFee(policy)

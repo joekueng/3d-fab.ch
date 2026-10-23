@@ -26,12 +26,14 @@ public class GCodeParser {
     private static final Pattern TIME_PATTERN = Pattern.compile(
             ";\\s*(?:estimated\\s+printing\\s+time|estimated\\s+print\\s+time|print\\s+time).*?[:=]\\s*(.*)",
             Pattern.CASE_INSENSITIVE);
-    private static final Pattern FILAMENT_G_PATTERN = Pattern.compile(";\\s*filament used \\[g\\]\\s*=\\s*(.*)");
-    private static final Pattern FILAMENT_MM_PATTERN = Pattern.compile(";\\s*filament used \\[mm\\]\\s*=\\s*(.*)");
+    private static final Pattern FILAMENT_G_PATTERN = Pattern.compile(";\\s*filament used \\[g\\]\\s*=\\s*(.*)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern TOTAL_FILAMENT_G_PATTERN = Pattern.compile(";\\s*total filament used \\[g\\]\\s*=\\s*(.*)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern FILAMENT_MM_PATTERN = Pattern.compile(";\\s*filament used \\[mm\\]\\s*=\\s*(.*)", Pattern.CASE_INSENSITIVE);
 
     public PrintStats parse(File gcodeFile) throws IOException {
         long seconds = 0;
         double weightG = 0;
+        Double totalWeightG = null;
         double lengthMm = 0;
         String timeFormatted = "";
 
@@ -77,22 +79,44 @@ public class GCodeParser {
                 Matcher weightMatcher = FILAMENT_G_PATTERN.matcher(line);
                 if (weightMatcher.find()) {
                     try {
-                        weightG = Double.parseDouble(weightMatcher.group(1).trim());
+                        weightG = sumFilamentUsage(weightMatcher.group(1));
                          System.out.println("GCodeParser: Found weight: " + weightG + "g");
                     } catch (NumberFormatException ignored) {}
+                }
+
+                Matcher totalWeightMatcher = TOTAL_FILAMENT_G_PATTERN.matcher(line);
+                if (totalWeightMatcher.find()) {
+                    try {
+                        totalWeightG = sumFilamentUsage(totalWeightMatcher.group(1));
+                    } catch (NumberFormatException ignored) {
+                    }
                 }
                 
                 Matcher lengthMatcher = FILAMENT_MM_PATTERN.matcher(line);
                 if (lengthMatcher.find()) {
                     try {
-                        lengthMm = Double.parseDouble(lengthMatcher.group(1).trim());
+                        lengthMm = sumFilamentUsage(lengthMatcher.group(1));
                          System.out.println("GCodeParser: Found length: " + lengthMm + "mm");
                     } catch (NumberFormatException ignored) {}
                 }
             }
         }
-        
-        return new PrintStats(seconds, timeFormatted, weightG, lengthMm);
+
+        return new PrintStats(seconds, timeFormatted, totalWeightG != null ? totalWeightG : weightG, lengthMm);
+    }
+
+    private double sumFilamentUsage(String metadata) {
+        // Orca emits one value per filament, including zeroes for unused slots.
+        // Each metadata line is a snapshot; do not add repeated header/footer lines.
+        String values = metadata.split(";", 2)[0].trim();
+        double total = 0;
+        for (String token : values.split(",", -1)) {
+            double value = Double.parseDouble(token.trim());
+            if (!Double.isFinite(value) || value < 0) throw new NumberFormatException("Invalid filament usage");
+            total += value;
+        }
+        if (!Double.isFinite(total)) throw new NumberFormatException("Invalid filament total");
+        return total;
     }
 
     private long parseTimeString(String timeStr) {

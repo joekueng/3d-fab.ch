@@ -1,5 +1,6 @@
 <button
   [type]="type()"
+  [attr.aria-label]="ariaLabel()"
   [class]="buttonClass()"
   [disabled]="disabled() || loading()"
   [attr.aria-busy]="loading() ? true : null"

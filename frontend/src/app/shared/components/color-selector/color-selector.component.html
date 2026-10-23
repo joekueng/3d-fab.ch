@@ -1,9 +1,12 @@
-<div class="color-selector-container" (keydown.escape)="close()">
-  @if (isOpen() && !disabled()) {
-    <div class="backdrop" (click)="close()"></div>
-  }
-
+<div
+  (keydown.escape)="onEscape($event)"
+  [class.color-selector-container--compact]="compact()"
+  [class.color-selector-container--field]="field()"
+  class="color-selector-container"
+>
   <button
+    cdkOverlayOrigin
+    #colorTrigger="cdkOverlayOrigin"
     type="button"
     [disabled]="disabled()"
     [attr.aria-label]="getCurrentLabel() | translate"
@@ -19,13 +22,42 @@
     ></span>
     @if (showLabel()) {
       <span class="trigger-copy"
-        ><strong>{{ getCurrentLabel() | translate }}</strong
-        ><small>{{ subtitle() }}</small></span
+        ><strong>{{ getCurrentLabel() | translate }}</strong>
+        @if (subtitle()) {
+          <small>{{ subtitle() }}</small>
+        }
+      </span>
+    }
+    @if (field()) {
+      <svg
+        aria-hidden="true"
+        class="trigger-chevron"
+        fill="none"
+        height="14"
+        stroke="currentColor"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="14"
       >
+        <path d="m6 9 6 6 6-6" />
+      </svg>
     }
   </button>
 
-  @if (isOpen() && !disabled()) {
+  <ng-template
+    cdkConnectedOverlay
+    [cdkConnectedOverlayOrigin]="colorTrigger"
+    [cdkConnectedOverlayOpen]="isOpen() && !disabled()"
+    [cdkConnectedOverlayUsePopover]="field() ? 'inline' : null"
+    [cdkConnectedOverlayPositions]="popupPositions"
+    [cdkConnectedOverlayPush]="true"
+    [cdkConnectedOverlayViewportMargin]="12"
+    [cdkConnectedOverlayScrollStrategy]="scrollStrategy"
+    [cdkConnectedOverlayHasBackdrop]="true"
+    cdkConnectedOverlayBackdropClass="color-selector-backdrop"
+    (backdropClick)="close()"
+    (detach)="close()"
+  >
     <div class="color-popup">
       @for (category of categories(); track category.name) {
         <div class="category">
@@ -69,5 +101,5 @@
         </div>
       }
     </div>
-  }
+  </ng-template>
 </div>

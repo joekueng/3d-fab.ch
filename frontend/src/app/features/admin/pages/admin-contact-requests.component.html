@@ -251,6 +251,15 @@
                 >
               </p>
             </div>
+            @if (canPreview(attachment.originalFilename)) {
+              <app-button
+                (click)="openPreview(attachment)"
+                type="button"
+                variant="secondary"
+              >
+                {{ "ADMIN_ORDERS.OPEN_3D_PREVIEW" | translate }}
+              </app-button>
+            }
             <app-button
               type="button"
               variant="ghost"
@@ -276,6 +285,14 @@
 <ng-template #loadingTpl>
   <p>Caricamento richieste...</p>
 </ng-template>
+
+@if (preview; as model) {
+  <app-model-preview-dialog
+    (dismissed)="preview = null"
+    [filename]="model.filename"
+    [source]="model.source"
+  />
+}
 
 <ng-template #noAttachmentsTpl>
   <p class="muted">Nessun allegato disponibile.</p>

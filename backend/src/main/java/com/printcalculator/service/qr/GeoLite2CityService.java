@@ -1,5 +1,7 @@
 package com.printcalculator.service.qr;
 
+import com.printcalculator.security.IpAddressUtils;
+
 import com.maxmind.db.Reader;
 import com.maxmind.geoip2.DatabaseReader;
 import com.maxmind.geoip2.exception.GeoIp2Exception;

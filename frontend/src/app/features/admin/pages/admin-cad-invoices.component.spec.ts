@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, PLATFORM_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { TranslateService } from '@ngx-translate/core';
-import { of } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import {
   AdminCadInvoicesComponent,
   hoursMinutesToSeconds,
@@ -19,7 +19,128 @@ import { AdminOrdersService } from '../services/admin-orders.service';
 
 const SESSION_ID = '11111111-1111-1111-1111-111111111111';
 
-describe('parseDecimalInput', () => {
+describe('invoice editing', () => {
+  it('clears the calculator association while retaining the edited checkout and attachments', () => {
+    const { component, adminOperationsService } = createComponent();
+    const invoice = invoiceFixture();
+    adminOperationsService.getAdminQuoteItems.and.returnValue(of(response()));
+    adminOperationsService.updateCadInvoice.and.returnValue(
+      of({ ...invoice, calculatorSessionId: null }),
+    );
+    component.editInvoice(invoice);
+    component.sessionAttachments = [imageAttachment()];
+    component.form.sessionId = '';
+    component.onSessionIdChange();
+    expect(component.managedRows).toEqual([]);
+    expect(component.sessionAttachments).toEqual([imageAttachment()]);
+    expect(component.attachmentSessionId).toBe(SESSION_ID);
+    component.createCadInvoice();
+    expect(adminOperationsService.createCadInvoice).not.toHaveBeenCalled();
+    expect(adminOperationsService.updateCadInvoice).toHaveBeenCalledWith(
+      SESSION_ID,
+      jasmine.objectContaining({
+        sessionId: SESSION_ID,
+        calculatorSessionId: null,
+      }),
+    );
+    expect(component.form.sessionId).toBe('');
+    expect(component.serviceLines[0].description).toBe('Design');
+  });
+
+  it('changes and restores calculator IDs without replacing service rows or the checkout identity', () => {
+    const { component, adminOperationsService } = createComponent();
+    const other = '22222222-2222-2222-2222-222222222222';
+    adminOperationsService.getAdminQuoteItems.and.returnValue(of(response()));
+    component.editInvoice(invoiceFixture());
+    component.serviceLines[0].description = 'Keep my edits';
+    component.form.sessionId = other;
+    component.onSessionIdChange();
+    expect(component.draftSessionId).toBe(SESSION_ID);
+    expect(component.serviceLines[0].description).toBe('Keep my edits');
+    expect(adminOperationsService.getAdminQuoteItems).toHaveBeenCalledWith(
+      other,
+    );
+    adminOperationsService.updateCadInvoice.and.returnValue(
+      of({ ...invoiceFixture(), calculatorSessionId: other }),
+    );
+    component.createCadInvoice();
+    expect(adminOperationsService.updateCadInvoice).toHaveBeenCalledWith(
+      SESSION_ID,
+      jasmine.objectContaining({
+        sessionId: SESSION_ID,
+        calculatorSessionId: other,
+      }),
+    );
+    component.form.sessionId = SESSION_ID;
+    component.onSessionIdChange();
+    expect(adminOperationsService.getAdminQuoteItems).toHaveBeenCalledWith(
+      SESSION_ID,
+    );
+  });
+
+  it('rejects incomplete calculator IDs before saving', () => {
+    const { component, adminOperationsService } = createComponent();
+    component.editInvoice({ ...invoiceFixture(), calculatorSessionId: null });
+    component.form.sessionId = 'invalid';
+    component.createCadInvoice();
+    expect(adminOperationsService.updateCadInvoice).not.toHaveBeenCalled();
+    expect(component.errorMessage).toBe('CAD_PRINT_ITEMS.INVALID_SESSION');
+  });
+
+  it('selects the correct identity when switching from a draft to a converted invoice', () => {
+    const { component, adminOperationsService } = createComponent();
+    adminOperationsService.getAdminQuoteItems.and.returnValue(of(response()));
+    const draft = invoiceFixture();
+    const converted = {
+      ...draft,
+      sessionId: '77777777-7777-7777-7777-777777777777',
+      sessionStatus: 'CONVERTED',
+      convertedOrderId: 'order-1',
+    };
+    component.invoices = [draft, converted];
+    component.editInvoice(draft);
+    component.manageItems(converted.sessionId);
+    expect(component.draftSessionId).toBe(converted.sessionId);
+    expect(component.draftIsConverted).toBeTrue();
+    component.createCadInvoice();
+    expect(adminOperationsService.updateCadInvoice).not.toHaveBeenCalled();
+    expect(adminOperationsService.createCadInvoice).not.toHaveBeenCalled();
+  });
+
+  it('does not delete before confirmation and starts a new invoice with the same link', () => {
+    const { component, adminOperationsService } = createComponent();
+    const invoice = invoiceFixture();
+    component.requestDeleteInvoice(invoice);
+    expect(adminOperationsService.deleteCadInvoice).not.toHaveBeenCalled();
+    component.closeDeleteInvoice();
+    expect(component.invoiceToDelete).toBeNull();
+    component.requestDeleteInvoice(invoice);
+    adminOperationsService.deleteCadInvoice.and.returnValue(of(void 0));
+    component.confirmDeleteInvoice();
+    expect(adminOperationsService.deleteCadInvoice).toHaveBeenCalledWith(
+      SESSION_ID,
+      { linkAction: 'NEW_INVOICE', targetPath: undefined },
+    );
+    expect(component.draftSessionId).toBe(SESSION_ID);
+    expect(component.form.sessionId).toBe('');
+    expect(component.serviceLines[0].description).toBe('');
+    expect(component.invoiceToDelete).toBeNull();
+  });
+
+  it('keeps the confirmation open after deletion fails', () => {
+    const { component, adminOperationsService } = createComponent();
+    component.requestDeleteInvoice(invoiceFixture());
+    component.deleteLinkAction = 'REDIRECT';
+    component.deleteTargetPath = '/contact';
+    adminOperationsService.deleteCadInvoice.and.returnValue(
+      throwError(() => new Error('conflict')),
+    );
+    component.confirmDeleteInvoice();
+    expect(component.invoiceToDelete).not.toBeNull();
+    expect(component.deleteError).toBeTruthy();
+    expect(component.deletingInvoice).toBeFalse();
+  });
+
   it('accepts both decimal points and decimal commas', () => {
     expect(parseDecimalInput('1.5')).toBe(1.5);
     expect(parseDecimalInput('1,5')).toBe(1.5);
@@ -56,6 +177,22 @@ describe('hoursMinutesToSeconds', () => {
 });
 
 describe('AdminCadInvoicesComponent session files', () => {
+  it('ignores a previous calculator price response after the source field changes', () => {
+    const { component, adminOperationsService } = createComponent();
+    const pending = new Subject<AdminQuoteItemsResponse>();
+    adminOperationsService.getAdminQuoteItems.and.returnValue(of(response()));
+    component.editInvoice(invoiceFixture());
+    adminOperationsService.updateAdminQuoteItemStats.and.returnValue(pending);
+    component.previewManagedChanges();
+    component.form.sessionId = '';
+    component.onSessionIdChange();
+    pending.next(response());
+    expect(component.managedSessionId).toBeNull();
+    expect(component.managedRows).toEqual([]);
+    expect(component.managedPreviewActive).toBeFalse();
+    expect(component.previewing).toBeFalse();
+  });
+
   it('loads print files when a complete session id is entered', () => {
     const { component, adminOperationsService } = createComponent();
     adminOperationsService.getAdminQuoteItems.and.returnValue(of(response()));
@@ -277,6 +414,8 @@ function createComponent() {
     [
       'listCadInvoices',
       'createCadInvoice',
+      'updateCadInvoice',
+      'deleteCadInvoice',
       'getAdminQuoteItems',
       'updateAdminQuoteItemStats',
       'listQuoteSessionAttachments',
@@ -364,5 +503,30 @@ function imageAttachment(): QuoteSessionAttachment {
     fileSizeBytes: 10,
     image: true,
     createdAt: '2026-09-29T12:00:00Z',
+  };
+}
+
+function invoiceFixture(): AdminCadInvoice {
+  return {
+    sessionId: SESSION_ID,
+    calculatorSessionId: SESSION_ID,
+    sessionStatus: 'CAD_ACTIVE',
+    cadHours: 0,
+    cadHourlyRateChf: 0,
+    cadTotalChf: 0,
+    printItemsTotalChf: 0,
+    setupCostChf: 0,
+    shippingCostChf: 0,
+    grandTotalChf: 10,
+    checkoutPath: '/checkout/cad?session=' + SESSION_ID,
+    createdAt: '2026-10-20T12:00:00Z',
+    serviceLines: [
+      {
+        description: 'Design',
+        billingType: 'FIXED',
+        quantity: 1,
+        unitPriceChf: 10,
+      },
+    ],
   };
 }

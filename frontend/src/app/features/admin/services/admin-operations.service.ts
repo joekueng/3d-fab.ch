@@ -17,6 +17,12 @@ export interface AdminFilamentStockRow {
   active: boolean;
 }
 
+export interface AdminTranslateFilamentColorsResponse {
+  translatedColors: number;
+  filamentVariants: number;
+  shopVariants: number;
+}
+
 export interface AdminFilamentMaterialType {
   id: number;
   materialCode: string;
@@ -186,6 +192,7 @@ export interface AdminQuoteSessionDetail {
 }
 
 export interface AdminCreateCadInvoicePayload {
+  calculatorSessionId?: string | null;
   serviceLines?: ServiceLine[];
   clientName?: string;
   invoiceName?: string;
@@ -198,6 +205,7 @@ export interface AdminCreateCadInvoicePayload {
 }
 
 export interface AdminCadInvoice {
+  calculatorSessionId?: string | null;
   serviceLines?: ServiceLine[];
   clientName?: string;
   invoiceName?: string;
@@ -269,6 +277,15 @@ export interface QuoteSessionAttachment {
   providedIn: 'root',
 })
 export class AdminOperationsService {
+  getSessionItemPreview(sessionId: string, itemId: string): Observable<Blob> {
+    return this.http.get(
+      `${this.baseUrl}/sessions/${sessionId}/items/${itemId}/stl-preview`,
+      {
+        withCredentials: true,
+        responseType: 'blob',
+      },
+    );
+  }
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/api/admin`;
 
@@ -289,6 +306,14 @@ export class AdminOperationsService {
   getFilamentVariants(): Observable<AdminFilamentVariant[]> {
     return this.http.get<AdminFilamentVariant[]>(
       `${this.baseUrl}/filaments/variants`,
+      { withCredentials: true },
+    );
+  }
+
+  translateFilamentColors(): Observable<AdminTranslateFilamentColorsResponse> {
+    return this.http.post<AdminTranslateFilamentColorsResponse>(
+      `${this.baseUrl}/filaments/translate-colors`,
+      {},
       { withCredentials: true },
     );
   }
@@ -445,6 +470,28 @@ export class AdminOperationsService {
   ): Observable<AdminCadInvoice> {
     return this.http.post<AdminCadInvoice>(
       `${this.baseUrl}/cad-invoices`,
+      payload,
+      { withCredentials: true },
+    );
+  }
+
+  updateCadInvoice(
+    sessionId: string,
+    payload: AdminCreateCadInvoicePayload,
+  ): Observable<AdminCadInvoice> {
+    return this.http.put<AdminCadInvoice>(
+      `${this.baseUrl}/cad-invoices/${sessionId}`,
+      payload,
+      { withCredentials: true },
+    );
+  }
+
+  deleteCadInvoice(
+    sessionId: string,
+    payload: { linkAction: 'NEW_INVOICE' | 'REDIRECT'; targetPath?: string },
+  ): Observable<void> {
+    return this.http.post<void>(
+      `${this.baseUrl}/cad-invoices/${sessionId}/delete`,
       payload,
       { withCredentials: true },
     );

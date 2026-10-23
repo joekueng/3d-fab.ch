@@ -33,20 +33,23 @@ public class SlicerService {
     private final GCodeParser gCodeParser;
     private final ObjectMapper mapper;
     private final SlicerModelInspector modelInspector;
-    private final ThreeMfConversionSupport threeMfConversionSupport;
+    private final ModelConversionSupport modelConversionSupport;
+    private final StepConversionService stepConversionService;
 
     public SlicerService(
             @Value("${slicer.path}") String slicerPath,
             @Value("${assimp.path:assimp}") String assimpPath,
             ProfileManager profileManager,
             GCodeParser gCodeParser,
-            ObjectMapper mapper) {
+            ObjectMapper mapper,
+            StepConversionService stepConversionService) {
         this.trustedSlicerPath = SlicerFileSupport.normalizeExecutablePath(slicerPath, "slicer.path");
         this.profileManager = profileManager;
         this.gCodeParser = gCodeParser;
         this.mapper = mapper;
+        this.stepConversionService = stepConversionService;
         this.modelInspector = new SlicerModelInspector(trustedSlicerPath);
-        this.threeMfConversionSupport = new ThreeMfConversionSupport(
+        this.modelConversionSupport = new ModelConversionSupport(
                 SlicerFileSupport.normalizeExecutablePath(assimpPath, "assimp.path")
         );
     }
@@ -89,6 +92,9 @@ public class SlicerService {
         if (processOverrides != null) {
             processOverrides.forEach(processProfile::put);
         }
+        SlicerProfilePreparation.prepare(machineProfile, filamentProfile, processProfile,
+                !inputStl.getName().toLowerCase(java.util.Locale.ROOT).endsWith(".3mf"));
+        validateMinimumModelSize(inputStl, machineProfile);
         oversizedEstimateDimensions.ifPresent(dimensions -> applyOversizedEstimateVolume(machineProfile, dimensions));
 
         Path tempDir = Files.createTempDirectory("slicer_job_");
@@ -173,7 +179,9 @@ public class SlicerService {
                             continue;
                         }
 
-                        lastFailure = isOutOfVolumeError(output)
+                        boolean oversized = isOutOfVolumeError(output)
+                                && isLargerThanPrintableVolume(inputStl, machineProfile);
+                        lastFailure = oversized
                                 ? buildOutOfVolumeFailure(inputStl, machineName, machineProfile)
                                 : new ModelProcessingException(
                                 "SLICER_EXECUTION_FAILED",
@@ -204,7 +212,19 @@ public class SlicerService {
                         throw lastFailure;
                     }
 
-                    return gCodeParser.parse(gcodeFile);
+                    PrintStats stats = gCodeParser.parse(gcodeFile);
+                    if (stats.printTimeSeconds() <= 0 || !Double.isFinite(stats.filamentWeightGrams())
+                            || stats.filamentWeightGrams() <= 0) {
+                        lastFailure = new ModelProcessingException("SLICER_STATS_UNAVAILABLE",
+                                "Slicing did not return valid print time and material weight. Recalculate the quote or request a consultation.");
+                        if (hasMoreInputVariants) {
+                            logger.warning("Slicing statistics are incomplete for " + inputVariant.label()
+                                    + ". Retrying with fallback geometry.");
+                            break;
+                        }
+                        throw lastFailure;
+                    }
+                    return stats;
                 }
             }
 
@@ -221,6 +241,25 @@ public class SlicerService {
             throw new IOException("Interrupted during slicing", e);
         } finally {
             SlicerFileSupport.deleteRecursively(tempDir, logger);
+        }
+    }
+
+    private void validateMinimumModelSize(File inputModel, ObjectNode machineProfile) throws ModelProcessingException {
+        // Mesh formats have no declared units. Do not silently enlarge uploaded geometry.
+        if (!inputModel.getName().toLowerCase(java.util.Locale.ROOT).endsWith(".stl")) {
+            return;
+        }
+        JsonNode nozzle = machineProfile.path("nozzle_diameter");
+        double nozzleMm = (nozzle.isArray() ? nozzle.path(0) : nozzle).asDouble(0);
+        if (nozzleMm <= 0) return;
+        Optional<ModelDimensions> inspected = inspectModelDimensions(inputModel);
+        if (inspected.isPresent()) {
+            ModelDimensions dimensions = inspected.get();
+            double largestDimension = Math.max(dimensions.xMm(), Math.max(dimensions.yMm(), dimensions.zMm()));
+            if (largestDimension < nozzleMm) {
+                throw new ModelProcessingException("MODEL_TOO_SMALL",
+                        "The model is smaller than the selected nozzle. Check its units and export it in millimetres.");
+            }
         }
     }
 
@@ -265,7 +304,26 @@ public class SlicerService {
     }
 
     public Path convert3mfToPersistentStl(File input3mf, Path destinationStl) throws IOException {
-        return threeMfConversionSupport.convert3mfToPersistentStl(input3mf, destinationStl);
+        return modelConversionSupport.convert3mfToPersistentStl(input3mf, destinationStl);
+    }
+
+    public Path convertModelToPersistentStl(File inputModel, Path destinationStl) throws IOException {
+        return convertModelToPersistentStl(inputModel, destinationStl, "mm");
+    }
+
+    public Path convertModelToPersistentStl(File inputModel, Path destinationStl, String modelUnit) throws IOException {
+        String name = inputModel.getName().toLowerCase(java.util.Locale.ROOT);
+        if (name.endsWith(".3mf")) {
+            return convert3mfToPersistentStl(inputModel, destinationStl);
+        }
+        if (name.endsWith(".obj")) {
+            return modelConversionSupport.convertMeshToPersistentStl(inputModel, destinationStl,
+                    com.printcalculator.model.ModelUnit.parse(modelUnit).millimetres());
+        }
+        if (name.endsWith(".step") || name.endsWith(".stp")) {
+            return stepConversionService.convertToPersistentStl(inputModel, destinationStl);
+        }
+        throw new ModelProcessingException("MODEL_CONVERSION_FAILED", "Unsupported model conversion format.");
     }
 
     private ProcessBuilder buildSliceProcess(SliceAttempt attempt,
@@ -277,6 +335,8 @@ public class SlicerService {
         ProcessBuilder processBuilder = new ProcessBuilder();
         List<String> command = processBuilder.command();
         command.add(trustedSlicerPath);
+        command.add("--debug");
+        command.add("2");
         command.add("--load-settings");
         command.add(machineProfilePath);
         command.add("--load-settings");
@@ -284,10 +344,10 @@ public class SlicerService {
         command.add("--load-filaments");
         command.add(filamentProfilePath);
         command.add("--ensure-on-bed");
-        if (attempt.arrange()) {
-            command.add("--arrange");
-            command.add("1");
-        }
+        // Omitting this flag enables automatic arrangement, whose 1 mm edge
+        // margin rejects models that use the printer's full physical volume.
+        command.add("--arrange");
+        command.add(attempt.arrange() ? "1" : "0");
         if (attempt.allowRotations()) {
             command.add("--allow-rotations");
         }
@@ -324,8 +384,14 @@ public class SlicerService {
 
         String normalized = errorLog.toLowerCase();
         return normalized.contains("nothing to be sliced")
-                || normalized.contains("no object is fully inside the print volume")
-                || normalized.contains("calc_exclude_triangles");
+                || normalized.contains("no object is fully inside the print volume");
+    }
+
+    private boolean isLargerThanPrintableVolume(File input, ObjectNode machineProfile) {
+        Optional<ModelDimensions> dimensions = inspectModelDimensions(input);
+        Optional<PrintableVolume> volume = extractPrintableVolume(machineProfile);
+        return dimensions.isPresent() && volume.isPresent()
+                && SlicerModelInspector.exceedsPrintableVolume(dimensions.get(), volume.get());
     }
 
     static List<SliceAttempt> buildSliceAttempts() {
@@ -361,7 +427,7 @@ public class SlicerService {
         variants.add(new SlicerInputVariant(List.of(inputModelPath), "original 3MF project"));
 
         try {
-            List<String> convertedStlPaths = threeMfConversionSupport.convert3mfToStlInputPaths(inputModel, tempDir);
+            List<String> convertedStlPaths = modelConversionSupport.convert3mfToStlInputPaths(inputModel, tempDir);
             logger.info("Prepared converted 3MF fallback with " + convertedStlPaths.size() + " STL file(s) for slicing.");
             variants.add(new SlicerInputVariant(convertedStlPaths, "converted 3MF geometry"));
         } catch (InterruptedException e) {

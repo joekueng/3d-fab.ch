@@ -1,4 +1,8 @@
 {
+  "CAD_PRINT_ITEMS": {
+    "HINT": "Puoi svuotare o cambiare la sessione del calcolatore e salvare: file e costi seguono la sessione selezionata. Le sessioni originali vengono conservate, così puoi riassociarle. Il link checkout resta lo stesso.",
+    "INVALID_SESSION": "Inserisci un ID sessione del calcolatore valido oppure lascia il campo vuoto."
+  },
   "NAV": {
     "HOME": "Home",
     "CALCULATOR": "Calcolatore",
@@ -703,7 +707,7 @@
       "ITEMS": {
         "FILES": {
           "Q": "Che file posso caricare?",
-          "A": "Puoi caricare file STL o 3MF. Se scarichi un modello da un portale esterno, verifica che sia gia un file 3D pronto e non solo immagini o documentazione."
+          "A": "Puoi caricare file STL, 3MF, OBJ o STEP/STP. Se scarichi un modello da un portale esterno, verifica che sia già un file 3D pronto e non solo immagini o documentazione."
         },
         "MODE": {
           "Q": "Come scelgo tra Base e Avanzata?",
@@ -724,7 +728,7 @@
       }
     },
     "UPLOAD_LABEL": "Trascina il tuo file 3D qui",
-    "UPLOAD_SUB": "Supportiamo STL, 3MF fino a 50MB",
+    "UPLOAD_SUB": "STL, 3MF, OBJ e STEP/STP · fino a 200 MB",
     "MATERIAL": "Materiale",
     "QUALITY": "Qualità",
     "PRINT_SPEED": "Velocità di Stampa",
@@ -737,6 +741,8 @@
     "NOZZLE": "Diametro Ugello",
     "SUPPORT": "Supporti",
     "SUPPORT_DESC": "Abilita supporti per sporgenze",
+    "SPLIT_RECALCULATE_HELP": "Per includerli nel totale, accetta la suddivisione selezionando la casella sotto i file, poi premi «Calcola Preventivo».",
+    "FILE_SPLIT_REQUIRED": "Richiede suddivisione",
     "SPLIT_ACCEPT_LABEL": "Accetto che i modelli troppo grandi vengano suddivisi per la stampa",
     "SPLIT_RESULT_NOTE": "Il preventivo include il supplemento di CHF 10 per suddividere i modelli troppo grandi. Il file originale resta associato all'ordine.",
     "CALCULATE": "Calcola Preventivo",
@@ -801,14 +807,14 @@
     "PROCESSING": "Elaborazione...",
     "NOTES_PLACEHOLDER": "Istruzioni specifiche...",
     "SETUP_NOTE": "* Include {{cost}} come costo di setup",
-    "SHIPPING_NOTE": "* La spedizione è stimata in base a dimensioni e peso imballati e confermata al checkout.",
-    "SHIPPING_UNAVAILABLE": "La spedizione non è inclusa in questo totale. Completa il calcolo o richiedi una consulenza per un preventivo di spedizione.",
-    "STEP_WARNING": "La visualizzazione 3D è disponibile solo per i file STL",
+    "SHIPPING_NOTE": "* La spedizione viene calcolata in questo passaggio in base alle dimensioni e al peso dell’imballaggio.",
+    "SHIPPING_UNAVAILABLE": "La spedizione non può essere calcolata perché mancano dati validi su peso o dimensioni dei pezzi. Ricalcola il preventivo; se il problema persiste, richiedi una consulenza.",
+    "SHIPPING_MANUAL_QUOTE": "Le dimensioni o il peso dell’ordine richiedono un preventivo di spedizione personalizzato. Richiedi una consulenza.",
     "REMOVE_FILE": "Rimuovi file",
     "FALLBACK_MATERIAL": "PLA (fallback)",
     "FALLBACK_QUALITY_STANDARD": "Standard",
     "ERR_FILE_TOO_LARGE": "Alcuni file superano il limite di 200MB e non sono stati aggiunti.",
-    "ERR_INVALID_FILE_TYPE": "Puoi caricare solo file .stl o .3mf.",
+    "ERR_INVALID_FILE_TYPE": "Puoi caricare file STL, 3MF, OBJ o STEP/STP.",
     "ERROR_ZERO_PRICE": "Qualcosa è andato storto nel calcolo. Prova un altro formato o contattaci direttamente con Richiedi Consulenza.",
     "ZERO_RESULT_TITLE": "Risultato non valido",
     "ZERO_RESULT_HELP": "Il calcolo ha restituito valori non validi (0). Prova con un altro formato file oppure contattaci direttamente con Richiedi Consulenza.",
@@ -821,8 +827,10 @@
     "SPLIT_REQUEST_ACTION": "Richiedi la suddivisione",
     "REVIEW_OUT_OF_VOLUME": "Il modello supera il volume di stampa disponibile.",
     "REVIEW_PROCESSING_FAILED": "Non è stato possibile analizzare automaticamente il file. Il file resta salvato per una valutazione manuale.",
-    "REVIEW_PARTIAL_SINGLE": "{{fileName}} richiede una valutazione manuale e non è incluso nel totale. {{reason}}",
-    "REVIEW_PARTIAL_MULTIPLE": "{{count}} file richiedono una valutazione manuale e non sono inclusi nel totale: {{fileNames}}. {{reason}}",
+    "REVIEW_TOO_SMALL": "Il modello è troppo piccolo per l’ugello selezionato. Controlla le unità ed esportalo in millimetri.",
+    "MODEL_UNIT": "Unità",
+    "REVIEW_PARTIAL_SINGLE": "{{fileName}} non è incluso nel totale. {{reason}}",
+    "REVIEW_PARTIAL_MULTIPLE": "{{count}} file non sono inclusi nel totale: {{fileNames}}. {{reason}}",
     "FILE_REVIEW_REQUIRED": "Richiede valutazione"
   },
   "QUOTE": {
@@ -855,6 +863,12 @@
     "SUBMIT": "Procedi",
     "SUMMARY_TITLE": "Riepilogo",
     "DEFAULT_COLOR": "Predefinito"
+  },
+  "IMAGE_PREVIEW": {
+    "OPEN": "Ingrandisci immagine: {{name}}",
+    "CLOSE": "Chiudi",
+    "ZOOM": "Dimensioni originali",
+    "FIT": "Adatta allo schermo"
   },
   "COMMON": {
     "REQUIRED": "Campo obbligatorio",
@@ -1266,6 +1280,7 @@
     "REMOVE_FILE": "Rimuovi file allegato"
   },
   "CHECKOUT": {
+    "CUSTOMIZE_ITEM": "Scegli quantità e colore",
     "COLOR": "Colore",
     "ERR_UPDATE_ITEM": "Impossibile aggiornare il pezzo. Verifica quantità e colore e riprova.",
     "TITLE": "Checkout",
@@ -1291,6 +1306,8 @@
     "PLACE_ORDER": "Invia Ordine",
     "PROCESSING": "Elaborazione...",
     "SUMMARY_TITLE": "Riepilogo Ordine",
+    "SUMMARY_EXPAND": "Ingrandisci riepilogo",
+    "SUMMARY_CLOSE": "Chiudi riepilogo",
     "SUBTOTAL": "Subtotale",
     "ITEMS_BASE_SUBTOTAL": "Costo Base Articoli",
     "MACHINE_COST": "Costo Macchina",
@@ -1528,6 +1545,21 @@
     "COPIED": "Link copiato. Puoi usarlo per riaprire tutta la sessione.",
     "COPY_ERROR": "Copia automatica non disponibile. Seleziona e copia il link qui sotto."
   },
+  "CAD_DELETE": {
+    "DELETE": "Elimina",
+    "TITLE": "Elimina fattura",
+    "WARNING": "La fattura, i file e gli allegati verranno eliminati. Scegli come gestire il link già condiviso.",
+    "LINK_ACTION": "Gestione del vecchio link",
+    "NEW_INVOICE": "Associa il link a una nuova fattura",
+    "REDIRECT": "Reindirizza a una pagina del sito",
+    "REUSE_HINT": "Si aprirà una nuova fattura vuota con lo stesso link. Fino al salvataggio il vecchio link non mostrerà alcuna fattura.",
+    "TARGET": "Pagina di destinazione (percorso interno)",
+    "CONFIRM": "Conferma eliminazione",
+    "CANCEL": "Annulla",
+    "DONE": "Fattura eliminata. La gestione del vecchio link è stata salvata.",
+    "ERROR": "Impossibile eliminare la fattura. Controlla la destinazione e che non sia già collegata a un ordine.",
+    "STABLE_LINK": "Il link di questa fattura resta invariato durante le modifiche. Per creare una fattura distinta usa Nuova fattura."
+  },
   "CAD_ORGANIZATION": {
     "TITLE": "Fatture e prestazioni",
     "CLIENT": "Cliente / azienda (riferimento interno)",
@@ -1626,5 +1658,17 @@
     "ATTACH_AFTER_PAYMENT": "Scaricabile dopo il pagamento",
     "ATTACH_REQUIRES_SESSION": "Salva la fattura per caricare gli allegati.",
     "ATTACH_PENDING": "Verrà caricato al salvataggio"
+  },
+  "ADMIN_TRANSLATION": {
+    "SOURCE_LANGUAGE": "Lingua di partenza",
+    "OVERWRITE": "Sovrascrivi traduzioni esistenti",
+    "TRANSLATE": "Traduci",
+    "TRANSLATING": "Traduco…",
+    "HINT": "Compila i campi nella lingua di partenza. Le traduzioni vengono inserite nel modulo: salva per applicarle.",
+    "ERROR": "Traduzione non riuscita. Riprova.",
+    "UPDATED": "Traduzioni inserite nel modulo. Salva per applicarle.",
+    "EMPTY": "Nessun campo da tradurre o aggiornare.",
+    "COLORS_HINT": "Traduce tutti i colori salvati dall’italiano, sostituisce EN, DE e FR e salva le traduzioni per filamenti e shop.",
+    "COLORS_SAVED": "Traduzioni dei colori salvate per filamenti e shop."
   }
 }

@@ -26,6 +26,7 @@ export class AppButtonComponent {
   disabled = input<boolean>(false);
   loading = input<boolean>(false);
   fullWidth = input<boolean>(false);
+  ariaLabel = input<string | null>(null);
 
   buttonClass(): string {
     const variantClasses: Record<string, string> = {

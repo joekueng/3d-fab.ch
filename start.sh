@@ -175,6 +175,10 @@ if [ "$CLEAN" -eq 1 ]; then
   clean_environment
 fi
 
+log "Preparing the local STEP/STP converter..."
+bash "$PROJECT_ROOT/backend/scripts/setup-step-converter.sh" || fail "Could not prepare the STEP converter. See backend/README.md."
+export STEP_PYTHON_PATH="${STEP_PYTHON_PATH:-$PROJECT_ROOT/backend/venv/bin/python}"
+
 ensure_docker
 
 log "Starting PostgreSQL and ClamAV containers if needed..."

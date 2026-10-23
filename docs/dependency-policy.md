@@ -37,7 +37,9 @@ node scripts/check-external-packages.mjs
 This dependency-free script reads metadata without installing or executing packages.
 It checks manifest/lockfile declarations, every direct locked npm version and its
 tarball URL/integrity against npm, deprecation, literal versioned Maven POMs and
-versioned Gradle plugin markers. Missing packages, mismatches and network failures
+versioned Gradle plugin markers. It also checks every pinned package and wheel hash
+in `backend/step-requirements.txt` against PyPI, including its locked dependencies.
+Missing packages, mismatches and network failures
 return a nonzero exit code. It prints Maven release metadata for upgrade review.
 Gitea runs it on dependency-related pull requests and manual dispatch.
 

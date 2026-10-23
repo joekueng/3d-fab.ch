@@ -12,8 +12,41 @@ import java.util.UUID;
         @Index(name = "ix_quote_sessions_status",
                 columnList = "status"),
         @Index(name = "ix_quote_sessions_expires_at",
-                columnList = "expires_at")})
+                columnList = "expires_at"),
+        @Index(name = "ix_quote_sessions_calculator_session", columnList = "calculator_session_id")})
 public class QuoteSession {
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "calculator_session_id", foreignKey = @ForeignKey(name = "fk_quote_sessions_calculator_session"))
+    private QuoteSession calculatorSession;
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    @Column(name = "calculator_detached")
+    private Boolean calculatorDetached;
+
+    public QuoteSession getCalculatorSession() { return calculatorSession; }
+    public void setCalculatorSession(QuoteSession value) { calculatorSession = value; }
+    public Boolean getCalculatorDetached() { return calculatorDetached; }
+    public void setCalculatorDetached(Boolean value) { calculatorDetached = value; }
+
+    /** Legacy invoices keep their own print rows; detaching never deletes them. */
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    @Transient
+    public QuoteSession getPrintSource() {
+        return Boolean.TRUE.equals(calculatorDetached) ? null : calculatorSession != null ? calculatorSession : this;
+    }
+
+    public boolean includesPrintItem(QuoteLineItem item) {
+        QuoteSession source = getPrintSource();
+        return source != null && source.getId().equals(item.getQuoteSession().getId());
+    }
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    @Column(name = "deleted_redirect_path", length = 1000)
+    private String deletedRedirectPath;
+    public String getDeletedRedirectPath() { return deletedRedirectPath; }
+    public void setDeletedRedirectPath(String path) { deletedRedirectPath = path; }
+
     @Column(name = "invoice_client_name", length = 160)
     private String clientName;
     public String getClientName() { return clientName; }

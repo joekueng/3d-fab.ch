@@ -1,10 +1,12 @@
 import { TestBed } from '@angular/core/testing';
+import { OverlayContainer } from '@angular/cdk/overlay';
 import { provideTranslateService, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from '../../../core/services/language.service';
 import { PrintItemControlsComponent } from './print-item-controls.component';
 import itTranslations from '../../../../assets/i18n/it.json';
 
 describe('PrintItemControlsComponent', () => {
+  afterEach(() => TestBed.inject(OverlayContainer).ngOnDestroy());
   it('renders translated controls, commits quantity on blur, and selects material variants', async () => {
     await TestBed.configureTestingModule({
       imports: [PrintItemControlsComponent],
@@ -52,7 +54,10 @@ describe('PrintItemControlsComponent', () => {
     expect(quantity).toHaveBeenCalledWith(3);
     element.querySelector<HTMLButtonElement>('.trigger')!.click();
     fixture.detectChanges();
-    element.querySelector<HTMLElement>('.color-item')!.click();
+    TestBed.inject(OverlayContainer)
+      .getContainerElement()
+      .querySelector<HTMLElement>('.color-item')!
+      .click();
     expect(color).toHaveBeenCalledWith({
       colorName: 'Nero',
       filamentVariantId: 12,

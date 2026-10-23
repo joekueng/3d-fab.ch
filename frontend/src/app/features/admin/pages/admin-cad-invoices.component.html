@@ -15,13 +15,13 @@
   <section class="create-box">
     <h2>
       {{
-        (form.sessionId
+        (draftSessionId
           ? "CAD_ORGANIZATION.EDIT_DRAFT"
           : "CAD_ORGANIZATION.CREATE"
         ) | translate
       }}
     </h2>
-    <fieldset [disabled]="creating" class="invoice-fields">
+    <fieldset [disabled]="creating || draftIsConverted" class="invoice-fields">
       <div class="form-grid">
         <app-input
           name="clientName"
@@ -58,6 +58,9 @@
           [(ngModel)]="form.sourceRequestId"
           [label]="'CAD_ORGANIZATION.REQUEST' | translate"
         ></app-input>
+        <p class="ui-copy-subtitle notes-field" *ngIf="draftSessionId">
+          {{ "CAD_PRINT_ITEMS.HINT" | translate }}
+        </p>
         <app-textarea
           class="notes-field"
           name="notes"
@@ -106,7 +109,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let row of managedRows">
+                <tr *ngFor="let row of managedRows; trackBy: trackManagedRow">
                   <td
                     class="file-cell"
                     [attr.data-label]="'CAD_ITEM_PRICING.FILE' | translate"
@@ -185,6 +188,7 @@
           <div class="manage-actions">
             <app-button
               type="button"
+              variant="secondary"
               (click)="previewManagedChanges()"
               [disabled]="previewing || savingManaged || !canEditManagedItems()"
             >
@@ -305,7 +309,7 @@
         >
           {{ attachmentError }}
         </p>
-        <p class="ui-copy-subtitle" *ngIf="!managedSessionId">
+        <p class="ui-copy-subtitle" *ngIf="!attachmentSessionId">
           {{ "CAD_ITEM_PRICING.ATTACH_REQUIRES_SESSION" | translate }}
         </p>
         <div
@@ -367,24 +371,31 @@
         </ng-template>
         <div class="attachment-upload">
           <input
+            #invoiceAttachmentFiles
             id="invoice-attachment-files"
-            class="sr-only"
             type="file"
+            hidden
             multiple
             (change)="onAttachmentFilesSelected($event)"
             [disabled]="!canEditManagedItems() || attachmentUploading"
           />
-          <label class="ui-file-picker" for="invoice-attachment-files">
-            <span class="ui-file-picker__button">{{
-              "CAD_ITEM_PRICING.ATTACH_ADD" | translate
-            }}</span>
-            <span class="ui-file-picker__name">{{
+          <app-button
+            (click)="invoiceAttachmentFiles.click()"
+            [disabled]="!canEditManagedItems()"
+            [loading]="attachmentUploading"
+            type="button"
+            variant="secondary"
+          >
+            {{
               (attachmentUploading
                 ? "CAD_ITEM_PRICING.ATTACH_UPLOADING"
-                : "CAD_ITEM_PRICING.ATTACH_PICKER_HINT"
+                : "CAD_ITEM_PRICING.ATTACH_ADD"
               ) | translate
-            }}</span>
-          </label>
+            }}
+          </app-button>
+          <p class="ui-form-hint">
+            {{ "CAD_ITEM_PRICING.ATTACH_PICKER_HINT" | translate }}
+          </p>
         </div>
       </div>
     </fieldset>
@@ -392,7 +403,7 @@
       <app-button
         type="button"
         (click)="createCadInvoice()"
-        [disabled]="creating || !serviceLines.length"
+        [disabled]="creating || draftIsConverted || !serviceLines.length"
       >
         {{
           (creating ? "CAD_ORGANIZATION.SAVING" : "CAD_ORGANIZATION.PREPARE")
@@ -415,20 +426,22 @@
       {{ "CAD_ORGANIZATION.EMPTY" | translate }}
     </p>
     <section *ngFor="let group of invoiceGroups; trackBy: trackGroup">
-      <h2 class="ui-section-display-subtitle">
-        {{ group.clientName }} {{ group.clientName ? " / " : ""
-        }}{{ group.name || ("CAD_ORGANIZATION.UNGROUPED" | translate) }} ({{
-          group.rows.length
-        }})
-      </h2>
-      <app-button
-        type="button"
-        variant="ghost"
-        (click)="newInterimInvoice(group)"
-        [disabled]="creating"
-      >
-        {{ "CAD_ORGANIZATION.INTERIM" | translate }}
-      </app-button>
+      <div class="invoice-group-header">
+        <h2 class="ui-section-display-subtitle">
+          {{ group.clientName }} {{ group.clientName ? " / " : ""
+          }}{{ group.name || ("CAD_ORGANIZATION.UNGROUPED" | translate) }} ({{
+            group.rows.length
+          }})
+        </h2>
+        <app-button
+          type="button"
+          variant="ghost"
+          (click)="newInterimInvoice(group)"
+          [disabled]="creating"
+        >
+          {{ "CAD_ORGANIZATION.INTERIM" | translate }}
+        </app-button>
+      </div>
       <div class="table-wrap ui-table-wrap">
         <table class="cad-invoices-table ui-data-table">
           <thead>
@@ -442,43 +455,53 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let row of group.rows; trackBy: trackInvoice">
+            <tr
+              *ngFor="let row of group.rows; trackBy: trackInvoice"
+              [class.selected]="row.sessionId === draftSessionId"
+            >
               <td
                 class="invoice-name"
                 [attr.data-label]="'CAD_ORGANIZATION.NAME' | translate"
               >
-                <strong>{{
-                  row.invoiceName || ("CAD_ORGANIZATION.UNTITLED" | translate)
-                }}</strong>
-                <div [appCopyOnClick]="row.sessionId" [title]="row.sessionId">
-                  {{ row.sessionId | slice: 0 : 8 }}
+                <div class="invoice-identity">
+                  <strong>{{
+                    row.invoiceName || ("CAD_ORGANIZATION.UNTITLED" | translate)
+                  }}</strong>
+                  <div [appCopyOnClick]="row.sessionId" [title]="row.sessionId">
+                    {{ row.sessionId | slice: 0 : 8 }}
+                  </div>
                 </div>
               </td>
               <td [attr.data-label]="'CAD_ORGANIZATION.SERVICES' | translate">
-                <details *ngIf="row.serviceLines?.length; else legacyCad">
-                  <summary>
-                    {{ row.serviceLines.length }}
-                    {{ "CAD_ORGANIZATION.SERVICES" | translate }}
-                  </summary>
-                  <ul class="service-details">
-                    <li *ngFor="let line of row.serviceLines">
-                      {{ line.description }} —
-                      {{
-                        line.billingType === "HOURLY"
-                          ? line.quantity + " h × "
-                          : ""
-                      }}
-                      {{ line.unitPriceChf | currency: "CHF" }}
-                    </li>
-                  </ul>
-                </details>
-                <p *ngIf="row.notes" class="service-details">{{ row.notes }}</p>
-                <ng-template #legacyCad
-                  >{{ row.cadHours }} h ×
-                  {{ row.cadHourlyRateChf | currency: "CHF" }}</ng-template
-                >
+                <div>
+                  <details *ngIf="row.serviceLines?.length; else legacyCad">
+                    <summary>
+                      {{ row.serviceLines.length }}
+                      {{ "CAD_ORGANIZATION.SERVICES" | translate }}
+                    </summary>
+                    <ul class="service-details">
+                      <li *ngFor="let line of row.serviceLines">
+                        {{ line.description }} —
+                        {{
+                          line.billingType === "HOURLY"
+                            ? line.quantity + " h × "
+                            : ""
+                        }}
+                        {{ line.unitPriceChf | currency: "CHF" }}
+                      </li>
+                    </ul>
+                  </details>
+                  <p *ngIf="row.notes" class="service-details">
+                    {{ row.notes }}
+                  </p>
+                  <ng-template #legacyCad
+                    >{{ row.cadHours }} h ×
+                    {{ row.cadHourlyRateChf | currency: "CHF" }}</ng-template
+                  >
+                </div>
               </td>
               <td
+                class="amount-cell"
                 [attr.data-label]="
                   'CAD_ORGANIZATION.SERVICES_TOTAL' | translate
                 "
@@ -486,63 +509,85 @@
                 {{ servicesTotal(row) | currency: "CHF" }}
               </td>
               <td
+                class="amount-cell"
                 [attr.data-label]="'CAD_ORGANIZATION.ORDER_TOTAL' | translate"
               >
                 {{ row.grandTotalChf | currency: "CHF" }}
               </td>
               <td [attr.data-label]="'CAD_ORGANIZATION.STATUS' | translate">
-                {{ row.convertedOrderStatus || row.sessionStatus }}
-                <div
-                  *ngIf="row.convertedOrderId"
-                  [appCopyOnClick]="row.convertedOrderId"
-                  [title]="row.convertedOrderId"
-                >
-                  {{ row.convertedOrderId | slice: 0 : 8 }}
+                <div>
+                  {{ row.convertedOrderStatus || row.sessionStatus }}
+                  <div
+                    *ngIf="row.convertedOrderId"
+                    [appCopyOnClick]="row.convertedOrderId"
+                    [title]="row.convertedOrderId"
+                  >
+                    {{ row.convertedOrderId | slice: 0 : 8 }}
+                  </div>
                 </div>
               </td>
-              <td
-                class="actions"
-                [attr.data-label]="'CAD_ORGANIZATION.ACTIONS' | translate"
-              >
-                <app-button
-                  type="button"
-                  variant="ghost"
-                  (click)="manageItems(row.sessionId)"
-                  >{{ "CAD_ITEM_PRICING.MANAGE" | translate }}</app-button
-                >
-                <app-button
-                  type="button"
-                  variant="ghost"
-                  (click)="editMetadata(row)"
-                  >{{ "CAD_ORGANIZATION.EDIT" | translate }}</app-button
-                >
-                <app-button
-                  *ngIf="!row.convertedOrderId"
-                  type="button"
-                  variant="ghost"
-                  (click)="editInvoice(row)"
-                  [disabled]="creating"
-                  >{{ "CAD_ORGANIZATION.EDIT_DRAFT" | translate }}</app-button
-                >
-                <app-button
-                  type="button"
-                  variant="ghost"
-                  (click)="openCheckout(row.checkoutPath)"
-                  >{{ "CAD_ORGANIZATION.OPEN" | translate }}</app-button
-                >
-                <app-button
-                  type="button"
-                  variant="ghost"
-                  (click)="copyCheckout(row.checkoutPath)"
-                  >{{ "CAD_ORGANIZATION.COPY" | translate }}</app-button
-                >
-                <app-button
-                  *ngIf="row.convertedOrderId"
-                  type="button"
-                  variant="ghost"
-                  (click)="downloadInvoice(row.convertedOrderId)"
-                  >{{ "CAD_ORGANIZATION.DOWNLOAD" | translate }}</app-button
-                >
+              <td [attr.data-label]="'CAD_ORGANIZATION.ACTIONS' | translate">
+                <div class="invoice-actions">
+                  <div class="actions">
+                    <app-button
+                      type="button"
+                      variant="ghost"
+                      *ngIf="
+                        row.convertedOrderId ||
+                        row.sessionStatus === 'CONVERTED'
+                      "
+                      (click)="editMetadata(row)"
+                      >{{ "CAD_ORGANIZATION.EDIT" | translate }}</app-button
+                    >
+                    <app-button
+                      *ngIf="
+                        !row.convertedOrderId &&
+                        row.sessionStatus !== 'CONVERTED'
+                      "
+                      type="button"
+                      variant="secondary"
+                      (click)="editInvoice(row)"
+                      [disabled]="creating"
+                      >{{
+                        "CAD_ORGANIZATION.EDIT_DRAFT" | translate
+                      }}</app-button
+                    >
+                  </div>
+                  <div class="actions">
+                    <app-button
+                      type="button"
+                      variant="ghost"
+                      (click)="openCheckout(row.checkoutPath)"
+                      >{{ "CAD_ORGANIZATION.OPEN" | translate }}</app-button
+                    >
+                    <app-button
+                      type="button"
+                      variant="ghost"
+                      (click)="copyCheckout(row.checkoutPath)"
+                      >{{ "CAD_ORGANIZATION.COPY" | translate }}</app-button
+                    >
+                    <app-button
+                      *ngIf="row.convertedOrderId"
+                      type="button"
+                      variant="ghost"
+                      (click)="downloadInvoice(row.convertedOrderId)"
+                      >{{ "CAD_ORGANIZATION.DOWNLOAD" | translate }}</app-button
+                    >
+                  </div>
+                  <div class="actions">
+                    <app-button
+                      *ngIf="
+                        !row.convertedOrderId &&
+                        row.sessionStatus === 'CAD_ACTIVE'
+                      "
+                      type="button"
+                      [disabled]="creating || deletingInvoice"
+                      variant="ghost-danger"
+                      (click)="requestDeleteInvoice(row)"
+                      >{{ "CAD_DELETE.DELETE" | translate }}</app-button
+                    >
+                  </div>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -551,6 +596,60 @@
     </section>
   </ng-container>
 </section>
+
+<app-dialog
+  *ngIf="invoiceToDelete"
+  [title]="'CAD_DELETE.TITLE' | translate"
+  [closeLabel]="'CAD_ORGANIZATION.CLOSE' | translate"
+  (dismissed)="closeDeleteInvoice()"
+>
+  <p>{{ "CAD_DELETE.WARNING" | translate }}</p>
+  <p class="service-details">
+    {{ invoiceToDelete.invoiceName || invoiceToDelete.sessionId }}
+  </p>
+  <p class="service-details" [appCopyOnClick]="deletionLinkUrl">
+    {{ deletionLinkUrl }}
+  </p>
+  <p class="ui-banner ui-banner--error" role="alert" *ngIf="deleteError">
+    {{ deleteError }}
+  </p>
+  <app-select
+    name="deleteLinkAction"
+    [(ngModel)]="deleteLinkAction"
+    [options]="deleteLinkOptions"
+    [disabled]="deletingInvoice"
+    [label]="'CAD_DELETE.LINK_ACTION' | translate"
+  ></app-select>
+  <p *ngIf="deleteLinkAction === 'NEW_INVOICE'">
+    {{ "CAD_DELETE.REUSE_HINT" | translate }}
+  </p>
+  <app-input
+    *ngIf="deleteLinkAction === 'REDIRECT'"
+    name="deleteTargetPath"
+    [(ngModel)]="deleteTargetPath"
+    [disabled]="deletingInvoice"
+    [label]="'CAD_DELETE.TARGET' | translate"
+    placeholder="/contact"
+  ></app-input>
+  <div class="actions">
+    <app-button
+      type="button"
+      variant="danger"
+      (click)="confirmDeleteInvoice()"
+      [loading]="deletingInvoice"
+    >
+      {{ "CAD_DELETE.CONFIRM" | translate }}
+    </app-button>
+    <app-button
+      type="button"
+      variant="ghost"
+      (click)="closeDeleteInvoice()"
+      [disabled]="deletingInvoice"
+    >
+      {{ "CAD_DELETE.CANCEL" | translate }}
+    </app-button>
+  </div>
+</app-dialog>
 
 <app-dialog
   *ngIf="editingSessionId"

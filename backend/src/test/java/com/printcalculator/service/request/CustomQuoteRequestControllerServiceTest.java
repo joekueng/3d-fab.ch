@@ -4,6 +4,7 @@ import com.printcalculator.dto.QuoteRequestDto;
 import com.printcalculator.entity.CustomQuoteRequest;
 import com.printcalculator.event.CustomQuoteRequestCreatedEvent;
 import com.printcalculator.repository.CustomQuoteRequestRepository;
+import com.printcalculator.service.LegalConsentService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -35,6 +36,8 @@ class CustomQuoteRequestControllerServiceTest {
     private CustomQuoteRequestAttachmentService attachmentService;
     @Mock
     private ApplicationEventPublisher eventPublisher;
+    @Mock
+    private LegalConsentService legalConsentService;
 
     @InjectMocks
     private CustomQuoteRequestControllerService service;
@@ -45,11 +48,11 @@ class CustomQuoteRequestControllerServiceTest {
 
         ResponseStatusException ex = assertThrows(
                 ResponseStatusException.class,
-                () -> service.createCustomQuoteRequest(dto, List.of())
+                () -> service.createCustomQuoteRequest(dto, List.of(), "203.0.113.42")
         );
 
         assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
-        verifyNoInteractions(requestRepo, attachmentService, eventPublisher);
+        verifyNoInteractions(requestRepo, attachmentService, eventPublisher, legalConsentService);
     }
 
     @Test
@@ -65,7 +68,7 @@ class CustomQuoteRequestControllerServiceTest {
         });
         when(attachmentService.storeAttachments(any(CustomQuoteRequest.class), eq(files))).thenReturn(2);
 
-        CustomQuoteRequest saved = service.createCustomQuoteRequest(dto, files);
+        CustomQuoteRequest saved = service.createCustomQuoteRequest(dto, files, "203.0.113.42");
 
         assertNotNull(saved);
         assertEquals(requestId, saved.getId());
@@ -74,6 +77,7 @@ class CustomQuoteRequestControllerServiceTest {
         assertNotNull(saved.getUpdatedAt());
 
         verify(requestRepo).save(any(CustomQuoteRequest.class));
+        verify(legalConsentService).recordContactRequest(saved, true, true, "de-CH", "203.0.113.42");
         verify(attachmentService).storeAttachments(saved, files);
         verify(eventPublisher).publishEvent(new CustomQuoteRequestCreatedEvent(requestId, 2, "de-CH"));
     }

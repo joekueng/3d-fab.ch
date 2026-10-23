@@ -1,7 +1,11 @@
+import type { ModelUnit } from '../../services/quote-estimator.service';
+
 export interface FormItem {
+  modelUnit?: ModelUnit;
   clientKey: string;
   file: File;
   previewFile?: File;
+  previewUnit?: ModelUnit;
   quantity: number;
   material: string;
   quality: string;
@@ -30,6 +34,7 @@ export type ItemPrintSettingsUpdate = Partial<
     | 'infillDensity'
     | 'infillPattern'
     | 'supportEnabled'
+    | 'modelUnit'
   >
 >;
 

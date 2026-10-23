@@ -1,8 +1,7 @@
 package com.printcalculator.service.order;
 
-import com.printcalculator.dto.AddressDto;
 import com.printcalculator.dto.CreateOrderRequest;
-import com.printcalculator.dto.OrderDto;
+import com.printcalculator.dto.PublicOrderDto;
 import com.printcalculator.dto.OrderItemDto;
 import com.printcalculator.entity.Order;
 import com.printcalculator.entity.OrderItem;
@@ -15,6 +14,7 @@ import com.printcalculator.service.payment.InvoicePdfRenderingService;
 import com.printcalculator.service.payment.PaymentService;
 import com.printcalculator.service.payment.QrBillService;
 import com.printcalculator.service.payment.TwintPaymentService;
+import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -24,22 +24,14 @@ import java.net.URI;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
 public class OrderControllerService {
-    private static final Set<String> PERSONAL_DATA_REDACTED_STATUSES = Set.of(
-            "IN_PRODUCTION",
-            "SHIPPED",
-            "COMPLETED"
-    );
-
     private final OrderService orderService;
     private final OrderRepository orderRepo;
     private final OrderItemRepository orderItemRepo;
@@ -71,15 +63,15 @@ public class OrderControllerService {
     }
 
     @Transactional
-    public OrderDto createOrderFromQuote(UUID quoteSessionId, CreateOrderRequest request) {
-        Order order = orderService.createOrderFromQuote(quoteSessionId, request);
+    public PublicOrderDto createOrderFromQuote(UUID quoteSessionId, CreateOrderRequest request, String clientIp) {
+        Order order = orderService.createOrderFromQuote(quoteSessionId, request, clientIp);
         List<OrderItem> items = orderItemRepo.findByOrder_Id(order.getId());
-        OrderDto dto = convertToDto(order, items);
+        PublicOrderDto dto = convertToDto(order, items);
         dto.setInformationToken(order.getInformationToken());
         return dto;
     }
 
-    public Optional<OrderDto> getOrder(UUID orderId) {
+    public Optional<PublicOrderDto> getOrder(UUID orderId) {
         return orderRepo.findById(orderId)
                 .map(order -> {
                     List<OrderItem> items = orderItemRepo.findByOrder_Id(order.getId());
@@ -88,7 +80,7 @@ public class OrderControllerService {
     }
 
     @Transactional
-    public Optional<OrderDto> reportPayment(UUID orderId, String method) {
+    public Optional<PublicOrderDto> reportPayment(UUID orderId, String method) {
         paymentService.reportPayment(orderId, method);
         return getOrder(orderId);
     }
@@ -148,11 +140,18 @@ public class OrderControllerService {
     }
 
     private ResponseEntity<byte[]> generateDocument(UUID orderId, boolean isConfirmation) {
-        Order order = orderRepo.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+        Order order = orderRepo.findById(orderId).orElse(null);
+        if (order == null || !"PENDING_PAYMENT".equals(order.getStatus()) || order.getPaidAt() != null) {
+            return ResponseEntity.notFound().cacheControl(CacheControl.noStore()).build();
+        }
 
-        List<OrderItem> items = orderItemRepo.findByOrder_Id(orderId);
         Payment payment = paymentRepo.findByOrder_Id(orderId).orElse(null);
+        if (payment != null && (payment.getReceivedAt() != null
+                || !("PENDING".equalsIgnoreCase(payment.getStatus())
+                || "REPORTED".equalsIgnoreCase(payment.getStatus())))) {
+            return ResponseEntity.notFound().cacheControl(CacheControl.noStore()).build();
+        }
+        List<OrderItem> items = orderItemRepo.findByOrder_Id(orderId);
 
         byte[] pdf = invoiceService.generateDocumentPdf(order, items, isConfirmation, qrBillService, payment);
         String typePrefix = isConfirmation ? "confirmation-" : "invoice-";
@@ -160,12 +159,12 @@ public class OrderControllerService {
         return ResponseEntity.ok()
                 .header("Content-Disposition", "attachment; filename=\"" + typePrefix + truncatedUuid + ".pdf\"")
                 .contentType(MediaType.APPLICATION_PDF)
-                .cacheControl(org.springframework.http.CacheControl.noStore())
+                .cacheControl(CacheControl.noStore())
                 .body(pdf);
     }
 
-    private OrderDto convertToDto(Order order, List<OrderItem> items) {
-        OrderDto dto = new OrderDto();
+    private PublicOrderDto convertToDto(Order order, List<OrderItem> items) {
+        PublicOrderDto dto = new PublicOrderDto();
         dto.setId(order.getId());
         dto.setOrderNumber(getDisplayOrderNumber(order));
         dto.setSourceType(order.getSourceType() != null ? order.getSourceType() : "CALCULATOR");
@@ -176,12 +175,6 @@ public class OrderControllerService {
             dto.setPaymentMethod(payment.getMethod());
         });
 
-        boolean redactPersonalData = shouldRedactPersonalData(order.getStatus());
-        if (!redactPersonalData) {
-            dto.setCustomerEmail(order.getCustomerEmail());
-            dto.setCustomerPhone(order.getCustomerPhone());
-            dto.setBillingCustomerType(order.getBillingCustomerType());
-        }
         dto.setPreferredLanguage(order.getPreferredLanguage());
         dto.setCurrency(order.getCurrency());
         dto.setSetupCostChf(order.getSetupCostChf());
@@ -189,7 +182,6 @@ public class OrderControllerService {
         dto.setDiscountChf(order.getDiscountChf());
         dto.setSubtotalChf(order.getSubtotalChf());
         dto.setIsCadOrder(order.getIsCadOrder());
-        dto.setSourceRequestId(order.getSourceRequestId());
         dto.setCadHours(order.getCadHours());
         dto.setCadHourlyRateChf(order.getCadHourlyRateChf());
         dto.setCadTotalChf(order.getCadTotalChf());
@@ -204,35 +196,6 @@ public class OrderControllerService {
         dto.setTotalChf(order.getTotalChf());
         dto.setCreatedAt(order.getCreatedAt());
         dto.setPaidAt(order.getPaidAt());
-        dto.setShippingSameAsBilling(order.getShippingSameAsBilling());
-
-        if (!redactPersonalData) {
-            AddressDto billing = new AddressDto();
-            billing.setFirstName(order.getBillingFirstName());
-            billing.setLastName(order.getBillingLastName());
-            billing.setCompanyName(order.getBillingCompanyName());
-            billing.setContactPerson(order.getBillingContactPerson());
-            billing.setAddressLine1(order.getBillingAddressLine1());
-            billing.setAddressLine2(order.getBillingAddressLine2());
-            billing.setZip(order.getBillingZip());
-            billing.setCity(order.getBillingCity());
-            billing.setCountryCode(order.getBillingCountryCode());
-            dto.setBillingAddress(billing);
-
-            if (!Boolean.TRUE.equals(order.getShippingSameAsBilling())) {
-                AddressDto shipping = new AddressDto();
-                shipping.setFirstName(order.getShippingFirstName());
-                shipping.setLastName(order.getShippingLastName());
-                shipping.setCompanyName(order.getShippingCompanyName());
-                shipping.setContactPerson(order.getShippingContactPerson());
-                shipping.setAddressLine1(order.getShippingAddressLine1());
-                shipping.setAddressLine2(order.getShippingAddressLine2());
-                shipping.setZip(order.getShippingZip());
-                shipping.setCity(order.getShippingCity());
-                shipping.setCountryCode(order.getShippingCountryCode());
-                dto.setShippingAddress(shipping);
-            }
-        }
 
         List<OrderItemDto> itemDtos = items.stream().map(item -> {
             OrderItemDto itemDto = new OrderItemDto();
@@ -289,13 +252,6 @@ public class OrderControllerService {
         dto.setItems(itemDtos);
 
         return dto;
-    }
-
-    private boolean shouldRedactPersonalData(String status) {
-        if (status == null || status.isBlank()) {
-            return false;
-        }
-        return PERSONAL_DATA_REDACTED_STATUSES.contains(status.trim().toUpperCase(Locale.ROOT));
     }
 
     private String getDisplayOrderNumber(Order order) {

@@ -18,11 +18,23 @@
       } @else {
         {{ errorKey() | translate }}
       }
+      @if (isOutOfVolumeError()) {
+        <div class="split-next-step">
+          {{ "CALC.SPLIT_RECALCULATE_HELP" | translate }}
+        </div>
+      }
     </app-alert>
   }
 
   @if (warningMessage()) {
-    <app-alert type="warning">{{ warningMessage() }}</app-alert>
+    <app-alert type="warning">
+      {{ warningMessage() }}
+      @if (hasOversizedFailures()) {
+        <div class="split-next-step">
+          {{ "CALC.SPLIT_RECALCULATE_HELP" | translate }}
+        </div>
+      }
+    </app-alert>
   }
 </div>
 
@@ -125,7 +137,11 @@
           <h3>{{ "CALC.ZERO_RESULT_TITLE" | translate }}</h3>
           <p>{{ "CALC.ZERO_RESULT_HELP" | translate }}</p>
           <div class="zero-result-action">
-            <app-button variant="outline" (click)="onConsult()">
+            <app-button
+              variant="outline"
+              [fullWidth]="true"
+              (click)="onConsult()"
+            >
               {{ "QUOTE.CONSULT" | translate }}
             </app-button>
           </div>
@@ -152,12 +168,17 @@
             @if (isOutOfVolumeError()) {
               <app-button
                 (click)="onAcceptSplitAndCalculate()"
+                [fullWidth]="true"
                 [disabled]="loading() || rateLimitSecondsRemaining() > 0"
               >
                 {{ "CALC.SPLIT_ACCEPT_CALCULATE" | translate }}
               </app-button>
             }
-            <app-button variant="outline" (click)="onConsult()">
+            <app-button
+              variant="outline"
+              [fullWidth]="true"
+              (click)="onConsult()"
+            >
               {{ "QUOTE.CONSULT" | translate }}
             </app-button>
           </div>

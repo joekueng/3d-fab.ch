@@ -51,6 +51,12 @@ class AdminAuthSecurityTest {
     private MockMvc mockMvc;
 
     @Test
+    void sessionModelPreviewRequiresAdminAuthentication() throws Exception {
+        mockMvc.perform(get("/api/admin/sessions/11111111-1111-1111-1111-111111111111/items/22222222-2222-2222-2222-222222222222/stl-preview"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void loginOk_ShouldReturnCookie() throws Exception {
         MvcResult result = mockMvc.perform(post("/api/admin/auth/login")
                         .with(req -> {

@@ -3,8 +3,15 @@
     @if (selectedFile()) {
       <div class="viewer-wrapper">
         @if (!canPreviewSelectedFile()) {
-          <div class="step-warning">
-            <p>{{ "CALC.STEP_WARNING" | translate }}</p>
+          <div class="preview-status">
+            <p role="status">
+              {{
+                (previewLoading()
+                  ? "STL_VIEWER.LOADING"
+                  : "STL_VIEWER.UNAVAILABLE"
+                ) | translate
+              }}
+            </p>
           </div>
         } @else {
           <app-stl-viewer
@@ -43,7 +50,12 @@
               }}</span>
               @if (item.reviewLevel) {
                 <span class="review-badge">
-                  {{ "CALC.FILE_REVIEW_REQUIRED" | translate }}
+                  {{
+                    (item.reviewLevel === "warning"
+                      ? "CALC.FILE_SPLIT_REQUIRED"
+                      : "CALC.FILE_REVIEW_REQUIRED"
+                    ) | translate
+                  }}
                 </span>
               }
             </div>
@@ -61,6 +73,24 @@
                 (quantityChange)="updateItemQuantityValue(i, $event)"
                 (colorChange)="updateItemColor(i, $event)"
               />
+
+              @if (isObjFile(item.file)) {
+                <div
+                  class="model-unit-field"
+                  (click)="$event.stopPropagation()"
+                >
+                  <app-select
+                    [label]="'CALC.MODEL_UNIT' | translate"
+                    [compact]="true"
+                    size="small"
+                    [options]="modelUnitOptions"
+                    [ngModel]="item.modelUnit ?? 'mm'"
+                    [ngModelOptions]="{ standalone: true }"
+                    [disabled]="loading()"
+                    (ngModelChange)="updateItemModelUnit(i, $event)"
+                  />
+                </div>
+              }
 
               <button
                 type="button"

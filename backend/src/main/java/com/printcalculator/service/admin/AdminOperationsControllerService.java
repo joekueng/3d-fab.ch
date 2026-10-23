@@ -3,6 +3,9 @@ package com.printcalculator.service.admin;
 import com.printcalculator.dto.AdminCadInvoiceCreateRequest;
 import com.printcalculator.dto.AdminCadInvoiceDto;
 import com.printcalculator.dto.AdminCadInvoiceMetadataRequest;
+import com.printcalculator.dto.AdminCadInvoiceDeleteRequest;
+import com.printcalculator.repository.QuoteSessionAttachmentRepository;
+import com.printcalculator.service.qr.QrLinkSupportService;
 import com.printcalculator.dto.AdminContactRequestAttachmentDto;
 import com.printcalculator.dto.AdminContactRequestDetailDto;
 import com.printcalculator.dto.AdminContactRequestDto;
@@ -91,6 +94,8 @@ public class AdminOperationsControllerService {
     private final QuoteSessionExpiryPolicy quoteSessionExpiryPolicy;
     private final EmailAuditService emailAuditService;
     private final CustomQuoteRequestNotificationService contactRequestNotificationService;
+    private final QuoteSessionAttachmentRepository sessionAttachmentRepo;
+    private final QrLinkSupportService linkSupport;
 
     public AdminOperationsControllerService(FilamentVariantStockKgRepository filamentStockRepo,
                                             FilamentVariantRepository filamentVariantRepo,
@@ -104,7 +109,11 @@ public class AdminOperationsControllerService {
                                             QuoteSessionTotalsService quoteSessionTotalsService,
                                             QuoteSessionExpiryPolicy quoteSessionExpiryPolicy,
                                             EmailAuditService emailAuditService,
-                                            CustomQuoteRequestNotificationService contactRequestNotificationService) {
+                                            CustomQuoteRequestNotificationService contactRequestNotificationService,
+                                            QuoteSessionAttachmentRepository sessionAttachmentRepo,
+                                            QrLinkSupportService linkSupport) {
+        this.sessionAttachmentRepo = sessionAttachmentRepo;
+        this.linkSupport = linkSupport;
         this.filamentStockRepo = filamentStockRepo;
         this.filamentVariantRepo = filamentVariantRepo;
         this.customQuoteRequestRepo = customQuoteRequestRepo;
@@ -296,6 +305,7 @@ public class AdminOperationsControllerService {
     public List<AdminQuoteSessionDto> getQuoteSessions() {
         return quoteSessionRepo.findAll(Sort.by(Sort.Direction.DESC, "createdAt"))
                 .stream()
+                .filter(session -> !"CAD_DELETED".equals(session.getStatus()))
                 .map(this::toQuoteSessionDto)
                 .toList();
     }
@@ -382,6 +392,38 @@ public class AdminOperationsControllerService {
             throw new ResponseStatusException(CONFLICT, "Session already converted to order");
         }
 
+        if ("ACTIVE".equals(session.getStatus()) && session.getId() != null
+                && quoteSessionRepo.existsByCalculatorSession_Id(session.getId())) {
+            throw new ResponseStatusException(CONFLICT, "Calculator session is already used by an invoice");
+        }
+
+        if ("CAD_DELETED".equals(session.getStatus()) && session.getDeletedRedirectPath() != null) {
+            throw new ResponseStatusException(CONFLICT, "This deleted invoice link is reserved for a redirect");
+        }
+
+        if (session.getId() != null && orderRepo.existsBySourceQuoteSession_Id(session.getId())) {
+            throw new ResponseStatusException(CONFLICT, "Cannot change an invoice linked to an order");
+        }
+        if (payload.hasCalculatorSessionId()) {
+            UUID sourceId = payload.getCalculatorSessionId();
+            if (sourceId == null) {
+                // Retain the last external source so expiry cleanup cannot prevent reattachment.
+                session.setCalculatorDetached(true);
+            } else if (sourceId.equals(session.getId())) {
+                session.setCalculatorSession(null);
+                session.setCalculatorDetached(false);
+            } else {
+                QuoteSession source = quoteSessionRepo.findLockedById(sourceId)
+                        .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Calculator session not found"));
+                if (!"ACTIVE".equals(source.getStatus()) || !"PRINT_QUOTE".equals(source.getSessionType())
+                        || source.getConvertedOrderId() != null || orderRepo.existsBySourceQuoteSession_Id(sourceId)) {
+                    throw new ResponseStatusException(CONFLICT, "Choose an unconverted calculator session");
+                }
+                session.setCalculatorSession(source);
+                session.setCalculatorDetached(false);
+            }
+        }
+
         if (payload.getSourceRequestId() != null) {
             if (!customQuoteRequestRepo.existsById(payload.getSourceRequestId())) {
                 throw new ResponseStatusException(NOT_FOUND, "Source request not found");
@@ -392,6 +434,8 @@ public class AdminOperationsControllerService {
         }
 
         session.setStatus("CAD_ACTIVE");
+        session.setDeletedRedirectPath(null);
+        session.setExpiresAt(quoteSessionExpiryPolicy.newExpiry());
         if (payload.getClientName() != null) {
             session.setClientName(normalizeInvoiceLabel(payload.getClientName()));
         }
@@ -436,6 +480,50 @@ public class AdminOperationsControllerService {
     }
 
     @Transactional
+    public void deleteCadInvoice(UUID sessionId, AdminCadInvoiceDeleteRequest payload) {
+        QuoteSession session = quoteSessionRepo.findLockedById(sessionId)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Session not found"));
+        if ("CONVERTED".equals(session.getStatus()) || session.getConvertedOrderId() != null
+                || orderRepo.existsBySourceQuoteSession_Id(sessionId)) {
+            throw new ResponseStatusException(CONFLICT, "Cannot delete an invoice linked to an order");
+        }
+        if (!"CAD_ACTIVE".equals(session.getStatus())) {
+            throw new ResponseStatusException(BAD_REQUEST, "Not an active CAD invoice");
+        }
+        if (quoteSessionRepo.existsByCalculatorSession_Id(sessionId)) {
+            throw new ResponseStatusException(CONFLICT, "Session is used by another invoice");
+        }
+        if (payload == null || payload.linkAction() == null) {
+            throw new ResponseStatusException(BAD_REQUEST, "Choose how to retain the old link");
+        }
+        String redirectPath = payload.linkAction() == AdminCadInvoiceDeleteRequest.LinkAction.REDIRECT
+                ? linkSupport.normalizeTargetPath(payload.targetPath()) : null;
+        if (redirectPath != null && (redirectPath.length() > 1000 || redirectPath.startsWith("/checkout") || redirectPath.contains("\\")
+                || redirectPath.contains("%") || redirectPath.contains(".."))) {
+            throw new ResponseStatusException(BAD_REQUEST, "Choose a public destination page");
+        }
+        quoteLineItemRepo.deleteByQuoteSession_Id(sessionId);
+        sessionAttachmentRepo.deleteAll(sessionAttachmentRepo.findByQuoteSessionIdOrderByCreatedAtAsc(sessionId));
+        deleteSessionFiles(sessionId);
+        // Keep only the link reservation. No previous invoice or customer content remains public.
+        session.setCalculatorSession(null);
+        session.setCalculatorDetached(true);
+        session.setStatus("CAD_DELETED");
+        session.setDeletedRedirectPath(redirectPath);
+        session.setInformationDraftId(null);
+        session.setSourceRequestId(null);
+        session.setClientName(null);
+        session.setInvoiceName(null);
+        session.setCollaborationName(null);
+        session.setNotes(null);
+        session.setServiceLines(List.of());
+        session.setCadHours(BigDecimal.ZERO);
+        session.setCadHourlyRateChf(BigDecimal.ZERO);
+        session.setSetupCostChf(BigDecimal.ZERO);
+        quoteSessionRepo.save(session);
+    }
+
+    @Transactional
     public void deleteQuoteSession(UUID sessionId) {
         QuoteSession session = quoteSessionRepo.findById(sessionId)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Session not found"));
@@ -443,7 +531,13 @@ public class AdminOperationsControllerService {
         if (orderRepo.existsBySourceQuoteSession_Id(sessionId)) {
             throw new ResponseStatusException(CONFLICT, "Cannot delete session already linked to an order");
         }
+        if ("CAD_ACTIVE".equals(session.getStatus()) || "CAD_DELETED".equals(session.getStatus())) {
+            throw new ResponseStatusException(CONFLICT, "Use CAD invoice deletion to preserve its link");
+        }
 
+        if (quoteSessionRepo.existsByCalculatorSession_Id(sessionId)) {
+            throw new ResponseStatusException(CONFLICT, "Session is used by an invoice");
+        }
         deleteSessionFiles(sessionId);
         quoteSessionRepo.delete(session);
     }
@@ -537,7 +631,8 @@ public class AdminOperationsControllerService {
     }
 
     private AdminCadInvoiceDto toCadInvoiceDto(QuoteSession session) {
-        List<QuoteLineItem> items = quoteLineItemRepo.findByQuoteSessionId(session.getId());
+        QuoteSession source = session.getPrintSource();
+        List<QuoteLineItem> items = source == null ? List.of() : quoteLineItemRepo.findByQuoteSessionId(source.getId());
         QuoteSessionTotalsService.QuoteSessionTotals totals = quoteSessionTotalsService.compute(session, items);
 
         AdminCadInvoiceDto dto = new AdminCadInvoiceDto();
@@ -546,6 +641,7 @@ public class AdminOperationsControllerService {
         dto.setInvoiceName(session.getInvoiceName());
         dto.setCollaborationName(session.getCollaborationName());
         dto.setSessionId(session.getId());
+        dto.setCalculatorSessionId(source == null || source.getId().equals(session.getId()) && items.isEmpty() ? null : source.getId());
         dto.setSessionStatus(session.getStatus());
         dto.setSourceRequestId(session.getSourceRequestId());
         dto.setCadHours(session.getCadHours() != null ? session.getCadHours() : BigDecimal.ZERO);

@@ -18,6 +18,10 @@ export class PrintItemControlsComponent {
   variants = input<VariantOption[]>([]);
   disabled = input(false);
   commitOnBlur = input(false);
+  quantityLabelKey = input('CALC.QTY_SHORT');
+  showColorLabel = input(false);
+  stacked = input(false);
+  compact = input(false);
   quantityChange = output<number>();
   colorChange = output<{ colorName: string; filamentVariantId?: number }>();
 }

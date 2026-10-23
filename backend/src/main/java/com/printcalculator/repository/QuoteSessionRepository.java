@@ -11,6 +11,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface QuoteSessionRepository extends JpaRepository<QuoteSession, UUID> {
+    boolean existsByCalculatorSession_Id(UUID id);
+
     @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
     @Query("select s from QuoteSession s where s.id = :id")
     Optional<QuoteSession> findLockedById(@Param("id") UUID id);
@@ -21,7 +23,7 @@ public interface QuoteSessionRepository extends JpaRepository<QuoteSession, UUID
 
     Optional<QuoteSession> findByIdAndSessionType(UUID id, String sessionType);
 
-    @Query("select count(s) from QuoteSession s")
+    @Query("select count(s) from QuoteSession s where s.status <> 'CAD_DELETED'")
     long countAllForStatistics();
 
     @Query("""

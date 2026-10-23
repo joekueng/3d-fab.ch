@@ -56,9 +56,14 @@ For live order updates, follow [customer order tracking](README.md#customer-orde
 
 For asynchronous view updates, follow [change detection conventions](README.md#asynchronous-view-updates).
 
+For localized admin content and the bulk filament color action, follow
+[admin content translation](README.md#admin-content-translation).
+
 For oversized models, follow [split consent and recalculation](README.md#oversized-models-and-split-consent).
 
 For calculator API changes, follow [calculator batch requests](README.md#calculator-batch-requests) and the linked backend admission contract.
+
+For model formats and generated STL previews, follow [model uploads and previews](README.md#model-uploads-and-previews).
 
 ## Verification
 

@@ -54,6 +54,11 @@ export class QuoteResultComponent {
     const status = this.result().shippingQuote?.status;
     return status === 'PENDING' || status === 'MANUAL_QUOTE';
   });
+  shippingMessageKey = computed(() =>
+    this.result().shippingQuote?.status === 'MANUAL_QUOTE'
+      ? 'CALC.SHIPPING_MANUAL_QUOTE'
+      : 'CALC.SHIPPING_UNAVAILABLE',
+  );
   recalculationRequired = input<boolean>(false);
   recalculationReason = input<'changes' | 'ordered'>('changes');
   itemSettingsDiffByFileName = input<Record<string, { differences: string[] }>>(

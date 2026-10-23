@@ -1,0 +1,20 @@
+<app-dialog
+  (dismissed)="dismissed.emit()"
+  [closeLabel]="'ADMIN_ORDERS.CLOSE' | translate"
+  [fullscreenOnMobile]="true"
+  [subtitle]="filename()"
+  [title]="'ADMIN_ORDERS.PREVIEW_TITLE' | translate"
+  size="large"
+>
+  @if (error()) {
+    <p class="ui-banner ui-banner--error">
+      {{ "ADMIN_ORDERS.PREVIEW_ERROR" | translate }}
+    </p>
+  } @else if (file(); as preview) {
+    <app-stl-viewer [color]="color()" [file]="preview" [height]="520" />
+  } @else {
+    <p class="preview-loading">
+      {{ "ADMIN_ORDERS.PREVIEW_LOADING" | translate }}
+    </p>
+  }
+</app-dialog>

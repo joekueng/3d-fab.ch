@@ -8,6 +8,12 @@ import {
   inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import {
+  ConnectedPosition,
+  Overlay,
+  OverlayModule,
+  RepositionScrollStrategy,
+} from '@angular/cdk/overlay';
 import { TranslatePipe } from '@ngx-translate/core';
 import {
   PRODUCT_COLORS,
@@ -29,12 +35,31 @@ export interface ColorSelectorGroup {
 @Component({
   selector: 'app-color-selector',
   standalone: true,
-  imports: [CommonModule, TranslatePipe],
+  imports: [CommonModule, OverlayModule, TranslatePipe],
   templateUrl: './color-selector.component.html',
   styleUrl: './color-selector.component.scss',
 })
 export class ColorSelectorComponent {
   private readonly languageService = inject(LanguageService);
+  private readonly overlay = inject(Overlay);
+  readonly scrollStrategy: RepositionScrollStrategy =
+    this.overlay.scrollStrategies.reposition();
+  readonly popupPositions: ConnectedPosition[] = [
+    {
+      originX: 'start',
+      originY: 'bottom',
+      overlayX: 'start',
+      overlayY: 'top',
+      offsetY: 8,
+    },
+    {
+      originX: 'start',
+      originY: 'top',
+      overlayX: 'start',
+      overlayY: 'bottom',
+      offsetY: -8,
+    },
+  ];
   disabled = input(false);
   selectedColor = input<string>('Black');
   selectedVariantId = input<string | number | null>(null);
@@ -43,6 +68,8 @@ export class ColorSelectorComponent {
 
   groups = input<ColorSelectorGroup[] | null>(null);
   showLabel = input(false);
+  field = input(false);
+  compact = input(false);
   subtitle = input('');
   variantSelected = output<string | number>();
   isOpen = signal(false);
@@ -130,6 +157,13 @@ export class ColorSelectorComponent {
     if (normalized === 'glossy') return 'COLOR.CATEGORY_GLOSSY';
     if (normalized === 'matte') return 'COLOR.CATEGORY_MATTE';
     return 'COLOR.AVAILABLE_COLORS';
+  }
+
+  onEscape(event: Event): void {
+    if (!this.isOpen()) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this.close();
   }
 
   close() {

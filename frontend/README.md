@@ -133,6 +133,36 @@ The server remains responsible for quota and concurrency enforcement. See the
 [backend admission contract](../backend/README.md#calculator-admission-and-slicing-capacity)
 for defaults, legacy compatibility and deployment order.
 
+### Model uploads and previews
+
+The calculator accepts STL, 3MF, OBJ and STEP/STP files up to the existing 200 MB upload
+limit. STL previews stay local. On selection, other formats request an STL from
+`POST /api/model-previews`; show the existing viewer loading/unavailable text
+while waiting or on failure. Preview failures must not prevent quoting. Cancel
+the pending preview when selection changes, and cache the result by the original
+`File` identity and selected unit so files with identical names stay independent.
+
+OBJ cards expose a compact shared `app-select` for file units (`mm`, `cm`, `m`,
+`in`). Send `modelUnit` in both preview FormData and per-file quote settings.
+Changing units invalidates that item's preview/review message, refreshes its
+preview, and requires recalculation before checkout. Preserve the unit in drafts,
+session restoration and recalculation signatures. Do not apply global print
+settings or guessed unit conversions to this per-file value.
+
+Keep the original file in requests and drafts. Generated preview files belong in
+`previewFile`, never in `file`. Restored sessions use the stored converted STL.
+Checkout reuses that stored STL through `getLineItemStlPreview` for all five
+supported extensions. Do not restrict previews to original `.stl` filenames or
+upload models again when opening the summary. Item headers pair the name with
+the line total; the next row groups material, print time and weight. The expanded
+summary uses two columns on desktop and one on mobile, with square model previews.
+Both summary views place stacked quantity/color fields beside the thumbnail;
+the expand icon sits beside its heading and opens the same complete summary.
+Track print summary cards by their persistent item ID. Updating CAD quantity or
+color returns a new session object; retaining cards avoids recreating WebGL
+viewers and preserves the scroll position and 3D camera while applying colors.
+See the [backend conversion contract](../backend/README.md#model-conversion-and-previews).
+
 ## Internationalization (i18n)
 
 Translations are stored in `src/assets/i18n/`.
@@ -143,6 +173,26 @@ Translations are stored in `src/assets/i18n/`.
 - `fr.json` (French)
 
 To add a language, create the JSON file, update the supported-language types and `LanguageService` in `src/app/core/services/language.service.ts`, and update the static translation loader. Run `npm run check:i18n` before committing.
+
+## Admin content translation
+
+Reuse `AdminTranslationService` and the existing localized-text backend for admin
+content. `features/admin/components/admin-translate-action` supplies source language,
+optional overwrite, loading/error feedback, and draft-only results for category
+content/SEO and product image title/alt text. Identify each draft with its names or
+translations map so switching records cancels pending results. Responses preserve
+the source and edits made while translating; saving remains the owning form's job.
+Populated optional fields participate even when required fields are already complete.
+
+Filament colors use the page-header **Translate** action beside **Refresh** instead:
+`POST /api/admin/filaments/translate-colors` always translates saved Italian labels,
+overwrites EN/DE/FR, and persists filament and existing shop variant labels together.
+Save Italian changes/new colors before running it. Keep internal color names/IDs and
+hex values stable; public selectors, shop, cart and orders consume the existing locale
+labels. Checkout print summaries use the session's localized labels, with filament
+options by ID as a fallback.
+Browser scenarios `UI-ADMIN-TRANSLATION-001/002` use simulated APIs and cover the
+header action, overwrite results, failure recovery, category/image editors and mobile.
 
 ## Customer order tracking
 
@@ -243,6 +293,34 @@ issued document snapshots retain their agreed name and service details.
 explicitly simulated API and checks narrow-screen layout. Backend integration
 and pricing tests remain responsible for persistence, amounts and paid access.
 
+Keep the currently edited invoice ID separately from the form's optional
+calculator source field. The source field stays editable: clearing it sends
+`calculatorSessionId: null`; changing it sends the selected UUID. Always send
+content edits to `PUT /cad-invoices/{invoiceId}` so neither action creates a
+second checkout. Populate the field from the returned `calculatorSessionId`,
+not the invoice ID, and retain the saved service rows. Only explicit
+new/interim-invoice actions clear the editor's invoice identity.
+
+Changing the source previews its print rows without replacing services or
+attachments. Attachment operations remain bound to the invoice ID even when
+its calculator source is empty or different. Re-entering a previous source ID
+restores its files and prices without re-uploading them. Use one draft edit
+action for services and print pricing; metadata-only editing remains available
+for converted invoices. Keep action groups inside the table cell so shared
+mobile labels and desktop alignment stay intact. `UI-INVOICE-009` covers
+clear/save, reattachment, replacement, persistence in the editor and responsive
+layout with an explicitly simulated API.
+
+Draft deletion uses `app-dialog` and a required old-link decision. Cancel/Escape
+make no request. `NEW_INVOICE` opens an empty replacement form with the reserved
+ID; `REDIRECT` accepts a public site path and clears the deleted draft editor.
+Keep errors in the dialog and block duplicate confirmation while saving. Issued
+order snapshots remain protected. Checkout and saved calculator links follow a
+deleted invoice's public redirect in the selected language with history replacement,
+before mapping the response to a quote. Accept only internal paths, rejecting
+protocol-relative URLs and backslashes. Browser scenarios UI-INVOICE-004/005 and
+ADMIN-CAD-001/002 cover stable identity, confirmation, replacement and redirect.
+
 ### Oversized models and split consent
 
 When slicing reports `MODEL_OUT_OF_PRINT_VOLUME`, the calculator offers explicit
@@ -253,3 +331,10 @@ priced item `requiresSplitPrinting`, which triggers the configured split surchar
 This estimates printing; it does not generate cut geometry. Failed estimates still
 require manual review. Preserve the error code from both upload and session
 responses so generic processing failures cannot hide the consent action.
+
+For partial quotes, keep oversized files explicitly excluded from the total until
+recalculation succeeds. Use the existing warning banner to explain the two steps:
+select the split-consent checkbox, then calculate the quote again. Label these
+files as requiring splitting; reserve manual-review copy for failed estimates.
+Keep the checkbox label concise; the split-review card explains the surcharge
+and manual-review fallback. Stack its full-width action buttons with a consistent gap.

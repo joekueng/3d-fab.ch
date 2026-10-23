@@ -1,6 +1,11 @@
 package com.printcalculator.dto;
 
 public class PrintSettingsDto {
+    @jakarta.validation.constraints.Pattern(regexp = "mm|cm|m|in")
+    private String modelUnit;
+    public String getModelUnit() { return modelUnit; }
+    public void setModelUnit(String unit) { modelUnit = unit; }
+
     @jakarta.validation.constraints.Size(max = 100)
     private String clientModelKey;
     public String getClientModelKey() { return clientModelKey; }

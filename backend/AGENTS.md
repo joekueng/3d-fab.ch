@@ -26,6 +26,9 @@ Read [README.md](README.md) before extending backend features. For email changes
 - Use constructor injection and existing project patterns. Do not introduce a second dependency-injection style.
 - Return safe, minimal public data. Keep administrative and public contracts separate, and never treat an identifier alone as authorization.
 
+For separate public/admin order DTOs and the scope of the JSON response boundary,
+follow [public and admin order responses](README.md#public-and-admin-order-responses).
+
 ## Domain dependencies to preserve
 
 - Quote calculations combine model inspection, Orca profile resolution, slicing/G-code parsing, print statistics, and pricing policy. Changes require special care around `SlicerService`, `QuoteCalculator`, `QuoteSessionTotalsService`, and related entities.
@@ -34,9 +37,21 @@ Read [README.md](README.md) before extending backend features. For email changes
 - QR location is inferred from backend-observed IP data; proxy-header trust and GeoLite configuration are security-sensitive.
 - SMTP, TWINT, QR-bill, and OpenAI translation integrations must be configuration-driven. Never log credentials or full sensitive request data.
 
+For the bulk Italian color translation action and propagation to existing shop
+variants, follow [filament and shop color translations](README.md#filament-and-shop-color-translations).
+
 For calculator batches, admission budgets and queue behavior, follow [calculator admission and slicing capacity](README.md#calculator-admission-and-slicing-capacity). Preserve admission before quote reset and session/IP-bound permit consumption.
 
+For accepted calculator formats, temporary preview conversion and original-file retention,
+follow [model conversion and previews](README.md#model-conversion-and-previews).
+
+For native CLI compatibility and full-bed fit checks, follow
+[CLI printer profiles and usable volume](README.md#cli-printer-profiles-and-usable-volume).
+
 ## Testing and checks
+
+For terms/privacy acceptance persistence, document versions and additive schema
+deployment, follow [legal acceptance records](README.md#legal-acceptance-records).
 
 Use the Gradle wrapper from `backend/`:
 

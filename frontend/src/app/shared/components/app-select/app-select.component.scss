@@ -7,3 +7,24 @@
   color: var(--color-text);
   margin-left: 2px;
 }
+
+.select-small {
+  gap: 2px;
+
+  .ui-form-label {
+    font-size: 0.72rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    font-weight: 600;
+  }
+
+  .ui-form-control {
+    height: 34px;
+    padding: 4px 1.75rem 4px 6px;
+    font-size: 0.95rem;
+    border-radius: var(--radius-sm);
+    background-position: right 0.5rem center;
+    background-size: 0.8rem;
+  }
+}

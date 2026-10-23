@@ -5,6 +5,10 @@
 @use "./styles/ui";
 @use "./styles/admin";
 
+.color-selector-backdrop {
+  background: transparent;
+}
+
 /* Reset / Base */
 *,
 *::before,

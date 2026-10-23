@@ -13,12 +13,12 @@ Before implementing anything, read [AGENTS.md](AGENTS.md), the nearest module gu
 4. Keep necessary exceptions small and explain their concrete reason in the change description. When introducing a reusable convention, document its source of truth in the relevant README and link it from AGENTS.md.
 5. Run the relevant checks and compare the rendered result with the existing reference, including narrow screens and long translated content where applicable. Report the reference reused, validation performed, and any verification limitations.
 
-| Area | Source of truth and implementation guide |
-| --- | --- |
-| Public and admin UI | [Frontend README](frontend/README.md), [frontend agent guide](frontend/AGENTS.md), shared controls and `frontend/src/styles/` |
-| Backend services, APIs, integrations | [Backend README](backend/README.md), [backend agent guide](backend/AGENTS.md), nearest existing domain implementation |
-| Transactional email | [Email template README](backend/src/main/resources/templates/email/README.md), shared Thymeleaf fragments and established order emails |
-| Invoices and generated documents | `backend/src/main/resources/templates/invoice.html`, `invoice-logo.svg`, and their existing generation services; retain document-specific layout and formatting |
+| Area                                 | Source of truth and implementation guide                                                                                                                        |
+|--------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Public and admin UI                  | [Frontend README](frontend/README.md), [frontend agent guide](frontend/AGENTS.md), shared controls and `frontend/src/styles/`                                   |
+| Backend services, APIs, integrations | [Backend README](backend/README.md), [backend agent guide](backend/AGENTS.md), nearest existing domain implementation                                           |
+| Transactional email                  | [Email template REAls<br/>DME](backend/src/main/resources/templates/email/README.md), shared Thymeleaf fragments and established order emails                   |
+| Invoices and generated documents     | `backend/src/main/resources/templates/invoice.html`, `invoice-logo.svg`, and their existing generation services; retain document-specific layout and formatting |
 
 ## Features 
 
@@ -61,6 +61,8 @@ From the repository root, run:
 The command starts or creates the PostgreSQL and ClamAV Docker containers,
 waits for them to become ready, and then starts the Spring Boot backend with the
 `local` profile, the Angular frontend, and the static image server on port 8081.
+It also prepares the pinned STEP/STP converter in `backend/venv` on first start
+(Python 3.10–3.14 and internet access are required for that installation).
 Press `Ctrl+C` to stop the three local processes. The Docker containers remain
 running and can be stopped separately with `docker compose down`.
 

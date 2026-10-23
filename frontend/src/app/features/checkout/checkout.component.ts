@@ -1,3 +1,4 @@
+import { ImagePreviewComponent } from '../../shared/components/image-preview/image-preview.component';
 import { ServiceLine } from '../../shared/models/service-line';
 import { AppDialogComponent } from '../../shared/components/app-dialog/app-dialog.component';
 import { FormControl } from '@angular/forms';
@@ -52,10 +53,26 @@ import {
   resolveLocalizedColorLabel,
 } from '../../core/constants/colors.const';
 
+interface CheckoutColorItem {
+  filamentVariantId?: number | null;
+  materialCode?: string | null;
+  colorCode?: string | null;
+  shopVariantColorName?: string | null;
+  shopVariantColorLabelIt?: string | null;
+  shopVariantColorLabelEn?: string | null;
+  shopVariantColorLabelDe?: string | null;
+  shopVariantColorLabelFr?: string | null;
+  filamentColorLabelIt?: string | null;
+  filamentColorLabelEn?: string | null;
+  filamentColorLabelDe?: string | null;
+  filamentColorLabelFr?: string | null;
+}
+
 @Component({
   selector: 'app-checkout',
   standalone: true,
   imports: [
+    ImagePreviewComponent,
     AppDialogComponent,
     LegalConsentComponent,
     OrderInformationComponent,
@@ -109,6 +126,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   previewLoading = signal<Record<string, boolean>>({});
   previewErrors = signal<Record<string, boolean>>({});
   attachmentPreviews = signal<Record<string, string>>({});
+  readonly summaryModalOpen = signal(false);
   previewModalOpen = signal(false);
   selectedPreviewFile = signal<File | null>(null);
   selectedPreviewName = signal('');
@@ -233,10 +251,25 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     this.resetPreviewState();
     this.quoteService.getQuoteSession(this.sessionId).subscribe({
       next: (session) => {
+        if (
+          typeof session?.redirectPath === 'string' &&
+          session.redirectPath.startsWith('/') &&
+          !session.redirectPath.startsWith('//') &&
+          !session.redirectPath.includes('\\')
+        ) {
+          this.loading = false;
+          void this.router.navigateByUrl(
+            '/' +
+              this.languageService.selectedLang() +
+              (session.redirectPath === '/' ? '' : session.redirectPath),
+            { replaceUrl: true },
+          );
+          return;
+        }
         this.error = null;
         this.quoteSession.set(session);
         if (Array.isArray(session?.items) && session.items.length > 0) {
-          this.loadStlPreviews(session);
+          this.loadModelPreviews(session);
         } else {
           this.resetPreviewState();
         }
@@ -257,6 +290,10 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     return Array.isArray(session?.items)
       ? session.items.filter((item: any) => item?.status !== 'REVIEW_REQUIRED')
       : [];
+  }
+
+  trackSummaryItem(_index: number, item: { id: string }): string {
+    return item.id;
   }
 
   isCadSession(): boolean {
@@ -385,7 +422,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     if (variantLabel) {
       return variantLabel;
     }
-    return this.localizedShopColorLabel(item);
+    return this.itemColorLabel(item);
   }
 
   showItemMaterial(item: any): boolean {
@@ -396,9 +433,14 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     return !this.isShopItem(item);
   }
 
-  isStlItem(item: any): boolean {
-    const name = String(item?.originalFilename ?? '').toLowerCase();
-    return name.endsWith('.stl');
+  hasModelPreview(item: {
+    originalFilename?: string;
+    lineItemType?: string;
+  }): boolean {
+    return (
+      !this.isShopItem(item) &&
+      /\.(stl|3mf|obj|step|stp)$/i.test(item.originalFilename?.trim() ?? '')
+    );
   }
 
   previewFile(item: any): File | null {
@@ -413,8 +455,43 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     return this.itemColorSwatch(item);
   }
 
-  itemColorLabel(item: any): string {
-    return this.localizedShopColorLabel(item) || String(item?.colorCode ?? '-');
+  itemColorLabel(item: CheckoutColorItem): string {
+    const variants = this.materialOptions()
+      .filter(
+        (material) => !item.materialCode || material.code === item.materialCode,
+      )
+      .flatMap((material) => material.variants);
+    const variant =
+      variants.find(
+        (candidate) => candidate.id === Number(item.filamentVariantId),
+      ) ??
+      variants.find(
+        (candidate) =>
+          normalizeColorValue(candidate.colorName) ===
+          normalizeColorValue(item.colorCode),
+      );
+    return (
+      resolveLocalizedColorLabel(this.languageService.selectedLang(), {
+        fallback:
+          item.shopVariantColorName ?? variant?.colorName ?? item.colorCode,
+        it:
+          item.shopVariantColorLabelIt ??
+          item.filamentColorLabelIt ??
+          variant?.colorLabelIt,
+        en:
+          item.shopVariantColorLabelEn ??
+          item.filamentColorLabelEn ??
+          variant?.colorLabelEn,
+        de:
+          item.shopVariantColorLabelDe ??
+          item.filamentColorLabelDe ??
+          variant?.colorLabelDe,
+        fr:
+          item.shopVariantColorLabelFr ??
+          item.filamentColorLabelFr ??
+          variant?.colorLabelFr,
+      }) ?? '-'
+    );
   }
 
   itemColorSwatch(item: any): string {
@@ -456,16 +533,6 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       return false;
     }
     return !!this.previewLoading()[id];
-  }
-
-  private localizedShopColorLabel(item: any): string | null {
-    return resolveLocalizedColorLabel(this.languageService.selectedLang(), {
-      fallback: item?.shopVariantColorName ?? item?.colorCode,
-      it: item?.shopVariantColorLabelIt,
-      en: item?.shopVariantColorLabelEn,
-      de: item?.shopVariantColorLabelDe,
-      fr: item?.shopVariantColorLabelFr,
-    });
   }
 
   hasPreviewError(item: any): boolean {
@@ -533,13 +600,13 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     );
   }
 
-  private loadStlPreviews(session: any): void {
+  private loadModelPreviews(session: any): void {
     if (!this.sessionId || !Array.isArray(session?.items)) {
       return;
     }
 
     for (const item of session.items) {
-      if (!this.isStlItem(item)) {
+      if (!this.hasModelPreview(item)) {
         continue;
       }
 
@@ -625,6 +692,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   }
 
   private resetPreviewState(): void {
+    this.summaryModalOpen.set(false);
     this.previewFiles.set({});
     this.previewLoading.set({});
     this.previewErrors.set({});

@@ -289,6 +289,25 @@ class AdminOrderControllerServiceTest {
     }
 
     @Test
+    void getOrder_keepsCustomerDataForAdminAfterCompletion() {
+        UUID orderId = UUID.randomUUID();
+        Order order = buildOrder(orderId, "COMPLETED");
+        when(orderRepo.findById(orderId)).thenReturn(Optional.of(order));
+        when(orderItemRepo.findByOrder_Id(orderId)).thenReturn(List.of());
+
+        OrderDto dto = service.getOrder(orderId);
+
+        assertEquals("customer@example.com", dto.getCustomerEmail());
+        assertEquals("+41910000000", dto.getCustomerPhone());
+        assertEquals("PRIVATE", dto.getBillingCustomerType());
+        assertEquals("Mario", dto.getBillingAddress().getFirstName());
+        assertEquals("Rossi", dto.getBillingAddress().getLastName());
+        assertEquals("Via Test 1", dto.getBillingAddress().getAddressLine1());
+        assertEquals("Lugano", dto.getBillingAddress().getCity());
+        assertEquals(dto.getBillingAddress(), dto.getShippingAddress());
+    }
+
+    @Test
     void getOrder_shouldIncludePerItemPrintSettingsAndVariantMetadata() {
         UUID orderId = UUID.randomUUID();
         Order order = buildOrder(orderId, "PAID");

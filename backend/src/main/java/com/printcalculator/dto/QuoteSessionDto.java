@@ -42,6 +42,7 @@ public record QuoteSessionDto(
     }
 
     private static QuoteSessionDto from(QuoteSession session, boolean includeInformationDraft, UUID calculationId) {
+        QuoteSession printSource = session.getPrintSource();
         return new QuoteSessionDto(
                 session.getId(),
                 includeInformationDraft ? session.getInformationDraftId() : null,
@@ -55,7 +56,7 @@ public record QuoteSessionDto(
                 session.getInfillPercent(),
                 session.getSupportsEnabled(),
                 session.getNotes(),
-                session.getSetupCostChf(),
+                printSource != null ? printSource.getSetupCostChf() : BigDecimal.ZERO,
                 session.getCreatedAt(),
                 session.getExpiresAt(),
                 session.getConvertedOrderId(),

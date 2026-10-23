@@ -77,3 +77,43 @@ dashboard admin. I workflow Gitea e il deploy remoto non sono stati eseguiti
 localmente. Prima del passaggio in produzione conservare i digest precedenti e,
 poiché Hibernate usa ancora `ddl-auto=update`, verificare backup e differenze di
 schema: il rollback della sola immagine potrebbe non essere sufficiente.
+
+## Aggiornamento patch frontend del 21 ottobre 2026
+
+Angular framework, CLI, build, SSR, Material e CDK sono allineati alla **22.2.3**.
+Il lockfile è generato da npm; gli altri pacchetti diretti restano invariati.
+`follow-redirects` passa alla **1.16.1** entro il range già dichiarato dal suo
+chiamante. L'override limitato a `@angular/build` seleziona **Vite 8.3.3** al posto
+della versione 8.3.0 fissata dal builder. Rimuovere questo override quando il
+builder includerà Vite 8.3.3 o una versione successiva compatibile.
+
+Identità, pubblicazione, requisiti e integrità sono stati verificati il
+21 ottobre 2026 contro i metadati npm delle versioni selezionate:
+[@angular/core 22.2.3](https://registry.npmjs.org/@angular%2fcore/22.2.3),
+[@angular/build 22.2.3](https://registry.npmjs.org/@angular%2fbuild/22.2.3),
+[Vite 8.3.3](https://registry.npmjs.org/vite/8.3.3) e
+[follow-redirects 1.16.1](https://registry.npmjs.org/follow-redirects/1.16.1),
+oltre agli altri pacchetti Angular e a tutte le versioni transitive cambiate.
+Le identità sono riscontrate con le guide ufficiali di
+[Angular](https://angular.dev/installation),
+[Material](https://material.angular.dev/guide/getting-started),
+[Vite](https://vite.dev/guide/) e il
+[repository follow-redirects](https://github.com/follow-redirects/follow-redirects).
+
+I requisiti pubblicati confermano Node 24, TypeScript 6.0, RxJS 7.8 e Zone 0.16;
+i peer Angular e Material/CDK sono coerenti. Non sono introdotte nuove API
+applicative. Il bridge SSR esistente è verificato sul bundle reale aggiornato.
+
+Verifica locale: installazioni pulite con `--strict-peer-deps`, prima con
+`--ignore-scripts` e poi normali; metadati esterni **45/45**; **45 versioni nuove
+o cambiate** verificate anche per origine e integrità; audit runtime pulito e
+policy di audit completo superata senza modifiche alle eccezioni; **228/228 test
+Angular**, **7/7 test del controllo audit**, build produzione e test SSR superati.
+Passano anche typecheck app/spec/E2E, i18n, riuso UI, inventario route e uno smoke
+del server di sviluppo con Vite. I due warning SCSS preesistenti restano.
+Le verifiche host usano Node **24.15.0**, compatibile con i requisiti dichiarati;
+lo stack Docker usa Node **24.21.0** fissato dal repository.
+La suite fullstack Chromium sullo stack Docker temporaneo passa **45/45 E2E**,
+inclusi upload OBJ/STEP/STP, preventivi, ripristino sessioni, checkout e fatture
+CAD. Lo stack e i relativi volumi sono rimossi al termine. La matrice degli altri
+browser e i workflow remoti non sono stati eseguiti in questa verifica.

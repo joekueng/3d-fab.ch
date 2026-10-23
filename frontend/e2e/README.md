@@ -65,3 +65,39 @@ Navigation specs use `openNavigation` from `e2e/navigation.ts` before interactin
 with header links. It opens the actual mobile menu when the responsive toggle
 is visible; desktop keeps its normal navigation. Follow the link and check that
 the menu closes before interacting with footer links or page content.
+
+Calculator conversion coverage is in `calculator/conversion.spec.ts` (CALC-003–005).
+It uses a synthetic OBJ cube in metres and `fixtures/cube.step`, a synthetic 10 mm
+OpenCascade box. The same STEP fixture is uploaded under both STEP and STP names.
+These cases exercise real scanning, conversion and slicing; they compare physical
+STL bounds and downloaded original bytes, preserve OBJ units after session resume,
+and retain invalid CAD files for review. No external CAD file or customer data is used.
+`admin/cad-invoice-lifecycle.spec.ts` (ADMIN-CAD-001/002) exercises real persistence,
+anonymous/CSRF rejection, editing, deletion, replacement and both saved-link entry points.
+
+Run these against a fresh disposable stack from the repository root:
+
+```bash
+E2E_TEST_GREP='CALC-003|CALC-004|CALC-005|ADMIN-CAD-' bash scripts/e2e/run.sh fullstack
+```
+
+Public API snapshots can be read through `page.request` after the UI mutation
+completes. Read invoice identity from a successful edit request URL; the form's
+calculator-session field is optional, editable and distinct from the checkout ID.
+This also avoids depending on a response body's lifetime during Angular navigation.
+Admin authentication uses a Secure cookie: browser requests on loopback HTTP and
+`page.request` may apply different cookie rules. Observe the authenticated UI's
+requests for invoice identity instead of assuming an extra API request is logged
+in. Check status and response shape before parsing API snapshots.
+For transient binary model previews, `capturePreview` forwards
+the original browser request once with
+[`route.fetch()`](https://playwright.dev/docs/api/class-route#route-fetch), retains
+the real backend status/body and delivers that same response with
+[`route.fulfill()`](https://playwright.dev/docs/api/class-route#route-fulfill).
+These APIs are present in the pinned Playwright 1.63.0 types. No preview is
+fabricated or requested a second time. Do not read these blobs through the
+browser debugging protocol: Chromium may no longer retain them. Check both the
+retained STL bounds and the viewer's rendered dimensions so forwarding cannot
+hide a failure to consume the preview in the application.
+Keep failing regressions active: a confirmed defect must not be hidden with
+retries or skips.

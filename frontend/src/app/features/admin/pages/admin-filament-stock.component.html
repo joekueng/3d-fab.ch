@@ -3,10 +3,30 @@
     <div>
       <h1>Stock filamenti</h1>
     </div>
-    <app-button type="button" (click)="loadData()" [disabled]="loading">
-      Aggiorna
-    </app-button>
+    <div class="header-actions">
+      <app-button
+        (click)="translateColors()"
+        [disabled]="!canTranslateColors()"
+        [loading]="translatingColors"
+        type="button"
+      >
+        {{
+          (translatingColors
+            ? "ADMIN_TRANSLATION.TRANSLATING"
+            : "ADMIN_TRANSLATION.TRANSLATE"
+          ) | translate
+        }}
+      </app-button>
+      <app-button
+        (click)="loadData()"
+        [disabled]="loading || translatingColors"
+        type="button"
+      >
+        Aggiorna
+      </app-button>
+    </div>
   </header>
+  <p class="muted">{{ "ADMIN_TRANSLATION.COLORS_HINT" | translate }}</p>
 
   <div class="alerts">
     <p class="ui-banner ui-banner--error" *ngIf="errorMessage">
@@ -69,7 +89,7 @@
             <app-button
               type="button"
               (click)="createMaterial()"
-              [disabled]="creatingMaterial"
+              [disabled]="creatingMaterial || translatingColors"
             >
               {{ creatingMaterial ? "Salvataggio..." : "Aggiungi materiale" }}
             </app-button>
@@ -198,7 +218,9 @@
             <app-button
               type="button"
               (click)="createVariant()"
-              [disabled]="creatingVariant || !materials.length"
+              [disabled]="
+                creatingVariant || translatingColors || !materials.length
+              "
             >
               {{ creatingVariant ? "Salvataggio..." : "Aggiungi variante" }}
             </app-button>
@@ -265,7 +287,9 @@
                 type="button"
                 variant="danger"
                 (click)="openDeleteVariant(variant)"
-                [disabled]="deletingVariantIds.has(variant.id)"
+                [disabled]="
+                  deletingVariantIds.has(variant.id) || translatingColors
+                "
               >
                 {{
                   deletingVariantIds.has(variant.id)
@@ -394,7 +418,7 @@
             type="button"
             *ngIf="isVariantExpanded(variant.id)"
             (click)="saveVariant(variant)"
-            [disabled]="savingVariantIds.has(variant.id)"
+            [disabled]="savingVariantIds.has(variant.id) || translatingColors"
           >
             {{
               savingVariantIds.has(variant.id)
@@ -460,7 +484,9 @@
             <app-button
               type="button"
               (click)="saveMaterial(material)"
-              [disabled]="savingMaterialIds.has(material.id)"
+              [disabled]="
+                savingMaterialIds.has(material.id) || translatingColors
+              "
             >
               {{
                 savingMaterialIds.has(material.id)
@@ -515,7 +541,10 @@
       type="button"
       variant="danger"
       (click)="confirmDeleteVariant()"
-      [disabled]="variantToDelete && deletingVariantIds.has(variantToDelete.id)"
+      [disabled]="
+        translatingColors ||
+        (variantToDelete && deletingVariantIds.has(variantToDelete.id))
+      "
     >
       {{
         variantToDelete && deletingVariantIds.has(variantToDelete.id)

@@ -90,7 +90,7 @@ public class QuoteSessionItemService {
 
         String ext = quoteStorageService.getSafeExtension(file.getOriginalFilename(), "");
         if (ext.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported file type. Allowed: stl, 3mf");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported file type. Allowed: stl, 3mf, obj, step, stp");
         }
 
         try (InputStream inputStream = file.getInputStream()) {
@@ -158,6 +158,11 @@ public class QuoteSessionItemService {
                 String convertedFilename = UUID.randomUUID() + "-converted.stl";
                 convertedPersistentPath = quoteStorageService.resolveSessionPath(sessionStorageDir, convertedFilename);
                 slicerService.convert3mfToPersistentStl(persistentPath.toFile(), convertedPersistentPath);
+            } else if ("obj".equals(ext) || "step".equals(ext) || "stp".equals(ext)) {
+                String convertedFilename = UUID.randomUUID() + "-converted.stl";
+                convertedPersistentPath = quoteStorageService.resolveSessionPath(sessionStorageDir, convertedFilename);
+                slicerService.convertModelToPersistentStl(persistentPath.toFile(), convertedPersistentPath, settings.getModelUnit());
+                slicerInputPath = convertedPersistentPath;
             }
 
             Exception lastFailure = null;
@@ -371,6 +376,7 @@ public class QuoteSessionItemService {
 
         Map<String, Object> breakdown = new HashMap<>();
         breakdown.put("errorCode", errorCode);
+        breakdown.put("modelUnit", com.printcalculator.model.ModelUnit.parse(settings.getModelUnit()).code());
         if (convertedPersistentPath != null && Files.exists(convertedPersistentPath)) {
             breakdown.put("convertedStoredPath", quoteStorageService.toStoredPath(convertedPersistentPath));
         }
@@ -420,6 +426,7 @@ public class QuoteSessionItemService {
         Map<String, Object> breakdown = new HashMap<>();
         breakdown.put("machine_cost", result.getTotalPrice());
         breakdown.put("setup_fee", 0);
+        breakdown.put("modelUnit", com.printcalculator.model.ModelUnit.parse(settings.getModelUnit()).code());
         breakdown.put("requiresSplitPrinting", requiresSplitPrinting);
         if (machine != null && machine.getId() != null) {
             breakdown.put("printerMachineId", machine.getId());
