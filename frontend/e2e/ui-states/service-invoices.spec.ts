@@ -360,6 +360,12 @@ test('UI-INVOICE-001: simulated API supports custom rows, grouping and interim i
       }
       return route.fulfill({ json: invoices });
     }
+    if (url.pathname.endsWith('/items')) {
+      return route.fulfill({ json: {
+        sessionId: invoices[0].sessionId, sessionStatus: 'CAD_ACTIVE',
+        items: [], grandTotalChf: 150,
+      } });
+    }
     if (url.pathname.endsWith('/cad-invoices/11111111-1111-1111-1111-111111111111')) {
       Object.assign(invoices[0], route.request().postDataJSON() as object);
       return route.fulfill({ json: invoices[0] });
@@ -1244,7 +1250,8 @@ test('UI-INVOICE-009: simulated removal keeps the checkout and groups responsive
         json: {
           sessionId: id,
           sessionStatus: 'CAD_ACTIVE',
-          itemsTotalChf: removed ? 0 : 20,
+          itemsTotalChf: removed ? 50 : 77,
+          grandTotalChf: removed ? 50 : 77,
           items: removed
             ? []
             : [
