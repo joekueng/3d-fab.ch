@@ -192,6 +192,7 @@ export interface AdminQuoteSessionDetail {
 }
 
 export interface AdminCreateCadInvoicePayload {
+  removePrintItems?: boolean;
   serviceLines?: ServiceLine[];
   clientName?: string;
   invoiceName?: string;

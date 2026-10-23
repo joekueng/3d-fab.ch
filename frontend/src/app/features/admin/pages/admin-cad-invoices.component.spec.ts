@@ -19,7 +19,47 @@ import { AdminOrdersService } from '../services/admin-orders.service';
 
 const SESSION_ID = '11111111-1111-1111-1111-111111111111';
 
-describe('parseDecimalInput', () => {
+describe('invoice editing', () => {
+  it('removes prints only on save while preserving the checkout identity and services', () => {
+    const { component, adminOperationsService } = createComponent();
+    const invoice = invoiceFixture();
+    adminOperationsService.getAdminQuoteItems.and.returnValue(of(response()));
+    adminOperationsService.updateCadInvoice.and.returnValue(of(invoice));
+    component.editInvoice(invoice);
+    component.togglePrintItemsRemoval();
+    expect(component.removePrintItems).toBeTrue();
+    expect(adminOperationsService.updateCadInvoice).not.toHaveBeenCalled();
+    component.createCadInvoice();
+    expect(adminOperationsService.updateCadInvoice).toHaveBeenCalledWith(
+      SESSION_ID,
+      jasmine.objectContaining({
+        removePrintItems: true,
+        sessionId: SESSION_ID,
+        serviceLines: jasmine.arrayContaining([
+          jasmine.objectContaining({ description: 'Design' }),
+        ]),
+      }),
+    );
+    expect(adminOperationsService.createCadInvoice).not.toHaveBeenCalled();
+    expect(component.removePrintItems).toBeFalse();
+  });
+
+  it('can undo removal and does not carry it into a different invoice', () => {
+    const { component, adminOperationsService } = createComponent();
+    adminOperationsService.getAdminQuoteItems.and.returnValue(of(response()));
+    component.editInvoice(invoiceFixture());
+    component.togglePrintItemsRemoval();
+    component.togglePrintItemsRemoval();
+    expect(component.removePrintItems).toBeFalse();
+    component.togglePrintItemsRemoval();
+    component.resetForm();
+    expect(component.removePrintItems).toBeFalse();
+    component.editInvoice(invoiceFixture());
+    component.togglePrintItemsRemoval();
+    component.editInvoice(invoiceFixture());
+    expect(component.removePrintItems).toBeFalse();
+  });
+
   it('keeps the edited invoice identity even if the session field is cleared', () => {
     const { component, adminOperationsService } = createComponent();
     const invoice = invoiceFixture();

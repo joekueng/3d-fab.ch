@@ -298,6 +298,13 @@ session field. Once an invoice is selected or saved, show that ID read-only and
 send content updates to `PUT /cad-invoices/{id}`. Keep the returned content in
 the form so saving again cannot accidentally replace it with blank service rows.
 Only the explicit new/interim-invoice action clears this identity.
+Label an existing ID as the invoice/checkout identity. The print panel offers
+**Remove prints from invoice**, staged until saving and undoable beforehand.
+Send `removePrintItems: true` with the existing PUT identity; keep service rows
+and attachments. Use one draft edit action for services and print pricing.
+Metadata-only editing remains available for converted invoices. Keep action
+groups inside the table cell so the shared mobile label grid and desktop table
+layout remain intact. `UI-INVOICE-009` covers removal and responsive actions.
 
 Draft deletion uses `app-dialog` and a required old-link decision. Cancel/Escape
 make no request. `NEW_INVOICE` opens an empty replacement form with the reserved

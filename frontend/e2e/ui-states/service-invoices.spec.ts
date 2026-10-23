@@ -173,7 +173,7 @@ test('UI-INVOICE-004: simulated editing and replacement preserve the shared link
   await page.route('**/api/**', async (route) => {
     const path = new URL(route.request().url()).pathname;
     const method = route.request().method();
-    if (path.endsWith('/auth/me'))
+    if (path.endsWith('/auth/me') || path.endsWith('/auth/login'))
       return route.fulfill({json: {authenticated: true}});
     if (path.endsWith('/cad-invoices')) {
       expect(method).toBe('GET');
@@ -222,11 +222,11 @@ test('UI-INVOICE-004: simulated editing and replacement preserve the shared link
       });
     return route.fulfill({ json: [] });
   });
-  await page.goto('/it/admin/cad-invoices');
+  await openSimulatedAdmin(page, '/it/admin/cad-invoices');
   await page
     .getByRole('button', {name: 'Modifica prestazioni', exact: true})
     .click();
-  const sessionField = page.getByLabel('ID sessione calcolatore (opzionale)');
+  const sessionField = page.locator('app-input[name="sessionId"] input');
   await expect(sessionField).toHaveAttribute('readonly', '');
   await page.getByLabel('Importo CHF', { exact: true }).fill('30');
   await page
@@ -328,7 +328,7 @@ test('UI-INVOICE-001: simulated API supports custom rows, grouping and interim i
   page.on('pageerror', (error) => failures.push(error.message));
   await page.route('**/api/**', async (route) => {
     const url = new URL(route.request().url());
-    if (url.pathname.endsWith('/auth/me')) {
+    if (url.pathname.endsWith('/auth/me') || url.pathname.endsWith('/auth/login')) {
       return route.fulfill({ json: { authenticated: true } });
     }
     if (url.pathname.endsWith('/cad-invoices')) {
@@ -360,13 +360,13 @@ test('UI-INVOICE-001: simulated API supports custom rows, grouping and interim i
       }
       return route.fulfill({ json: invoices });
     }
-    if (url.pathname.endsWith('/metadata')) {
+    if (url.pathname.endsWith('/cad-invoices/11111111-1111-1111-1111-111111111111')) {
       Object.assign(invoices[0], route.request().postDataJSON() as object);
-      return route.fulfill({ status: 204 });
+      return route.fulfill({ json: invoices[0] });
     }
     return route.fulfill({ json: [] });
   });
-  await page.goto('/it/admin/cad-invoices');
+  await openSimulatedAdmin(page, '/it/admin/cad-invoices');
   await expect(
     page.getByRole('heading', { name: 'Fatture e prestazioni' }),
   ).toBeVisible();
@@ -430,15 +430,13 @@ test('UI-INVOICE-001: simulated API supports custom rows, grouping and interim i
     page.getByLabel('Descrizione e dettagli', { exact: true }),
   ).toHaveValue('');
   await page
-    .getByRole('button', { name: 'Modifica nome e gruppo', exact: true })
+    .getByRole('button', { name: 'Modifica prestazioni', exact: true })
     .click();
   await page
-    .getByRole('dialog')
     .getByLabel('Nome fattura', { exact: true })
     .fill('Prima iterazione approvata');
   await page
-    .getByRole('dialog')
-    .getByRole('button', { name: 'Salva', exact: true })
+    .getByRole('button', { name: 'Salva e prepara checkout', exact: true })
     .click();
   await expect(
     page.getByRole('cell', { name: /Prima iterazione approvata/ }),
@@ -1194,4 +1192,128 @@ test('UI-INVOICE-008: simulated mixed-format checkout reuses stored model previe
     page.locator('.cad-item-editor').first().getByRole('spinbutton'),
   ).toHaveValue('4');
   expect(errors).toEqual([]);
+});
+
+
+test('UI-INVOICE-009: simulated removal keeps the checkout and groups responsive table actions', async ({
+  page,
+}, testInfo) => {
+  const id = '99999999-9999-9999-9999-999999999999';
+  let removed = false;
+  const serviceLines = [
+    {
+      description: 'Progettazione conservata',
+      billingType: 'FIXED',
+      quantity: 1,
+      unitPriceChf: 50,
+    },
+  ];
+  const invoice = () => ({
+    sessionId: id,
+    sessionStatus: 'CAD_ACTIVE',
+    invoiceName: 'Prototipo con un nome molto lungo',
+    serviceLines,
+    cadHours: 0,
+    cadHourlyRateChf: 0,
+    cadTotalChf: 0,
+    printItemsTotalChf: removed ? 0 : 20,
+    setupCostChf: removed ? 0 : 5,
+    shippingCostChf: removed ? 0 : 2,
+    grandTotalChf: removed ? 50 : 77,
+    checkoutPath: `/checkout/cad?session=${id}`,
+  });
+  await page.route('**/api/**', async (route) => {
+    const path = new URL(route.request().url()).pathname;
+    if (path.endsWith('/auth/me') || path.endsWith('/auth/login'))
+      return route.fulfill({ json: { authenticated: true } });
+    if (path.endsWith('/cad-invoices'))
+      return route.fulfill({ json: [invoice()] });
+    if (
+      path.endsWith(`/cad-invoices/${id}`) &&
+      route.request().method() === 'PUT'
+    ) {
+      const body = route.request().postDataJSON();
+      expect(body.removePrintItems).toBe(true);
+      expect(body.sessionId).toBe(id);
+      expect(body.serviceLines).toEqual(serviceLines);
+      removed = true;
+      return route.fulfill({ json: invoice() });
+    }
+    if (path.endsWith('/items'))
+      return route.fulfill({
+        json: {
+          sessionId: id,
+          sessionStatus: 'CAD_ACTIVE',
+          itemsTotalChf: removed ? 0 : 20,
+          items: removed
+            ? []
+            : [
+                {
+                  id: 'print',
+                  displayName: 'RASPBERRY_PI_5_long_model_filename.stl',
+                  quantity: 9,
+                  printTimeSeconds: 7020,
+                  materialGrams: 29.11,
+                  unitPriceChf: 4.18,
+                  editable: true,
+                },
+              ],
+          printItemsTotalChf: removed ? 0 : 20,
+        },
+      });
+    return route.fulfill({ json: [] });
+  });
+  await openSimulatedAdmin(page, '/it/admin/cad-invoices');
+  const table = page.locator('.cad-invoices-table');
+  await expect(
+    table.getByRole('button', { name: 'Modifica prestazioni', exact: true }),
+  ).toHaveCount(1);
+  await expect(
+    table.getByRole('button', { name: 'Gestisci file', exact: true }),
+  ).toHaveCount(0);
+  await table
+    .getByRole('button', { name: 'Modifica prestazioni', exact: true })
+    .click();
+  await expect(page.getByLabel('ID fattura / checkout')).toHaveValue(id);
+  await expect(page.locator('.managed-items-table')).toBeVisible();
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 1000 });
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    ).toBe(true);
+    await page.screenshot({
+      path: testInfo.outputPath(`invoice-editor-${width}.png`),
+      fullPage: true,
+    });
+    await table.screenshot({
+      path: testInfo.outputPath(`invoice-table-${width}.png`),
+    });
+    const cells = table.locator('tbody tr').first().locator('td');
+    expect(
+      await cells.last().evaluate((el) => getComputedStyle(el).display),
+    ).not.toBe('flex');
+  }
+  await page
+    .getByRole('button', { name: 'Rimuovi stampe dalla fattura', exact: true })
+    .click();
+  await expect(page.locator('.managed-items-table')).toHaveCount(0);
+  await page
+    .getByRole('button', { name: 'Mantieni le stampe', exact: true })
+    .click();
+  await expect(page.locator('.managed-items-table')).toBeVisible();
+  await page
+    .getByRole('button', { name: 'Rimuovi stampe dalla fattura', exact: true })
+    .click();
+  await page
+    .getByRole('button', { name: 'Salva e prepara checkout', exact: true })
+    .click();
+  await expect(
+    page.getByLabel('Descrizione e dettagli', { exact: true }),
+  ).toHaveValue('Progettazione conservata');
+  await expect(page.getByLabel('ID fattura / checkout')).toHaveValue(id);
+  await expect(page.locator('.managed-items-table')).toHaveCount(0);
+  await expect(table.locator('tbody tr')).toContainText('50.00');
+  expect(removed).toBe(true);
 });

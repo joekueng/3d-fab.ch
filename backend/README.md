@@ -588,6 +588,11 @@ CAD content edits use `PUT /api/admin/cad-invoices/{sessionId}`. The path ID is
 authoritative even if `sessionId` is missing or different in the body. The existing
 POST remains the creation / calculator-session association contract. Ordinary
 content and metadata edits keep the same session and checkout URL.
+Setting `removePrintItems: true` explicitly removes a draft invoice's calculator
+line items and resets its setup cost on save. Totals then exclude print and
+shipping charges; services, notes, attachments and the checkout UUID remain.
+Order-linked invoices reject this action under the same session lock. No schema
+change is required; omitted/false preserves existing calculator content.
 
 `POST /api/admin/cad-invoices/{sessionId}/delete` requires `linkAction`:
 `NEW_INVOICE` reserves the existing UUID for a blank replacement; `REDIRECT`

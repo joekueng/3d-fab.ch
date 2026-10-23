@@ -1,4 +1,10 @@
 {
+  "CAD_PRINT_ITEMS": {
+    "INVOICE_ID": "ID de facture / paiement",
+    "REMOVE": "Retirer les impressions de la facture",
+    "UNDO": "Conserver les impressions",
+    "PENDING": "L’enregistrement supprimera les fichiers du calculateur et leurs frais d’impression, de préparation et de livraison. Le lien de paiement, les prestations et les pièces jointes sont conservés."
+  },
   "NAV": {
     "HOME": "Accueil",
     "CALCULATOR": "Calculateur",

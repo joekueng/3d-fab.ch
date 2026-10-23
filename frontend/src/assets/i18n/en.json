@@ -1,4 +1,10 @@
 {
+  "CAD_PRINT_ITEMS": {
+    "INVOICE_ID": "Invoice / checkout ID",
+    "REMOVE": "Remove prints from invoice",
+    "UNDO": "Keep prints",
+    "PENDING": "Saving will remove calculator files and their printing, setup and shipping costs. The checkout link, services and attachments stay the same."
+  },
   "NAV": {
     "HOME": "Home",
     "CALCULATOR": "Calculator",

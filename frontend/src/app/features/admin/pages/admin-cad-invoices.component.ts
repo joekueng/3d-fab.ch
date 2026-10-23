@@ -116,6 +116,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
   private readonly translate = inject(TranslateService);
   invoices: AdminCadInvoice[] = [];
   draftSessionId: string | null = null;
+  removePrintItems = false;
   invoiceToDelete: AdminCadInvoice | null = null;
   deleteLinkAction: 'NEW_INVOICE' | 'REDIRECT' = 'NEW_INVOICE';
   deleteTargetPath = '/';
@@ -414,6 +415,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
   }
 
   editInvoice(row: AdminCadInvoice): void {
+    this.removePrintItems = false;
     this.draftSessionId = row.sessionId;
     this.form = {
       invoiceName: row.invoiceName || '',
@@ -443,6 +445,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
   }
 
   resetForm(): void {
+    this.removePrintItems = false;
     this.draftSessionId = null;
     this.form = {
       clientName: '',
@@ -505,6 +508,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
       sourceRequestId: this.form.sourceRequestId.trim() || undefined,
       notes: this.form.notes.trim(),
       serviceLines,
+      removePrintItems: this.removePrintItems || undefined,
     };
     const save = this.draftSessionId
       ? this.adminOperationsService.updateCadInvoice(
@@ -535,6 +539,20 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
         );
       },
     });
+  }
+
+  togglePrintItemsRemoval(): void {
+    if (
+      !this.draftSessionId ||
+      this.draftIsConverted ||
+      this.creating ||
+      this.previewing ||
+      this.savingManaged ||
+      !this.managedRows.length
+    )
+      return;
+    this.removePrintItems = !this.removePrintItems;
+    this.onManagedDraftChange();
   }
 
   onSessionIdChange(): void {

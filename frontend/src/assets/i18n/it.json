@@ -1,4 +1,10 @@
 {
+  "CAD_PRINT_ITEMS": {
+    "INVOICE_ID": "ID fattura / checkout",
+    "REMOVE": "Rimuovi stampe dalla fattura",
+    "UNDO": "Mantieni le stampe",
+    "PENDING": "Al salvataggio verranno rimossi i file del calcolatore e i relativi costi di stampa, preparazione e spedizione. Il link checkout, le prestazioni e gli allegati restano gli stessi."
+  },
   "NAV": {
     "HOME": "Home",
     "CALCULATOR": "Calcolatore",

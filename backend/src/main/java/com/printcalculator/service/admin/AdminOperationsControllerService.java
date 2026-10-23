@@ -396,6 +396,17 @@ public class AdminOperationsControllerService {
             throw new ResponseStatusException(CONFLICT, "This deleted invoice link is reserved for a redirect");
         }
 
+        if (payload.isRemovePrintItems()) {
+            if (session.getId() == null || !"CAD_ACTIVE".equals(session.getStatus())) {
+                throw new ResponseStatusException(BAD_REQUEST, "Only an existing draft invoice can remove print items");
+            }
+            if (orderRepo.existsBySourceQuoteSession_Id(session.getId())) {
+                throw new ResponseStatusException(CONFLICT, "Cannot change an invoice linked to an order");
+            }
+            quoteLineItemRepo.deleteByQuoteSession_Id(session.getId());
+            session.setSetupCostChf(BigDecimal.ZERO);
+        }
+
         if (payload.getSourceRequestId() != null) {
             if (!customQuoteRequestRepo.existsById(payload.getSourceRequestId())) {
                 throw new ResponseStatusException(NOT_FOUND, "Source request not found");

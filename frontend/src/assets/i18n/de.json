@@ -1,4 +1,10 @@
 {
+  "CAD_PRINT_ITEMS": {
+    "INVOICE_ID": "Rechnungs- / Checkout-ID",
+    "REMOVE": "Drucke aus Rechnung entfernen",
+    "UNDO": "Drucke behalten",
+    "PENDING": "Beim Speichern werden die Rechnerdateien und ihre Druck-, Einrichtungs- und Versandkosten entfernt. Checkout-Link, Leistungen und Anhänge bleiben erhalten."
+  },
   "NAV": {
     "HOME": "Startseite",
     "CALCULATOR": "Rechner",

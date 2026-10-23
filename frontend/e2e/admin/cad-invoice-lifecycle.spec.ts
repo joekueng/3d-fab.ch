@@ -56,7 +56,7 @@ test('ADMIN-CAD-001: real invoice edits, protected deletion, replacement and pub
   await page.getByRole('button', { name: 'Salva e prepara checkout', exact: true }).click();
   const createdResponse = await created;
   expect(createdResponse.ok()).toBe(true);
-  const sessionField = page.getByLabel('ID sessione calcolatore (opzionale)');
+  const sessionField = page.locator('app-input[name="sessionId"] input');
   await expect(sessionField).toHaveValue(/^[0-9a-f-]{36}$/);
   const sessionId = await sessionField.inputValue();
   await expect(sessionField).toHaveValue(sessionId);

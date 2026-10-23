@@ -27,6 +27,11 @@ public class AdminCadInvoiceCreateRequest {
     public String getCollaborationName() { return collaborationName; }
     public void setCollaborationName(String value) { collaborationName = value; }
 
+    private boolean removePrintItems;
+
+    public boolean isRemovePrintItems() { return removePrintItems; }
+    public void setRemovePrintItems(boolean value) { removePrintItems = value; }
+
     private UUID sessionId;
     private UUID sourceRequestId;
     private BigDecimal cadHours;
