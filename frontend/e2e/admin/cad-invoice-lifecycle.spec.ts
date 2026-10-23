@@ -57,17 +57,19 @@ test('ADMIN-CAD-001: real invoice edits, protected deletion, replacement and pub
   const createdResponse = await created;
   expect(createdResponse.ok()).toBe(true);
   const sessionField = page.locator('app-input[name="sessionId"] input');
-  const invoices = await page.request.get('/api/admin/cad-invoices');
-  const sessionId = (await invoices.json() as { sessionId: string; invoiceName: string }[])
-    .find(invoice => invoice.invoiceName === name)!.sessionId;
   await expect(sessionField).toHaveValue('');
   await expect(sessionField).toBeEditable();
   await page.getByLabel('Tariffa CHF/h', { exact: true }).fill('40');
   const updated = page.waitForResponse(response =>
-    response.url().endsWith(`/api/admin/cad-invoices/${sessionId}`) && response.request().method() === 'PUT',
+    /^\/api\/admin\/cad-invoices\/[0-9a-f-]{36}$/.test(new URL(response.url()).pathname)
+      && response.request().method() === 'PUT',
   );
   await page.getByRole('button', { name: 'Salva e prepara checkout', exact: true }).click();
-  expect((await updated).ok()).toBe(true);
+  const updatedResponse = await updated;
+  expect(updatedResponse.ok()).toBe(true);
+  // Read the checkout identity from the successful edit URL; the form field is the optional calculator source.
+  const sessionId = new URL(updatedResponse.url()).pathname.split('/').pop()!;
+  expect(sessionId).toMatch(/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/);
   await expect(page.getByLabel('Descrizione e dettagli', { exact: true })).toHaveValue('Synthetic design service');
 
   const customerContext = await browser.newContext({ baseURL: new URL(page.url()).origin });

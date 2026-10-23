@@ -81,10 +81,15 @@ Run these against a fresh disposable stack from the repository root:
 E2E_TEST_GREP='CALC-003|CALC-004|CALC-005|ADMIN-CAD-' bash scripts/e2e/run.sh fullstack
 ```
 
-API snapshots are read through `page.request` after the UI mutation completes;
-session identity is taken from the affected request URL or the read-only session
-field. This avoids depending on the lifetime of a browser response body during
-Angular navigation. For transient binary model previews, `capturePreview` forwards
+Public API snapshots can be read through `page.request` after the UI mutation
+completes. Read invoice identity from a successful edit request URL; the form's
+calculator-session field is optional, editable and distinct from the checkout ID.
+This also avoids depending on a response body's lifetime during Angular navigation.
+Admin authentication uses a Secure cookie: browser requests on loopback HTTP and
+`page.request` may apply different cookie rules. Observe the authenticated UI's
+requests for invoice identity instead of assuming an extra API request is logged
+in. Check status and response shape before parsing API snapshots.
+For transient binary model previews, `capturePreview` forwards
 the original browser request once with
 [`route.fetch()`](https://playwright.dev/docs/api/class-route#route-fetch), retains
 the real backend status/body and delivers that same response with
