@@ -27,10 +27,15 @@ public class AdminCadInvoiceCreateRequest {
     public String getCollaborationName() { return collaborationName; }
     public void setCollaborationName(String value) { collaborationName = value; }
 
-    private boolean removePrintItems;
+    private UUID calculatorSessionId;
+    private boolean calculatorSessionSpecified;
 
-    public boolean isRemovePrintItems() { return removePrintItems; }
-    public void setRemovePrintItems(boolean value) { removePrintItems = value; }
+    public UUID getCalculatorSessionId() { return calculatorSessionId; }
+    public void setCalculatorSessionId(UUID value) {
+        calculatorSessionId = value;
+        calculatorSessionSpecified = true;
+    }
+    public boolean hasCalculatorSessionId() { return calculatorSessionSpecified; }
 
     private UUID sessionId;
     private UUID sourceRequestId;

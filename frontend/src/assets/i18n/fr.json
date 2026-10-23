@@ -1,9 +1,7 @@
 {
   "CAD_PRINT_ITEMS": {
-    "INVOICE_ID": "ID de facture / paiement",
-    "REMOVE": "Retirer les impressions de la facture",
-    "UNDO": "Conserver les impressions",
-    "PENDING": "L’enregistrement supprimera les fichiers du calculateur et leurs frais d’impression, de préparation et de livraison. Le lien de paiement, les prestations et les pièces jointes sont conservés."
+    "HINT": "Effacez ou changez la session du calculateur puis enregistrez : les fichiers et les coûts suivent la session choisie. Les sessions originales sont conservées et peuvent être associées à nouveau. Le lien de paiement reste identique.",
+    "INVALID_SESSION": "Saisissez un ID de session du calculateur valide ou laissez le champ vide."
   },
   "NAV": {
     "HOME": "Accueil",

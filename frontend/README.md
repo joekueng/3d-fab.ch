@@ -293,18 +293,23 @@ issued document snapshots retain their agreed name and service details.
 explicitly simulated API and checks narrow-screen layout. Backend integration
 and pricing tests remain responsible for persistence, amounts and paid access.
 
-Keep the currently edited invoice ID separately from the form's optional source
-session field. Once an invoice is selected or saved, show that ID read-only and
-send content updates to `PUT /cad-invoices/{id}`. Keep the returned content in
-the form so saving again cannot accidentally replace it with blank service rows.
-Only the explicit new/interim-invoice action clears this identity.
-Label an existing ID as the invoice/checkout identity. The print panel offers
-**Remove prints from invoice**, staged until saving and undoable beforehand.
-Send `removePrintItems: true` with the existing PUT identity; keep service rows
-and attachments. Use one draft edit action for services and print pricing.
-Metadata-only editing remains available for converted invoices. Keep action
-groups inside the table cell so the shared mobile label grid and desktop table
-layout remain intact. `UI-INVOICE-009` covers removal and responsive actions.
+Keep the currently edited invoice ID separately from the form's optional
+calculator source field. The source field stays editable: clearing it sends
+`calculatorSessionId: null`; changing it sends the selected UUID. Always send
+content edits to `PUT /cad-invoices/{invoiceId}` so neither action creates a
+second checkout. Populate the field from the returned `calculatorSessionId`,
+not the invoice ID, and retain the saved service rows. Only explicit
+new/interim-invoice actions clear the editor's invoice identity.
+
+Changing the source previews its print rows without replacing services or
+attachments. Attachment operations remain bound to the invoice ID even when
+its calculator source is empty or different. Re-entering a previous source ID
+restores its files and prices without re-uploading them. Use one draft edit
+action for services and print pricing; metadata-only editing remains available
+for converted invoices. Keep action groups inside the table cell so shared
+mobile labels and desktop alignment stay intact. `UI-INVOICE-009` covers
+clear/save, reattachment, replacement, persistence in the editor and responsive
+layout with an explicitly simulated API.
 
 Draft deletion uses `app-dialog` and a required old-link decision. Cancel/Escape
 make no request. `NEW_INVOICE` opens an empty replacement form with the reserved

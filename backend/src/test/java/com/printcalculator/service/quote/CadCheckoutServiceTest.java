@@ -18,7 +18,8 @@ class CadCheckoutServiceTest {
     final QuoteSessionTotalsService totals = mock(QuoteSessionTotalsService.class);
     final QuoteSessionResponseAssembler assembler = mock(QuoteSessionResponseAssembler.class);
     final QuoteSessionAttachmentService attachments = mock(QuoteSessionAttachmentService.class);
-    final CadCheckoutService service = new CadCheckoutService(items, variants, policies, totals, assembler, attachments);
+    final QuoteSessionRepository sessions = mock(QuoteSessionRepository.class);
+    final CadCheckoutService service = new CadCheckoutService(items, variants, policies, totals, assembler, attachments, sessions);
     final QuoteSession session = new QuoteSession();
     final QuoteLineItem item = new QuoteLineItem();
     final FilamentVariant black = variant(1L, "PLA", "Black", "20");
@@ -50,6 +51,21 @@ class CadCheckoutServiceTest {
             service.update(session.getId(), item.getId(), new CadCheckoutItemRequest(3, 2L));
             assertEquals(new BigDecimal("6.50"), item.getUnitPriceChf());
         }
+    }
+
+    @Test void linkedCheckoutEditsTheSelectedSourceAndRejectsItAfterDetachment() {
+        var source = new QuoteSession(); source.setId(UUID.randomUUID()); source.setStatus("ACTIVE");
+        item.setQuoteSession(source); session.setCalculatorSession(source);
+        when(sessions.findLockedById(session.getId())).thenReturn(Optional.of(session));
+        when(sessions.findLockedById(source.getId())).thenReturn(Optional.of(source));
+        when(items.findByQuoteSessionIdOrderByCreatedAtAsc(source.getId())).thenReturn(List.of(item));
+        service.update(session.getId(), item.getId(), new CadCheckoutItemRequest(3, 1L));
+        assertEquals(3, item.getQuantity());
+        verify(totals).compute(session, List.of(item));
+        session.setCalculatorDetached(true);
+        assertThrows(ResponseStatusException.class,
+                () -> service.update(session.getId(), item.getId(), new CadCheckoutItemRequest(9, 1L)));
+        assertEquals(3, item.getQuantity());
     }
 
     @Test void rejectsOtherSessionAndConvertedOrders() {

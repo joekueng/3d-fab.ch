@@ -116,7 +116,6 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
   private readonly translate = inject(TranslateService);
   invoices: AdminCadInvoice[] = [];
   draftSessionId: string | null = null;
-  removePrintItems = false;
   invoiceToDelete: AdminCadInvoice | null = null;
   deleteLinkAction: 'NEW_INVOICE' | 'REDIRECT' = 'NEW_INVOICE';
   deleteTargetPath = '/';
@@ -180,7 +179,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
           if (action === 'NEW_INVOICE') {
             this.resetForm();
             this.draftSessionId = id;
-            this.form.sessionId = id;
+            this.form.sessionId = '';
             if (this.isBrowser) window.scrollTo({ top: 0, behavior: 'smooth' });
           } else if (this.draftSessionId === id || this.form.sessionId === id) {
             this.resetForm();
@@ -415,13 +414,12 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
   }
 
   editInvoice(row: AdminCadInvoice): void {
-    this.removePrintItems = false;
     this.draftSessionId = row.sessionId;
     this.form = {
       invoiceName: row.invoiceName || '',
       clientName: row.clientName || '',
       collaborationName: row.collaborationName || '',
-      sessionId: row.sessionId,
+      sessionId: row.calculatorSessionId ?? '',
       sourceRequestId: row.sourceRequestId || '',
       notes: row.notes || '',
     };
@@ -440,12 +438,13 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
           },
         ];
     this.errorMessage = null;
-    this.loadSessionFiles(row.sessionId);
+    this.clearSessionFiles();
+    if (this.form.sessionId) this.loadSessionFiles(this.form.sessionId);
+    this.loadSessionAttachments(row.sessionId);
     if (this.isBrowser) window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   resetForm(): void {
-    this.removePrintItems = false;
     this.draftSessionId = null;
     this.form = {
       clientName: '',
@@ -497,6 +496,13 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
       );
       return;
     }
+    const calculatorSessionId = this.form.sessionId.trim();
+    if (calculatorSessionId && !this.isUuid(calculatorSessionId)) {
+      this.errorMessage = this.translate.instant(
+        'CAD_PRINT_ITEMS.INVALID_SESSION',
+      );
+      return;
+    }
     this.creating = true;
     this.errorMessage = null;
     this.successMessage = null;
@@ -508,7 +514,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
       sourceRequestId: this.form.sourceRequestId.trim() || undefined,
       notes: this.form.notes.trim(),
       serviceLines,
-      removePrintItems: this.removePrintItems || undefined,
+      calculatorSessionId: calculatorSessionId || null,
     };
     const save = this.draftSessionId
       ? this.adminOperationsService.updateCadInvoice(
@@ -541,33 +547,15 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
     });
   }
 
-  togglePrintItemsRemoval(): void {
-    if (
-      !this.draftSessionId ||
-      this.draftIsConverted ||
-      this.creating ||
-      this.previewing ||
-      this.savingManaged ||
-      !this.managedRows.length
-    )
-      return;
-    this.removePrintItems = !this.removePrintItems;
-    this.onManagedDraftChange();
-  }
-
   onSessionIdChange(): void {
-    if (this.draftSessionId) {
-      this.form.sessionId = this.draftSessionId;
-      return;
-    }
     const sessionId = String(this.form.sessionId ?? '').trim();
     const invoice = this.invoices.find((row) => row.sessionId === sessionId);
-    if (invoice) {
+    if (!this.draftSessionId && invoice) {
       this.editInvoice(invoice);
       return;
     }
     if (!this.isUuid(sessionId)) {
-      this.clearSessionFiles();
+      this.clearSessionFiles(!!this.draftSessionId);
       return;
     }
     if (sessionId === this.managedSessionId) {
@@ -598,24 +586,23 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
     this.managedSessionId = target;
     this.sessionFilesLoaded = false;
     this.managedError = null;
-    this.attachmentError = null;
-    this.successMessage = null;
-    this.attachmentUploading = false;
-    this.deletingAttachmentId = null;
-    this.clearAttachmentPreviews();
     this.loadManagedItems(target);
-    this.loadSessionAttachments(target);
+    if (!this.draftSessionId) this.loadSessionAttachments(target);
+  }
+
+  get attachmentSessionId(): string | null {
+    return this.draftSessionId || this.managedSessionId;
   }
 
   loadSessionAttachments(sessionId?: string): void {
-    const target = String(sessionId ?? this.managedSessionId ?? '').trim();
+    const target = String(sessionId ?? this.attachmentSessionId ?? '').trim();
     if (!target) {
       return;
     }
     this.adminOperationsService.listQuoteSessionAttachments(target).subscribe({
       next: (attachments) => {
         this.changeDetector.markForCheck();
-        if (this.managedSessionId !== target) {
+        if (this.attachmentSessionId !== target) {
           return;
         }
         this.sessionAttachments = attachments;
@@ -623,7 +610,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.changeDetector.markForCheck();
-        if (this.managedSessionId !== target) {
+        if (this.attachmentSessionId !== target) {
           return;
         }
         this.sessionAttachments = [];
@@ -671,11 +658,11 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
     }
     this.attachmentError = null;
 
-    if (!this.managedSessionId) {
+    if (!this.attachmentSessionId) {
       this.pendingAttachmentFiles = [...this.pendingAttachmentFiles, ...files];
       return;
     }
-    this.uploadAttachments(this.managedSessionId, files);
+    this.uploadAttachments(this.attachmentSessionId, files);
   }
 
   removePendingAttachment(index: number): void {
@@ -695,7 +682,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.changeDetector.markForCheck();
-          if (this.managedSessionId !== sessionId) {
+          if (this.attachmentSessionId !== sessionId) {
             return;
           }
           this.attachmentUploading = false;
@@ -707,7 +694,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.changeDetector.markForCheck();
-          if (this.managedSessionId !== sessionId) {
+          if (this.attachmentSessionId !== sessionId) {
             return;
           }
           this.attachmentUploading = false;
@@ -719,10 +706,10 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
   }
 
   deleteAttachment(attachment: QuoteSessionAttachment): void {
-    if (!this.managedSessionId || this.deletingAttachmentId) {
+    if (!this.attachmentSessionId || this.deletingAttachmentId) {
       return;
     }
-    const sessionId = this.managedSessionId;
+    const sessionId = this.attachmentSessionId;
     this.deletingAttachmentId = attachment.id;
     this.attachmentError = null;
     this.adminOperationsService
@@ -730,7 +717,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.changeDetector.markForCheck();
-          if (this.managedSessionId !== sessionId) {
+          if (this.attachmentSessionId !== sessionId) {
             return;
           }
           this.deletingAttachmentId = null;
@@ -741,7 +728,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.changeDetector.markForCheck();
-          if (this.managedSessionId !== sessionId) {
+          if (this.attachmentSessionId !== sessionId) {
             return;
           }
           this.deletingAttachmentId = null;
@@ -806,7 +793,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
             this.changeDetector.markForCheck();
             if (
               !this.isBrowser ||
-              this.managedSessionId !== sessionId ||
+              this.attachmentSessionId !== sessionId ||
               this.attachmentPreviews[attachment.id]
             ) {
               return;
@@ -839,7 +826,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
     this.attachmentPreviews = rest;
   }
 
-  private clearSessionFiles(): void {
+  private clearSessionFiles(preserveAttachments = false): void {
     this.managedSessionId = null;
     this.managedSessionStatus = null;
     this.managedItemsTotalChf = null;
@@ -848,6 +835,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
     this.managedPreviewActive = false;
     this.managedError = null;
     this.sessionFilesLoaded = false;
+    if (preserveAttachments) return;
     this.sessionAttachments = [];
     this.pendingAttachmentFiles = [];
     this.attachmentError = null;
@@ -875,7 +863,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
   }
 
   canEditManagedItems(): boolean {
-    return this.managedSessionStatus !== 'CONVERTED';
+    return !this.draftIsConverted && this.managedSessionStatus !== 'CONVERTED';
   }
 
   isRowEditable(row: ManagedItemRow): boolean {
@@ -955,6 +943,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
           this.changeDetector.markForCheck();
           this.previewing = false;
           this.savingManaged = false;
+          if (this.managedSessionId !== sessionId) return;
           if (persist) {
             this.successMessage = this.translate.instant(
               'CAD_ITEM_PRICING.SAVED',
@@ -978,6 +967,7 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
           this.changeDetector.markForCheck();
           this.previewing = false;
           this.savingManaged = false;
+          if (this.managedSessionId !== sessionId) return;
           this.managedError =
             err?.error?.message ||
             this.translate.instant(

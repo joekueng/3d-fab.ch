@@ -57,10 +57,11 @@ test('ADMIN-CAD-001: real invoice edits, protected deletion, replacement and pub
   const createdResponse = await created;
   expect(createdResponse.ok()).toBe(true);
   const sessionField = page.locator('app-input[name="sessionId"] input');
-  await expect(sessionField).toHaveValue(/^[0-9a-f-]{36}$/);
-  const sessionId = await sessionField.inputValue();
-  await expect(sessionField).toHaveValue(sessionId);
-  await expect(sessionField).toHaveAttribute('readonly', '');
+  const invoices = await page.request.get('/api/admin/cad-invoices');
+  const sessionId = (await invoices.json() as { sessionId: string; invoiceName: string }[])
+    .find(invoice => invoice.invoiceName === name)!.sessionId;
+  await expect(sessionField).toHaveValue('');
+  await expect(sessionField).toBeEditable();
   await page.getByLabel('Tariffa CHF/h', { exact: true }).fill('40');
   const updated = page.waitForResponse(response =>
     response.url().endsWith(`/api/admin/cad-invoices/${sessionId}`) && response.request().method() === 'PUT',
@@ -95,7 +96,7 @@ test('ADMIN-CAD-001: real invoice edits, protected deletion, replacement and pub
     expect((await deleted).status()).toBe(204);
     await expect(page.getByRole('dialog')).toHaveCount(0);
     expect((await customer.request.get(`/api/quote-sessions/${sessionId}`)).status()).toBe(410);
-    await expect(sessionField).toHaveValue(sessionId);
+    await expect(sessionField).toHaveValue('');
     await expect(page.getByLabel('Descrizione e dettagli', { exact: true })).toHaveValue('');
 
     await page.getByLabel('Nome fattura', { exact: true }).fill(name);

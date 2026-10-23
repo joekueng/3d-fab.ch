@@ -426,7 +426,7 @@ class AdminOperationsControllerServiceTest {
                 () -> service.createOrUpdateCadInvoice(payload)).getStatusCode());
     }
     @Test
-    void removingPrintItemsKeepsCheckoutServicesNotesAndAttachments() {
+    void detachingCalculatorKeepsCheckoutServicesNotesAttachmentsAndOriginalPrintData() {
         UUID id = UUID.randomUUID();
         QuoteSession session = new QuoteSession();
         session.setId(id);
@@ -438,10 +438,9 @@ class AdminOperationsControllerServiceTest {
         payload.setSessionId(id);
         payload.setServiceLines(List.of(line));
         payload.setNotes("Keep these instructions");
-        payload.setRemovePrintItems(true);
+        payload.setCalculatorSessionId(null);
         when(quoteSessionRepo.findLockedById(id)).thenReturn(Optional.of(session));
         when(quoteSessionRepo.save(session)).thenReturn(session);
-        when(quoteLineItemRepo.findByQuoteSessionId(id)).thenReturn(List.of());
         // Use the real totals calculation to catch residual setup, print or shipping charges.
         var calculator = org.mockito.Mockito.mock(com.printcalculator.service.QuoteCalculator.class);
         when(calculator.calculateSessionMachineCost(any(), any())).thenReturn(BigDecimal.ZERO);
@@ -463,13 +462,15 @@ class AdminOperationsControllerServiceTest {
         assertEquals(0, result.getPrintItemsTotalChf().signum());
         assertEquals(0, result.getSetupCostChf().signum());
         assertEquals(0, result.getShippingCostChf().signum());
-        verify(quoteLineItemRepo).deleteByQuoteSession_Id(id);
+        assertEquals(new BigDecimal("5"), session.getSetupCostChf());
+        assertEquals(Boolean.TRUE, session.getCalculatorDetached());
+        org.mockito.Mockito.verifyNoInteractions(quoteLineItemRepo);
         org.mockito.Mockito.verifyNoInteractions(sessionAttachmentRepo);
         verify(quoteSessionRepo, never()).delete(any());
     }
 
     @Test
-    void removingPrintItemsRejectsConvertedAndOrderLinkedInvoices() {
+    void changingCalculatorRejectsConvertedAndOrderLinkedInvoices() {
         UUID id = UUID.randomUUID();
         QuoteSession session = new QuoteSession();
         session.setId(id);
@@ -478,7 +479,7 @@ class AdminOperationsControllerServiceTest {
         payload.setSessionId(id);
         payload.setCadHours(BigDecimal.ONE);
         payload.setCadHourlyRateChf(BigDecimal.TEN);
-        payload.setRemovePrintItems(true);
+        payload.setCalculatorSessionId(null);
         when(quoteSessionRepo.findLockedById(id)).thenReturn(Optional.of(session));
         assertEquals(HttpStatus.CONFLICT, assertThrows(ResponseStatusException.class,
                 () -> service.createOrUpdateCadInvoice(payload)).getStatusCode());
@@ -488,6 +489,60 @@ class AdminOperationsControllerServiceTest {
                 () -> service.createOrUpdateCadInvoice(payload)).getStatusCode());
         org.mockito.Mockito.verifyNoInteractions(quoteLineItemRepo, sessionAttachmentRepo);
         verify(quoteSessionRepo, never()).save(any());
+    }
+
+    @Test
+    void calculatorCanBeSwitchedClearedAndRestoredWithoutChangingInvoiceIdentity() {
+        UUID id = UUID.randomUUID();
+        QuoteSession invoice = new QuoteSession();
+        invoice.setId(id); invoice.setStatus("CAD_ACTIVE");
+        invoice.setSetupCostChf(new BigDecimal("5"));
+        QuoteSession source = new QuoteSession();
+        source.setId(UUID.randomUUID()); source.setStatus("ACTIVE"); source.setSessionType("PRINT_QUOTE");
+        source.setSetupCostChf(new BigDecimal("9"));
+        var ownItem = new com.printcalculator.entity.QuoteLineItem(); ownItem.setQuoteSession(invoice);
+        var sourceItem = new com.printcalculator.entity.QuoteLineItem(); sourceItem.setQuoteSession(source);
+        when(quoteSessionRepo.findLockedById(id)).thenReturn(Optional.of(invoice));
+        when(quoteSessionRepo.findLockedById(source.getId())).thenReturn(Optional.of(source));
+        when(quoteSessionRepo.save(invoice)).thenReturn(invoice);
+        when(quoteLineItemRepo.findByQuoteSessionId(id)).thenReturn(List.of(ownItem));
+        when(quoteLineItemRepo.findByQuoteSessionId(source.getId())).thenReturn(List.of(sourceItem));
+        when(quoteSessionTotalsService.compute(any(), anyList())).thenReturn(
+                new QuoteSessionTotalsService.QuoteSessionTotals(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.TEN,
+                        BigDecimal.TEN, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
+                        BigDecimal.TEN, BigDecimal.ZERO));
+        var payload = new AdminCadInvoiceCreateRequest(); payload.setSessionId(id);
+        payload.setCadHours(BigDecimal.ONE); payload.setCadHourlyRateChf(BigDecimal.TEN);
+        for (UUID selected : new UUID[]{source.getId(), null, id, source.getId()}) {
+            payload.setCalculatorSessionId(selected);
+            var result = service.createOrUpdateCadInvoice(payload);
+            assertEquals(id, result.getSessionId());
+            assertEquals("/checkout/cad?session=" + id, result.getCheckoutPath());
+            assertEquals(selected, result.getCalculatorSessionId());
+            assertEquals(selected == null ? null : selected.equals(id) ? invoice : source, invoice.getPrintSource());
+        }
+        assertEquals(new BigDecimal("5"), invoice.getSetupCostChf());
+        assertEquals(new BigDecimal("9"), source.getSetupCostChf());
+        assertEquals("ACTIVE", source.getStatus());
+        verify(quoteLineItemRepo, never()).deleteByQuoteSession_Id(any());
+        org.mockito.Mockito.verifyNoInteractions(sessionAttachmentRepo);
+    }
+
+    @Test
+    void invalidCalculatorAssociationDoesNotChangeTheInvoice() {
+        var invoice = new QuoteSession(); invoice.setId(UUID.randomUUID()); invoice.setStatus("CAD_ACTIVE");
+        var source = new QuoteSession(); source.setId(UUID.randomUUID()); source.setStatus("CAD_ACTIVE");
+        source.setSessionType("PRINT_QUOTE");
+        var payload = new AdminCadInvoiceCreateRequest(); payload.setSessionId(invoice.getId());
+        payload.setCadHours(BigDecimal.ONE); payload.setCadHourlyRateChf(BigDecimal.TEN);
+        payload.setCalculatorSessionId(source.getId());
+        when(quoteSessionRepo.findLockedById(invoice.getId())).thenReturn(Optional.of(invoice));
+        when(quoteSessionRepo.findLockedById(source.getId())).thenReturn(Optional.of(source));
+        assertEquals(HttpStatus.CONFLICT, assertThrows(ResponseStatusException.class,
+                () -> service.createOrUpdateCadInvoice(payload)).getStatusCode());
+        org.junit.jupiter.api.Assertions.assertNull(invoice.getCalculatorSession());
+        verify(quoteSessionRepo, never()).save(any());
+        org.mockito.Mockito.verifyNoInteractions(quoteLineItemRepo, sessionAttachmentRepo);
     }
 
 }

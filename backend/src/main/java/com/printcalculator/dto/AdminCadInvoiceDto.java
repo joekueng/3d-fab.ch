@@ -23,6 +23,10 @@ public class AdminCadInvoiceDto {
     public String getCollaborationName() { return collaborationName; }
     public void setCollaborationName(String value) { collaborationName = value; }
 
+    private UUID calculatorSessionId;
+    public UUID getCalculatorSessionId() { return calculatorSessionId; }
+    public void setCalculatorSessionId(UUID value) { calculatorSessionId = value; }
+
     private UUID sessionId;
     private String sessionStatus;
     private UUID sourceRequestId;

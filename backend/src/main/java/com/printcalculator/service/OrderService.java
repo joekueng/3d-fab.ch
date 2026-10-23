@@ -98,7 +98,14 @@ public class OrderService {
         }
         informationService.validateCheckout(session, request.getInformationToken());
 
-        List<QuoteLineItem> quoteItems = quoteLineItemRepo.findByQuoteSessionId(quoteSessionId);
+        QuoteSession printSource = session.getPrintSource();
+        if (printSource != null && !printSource.getId().equals(session.getId())) {
+            // Serialize checkout with recalculation or price edits of the selected source.
+            printSource = quoteSessionRepo.findLockedById(printSource.getId())
+                    .orElseThrow(() -> new IllegalStateException("Calculator session not found"));
+        }
+        List<QuoteLineItem> quoteItems = printSource == null ? List.of()
+                : quoteLineItemRepo.findByQuoteSessionId(printSource.getId());
         quoteItems = quoteItems.stream()
                 .filter(item -> !"REVIEW_REQUIRED".equalsIgnoreCase(item.getStatus()))
                 .toList();
@@ -290,7 +297,7 @@ public class OrderService {
 
             oItem = orderItemRepo.save(oItem);
 
-            Path sourcePath = resolveStoredQuotePath(qItem.getStoredPath(), session.getId());
+            Path sourcePath = resolveStoredQuotePath(qItem.getStoredPath(), qItem.getQuoteSession().getId());
             if (sourcePath == null || !Files.exists(sourcePath)) {
                 if (requiresStoredSourceFile(qItem)) {
                     throw new IllegalStateException("Source file not available for quote line item " + qItem.getId());

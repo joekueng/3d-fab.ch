@@ -1,9 +1,7 @@
 {
   "CAD_PRINT_ITEMS": {
-    "INVOICE_ID": "Rechnungs- / Checkout-ID",
-    "REMOVE": "Drucke aus Rechnung entfernen",
-    "UNDO": "Drucke behalten",
-    "PENDING": "Beim Speichern werden die Rechnerdateien und ihre Druck-, Einrichtungs- und Versandkosten entfernt. Checkout-Link, Leistungen und Anhänge bleiben erhalten."
+    "HINT": "Rechnersitzung leeren oder ändern und speichern: Dateien und Kosten folgen der ausgewählten Sitzung. Die ursprünglichen Sitzungen bleiben erhalten und können erneut verknüpft werden. Der Checkout-Link bleibt gleich.",
+    "INVALID_SESSION": "Geben Sie eine gültige Rechnersitzungs-ID ein oder lassen Sie das Feld leer."
   },
   "NAV": {
     "HOME": "Startseite",

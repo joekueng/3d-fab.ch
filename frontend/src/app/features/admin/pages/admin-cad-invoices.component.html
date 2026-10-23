@@ -15,7 +15,7 @@
   <section class="create-box">
     <h2>
       {{
-        (form.sessionId
+        (draftSessionId
           ? "CAD_ORGANIZATION.EDIT_DRAFT"
           : "CAD_ORGANIZATION.CREATE"
         ) | translate
@@ -50,14 +50,8 @@
         <app-input
           name="sessionId"
           [(ngModel)]="form.sessionId"
-          [readonly]="!!draftSessionId"
           (ngModelChange)="onSessionIdChange()"
-          [label]="
-            (draftSessionId
-              ? 'CAD_PRINT_ITEMS.INVOICE_ID'
-              : 'CAD_ORGANIZATION.SESSION'
-            ) | translate
-          "
+          [label]="'CAD_ORGANIZATION.SESSION' | translate"
         ></app-input>
         <app-input
           name="sourceRequestId"
@@ -65,7 +59,7 @@
           [label]="'CAD_ORGANIZATION.REQUEST' | translate"
         ></app-input>
         <p class="ui-copy-subtitle notes-field" *ngIf="draftSessionId">
-          {{ "CAD_DELETE.STABLE_LINK" | translate }}
+          {{ "CAD_PRINT_ITEMS.HINT" | translate }}
         </p>
         <app-textarea
           class="notes-field"
@@ -86,30 +80,7 @@
             managedError)
         "
       >
-        <div class="session-files-header">
-          <h3>{{ "CAD_ITEM_PRICING.TITLE" | translate }}</h3>
-          <app-button
-            *ngIf="draftSessionId && managedRows.length && !draftIsConverted"
-            type="button"
-            [variant]="removePrintItems ? 'ghost' : 'ghost-danger'"
-            [disabled]="creating || previewing || savingManaged"
-            (click)="togglePrintItemsRemoval()"
-          >
-            {{
-              (removePrintItems
-                ? "CAD_PRINT_ITEMS.UNDO"
-                : "CAD_PRINT_ITEMS.REMOVE"
-              ) | translate
-            }}
-          </app-button>
-        </div>
-        <p
-          *ngIf="removePrintItems"
-          class="ui-banner ui-banner--warning"
-          role="status"
-        >
-          {{ "CAD_PRINT_ITEMS.PENDING" | translate }}
-        </p>
+        <h3>{{ "CAD_ITEM_PRICING.TITLE" | translate }}</h3>
         <p class="ui-banner ui-banner--error" role="alert" *ngIf="managedError">
           {{ managedError }}
         </p>
@@ -123,7 +94,7 @@
           {{ "CAD_ITEM_PRICING.EMPTY" | translate }}
         </p>
 
-        <ng-container *ngIf="managedRows.length > 0 && !removePrintItems">
+        <ng-container *ngIf="managedRows.length > 0">
           <div class="table-wrap ui-table-wrap">
             <table class="managed-items-table ui-data-table">
               <thead>
@@ -338,7 +309,7 @@
         >
           {{ attachmentError }}
         </p>
-        <p class="ui-copy-subtitle" *ngIf="!managedSessionId">
+        <p class="ui-copy-subtitle" *ngIf="!attachmentSessionId">
           {{ "CAD_ITEM_PRICING.ATTACH_REQUIRES_SESSION" | translate }}
         </p>
         <div

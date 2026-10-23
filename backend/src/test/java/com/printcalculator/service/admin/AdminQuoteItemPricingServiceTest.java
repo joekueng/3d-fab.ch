@@ -85,6 +85,19 @@ class AdminQuoteItemPricingServiceTest {
     }
 
     @Test
+    void adminCanPreviewOriginalCalculatorRowsAfterTheInvoiceHasDetachedThem() {
+        QuoteSession session = session(UUID.randomUUID(), "CAD_ACTIVE");
+        session.setCalculatorDetached(true);
+        var item = printItem(variant());
+        when(sessionRepo.findById(session.getId())).thenReturn(Optional.of(session));
+        when(lineItemRepo.findByQuoteSessionIdOrderByCreatedAtAsc(session.getId())).thenReturn(List.of(item));
+        when(totalsService.computeCalculatorSource(session, List.of(item))).thenReturn(totals("10.00"));
+        var result = service.getItems(session.getId());
+        assertEquals(item.getId(), result.getItems().get(0).getId());
+        assertEquals(new BigDecimal("10.00"), result.getGrandTotalChf());
+    }
+
+    @Test
     void updateStats_withPreview_shouldReturnProposedPricesWithoutSaving() {
         QuoteSession session = session(UUID.randomUUID(), "CAD_ACTIVE");
         FilamentVariant variant = variant();
@@ -103,8 +116,8 @@ class AdminQuoteItemPricingServiceTest {
 
         QuoteSessionTotalsService.QuoteSessionTotals currentTotals = totals("10.00");
         QuoteSessionTotalsService.QuoteSessionTotals proposedTotals = totals("40.00");
-        when(totalsService.compute(session, List.of(item))).thenReturn(currentTotals);
-        when(totalsService.compute(eq(session), anyList(), anyMap())).thenReturn(proposedTotals);
+        when(totalsService.computeCalculatorSource(session, List.of(item))).thenReturn(currentTotals);
+        when(totalsService.computeCalculatorSource(eq(session), anyList(), anyMap())).thenReturn(proposedTotals);
         when(assembler.resolveDistributedUnitPrice(any(BigDecimal.class), any(), any(), any()))
                 .thenAnswer(invocation -> invocation.getArgument(0, BigDecimal.class));
 
@@ -139,7 +152,7 @@ class AdminQuoteItemPricingServiceTest {
         when(machineRepo.findById(5L)).thenReturn(Optional.of(machine));
         when(quoteCalculator.calculatePrintItemUnitPrice(7200L, new BigDecimal("200"), machine, policy, variant))
                 .thenReturn(new BigDecimal("20.00"));
-        when(totalsService.compute(session, List.of(item))).thenReturn(totals("40.00"));
+        when(totalsService.computeCalculatorSource(session, List.of(item))).thenReturn(totals("40.00"));
         when(assembler.resolveDistributedUnitPrice(any(BigDecimal.class), any(), any(), any()))
                 .thenAnswer(invocation -> invocation.getArgument(0, BigDecimal.class));
 
@@ -252,8 +265,8 @@ class AdminQuoteItemPricingServiceTest {
         when(machineRepo.findFirstByIsActiveTrueOrderByIdAsc()).thenReturn(Optional.of(fallbackMachine));
         when(quoteCalculator.calculatePrintItemUnitPrice(7200L, new BigDecimal("200"), fallbackMachine, policy, variant))
                 .thenReturn(new BigDecimal("20.00"));
-        when(totalsService.compute(session, List.of(item))).thenReturn(totals("10.00"));
-        when(totalsService.compute(eq(session), anyList(), anyMap())).thenReturn(totals("40.00"));
+        when(totalsService.computeCalculatorSource(session, List.of(item))).thenReturn(totals("10.00"));
+        when(totalsService.computeCalculatorSource(eq(session), anyList(), anyMap())).thenReturn(totals("40.00"));
         when(assembler.resolveDistributedUnitPrice(any(BigDecimal.class), any(), any(), any()))
                 .thenAnswer(invocation -> invocation.getArgument(0, BigDecimal.class));
 
@@ -286,8 +299,8 @@ class AdminQuoteItemPricingServiceTest {
                 .thenReturn(Optional.of(fallbackVariant));
         when(quoteCalculator.calculatePrintItemUnitPrice(7200L, new BigDecimal("200"), machine, policy, fallbackVariant))
                 .thenReturn(new BigDecimal("20.00"));
-        when(totalsService.compute(session, List.of(item))).thenReturn(totals("10.00"));
-        when(totalsService.compute(eq(session), anyList(), anyMap())).thenReturn(totals("40.00"));
+        when(totalsService.computeCalculatorSource(session, List.of(item))).thenReturn(totals("10.00"));
+        when(totalsService.computeCalculatorSource(eq(session), anyList(), anyMap())).thenReturn(totals("40.00"));
         when(assembler.resolveDistributedUnitPrice(any(BigDecimal.class), any(), any(), any()))
                 .thenAnswer(invocation -> invocation.getArgument(0, BigDecimal.class));
 

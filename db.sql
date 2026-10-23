@@ -1776,3 +1776,10 @@ ALTER TABLE legal_consents ADD COLUMN IF NOT EXISTS client_ip varchar(45);
 
 -- Deleted CAD invoices retain only their link reservation / public-page redirect.
 ALTER TABLE quote_sessions ADD COLUMN IF NOT EXISTS deleted_redirect_path varchar(1000);
+
+-- Editable, reversible calculator association on service invoices.
+-- NULL / false keeps legacy invoice-owned print rows; true only excludes them.
+ALTER TABLE quote_sessions ADD COLUMN IF NOT EXISTS calculator_session_id uuid
+    CONSTRAINT fk_quote_sessions_calculator_session REFERENCES quote_sessions (quote_session_id);
+ALTER TABLE quote_sessions ADD COLUMN IF NOT EXISTS calculator_detached boolean;
+CREATE INDEX IF NOT EXISTS ix_quote_sessions_calculator_session ON quote_sessions (calculator_session_id);

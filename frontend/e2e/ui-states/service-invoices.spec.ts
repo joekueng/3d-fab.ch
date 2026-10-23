@@ -227,12 +227,12 @@ test('UI-INVOICE-004: simulated editing and replacement preserve the shared link
     .getByRole('button', {name: 'Modifica prestazioni', exact: true})
     .click();
   const sessionField = page.locator('app-input[name="sessionId"] input');
-  await expect(sessionField).toHaveAttribute('readonly', '');
+  await expect(sessionField).not.toHaveAttribute('readonly', '');
   await page.getByLabel('Importo CHF', { exact: true }).fill('30');
   await page
     .getByRole('button', {name: 'Salva e prepara checkout', exact: true})
     .click();
-  await expect(sessionField).toHaveValue(id);
+  await expect(sessionField).toHaveValue('');
   expect(updates).toBe(1);
   await expect(
     page.getByLabel('Descrizione e dettagli', {exact: true}),
@@ -264,7 +264,7 @@ test('UI-INVOICE-004: simulated editing and replacement preserve the shared link
     .click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   expect(deleteCalls).toBe(1);
-  await expect(sessionField).toHaveValue(id);
+  await expect(sessionField).toHaveValue('');
   await expect(
     page.getByLabel('Descrizione e dettagli', {exact: true}),
   ).toHaveValue('');
@@ -283,7 +283,7 @@ test('UI-INVOICE-004: simulated editing and replacement preserve the shared link
     page.getByLabel('Descrizione e dettagli', {exact: true}),
   ).toHaveValue('Nuova prestazione');
   expect(updates).toBe(2);
-  await expect(sessionField).toHaveValue(id);
+  await expect(sessionField).toHaveValue('');
   await page.getByRole('button', { name: 'Elimina', exact: true }).click();
   await page
     .getByRole('dialog')
@@ -569,6 +569,7 @@ test('UI-INVOICE-003: session id loads files inline and admin manages attachment
   ]);
   const invoice: AdminCadInvoice = {
     sessionId,
+    calculatorSessionId: sessionId,
     sessionStatus: 'CAD_ACTIVE',
     invoiceName: 'Correzione prezzo',
     clientName: 'Example company',
@@ -1201,11 +1202,13 @@ test('UI-INVOICE-008: simulated mixed-format checkout reuses stored model previe
 });
 
 
-test('UI-INVOICE-009: simulated removal keeps the checkout and groups responsive table actions', async ({
+test('UI-INVOICE-009: simulated calculator session can be cleared, changed and restored on the same checkout', async ({
   page,
 }, testInfo) => {
   const id = '99999999-9999-9999-9999-999999999999';
-  let removed = false;
+  const other = '88888888-8888-8888-8888-888888888888';
+  let selected: string | null = id;
+  const updates: (string | null)[] = [];
   const serviceLines = [
     {
       description: 'Progettazione conservata',
@@ -1216,16 +1219,17 @@ test('UI-INVOICE-009: simulated removal keeps the checkout and groups responsive
   ];
   const invoice = () => ({
     sessionId: id,
+    calculatorSessionId: selected,
     sessionStatus: 'CAD_ACTIVE',
     invoiceName: 'Prototipo con un nome molto lungo',
     serviceLines,
     cadHours: 0,
     cadHourlyRateChf: 0,
     cadTotalChf: 0,
-    printItemsTotalChf: removed ? 0 : 20,
-    setupCostChf: removed ? 0 : 5,
-    shippingCostChf: removed ? 0 : 2,
-    grandTotalChf: removed ? 50 : 77,
+    printItemsTotalChf: selected ? 20 : 0,
+    setupCostChf: selected ? 5 : 0,
+    shippingCostChf: selected ? 2 : 0,
+    grandTotalChf: selected ? 77 : 50,
     checkoutPath: `/checkout/cad?session=${id}`,
   });
   await page.route('**/api/**', async (route) => {
@@ -1239,50 +1243,95 @@ test('UI-INVOICE-009: simulated removal keeps the checkout and groups responsive
       route.request().method() === 'PUT'
     ) {
       const body = route.request().postDataJSON();
-      expect(body.removePrintItems).toBe(true);
       expect(body.sessionId).toBe(id);
       expect(body.serviceLines).toEqual(serviceLines);
-      removed = true;
+      expect(body.removePrintItems).toBeUndefined();
+      selected = body.calculatorSessionId;
+      updates.push(selected);
       return route.fulfill({ json: invoice() });
     }
-    if (path.endsWith('/items'))
+    // Admin item management reads the original source even while its invoice is detached.
+    if (path.endsWith('/items')) {
+      const source = path.includes(other) ? other : id;
       return route.fulfill({
         json: {
-          sessionId: id,
-          sessionStatus: 'CAD_ACTIVE',
-          itemsTotalChf: removed ? 50 : 77,
-          grandTotalChf: removed ? 50 : 77,
-          items: removed
-            ? []
-            : [
-                {
-                  id: 'print',
-                  displayName: 'RASPBERRY_PI_5_long_model_filename.stl',
-                  quantity: 9,
-                  printTimeSeconds: 7020,
-                  materialGrams: 29.11,
-                  unitPriceChf: 4.18,
-                  editable: true,
-                },
-              ],
-          printItemsTotalChf: removed ? 0 : 20,
+          sessionId: source,
+          sessionStatus: source === id ? 'CAD_ACTIVE' : 'ACTIVE',
+          grandTotalChf: 27,
+          items: [
+            {
+              id: source,
+              displayName:
+                source === id
+                  ? 'RASPBERRY_PI_5_original.stl'
+                  : 'replacement.stl',
+              quantity: 9,
+              printTimeSeconds: 7020,
+              materialGrams: 29.11,
+              unitPriceChf: 4.18,
+              editable: true,
+            },
+          ],
         },
+      });
+    }
+    if (path.endsWith(`/quote-sessions/${id}/attachments`))
+      return route.fulfill({
+        json: [
+          {
+            id: 'attachment',
+            originalFilename: 'invoice-instructions.pdf',
+            image: false,
+          },
+        ],
       });
     return route.fulfill({ json: [] });
   });
   await openSimulatedAdmin(page, '/it/admin/cad-invoices');
   const table = page.locator('.cad-invoices-table');
-  await expect(
-    table.getByRole('button', { name: 'Modifica prestazioni', exact: true }),
-  ).toHaveCount(1);
+  const edit = table.getByRole('button', {
+    name: 'Modifica prestazioni',
+    exact: true,
+  });
+  await expect(edit).toHaveCount(1);
   await expect(
     table.getByRole('button', { name: 'Gestisci file', exact: true }),
   ).toHaveCount(0);
-  await table
-    .getByRole('button', { name: 'Modifica prestazioni', exact: true })
-    .click();
-  await expect(page.getByLabel('ID fattura / checkout')).toHaveValue(id);
-  await expect(page.locator('.managed-items-table')).toBeVisible();
+  await edit.click();
+  const field = page.getByLabel('ID sessione calcolatore (opzionale)');
+  await expect(field).toBeEditable();
+  await expect(field).toHaveValue(id);
+  await expect(
+    page.getByRole('button', {
+      name: 'Rimuovi stampe dalla fattura',
+      exact: true,
+    }),
+  ).toHaveCount(0);
+  for (const source of [null, id, other, null, id]) {
+    await field.fill(source || '');
+    if (source)
+      await expect(page.locator('.managed-items-table')).toContainText(
+        source === id ? 'RASPBERRY_PI_5_original.stl' : 'replacement.stl',
+      );
+    else await expect(page.locator('.managed-items-table')).toHaveCount(0);
+    await expect(
+      page.getByText('invoice-instructions.pdf', { exact: true }),
+    ).toBeVisible();
+    await page
+      .getByRole('button', { name: 'Salva e prepara checkout', exact: true })
+      .click();
+    await expect(field).toHaveValue(source || '');
+    await expect(
+      page.getByLabel('Descrizione e dettagli', { exact: true }),
+    ).toHaveValue('Progettazione conservata');
+    await expect(table.locator('tbody tr')).toHaveCount(1);
+    await expect(table.locator('tbody tr')).toContainText(
+      source ? '77.00' : '50.00',
+    );
+    await edit.click();
+    await expect(field).toHaveValue(source || '');
+  }
+  expect(updates).toEqual([null, id, other, null, id]);
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 1000 });
     expect(
@@ -1291,36 +1340,8 @@ test('UI-INVOICE-009: simulated removal keeps the checkout and groups responsive
       ),
     ).toBe(true);
     await page.screenshot({
-      path: testInfo.outputPath(`invoice-editor-${width}.png`),
+      path: testInfo.outputPath(`editable-calculator-${width}.png`),
       fullPage: true,
     });
-    await table.screenshot({
-      path: testInfo.outputPath(`invoice-table-${width}.png`),
-    });
-    const cells = table.locator('tbody tr').first().locator('td');
-    expect(
-      await cells.last().evaluate((el) => getComputedStyle(el).display),
-    ).not.toBe('flex');
   }
-  await page
-    .getByRole('button', { name: 'Rimuovi stampe dalla fattura', exact: true })
-    .click();
-  await expect(page.locator('.managed-items-table')).toHaveCount(0);
-  await page
-    .getByRole('button', { name: 'Mantieni le stampe', exact: true })
-    .click();
-  await expect(page.locator('.managed-items-table')).toBeVisible();
-  await page
-    .getByRole('button', { name: 'Rimuovi stampe dalla fattura', exact: true })
-    .click();
-  await page
-    .getByRole('button', { name: 'Salva e prepara checkout', exact: true })
-    .click();
-  await expect(
-    page.getByLabel('Descrizione e dettagli', { exact: true }),
-  ).toHaveValue('Progettazione conservata');
-  await expect(page.getByLabel('ID fattura / checkout')).toHaveValue(id);
-  await expect(page.locator('.managed-items-table')).toHaveCount(0);
-  await expect(table.locator('tbody tr')).toContainText('50.00');
-  expect(removed).toBe(true);
 });

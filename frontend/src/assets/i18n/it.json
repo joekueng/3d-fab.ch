@@ -1,9 +1,7 @@
 {
   "CAD_PRINT_ITEMS": {
-    "INVOICE_ID": "ID fattura / checkout",
-    "REMOVE": "Rimuovi stampe dalla fattura",
-    "UNDO": "Mantieni le stampe",
-    "PENDING": "Al salvataggio verranno rimossi i file del calcolatore e i relativi costi di stampa, preparazione e spedizione. Il link checkout, le prestazioni e gli allegati restano gli stessi."
+    "HINT": "Puoi svuotare o cambiare la sessione del calcolatore e salvare: file e costi seguono la sessione selezionata. Le sessioni originali vengono conservate, così puoi riassociarle. Il link checkout resta lo stesso.",
+    "INVALID_SESSION": "Inserisci un ID sessione del calcolatore valido oppure lascia il campo vuoto."
   },
   "NAV": {
     "HOME": "Home",

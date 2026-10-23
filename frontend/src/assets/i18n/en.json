@@ -1,9 +1,7 @@
 {
   "CAD_PRINT_ITEMS": {
-    "INVOICE_ID": "Invoice / checkout ID",
-    "REMOVE": "Remove prints from invoice",
-    "UNDO": "Keep prints",
-    "PENDING": "Saving will remove calculator files and their printing, setup and shipping costs. The checkout link, services and attachments stay the same."
+    "HINT": "Clear or change the calculator session and save: files and costs follow the selected session. Original sessions are preserved so you can link them again. The checkout link stays the same.",
+    "INVALID_SESSION": "Enter a valid calculator session ID or leave the field empty."
   },
   "NAV": {
     "HOME": "Home",

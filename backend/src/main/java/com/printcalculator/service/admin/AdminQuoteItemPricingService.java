@@ -76,7 +76,7 @@ public class AdminQuoteItemPricingService {
     public AdminQuoteItemsResponse getItems(UUID sessionId) {
         QuoteSession session = loadSession(sessionId);
         List<QuoteLineItem> items = lineItemRepo.findByQuoteSessionIdOrderByCreatedAtAsc(sessionId);
-        QuoteSessionTotalsService.QuoteSessionTotals totals = totalsService.compute(session, items);
+        QuoteSessionTotalsService.QuoteSessionTotals totals = totalsService.computeCalculatorSource(session, items);
         return toResponse(session, items, totals, null, null);
     }
 
@@ -132,7 +132,7 @@ public class AdminQuoteItemPricingService {
         }
 
         if (!request.isPersist()) {
-            QuoteSessionTotalsService.QuoteSessionTotals currentTotals = totalsService.compute(session, items);
+            QuoteSessionTotalsService.QuoteSessionTotals currentTotals = totalsService.computeCalculatorSource(session, items);
             Map<UUID, QuoteSessionTotalsService.ItemStatsOverride> overrides = new LinkedHashMap<>();
             for (ResolvedItem resolved : resolvedItems) {
                 overrides.put(
@@ -144,7 +144,7 @@ public class AdminQuoteItemPricingService {
                 );
             }
             QuoteSessionTotalsService.QuoteSessionTotals proposedTotals =
-                    totalsService.compute(session, items, overrides);
+                    totalsService.computeCalculatorSource(session, items, overrides);
             return toResponse(session, items, proposedTotals, overrides, currentTotals);
         }
 
@@ -168,7 +168,7 @@ public class AdminQuoteItemPricingService {
         }
         lineItemRepo.saveAll(resolvedItems.stream().map(ResolvedItem::item).toList());
 
-        QuoteSessionTotalsService.QuoteSessionTotals updatedTotals = totalsService.compute(session, items);
+        QuoteSessionTotalsService.QuoteSessionTotals updatedTotals = totalsService.computeCalculatorSource(session, items);
         return toResponse(session, items, updatedTotals, null, null);
     }
 
