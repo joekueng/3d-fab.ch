@@ -99,6 +99,15 @@
 
     <!-- Right Column: Result or Info -->
     <div class="col-result" #resultCol>
+      <p>
+        <a
+          class="ui-button ui-button--text"
+          [href]="languageService.localizedPath('/pricing')"
+          target="_blank"
+          rel="noopener"
+          >{{ "GUIDE_LINKS.PRICING_HINT" | translate }}</a
+        >
+      </p>
       @if (loading()) {
         <app-card class="loading-state">
           <div class="loader-content">

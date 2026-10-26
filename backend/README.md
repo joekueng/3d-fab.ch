@@ -607,3 +607,10 @@ Until then the old checkout is unavailable. A redirect reservation cannot be
 reactivated by an ordinary edit. The new nullable `deleted_redirect_path` column
 is additive under Hibernate schema update; matching DDL is in `db.sql` and needs
 no backfill. Existing instructions retain their normal draft retention policy.
+
+## Media pricing examples
+
+The [pricing and sample guide](../docs/pricing-and-samples.md) documents the optional
+`media_usage.pricing_example` JSON field, additive rollout and publication rules.
+Reuse the existing Media endpoints. Public reads must exclude unverified or
+incomplete pricing data; never add quote credentials or customer references to it.

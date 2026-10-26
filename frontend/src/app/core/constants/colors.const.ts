@@ -118,3 +118,22 @@ function firstNonBlank(
 export function getColorHex(value: string): string {
   return findColorHex(value) ?? DEFAULT_BRAND_COLOR;
 }
+
+/** Shared finish terminology for the calculator and public sample catalogue. */
+export function filamentFinishLabelKey(finishType: string): string {
+  const keys: Readonly<Record<string, string>> = {
+    glossy: 'COLOR.CATEGORY_GLOSSY',
+    matte: 'COLOR.CATEGORY_MATTE',
+    marble: 'COLOR.CATEGORY_MARBLE',
+    silk: 'COLOR.CATEGORY_SILK',
+    translucent: 'COLOR.CATEGORY_TRANSLUCENT',
+    special: 'COLOR.CATEGORY_SPECIAL',
+  };
+  return (
+    keys[
+      String(finishType ?? '')
+        .trim()
+        .toLowerCase()
+    ] ?? 'COLOR.CATEGORY_OTHER'
+  );
+}

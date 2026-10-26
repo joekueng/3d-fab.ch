@@ -1,5 +1,9 @@
 {
   "NAV": {
+    "PRINT_GUIDES": "Printing guides",
+    "OPEN_MENU": "Open menu",
+    "CLOSE_MENU": "Close menu",
+    "MAIN_NAVIGATION": "Main navigation",
     "HOME": "Home",
     "CALCULATOR": "Calculator",
     "SHOP": "Shop",
@@ -40,6 +44,7 @@
     "DEFAULT_COLOR": "Default"
   },
   "FOOTER": {
+    "INFORMATION": "Information",
     "PRIVACY": "Privacy",
     "TERMS": "Terms & Conditions",
     "MATERIALS": "Quality & Materials",
@@ -110,6 +115,14 @@
         "EMAIL_STATUS_UNKNOWN": "Delivery uncertain",
         "TITLE": "Admin | 3D fab",
         "DESCRIPTION": "Restricted 3D fab administration area."
+      },
+      "PRICING": {
+        "TITLE": "3D printing prices in CHF | 3D fab",
+        "DESCRIPTION": "Understand 3D printing costs: material, quantity, quality and time. Calculate a CHF quote or request a free first discussion."
+      },
+      "COLORS_FINISHES": {
+        "TITLE": "3D printing colors and finishes | 3D fab",
+        "DESCRIPTION": "Explore colors and finishes from the calculator, view samples and compare two variants for your 3D printing project."
       }
     }
   },
@@ -1452,6 +1465,11 @@
     }
   },
   "COLOR": {
+    "CATEGORY_MARBLE": "Marble",
+    "CATEGORY_SILK": "Silk",
+    "CATEGORY_TRANSLUCENT": "Translucent",
+    "CATEGORY_SPECIAL": "Special",
+    "CATEGORY_OTHER": "Other finish",
     "AVAILABLE_COLORS": "Available colors",
     "CATEGORY_GLOSSY": "Glossy",
     "CATEGORY_MATTE": "Matte",
@@ -1665,5 +1683,112 @@
     "EMPTY": "No fields to translate or update.",
     "COLORS_HINT": "Translates all saved colors from Italian, replaces EN, DE and FR, and saves the translations for filaments and the shop.",
     "COLORS_SAVED": "Color translations saved for filaments and the shop."
+  },
+  "GUIDE_LINKS": {
+    "LABEL": "Project guides",
+    "PRICING": "Pricing",
+    "COLORS": "Colors and finishes",
+    "CALCULATE": "Calculate your price",
+    "CONSULT": "Request a consultation",
+    "FREE_CONSULTATION": "The first discussion to understand your project is free; any further work is quoted and agreed before it begins.",
+    "BEFORE_STARTING": "Before getting started",
+    "PRICING_HINT": "How is the price calculated? Open the guide in a new tab.",
+    "COLORS_HINT": "View colors and finishes in a new tab."
+  },
+  "PRICING": {
+    "CAD_TITLE": "CAD design and support",
+    "CAD_CTA": "Request CAD support",
+    "CAD_BILLING": "The first consultation is free and helps us understand your project. Any subsequent CAD design and support work is billed according to a quote agreed with you before work begins.",
+    "TITLE": "The price of your project",
+    "INTRO": "Every model needs a different amount of material, preparation and time. Upload your file to the calculator for a CHF quote based on your chosen settings.",
+    "FACTORS_TITLE": "What determines the cost",
+    "FACTORS": {
+      "material": {
+        "TITLE": "Material",
+        "TEXT": "Filament type and the amount used, including supports and process waste, contribute to the cost."
+      },
+      "geometry": {
+        "TITLE": "Geometry",
+        "TEXT": "Size, shape and orientation affect the printing path and preparation. Two objects of the same weight may take different times to print."
+      },
+      "quantity": {
+        "TITLE": "Quantity",
+        "TEXT": "Parts in the same project may share some preparation work. The calculator shows the total for your requested quantity."
+      },
+      "quality": {
+        "TITLE": "Quality and infill",
+        "TEXT": "Thinner layers and more infill can increase the time and material needed. Choose according to the intended function and appearance."
+      },
+      "supports": {
+        "TITLE": "Supports",
+        "TEXT": "Overhangs and suspended areas may need temporary structures. Printing and removing them adds work and may leave surface marks."
+      },
+      "time": {
+        "TITLE": "Print time and preparation",
+        "TEXT": "Machine time and setup work are part of the quote. Additional work is agreed according to the project."
+      }
+    },
+    "CASES_TITLE": "Three ways to use 3D printing",
+    "CASES": {
+      "functional": {
+        "TITLE": "Small functional part",
+        "TEXT": "A spare part, bracket or adapter: start with the intended use and measurements. Strength and orientation matter as much as size."
+      },
+      "decorative": {
+        "TITLE": "Decorative object",
+        "TEXT": "An object to display or give as a gift: color, finish and visible layers guide the choice. Explore the colors and finishes guide."
+      },
+      "series": {
+        "TITLE": "Ten identical parts",
+        "TEXT": "A small run for assembly or testing: set ten copies of the same model to see the total cost. Quantity and arrangement affect production."
+      }
+    },
+    "CASES_NOTE": "To price your object, use your own file and chosen settings in the calculator. Contact us if your project does not yet have a 3D model.",
+    "EXAMPLES_TITLE": "Examples from real quotes",
+    "EXAMPLES_NOTE": "Indicative CHF prices for the specifications and date shown. Each example states which costs are included; your quote may differ.",
+    "CONSULTATION_TITLE": "Let’s discuss your project"
+  },
+  "COLORS_FINISHES": {
+    "TITLE": "Colors and finishes",
+    "INTRO": "Explore the calculator’s active variants and compare two samples. For mechanical properties and technical choices, see the materials guide.",
+    "SCREEN_NOTE": "Screen appearance is indicative: lighting, orientation and print settings can change colors and reflections. Swatches do not replace a sample photograph.",
+    "MATERIAL": "Material",
+    "FINISH": "Finish",
+    "ALL_MATERIALS": "All materials",
+    "ALL_FINISHES": "All finishes",
+    "OTHER_FINISH": "Other finish",
+    "LOADING": "Loading catalogue…",
+    "ERROR": "The catalogue is unavailable. Please try again shortly.",
+    "RETRY": "Try again",
+    "COMPARE_TITLE": "Compare two variants",
+    "COMPARE_HINT": "Select up to two catalogue variants. Selected: {{count}}/2. Your comparison stays visible when you change filters.",
+    "COMPARE": "Compare this variant",
+    "CATALOG_TITLE": "Sample catalogue",
+    "RESULTS": "Variants: {{count}}",
+    "EMPTY": "No variants match these filters. Try another material or finish.",
+    "AVAILABLE": "Available in the calculator",
+    "OUT_OF_STOCK": "Currently out of stock",
+    "NO_PHOTO": "Photo not yet available",
+    "APPEARANCE_TITLE": "Understanding a printed surface",
+    "APPEARANCE": "Matte finishes soften reflections; glossy finishes make them more visible and change with the light. Texture, pigments and wall thickness can affect opacity and translucency. This catalogue shows filament finishes, not painting or polishing treatments.",
+    "LAYERS": "FDM layers remain visible, especially on curves and sloped surfaces. Orientation, layer height and support removal affect the final texture. Ask us about your model if you have specific appearance requirements."
+  },
+  "ADMIN_GUIDES": {
+    "FILAMENTS_TITLE": "Filament samples",
+    "FILAMENTS_DESCRIPTION": "Real photographs of active variants: overall, oblique and detail views. The primary image leads the gallery; the others follow the sort order.",
+    "PRICING_TITLE": "Pricing examples",
+    "PRICING_DESCRIPTION": "Add a real photograph and quote details. Unverified examples remain hidden from the public.",
+    "PRICE_HINT": "To publish: a real photo, title and alt in all four languages, material, dimensions in mm, quantity (1 or 10 for the series), CHF total, quote date, settings and included costs in every language. Always state VAT and shipping treatment in the included costs. Retain quote evidence internally; do not enter customer data.",
+    "MATERIAL": "Material",
+    "DIMENSIONS": "Dimensions (L × W × H)",
+    "QUANTITY": "Quantity",
+    "PRICE": "Indicative total price (CHF)",
+    "DATE": "Quote date",
+    "SETTINGS": "Print settings",
+    "COSTS": "Included and excluded costs (VAT, shipping, preparation)",
+    "VERIFIED": "I confirm the photo is real and the data matches the quote; publish when complete.",
+    "CATALOG_ERROR": "Could not load variants. Reload Media to try again.",
+    "EDIT": "Edit / replace",
+    "SAVE": "Save changes"
   }
 }

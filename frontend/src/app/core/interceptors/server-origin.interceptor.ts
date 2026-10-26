@@ -124,9 +124,19 @@ function resolveApiOrigin(
   const e2eRouteAllApi =
     (globalThis as { process?: { env?: Record<string, string | undefined> } })
       .process?.env?.['SSR_ROUTE_ALL_API_INTERNALLY'] === 'true';
+  const informationalPage =
+    /^\/(?:it|en|de|fr)\/(?:pricing|colors-finishes)\/?$/i.test(
+      readRequestPath(request) ?? '',
+    );
+  const informationalApi =
+    /^\/api\/(?:calculator\/options|public\/media\/usages)$/i.test(
+      stripQueryAndHash(normalizeRelativePath(relativeUrl)),
+    );
   if (
     internalOrigin &&
-    ((e2eRouteAllApi && /^\/api\//i.test(normalizeRelativePath(relativeUrl))) ||
+    ((informationalPage && informationalApi) ||
+      (e2eRouteAllApi &&
+        /^\/api\//i.test(normalizeRelativePath(relativeUrl))) ||
       (isPublicShopPageRequest(request) &&
         isPublicShopDiscoveryApi(relativeUrl)))
   ) {

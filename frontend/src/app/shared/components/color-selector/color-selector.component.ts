@@ -20,6 +20,7 @@ import {
   getColorHex,
   ColorOption,
   resolveLocalizedColorLabel,
+  filamentFinishLabelKey,
 } from '../../../core/constants/colors.const';
 import { VariantOption } from '../../../features/calculator/services/quote-estimator.service';
 import { LanguageService } from '../../../core/services/language.service';
@@ -151,12 +152,7 @@ export class ColorSelectorComponent {
   }
 
   private finishCategoryLabel(finishType: string): string {
-    const normalized = String(finishType || '')
-      .trim()
-      .toLowerCase();
-    if (normalized === 'glossy') return 'COLOR.CATEGORY_GLOSSY';
-    if (normalized === 'matte') return 'COLOR.CATEGORY_MATTE';
-    return 'COLOR.AVAILABLE_COLORS';
+    return filamentFinishLabelKey(finishType);
   }
 
   onEscape(event: Event): void {

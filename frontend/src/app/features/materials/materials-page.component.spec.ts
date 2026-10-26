@@ -1,4 +1,5 @@
 import { signal } from '@angular/core';
+import { provideRouter } from '@angular/router';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideTranslateService, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom, of } from 'rxjs';
@@ -40,6 +41,7 @@ describe('MaterialsPageComponent', () => {
       imports: [MaterialsPageComponent],
       providers: [
         provideTranslateService(),
+        provideRouter([]),
         { provide: PublicMediaService, useValue: publicMediaService },
         { provide: LanguageService, useValue: languageServiceStub },
       ],

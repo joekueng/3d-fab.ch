@@ -91,3 +91,9 @@ rg -n "<(input|select|textarea|button)\\b" src/app/features/admin/pages --glob '
 Raw controls found by the second command are allowed only for the special-purpose exceptions above. Verify responsive behavior for user-facing UI changes.
 
 For editable service rows and interim invoice groups, follow [service invoice administration](README.md#service-invoice-administration).
+
+For pricing examples, filament photographs and shared catalogue terminology, follow
+[pricing and filament sample pages](README.md#pricing-and-filament-sample-pages).
+
+For the shared header/footer guide links and their mobile disclosure, follow
+[public guide navigation](README.md#public-guide-navigation).

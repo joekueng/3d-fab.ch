@@ -96,7 +96,12 @@ export class ContactFormComponent implements OnDestroy {
     private estimator: QuoteEstimatorService,
   ) {
     this.form = this.fb.group({
-      requestType: ['custom', Validators.required],
+      requestType: [
+        this.route.snapshot.queryParamMap.get('requestType') === 'consult'
+          ? 'consult'
+          : 'custom',
+        Validators.required,
+      ],
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       phone: [''],

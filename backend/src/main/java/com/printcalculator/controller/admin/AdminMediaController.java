@@ -1,5 +1,6 @@
 package com.printcalculator.controller.admin;
 
+import jakarta.validation.Valid;
 import com.printcalculator.dto.AdminCreateMediaUsageRequest;
 import com.printcalculator.dto.AdminMediaAssetDto;
 import com.printcalculator.dto.AdminMediaUsageDto;
@@ -69,14 +70,14 @@ public class AdminMediaController {
 
     @PostMapping("/usages")
     @Transactional
-    public ResponseEntity<AdminMediaUsageDto> createUsage(@RequestBody AdminCreateMediaUsageRequest payload) {
+    public ResponseEntity<AdminMediaUsageDto> createUsage(@Valid @RequestBody AdminCreateMediaUsageRequest payload) {
         return ResponseEntity.ok(adminMediaControllerService.createUsage(payload));
     }
 
     @PatchMapping("/usages/{mediaUsageId}")
     @Transactional
     public ResponseEntity<AdminMediaUsageDto> updateUsage(@PathVariable UUID mediaUsageId,
-                                                          @RequestBody AdminUpdateMediaUsageRequest payload) {
+                                                          @Valid @RequestBody AdminUpdateMediaUsageRequest payload) {
         return ResponseEntity.ok(adminMediaControllerService.updateUsage(mediaUsageId, payload));
     }
 

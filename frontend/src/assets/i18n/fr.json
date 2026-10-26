@@ -1,5 +1,9 @@
 {
   "NAV": {
+    "PRINT_GUIDES": "Guides d’impression",
+    "OPEN_MENU": "Ouvrir le menu",
+    "CLOSE_MENU": "Fermer le menu",
+    "MAIN_NAVIGATION": "Navigation principale",
     "HOME": "Accueil",
     "CALCULATOR": "Calculateur",
     "SHOP": "Boutique",
@@ -9,6 +13,7 @@
     "LANGUAGE_SELECTOR": "Sélecteur de langue"
   },
   "FOOTER": {
+    "INFORMATION": "Informations",
     "PRIVACY": "Confidentialité",
     "TERMS": "Conditions générales",
     "MATERIALS": "Qualité & matériaux",
@@ -79,6 +84,14 @@
         "EMAIL_STATUS_UNKNOWN": "Envoi incertain",
         "TITLE": "Admin | 3D fab",
         "DESCRIPTION": "Espace d'administration restreint de 3D fab."
+      },
+      "PRICING": {
+        "TITLE": "Prix impression 3D en CHF | 3D fab",
+        "DESCRIPTION": "Comprends le prix de l’impression 3D : matériau, quantité, qualité et temps. Calcule un devis en CHF ou demande un premier échange gratuit."
+      },
+      "COLORS_FINISHES": {
+        "TITLE": "Couleurs et finitions impression 3D | 3D fab",
+        "DESCRIPTION": "Explore les couleurs et finitions du calculateur, découvre les échantillons et compare deux variantes pour ton projet d’impression 3D."
       }
     }
   },
@@ -1472,6 +1485,11 @@
     }
   },
   "COLOR": {
+    "CATEGORY_MARBLE": "Marbrée",
+    "CATEGORY_SILK": "Soyeuse",
+    "CATEGORY_TRANSLUCENT": "Translucide",
+    "CATEGORY_SPECIAL": "Spéciale",
+    "CATEGORY_OTHER": "Autre finition",
     "AVAILABLE_COLORS": "Couleurs disponibles",
     "CATEGORY_GLOSSY": "Brillants",
     "CATEGORY_MATTE": "Mats",
@@ -1673,5 +1691,112 @@
     "EMPTY": "Aucun champ à traduire ou à mettre à jour.",
     "COLORS_HINT": "Traduit toutes les couleurs enregistrées depuis l’italien, remplace EN, DE et FR et enregistre les traductions pour les filaments et la boutique.",
     "COLORS_SAVED": "Traductions des couleurs enregistrées pour les filaments et la boutique."
+  },
+  "GUIDE_LINKS": {
+    "LABEL": "Guides pour ton projet",
+    "PRICING": "Prix",
+    "COLORS": "Couleurs et finitions",
+    "CALCULATE": "Calcule ton prix",
+    "CONSULT": "Demander un conseil",
+    "FREE_CONSULTATION": "Le premier échange pour comprendre ton projet est gratuit ; toute prestation ultérieure fait l’objet d’un devis et d’un accord avant de commencer.",
+    "BEFORE_STARTING": "Avant de commencer",
+    "PRICING_HINT": "Comment le prix est-il calculé ? Ouvrir le guide dans un nouvel onglet.",
+    "COLORS_HINT": "Voir les couleurs et finitions dans un nouvel onglet."
+  },
+  "PRICING": {
+    "CAD_TITLE": "Conception et assistance CAD",
+    "CAD_CTA": "Demander une aide CAD",
+    "CAD_BILLING": "La première consultation est gratuite et nous permet de comprendre ton projet. Les éventuelles prestations de conception et d’assistance CAD qui suivent sont facturées sur la base d’un devis convenu avec toi avant de commencer.",
+    "TITLE": "Le prix de ton projet",
+    "INTRO": "Chaque modèle demande une quantité différente de matière, de préparation et de temps. Charge ton fichier dans le calculateur pour obtenir un devis en CHF selon tes réglages.",
+    "FACTORS_TITLE": "Ce qui détermine le coût",
+    "FACTORS": {
+      "material": {
+        "TITLE": "Matériau",
+        "TEXT": "Le type de filament et la quantité utilisée, supports et pertes de fabrication compris, contribuent au coût."
+      },
+      "geometry": {
+        "TITLE": "Géométrie",
+        "TEXT": "La taille, la forme et l’orientation influencent le parcours d’impression et la préparation. Deux objets de même poids peuvent demander des temps différents."
+      },
+      "quantity": {
+        "TITLE": "Quantité",
+        "TEXT": "Les pièces d’un même projet peuvent partager une partie de la préparation. Le calculateur affiche le total pour la quantité demandée."
+      },
+      "quality": {
+        "TITLE": "Qualité et remplissage",
+        "TEXT": "Des couches plus fines et un remplissage plus dense peuvent augmenter le temps et la matière nécessaires. Choisis selon la fonction et l’aspect souhaités."
+      },
+      "supports": {
+        "TITLE": "Supports",
+        "TEXT": "Les surplombs et parties suspendues peuvent nécessiter des structures temporaires. Leur impression et leur retrait demandent du travail et peuvent laisser des marques."
+      },
+      "time": {
+        "TITLE": "Temps d’impression et préparation",
+        "TEXT": "Le temps machine et la préparation font partie du devis. Les prestations supplémentaires sont convenues selon le projet."
+      }
+    },
+    "CASES_TITLE": "Trois usages de l’impression 3D",
+    "CASES": {
+      "functional": {
+        "TITLE": "Petite pièce fonctionnelle",
+        "TEXT": "Une pièce de rechange, une équerre ou un adaptateur : pars de l’usage prévu et des mesures. La résistance et l’orientation comptent autant que la taille."
+      },
+      "decorative": {
+        "TITLE": "Objet décoratif",
+        "TEXT": "Un objet à exposer ou à offrir : la couleur, la finition et les couches visibles guident le choix. Consulte le guide Couleurs et finitions."
+      },
+      "series": {
+        "TITLE": "Série de dix pièces identiques",
+        "TEXT": "Une petite série pour l’assemblage ou les essais : sélectionne dix exemplaires du même modèle pour voir le coût total. La quantité et la disposition influencent la fabrication."
+      }
+    },
+    "CASES_NOTE": "Pour connaître le prix de ton objet, utilise ton fichier et les réglages souhaités dans le calculateur. Contacte-nous si ton projet n’a pas encore de modèle 3D.",
+    "EXAMPLES_TITLE": "Exemples issus de devis réels",
+    "EXAMPLES_NOTE": "Prix indicatifs en CHF pour les caractéristiques et la date indiquées. Les coûts inclus figurent dans chaque exemple ; ton devis peut varier.",
+    "CONSULTATION_TITLE": "Parlons de ton projet"
+  },
+  "COLORS_FINISHES": {
+    "TITLE": "Couleurs et finitions",
+    "INTRO": "Explore les variantes actives du calculateur et compare deux échantillons. Pour les propriétés mécaniques et le choix technique, consulte le guide Matériaux.",
+    "SCREEN_NOTE": "Le rendu à l’écran est indicatif : la lumière, l’orientation et les réglages d’impression peuvent modifier la couleur et les reflets. Les aplats de couleur ne remplacent pas une photo d’échantillon.",
+    "MATERIAL": "Matériau",
+    "FINISH": "Finition",
+    "ALL_MATERIALS": "Tous les matériaux",
+    "ALL_FINISHES": "Toutes les finitions",
+    "OTHER_FINISH": "Autre finition",
+    "LOADING": "Chargement du catalogue…",
+    "ERROR": "Le catalogue est indisponible. Réessaie dans un instant.",
+    "RETRY": "Réessayer",
+    "COMPARE_TITLE": "Comparer deux variantes",
+    "COMPARE_HINT": "Sélectionne jusqu’à deux variantes du catalogue. Sélection : {{count}}/2. Le comparatif reste visible quand tu changes de filtre.",
+    "COMPARE": "Comparer cette variante",
+    "CATALOG_TITLE": "Catalogue des échantillons",
+    "RESULTS": "Variantes : {{count}}",
+    "EMPTY": "Aucune variante ne correspond à ces filtres. Essaie un autre matériau ou une autre finition.",
+    "AVAILABLE": "Disponible dans le calculateur",
+    "OUT_OF_STOCK": "Actuellement épuisé",
+    "NO_PHOTO": "Photo pas encore disponible",
+    "APPEARANCE_TITLE": "Comprendre une surface imprimée",
+    "APPEARANCE": "Les finitions mates atténuent les reflets ; les finitions brillantes les accentuent et changent avec la lumière. Texture, pigments et épaisseur des parois influencent l’opacité et la translucidité. Ce catalogue montre les finitions du filament, pas des traitements de peinture ou de polissage.",
+    "LAYERS": "Les couches FDM restent visibles, surtout sur les courbes et surfaces inclinées. L’orientation, la hauteur de couche et le retrait des supports influencent la texture finale. Pour des exigences esthétiques précises, demande-nous conseil sur ton modèle."
+  },
+  "ADMIN_GUIDES": {
+    "FILAMENTS_TITLE": "Échantillons de filament",
+    "FILAMENTS_DESCRIPTION": "Photos réelles des variantes actives : vue générale, oblique et détail. L’image principale ouvre la galerie ; les autres suivent l’ordre défini.",
+    "PRICING_TITLE": "Exemples de prix",
+    "PRICING_DESCRIPTION": "Ajoute une photo réelle et les données du devis. Les exemples non vérifiés restent masqués au public.",
+    "PRICE_HINT": "Pour publier : photo réelle, titre et texte alternatif dans les quatre langues, matériau, dimensions en mm, quantité (1 ou 10 pour la série), total CHF, date du devis, réglages et coûts inclus dans chaque langue. Précise toujours le traitement de la TVA et du transport. Conserve la preuve du devis en interne ; ne saisis pas de données client.",
+    "MATERIAL": "Matériau",
+    "DIMENSIONS": "Dimensions (L × P × H)",
+    "QUANTITY": "Quantité",
+    "PRICE": "Prix total indicatif (CHF)",
+    "DATE": "Date du devis",
+    "SETTINGS": "Réglages d’impression",
+    "COSTS": "Coûts inclus et exclus (TVA, transport, préparation)",
+    "VERIFIED": "Je confirme la photo réelle et les données vérifiées du devis ; publier une fois complet.",
+    "CATALOG_ERROR": "Impossible de charger les variantes. Recharge les médias pour réessayer.",
+    "EDIT": "Modifier / remplacer",
+    "SAVE": "Enregistrer les modifications"
   }
 }

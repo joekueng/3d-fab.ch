@@ -70,6 +70,13 @@ export const scenarioCatalog: Record<string, {
     priority: 'standard',
     fixture: 'synthetic-stack'
   },
+  'UI-NAV-GUIDES-001': { spec: 'ui-states/navigation-guides.spec.ts', priority: 'standard', fixture: 'synthetic-stack' },
+  'UI-NAV-GUIDES-002': { spec: 'ui-states/navigation-guides.spec.ts', priority: 'standard', fixture: 'synthetic-stack' },
+  'UI-NAV-GUIDES-003': { spec: 'ui-states/navigation-guides.spec.ts', priority: 'standard', fixture: 'synthetic-stack' },
+  'UI-NAV-GUIDES-004': { spec: 'ui-states/navigation-guides.spec.ts', priority: 'standard', fixture: 'synthetic-stack' },
+  'UI-GUIDES-001': { spec: 'ui-states/guides.spec.ts', priority: 'standard', fixture: 'synthetic-stack' },
+  'UI-GUIDES-002': { spec: 'ui-states/guides.spec.ts', priority: 'standard', fixture: 'synthetic-stack' },
+  'UI-GUIDES-003': { spec: 'ui-states/guides.spec.ts', priority: 'standard', fixture: 'synthetic-stack' },
   'UI-001': { spec: 'ui-states/catalog-failure.spec.ts', priority: 'standard', fixture: 'synthetic-stack' },
 };
 
@@ -78,6 +85,8 @@ export const routeCoverage: RouteCoverage[] = [
   { source: 'app', path: 'calculator', suite: 'fullstack', scenario: 'CALC-001', status: 'partial' },
   { source: 'app', path: 'shop', suite: 'fullstack', scenario: 'SHOP-001', status: 'partial' },
   { source: 'app', path: 'about', suite: 'smoke', scenario: 'SMOKE-002', status: 'covered' },
+  { source: 'app', path: 'pricing', suite: 'fullstack', scenario: 'UI-GUIDES-003', status: 'partial' },
+  { source: 'app', path: 'colors-finishes', suite: 'fullstack', scenario: 'UI-GUIDES-001', status: 'partial' },
   { source: 'app', path: 'materials', suite: 'smoke', scenario: 'SMOKE-002', status: 'partial' },
   { source: 'app', path: 'contact', suite: 'fullstack', scenario: 'PUBLIC-003', status: 'partial' },
   { source: 'app', path: 'checkout/cad', suite: 'fullstack', scenario: 'CAD-001', status: 'partial' },

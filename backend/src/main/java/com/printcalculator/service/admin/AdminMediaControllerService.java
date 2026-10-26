@@ -282,6 +282,8 @@ public class AdminMediaControllerService {
         usage.setIsActive(payload.getIsActive() == null || payload.getIsActive());
         usage.setCreatedAt(OffsetDateTime.now());
         applyTranslations(usage, translations);
+        usage.setPricingExample(payload.getPricingExample());
+        validatePricingExample(usage);
 
         MediaUsage saved = mediaUsageRepository.save(usage);
         return toUsageDto(saved);
@@ -319,6 +321,11 @@ public class AdminMediaControllerService {
         if (payload.getTranslations() != null) {
             applyTranslations(usage, requireTranslations(payload.getTranslations()));
         }
+
+        if (payload.getPricingExample() != null) {
+            usage.setPricingExample(payload.getPricingExample());
+        }
+        validatePricingExample(usage);
 
         if (Boolean.TRUE.equals(usage.getIsPrimary())) {
             unsetPrimaryForScope(usage.getUsageType(), usage.getUsageKey(), usage.getOwnerId(), usage.getId());
@@ -585,7 +592,28 @@ public class AdminMediaControllerService {
         dto.setIsActive(usage.getIsActive());
         dto.setTranslations(extractTranslations(usage));
         dto.setCreatedAt(usage.getCreatedAt());
+        dto.setPricingExample(usage.getPricingExample());
         return dto;
+    }
+
+    private void validatePricingExample(MediaUsage usage) {
+        var example = usage.getPricingExample();
+        if (!"PRICING_EXAMPLE".equals(usage.getUsageType())) {
+            if (example != null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Pricing data requires PRICING_EXAMPLE usage.");
+            }
+            return;
+        }
+        if (!Set.of("functional", "decorative", "series").contains(usage.getUsageKey())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown pricing example.");
+        }
+        if (example == null || !example.verified()) {
+            return; // Drafts never appear in public media queries.
+        }
+        int expectedQuantity = "series".equals(usage.getUsageKey()) ? 10 : 1;
+        if (!example.publishable() || !Objects.equals(example.quantity(), expectedQuantity)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incomplete or invalid verified pricing example.");
+        }
     }
 
     private int compareVariants(MediaVariant left, MediaVariant right) {

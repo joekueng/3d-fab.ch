@@ -326,3 +326,44 @@ select the split-consent checkbox, then calculate the quote again. Label these
 files as requiring splitting; reserve manual-review copy for failed estimates.
 Keep the checkbox label concise; the split-review card explains the surcharge
 and manual-review fallback. Stack its full-width action buttons with a consistent gap.
+
+## Pricing and filament sample pages
+
+See [pricing and samples](../docs/pricing-and-samples.md) for the Media scopes,
+publication gate, photo protocol and back-office workflow. Read-only catalogue
+consumers use `CalculatorOptionsService`; session creation remains in the quote
+service. Shared finish terminology lives in `filamentFinishLabelKey` in
+`core/constants/colors.const.ts`, used by both the calculator and sample catalogue.
+`app-image-preview` emits `loadFailed` so owners can provide a missing-photo state.
+Verify production HTML with `npm run build && npm run check:guides-ssr`.
+`UI-GUIDES-001`–`003` in `e2e/ui-states/guides.spec.ts` use explicit synthetic
+catalogue/media responses for filters, comparison, keyboard, recovery and locales.
+
+Public informational guides use the open typography of About/legal pages and the
+shared public hero. The `ui-guide-*` primitives in `styles/_ui.scss` provide a
+reading width, section dividers and spacing without card surfaces or shadows.
+Keep factors and examples in semantic lists/articles, catalogue availability as
+plain text, and use existing controls for filtering, comparison and previews.
+
+## Public guide navigation
+
+Header and footer share the three localized destinations in
+`core/layout/print-guide-links.ts`, in the order Materials, Colors and finishes,
+Pricing. The header uses a small disclosure labelled Printing guides, opening on mouse
+hover on desktop as well as click/keyboard. A pointer bridge spans the gap to
+the flyout, so entering its links does not close it. The mobile
+hamburger opens that group so its choices are immediately available. Keep native
+buttons for navigation disclosures and `RouterLink` anchors for destinations.
+Escape restores focus to the trigger; outside clicks, leaving the disclosure by
+keyboard and navigation close it. Preserve the same destinations in the footer’s
+labelled group, alongside a separate information group.
+
+`RouterLinkActive` marks the group and current links, with
+`ariaCurrentWhenActive="page"` on destinations. This input and ancestor-group
+behavior were verified on 2026-10-26 against the installed Angular Router 22.2.3
+types and the [official API](https://angular.dev/api/router/RouterLinkActive).
+No dependency was added or updated; the external package check passed 45/45.
+Browser coverage is `UI-NAV-GUIDES-001`–`004` in
+`e2e/ui-states/navigation-guides.spec.ts`, including four locales, navigation
+without document reloads, footer grouping, keyboard controls and 320 px width.
+Run Playwright suites sequentially when they share the same artifact directory.

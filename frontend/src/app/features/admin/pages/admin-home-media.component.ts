@@ -1,3 +1,6 @@
+import { TranslatePipe } from '@ngx-translate/core';
+import { CalculatorOptionsService } from '../../calculator/services/calculator-options.service';
+import type { PricingExample } from '../../../core/services/public-media.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   ChangeDetectorRef,
@@ -8,7 +11,7 @@ import {
   inject,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { of, switchMap } from 'rxjs';
+import { catchError, combineLatest, of, switchMap } from 'rxjs';
 import {
   AdminCreateMediaUsagePayload,
   AdminMediaAsset,
@@ -16,6 +19,7 @@ import {
   AdminMediaService,
   AdminMediaTranslation,
   AdminMediaUsage,
+  AdminPricingExample,
 } from '../services/admin-media.service';
 import {
   AdminTranslateLocalizedTextPayload,
@@ -35,8 +39,18 @@ import {
   mergeLocalizedTextMap,
 } from '../../../shared/utils/admin-localization.util';
 
-type MediaCollectionId = 'home' | 'materials' | 'about';
-type MediaUsageType = 'HOME_SECTION' | 'ABOUT_MEMBER' | 'MATERIALS_PAGE';
+type MediaCollectionId =
+  | 'home'
+  | 'materials'
+  | 'about'
+  | 'filaments'
+  | 'pricing';
+type MediaUsageType =
+  | 'HOME_SECTION'
+  | 'ABOUT_MEMBER'
+  | 'MATERIALS_PAGE'
+  | 'FILAMENT_VARIANT'
+  | 'PRICING_EXAMPLE';
 type MediaVariantName = 'card' | 'hero';
 
 interface MediaCollectionConfig {
@@ -64,6 +78,7 @@ interface MediaSectionConfig {
 }
 
 interface MediaFormState {
+  pricingExample: PricingExample;
   file: File | null;
   previewUrl: string | null;
   activeLanguage: AdminMediaLanguage;
@@ -77,6 +92,7 @@ interface MediaFormState {
 }
 
 interface MediaItem {
+  pricingExample: AdminPricingExample | null;
   usageId: string;
   mediaAssetId: string;
   originalFilename: string;
@@ -104,6 +120,7 @@ const MEDIA_LANGUAGE_LABELS = ADMIN_LANGUAGE_LABELS satisfies Readonly<
   standalone: true,
   imports: [
     CommonModule,
+    TranslatePipe,
     FormsModule,
     FeaturePanelComponent,
     AppButtonComponent,
@@ -115,6 +132,8 @@ const MEDIA_LANGUAGE_LABELS = ADMIN_LANGUAGE_LABELS satisfies Readonly<
   styleUrl: './admin-home-media.component.scss',
 })
 export class AdminHomeMediaComponent implements OnInit, OnDestroy {
+  private readonly optionsService = inject(CalculatorOptionsService);
+  catalogueError = false;
   private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly adminMediaService = inject(AdminMediaService);
@@ -124,6 +143,16 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
   readonly mediaLanguageLabels = MEDIA_LANGUAGE_LABELS;
 
   readonly collections: readonly MediaCollectionConfig[] = [
+    {
+      id: 'filaments',
+      title: 'ADMIN_GUIDES.FILAMENTS_TITLE',
+      description: 'ADMIN_GUIDES.FILAMENTS_DESCRIPTION',
+    },
+    {
+      id: 'pricing',
+      title: 'ADMIN_GUIDES.PRICING_TITLE',
+      description: 'ADMIN_GUIDES.PRICING_DESCRIPTION',
+    },
     {
       id: 'home',
       title: 'Home',
@@ -142,6 +171,18 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
   ];
 
   readonly sectionGroups: readonly MediaSectionGroup[] = [
+    {
+      id: 'filament-variants',
+      collectionId: 'filaments',
+      title: 'ADMIN_GUIDES.FILAMENTS_TITLE',
+      description: 'ADMIN_GUIDES.FILAMENTS_DESCRIPTION',
+    },
+    {
+      id: 'pricing-examples',
+      collectionId: 'pricing',
+      title: 'ADMIN_GUIDES.PRICING_TITLE',
+      description: 'ADMIN_GUIDES.PRICING_DESCRIPTION',
+    },
     {
       id: 'home-galleries',
       collectionId: 'home',
@@ -168,7 +209,17 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
     },
   ];
 
-  readonly sectionConfigs: readonly MediaSectionConfig[] = [
+  private readonly staticSectionConfigs: readonly MediaSectionConfig[] = [
+    ...(['functional', 'decorative', 'series'] as const).map((key) => ({
+      id: `PRICING_EXAMPLE::${key}`,
+      usageType: 'PRICING_EXAMPLE' as const,
+      usageKey: key,
+      collectionId: 'pricing' as const,
+      groupId: 'pricing-examples',
+      title: `PRICING.CASES.${key}.TITLE`,
+      description: 'ADMIN_GUIDES.PRICING_DESCRIPTION',
+      preferredVariantName: 'card' as const,
+    })),
     {
       id: 'HOME_SECTION::shop-gallery',
       usageType: 'HOME_SECTION',
@@ -321,6 +372,7 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
     },
   ];
 
+  sectionConfigs: readonly MediaSectionConfig[] = this.staticSectionConfigs;
   sections: MediaSectionView[] = [];
   selectedCollectionId: MediaCollectionId = 'home';
   loading = false;
@@ -368,8 +420,32 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
     this.errorMessage = null;
     this.successMessage = null;
 
-    this.adminMediaService.listAssets().subscribe({
-      next: (assets) => {
+    this.catalogueError = false;
+    combineLatest({
+      assets: this.adminMediaService.listAssets(),
+      options: this.optionsService.getOptions().pipe(
+        catchError(() => {
+          this.catalogueError = true;
+          return of(null);
+        }),
+      ),
+    }).subscribe({
+      next: ({ assets, options }) => {
+        this.sectionConfigs = [
+          ...this.staticSectionConfigs,
+          ...(options?.materials ?? []).flatMap((material) =>
+            material.variants.map((variant) => ({
+              id: `FILAMENT_VARIANT::${variant.id}`,
+              usageType: 'FILAMENT_VARIANT' as const,
+              usageKey: String(variant.id),
+              collectionId: 'filaments' as const,
+              groupId: 'filament-variants',
+              title: `${material.label} · ${variant.name || variant.colorName} · #${variant.id}`,
+              description: 'ADMIN_GUIDES.FILAMENTS_DESCRIPTION',
+              preferredVariantName: 'card' as const,
+            })),
+          ),
+        ];
         this.changeDetector.markForCheck();
         this.sections = this.sectionConfigs.map((config) => ({
           ...config,
@@ -471,6 +547,22 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
     formState.sortOrder = item.sortOrder;
     formState.isPrimary = item.isPrimary;
     formState.replacingUsageId = item.usageId;
+    const defaults = this.emptyPricingExample(
+      sectionId === 'PRICING_EXAMPLE::series' ? 10 : 1,
+    );
+    formState.pricingExample = {
+      material: item.pricingExample?.material ?? defaults.material,
+      dimensionsMm: item.pricingExample?.dimensionsMm ?? defaults.dimensionsMm,
+      quantity: item.pricingExample?.quantity ?? defaults.quantity,
+      priceChf: item.pricingExample?.priceChf ?? defaults.priceChf,
+      quotedOn: item.pricingExample?.quotedOn ?? defaults.quotedOn,
+      settings: { ...defaults.settings, ...item.pricingExample?.settings },
+      costsIncluded: {
+        ...defaults.costsIncluded,
+        ...item.pricingExample?.costsIncluded,
+      },
+      verified: item.pricingExample?.verified ?? false,
+    };
   }
 
   cancelReplace(sectionId: string): void {
@@ -481,7 +573,11 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
     const section = this.sections.find((item) => item.id === sectionId);
     const formState = this.getFormState(sectionId);
 
-    if (!section || !formState.file || formState.saving) {
+    if (
+      !section ||
+      (!formState.file && !formState.replacingUsageId) ||
+      formState.saving
+    ) {
       return;
     }
 
@@ -509,49 +605,57 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
       isPrimary: formState.isPrimary,
       isActive: true,
       translations: normalizedTranslations,
+      ...(section.usageType === 'PRICING_EXAMPLE'
+        ? { pricingExample: formState.pricingExample }
+        : {}),
     });
 
-    this.adminMediaService
-      .uploadAsset(formState.file, {
-        title: normalizedTranslations.it.title,
-        altText: normalizedTranslations.it.altText,
-        visibility: 'PUBLIC',
-      })
-      .pipe(
-        switchMap((asset) =>
-          this.adminMediaService.createUsage(createUsagePayload(asset.id)),
-        ),
-        switchMap(() => {
-          if (!formState.replacingUsageId) {
-            return of(null);
-          }
-          return this.adminMediaService.updateUsage(
-            formState.replacingUsageId,
-            {
-              isActive: false,
-              isPrimary: false,
-            },
-          );
-        }),
-      )
-      .subscribe({
-        next: () => {
-          this.changeDetector.markForCheck();
-          formState.saving = false;
-          this.successMessage = formState.replacingUsageId
-            ? 'Media sostituito.'
-            : 'Media caricato.';
-          this.loadMedia();
-        },
-        error: (error) => {
-          this.changeDetector.markForCheck();
-          formState.saving = false;
-          this.errorMessage = this.extractErrorMessage(
-            error,
-            'Upload media non riuscito.',
-          );
-        },
-      });
+    const operation = formState.file
+      ? this.adminMediaService
+          .uploadAsset(formState.file, {
+            title: normalizedTranslations.it.title,
+            altText: normalizedTranslations.it.altText,
+            visibility: 'PUBLIC',
+          })
+          .pipe(
+            switchMap((asset) =>
+              this.adminMediaService.createUsage(createUsagePayload(asset.id)),
+            ),
+            switchMap(() =>
+              formState.replacingUsageId
+                ? this.adminMediaService.updateUsage(
+                    formState.replacingUsageId,
+                    { isActive: false, isPrimary: false },
+                  )
+                : of(null),
+            ),
+          )
+      : this.adminMediaService.updateUsage(formState.replacingUsageId!, {
+          translations: normalizedTranslations,
+          sortOrder: formState.sortOrder,
+          isPrimary: formState.isPrimary,
+          ...(section.usageType === 'PRICING_EXAMPLE'
+            ? { pricingExample: formState.pricingExample }
+            : {}),
+        });
+    operation.subscribe({
+      next: () => {
+        this.changeDetector.markForCheck();
+        formState.saving = false;
+        this.successMessage = formState.replacingUsageId
+          ? 'Media sostituito.'
+          : 'Media caricato.';
+        this.loadMedia();
+      },
+      error: (error) => {
+        this.changeDetector.markForCheck();
+        formState.saving = false;
+        this.errorMessage = this.extractErrorMessage(
+          error,
+          'Upload media non riuscito.',
+        );
+      },
+    });
   }
 
   translateForSection(sectionId: string): void {
@@ -801,6 +905,7 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
     config: MediaSectionConfig,
   ): MediaItem {
     return {
+      pricingExample: usage.pricingExample ?? null,
       usageId: usage.id,
       mediaAssetId: asset.id,
       originalFilename: asset.originalFilename,
@@ -857,6 +962,9 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
       saving: false,
       translating: false,
       overwriteExistingTranslations: false,
+      pricingExample: this.emptyPricingExample(
+        sectionId === 'PRICING_EXAMPLE::series' ? 10 : 1,
+      ),
     });
   }
 
@@ -875,6 +983,19 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
     return normalized.trim();
   }
 
+  private emptyPricingExample(quantity = 1): PricingExample {
+    return {
+      material: '',
+      dimensionsMm: '',
+      quantity,
+      priceChf: 0,
+      quotedOn: '',
+      settings: { it: '', en: '', de: '', fr: '' },
+      costsIncluded: { it: '', en: '', de: '', fr: '' },
+      verified: false,
+    };
+  }
+
   private createEmptyFormState(): MediaFormState {
     return {
       file: null,
@@ -887,6 +1008,7 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
       saving: false,
       translating: false,
       overwriteExistingTranslations: false,
+      pricingExample: this.emptyPricingExample(),
     };
   }
 

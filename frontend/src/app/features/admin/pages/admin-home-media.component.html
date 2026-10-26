@@ -1,3 +1,8 @@
+@if (catalogueError) {
+  <p role="alert" class="ui-banner ui-banner--warning">
+    {{ "ADMIN_GUIDES.CATALOG_ERROR" | translate }}
+  </p>
+}
 <section class="section-card ui-stack ui-stack--roomy">
   <header class="section-header">
     <div class="header-copy">
@@ -38,7 +43,7 @@
           (click)="selectCollection(collection.id)"
         >
           <span class="media-context-trigger__title">{{
-            collection.title
+            collection.title | translate
           }}</span>
           <span class="media-context-trigger__meta">
             {{ collectionSectionCount(collection.id) }} sezioni
@@ -52,7 +57,7 @@
     <div class="collection-content ui-stack ui-stack--roomy">
       <section class="collection-summary ui-subpanel ui-subpanel--warm">
         <div class="collection-summary__copy ui-stack ui-stack--dense">
-          <h3>{{ selectedCollection.title }}</h3>
+          <h3>{{ selectedCollection.title | translate }}</h3>
         </div>
 
         <div class="collection-summary__stats ui-inline-actions">
@@ -76,8 +81,8 @@
           *ngFor="let group of getVisibleGroups(); trackBy: trackGroup"
         >
           <header class="group-header ui-stack ui-stack--dense">
-            <h3>{{ group.title }}</h3>
-            <p>{{ group.description }}</p>
+            <h3>{{ group.title | translate }}</h3>
+            <p>{{ group.description | translate }}</p>
           </header>
 
           <div class="sections ui-stack ui-stack--dense">
@@ -93,7 +98,7 @@
               >
                 <div class="media-panel-copy ui-stack ui-stack--dense">
                   <div class="title-row ui-row ui-row--center ui-row--wrap">
-                    <h4>{{ section.title }}</h4>
+                    <h4>{{ section.title | translate }}</h4>
                     <span class="count-pill ui-pill ui-pill--soft">
                       {{ section.items.length }}
                       {{ section.items.length === 1 ? "attivo" : "attivi" }}
@@ -116,7 +121,7 @@
                     <h5>
                       {{
                         getFormState(section.id).replacingUsageId
-                          ? "Sostituisci media"
+                          ? ("ADMIN_GUIDES.SAVE" | translate)
                           : "Carica media"
                       }}
                     </h5>
@@ -213,6 +218,89 @@
                       [compact]="true"
                     />
 
+                    @if (section.usageType === "PRICING_EXAMPLE") {
+                      <p class="form-field--wide">
+                        {{ "ADMIN_GUIDES.PRICE_HINT" | translate }}
+                      </p>
+                      <app-input
+                        [label]="'ADMIN_GUIDES.MATERIAL' | translate"
+                        type="text"
+                        [(ngModel)]="
+                          getFormState(section.id).pricingExample.material
+                        "
+                        [compact]="true"
+                      />
+                      <app-input
+                        [label]="'ADMIN_GUIDES.DIMENSIONS' | translate"
+                        type="text"
+                        [(ngModel)]="
+                          getFormState(section.id).pricingExample.dimensionsMm
+                        "
+                        [compact]="true"
+                      />
+                      <app-input
+                        [label]="'ADMIN_GUIDES.QUANTITY' | translate"
+                        type="number"
+                        [(ngModel)]="
+                          getFormState(section.id).pricingExample.quantity
+                        "
+                        [compact]="true"
+                      />
+                      <app-input
+                        [label]="'ADMIN_GUIDES.PRICE' | translate"
+                        type="number"
+                        [(ngModel)]="
+                          getFormState(section.id).pricingExample.priceChf
+                        "
+                        [compact]="true"
+                      />
+                      <app-input
+                        [label]="'ADMIN_GUIDES.DATE' | translate"
+                        type="date"
+                        [(ngModel)]="
+                          getFormState(section.id).pricingExample.quotedOn
+                        "
+                        [compact]="true"
+                      />
+                      <app-input
+                        [label]="
+                          ('ADMIN_GUIDES.SETTINGS' | translate) +
+                          ' (' +
+                          mediaLanguageLabels[
+                            getFormState(section.id).activeLanguage
+                          ] +
+                          ')'
+                        "
+                        [(ngModel)]="
+                          getFormState(section.id).pricingExample.settings[
+                            getFormState(section.id).activeLanguage
+                          ]
+                        "
+                        [compact]="true"
+                      />
+                      <app-input
+                        [label]="
+                          ('ADMIN_GUIDES.COSTS' | translate) +
+                          ' (' +
+                          mediaLanguageLabels[
+                            getFormState(section.id).activeLanguage
+                          ] +
+                          ')'
+                        "
+                        [(ngModel)]="
+                          getFormState(section.id).pricingExample.costsIncluded[
+                            getFormState(section.id).activeLanguage
+                          ]
+                        "
+                        [compact]="true"
+                      />
+                      <app-checkbox
+                        [label]="'ADMIN_GUIDES.VERIFIED' | translate"
+                        [(ngModel)]="
+                          getFormState(section.id).pricingExample.verified
+                        "
+                      />
+                    }
                     <app-input
                       label="Sort order"
                       type="number"
@@ -234,14 +322,15 @@
                       (click)="uploadForSection(section.id)"
                       [disabled]="
                         getFormState(section.id).saving ||
-                        !getFormState(section.id).file
+                        (!getFormState(section.id).file &&
+                          !getFormState(section.id).replacingUsageId)
                       "
                     >
                       {{
                         getFormState(section.id).saving
                           ? "Salvataggio..."
                           : getFormState(section.id).replacingUsageId
-                            ? "Sostituisci media"
+                            ? ("ADMIN_GUIDES.SAVE" | translate)
                             : "Carica media"
                       }}
                     </app-button>
@@ -360,7 +449,7 @@
                             (click)="prepareReplace(section.id, item)"
                             [disabled]="isUsageBusy(item.usageId)"
                           >
-                            Sostituisci
+                            {{ "ADMIN_GUIDES.EDIT" | translate }}
                           </app-button>
                           <app-button
                             type="button"

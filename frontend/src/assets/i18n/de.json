@@ -1,5 +1,9 @@
 {
   "NAV": {
+    "PRINT_GUIDES": "Druckratgeber",
+    "OPEN_MENU": "Menü öffnen",
+    "CLOSE_MENU": "Menü schliessen",
+    "MAIN_NAVIGATION": "Hauptnavigation",
     "HOME": "Startseite",
     "CALCULATOR": "Rechner",
     "SHOP": "Shop",
@@ -40,6 +44,7 @@
     "DEFAULT_COLOR": "Standard"
   },
   "FOOTER": {
+    "INFORMATION": "Informationen",
     "PRIVACY": "Datenschutz",
     "TERMS": "AGB",
     "MATERIALS": "Qualität & Materialien",
@@ -110,6 +115,14 @@
         "EMAIL_STATUS_UNKNOWN": "Versandstatus unklar",
         "TITLE": "Admin | 3D fab",
         "DESCRIPTION": "Geschützter Administrationsbereich von 3D fab."
+      },
+      "PRICING": {
+        "TITLE": "3D-Druck Preise in CHF | 3D fab",
+        "DESCRIPTION": "Erfahre, was 3D-Druck kostet: Material, Menge, Qualität und Zeit. Berechne eine Offerte in CHF oder frage ein kostenloses Erstgespräch an."
+      },
+      "COLORS_FINISHES": {
+        "TITLE": "3D-Druck Farben und Oberflächen | 3D fab",
+        "DESCRIPTION": "Entdecke Farben und Oberflächen aus dem Rechner, sieh dir Muster an und vergleiche zwei Varianten für dein 3D-Druckprojekt."
       }
     }
   },
@@ -1465,6 +1478,11 @@
     }
   },
   "COLOR": {
+    "CATEGORY_MARBLE": "Marmoriert",
+    "CATEGORY_SILK": "Seidig",
+    "CATEGORY_TRANSLUCENT": "Lichtdurchlässig",
+    "CATEGORY_SPECIAL": "Spezial",
+    "CATEGORY_OTHER": "Andere Oberfläche",
     "AVAILABLE_COLORS": "Verfügbare Farben",
     "CATEGORY_GLOSSY": "Glänzend",
     "CATEGORY_MATTE": "Matt",
@@ -1678,5 +1696,112 @@
     "EMPTY": "Keine Felder zu übersetzen oder zu aktualisieren.",
     "COLORS_HINT": "Übersetzt alle gespeicherten Farben aus dem Italienischen, ersetzt EN, DE und FR und speichert die Übersetzungen für Filamente und Shop.",
     "COLORS_SAVED": "Farbübersetzungen für Filamente und Shop gespeichert."
+  },
+  "GUIDE_LINKS": {
+    "LABEL": "Ratgeber für dein Projekt",
+    "PRICING": "Preise",
+    "COLORS": "Farben und Oberflächen",
+    "CALCULATE": "Berechne deinen Preis",
+    "CONSULT": "Beratung anfragen",
+    "FREE_CONSULTATION": "Das erste Gespräch zum Verständnis deines Projekts ist kostenlos; weitere Arbeiten werden vor Beginn offeriert und vereinbart.",
+    "BEFORE_STARTING": "Bevor du startest",
+    "PRICING_HINT": "Wie entsteht der Preis? Ratgeber in einem neuen Tab öffnen.",
+    "COLORS_HINT": "Farben und Oberflächen in einem neuen Tab ansehen."
+  },
+  "PRICING": {
+    "CAD_TITLE": "CAD-Konstruktion und Unterstützung",
+    "CAD_CTA": "CAD-Unterstützung anfragen",
+    "CAD_BILLING": "Die erste Beratung ist kostenlos und dient dazu, dein Projekt zu verstehen. Weitere CAD-Konstruktions- und Unterstützungsarbeiten werden auf Grundlage einer Offerte abgerechnet, die wir vor Beginn mit dir vereinbaren.",
+    "TITLE": "Der Preis für dein Projekt",
+    "INTRO": "Jedes Modell benötigt unterschiedlich viel Material, Vorbereitung und Zeit. Lade deine Datei im Rechner hoch und erhalte eine Offerte in CHF für deine Einstellungen.",
+    "FACTORS_TITLE": "Was den Preis bestimmt",
+    "FACTORS": {
+      "material": {
+        "TITLE": "Material",
+        "TEXT": "Filamenttyp und Verbrauch einschliesslich Stützstrukturen und Verarbeitungsabfällen beeinflussen die Kosten."
+      },
+      "geometry": {
+        "TITLE": "Geometrie",
+        "TEXT": "Grösse, Form und Ausrichtung bestimmen Druckwege und Vorbereitung. Zwei gleich schwere Objekte können unterschiedlich lange Druckzeiten haben."
+      },
+      "quantity": {
+        "TITLE": "Menge",
+        "TEXT": "Mehrere Teile eines Projekts können sich einen Teil der Vorbereitung teilen. Der Rechner zeigt den Gesamtpreis für die gewünschte Menge."
+      },
+      "quality": {
+        "TITLE": "Qualität und Fülldichte",
+        "TEXT": "Dünnere Schichten und höhere Fülldichten können Zeit und Materialbedarf erhöhen. Wähle passend zu Funktion und gewünschter Optik."
+      },
+      "supports": {
+        "TITLE": "Stützstrukturen",
+        "TEXT": "Überhänge und frei liegende Bereiche können temporäre Stützstrukturen benötigen. Ihr Druck und ihre Entfernung verursachen Aufwand und können Spuren hinterlassen."
+      },
+      "time": {
+        "TITLE": "Druckzeit und Vorbereitung",
+        "TEXT": "Maschinenzeit und Vorbereitung fliessen in die Offerte ein. Zusätzliche Arbeiten werden je nach Projekt vereinbart."
+      }
+    },
+    "CASES_TITLE": "Drei Anwendungen für den 3D-Druck",
+    "CASES": {
+      "functional": {
+        "TITLE": "Kleines Funktionsteil",
+        "TEXT": "Ein Ersatzteil, Halter oder Adapter: Ausgangspunkt sind Anwendung und Masse. Festigkeit und Ausrichtung zählen ebenso wie die Grösse."
+      },
+      "decorative": {
+        "TITLE": "Dekoratives Objekt",
+        "TEXT": "Ein Objekt zum Ausstellen oder Verschenken: Farbe, Oberfläche und sichtbare Schichten bestimmen die Wahl. Schau in den Ratgeber Farben und Oberflächen."
+      },
+      "series": {
+        "TITLE": "Serie mit zehn gleichen Teilen",
+        "TEXT": "Eine Kleinserie für Montage oder Tests: Wähle zehn Exemplare desselben Modells für den Gesamtpreis. Menge und Anordnung beeinflussen die Fertigung."
+      }
+    },
+    "CASES_NOTE": "Für deinen Preis nutze deine Datei mit den gewünschten Einstellungen im Rechner. Kontaktiere uns, wenn noch kein 3D-Modell vorliegt.",
+    "EXAMPLES_TITLE": "Beispiele aus echten Offerten",
+    "EXAMPLES_NOTE": "Richtpreise in CHF für die angegebenen Spezifikationen und das jeweilige Datum. Die enthaltenen Kosten stehen bei jedem Beispiel; deine Offerte kann abweichen.",
+    "CONSULTATION_TITLE": "Sprechen wir über dein Projekt"
+  },
+  "COLORS_FINISHES": {
+    "TITLE": "Farben und Oberflächen",
+    "INTRO": "Entdecke die aktiven Varianten des Rechners und vergleiche zwei Muster. Mechanische Eigenschaften und technische Auswahl findest du im Materialratgeber.",
+    "SCREEN_NOTE": "Die Bildschirmdarstellung ist nur eine Orientierung: Licht, Ausrichtung und Druckeinstellungen können Farbe und Reflexionen verändern. Farbfelder ersetzen kein Musterfoto.",
+    "MATERIAL": "Material",
+    "FINISH": "Oberfläche",
+    "ALL_MATERIALS": "Alle Materialien",
+    "ALL_FINISHES": "Alle Oberflächen",
+    "OTHER_FINISH": "Andere Oberfläche",
+    "LOADING": "Katalog wird geladen…",
+    "ERROR": "Der Katalog ist nicht verfügbar. Bitte versuche es gleich noch einmal.",
+    "RETRY": "Erneut versuchen",
+    "COMPARE_TITLE": "Zwei Varianten vergleichen",
+    "COMPARE_HINT": "Wähle bis zu zwei Varianten aus dem Katalog. Ausgewählt: {{count}}/2. Der Vergleich bleibt beim Filtern sichtbar.",
+    "COMPARE": "Diese Variante vergleichen",
+    "CATALOG_TITLE": "Musterkatalog",
+    "RESULTS": "Varianten: {{count}}",
+    "EMPTY": "Keine Varianten für diese Filter. Wähle ein anderes Material oder eine andere Oberfläche.",
+    "AVAILABLE": "Im Rechner verfügbar",
+    "OUT_OF_STOCK": "Zurzeit nicht auf Lager",
+    "NO_PHOTO": "Foto noch nicht verfügbar",
+    "APPEARANCE_TITLE": "Eine gedruckte Oberfläche beurteilen",
+    "APPEARANCE": "Matte Oberflächen dämpfen Reflexionen; glänzende betonen sie und verändern sich mit dem Licht. Textur, Pigmente und Wandstärke beeinflussen Deckkraft und Lichtdurchlässigkeit. Der Katalog zeigt Filamentoberflächen, keine Lackierung oder Politur.",
+    "LAYERS": "FDM-Schichten bleiben sichtbar, besonders auf Rundungen und schrägen Flächen. Ausrichtung, Schichthöhe und das Entfernen von Stützen beeinflussen die Textur. Bei konkreten optischen Anforderungen beraten wir dich zu deinem Modell."
+  },
+  "ADMIN_GUIDES": {
+    "FILAMENTS_TITLE": "Filamentmuster",
+    "FILAMENTS_DESCRIPTION": "Echte Fotos der aktiven Varianten: Gesamtansicht, Schrägansicht und Detail. Das Hauptbild steht zuerst, danach gilt die Sortierung.",
+    "PRICING_TITLE": "Preisbeispiele",
+    "PRICING_DESCRIPTION": "Füge ein echtes Foto und die Offertendaten hinzu. Ungeprüfte Beispiele bleiben öffentlich unsichtbar.",
+    "PRICE_HINT": "Für die Veröffentlichung: echtes Foto, Titel und Alt-Text in vier Sprachen, Material, Masse in mm, Menge (1 oder 10 für die Serie), CHF-Gesamtpreis, Offertendatum sowie Einstellungen und enthaltene Kosten in allen Sprachen. MWST und Versand immer angeben. Offertenbeleg intern aufbewahren; keine Kundendaten eingeben.",
+    "MATERIAL": "Material",
+    "DIMENSIONS": "Masse (L × B × H)",
+    "QUANTITY": "Menge",
+    "PRICE": "Unverbindlicher Gesamtpreis (CHF)",
+    "DATE": "Offertendatum",
+    "SETTINGS": "Druckeinstellungen",
+    "COSTS": "Enthaltene und ausgeschlossene Kosten (MWST, Versand, Vorbereitung)",
+    "VERIFIED": "Ich bestätige echtes Foto und geprüfte Offertendaten; veröffentlichen, sobald vollständig.",
+    "CATALOG_ERROR": "Varianten konnten nicht geladen werden. Lade Medien erneut.",
+    "EDIT": "Bearbeiten / ersetzen",
+    "SAVE": "Änderungen speichern"
   }
 }

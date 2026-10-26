@@ -13,6 +13,17 @@ import {
 import { environment } from '../../../environments/environment';
 import { LanguageService } from './language.service';
 
+export interface PricingExample {
+  material: string;
+  dimensionsMm: string;
+  quantity: number;
+  priceChf: number;
+  quotedOn: string;
+  settings: Record<'it' | 'en' | 'de' | 'fr', string>;
+  costsIncluded: Record<'it' | 'en' | 'de' | 'fr', string>;
+  verified: boolean;
+}
+
 export type PublicMediaUsageType = string;
 export type PublicMediaPreset = 'thumb' | 'card' | 'hero';
 
@@ -24,6 +35,7 @@ export interface PublicMediaVariantDto {
 }
 
 export interface PublicMediaUsageDto {
+  pricingExample?: PricingExample | null;
   mediaAssetId: string;
   title: string | null;
   altText: string | null;
@@ -51,6 +63,7 @@ export interface PublicMediaResolvedSourceSet
 }
 
 export interface PublicMediaImage {
+  pricingExample?: PricingExample | null;
   mediaAssetId: string;
   title: string | null;
   altText: string | null;
@@ -176,6 +189,7 @@ export class PublicMediaService {
     }
 
     return {
+      pricingExample: item.pricingExample ?? null,
       mediaAssetId: item.mediaAssetId,
       title: item.title,
       altText: item.altText,
@@ -189,6 +203,7 @@ export class PublicMediaService {
 
   private mapUsageDto(item: PublicMediaUsageDto): PublicMediaImage {
     return {
+      pricingExample: item.pricingExample ?? null,
       mediaAssetId: item.mediaAssetId,
       title: item.title ?? null,
       altText: item.altText ?? null,

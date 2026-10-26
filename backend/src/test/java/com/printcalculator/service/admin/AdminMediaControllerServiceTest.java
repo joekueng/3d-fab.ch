@@ -372,6 +372,32 @@ class AdminMediaControllerServiceTest {
     }
 
     @Test
+    void pricingExampleCanBeDraftedCompletedAndUnpublishedWithoutUploadingAnotherPhoto() {
+        var asset = persistAsset(seedAsset("PUBLIC"));
+        var create = new AdminCreateMediaUsageRequest();
+        create.setUsageType("PRICING_EXAMPLE");
+        create.setUsageKey("series");
+        create.setMediaAssetId(asset.getId());
+        create.setTranslations(buildTranslations("Sample", "Real sample"));
+        var draft = service.createUsage(create);
+        assertNull(draft.getPricingExample());
+        var translated = Map.of("it", "text", "en", "text", "de", "text", "fr", "text");
+        var update = new com.printcalculator.dto.AdminUpdateMediaUsageRequest();
+        update.setPricingExample(new com.printcalculator.dto.PricingExampleDto("PLA", "20 × 20 × 10", 1,
+                new java.math.BigDecimal("12.50"), java.time.LocalDate.now(), translated, translated, true));
+        assertThrows(ResponseStatusException.class, () -> service.updateUsage(draft.getId(), update));
+        update.setPricingExample(new com.printcalculator.dto.PricingExampleDto("PLA", "20 × 20 × 10", 10,
+                new java.math.BigDecimal("12.50"), java.time.LocalDate.now(), translated, translated, true));
+        var published = service.updateUsage(draft.getId(), update);
+        assertEquals(10, published.getPricingExample().quantity());
+        assertTrue(published.getPricingExample().publishable());
+        assertEquals(asset.getId(), published.getMediaAssetId());
+        update.setPricingExample(new com.printcalculator.dto.PricingExampleDto("PLA", "20 × 20 × 10", 10,
+                new java.math.BigDecimal("12.50"), java.time.LocalDate.now(), translated, translated, false));
+        assertFalse(service.updateUsage(draft.getId(), update).getPricingExample().publishable());
+    }
+
+    @Test
     void createUsage_withoutAllTranslations_shouldFailValidation() {
         MediaAsset asset = persistAsset(seedAsset("PUBLIC"));
 

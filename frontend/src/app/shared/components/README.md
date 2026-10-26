@@ -62,3 +62,9 @@ For a viewer filling a grid cell with a height defined by adjacent content, omit
 on the containing preview. The existing ResizeObserver adapts its canvas/camera.
 Checkout uses this in the normal summary so the preview matches the controls;
 the expanded summary retains square thumbnails.
+
+`app-dialog` explicitly restores focus to the connected element that opened it
+when destroyed, after closing the native dialog. Preserve this behavior for
+keyboard users; the sample catalogue browser tests exercise Enter, Tab and Escape.
+Image thumbnails use native lazy loading; `app-image-preview.loadFailed` lets the
+owning feature replace unavailable sources with its localized fallback.

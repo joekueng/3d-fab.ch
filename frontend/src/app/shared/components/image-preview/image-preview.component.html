@@ -5,7 +5,7 @@
   class="image-trigger"
   type="button"
 >
-  <img [alt]="alt()" [src]="src()" />
+  <img [alt]="alt()" [src]="src()" (error)="loadFailed.emit()" loading="lazy" />
 </button>
 
 @if (open()) {

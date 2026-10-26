@@ -51,6 +51,35 @@
   padding-bottom: var(--space-12);
 }
 
+// Informational guides use the public site's open sections and text hierarchy.
+.ui-guide-body.container {
+  max-width: 1040px;
+}
+.ui-guide-section {
+  padding-block: var(--space-10);
+  border-top: 1px solid var(--color-border);
+}
+.ui-guide-title {
+  margin: 0 0 var(--space-6);
+  font-size: 1.5rem;
+  line-height: 1.25;
+}
+.ui-guide-note {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: 1.7;
+  font-size: 0.95rem;
+}
+.ui-guide-links {
+  padding-top: var(--space-4);
+}
+.ui-guide-page .ui-simple-hero {
+  padding-inline: var(--space-4);
+}
+.ui-guide-page .ui-simple-hero__actions {
+  margin-bottom: var(--space-10);
+}
+
 .ui-stack {
   display: grid;
   gap: var(--space-4);
