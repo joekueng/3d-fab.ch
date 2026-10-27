@@ -218,7 +218,9 @@ describe('SeoService', () => {
     events$.next(new NavigationEnd(1, '/de/missing', '/de/missing'));
 
     expect(document.querySelector('link[rel="canonical"]')).toBeNull();
-    expect(document.querySelector('link[rel="alternate"][hreflang]')).toBeNull();
+    expect(
+      document.querySelector('link[rel="alternate"][hreflang]'),
+    ).toBeNull();
     expect(document.documentElement.lang).toBe('de-CH');
     expect(meta.updateTag).toHaveBeenCalledWith({
       name: 'robots',
