@@ -193,6 +193,7 @@
           <p *ngIf="o.invoiceName" class="ui-copy-subtitle">
             {{ o.invoiceName }}
           </p>
+          <p *ngIf="o.serviceQuoteReference as reference" class="ui-copy-subtitle">{{ 'SERVICE_QUOTES.UUID' | translate }}: {{ reference.quoteId }} · r{{ reference.revisionNumber }}</p>
           <div class="order-summary-meta">
             <div>
               <span class="summary-label">{{

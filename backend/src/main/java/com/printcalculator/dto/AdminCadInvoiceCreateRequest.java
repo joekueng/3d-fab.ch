@@ -4,6 +4,15 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 public class AdminCadInvoiceCreateRequest {
+    private UUID serviceQuoteId;
+    private UUID serviceQuoteRevisionId;
+    private boolean serviceQuoteSpecified;
+    public UUID getServiceQuoteId() { return serviceQuoteId; }
+    public void setServiceQuoteId(UUID value) { serviceQuoteId=value; serviceQuoteSpecified=true; }
+    public UUID getServiceQuoteRevisionId() { return serviceQuoteRevisionId; }
+    public void setServiceQuoteRevisionId(UUID value) { serviceQuoteRevisionId=value; }
+    public boolean hasServiceQuoteId() { return serviceQuoteSpecified; }
+
     @jakarta.validation.constraints.Size(max = 160)
     private String clientName;
     public String getClientName() { return clientName; }

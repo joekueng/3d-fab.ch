@@ -1,3 +1,6 @@
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ServiceQuotesApiService } from '../../service-quotes/service-quotes-api.service';
+import { ServiceQuoteReference, QuoteRevision } from '../../service-quotes/service-quotes.models';
 import {
   ServiceLine,
   serviceLineTotal,
@@ -10,6 +13,7 @@ import {
   OnInit,
   PLATFORM_ID,
   inject,
+  Injector,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -95,6 +99,7 @@ interface ManagedItemRow {
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     FormsModule,
     TranslatePipe,
     AppSelectComponent,
@@ -114,6 +119,48 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
   private readonly adminOrdersService = inject(AdminOrdersService);
 
   private readonly translate = inject(TranslateService);
+  private readonly injector = inject(Injector);
+  private readonly route = inject(ActivatedRoute, { optional: true });
+  quoteRevisions: QuoteRevision[] = [];
+  quoteReference: ServiceQuoteReference | null = null;
+  quoteLoading = false;
+  quoteClientName = '';
+  quoteProjectName = '';
+  private pendingJobId: string | null = null;
+
+  get quoteRevisionOptions(): { value: string; label: string }[] {
+    return this.quoteRevisions.map(r => ({ value: r.offer.revisionId, label: `r${r.offer.revisionNumber} · ${r.offer.content.title}` }));
+  }
+  clearQuoteReference(): void { this.quoteRevisions = []; this.quoteReference = null; this.form.serviceQuoteRevisionId = ''; }
+  loadServiceQuote(prefill = false): void {
+    const id = this.form.serviceQuoteId.trim();
+    if (!this.isUuid(id)) { this.errorMessage = this.translate.instant('SERVICE_QUOTES.INVALID'); return; }
+    this.quoteLoading = true;
+    this.injector.get(ServiceQuotesApiService).get(id).subscribe({ next: quote => {
+      this.quoteLoading = false;
+      if (this.form.serviceQuoteId.trim() !== id) { this.changeDetector.markForCheck(); return; }
+      this.quoteRevisions = quote.revisions.filter(r => r.acceptance);
+      if (this.quoteRevisions.length === 1) this.form.serviceQuoteRevisionId = this.quoteRevisions[0].offer.revisionId;
+      if (prefill) {
+        this.form.clientName = quote.clientName || ''; this.form.collaborationName = quote.collaborationName || '';
+        this.form.sourceRequestId = quote.sourceRequestId || '';
+      }
+      this.selectQuoteRevision(prefill); this.changeDetector.markForCheck();
+    }, error: () => { this.quoteLoading = false; this.errorMessage = this.translate.instant('SERVICE_QUOTES.ERROR'); this.changeDetector.markForCheck(); } });
+  }
+  selectQuoteRevision(prefill = false): void {
+    const revision = this.quoteRevisions.find(r => r.offer.revisionId === this.form.serviceQuoteRevisionId);
+    if (!revision?.acceptance) { this.quoteReference = null; return; }
+    const offer = revision.offer;
+    this.quoteReference = { quoteId: offer.quoteId, revisionId: offer.revisionId, acceptanceId: revision.acceptance.id,
+      revisionNumber: offer.revisionNumber, title: offer.content.title, estimatedAmountChf: offer.estimatedAmountChf,
+      maximumAmountChf: offer.maximumAmountChf, variationType: offer.content.variationType, variationValue: offer.content.variationValue };
+    if (prefill) {
+      this.form.invoiceName = offer.content.title;
+      this.serviceLines = [{ description: offer.content.title, billingType: 'FIXED', quantity: '1', unitPriceChf: String(offer.estimatedAmountChf) }];
+    }
+  }
+
   invoices: AdminCadInvoice[] = [];
   draftSessionId: string | null = null;
   invoiceToDelete: AdminCadInvoice | null = null;
@@ -350,11 +397,20 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
     collaborationName: '',
     sessionId: '',
     sourceRequestId: '',
+    serviceQuoteId: '',
+    serviceQuoteRevisionId: '',
     notes: '',
   };
 
   ngOnInit(): void {
+    this.pendingJobId = this.route?.snapshot.queryParamMap.get('job') ?? null;
     this.loadCadInvoices();
+    const quoteId = this.route?.snapshot.queryParamMap.get('serviceQuote');
+    if (quoteId) {
+      this.form.serviceQuoteId = quoteId;
+      this.form.serviceQuoteRevisionId = this.route?.snapshot.queryParamMap.get('revision') ?? '';
+      this.loadServiceQuote(true);
+    }
   }
 
   loadCadInvoices(): void {
@@ -364,6 +420,10 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
       next: (rows) => {
         this.changeDetector.markForCheck();
         this.invoices = rows;
+        if (this.pendingJobId) {
+          const selected = rows.find(row => row.sessionId === this.pendingJobId);
+          this.pendingJobId = null; if (selected) this.editInvoice(selected);
+        }
         this.loading = false;
       },
       error: () => {
@@ -415,12 +475,16 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
 
   editInvoice(row: AdminCadInvoice): void {
     this.draftSessionId = row.sessionId;
+    this.quoteReference = row.serviceQuoteReference || null;
+    this.quoteRevisions = [];
     this.form = {
       invoiceName: row.invoiceName || '',
       clientName: row.clientName || '',
       collaborationName: row.collaborationName || '',
       sessionId: row.calculatorSessionId ?? '',
       sourceRequestId: row.sourceRequestId || '',
+      serviceQuoteId: row.serviceQuoteReference?.quoteId || '',
+      serviceQuoteRevisionId: row.serviceQuoteReference?.revisionId || '',
       notes: row.notes || '',
     };
     this.serviceLines = row.serviceLines?.length
@@ -441,10 +505,12 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
     this.clearSessionFiles();
     if (this.form.sessionId) this.loadSessionFiles(this.form.sessionId);
     this.loadSessionAttachments(row.sessionId);
+    if (this.form.serviceQuoteId) this.loadServiceQuote();
     if (this.isBrowser) window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   resetForm(): void {
+    this.quoteReference = null; this.quoteRevisions = [];
     this.draftSessionId = null;
     this.form = {
       clientName: '',
@@ -452,6 +518,8 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
       collaborationName: '',
       sessionId: '',
       sourceRequestId: '',
+    serviceQuoteId: '',
+    serviceQuoteRevisionId: '',
       notes: '',
     };
     this.serviceLines = [this.newServiceLine()];
@@ -512,6 +580,8 @@ export class AdminCadInvoicesComponent implements OnInit, OnDestroy {
       collaborationName: this.form.collaborationName.trim(),
       sessionId: this.draftSessionId || this.form.sessionId.trim() || undefined,
       sourceRequestId: this.form.sourceRequestId.trim() || undefined,
+      serviceQuoteId: this.form.serviceQuoteId.trim() || null,
+      serviceQuoteRevisionId: this.form.serviceQuoteRevisionId || undefined,
       notes: this.form.notes.trim(),
       serviceLines,
       calculatorSessionId: calculatorSessionId || null,

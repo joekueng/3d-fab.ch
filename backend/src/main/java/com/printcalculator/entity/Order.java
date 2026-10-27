@@ -11,6 +11,12 @@ import java.util.UUID;
 @Table(name = "orders", indexes = {@Index(name = "ix_orders_status",
         columnList = "status")})
 public class Order {
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+    @jakarta.persistence.Column(name="service_quote_reference")
+    private com.printcalculator.dto.ServiceQuoteReference serviceQuoteReference;
+    public com.printcalculator.dto.ServiceQuoteReference getServiceQuoteReference() { return serviceQuoteReference; }
+    public void setServiceQuoteReference(com.printcalculator.dto.ServiceQuoteReference value) { serviceQuoteReference=value; }
+
     @Column(name = "invoice_name", length = 160)
     private String invoiceName;
     public String getInvoiceName() { return invoiceName; }

@@ -1,3 +1,4 @@
+import { ServiceQuoteReference } from '../service-quotes/service-quotes.models';
 import {
   ServiceLine,
   serviceLineTotal,
@@ -87,6 +88,7 @@ interface PublicOrderCadFile {
 }
 
 interface PublicOrder {
+  serviceQuoteReference?: ServiceQuoteReference | null;
   invoiceName?: string;
   serviceLines?: ServiceLine[];
   id: string;

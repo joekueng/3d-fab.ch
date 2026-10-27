@@ -30,6 +30,8 @@ class InvoicePdfRenderingServiceTest {
         Order order = new Order();
         order.setId(UUID.randomUUID());
         order.setCreatedAt(OffsetDateTime.parse("2026-03-10T10:15:30+01:00"));
+        var quoteId = UUID.fromString("3d9b1800-2600-4000-8000-000000000001");
+        order.setServiceQuoteReference(new com.printcalculator.dto.ServiceQuoteReference(quoteId,UUID.randomUUID(),UUID.randomUUID(),2,"Agreed design",new BigDecimal("800"),new BigDecimal("920"),"PERCENTAGE",new BigDecimal("15")));
         order.setBillingCustomerType("PRIVATE");
         order.setBillingFirstName("Joe");
         order.setBillingLastName("Buyer");
@@ -95,6 +97,7 @@ class InvoicePdfRenderingServiceTest {
         try (var document = org.apache.pdfbox.Loader.loadPDF(rendered)) {
             String text = new org.apache.pdfbox.text.PDFTextStripper().getText(document);
             assertTrue(text.contains("Materiale: PLA"));
+            assertTrue(text.contains(quoteId.toString()));
             assertTrue(text.contains("30 giorni"));
         }
         java.nio.file.Path preview = java.nio.file.Path.of("build", "invoice-preview.pdf");

@@ -1,3 +1,4 @@
+import { ServiceQuoteReference } from '../../service-quotes/service-quotes.models';
 import { ServiceLine } from '../../../shared/models/service-line';
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
@@ -59,6 +60,7 @@ export interface AdminOrderAddress {
 }
 
 export interface AdminOrder {
+  serviceQuoteReference?: ServiceQuoteReference | null;
   invoiceName?: string;
   serviceLines?: ServiceLine[];
   id: string;

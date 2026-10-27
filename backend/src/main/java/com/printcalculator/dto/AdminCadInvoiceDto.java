@@ -5,6 +5,10 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 public class AdminCadInvoiceDto {
+    private com.printcalculator.dto.ServiceQuoteReference serviceQuoteReference;
+    public com.printcalculator.dto.ServiceQuoteReference getServiceQuoteReference() { return serviceQuoteReference; }
+    public void setServiceQuoteReference(com.printcalculator.dto.ServiceQuoteReference value) { serviceQuoteReference=value; }
+
     private String clientName;
     public String getClientName() { return clientName; }
     public void setClientName(String value) { clientName = value; }

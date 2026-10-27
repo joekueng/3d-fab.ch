@@ -96,6 +96,7 @@ public class AdminOperationsControllerService {
     private final CustomQuoteRequestNotificationService contactRequestNotificationService;
     private final QuoteSessionAttachmentRepository sessionAttachmentRepo;
     private final QrLinkSupportService linkSupport;
+    private final com.printcalculator.service.servicequote.ServiceQuoteService serviceQuotes;
 
     public AdminOperationsControllerService(FilamentVariantStockKgRepository filamentStockRepo,
                                             FilamentVariantRepository filamentVariantRepo,
@@ -111,7 +112,9 @@ public class AdminOperationsControllerService {
                                             EmailAuditService emailAuditService,
                                             CustomQuoteRequestNotificationService contactRequestNotificationService,
                                             QuoteSessionAttachmentRepository sessionAttachmentRepo,
-                                            QrLinkSupportService linkSupport) {
+                                            QrLinkSupportService linkSupport,
+                                            com.printcalculator.service.servicequote.ServiceQuoteService serviceQuotes) {
+        this.serviceQuotes=serviceQuotes;
         this.sessionAttachmentRepo = sessionAttachmentRepo;
         this.linkSupport = linkSupport;
         this.filamentStockRepo = filamentStockRepo;
@@ -404,6 +407,12 @@ public class AdminOperationsControllerService {
         if (session.getId() != null && orderRepo.existsBySourceQuoteSession_Id(session.getId())) {
             throw new ResponseStatusException(CONFLICT, "Cannot change an invoice linked to an order");
         }
+        if (payload.hasServiceQuoteId()) {
+            var reference = payload.getServiceQuoteId() == null ? null
+                : serviceQuotes.resolveAccepted(payload.getServiceQuoteId(), payload.getServiceQuoteRevisionId());
+            session.setServiceQuoteId(payload.getServiceQuoteId());
+            session.setServiceQuoteReference(reference);
+        }
         if (payload.hasCalculatorSessionId()) {
             UUID sourceId = payload.getCalculatorSessionId();
             if (sourceId == null) {
@@ -512,6 +521,8 @@ public class AdminOperationsControllerService {
         session.setDeletedRedirectPath(redirectPath);
         session.setInformationDraftId(null);
         session.setSourceRequestId(null);
+        session.setServiceQuoteId(null);
+        session.setServiceQuoteReference(null);
         session.setClientName(null);
         session.setInvoiceName(null);
         session.setCollaborationName(null);
@@ -641,6 +652,7 @@ public class AdminOperationsControllerService {
         dto.setInvoiceName(session.getInvoiceName());
         dto.setCollaborationName(session.getCollaborationName());
         dto.setSessionId(session.getId());
+        dto.setServiceQuoteReference(session.getServiceQuoteReference());
         dto.setCalculatorSessionId(source == null || source.getId().equals(session.getId()) && items.isEmpty() ? null : source.getId());
         dto.setSessionStatus(session.getStatus());
         dto.setSourceRequestId(session.getSourceRequestId());

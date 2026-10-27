@@ -225,6 +225,7 @@ public class OrderService {
         order.setCadTotalChf(cadTotal);
         order.setServiceLines(session.getServiceLines());
         order.setInvoiceName(session.getInvoiceName());
+        order.setServiceQuoteReference(session.getServiceQuoteReference());
 
         order = orderRepo.save(order);
 

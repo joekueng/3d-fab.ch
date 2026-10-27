@@ -1818,6 +1818,7 @@ CREATE TABLE IF NOT EXISTS service_quote_documents (
 );
 ALTER TABLE quote_sessions ADD COLUMN IF NOT EXISTS service_quote_id uuid REFERENCES service_quotes(id);
 ALTER TABLE quote_sessions ADD COLUMN IF NOT EXISTS service_quote_reference jsonb;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS service_quote_reference jsonb;
 ALTER TABLE email_logs ADD COLUMN IF NOT EXISTS service_quote_id uuid REFERENCES service_quotes(id);
 ALTER TABLE email_logs ADD COLUMN IF NOT EXISTS service_quote_revision_id uuid REFERENCES service_quote_revisions(id);
 ALTER TABLE email_logs ADD COLUMN IF NOT EXISTS service_quote_document_id uuid REFERENCES service_quote_documents(id);

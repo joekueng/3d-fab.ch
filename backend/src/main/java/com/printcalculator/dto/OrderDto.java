@@ -7,6 +7,10 @@ import java.util.UUID;
 
 /** Administrative order response. Public endpoints must use {@link PublicOrderDto}. */
 public class OrderDto {
+    private com.printcalculator.dto.ServiceQuoteReference serviceQuoteReference;
+    public com.printcalculator.dto.ServiceQuoteReference getServiceQuoteReference() { return serviceQuoteReference; }
+    public void setServiceQuoteReference(com.printcalculator.dto.ServiceQuoteReference value) { serviceQuoteReference=value; }
+
     private String invoiceName;
     public String getInvoiceName() { return invoiceName; }
     public void setInvoiceName(String name) { invoiceName = name; }

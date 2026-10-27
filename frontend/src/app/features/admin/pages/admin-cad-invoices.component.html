@@ -1,6 +1,7 @@
 <section class="cad-page section-card">
   <header class="page-header section-header">
     <h1>{{ "CAD_ORGANIZATION.TITLE" | translate }}</h1>
+    <a routerLink="../service-quotes">{{ 'SERVICE_QUOTES.ADMIN_TITLE' | translate }}</a>
     <app-button type="button" (click)="loadCadInvoices()" [disabled]="loading">
       {{ "CAD_ORGANIZATION.REFRESH" | translate }}
     </app-button>
@@ -53,6 +54,14 @@
           (ngModelChange)="onSessionIdChange()"
           [label]="'CAD_ORGANIZATION.SESSION' | translate"
         ></app-input>
+        <app-input name="serviceQuoteId" [(ngModel)]="form.serviceQuoteId" (ngModelChange)="clearQuoteReference()" [label]="'SERVICE_QUOTES.UUID' | translate" />
+        <app-button type="button" [disabled]="quoteLoading || !form.serviceQuoteId" (click)="loadServiceQuote()">{{ 'SERVICE_QUOTES.CHECK_REFERENCE' | translate }}</app-button>
+        <app-select *ngIf="quoteRevisions.length" name="serviceQuoteRevisionId" [(ngModel)]="form.serviceQuoteRevisionId" (ngModelChange)="selectQuoteRevision()" [options]="quoteRevisionOptions" [label]="'SERVICE_QUOTES.REVISION' | translate" />
+        <div class="ui-subpanel notes-field" *ngIf="quoteReference as reference">
+          <strong>{{ reference.title }} · r{{ reference.revisionNumber }}</strong>
+          <p>{{ 'SERVICE_QUOTES.ESTIMATE' | translate }}: {{ reference.estimatedAmountChf | currency:'CHF' }} · {{ 'SERVICE_QUOTES.MAXIMUM' | translate }}: {{ reference.maximumAmountChf | currency:'CHF' }}</p>
+          <p>{{ 'SERVICE_QUOTES.COMPARISON_NOTICE' | translate }}</p>
+        </div>
         <app-input
           name="sourceRequestId"
           [(ngModel)]="form.sourceRequestId"
@@ -474,6 +483,8 @@
               </td>
               <td [attr.data-label]="'CAD_ORGANIZATION.SERVICES' | translate">
                 <div>
+                  <p *ngIf="row.serviceQuoteReference as reference">{{ 'SERVICE_QUOTES.UUID' | translate }}: {{ reference.quoteId }} · r{{ reference.revisionNumber }}</p>
+                  <p class="ui-banner ui-banner--warning" *ngIf="row.serviceQuoteReference && row.grandTotalChf - row.shippingCostChf > row.serviceQuoteReference.maximumAmountChf">{{ 'SERVICE_QUOTES.OVER_MAXIMUM' | translate }}</p>
                   <details *ngIf="row.serviceLines?.length; else legacyCad">
                     <summary>
                       {{ row.serviceLines.length }}

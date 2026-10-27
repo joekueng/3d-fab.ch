@@ -7,6 +7,10 @@ import java.util.UUID;
 
 /** Public order tracking and checkout response; customer contact/address data belongs to the admin API. */
 public class PublicOrderDto {
+    private com.printcalculator.dto.ServiceQuoteReference serviceQuoteReference;
+    public com.printcalculator.dto.ServiceQuoteReference getServiceQuoteReference() { return serviceQuoteReference; }
+    public void setServiceQuoteReference(com.printcalculator.dto.ServiceQuoteReference value) { serviceQuoteReference=value; }
+
     private String invoiceName;
     public String getInvoiceName() { return invoiceName; }
     public void setInvoiceName(String name) { invoiceName = name; }

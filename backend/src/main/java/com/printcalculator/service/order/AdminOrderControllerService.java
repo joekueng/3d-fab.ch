@@ -335,6 +335,7 @@ public class AdminOrderControllerService {
         dto.setCadTotalChf(order.getCadTotalChf());
         dto.setServiceLines(order.getServiceLines());
         dto.setInvoiceName(order.getInvoiceName());
+        dto.setServiceQuoteReference(order.getServiceQuoteReference());
         OrderCadFileService.CadFileSummary cadFileSummary = orderCadFileService.summarize(order);
         dto.setCadFileCount(cadFileSummary != null ? cadFileSummary.fileCount() : 0);
         dto.setCadFileDownloadAvailable(cadFileSummary != null && cadFileSummary.downloadAvailable());

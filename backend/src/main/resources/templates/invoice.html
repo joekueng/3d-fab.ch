@@ -64,6 +64,7 @@ h1 { font-size: 26pt; letter-spacing: -0.5pt; margin: 0; font-weight: bold; }
 </tr></table>
 <table class="title"><tr><td style="width:65%"><h1 th:text="${labels.invoice}"></h1><div class="reference" th:text="${invoiceNumber}"></div></td><td class="paid" th:unless="${isConfirmation}" th:text="${labels.paid}"></td></tr></table>
 <div class="reference" th:if="${invoiceName != null}" th:text="${invoiceName}"></div>
+<div class="reference" th:if="${serviceQuoteReference != null}" th:text="${serviceQuoteReference}"></div>
 <table class="meta"><colgroup><col style="width:52mm"/><col style="width:52mm"/><col style="width:70mm"/></colgroup><tr>
 <td><div class="meta-label" th:text="${labels.date}"></div><span th:text="${invoiceDate}"></span></td>
 <td><div class="meta-label" th:text="${labels.due}"></div><span th:text="${dueDate}"></span></td>

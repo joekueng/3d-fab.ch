@@ -71,6 +71,10 @@ public class InvoicePdfRenderingService {
             : order.getId().toString();
 
         vars.put("invoiceName", order.getInvoiceName());
+        var quoteReference = order.getServiceQuoteReference();
+        vars.put("serviceQuoteReference", quoteReference == null ? null
+            : com.printcalculator.service.servicequote.ServiceQuoteCopy.labels(language.code()).get("quote")
+                + " " + quoteReference.quoteId() + " · r" + quoteReference.revisionNumber());
         vars.put("invoiceNumber", "INV-" + displayOrderNumber.toUpperCase());
         vars.put("invoiceDate", order.getCreatedAt().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
         vars.put("dueDate", order.getCreatedAt().plusDays(30).format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));

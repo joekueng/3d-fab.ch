@@ -1,3 +1,4 @@
+import { ServiceQuoteReference } from '../../service-quotes/service-quotes.models';
 import { ServiceLine } from '../../../shared/models/service-line';
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
@@ -192,6 +193,8 @@ export interface AdminQuoteSessionDetail {
 }
 
 export interface AdminCreateCadInvoicePayload {
+  serviceQuoteId?: string | null;
+  serviceQuoteRevisionId?: string;
   calculatorSessionId?: string | null;
   serviceLines?: ServiceLine[];
   clientName?: string;
@@ -205,6 +208,7 @@ export interface AdminCreateCadInvoicePayload {
 }
 
 export interface AdminCadInvoice {
+  serviceQuoteReference?: ServiceQuoteReference | null;
   calculatorSessionId?: string | null;
   serviceLines?: ServiceLine[];
   clientName?: string;

@@ -1,3 +1,4 @@
+import { RouterLink } from '@angular/router';
 import { AppDialogComponent } from '../../../shared/components/app-dialog/app-dialog.component';
 import { OrderInformationComponent } from '../../order-information/order-information.component';
 import { InformationModel } from '../../order-information/order-information.service';
@@ -33,6 +34,7 @@ import { firstValueFrom } from 'rxjs';
   selector: 'app-admin-dashboard',
   standalone: true,
   imports: [
+    RouterLink,
     AppDialogComponent,
     OrderInformationComponent,
     CommonModule,

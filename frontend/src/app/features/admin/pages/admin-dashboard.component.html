@@ -217,6 +217,10 @@
             >{{ selectedOrder.id }}</code
           >
         </p>
+        <p *ngIf="selectedOrder.serviceQuoteReference as reference" class="order-uuid">
+          {{ 'SERVICE_QUOTES.UUID' | translate }}:
+          <a routerLink="../service-quotes" [queryParams]="{quote: reference.quoteId}">{{ reference.quoteId }} · r{{ reference.revisionNumber }}</a>
+        </p>
         <p *ngIf="detailLoading">Caricamento dettaglio...</p>
       </div>
 

@@ -80,6 +80,9 @@ class AdminOperationsControllerServiceTest {
     @Mock
     private com.printcalculator.service.qr.QrLinkSupportService linkSupport;
 
+    @Mock
+    private com.printcalculator.service.servicequote.ServiceQuoteService serviceQuotes;
+
     @InjectMocks
     private AdminOperationsControllerService service;
 
@@ -543,6 +546,27 @@ class AdminOperationsControllerServiceTest {
         org.junit.jupiter.api.Assertions.assertNull(invoice.getCalculatorSession());
         verify(quoteSessionRepo, never()).save(any());
         org.mockito.Mockito.verifyNoInteractions(quoteLineItemRepo, sessionAttachmentRepo);
+    }
+
+    @Test
+    void commercialReferenceIsPreservedWhenOmittedAndClearedOnlyWhenExplicitlyNull() {
+        var invoice=new QuoteSession();invoice.setId(UUID.randomUUID());invoice.setStatus("CAD_ACTIVE");
+        var quoteId=UUID.randomUUID();var revisionId=UUID.randomUUID();
+        var reference=new com.printcalculator.dto.ServiceQuoteReference(quoteId,revisionId,UUID.randomUUID(),1,"Design",BigDecimal.TEN,new BigDecimal("12"),"PERCENTAGE",new BigDecimal("20"));
+        when(quoteSessionRepo.findLockedById(invoice.getId())).thenReturn(Optional.of(invoice));
+        when(quoteSessionRepo.save(invoice)).thenReturn(invoice);
+        when(quoteLineItemRepo.findByQuoteSessionId(invoice.getId())).thenReturn(List.of());
+        when(quoteSessionTotalsService.compute(any(),anyList())).thenReturn(new QuoteSessionTotalsService.QuoteSessionTotals(BigDecimal.ZERO,BigDecimal.ZERO,BigDecimal.TEN,BigDecimal.TEN,BigDecimal.ZERO,BigDecimal.ZERO,BigDecimal.ZERO,BigDecimal.ZERO,BigDecimal.TEN,BigDecimal.ZERO));
+        when(serviceQuotes.resolveAccepted(quoteId,revisionId)).thenReturn(reference);
+        var attach=new AdminCadInvoiceCreateRequest();attach.setSessionId(invoice.getId());attach.setCadHours(BigDecimal.ONE);attach.setCadHourlyRateChf(BigDecimal.TEN);
+        attach.setServiceQuoteId(quoteId);attach.setServiceQuoteRevisionId(revisionId);
+        assertEquals(reference,service.createOrUpdateCadInvoice(attach).getServiceQuoteReference());
+        var omit=new AdminCadInvoiceCreateRequest();omit.setSessionId(invoice.getId());omit.setCadHours(BigDecimal.ONE);omit.setCadHourlyRateChf(BigDecimal.TEN);
+        assertEquals(reference,service.createOrUpdateCadInvoice(omit).getServiceQuoteReference());
+        omit.setServiceQuoteId(null);
+        org.junit.jupiter.api.Assertions.assertNull(service.createOrUpdateCadInvoice(omit).getServiceQuoteReference());
+        org.junit.jupiter.api.Assertions.assertNull(invoice.getServiceQuoteId());
+        verify(serviceQuotes).resolveAccepted(quoteId,revisionId);
     }
 
 }
