@@ -12,6 +12,8 @@ export const scenarioCatalog: Record<string, {
   priority: 'critical' | 'standard';
   fixture: 'public' | 'synthetic-stack' | 'order' | 'cad' | 'slicer';
 }> = {
+  'QUOTE-001': { spec: 'admin/service-quotes.spec.ts', priority: 'critical', fixture: 'synthetic-stack' },
+  'QUOTE-002': { spec: 'admin/service-quotes.spec.ts', priority: 'critical', fixture: 'synthetic-stack' },
   'SMOKE-001': { spec: 'smoke/public-health.spec.ts', priority: 'critical', fixture: 'public' },
   'SMOKE-002': { spec: 'smoke/public-health.spec.ts', priority: 'standard', fixture: 'public' },
   'SMOKE-003': { spec: 'smoke/public-health.spec.ts', priority: 'critical', fixture: 'public' },
@@ -75,6 +77,8 @@ export const scenarioCatalog: Record<string, {
 };
 
 export const routeCoverage: RouteCoverage[] = [
+  { source: 'app', path: 'quotes/:publicLinkId', suite: 'fullstack', scenario: 'QUOTE-001', status: 'partial' },
+  { source: 'admin', path: 'service-quotes', suite: 'fullstack', scenario: 'QUOTE-001', status: 'partial' },
   { source: 'app', path: '', suite: 'smoke', scenario: 'SMOKE-001', status: 'covered' },
   { source: 'app', path: 'calculator', suite: 'fullstack', scenario: 'CALC-001', status: 'partial' },
   { source: 'app', path: 'shop', suite: 'fullstack', scenario: 'SHOP-001', status: 'partial' },

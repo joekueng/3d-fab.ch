@@ -101,3 +101,18 @@ retained STL bounds and the viewer's rendered dimensions so forwarding cannot
 hide a failure to consume the preview in the application.
 Keep failing regressions active: a confirmed defect must not be hidden with
 retries or skips.
+
+Commercial quote scenarios QUOTE-001/002 are in `admin/service-quotes.spec.ts`.
+They create unique synthetic estimates, accept through a fresh mobile browser,
+compare the downloaded PDF with the SMTP attachment, reject later public download,
+and preserve the reference in the final CAD job/order. They use only the disposable
+stack and its Mailpit mailbox. Mailpit v1 message attachment metadata (`FileName`,
+`PartID`) and `/api/v1/message/{ID}/part/{PartID}` were verified on 2026-10-27 against
+the [official API](https://mailpit.axllent.org/docs/api-v1/) and its linked
+[OpenAPI schema](https://raw.githubusercontent.com/axllent/mailpit/master/server/ui/api/v1/swagger.json).
+The harness's existing Mailpit image is unchanged; the integration test checks its
+actual response and byte content. Run the focused journey with:
+
+```bash
+E2E_TEST_GREP='QUOTE-|ADMIN-CAD-' bash scripts/e2e/run.sh fullstack
+```

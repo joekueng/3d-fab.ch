@@ -223,3 +223,24 @@ Follow Playwright's [best practices](https://playwright.dev/docs/best-practices)
 5. A clean run and repeat run pass independently; tests do not depend on execution order, shared developer data or external provider availability. Run repetitions during stabilization to detect leaks and flakes.
 6. Required CI failures block deployment, reports explain failures, and disposable resources are cleaned up. The deployed-dev smoke job remains restricted to its approved public scope.
 7. Documentation records setup, fixture ownership, adding coverage, updating reviewed visual baselines, debugging, limitations and the separate manual/device checks. Browser coverage complements the existing backend/unit suites; it cannot prove every possible input or external-service behavior.
+
+## Commercial service quote acceptance (2026-10-27)
+
+Routes `/:lang/quotes/:publicLinkId` and `/:lang/admin/service-quotes` are covered
+by QUOTE-001/002 in `frontend/e2e/admin/service-quotes.spec.ts`, using only the
+disposable local stack. The core journey covers hourly/percentage and lump sum/CHF
+estimates, immutable publication, fresh-browser customer acceptance, the temporary
+PDF download, identical local SMTP attachment, reopened-link denial, private admin
+PDF access and reference propagation into the final CAD job and order. Captured
+screenshots check the mobile acceptance page and administrative layout. Protected
+endpoints also reject anonymous and cross-origin mutations.
+
+The route inventory remains partial: backend tests cover expiry, concurrent
+acceptance, replaced revisions, renderer/SMTP failures and revision selection;
+additional browser scenarios for every failure, revision edit and manual resend
+remain separate follow-up coverage. Existing ADMIN-CAD-001/002 verify the unchanged
+invoice identity/deletion/replacement flow alongside these scenarios.
+
+QUOTE-001 also verifies customer prefill from the shared admin CAD checkout link
+for private/business identities, editable billing data, fresh order consent, no PII
+in public session responses and disabled prefill access after conversion.
