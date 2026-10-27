@@ -1,4 +1,12 @@
 {
+  "NOT_FOUND": {
+    "EYEBROW": "Il manque une pièce",
+    "TITLE": "Page introuvable",
+    "DESCRIPTION": "La page que vous recherchez n’existe pas ou n’est plus disponible.",
+    "BACK_HOME": "Retour à l’accueil",
+    "GO_CALCULATOR": "Aller au calculateur",
+    "HELP": "Besoin d’un coup de main ?"
+  },
   "CAD_PRINT_ITEMS": {
     "HINT": "Effacez ou changez la session du calculateur puis enregistrez : les fichiers et les coûts suivent la session choisie. Les sessions originales sont conservées et peuvent être associées à nouveau. Le lien de paiement reste identique.",
     "INVALID_SESSION": "Saisissez un ID de session du calculateur valide ou laissez le champ vide."

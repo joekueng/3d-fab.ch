@@ -323,11 +323,15 @@ assert_redirect "calculator redirects to canonical basic path" "/calculator" "30
 assert_redirect "shop redirects to default language" "/shop" "308" "/it/shop"
 
 assert_redirect "language calculator alias redirects to basic" "/de/calculator" "308" "/de/calculator/basic"
+assert_redirect "regional language prefix preserves German" "/de-CH/about" "308" "/de/about"
+assert_redirect "regional calculator alias redirects directly to basic" "/fr-CH/calculator" "308" "/fr/calculator/basic"
 assert_redirect "legacy shop product alias redirects to canonical product route" \
   "/de/shop/zubehor/demo-produkt" "308" "/de/shop/p/demo-produkt"
 
 assert_status "prefixed about returns 200" "/de/about" "200"
 assert_status "prefixed contact returns 200" "/fr/contact" "200"
+assert_status "unknown German page returns 404" "/de/missing-page" "404"
+assert_status "unknown nested page returns 404" "/fr/calculator/missing-page" "404"
 assert_status "prefixed shop returns 200" "/en/shop" "200"
 
 assert_html_contains "German about exposes regional html lang" "/de/about" 'lang="de-CH"'

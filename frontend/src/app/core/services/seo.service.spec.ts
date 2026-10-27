@@ -199,6 +199,35 @@ describe('SeoService', () => {
     });
   });
 
+  it('clears canonical and language alternates when navigating to a missing page', () => {
+    const { router, events$, meta } = createService({
+      url: '/de/about',
+      data: {},
+      translations: {},
+    });
+    expect(document.querySelector('link[rel="canonical"]')).not.toBeNull();
+    Object.defineProperty(router, 'url', {
+      value: '/de/missing',
+      configurable: true,
+    });
+    router.routerState.snapshot.root.data = {
+      seoNotFound: true,
+      seoRobots: 'noindex, follow',
+    };
+
+    events$.next(new NavigationEnd(1, '/de/missing', '/de/missing'));
+
+    expect(document.querySelector('link[rel="canonical"]')).toBeNull();
+    expect(
+      document.querySelector('link[rel="alternate"][hreflang]'),
+    ).toBeNull();
+    expect(document.documentElement.lang).toBe('de-CH');
+    expect(meta.updateTag).toHaveBeenCalledWith({
+      name: 'robots',
+      content: 'noindex, follow',
+    });
+  });
+
   it('resolves translated route metadata for the active language', () => {
     const { meta, title } = createService({
       url: '/en/about',

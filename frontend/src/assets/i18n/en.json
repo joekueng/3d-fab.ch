@@ -1,4 +1,12 @@
 {
+  "NOT_FOUND": {
+    "EYEBROW": "A little piece is missing",
+    "TITLE": "Page not found",
+    "DESCRIPTION": "The page you are looking for does not exist or is no longer available.",
+    "BACK_HOME": "Back to home",
+    "GO_CALCULATOR": "Go to calculator",
+    "HELP": "Need a hand?"
+  },
   "CAD_PRINT_ITEMS": {
     "HINT": "Clear or change the calculator session and save: files and costs follow the selected session. Original sessions are preserved so you can link them again. The checkout link stays the same.",
     "INVALID_SESSION": "Enter a valid calculator session ID or leave the field empty."

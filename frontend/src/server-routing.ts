@@ -1,3 +1,5 @@
+import { normalizeSupportedLanguage } from './app/core/i18n/language-resolution';
+
 const SUPPORTED_LANG_LIST = ['it', 'en', 'de', 'fr'] as const;
 
 export const SUPPORTED_LANGS = new Set<string>(SUPPORTED_LANG_LIST);
@@ -17,8 +19,11 @@ export function resolvePublicRedirectTarget(pathname: string): string | null {
   }
 
   const firstSegment = segments[0].toLowerCase();
-  if (SUPPORTED_LANGS.has(firstSegment)) {
-    const canonicalSegments = [firstSegment, ...segments.slice(1)];
+  const language = looksLikeLangToken(firstSegment)
+    ? normalizeSupportedLanguage(firstSegment)
+    : null;
+  if (language) {
+    const canonicalSegments = [language, ...segments.slice(1)];
     const canonicalPath = `/${canonicalSegments.join('/')}`;
     const directRedirect = resolveCanonicalRedirect(canonicalSegments);
     if (directRedirect) {

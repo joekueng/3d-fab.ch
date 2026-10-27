@@ -124,7 +124,7 @@ function resolveExplicitLanguageFromUrl(
   return normalizeSupportedLanguage(queryLanguage);
 }
 
-function normalizeSupportedLanguage(
+export function normalizeSupportedLanguage(
   rawLanguage: string | null | undefined,
 ): SupportedLang | null {
   if (typeof rawLanguage !== 'string') {
