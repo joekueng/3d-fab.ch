@@ -1,4 +1,12 @@
 {
+  "NOT_FOUND": {
+    "EYEBROW": "Hier fehlt ein Teil",
+    "TITLE": "Seite nicht gefunden",
+    "DESCRIPTION": "Die gesuchte Seite existiert nicht oder ist nicht mehr verfügbar.",
+    "BACK_HOME": "Zur Startseite",
+    "GO_CALCULATOR": "Zum Rechner",
+    "HELP": "Brauchst du Hilfe?"
+  },
   "CAD_PRINT_ITEMS": {
     "HINT": "Rechnersitzung leeren oder ändern und speichern: Dateien und Kosten folgen der ausgewählten Sitzung. Die ursprünglichen Sitzungen bleiben erhalten und können erneut verknüpft werden. Der Checkout-Link bleibt gleich.",
     "INVALID_SESSION": "Geben Sie eine gültige Rechnersitzungs-ID ein oder lassen Sie das Feld leer."

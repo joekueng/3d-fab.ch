@@ -9,6 +9,7 @@ import {
 import {
   getNavigatorLanguagePreferences,
   isSupportedLangValue,
+  normalizeSupportedLanguage,
   parseAcceptLanguage,
   resolveInitialLanguage,
   SupportedLang,
@@ -140,6 +141,15 @@ export class LanguageService {
 
     if (segments.length > 0 && this.isSupportedLang(segments[0])) {
       this.applyLanguage(segments[0]);
+      return;
+    }
+
+    const regionalLanguage = this.looksLikeLangToken(segments[0])
+      ? normalizeSupportedLanguage(segments[0])
+      : null;
+    if (regionalLanguage) {
+      this.applyLanguage(regionalLanguage);
+      this.navigateIfChanged(urlTree, [regionalLanguage, ...segments.slice(1)]);
       return;
     }
 

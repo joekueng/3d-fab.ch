@@ -30,7 +30,19 @@ describe('server routing redirects', () => {
 
   it('drops unsupported language-like prefixes instead of nesting them', () => {
     expect(resolvePublicRedirectTarget('/es/about')).toBe('/it/about');
-    expect(resolvePublicRedirectTarget('/de-CH/about')).toBe('/it/about');
+    expect(resolvePublicRedirectTarget('/es-ES/about')).toBe('/it/about');
+  });
+
+  it('preserves supported languages when normalizing regional prefixes', () => {
+    expect(resolvePublicRedirectTarget('/de-CH/about')).toBe('/de/about');
+    expect(resolvePublicRedirectTarget('/FR-ch/contact/')).toBe('/fr/contact');
+    expect(resolvePublicRedirectTarget('/en-GB')).toBe('/en');
+    expect(resolvePublicRedirectTarget('/it-CH/calculator')).toBe(
+      '/it/calculator/basic',
+    );
+    expect(resolvePublicRedirectTarget('/de-CH/shop/zubehor/kabelhalter')).toBe(
+      '/de/shop/p/kabelhalter',
+    );
   });
 
   it('normalizes supported language prefixes and trailing slashes', () => {

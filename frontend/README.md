@@ -81,6 +81,26 @@ See the [shared component guide](src/app/shared/components/README.md) for modal,
    }
    ```
 
+## Public routing and missing pages
+
+Public URLs use `/it`, `/en`, `/de`, or `/fr`. Express normalizes regional prefixes
+such as `/de-CH/about` to `/de/about` with HTTP 308, preserving query parameters;
+`LanguageService` applies the same language normalization during client navigation.
+Unprefixed pages and unsupported languages use Italian. Keep calculator and legacy
+product aliases in the same redirect so normalization reaches the final path directly.
+
+Unknown routes render the localized `NotFoundComponent` inside the shared site layout,
+preserve the requested path, and set request-local `RESPONSE_INIT.status` to 404.
+The page reuses the home hero typography, semantic color tokens and `ui-button`
+links. Its simple decorative SVG represents layered 404 digits and a missing
+piece under a printhead; keep it hidden from assistive technology. Home, calculator
+and contact links must retain the active language, including after switching locales.
+Their route data uses `seoNotFound: true` and `seoRobots: 'noindex, follow'` so
+`SeoService` removes canonical and hreflang links. Do not redirect missing pages to
+the homepage or publish invented language alternates for them. The Express bridge
+propagates the status and disables caching, as it does for shop errors.
+Verify production HTTP responses with `npm run build && npm run check:seo-ssr`.
+
 ## Product structured data
 
 `SeoService` must wait for the first completed router navigation before generating

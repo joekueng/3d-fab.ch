@@ -22,6 +22,8 @@ test('RENDER-002: canonical redirects preserve query strings', async ({ request 
     ['/en/calculator?session=test', '/en/calculator/basic?session=test'],
     ['/it/shop/example/item?campaign=e2e', '/it/shop/p/item?campaign=e2e'],
     ['/zz/about?campaign=e2e', '/it/about?campaign=e2e'],
+    ['/de-CH/about?campaign=e2e', '/de/about?campaign=e2e'],
+    ['/fr-CH/calculator?campaign=e2e', '/fr/calculator/basic?campaign=e2e'],
     ['/fr/about/?campaign=e2e', '/fr/about?campaign=e2e'],
   ];
   for (const [source, target] of cases) {
@@ -53,11 +55,32 @@ test('RENDER-004: missing catalogue resources return HTTP 404', async ({ request
   expect(category.headers()['cache-control']).toContain('no-store');
 });
 
-test('RENDER-005: unknown application routes follow the documented wildcard', async ({ request }) => {
-  const response = await request.get('/en/e2e-unknown-route');
-  expect(response.status()).toBe(200);
-  const html = await response.text();
-  expect(html).toMatch(/<h1\b/i);
+test('RENDER-005: unknown application routes return localized 404 pages', async ({ request, page }) => {
+  for (const locale of ['it', 'en', 'de', 'fr']) {
+    const response = await request.get(`/${locale}/e2e-unknown-route`, { maxRedirects: 0 });
+    expect(response.status()).toBe(404);
+    expect(response.headers()['location']).toBeUndefined();
+    expect(response.headers()['cache-control']).toContain('no-store');
+    const html = await response.text();
+    const head = html.slice(0, html.indexOf('</head>'));
+    expect(html).toContain(`<html lang="${locale}-CH"`);
+    expect(head).toContain('name="robots" content="noindex, follow"');
+    expect(head).not.toMatch(/<link[^>]+rel="canonical"/);
+    expect(head).not.toMatch(/<link[^>]+hreflang=/);
+  }
+
+  await page.goto('/de/e2e-unknown-route');
+  await expect(page.getByRole('heading', { name: 'Seite nicht gefunden' })).toBeVisible();
+  await expect(page.locator('app-not-found .not-found-home')).toHaveAttribute('href', '/de');
+  await page.locator('header select.lang-switch').selectOption('fr');
+  await expect(page).toHaveURL(/\/fr\/e2e-unknown-route$/);
+  await expect(page.getByRole('heading', { name: 'Page introuvable' })).toBeVisible();
+  await expect(page.locator('app-not-found .not-found-home')).toHaveAttribute('href', '/fr');
+  await expect(page.locator('head link[rel="canonical"]')).toHaveCount(0);
+  await page.locator('footer a[href="/fr/privacy"]').click();
+  await expect(page.locator('.legal-page h1')).toBeVisible();
+  await expect(page.locator('head link[rel="canonical"]')).toHaveAttribute('href', /\/fr\/privacy$/);
+  await expect(page.locator('head meta[name="robots"]')).toHaveAttribute('content', 'index, follow');
 });
 
 test('RENDER-006: calculator diagnostic page is excluded from indexing', async ({ request }) => {
