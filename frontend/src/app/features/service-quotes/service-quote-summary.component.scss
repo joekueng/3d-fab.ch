@@ -1,0 +1,5 @@
+:host { display: block; min-width: 0; }
+.description { white-space: pre-wrap; overflow-wrap: anywhere; }
+.reference { overflow-wrap: anywhere; }
+.amounts { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-3); }
+.amounts dd { margin: 0; text-align: right; }

@@ -1,0 +1,46 @@
+<div class="container quote-page">
+  <header class="ui-simple-hero"><h1 class="ui-simple-hero__title">{{ 'SERVICE_QUOTES.PUBLIC_TITLE' | translate }}</h1></header>
+  <app-alert *ngIf="loading()">{{ 'SERVICE_QUOTES.LOADING' | translate }}</app-alert>
+  <app-alert *ngIf="error()" type="error">{{ error()! | translate }}</app-alert>
+  <app-alert *ngIf="alreadyAccepted()" type="info">{{ 'SERVICE_QUOTES.ALREADY_ACCEPTED' | translate }}</app-alert>
+  <ng-container *ngIf="confirmation() as confirmation; else acceptanceForm">
+    <app-card>
+      <h2 class="ui-card-title">{{ 'SERVICE_QUOTES.ACCEPTED_TITLE' | translate }}</h2>
+      <p>{{ 'SERVICE_QUOTES.CONFIRMED' | translate }}</p>
+      <p>{{ 'SERVICE_QUOTES.EMAIL_STATE' | translate }}: {{ ('SERVICE_QUOTES.STATUS.' + confirmation.emailStatus) | translate }}</p>
+      <app-alert *ngIf="confirmation.emailStatus === 'FAILED' || confirmation.emailStatus === 'SKIPPED' || confirmation.emailStatus === 'UNKNOWN'" type="warning">{{ 'SERVICE_QUOTES.EMAIL_PROBLEM' | translate }}</app-alert>
+      <p>{{ 'SERVICE_QUOTES.DOWNLOAD_NOTICE' | translate }}</p>
+      <p *ngIf="confirmation.documentStatus === 'PENDING'">{{ 'SERVICE_QUOTES.PDF_PREPARING' | translate }}</p>
+      <app-alert *ngIf="confirmation.documentStatus === 'FAILED'" type="warning">{{ 'SERVICE_QUOTES.PDF_FAILED' | translate }}</app-alert>
+      <app-button *ngIf="confirmation.documentStatus === 'READY' && !downloadExpired()" type="button" [loading]="busy()" (click)="download()">{{ 'SERVICE_QUOTES.DOWNLOAD' | translate }}</app-button>
+      <p *ngIf="downloadExpired()">{{ 'SERVICE_QUOTES.DOWNLOAD_EXPIRED' | translate }}</p>
+    </app-card>
+  </ng-container>
+  <ng-template #acceptanceForm>
+    <div class="quote-layout" *ngIf="offer() as quote">
+      <app-card><app-service-quote-summary [offer]="quote" /></app-card>
+      <app-card><form [formGroup]="form" (ngSubmit)="submit()">
+        <h2 class="ui-card-title">{{ 'CHECKOUT.CONTACT_INFO' | translate }}</h2>
+        <app-input formControlName="email" type="email" [label]="'CHECKOUT.EMAIL' | translate" [required]="true" autocomplete="email" />
+        <app-input formControlName="phone" type="tel" [label]="'CHECKOUT.PHONE' | translate" autocomplete="tel" />
+        <app-select formControlName="customerType" [label]="'SERVICE_QUOTES.CUSTOMER_TYPE' | translate" [options]="[{value:'PRIVATE',label:('SERVICE_QUOTES.PRIVATE' | translate)},{value:'BUSINESS',label:('SERVICE_QUOTES.BUSINESS' | translate)}]" />
+        <div *ngIf="form.controls.customerType.value === 'PRIVATE'" class="ui-form-row">
+          <app-input formControlName="firstName" [label]="'CHECKOUT.FIRST_NAME' | translate" [required]="true" autocomplete="given-name" />
+          <app-input formControlName="lastName" [label]="'CHECKOUT.LAST_NAME' | translate" [required]="true" autocomplete="family-name" />
+        </div>
+        <ng-container *ngIf="form.controls.customerType.value === 'BUSINESS'">
+          <app-input formControlName="companyName" [label]="'CHECKOUT.COMPANY_NAME' | translate" [required]="true" autocomplete="organization" />
+          <app-input formControlName="contactPerson" [label]="'CONTACT.REF_PERSON' | translate" [required]="true" />
+        </ng-container>
+        <app-input formControlName="addressLine1" [label]="'SERVICE_QUOTES.ADDRESS' | translate" [required]="true" autocomplete="address-line1" />
+        <div class="ui-form-row"><app-input formControlName="zip" [label]="'SERVICE_QUOTES.ZIP' | translate" [required]="true" autocomplete="postal-code" /><app-input formControlName="city" [label]="'SERVICE_QUOTES.CITY' | translate" [required]="true" autocomplete="address-level2" /></div>
+        <app-input formControlName="countryCode" [label]="'SERVICE_QUOTES.COUNTRY_CODE' | translate" [required]="true" autocomplete="country" />
+        <div class="consents"><p>{{ quote.acceptanceText }}</p>
+          <app-checkbox formControlName="acceptQuote" [label]="'SERVICE_QUOTES.ACCEPT_DECLARATION' | translate" />
+          <app-legal-consent [control]="form.controls.legal" />
+        </div>
+        <app-button type="submit" [loading]="busy()">{{ (pendingRequest ? 'SERVICE_QUOTES.RETRY' : 'SERVICE_QUOTES.ACCEPT') | translate }}</app-button>
+      </form></app-card>
+    </div>
+  </ng-template>
+</div>

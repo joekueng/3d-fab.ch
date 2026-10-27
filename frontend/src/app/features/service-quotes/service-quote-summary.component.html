@@ -1,0 +1,12 @@
+<h2 class="ui-card-title">{{ offer().content.title }}</h2>
+<p class="ui-copy-subtitle reference">{{ offer().quoteId }} · r{{ offer().revisionNumber }}</p>
+<p class="description">{{ offer().content.description }}</p>
+<p>{{ ('SERVICE_QUOTES.' + offer().content.pricingMode) | translate }}</p>
+<p *ngIf="offer().content.pricingMode === 'HOURLY_ESTIMATE'">{{ offer().content.estimatedHours | number:'1.0-2' }} h × {{ offer().content.hourlyRateChf | currency:'CHF' }}</p>
+<dl class="ui-subpanel amounts">
+  <dt>{{ 'SERVICE_QUOTES.ESTIMATE' | translate }}</dt><dd>{{ offer().estimatedAmountChf | currency:'CHF' }}</dd>
+  <dt>{{ 'SERVICE_QUOTES.VARIATION' | translate }}</dt><dd>{{ offer().content.variationValue | number:'1.0-2' }} {{ offer().content.variationType === 'PERCENTAGE' ? '%' : 'CHF' }}</dd>
+  <dt><strong>{{ 'SERVICE_QUOTES.MAXIMUM' | translate }}</strong></dt><dd><strong>{{ offer().maximumAmountChf | currency:'CHF' }}</strong></dd>
+</dl>
+<p class="ui-copy-subtitle">{{ 'SERVICE_QUOTES.SCOPE' | translate }}</p>
+<p>{{ 'SERVICE_QUOTES.VALID_UNTIL' | translate }}: {{ validityDate() }}</p>

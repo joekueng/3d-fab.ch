@@ -1,0 +1,90 @@
+<section class="quote-page section-card">
+  <header class="page-header section-header"><h1>{{ 'SERVICE_QUOTES.ADMIN_TITLE' | translate }}</h1><div class="actions">
+    <app-button type="button" [disabled]="busy()" (click)="newQuote()">{{ 'SERVICE_QUOTES.NEW' | translate }}</app-button>
+    <app-button type="button" [disabled]="busy()" (click)="refresh()">{{ 'CAD_ORGANIZATION.REFRESH' | translate }}</app-button>
+    <a [routerLink]="language.localizedPath('/admin/cad-invoices')">{{ 'CAD_ORGANIZATION.TITLE' | translate }}</a>
+  </div></header>
+  <app-alert *ngIf="error()" type="error">{{ error()! | translate }}</app-alert>
+  <app-alert *ngIf="notice()" type="info">{{ notice()! | translate }}</app-alert>
+  <div class="quote-admin-layout">
+    <div class="quote-editor ui-subpanel"><h2>{{ (selected() ? 'SERVICE_QUOTES.EDIT_DRAFT' : 'SERVICE_QUOTES.NEW') | translate }}</h2>
+      <p *ngIf="selected() as quote" class="reference" [appCopyOnClick]="quote.id">{{ quote.id }}</p>
+      <p class="ui-copy-subtitle">{{ 'SERVICE_QUOTES.CUSTOMER_DATA_NOTICE' | translate }}</p>
+      <form [formGroup]="form" (ngSubmit)="save()" novalidate><fieldset [disabled]="busy()">
+        <div class="form-grid">
+          <app-input formControlName="clientName" [label]="'CAD_ORGANIZATION.CLIENT' | translate" />
+          <app-input formControlName="collaborationName" [label]="'CAD_ORGANIZATION.COLLABORATION' | translate" />
+          <app-input formControlName="title" [label]="'SERVICE_QUOTES.TITLE' | translate" [required]="true" [error]="fieldError('title')" />
+          <app-input formControlName="sourceRequestId" [label]="'CAD_ORGANIZATION.REQUEST' | translate" />
+        </div>
+        <app-textarea formControlName="description" [label]="'SERVICE_QUOTES.DESCRIPTION' | translate" [rows]="3" [required]="true" [error]="fieldError('description')" />
+        <div class="form-grid">
+          <app-select formControlName="pricingMode" [label]="'SERVICE_QUOTES.PRICING_MODE' | translate" [options]="pricingOptions()" />
+          <ng-container *ngIf="form.controls.pricingMode.value === 'HOURLY_ESTIMATE'">
+            <app-input formControlName="estimatedHours" type="number" min="0.01" step="0.01" [label]="'SERVICE_QUOTES.HOURS' | translate" />
+            <app-input formControlName="hourlyRateChf" type="number" min="0" step="0.01" [label]="'SERVICE_QUOTES.HOURLY_RATE' | translate" />
+          </ng-container>
+          <app-input *ngIf="form.controls.pricingMode.value === 'LUMP_SUM_ESTIMATE'" formControlName="lumpSumChf" type="number" min="0" step="0.01" [label]="'SERVICE_QUOTES.ESTIMATE' | translate" />
+          <app-select formControlName="variationType" [label]="'SERVICE_QUOTES.VARIATION_TYPE' | translate" [options]="variationOptions()" />
+          <app-input formControlName="variationValue" type="number" min="0" step="0.01" [label]="'SERVICE_QUOTES.VARIATION' | translate" />
+          <app-input formControlName="validUntil" type="datetime-local" [label]="'SERVICE_QUOTES.VALID_UNTIL' | translate" />
+          <app-select formControlName="language" [label]="'SERVICE_QUOTES.LANGUAGE' | translate" [options]="[{value:'it',label:'Italiano'},{value:'en',label:'English'},{value:'de',label:'Deutsch'},{value:'fr',label:'Français'}]" />
+        </div>
+        <p class="ui-copy-subtitle">{{ 'SERVICE_QUOTES.REVISION_NOTICE' | translate }}</p>
+        <div class="actions create-actions">
+          <app-button type="submit" [loading]="busy()">{{ 'SERVICE_QUOTES.SAVE_DRAFT' | translate }}</app-button>
+          <app-button type="button" [disabled]="busy() || !selected()?.draft || form.dirty" (click)="publish()">{{ 'SERVICE_QUOTES.PUBLISH' | translate }}</app-button>
+          <app-button type="button" variant="secondary" [disabled]="busy() || !selected()?.draft || form.dirty" (click)="pdf()">{{ 'SERVICE_QUOTES.PREVIEW' | translate }}</app-button>
+        </div>
+      </fieldset></form>
+    </div>
+    <div class="quote-list"><h2>{{ 'SERVICE_QUOTES.ADMIN_TITLE' | translate }}</h2>
+      <p *ngIf="!rows().length && !busy()">{{ 'SERVICE_QUOTES.EMPTY' | translate }}</p>
+      <article class="ui-subpanel" *ngFor="let row of rows()">
+        <h3>{{ row.draft?.title || row.revisions[0]?.offer?.content?.title }}</h3>
+        <p>{{ row.clientName }} · {{ row.collaborationName }}</p><p class="reference" [appCopyOnClick]="row.id">{{ row.id }}</p>
+        <p *ngIf="row.draft">{{ 'SERVICE_QUOTES.STATUS.DRAFT' | translate }}</p>
+        <p *ngIf="row.revisions[0] as latest">r{{ latest.offer.revisionNumber }} · {{ ('SERVICE_QUOTES.STATUS.' + latest.offer.status) | translate }} · {{ latest.offer.estimatedAmountChf | currency:'CHF' }}</p>
+        <app-button type="button" [disabled]="busy()" (click)="edit(row)">{{ 'SERVICE_QUOTES.OPEN' | translate }}</app-button>
+      </article>
+    </div>
+  </div>
+</section>
+<section class="section-card" *ngIf="selected() as quote">
+  <h2>{{ 'SERVICE_QUOTES.HISTORY' | translate }}</h2>
+  <article class="ui-subpanel revision" *ngFor="let revision of quote.revisions">
+    <p>{{ ('SERVICE_QUOTES.STATUS.' + revision.offer.status) | translate }}</p>
+    <app-service-quote-summary [offer]="revision.offer" />
+    <p>{{ revision.offer.acceptanceText }}</p>
+    <div class="actions">
+      <app-button type="button" [disabled]="busy()" (click)="pdf(revision)">{{ (revision.acceptance ? 'SERVICE_QUOTES.DOWNLOAD' : 'SERVICE_QUOTES.PREVIEW') | translate }}</app-button>
+      <ng-container *ngIf="revision.offer.status === 'PUBLISHED'">
+        <app-button type="button" [disabled]="busy()" (click)="copyLink(revision)">{{ 'SERVICE_QUOTES.COPY_LINK' | translate }}</app-button>
+        <app-button type="button" variant="ghost" [disabled]="busy()" (click)="revoke(revision)">{{ 'SERVICE_QUOTES.REVOKE' | translate }}</app-button>
+      </ng-container>
+    </div>
+    <details *ngIf="revision.offer.status === 'PUBLISHED'" class="invitation">
+      <summary>{{ 'SERVICE_QUOTES.SHARE_EMAIL' | translate }}</summary>
+      <app-input [formControl]="email" type="email" [label]="'SERVICE_QUOTES.INVITE_EMAIL' | translate" />
+      <app-button type="button" variant="secondary" [disabled]="busy() || email.invalid" (click)="invite(revision)">{{ 'SERVICE_QUOTES.SEND_EMAIL' | translate }}</app-button>
+    </details>
+    <ng-container *ngIf="revision.acceptance as acceptance">
+      <h3>{{ 'SERVICE_QUOTES.ACCEPTED_TITLE' | translate }}</h3>
+      <p>{{ acceptance.acceptedAt | date:'medium' }} · {{ acceptance.customer.email }}</p>
+      <p>{{ acceptance.customer.firstName }} {{ acceptance.customer.lastName }} {{ acceptance.customer.companyName }} {{ acceptance.customer.contactPerson }}</p>
+      <p>{{ acceptance.customer.addressLine1 }}, {{ acceptance.customer.zip }} {{ acceptance.customer.city }}, {{ acceptance.customer.countryCode }}</p>
+      <p>{{ acceptance.customer.phone }} · {{ 'SERVICE_QUOTES.AUDIT_IP' | translate }}: {{ acceptance.clientIp || '—' }}</p>
+      <p>{{ 'SERVICE_QUOTES.DOCUMENT_STATE' | translate }}: {{ ('SERVICE_QUOTES.STATUS.' + acceptance.documentStatus) | translate }}</p>
+      <p>{{ 'SERVICE_QUOTES.EMAIL_STATE' | translate }}: {{ ('SERVICE_QUOTES.STATUS.' + acceptance.emailStatus) | translate }}</p>
+      <div class="actions">
+        <app-button type="button" [disabled]="busy()" (click)="resend(revision)">{{ 'SERVICE_QUOTES.RESEND' | translate }}</app-button>
+        <app-button *ngIf="acceptance.documentStatus !== 'READY'" type="button" [disabled]="busy()" (click)="retry(revision)">{{ 'SERVICE_QUOTES.RETRY_PDF' | translate }}</app-button>
+        <app-button type="button" [disabled]="busy()" (click)="createJob(revision)">{{ 'SERVICE_QUOTES.CREATE_JOB' | translate }}</app-button>
+      </div>
+    </ng-container>
+  </article>
+  <h3 *ngIf="quote.linkedJobs.length">{{ 'SERVICE_QUOTES.LINKED_JOBS' | translate }}</h3>
+  <p *ngFor="let job of quote.linkedJobs"><a [routerLink]="language.localizedPath('/admin/cad-invoices')" [queryParams]="{job:job.sessionId}">{{ job.name || job.sessionId }}</a></p>
+  <h3 *ngIf="quote.emailLogs.length">{{ 'SERVICE_QUOTES.EMAIL_HISTORY' | translate }}</h3>
+  <ul><li *ngFor="let log of quote.emailLogs">{{ log.attemptedAt | date:'medium' }} · {{ log.recipient }} · {{ ('SERVICE_QUOTES.STATUS.' + log.status) | translate }}</li></ul>
+</section>

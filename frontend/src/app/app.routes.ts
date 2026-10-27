@@ -11,6 +11,11 @@ const langPrefixCanMatch: CanMatchFn = (_route, segments) => {
 
 const appChildRoutes: Routes = [
   {
+    path: 'quotes/:publicLinkId',
+    loadComponent: () => import('./features/service-quotes/service-quote-acceptance.component').then(m => m.ServiceQuoteAcceptanceComponent),
+    data: { seoTitleKey: 'SERVICE_QUOTES.PUBLIC_TITLE', seoRobots: 'noindex, nofollow' },
+  },
+  {
     path: '',
     loadComponent: () =>
       import('./features/home/home.component').then((m) => m.HomeComponent),

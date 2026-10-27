@@ -1,0 +1,14 @@
+// Same stacked editor/list layout and spacing as the CAD invoice page.
+:host { display: block; min-width: 0; }
+.quote-page, .quote-admin-layout { display: flex; flex-direction: column; gap: var(--space-5); }
+.quote-editor h2 { margin: 0 0 var(--space-3); font-size: 1.05rem; }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+.actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.create-actions { margin-top: var(--space-4); align-items: center; }
+.reference { overflow-wrap: anywhere; }
+.quote-editor, .quote-list, .revision { min-width: 0; overflow-wrap: anywhere; }
+.quote-list article, .revision { margin-bottom: var(--space-3); }
+fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.invitation { margin-block: var(--space-4); }
+.invitation summary { cursor: pointer; margin-bottom: var(--space-3); }
+@media (max-width: 880px) { .form-grid { grid-template-columns: 1fr; } }

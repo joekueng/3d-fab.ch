@@ -18,6 +18,10 @@ export const ADMIN_ROUTES: Routes = [
       ),
     children: [
       {
+        path: 'service-quotes',
+        loadComponent: () => import('./pages/admin-service-quotes.component').then(m => m.AdminServiceQuotesComponent),
+      },
+      {
         path: '',
         pathMatch: 'full',
         redirectTo: 'orders',

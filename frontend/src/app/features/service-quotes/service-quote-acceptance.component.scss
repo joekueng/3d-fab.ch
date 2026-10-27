@@ -1,0 +1,5 @@
+:host { display: block; min-width: 0; }
+.quote-page { padding-bottom: var(--space-8); }
+.quote-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-6); align-items: start; }
+.consents { display: grid; gap: var(--space-4); margin-block: var(--space-5); }
+@media (max-width: 800px) { .quote-layout { grid-template-columns: minmax(0, 1fr); } }
