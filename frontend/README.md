@@ -358,3 +358,56 @@ select the split-consent checkbox, then calculate the quote again. Label these
 files as requiring splitting; reserve manual-review copy for failed estimates.
 Keep the checkbox label concise; the split-review card explains the surcharge
 and manual-review fallback. Stack its full-width action buttons with a consistent gap.
+
+## Commercial quote acceptance
+
+The CAD/services area links to `admin/service-quotes`. Its dedicated editor has one
+scope description, an hourly or lump sum estimate, and a maximum increase in percent
+or CHF. Save a draft before publishing or previewing it. Published revisions remain
+immutable; edits prepare a new draft. The revision history provides the public link,
+invitation, acceptance/customer details, PDF state, private download, rendering retry
+and receipt resend. All controls reuse the existing shared UI; copy is available in
+IT/EN/DE/FR. Order details link back to the commercial quote.
+
+`features/service-quotes` owns typed public/admin API contracts and the common quote
+summary. Public route `/:lang/quotes/:publicLinkId` uses noindex/nofollow and resumes
+an offer credential in memory. It validates private/business identity and consent
+before submitting a single acceptance. Network retries retain the original request ID,
+payload and random download credential while preventing further edits or duplicate
+clicks. No offer/download credential is stored in URLs or browser storage.
+
+The immediate confirmation page polls the PDF/email states and offers download with
+a separate temporary header credential for 15 minutes from acceptance. Closing or
+reloading the page loses that credential; reopening an accepted link shows only a
+status, never the PDF or prior customer data. The client keeps the email attachment;
+subsequent download/resend is available through the authenticated back-office. PDF or
+SMTP failures must never appear as a lost acceptance. Signals and lifecycle-bound
+subscriptions update the page without an extra click.
+
+CAD invoice forms accept an independent quote UUID and accepted revision, while the
+calculator session remains editable separately. Creating a job from an accepted quote
+prepares grouping labels and an editable service row; saving still uses the existing
+CAD invoice API. Existing job links can open the correct editor with `?job=...`.
+The order and invoice retain the accepted quote reference. Per-invoice comparison
+excludes shipping and is informational; check interim invoices together manually.
+
+`service-quote-acceptance.component.spec.ts` covers reopened links, required identity,
+network retry identity, duplicate-click prevention and asynchronous rendering.
+`e2e/admin/service-quotes.spec.ts` exercises the real isolated quote → acceptance →
+email/PDF → final job/order flow for both estimate/margin modes and protected admin
+endpoints. Route coverage is tracked under QUOTE-001/002.
+
+The quote editor follows the CAD page’s stacked editor/list layout and shared
+`ui-subpanel` and form controls. Customer email and address belong exclusively to
+the public acceptance form; optional link delivery is a separate collapsed action.
+Required title and scope errors appear on the corresponding shared controls.
+
+CAD invoices linked to an accepted commercial quote return a private prefill
+credential in the admin `checkoutPath` fragment (`#prefill=...`). Opening or copying
+the link uses the existing CAD actions. The checkout calls the separate
+`checkout-customer` endpoint with `X-Cad-Checkout-Token`; public session snapshots
+never contain customer data or this credential. Customer details fill only pristine
+controls, including the company/contact-person mapping. Billing remains editable,
+shipping defaults to the billing address, and order consent stays unchecked. Missing
+phone details still require completion at checkout. Switching sessions clears the
+previous identity; delayed responses cannot replace edits or another session’s data.

@@ -627,3 +627,89 @@ Until then the old checkout is unavailable. A redirect reservation cannot be
 reactivated by an ordinary edit. The new nullable `deleted_redirect_path` column
 is additive under Hibernate schema update; matching DDL is in `db.sql` and needs
 no backfill. Existing instructions retain their normal draft retention policy.
+
+## Commercial quote acceptance
+
+Commercial CAD/service estimates use `ServiceQuoteService` and the `/api/admin/service-quotes`
+API, independently of calculator sessions and payment/order states. A quote has one
+scope description, an hourly or lump sum estimate, and a maximum increase in percent
+or CHF. `ServiceQuoteMath` calculates both totals with cent rounding. Saving edits
+creates a draft; publishing freezes a revision, its declaration and legal document
+versions. Replacing or revoking a pending revision prevents acceptance from stale
+browser pages. Quote row locks serialize publication, revocation and acceptance;
+optimistic versions reject stale administrative edits.
+
+Public links use a separate random link ID. `/api/service-quote-links/{id}/resume`
+returns an offer-only credential with no-store headers. Public DTOs omit all acceptance/customer history. The customer supplies their own
+email and address at acceptance; invitation recipients do not constrain this identity.
+The legacy `recipientEmail` JSON field is ignored for stored-draft compatibility. The accept POST validates nested
+customer identity and required declarations, records server UTC time and the IP
+resolved by `LegalConsentRequestService`, and persists one acceptance per revision.
+Changed published terms/privacy versions require a new publication before acceptance.
+Acceptance is a recorded declaration, without email OTP or an identity-verification
+claim. Initial quote declaration copy remains a draft for editorial/legal review.
+
+The client generates a random ephemeral download credential before its submit. Only
+its hash and absolute 15-minute expiry are stored with the acceptance. Request IDs
+and body hashes make retries of the same in-memory submission idempotent within
+that original window. Changed submissions and expired retries cannot renew access.
+An already accepted link resumes to a generic status with no credential. Download
+and PDF-status endpoints require the separate download header, not the offer token.
+Neither credential belongs in URLs, logs or analytics.
+
+`ServiceQuoteAcceptedEvent` triggers document processing after commit. A persisted
+PENDING document also permits scheduled recovery if that notification is missed.
+`ServiceQuoteDocumentService` archives the original PDF in private storage, records
+its SHA-256 hash and reuses exactly those bytes for download and email. Rendering
+failures leave the acceptance intact and expose a FAILED document for admin retry.
+SMTP statuses remain separate from document/acceptance state; admin receipt resend
+never reopens public access. Recovery retries pending work, not completed failed
+SMTP attempts; these have an explicit administrative resend. A process crash during
+SMTP delivery can still produce an uncertain/duplicate delivery on recovery.
+
+The new template `templates/service-quote.html` reuses the invoice renderer library,
+logo, A4 typography and footer conventions, without creating fake orders/payments or
+including a payment QR. Quote email uses the shared transactional layout and the
+existing attachment API. Copy is provided in IT/EN/DE/FR. `storage.service-quotes-root`
+(default `storage_orders/service-quotes`) is inside the mounted order storage by
+default and must be backed up with the database. Never serve this directory statically.
+
+Deployment is additive: five new domain/document tables; nullable scalar commercial
+quote ID and JSON reference on quote sessions; JSON reference on orders; quote,
+revision and document IDs in email audit. Hibernate creates the mapped tables,
+columns and domain foreign keys; `db.sql` additionally records the cross-domain
+foreign keys and lookup indexes. No historical acceptances are backfilled. The
+ephemeral download hash/expiry live on the acceptance, rather than in a separate
+authorization table. New temporal columns use Hibernate `@TimeZoneStorage(NATIVE)`
+with PostgreSQL timestamptz so persistence preserves expiry instants across JVM
+zones. This existing Hibernate 7.4 API was verified on 2026-10-27 against installed
+7.4.5.Final and the [official annotation documentation](https://docs.hibernate.org/orm/7.4/javadocs/org/hibernate/annotations/TimeZoneStorage.html).
+No packages or versions were changed.
+
+CAD invoices accept optional `serviceQuoteId` and `serviceQuoteRevisionId`. Omission
+preserves the saved reference; explicit null removes it. The service requires an
+accepted revision and a selection if several revisions were accepted. The reference
+is a scalar ID plus immutable JSON snapshot, avoiding coupling legacy session
+mapping to the new aggregate. Checkout copies that snapshot to the order and invoice;
+converted invoices cannot change it. CAD deletion clears the local association but
+preserves the commercial quote, acceptance and original PDF. Multiple invoices can
+reference a quote; comparison with the maximum is informative and does not implement
+cumulative budget accounting or an automatic checkout block.
+
+Focused verification: `./gradlew test --tests '*ServiceQuote*'`. Workflow tests use
+real persistence/transactions, concurrent submissions, localized PDF/email rendering,
+identical attachment/download bytes and failed SMTP. Their H2 SQL adapter retains the
+PostgreSQL text mappings and translates JSON casts to H2's `format json` syntax.
+
+CAD checkout customer prefill uses `CadCheckoutCustomerService`. Linking an accepted
+revision creates a separate random 256-bit credential stored in
+`quote_sessions.cad_checkout_customer_token` (additive nullable column). Only admin
+checkout links contain it, in a URL fragment. `GET /api/quote-sessions/{id}/checkout-customer`
+requires `X-Cad-Checkout-Token` and returns the accepted customer with `no-store` and
+`no-referrer`. Public quote-session responses remain free of customer identity and
+the credential. The service validates the exact acceptance/revision and active CAD
+session. Relinking another acceptance rotates the credential; detachment/deletion
+clears it, and conversion disables access. Saving an older linked draft initializes
+its missing credential. Previously copied plain checkout links still permit manual
+entry; share the current admin link to enable prefill. Checkout edits affect the
+new order only, leaving the immutable acceptance/PDF intact.

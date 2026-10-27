@@ -92,3 +92,6 @@ rg -n "<(input|select|textarea|button)\\b" src/app/features/admin/pages --glob '
 Raw controls found by the second command are allowed only for the special-purpose exceptions above. Verify responsive behavior for user-facing UI changes.
 
 For editable service rows and interim invoice groups, follow [service invoice administration](README.md#service-invoice-administration).
+
+For the quote editor, public acceptance page, ephemeral PDF download and final job
+reference, follow [commercial quote acceptance](README.md#commercial-quote-acceptance).

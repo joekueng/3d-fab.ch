@@ -75,3 +75,7 @@ IMAP IDLE is the default acquisition mode when enabled; keep its wait outside da
 For SSE tracking, follow [live order notifications](README.md#live-order-notifications): emit only after commit, preserve the public data boundary, and clean up disconnected streams.
 
 For custom service rows, grouping, interim invoices and schema compatibility, follow [service invoices and interim billing](README.md#service-invoices-and-interim-billing).
+
+For commercial estimates, immutable acceptance records, temporary PDF access and
+linking accepted revisions to CAD invoices, follow
+[commercial quote acceptance](README.md#commercial-quote-acceptance).
