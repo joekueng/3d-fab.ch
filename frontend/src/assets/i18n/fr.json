@@ -1687,6 +1687,7 @@
     "COLORS_SAVED": "Traductions des couleurs enregistrées pour les filaments et la boutique."
   },
   "SERVICE_QUOTES": {
+    "CHECKOUT_PREFILLED": "Informations reprises du devis accepté. Vérifiez-les et modifiez-les si nécessaire.",
     "ADMIN_INVALID": "Complétez les champs obligatoires du devis et vérifiez les montants et la validité.",
     "FIELD_REQUIRED": "Complétez ce champ en respectant la longueur maximale.",
     "CUSTOMER_DATA_NOTICE": "Le client saisit son e-mail, son identité et son adresse sur la page d’acceptation. Après acceptation, il reçoit le PDF par e-mail et peut le télécharger sur l’écran de confirmation.",

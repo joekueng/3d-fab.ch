@@ -1692,6 +1692,7 @@
     "COLORS_SAVED": "Farbübersetzungen für Filamente und Shop gespeichert."
   },
   "SERVICE_QUOTES": {
+    "CHECKOUT_PREFILLED": "Angaben aus dem angenommenen Angebot übernommen. Bitte prüfen und bei Bedarf ändern.",
     "ADMIN_INVALID": "Füllen Sie die Pflichtfelder des Angebots aus und prüfen Sie Beträge und Gültigkeit.",
     "FIELD_REQUIRED": "Füllen Sie dieses Feld innerhalb der maximalen Länge aus.",
     "CUSTOMER_DATA_NOTICE": "Der Kunde gibt E-Mail, Personalien und Adresse auf der Annahmeseite ein. Nach der Annahme erhält er das PDF per E-Mail und kann es auf der Bestätigungsseite herunterladen.",

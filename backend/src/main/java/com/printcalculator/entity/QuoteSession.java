@@ -15,6 +15,13 @@ import java.util.UUID;
                 columnList = "expires_at"),
         @Index(name = "ix_quote_sessions_calculator_session", columnList = "calculator_session_id")})
 public class QuoteSession {
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    @Column(name="cad_checkout_customer_token", length=64)
+    private String cadCheckoutCustomerToken;
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public String getCadCheckoutCustomerToken() { return cadCheckoutCustomerToken; }
+    public void setCadCheckoutCustomerToken(String token) { cadCheckoutCustomerToken = token; }
+
     @Column(name="service_quote_id") private UUID serviceQuoteId;
     @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
     @Column(name="service_quote_reference") private com.printcalculator.dto.ServiceQuoteReference serviceQuoteReference;

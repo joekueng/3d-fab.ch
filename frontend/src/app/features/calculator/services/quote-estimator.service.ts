@@ -1,3 +1,4 @@
+import { QuoteCustomer } from '../../service-quotes/service-quotes.models';
 import { Injectable, inject, signal } from '@angular/core';
 import {
   HttpClient,
@@ -202,6 +203,12 @@ export class QuoteEstimatorService {
         headers,
       },
     );
+  }
+
+  getCadCheckoutCustomer(sessionId: string, token: string): Observable<QuoteCustomer> {
+    return this.http.get<QuoteCustomer>(`${environment.apiUrl}/api/quote-sessions/${sessionId}/checkout-customer`, {
+      headers: { 'X-Cad-Checkout-Token': token },
+    });
   }
 
   getQuoteSession(sessionId: string): Observable<any> {

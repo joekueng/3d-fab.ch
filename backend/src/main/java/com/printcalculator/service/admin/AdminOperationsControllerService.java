@@ -410,8 +410,17 @@ public class AdminOperationsControllerService {
         if (payload.hasServiceQuoteId()) {
             var reference = payload.getServiceQuoteId() == null ? null
                 : serviceQuotes.resolveAccepted(payload.getServiceQuoteId(), payload.getServiceQuoteRevisionId());
+            var previous = session.getServiceQuoteReference();
+            if (reference == null) session.setCadCheckoutCustomerToken(null);
+            else if (session.getCadCheckoutCustomerToken() == null || previous == null
+                    || !reference.acceptanceId().equals(previous.acceptanceId())) {
+                session.setCadCheckoutCustomerToken(com.printcalculator.service.quote.CadCheckoutCustomerService.newToken());
+            }
             session.setServiceQuoteId(payload.getServiceQuoteId());
             session.setServiceQuoteReference(reference);
+        }
+        if (session.getServiceQuoteReference() != null && session.getCadCheckoutCustomerToken() == null) {
+            session.setCadCheckoutCustomerToken(com.printcalculator.service.quote.CadCheckoutCustomerService.newToken());
         }
         if (payload.hasCalculatorSessionId()) {
             UUID sourceId = payload.getCalculatorSessionId();
@@ -523,6 +532,7 @@ public class AdminOperationsControllerService {
         session.setSourceRequestId(null);
         session.setServiceQuoteId(null);
         session.setServiceQuoteReference(null);
+        session.setCadCheckoutCustomerToken(null);
         session.setClientName(null);
         session.setInvoiceName(null);
         session.setCollaborationName(null);
@@ -664,7 +674,12 @@ public class AdminOperationsControllerService {
         dto.setShippingCostChf(totals.shippingCostChf());
         dto.setGrandTotalChf(totals.grandTotalChf());
         dto.setConvertedOrderId(session.getConvertedOrderId());
-        dto.setCheckoutPath("/checkout/cad?session=" + session.getId());
+        String checkoutPath = "/checkout/cad?session=" + session.getId();
+        if ("CAD_ACTIVE".equals(session.getStatus()) && session.getServiceQuoteReference() != null
+                && session.getCadCheckoutCustomerToken() != null && session.getConvertedOrderId() == null) {
+            checkoutPath += "#prefill=" + session.getCadCheckoutCustomerToken();
+        }
+        dto.setCheckoutPath(checkoutPath);
         dto.setNotes(session.getNotes());
         dto.setCreatedAt(session.getCreatedAt());
 

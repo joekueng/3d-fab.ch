@@ -561,12 +561,22 @@ class AdminOperationsControllerServiceTest {
         var attach=new AdminCadInvoiceCreateRequest();attach.setSessionId(invoice.getId());attach.setCadHours(BigDecimal.ONE);attach.setCadHourlyRateChf(BigDecimal.TEN);
         attach.setServiceQuoteId(quoteId);attach.setServiceQuoteRevisionId(revisionId);
         assertEquals(reference,service.createOrUpdateCadInvoice(attach).getServiceQuoteReference());
+        var token=invoice.getCadCheckoutCustomerToken();
+        org.junit.jupiter.api.Assertions.assertNotNull(token);
+        var same=service.createOrUpdateCadInvoice(attach);
+        assertEquals(token,invoice.getCadCheckoutCustomerToken());
+        org.junit.jupiter.api.Assertions.assertTrue(same.getCheckoutPath().endsWith("#prefill="+token));
         var omit=new AdminCadInvoiceCreateRequest();omit.setSessionId(invoice.getId());omit.setCadHours(BigDecimal.ONE);omit.setCadHourlyRateChf(BigDecimal.TEN);
         assertEquals(reference,service.createOrUpdateCadInvoice(omit).getServiceQuoteReference());
+        var another=new com.printcalculator.dto.ServiceQuoteReference(quoteId,UUID.randomUUID(),UUID.randomUUID(),2,"Revised design",BigDecimal.TEN,new BigDecimal("12"),"PERCENTAGE",new BigDecimal("20"));
+        when(serviceQuotes.resolveAccepted(quoteId,revisionId)).thenReturn(another);
+        service.createOrUpdateCadInvoice(attach);
+        org.junit.jupiter.api.Assertions.assertNotEquals(token,invoice.getCadCheckoutCustomerToken());
         omit.setServiceQuoteId(null);
         org.junit.jupiter.api.Assertions.assertNull(service.createOrUpdateCadInvoice(omit).getServiceQuoteReference());
         org.junit.jupiter.api.Assertions.assertNull(invoice.getServiceQuoteId());
-        verify(serviceQuotes).resolveAccepted(quoteId,revisionId);
+        org.junit.jupiter.api.Assertions.assertNull(invoice.getCadCheckoutCustomerToken());
+        verify(serviceQuotes,org.mockito.Mockito.times(3)).resolveAccepted(quoteId,revisionId);
     }
 
 }

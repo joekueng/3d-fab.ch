@@ -29,6 +29,9 @@
           {{ error | translate }}
         </div>
 
+        <p *ngIf="customerPrefilled()" class="ui-banner ui-banner--info" role="status">
+          {{ 'SERVICE_QUOTES.CHECKOUT_PREFILLED' | translate }}
+        </p>
         <form
           [formGroup]="checkoutForm"
           (ngSubmit)="onSubmit()"

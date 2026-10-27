@@ -1825,3 +1825,6 @@ ALTER TABLE email_logs ADD COLUMN IF NOT EXISTS service_quote_document_id uuid R
 CREATE INDEX IF NOT EXISTS ix_quote_sessions_service_quote ON quote_sessions(service_quote_id);
 CREATE INDEX IF NOT EXISTS ix_email_logs_service_quote ON email_logs(service_quote_id);
 CREATE INDEX IF NOT EXISTS ix_service_quote_documents_status ON service_quote_documents(status);
+
+-- Private credential for accepted-customer prefill; never included in public session DTOs.
+ALTER TABLE quote_sessions ADD COLUMN IF NOT EXISTS cad_checkout_customer_token varchar(64);

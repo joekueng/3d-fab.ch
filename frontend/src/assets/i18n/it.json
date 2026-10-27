@@ -1680,6 +1680,7 @@
     "COLORS_SAVED": "Traduzioni dei colori salvate per filamenti e shop."
   },
   "SERVICE_QUOTES": {
+    "CHECKOUT_PREFILLED": "Dati ripresi dal preventivo accettato. Verificali e modificali se necessario.",
     "ADMIN_INVALID": "Completa i campi obbligatori del preventivo e verifica importi e scadenza.",
     "FIELD_REQUIRED": "Compila questo campo rispettando la lunghezza massima.",
     "CUSTOMER_DATA_NOTICE": "Il cliente inserirà email, anagrafica e indirizzo nella pagina di accettazione. Dopo aver accettato riceverà il PDF via email e potrà scaricarlo nella schermata di conferma.",

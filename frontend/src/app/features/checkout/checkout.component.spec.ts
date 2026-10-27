@@ -177,6 +177,8 @@ describe('CheckoutComponent', () => {
     platformId: Object = 'browser',
     queryParams: Record<string, unknown> = {},
     language = 'it',
+    fragment: string | null = null,
+    queryUpdates?: Subject<Record<string, unknown>>,
   ) {
     TestBed.resetTestingModule();
 
@@ -184,6 +186,7 @@ describe('CheckoutComponent', () => {
       'QuoteEstimatorService',
       [
         'getQuoteSession',
+        'getCadCheckoutCustomer',
         'getOptions',
         'getLineItemStlPreview',
         'updateCadCheckoutItem',
@@ -217,7 +220,8 @@ describe('CheckoutComponent', () => {
         {
           provide: ActivatedRoute,
           useValue: {
-            queryParams: of(queryParams),
+            queryParams: queryUpdates ?? of(queryParams),
+            snapshot: { fragment },
           },
         },
         {
@@ -264,6 +268,54 @@ describe('CheckoutComponent', () => {
     expect(component.itemColorSwatch(item)).toBe('#ff6b6b');
     expect(component.showItemMaterial(item)).toBeFalse();
     expect(component.showItemPrintMetrics(item)).toBeFalse();
+  });
+
+  it('prefills company details and address without accepting the order or overwriting edits', () => {
+    const { component, quoteService } = createComponent('browser', { session: 'session-1' }, 'it', 'prefill=' + 'a'.repeat(64));
+    quoteService.getQuoteSession.and.returnValue(of({ session: { id: 'session-1', status: 'CAD_ACTIVE' }, items: [] }));
+    const response = new Subject<import('../service-quotes/service-quotes.models').QuoteCustomer>();
+    quoteService.getCadCheckoutCustomer.and.returnValue(response);
+    component.ngOnInit();
+    const email = component.checkoutForm.get('email')!;
+    email.setValue('edited@example.test'); email.markAsDirty();
+    response.next({ email: 'accepted@example.test', customerType: 'BUSINESS', firstName: '', lastName: '', companyName: 'Example AG', contactPerson: 'Ada Example', addressLine1: 'Example 1', zip: '6900', city: 'Lugano', countryCode: 'CH', phone: '' });
+    expect(quoteService.getCadCheckoutCustomer).toHaveBeenCalledWith('session-1', 'a'.repeat(64));
+    expect(component.checkoutForm.get('email')?.value).toBe('edited@example.test');
+    expect(component.isCompany).toBeTrue();
+    expect(component.checkoutForm.get('billingAddress.companyName')?.value).toBe('Example AG');
+    expect(component.checkoutForm.get('billingAddress.referencePerson')?.value).toBe('Ada Example');
+    expect(component.checkoutForm.get('billingAddress.addressLine1')?.value).toBe('Example 1');
+    expect(component.checkoutForm.get('billingAddress')?.valid).toBeTrue();
+    expect(component.checkoutForm.get('phone')?.valid).toBeFalse();
+    expect(component.checkoutForm.get('acceptLegal')?.value).toBeFalse();
+    expect(component.checkoutForm.get('shippingAddress')?.disabled).toBeTrue();
+    expect(component.customerPrefilled()).toBeTrue();
+  });
+
+  it('clears customer details when switching checkout sessions and ignores the previous response', () => {
+    const updates = new Subject<Record<string, unknown>>();
+    const { component, quoteService } = createComponent('browser', {}, 'it', 'prefill=' + 'a'.repeat(64), updates);
+    quoteService.getQuoteSession.and.returnValue(of({ session: { id: 'session-1', status: 'CAD_ACTIVE' }, items: [] }));
+    const response = new Subject<import('../service-quotes/service-quotes.models').QuoteCustomer>();
+    quoteService.getCadCheckoutCustomer.and.returnValue(response);
+    component.ngOnInit(); updates.next({ session: 'session-1' });
+    component.checkoutForm.patchValue({ email: 'previous@example.test', billingAddress: { city: 'Lugano' }, acceptLegal: true });
+    Object.assign(TestBed.inject(ActivatedRoute).snapshot, { fragment: null });
+    updates.next({ session: 'session-2' });
+    response.next({ email: 'late@example.test', customerType: 'PRIVATE', firstName: 'Ada', lastName: 'Example', companyName: '', contactPerson: '', addressLine1: 'Example 1', zip: '6900', city: 'Lugano', countryCode: 'CH', phone: '' });
+    expect(component.checkoutForm.get('email')?.value).toBe('');
+    expect(component.checkoutForm.get('billingAddress.city')?.value).toBeNull();
+    expect(component.checkoutForm.get('acceptLegal')?.value).toBeFalse();
+    expect(component.customerPrefilled()).toBeFalse();
+  });
+
+  it('keeps manual checkout available without a prefill credential', () => {
+    const { component, quoteService } = createComponent('browser', { session: 'session-1' });
+    quoteService.getQuoteSession.and.returnValue(of({ session: { id: 'session-1', status: 'CAD_ACTIVE' }, items: [] }));
+    component.ngOnInit();
+    expect(quoteService.getCadCheckoutCustomer).not.toHaveBeenCalled();
+    expect(component.checkoutForm.get('email')?.value).toBe('');
+    expect(component.error).toBeNull();
   });
 
   it('skips session and palette fetch during SSR', () => {

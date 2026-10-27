@@ -1,3 +1,5 @@
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { QuoteCustomer } from '../service-quotes/service-quotes.models';
 import { ImagePreviewComponent } from '../../shared/components/image-preview/image-preview.component';
 import { ServiceLine } from '../../shared/models/service-line';
 import { AppDialogComponent } from '../../shared/components/app-dialog/app-dialog.component';
@@ -10,6 +12,7 @@ import {
 } from '../order-information/order-information.service';
 import {
   Component,
+  DestroyRef,
   inject,
   OnDestroy,
   OnInit,
@@ -115,6 +118,9 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
   checkoutForm: FormGroup;
   sessionId: string | null = null;
+  private readonly destroyRef = inject(DestroyRef);
+  private prefillKey = '';
+  readonly customerPrefilled = signal(false);
   loading = true;
   error: string | null = null;
   itemEditError = signal(false);
@@ -231,7 +237,17 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     this.loadMaterialColorPalette();
 
     this.route.queryParams.subscribe((params) => {
-      this.sessionId = params['session'];
+      const nextSessionId: string | null = params['session'] ?? null;
+      if (this.sessionId && this.sessionId !== nextSessionId) {
+        this.prefillKey = '';
+        this.customerPrefilled.set(false);
+        this.checkoutForm.reset({
+          email: '', phone: '', customerType: 'PRIVATE', shippingSameAsBilling: true, acceptLegal: false,
+          billingAddress: { countryCode: 'CH' }, shippingAddress: { countryCode: 'CH' },
+        });
+        this.setCustomerType('PRIVATE');
+      }
+      this.sessionId = nextSessionId;
       if (!this.sessionId) {
         this.error = 'CHECKOUT.ERR_NO_SESSION_START';
         this.loading = false;
@@ -244,13 +260,15 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   }
 
   loadSessionDetails() {
-    if (!this.sessionId) return; // Ensure sessionId is present before fetching
+    const sessionId = this.sessionId;
+    if (!sessionId) return;
     this.loading = true;
     this.error = null;
     this.quoteSession.set(null);
     this.resetPreviewState();
-    this.quoteService.getQuoteSession(this.sessionId).subscribe({
+    this.quoteService.getQuoteSession(sessionId).subscribe({
       next: (session) => {
+        if (this.sessionId !== sessionId) return;
         if (
           typeof session?.redirectPath === 'string' &&
           session.redirectPath.startsWith('/') &&
@@ -268,6 +286,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         }
         this.error = null;
         this.quoteSession.set(session);
+        this.loadCustomerPrefill();
         if (Array.isArray(session?.items) && session.items.length > 0) {
           this.loadModelPreviews(session);
         } else {
@@ -277,12 +296,48 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         this.loading = false;
       },
       error: (err) => {
+        if (this.sessionId !== sessionId) return;
         console.error('Failed to load session', err);
         this.quoteSession.set(null);
         this.resetPreviewState();
         this.error = 'CHECKOUT.ERR_LOAD_SESSION';
         this.loading = false;
       },
+    });
+  }
+
+  private loadCustomerPrefill(): void {
+    const sessionId = this.sessionId;
+    const token = new URLSearchParams(this.route.snapshot?.fragment ?? '').get('prefill');
+    if (!sessionId || !this.isCadSession() || !token || !/^[a-f0-9]{64}$/.test(token)) return;
+    const key = `${sessionId}:${token}`;
+    if (key === this.prefillKey) return;
+    this.prefillKey = key;
+    this.customerPrefilled.set(false);
+    this.quoteService.getCadCheckoutCustomer(sessionId, token).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: customer => {
+        if (this.sessionId !== sessionId || this.prefillKey !== key) return;
+        this.applyCustomerPrefill(customer);
+        this.customerPrefilled.set(true);
+      },
+      // A missing/revoked credential still permits normal manual checkout.
+      error: () => { if (this.prefillKey === key) this.customerPrefilled.set(false); },
+    });
+  }
+
+  private applyCustomerPrefill(customer: QuoteCustomer): void {
+    const fill = (group: FormGroup, values: Record<string, string | null | undefined>) => {
+      for (const [name, value] of Object.entries(values)) {
+        const control = group.get(name);
+        if (control?.pristine) control.setValue(value ?? '');
+      }
+    };
+    if (this.checkoutForm.get('customerType')?.pristine) this.setCustomerType(customer.customerType);
+    fill(this.checkoutForm, { email: customer.email, phone: customer.phone });
+    fill(this.checkoutForm.get('billingAddress') as FormGroup, {
+      firstName: customer.firstName, lastName: customer.lastName,
+      companyName: customer.companyName, referencePerson: customer.contactPerson,
+      addressLine1: customer.addressLine1, zip: customer.zip, city: customer.city, countryCode: customer.countryCode,
     });
   }
 

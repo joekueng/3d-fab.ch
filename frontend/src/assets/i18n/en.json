@@ -1679,6 +1679,7 @@
     "COLORS_SAVED": "Color translations saved for filaments and the shop."
   },
   "SERVICE_QUOTES": {
+    "CHECKOUT_PREFILLED": "Details filled from your accepted quote. Check them and update them if needed.",
     "ADMIN_INVALID": "Complete the required quote fields and check amounts and expiry.",
     "FIELD_REQUIRED": "Complete this field within the maximum length.",
     "CUSTOMER_DATA_NOTICE": "The customer enters their email, identity and address on the acceptance page. After accepting, they receive the PDF by email and can download it on the confirmation screen.",
