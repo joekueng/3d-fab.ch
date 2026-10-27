@@ -588,6 +588,26 @@ CAD content edits use `PUT /api/admin/cad-invoices/{sessionId}`. The path ID is
 authoritative even if `sessionId` is missing or different in the body. The existing
 POST remains the creation / calculator-session association contract. Ordinary
 content and metadata edits keep the same session and checkout URL.
+`calculatorSessionId` is a separate, editable source association: an explicit
+`null` detaches calculator content, another UUID selects a calculator session,
+and omission preserves the current association for older clients. The PUT path
+continues to identify the invoice and never changes its checkout URL. Selecting
+the invoice's own UUID restores its original print rows. Files and rows are not
+deleted or moved when switching; printed products and setup costs come from the
+selected source, while invoice services, notes and attachments remain local.
+External sources must be unconverted `ACTIVE` / `PRINT_QUOTE` sessions. Financial
+edits remain blocked for ordered invoices. Public summaries, previews, CAD item
+edits and order file snapshots use the selected source, retaining its storage
+ownership checks and copying order files from the source's own directory.
+
+Deployment adds nullable `calculator_session_id` (a self-reference) and
+`calculator_detached` to quote sessions, plus the lookup index, through Hibernate
+update or the idempotent additions in `db.sql`. Existing null values preserve
+invoice-owned print rows and require no backfill. The original setup fee is kept
+for restoration. Detaching retains the last external source reference; expiry
+cleanup and admin deletion preserve referenced sources. Switching to a different
+source releases the previous one to its normal expiry lifecycle. Issued orders
+continue to use their immutable snapshots.
 
 `POST /api/admin/cad-invoices/{sessionId}/delete` requires `linkAction`:
 `NEW_INVOICE` reserves the existing UUID for a blank replacement; `REDIRECT`

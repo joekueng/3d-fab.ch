@@ -392,8 +392,36 @@ public class AdminOperationsControllerService {
             throw new ResponseStatusException(CONFLICT, "Session already converted to order");
         }
 
+        if ("ACTIVE".equals(session.getStatus()) && session.getId() != null
+                && quoteSessionRepo.existsByCalculatorSession_Id(session.getId())) {
+            throw new ResponseStatusException(CONFLICT, "Calculator session is already used by an invoice");
+        }
+
         if ("CAD_DELETED".equals(session.getStatus()) && session.getDeletedRedirectPath() != null) {
             throw new ResponseStatusException(CONFLICT, "This deleted invoice link is reserved for a redirect");
+        }
+
+        if (session.getId() != null && orderRepo.existsBySourceQuoteSession_Id(session.getId())) {
+            throw new ResponseStatusException(CONFLICT, "Cannot change an invoice linked to an order");
+        }
+        if (payload.hasCalculatorSessionId()) {
+            UUID sourceId = payload.getCalculatorSessionId();
+            if (sourceId == null) {
+                // Retain the last external source so expiry cleanup cannot prevent reattachment.
+                session.setCalculatorDetached(true);
+            } else if (sourceId.equals(session.getId())) {
+                session.setCalculatorSession(null);
+                session.setCalculatorDetached(false);
+            } else {
+                QuoteSession source = quoteSessionRepo.findLockedById(sourceId)
+                        .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Calculator session not found"));
+                if (!"ACTIVE".equals(source.getStatus()) || !"PRINT_QUOTE".equals(source.getSessionType())
+                        || source.getConvertedOrderId() != null || orderRepo.existsBySourceQuoteSession_Id(sourceId)) {
+                    throw new ResponseStatusException(CONFLICT, "Choose an unconverted calculator session");
+                }
+                session.setCalculatorSession(source);
+                session.setCalculatorDetached(false);
+            }
         }
 
         if (payload.getSourceRequestId() != null) {
@@ -462,6 +490,9 @@ public class AdminOperationsControllerService {
         if (!"CAD_ACTIVE".equals(session.getStatus())) {
             throw new ResponseStatusException(BAD_REQUEST, "Not an active CAD invoice");
         }
+        if (quoteSessionRepo.existsByCalculatorSession_Id(sessionId)) {
+            throw new ResponseStatusException(CONFLICT, "Session is used by another invoice");
+        }
         if (payload == null || payload.linkAction() == null) {
             throw new ResponseStatusException(BAD_REQUEST, "Choose how to retain the old link");
         }
@@ -475,6 +506,8 @@ public class AdminOperationsControllerService {
         sessionAttachmentRepo.deleteAll(sessionAttachmentRepo.findByQuoteSessionIdOrderByCreatedAtAsc(sessionId));
         deleteSessionFiles(sessionId);
         // Keep only the link reservation. No previous invoice or customer content remains public.
+        session.setCalculatorSession(null);
+        session.setCalculatorDetached(true);
         session.setStatus("CAD_DELETED");
         session.setDeletedRedirectPath(redirectPath);
         session.setInformationDraftId(null);
@@ -502,6 +535,9 @@ public class AdminOperationsControllerService {
             throw new ResponseStatusException(CONFLICT, "Use CAD invoice deletion to preserve its link");
         }
 
+        if (quoteSessionRepo.existsByCalculatorSession_Id(sessionId)) {
+            throw new ResponseStatusException(CONFLICT, "Session is used by an invoice");
+        }
         deleteSessionFiles(sessionId);
         quoteSessionRepo.delete(session);
     }
@@ -595,7 +631,8 @@ public class AdminOperationsControllerService {
     }
 
     private AdminCadInvoiceDto toCadInvoiceDto(QuoteSession session) {
-        List<QuoteLineItem> items = quoteLineItemRepo.findByQuoteSessionId(session.getId());
+        QuoteSession source = session.getPrintSource();
+        List<QuoteLineItem> items = source == null ? List.of() : quoteLineItemRepo.findByQuoteSessionId(source.getId());
         QuoteSessionTotalsService.QuoteSessionTotals totals = quoteSessionTotalsService.compute(session, items);
 
         AdminCadInvoiceDto dto = new AdminCadInvoiceDto();
@@ -604,6 +641,7 @@ public class AdminOperationsControllerService {
         dto.setInvoiceName(session.getInvoiceName());
         dto.setCollaborationName(session.getCollaborationName());
         dto.setSessionId(session.getId());
+        dto.setCalculatorSessionId(source == null || source.getId().equals(session.getId()) && items.isEmpty() ? null : source.getId());
         dto.setSessionStatus(session.getStatus());
         dto.setSourceRequestId(session.getSourceRequestId());
         dto.setCadHours(session.getCadHours() != null ? session.getCadHours() : BigDecimal.ZERO);

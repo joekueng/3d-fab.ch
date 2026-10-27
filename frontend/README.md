@@ -81,6 +81,26 @@ See the [shared component guide](src/app/shared/components/README.md) for modal,
    }
    ```
 
+## Public routing and missing pages
+
+Public URLs use `/it`, `/en`, `/de`, or `/fr`. Express normalizes regional prefixes
+such as `/de-CH/about` to `/de/about` with HTTP 308, preserving query parameters;
+`LanguageService` applies the same language normalization during client navigation.
+Unprefixed pages and unsupported languages use Italian. Keep calculator and legacy
+product aliases in the same redirect so normalization reaches the final path directly.
+
+Unknown routes render the localized `NotFoundComponent` inside the shared site layout,
+preserve the requested path, and set request-local `RESPONSE_INIT.status` to 404.
+The page reuses the home hero typography, semantic color tokens and `ui-button`
+links. Its simple decorative SVG represents layered 404 digits and a missing
+piece under a printhead; keep it hidden from assistive technology. Home, calculator
+and contact links must retain the active language, including after switching locales.
+Their route data uses `seoNotFound: true` and `seoRobots: 'noindex, follow'` so
+`SeoService` removes canonical and hreflang links. Do not redirect missing pages to
+the homepage or publish invented language alternates for them. The Express bridge
+propagates the status and disables caching, as it does for shop errors.
+Verify production HTTP responses with `npm run build && npm run check:seo-ssr`.
+
 ## Product structured data
 
 `SeoService` must wait for the first completed router navigation before generating
@@ -293,11 +313,23 @@ issued document snapshots retain their agreed name and service details.
 explicitly simulated API and checks narrow-screen layout. Backend integration
 and pricing tests remain responsible for persistence, amounts and paid access.
 
-Keep the currently edited invoice ID separately from the form's optional source
-session field. Once an invoice is selected or saved, show that ID read-only and
-send content updates to `PUT /cad-invoices/{id}`. Keep the returned content in
-the form so saving again cannot accidentally replace it with blank service rows.
-Only the explicit new/interim-invoice action clears this identity.
+Keep the currently edited invoice ID separately from the form's optional
+calculator source field. The source field stays editable: clearing it sends
+`calculatorSessionId: null`; changing it sends the selected UUID. Always send
+content edits to `PUT /cad-invoices/{invoiceId}` so neither action creates a
+second checkout. Populate the field from the returned `calculatorSessionId`,
+not the invoice ID, and retain the saved service rows. Only explicit
+new/interim-invoice actions clear the editor's invoice identity.
+
+Changing the source previews its print rows without replacing services or
+attachments. Attachment operations remain bound to the invoice ID even when
+its calculator source is empty or different. Re-entering a previous source ID
+restores its files and prices without re-uploading them. Use one draft edit
+action for services and print pricing; metadata-only editing remains available
+for converted invoices. Keep action groups inside the table cell so shared
+mobile labels and desktop alignment stay intact. `UI-INVOICE-009` covers
+clear/save, reattachment, replacement, persistence in the editor and responsive
+layout with an explicitly simulated API.
 
 Draft deletion uses `app-dialog` and a required old-link decision. Cancel/Escape
 make no request. `NEW_INVOICE` opens an empty replacement form with the reserved

@@ -43,6 +43,9 @@ public class SessionCleanupService {
                 continue;
             }
 
+            if (sessionRepository.existsByCalculatorSession_Id(session.getId())) {
+                continue;
+            }
             try {
                 // Delete sessions only after their configured expiry has passed.
                 deleteSessionFiles(session.getId().toString());

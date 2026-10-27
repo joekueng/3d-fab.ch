@@ -14,6 +14,7 @@ Routes start in `src/app/app.routes.ts`. Keep feature code within its feature fo
 
 Read the [frontend README consistency workflow](README.md#preserve-the-existing-ui-in-every-feature) before implementing new UI.
 For product SEO, follow the [structured data conventions](README.md#product-structured-data).
+For language redirects and HTTP 404 responses, follow [public routing and missing pages](README.md#public-routing-and-missing-pages).
 
 ## UI source of truth
 

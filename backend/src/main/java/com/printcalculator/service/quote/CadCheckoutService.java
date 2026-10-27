@@ -15,6 +15,7 @@ import static org.springframework.http.HttpStatus.*;
 
 @Service
 public class CadCheckoutService {
+    private final QuoteSessionRepository sessions;
     private final QuoteLineItemRepository items;
     private final FilamentVariantRepository variants;
     private final PricingPolicyRepository policies;
@@ -25,7 +26,8 @@ public class CadCheckoutService {
     public CadCheckoutService(QuoteLineItemRepository items, FilamentVariantRepository variants,
                               PricingPolicyRepository policies, QuoteSessionTotalsService totals,
                               QuoteSessionResponseAssembler assembler,
-                              QuoteSessionAttachmentService attachments) {
+                              QuoteSessionAttachmentService attachments, QuoteSessionRepository sessions) {
+        this.sessions = sessions;
         this.items = items;
         this.variants = variants;
         this.policies = policies;
@@ -37,8 +39,16 @@ public class CadCheckoutService {
     @Transactional
     public Map<String, Object> update(UUID sessionId, UUID itemId, CadCheckoutItemRequest request) {
         var item = items.findById(itemId).orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
-        var session = item.getQuoteSession();
-        if (!sessionId.equals(session.getId())) throw new ResponseStatusException(NOT_FOUND);
+        var session = sessionId.equals(item.getQuoteSession().getId()) ? item.getQuoteSession()
+                : sessions.findLockedById(sessionId).orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
+        if (!session.includesPrintItem(item)) throw new ResponseStatusException(NOT_FOUND);
+        if (!sessionId.equals(item.getQuoteSession().getId())) {
+            var source = sessions.findLockedById(item.getQuoteSession().getId())
+                    .orElseThrow(() -> new ResponseStatusException(NOT_FOUND));
+            if ("CONVERTED".equals(source.getStatus()) || source.getConvertedOrderId() != null) {
+                throw new ResponseStatusException(CONFLICT, "Calculator session already converted to order");
+            }
+        }
         if (!"CAD_ACTIVE".equals(session.getStatus()) || !"READY".equals(item.getStatus())
                 || "SHOP_PRODUCT".equals(item.getLineItemType())) {
             throw new ResponseStatusException(BAD_REQUEST, "This item cannot be edited at CAD checkout");
@@ -76,7 +86,7 @@ public class CadCheckoutService {
         item.setColorCode(variant.getColorName());
         item.setUpdatedAt(OffsetDateTime.now());
         items.save(item);
-        var allItems = items.findByQuoteSessionIdOrderByCreatedAtAsc(sessionId);
+        var allItems = items.findByQuoteSessionIdOrderByCreatedAtAsc(item.getQuoteSession().getId());
         return assembler.assemble(
                 session,
                 allItems,

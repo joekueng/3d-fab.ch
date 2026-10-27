@@ -40,6 +40,22 @@ class QuoteSessionTotalsServiceTest {
     }
 
     @Test
+    void calculatorAssociationUsesSelectedSetupAndCanRestoreOriginalCosts() {
+        QuoteSession invoice = new QuoteSession();
+        invoice.setSetupCostChf(new BigDecimal("5"));
+        invoice.setCadHours(BigDecimal.ONE); invoice.setCadHourlyRateChf(new BigDecimal("50"));
+        QuoteSession source = new QuoteSession(); source.setSetupCostChf(new BigDecimal("9"));
+        when(quoteCalculator.calculateSessionMachineCost(any(), any())).thenReturn(BigDecimal.ZERO);
+        invoice.setCalculatorSession(source);
+        assertAmountEquals("59", service.compute(invoice, List.of()).grandTotalChf());
+        invoice.setCalculatorDetached(true);
+        assertAmountEquals("50", service.compute(invoice, List.of()).grandTotalChf());
+        assertAmountEquals("55", service.computeCalculatorSource(invoice, List.of()).grandTotalChf());
+        invoice.setCalculatorSession(null); invoice.setCalculatorDetached(false);
+        assertAmountEquals("55", service.compute(invoice, List.of()).grandTotalChf());
+    }
+
+    @Test
     void customHourlyAndFixedServicesRoundEachLineWithoutShippingOrCadDuplication() {
         QuoteSession session = new QuoteSession();
         session.setServiceLines(List.of(

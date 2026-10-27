@@ -25,7 +25,8 @@ class QuoteSessionStlPreviewTest {
     void servesConvertedStlFor3mfAndRetainsSessionAndFormatChecks() throws Exception {
         var items = mock(QuoteLineItemRepository.class);
         var storage = spy(new QuoteStorageService());
-        var controller = new QuoteSessionController(null, items, null, null, null, null, storage,
+        var sessions = mock(com.printcalculator.repository.QuoteSessionRepository.class);
+        var controller = new QuoteSessionController(sessions, items, null, null, null, null, storage,
                 null, null, null, null, null, null);
         var mvc = MockMvcBuilders.standaloneSetup(controller).build();
         var session = new QuoteSession();
@@ -46,8 +47,17 @@ class QuoteSessionStlPreviewTest {
                 .andExpect(content().contentType("model/stl"))
                 .andExpect(content().string("solid converted"));
         mvc.perform(get(route, UUID.randomUUID(), item.getId()))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
 
+        var invoice = new QuoteSession(); invoice.setId(UUID.randomUUID()); invoice.setStatus("CAD_ACTIVE");
+        invoice.setCalculatorSession(session);
+        when(sessions.findById(invoice.getId())).thenReturn(Optional.of(invoice));
+        mvc.perform(get(route, invoice.getId(), item.getId()))
+                .andExpect(status().isOk()).andExpect(content().string("solid converted"));
+        invoice.setCalculatorDetached(true);
+        mvc.perform(get(route, invoice.getId(), item.getId())).andExpect(status().isNotFound());
+        invoice.setCalculatorDetached(false);
+        mvc.perform(get(route, invoice.getId(), item.getId())).andExpect(status().isOk());
         item.setPricingBreakdown(Map.of());
         doReturn(tempDir.resolve("original.3mf")).when(storage)
                 .resolveStoredQuotePath("original.3mf", session.getId());

@@ -168,6 +168,16 @@ describe('LanguageService', () => {
     );
   });
 
+  it('normalizes regional language prefixes during client navigation', () => {
+    const translate = createTranslateMock();
+    const router = createRouterMock('/de-CH/about?ref=test#team');
+    const service = new LanguageService(translate, router);
+
+    expect(router.url).toBe('/de/about?ref=test#team');
+    expect(service.selectedLang()).toBe('de');
+    expect(service.localizedPath('/')).toBe('/de');
+  });
+
   it('builds localized paths for internal links while preserving query and hash', () => {
     const translate = createTranslateMock();
     const router = createRouterMock('/de/shop');

@@ -192,6 +192,7 @@ export interface AdminQuoteSessionDetail {
 }
 
 export interface AdminCreateCadInvoicePayload {
+  calculatorSessionId?: string | null;
   serviceLines?: ServiceLine[];
   clientName?: string;
   invoiceName?: string;
@@ -204,6 +205,7 @@ export interface AdminCreateCadInvoicePayload {
 }
 
 export interface AdminCadInvoice {
+  calculatorSessionId?: string | null;
   serviceLines?: ServiceLine[];
   clientName?: string;
   invoiceName?: string;

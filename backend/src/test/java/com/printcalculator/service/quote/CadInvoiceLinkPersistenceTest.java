@@ -15,6 +15,54 @@ import static org.mockito.Mockito.*;
 
 class CadInvoiceLinkPersistenceTest {
     @Test
+    void calculatorAssociationAndDetachmentSurviveReloadWithoutLosingTheOriginalSession() {
+        try (var factory = new Configuration().addAnnotatedClass(QuoteSession.class)
+                .setProperty("hibernate.connection.driver_class", "org.h2.Driver")
+                .setProperty("hibernate.connection.url", "jdbc:h2:mem:calculatorAssociation;DB_CLOSE_DELAY=-1")
+                .setProperty("hibernate.hbm2ddl.auto", "create-drop").buildSessionFactory()) {
+            UUID invoiceId; UUID sourceId;
+            try (var db = factory.openSession()) {
+                var tx = db.beginTransaction();
+                var source = persistentSession("ACTIVE"); db.persist(source);
+                var invoice = persistentSession("CAD_ACTIVE"); invoice.setCalculatorSession(source); db.persist(invoice);
+                tx.commit(); invoiceId = invoice.getId(); sourceId = source.getId();
+            }
+            try (var db = factory.openSession()) {
+                var tx = db.beginTransaction(); var invoice = db.find(QuoteSession.class, invoiceId);
+                assertEquals(sourceId, invoice.getPrintSource().getId());
+                invoice.setCalculatorSession(null); invoice.setCalculatorDetached(true); tx.commit();
+            }
+            try (var db = factory.openSession()) {
+                var tx = db.beginTransaction(); var invoice = db.find(QuoteSession.class, invoiceId);
+                assertNull(invoice.getPrintSource());
+                var source = db.find(QuoteSession.class, sourceId); assertNotNull(source);
+                assertEquals(new BigDecimal("5.00"), source.getSetupCostChf());
+                invoice.setCalculatorSession(source); invoice.setCalculatorDetached(false); tx.commit();
+            }
+            try (var db = factory.openSession()) {
+                assertEquals(sourceId, db.find(QuoteSession.class, invoiceId).getPrintSource().getId());
+            }
+        }
+    }
+
+    @Test
+    void expiryCleanupKeepsCalculatorSessionsRetainedByAnInvoice() {
+        var sessions = mock(QuoteSessionRepository.class);
+        var source = persistentSession("ACTIVE"); source.setId(UUID.randomUUID());
+        source.setExpiresAt(OffsetDateTime.now().minusDays(1));
+        when(sessions.findByExpiresAtBefore(any())).thenReturn(List.of(source));
+        when(sessions.existsByCalculatorSession_Id(source.getId())).thenReturn(true);
+        new SessionCleanupService(sessions).cleanupOldSessions();
+        verify(sessions, never()).delete(any());
+    }
+
+    private QuoteSession persistentSession(String status) {
+        var session = new QuoteSession(); session.setStatus(status); session.setSessionType("PRINT_QUOTE");
+        session.setMaterialCode("PLA"); session.setPricingVersion("v1"); session.setSetupCostChf(new BigDecimal("5"));
+        session.setExpiresAt(OffsetDateTime.now().plusDays(30)); return session;
+    }
+
+    @Test
     void retainsRedirectAndReactivatesReservedUuidAcrossDatabaseReloads() {
         try (var factory = new Configuration().addAnnotatedClass(QuoteSession.class)
                 .setProperty("hibernate.connection.driver_class", "org.h2.Driver")

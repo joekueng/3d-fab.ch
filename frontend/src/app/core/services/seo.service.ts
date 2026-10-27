@@ -153,8 +153,13 @@ export class SeoService {
     const ogTitle = this.resolveSeoText(mergedData, 'ogTitle', lang) ?? title;
     const ogDescription =
       this.resolveSeoText(mergedData, 'ogDescription', lang) ?? description;
-    const canonicalPath = this.buildLocalizedPath(cleanPath, lang);
-    const alternates = this.buildAlternatePaths(canonicalPath);
+    const canonicalPath =
+      mergedData['seoNotFound'] === true
+        ? null
+        : this.buildLocalizedPath(cleanPath, lang);
+    const alternates = canonicalPath
+      ? this.buildAlternatePaths(canonicalPath)
+      : null;
 
     this.applySeoValues(
       title,

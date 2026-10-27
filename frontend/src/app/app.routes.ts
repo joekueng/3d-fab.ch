@@ -151,7 +151,16 @@ const appChildRoutes: Routes = [
   },
   {
     path: '**',
-    redirectTo: '',
+    loadComponent: () =>
+      import('./features/not-found/not-found.component').then(
+        (m) => m.NotFoundComponent,
+      ),
+    data: {
+      seoTitleKey: 'NOT_FOUND.TITLE',
+      seoDescriptionKey: 'NOT_FOUND.DESCRIPTION',
+      seoRobots: 'noindex, follow',
+      seoNotFound: true,
+    },
   },
 ];
 
@@ -193,9 +202,5 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./core/layout/layout.component').then((m) => m.LayoutComponent),
     children: appChildRoutes,
-  },
-  {
-    path: '**',
-    redirectTo: '',
   },
 ];

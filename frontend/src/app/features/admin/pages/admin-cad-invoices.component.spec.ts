@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, PLATFORM_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { TranslateService } from '@ngx-translate/core';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import {
   AdminCadInvoicesComponent,
   hoursMinutesToSeconds,
@@ -19,22 +19,72 @@ import { AdminOrdersService } from '../services/admin-orders.service';
 
 const SESSION_ID = '11111111-1111-1111-1111-111111111111';
 
-describe('parseDecimalInput', () => {
-  it('keeps the edited invoice identity even if the session field is cleared', () => {
+describe('invoice editing', () => {
+  it('clears the calculator association while retaining the edited checkout and attachments', () => {
     const { component, adminOperationsService } = createComponent();
     const invoice = invoiceFixture();
     adminOperationsService.getAdminQuoteItems.and.returnValue(of(response()));
-    adminOperationsService.updateCadInvoice.and.returnValue(of(invoice));
+    adminOperationsService.updateCadInvoice.and.returnValue(
+      of({ ...invoice, calculatorSessionId: null }),
+    );
     component.editInvoice(invoice);
+    component.sessionAttachments = [imageAttachment()];
     component.form.sessionId = '';
+    component.onSessionIdChange();
+    expect(component.managedRows).toEqual([]);
+    expect(component.sessionAttachments).toEqual([imageAttachment()]);
+    expect(component.attachmentSessionId).toBe(SESSION_ID);
     component.createCadInvoice();
     expect(adminOperationsService.createCadInvoice).not.toHaveBeenCalled();
     expect(adminOperationsService.updateCadInvoice).toHaveBeenCalledWith(
       SESSION_ID,
-      jasmine.objectContaining({ sessionId: SESSION_ID }),
+      jasmine.objectContaining({
+        sessionId: SESSION_ID,
+        calculatorSessionId: null,
+      }),
     );
-    expect(component.form.sessionId).toBe(SESSION_ID);
+    expect(component.form.sessionId).toBe('');
     expect(component.serviceLines[0].description).toBe('Design');
+  });
+
+  it('changes and restores calculator IDs without replacing service rows or the checkout identity', () => {
+    const { component, adminOperationsService } = createComponent();
+    const other = '22222222-2222-2222-2222-222222222222';
+    adminOperationsService.getAdminQuoteItems.and.returnValue(of(response()));
+    component.editInvoice(invoiceFixture());
+    component.serviceLines[0].description = 'Keep my edits';
+    component.form.sessionId = other;
+    component.onSessionIdChange();
+    expect(component.draftSessionId).toBe(SESSION_ID);
+    expect(component.serviceLines[0].description).toBe('Keep my edits');
+    expect(adminOperationsService.getAdminQuoteItems).toHaveBeenCalledWith(
+      other,
+    );
+    adminOperationsService.updateCadInvoice.and.returnValue(
+      of({ ...invoiceFixture(), calculatorSessionId: other }),
+    );
+    component.createCadInvoice();
+    expect(adminOperationsService.updateCadInvoice).toHaveBeenCalledWith(
+      SESSION_ID,
+      jasmine.objectContaining({
+        sessionId: SESSION_ID,
+        calculatorSessionId: other,
+      }),
+    );
+    component.form.sessionId = SESSION_ID;
+    component.onSessionIdChange();
+    expect(adminOperationsService.getAdminQuoteItems).toHaveBeenCalledWith(
+      SESSION_ID,
+    );
+  });
+
+  it('rejects incomplete calculator IDs before saving', () => {
+    const { component, adminOperationsService } = createComponent();
+    component.editInvoice({ ...invoiceFixture(), calculatorSessionId: null });
+    component.form.sessionId = 'invalid';
+    component.createCadInvoice();
+    expect(adminOperationsService.updateCadInvoice).not.toHaveBeenCalled();
+    expect(component.errorMessage).toBe('CAD_PRINT_ITEMS.INVALID_SESSION');
   });
 
   it('selects the correct identity when switching from a draft to a converted invoice', () => {
@@ -72,7 +122,7 @@ describe('parseDecimalInput', () => {
       { linkAction: 'NEW_INVOICE', targetPath: undefined },
     );
     expect(component.draftSessionId).toBe(SESSION_ID);
-    expect(component.form.sessionId).toBe(SESSION_ID);
+    expect(component.form.sessionId).toBe('');
     expect(component.serviceLines[0].description).toBe('');
     expect(component.invoiceToDelete).toBeNull();
   });
@@ -127,6 +177,22 @@ describe('hoursMinutesToSeconds', () => {
 });
 
 describe('AdminCadInvoicesComponent session files', () => {
+  it('ignores a previous calculator price response after the source field changes', () => {
+    const { component, adminOperationsService } = createComponent();
+    const pending = new Subject<AdminQuoteItemsResponse>();
+    adminOperationsService.getAdminQuoteItems.and.returnValue(of(response()));
+    component.editInvoice(invoiceFixture());
+    adminOperationsService.updateAdminQuoteItemStats.and.returnValue(pending);
+    component.previewManagedChanges();
+    component.form.sessionId = '';
+    component.onSessionIdChange();
+    pending.next(response());
+    expect(component.managedSessionId).toBeNull();
+    expect(component.managedRows).toEqual([]);
+    expect(component.managedPreviewActive).toBeFalse();
+    expect(component.previewing).toBeFalse();
+  });
+
   it('loads print files when a complete session id is entered', () => {
     const { component, adminOperationsService } = createComponent();
     adminOperationsService.getAdminQuoteItems.and.returnValue(of(response()));
@@ -443,6 +509,7 @@ function imageAttachment(): QuoteSessionAttachment {
 function invoiceFixture(): AdminCadInvoice {
   return {
     sessionId: SESSION_ID,
+    calculatorSessionId: SESSION_ID,
     sessionStatus: 'CAD_ACTIVE',
     cadHours: 0,
     cadHourlyRateChf: 0,

@@ -1,0 +1,121 @@
+<section class="not-found" aria-labelledby="not-found-title">
+  <div class="container not-found-layout">
+    <div class="not-found-visual" aria-hidden="true">
+      <svg viewBox="60 40 420 270" fill="none" focusable="false">
+        <defs>
+          <pattern
+            id="not-found-layers"
+            width="8"
+            height="7"
+            patternUnits="userSpaceOnUse"
+          >
+            <rect width="8" height="5.5" fill="white" />
+          </pattern>
+          <mask id="not-found-layer-mask">
+            <rect width="540" height="440" fill="url(#not-found-layers)" />
+          </mask>
+        </defs>
+
+        <g class="not-found-digits" mask="url(#not-found-layer-mask)">
+          <path
+            d="M151 145h26v78h22v24h-22v29h-28v-29H94v-24zm-2 41-25 37h25z"
+            fill-rule="evenodd"
+          />
+          <path
+            d="M375 145h26v78h22v24h-22v29h-28v-29h-55v-24zm-2 41-25 37h25z"
+            fill-rule="evenodd"
+          />
+        </g>
+        <rect
+          class="not-found-missing-piece"
+          x="226"
+          y="148"
+          width="88"
+          height="128"
+          rx="44"
+        />
+
+        <rect
+          class="not-found-printhead"
+          x="244"
+          y="65"
+          width="52"
+          height="44"
+          rx="8"
+        />
+        <rect
+          class="not-found-printhead-detail"
+          x="254"
+          y="76"
+          width="32"
+          height="9"
+          rx="2"
+        />
+        <path class="not-found-nozzle" d="m258 109 8 15h8l8-15z" />
+        <path class="not-found-print-line" d="M270 128v12" />
+      </svg>
+    </div>
+
+    <div class="not-found-copy">
+      <p class="ui-eyebrow not-found-eyebrow">
+        {{ "NOT_FOUND.EYEBROW" | translate }}
+      </p>
+      <h1 id="not-found-title" class="ui-hero-display">
+        {{ "NOT_FOUND.TITLE" | translate }}
+      </h1>
+      <p class="ui-copy-subtitle not-found-description">
+        {{ "NOT_FOUND.DESCRIPTION" | translate }}
+      </p>
+
+      <div class="ui-inline-actions not-found-actions">
+        <a
+          class="ui-button not-found-home"
+          [routerLink]="languageService.localizedPath('/')"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.75"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path d="m12 5-7 7 7 7M5 12h14" />
+          </svg>
+          {{ "NOT_FOUND.BACK_HOME" | translate }}
+        </a>
+        <a
+          class="ui-button ui-button--ghost"
+          [routerLink]="languageService.localizedPath('/calculator/basic')"
+        >
+          {{ "NOT_FOUND.GO_CALCULATOR" | translate }}
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.75"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path d="m12 5 7 7-7 7M5 12h14" />
+          </svg>
+        </a>
+      </div>
+
+      <p class="not-found-help">
+        {{ "NOT_FOUND.HELP" | translate }}
+        <a [routerLink]="languageService.localizedPath('/contact')">{{
+          "NAV.CONTACT" | translate
+        }}</a>
+      </p>
+    </div>
+  </div>
+</section>

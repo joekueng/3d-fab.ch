@@ -80,7 +80,7 @@
 
 .managed-items-table app-input {
   display: block;
-  min-width: 90px;
+  min-width: 0;
 }
 
 .file-cell {
@@ -225,5 +225,80 @@
 
   .attachment-row .attachment-name {
     flex-basis: 100%;
+  }
+}
+
+.invoice-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.invoice-group-header {
+  margin-bottom: var(--space-3);
+}
+
+.invoice-group-header h2 {
+  margin: 0;
+}
+
+.cad-invoices-table td {
+  vertical-align: top;
+}
+
+.invoice-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 12rem;
+}
+
+.invoice-actions .actions:empty {
+  display: none;
+}
+
+.amount-cell {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.invoice-identity {
+  overflow-wrap: anywhere;
+}
+
+.managed-items-table {
+  table-layout: fixed;
+}
+
+.managed-items-table th:first-child {
+  width: 30%;
+}
+
+.managed-items-table th:nth-child(2),
+.managed-items-table th:nth-child(3),
+.managed-items-table th:nth-child(4) {
+  width: 8%;
+}
+
+.managed-items-table th:nth-child(5) {
+  width: 14%;
+}
+
+.managed-items-table .file-cell {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 720px) {
+  .invoice-name,
+  .file-cell {
+    max-width: none;
+    min-width: 0;
+  }
+
+  .invoice-actions {
+    min-width: 0;
   }
 }

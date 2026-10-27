@@ -195,7 +195,8 @@ public class QuoteSessionController {
                     .body(Map.of("redirectPath", session.getDeletedRedirectPath()));
         }
 
-        List<QuoteLineItem> items = lineItemRepo.findByQuoteSessionIdOrderByCreatedAtAsc(id);
+        QuoteSession source = session.getPrintSource();
+        List<QuoteLineItem> items = source == null ? List.of() : lineItemRepo.findByQuoteSessionIdOrderByCreatedAtAsc(source.getId());
         QuoteSessionTotalsService.QuoteSessionTotals totals = quoteSessionTotalsService.compute(session, items);
         return ResponseEntity.ok(quoteSessionResponseAssembler.assemble(
                 session,
@@ -226,6 +227,7 @@ public class QuoteSessionController {
     }
 
     @GetMapping(value = "/{sessionId}/line-items/{lineItemId}/content")
+    @Transactional(readOnly = true)
     public ResponseEntity<Resource> downloadLineItemContent(@PathVariable UUID sessionId,
                                                             @PathVariable UUID lineItemId,
                                                             @RequestParam(name = "preview", required = false, defaultValue = "false") boolean preview)
@@ -233,8 +235,10 @@ public class QuoteSessionController {
         QuoteLineItem item = lineItemRepo.findById(lineItemId)
                 .orElseThrow(() -> new RuntimeException("Item not found"));
 
-        if (!item.getQuoteSession().getId().equals(sessionId)) {
-            return ResponseEntity.badRequest().build();
+        QuoteSession accessSession = item.getQuoteSession().getId().equals(sessionId) ? item.getQuoteSession()
+                : sessionRepo.findById(sessionId).orElseThrow(() -> new ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND));
+        if ("CAD_DELETED".equals(accessSession.getStatus()) || !accessSession.includesPrintItem(item)) {
+            return ResponseEntity.notFound().build();
         }
 
         String targetStoredPath = item.getStoredPath();
@@ -249,7 +253,7 @@ public class QuoteSessionController {
             return ResponseEntity.notFound().build();
         }
 
-        java.nio.file.Path path = quoteStorageService.resolveStoredQuotePath(targetStoredPath, sessionId);
+        java.nio.file.Path path = quoteStorageService.resolveStoredQuotePath(targetStoredPath, item.getQuoteSession().getId());
         if (path == null || !java.nio.file.Files.exists(path)) {
             return ResponseEntity.notFound().build();
         }
@@ -264,14 +268,17 @@ public class QuoteSessionController {
     }
 
     @GetMapping(value = "/{sessionId}/line-items/{lineItemId}/stl-preview")
+    @Transactional(readOnly = true)
     public ResponseEntity<Resource> downloadLineItemStlPreview(@PathVariable UUID sessionId,
                                                                @PathVariable UUID lineItemId)
             throws IOException {
         QuoteLineItem item = lineItemRepo.findById(lineItemId)
                 .orElseThrow(() -> new RuntimeException("Item not found"));
 
-        if (!item.getQuoteSession().getId().equals(sessionId)) {
-            return ResponseEntity.badRequest().build();
+        QuoteSession accessSession = item.getQuoteSession().getId().equals(sessionId) ? item.getQuoteSession()
+                : sessionRepo.findById(sessionId).orElseThrow(() -> new ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND));
+        if ("CAD_DELETED".equals(accessSession.getStatus()) || !accessSession.includesPrintItem(item)) {
+            return ResponseEntity.notFound().build();
         }
 
         String convertedPath = quoteStorageService.extractConvertedStoredPath(item);
@@ -280,7 +287,7 @@ public class QuoteSessionController {
             return ResponseEntity.notFound().build();
         }
 
-        java.nio.file.Path path = quoteStorageService.resolveStoredQuotePath(targetStoredPath, sessionId);
+        java.nio.file.Path path = quoteStorageService.resolveStoredQuotePath(targetStoredPath, item.getQuoteSession().getId());
         if (path == null || !java.nio.file.Files.exists(path)) {
             return ResponseEntity.notFound().build();
         }

@@ -1,0 +1,140 @@
+:host {
+  display: block;
+}
+
+.not-found {
+  display: grid;
+  align-items: center;
+  min-height: calc(100svh - 20rem);
+  padding: clamp(3rem, 7vh, 6rem) 0;
+}
+
+.not-found-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(2.5rem, 6vw, 5.5rem);
+}
+
+.not-found-visual {
+  width: 100%;
+
+  > svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+}
+
+.not-found-digits,
+.not-found-printhead,
+.not-found-nozzle {
+  fill: var(--color-text);
+}
+
+.not-found-missing-piece {
+  fill: none;
+  stroke: var(--color-primary-700);
+  stroke-width: 3;
+  stroke-dasharray: 7 7;
+}
+
+.not-found-print-line {
+  stroke: var(--color-brand);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.not-found-printhead-detail {
+  fill: var(--color-brand);
+}
+
+.not-found-copy {
+  min-width: 0;
+}
+
+.not-found-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+
+  &::before {
+    content: "";
+    width: var(--space-6);
+    height: 3px;
+    flex: 0 0 auto;
+    background: var(--color-brand);
+  }
+}
+
+.not-found-description {
+  max-width: 28rem;
+  margin-bottom: var(--space-8);
+}
+
+.not-found-actions {
+  > a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-height: var(--space-12);
+    text-decoration: none;
+  }
+
+  svg {
+    flex: 0 0 auto;
+  }
+}
+
+.not-found-help {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-8) 0 0;
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+
+  a {
+    color: var(--color-text);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+
+@media (max-width: 767px) {
+  .not-found {
+    min-height: auto;
+    padding: var(--space-8) 0 var(--space-4);
+  }
+
+  .not-found-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-8);
+    text-align: center;
+  }
+
+  .not-found-visual {
+    max-width: 21rem;
+    justify-self: center;
+  }
+
+  .not-found-eyebrow,
+  .not-found-actions,
+  .not-found-help {
+    justify-content: center;
+  }
+
+  .not-found-description {
+    margin-inline: auto;
+    margin-bottom: var(--space-6);
+  }
+
+  .not-found-help {
+    margin-top: var(--space-6);
+  }
+}
