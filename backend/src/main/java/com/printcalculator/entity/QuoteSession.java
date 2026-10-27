@@ -15,6 +15,14 @@ import java.util.UUID;
                 columnList = "expires_at"),
         @Index(name = "ix_quote_sessions_calculator_session", columnList = "calculator_session_id")})
 public class QuoteSession {
+    @Column(name="service_quote_id") private UUID serviceQuoteId;
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+    @Column(name="service_quote_reference") private com.printcalculator.dto.ServiceQuoteReference serviceQuoteReference;
+    public UUID getServiceQuoteId() { return serviceQuoteId; }
+    public void setServiceQuoteId(UUID id) { serviceQuoteId=id; }
+    public com.printcalculator.dto.ServiceQuoteReference getServiceQuoteReference() { return serviceQuoteReference; }
+    public void setServiceQuoteReference(com.printcalculator.dto.ServiceQuoteReference reference) { serviceQuoteReference=reference; }
+
     @com.fasterxml.jackson.annotation.JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "calculator_session_id", foreignKey = @ForeignKey(name = "fk_quote_sessions_calculator_session"))

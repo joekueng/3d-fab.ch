@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface QuoteSessionRepository extends JpaRepository<QuoteSession, UUID> {
+    java.util.List<QuoteSession> findByServiceQuoteId(UUID serviceQuoteId);
     boolean existsByCalculatorSession_Id(UUID id);
 
     @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)

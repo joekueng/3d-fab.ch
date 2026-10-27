@@ -1,0 +1,7 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${language}">
+<head><meta charset="UTF-8"/><title th:text="${emailTitle}"></title><style th:replace="~{email/fragments/layout :: styles}"></style></head>
+<body><div class="container"><div th:replace="~{email/fragments/layout :: header(${emailTitle})}"></div>
+<div class="content"><p th:text="${introText}"></p><p th:text="${quoteTitle}"></p>
+<p th:if="${actionUrl != null}"><span th:text="${actionText}"></span>: <a th:href="${actionUrl}" th:text="${actionUrl}"></a></p>
+</div><div th:replace="~{email/fragments/layout :: footer(${footerText})}"></div></div></body></html>

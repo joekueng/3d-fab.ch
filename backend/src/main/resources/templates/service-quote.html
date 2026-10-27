@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${language}">
+<head><meta charset="utf-8"/>
+<style>
+@page { size: A4; margin: 18mm;
+  @bottom-left { content: "3D Fab Küng Caletti · info@3dfab.ch"; font-family: Helvetica, sans-serif; font-size: 8pt; color: #666; }
+  @bottom-right { content: counter(page); font-family: Helvetica, sans-serif; font-size: 8pt; color: #666; }
+}
+body { font-family: Helvetica, Arial, sans-serif; font-size: 10pt; line-height: 1.45; color: #191d22; margin: 0; }
+table { width: 174mm; border-collapse: collapse; table-layout: fixed; } td { vertical-align: top; }
+.header { margin-bottom: 14mm; } .brand { width: 90mm; } .logo { width: 58mm; height: 7.07mm; }
+.seller { text-align: right; font-size: 8.5pt; color: #555; line-height: 1.6; }
+h1 { font-size: 26pt; letter-spacing: -0.5pt; margin: 0; border-bottom: 2pt solid #facf0c; padding-bottom: 4mm; }
+h2 { font-size: 14pt; margin-top: 7mm; } .reference { color: #555; font-size: 9pt; overflow-wrap: break-word; }
+.description { white-space: pre-wrap; overflow-wrap: break-word; } .muted { color: #646970; font-size: 8pt; }
+.summary { margin-top: 7mm; page-break-inside: avoid; } .summary td { padding: 2mm 0; }
+.value { text-align: right; } .maximum { font-weight: bold; font-size: 13pt; border-top: 1pt solid #191d22; border-bottom: 1pt solid #191d22; }
+.customer { margin-top: 8mm; } .acceptance { margin-top: 8mm; } .meta { font-size: 8pt; overflow-wrap: break-word; }
+</style></head>
+<body>
+<table class="header"><tr><td class="brand"><img class="logo" src="invoice-logo.svg" alt="3D Fab"/></td><td class="seller"><strong>3D Fab Küng Caletti</strong><br/>Joe Küng · Matteo Caletti<br/><span th:text="${location}"></span><br/>info@3dfab.ch</td></tr></table>
+<h1 th:text="${acceptance == null ? labels.preview : labels.accepted}"></h1>
+<h2 th:text="${content.title}"></h2>
+<p class="reference"><span th:text="${revision.quoteId}"></span> · r<span th:text="${revision.revisionNumber}"></span></p>
+<h2 th:text="${labels.description}"></h2><div class="description" th:text="${content.description}"></div>
+<div class="summary"><p th:text="${content.pricingMode.name() == 'HOURLY_ESTIMATE' ? labels.hourly : labels.lump}"></p>
+<p th:if="${content.pricingMode.name() == 'HOURLY_ESTIMATE'}"><span th:text="${content.estimatedHours}"></span> h × CHF <span th:text="${content.hourlyRateChf}"></span></p>
+<table><tr><td th:text="${labels.estimate}"></td><td class="value">CHF <span th:text="${revision.estimatedAmountChf}"></span></td></tr>
+<tr><td th:text="${labels.variation}"></td><td class="value" th:text="${variation}"></td></tr>
+<tr class="maximum"><td th:text="${labels.maximum}"></td><td class="value">CHF <span th:text="${revision.maximumAmountChf}"></span></td></tr></table>
+<p class="muted" th:text="${labels.scope}"></p><p><span th:text="${labels.validUntil}"></span>: <span th:text="${validUntil}"></span></p></div>
+<div class="customer" th:if="${acceptance != null}"><h2 th:text="${labels.customer}"></h2>
+<div th:if="${acceptance.customer.customerType == 'BUSINESS'}"><strong th:text="${acceptance.customer.companyName}"></strong><br/><span th:text="${acceptance.customer.contactPerson}"></span></div>
+<div th:unless="${acceptance.customer.customerType == 'BUSINESS'}"><strong th:text="${acceptance.customer.firstName + ' ' + acceptance.customer.lastName}"></strong></div>
+<div th:text="${acceptance.customer.addressLine1}"></div><div th:text="${acceptance.customer.zip + ' ' + acceptance.customer.city + ', ' + acceptance.customer.countryCode}"></div>
+<div th:text="${acceptance.customer.email}"></div><div th:text="${acceptance.customer.phone}"></div>
+<p><span th:text="${labels.acceptedAt}"></span>: <span th:text="${acceptedAt}"></span></p><p class="meta" th:text="${acceptance.id}"></p></div>
+<div class="acceptance"><p th:text="${revision.acceptanceText}"></p><p class="meta"><span th:text="${labels.termsVersion}"></span>: <span th:text="${revision.termsVersion}"></span><br/><span th:text="${labels.privacyVersion}"></span>: <span th:text="${revision.privacyVersion}"></span></p></div>
+</body></html>

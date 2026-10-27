@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface EmailLogRepository extends JpaRepository<EmailLog, UUID> {
+    List<EmailLog> findByServiceQuoteIdOrderByAttemptedAtDesc(UUID serviceQuoteId);
     List<EmailLog> findByOrder_IdOrderByAttemptedAtDesc(UUID orderId);
 
     boolean existsByOrder_IdAndEventTypeAndStatusIn(UUID orderId, String eventType, List<String> statuses);

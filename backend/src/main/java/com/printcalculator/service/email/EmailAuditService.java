@@ -89,6 +89,15 @@ public class EmailAuditService {
                 recipient, subject, "quote-session", null, result, null));
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void recordServiceQuoteEmail(UUID quoteId, UUID revisionId, UUID documentId,
+            String event, String recipient, String subject, String attachmentName, EmailSendResult result) {
+        EmailLog log=buildBaseLog("SERVICE_QUOTE", event, ORIGIN_SYSTEM, recipient, subject,
+            "service-quote", attachmentName, result, null);
+        log.setServiceQuoteId(quoteId); log.setServiceQuoteRevisionId(revisionId); log.setServiceQuoteDocumentId(documentId);
+        emailLogRepository.save(log);
+    }
+
     public List<AdminEmailLogDto> getOrderEmailLogDtos(UUID orderId) {
         return emailLogRepository.findByOrder_IdOrderByAttemptedAtDesc(orderId)
                 .stream()

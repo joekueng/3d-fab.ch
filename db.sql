@@ -1783,3 +1783,44 @@ ALTER TABLE quote_sessions ADD COLUMN IF NOT EXISTS calculator_session_id uuid
     CONSTRAINT fk_quote_sessions_calculator_session REFERENCES quote_sessions (quote_session_id);
 ALTER TABLE quote_sessions ADD COLUMN IF NOT EXISTS calculator_detached boolean;
 CREATE INDEX IF NOT EXISTS ix_quote_sessions_calculator_session ON quote_sessions (calculator_session_id);
+
+-- Commercial service estimates: published content and acceptances are immutable.
+CREATE TABLE IF NOT EXISTS service_quotes (
+    id uuid PRIMARY KEY, version bigint NOT NULL DEFAULT 0,
+    client_name varchar(160), collaboration_name varchar(160), source_request_id uuid,
+    draft jsonb, next_revision integer NOT NULL DEFAULT 1, created_at timestamptz NOT NULL
+);
+CREATE TABLE IF NOT EXISTS service_quote_revisions (
+    id uuid PRIMARY KEY, quote_id uuid NOT NULL REFERENCES service_quotes(id),
+    revision_number integer NOT NULL, content jsonb NOT NULL,
+    estimated_amount_chf numeric(12,2) NOT NULL, maximum_amount_chf numeric(12,2) NOT NULL,
+    acceptance_text varchar(3000) NOT NULL, content_version varchar(64) NOT NULL,
+    terms_version varchar(64) NOT NULL, privacy_version varchar(64) NOT NULL,
+    published_at timestamptz NOT NULL, revoked_at timestamptz, superseded_at timestamptz,
+    CONSTRAINT uq_service_quote_revision UNIQUE (quote_id, revision_number)
+);
+CREATE TABLE IF NOT EXISTS service_quote_public_links (
+    id uuid PRIMARY KEY, revision_id uuid NOT NULL UNIQUE REFERENCES service_quote_revisions(id),
+    access_token varchar(100) NOT NULL, created_at timestamptz NOT NULL, revoked_at timestamptz
+);
+CREATE TABLE IF NOT EXISTS service_quote_acceptances (
+    id uuid PRIMARY KEY, revision_id uuid NOT NULL UNIQUE REFERENCES service_quote_revisions(id),
+    customer jsonb NOT NULL, accepted_at timestamptz NOT NULL, client_ip varchar(45),
+    request_id uuid NOT NULL, request_hash varchar(64) NOT NULL,
+    download_token_hash varchar(64) NOT NULL, download_expires_at timestamptz NOT NULL,
+    accept_quote boolean NOT NULL, accept_terms boolean NOT NULL, accept_privacy boolean NOT NULL
+);
+CREATE TABLE IF NOT EXISTS service_quote_documents (
+    id uuid PRIMARY KEY, acceptance_id uuid NOT NULL UNIQUE REFERENCES service_quote_acceptances(id),
+    status varchar(20) NOT NULL, email_status varchar(20), admin_email_status varchar(20),
+    template_version varchar(64) NOT NULL, generated_at timestamptz,
+    storage_key varchar(160), document_hash varchar(64), size_bytes bigint
+);
+ALTER TABLE quote_sessions ADD COLUMN IF NOT EXISTS service_quote_id uuid REFERENCES service_quotes(id);
+ALTER TABLE quote_sessions ADD COLUMN IF NOT EXISTS service_quote_reference jsonb;
+ALTER TABLE email_logs ADD COLUMN IF NOT EXISTS service_quote_id uuid REFERENCES service_quotes(id);
+ALTER TABLE email_logs ADD COLUMN IF NOT EXISTS service_quote_revision_id uuid REFERENCES service_quote_revisions(id);
+ALTER TABLE email_logs ADD COLUMN IF NOT EXISTS service_quote_document_id uuid REFERENCES service_quote_documents(id);
+CREATE INDEX IF NOT EXISTS ix_quote_sessions_service_quote ON quote_sessions(service_quote_id);
+CREATE INDEX IF NOT EXISTS ix_email_logs_service_quote ON email_logs(service_quote_id);
+CREATE INDEX IF NOT EXISTS ix_service_quote_documents_status ON service_quote_documents(status);

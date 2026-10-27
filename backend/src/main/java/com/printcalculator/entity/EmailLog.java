@@ -22,6 +22,16 @@ import java.util.UUID;
         @Index(name = "ix_email_logs_attempted_at", columnList = "attempted_at")
 })
 public class EmailLog {
+    @Column(name="service_quote_id") private UUID serviceQuoteId;
+    @Column(name="service_quote_revision_id") private UUID serviceQuoteRevisionId;
+    @Column(name="service_quote_document_id") private UUID serviceQuoteDocumentId;
+    public UUID getServiceQuoteId() { return serviceQuoteId; }
+    public void setServiceQuoteId(UUID id) { serviceQuoteId=id; }
+    public UUID getServiceQuoteRevisionId() { return serviceQuoteRevisionId; }
+    public void setServiceQuoteRevisionId(UUID id) { serviceQuoteRevisionId=id; }
+    public UUID getServiceQuoteDocumentId() { return serviceQuoteDocumentId; }
+    public void setServiceQuoteDocumentId(UUID id) { serviceQuoteDocumentId=id; }
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "email_log_id", nullable = false)
