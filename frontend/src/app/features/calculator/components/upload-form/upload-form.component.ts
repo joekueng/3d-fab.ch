@@ -1442,7 +1442,7 @@ export class UploadFormComponent implements OnInit {
         ? item.layerHeight
         : normalizeNumber(
             allowedLayers[0]?.value,
-          this.technicalMaterialLayerHeights[0],
+            this.technicalMaterialLayerHeights[0],
           ),
     };
   }
@@ -1457,7 +1457,7 @@ export class UploadFormComponent implements OnInit {
         ? perNozzle
         : this.allLayerHeights.length > 0
           ? this.allLayerHeights
-          : [{label: '0.20 mm', value: 0.2}];
+          : [{ label: '0.20 mm', value: 0.2 }];
     if (!this.isTechnicalMaterial(materialCode)) {
       return available;
     }
