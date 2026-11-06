@@ -226,13 +226,15 @@ describe('UploadFormComponent', () => {
     component.form.get('material')?.setValue('PA12-CF');
     fixture.detectChanges();
     const element: HTMLElement = fixture.nativeElement;
-    const controls = element.querySelector<HTMLElement>('.easy-global-controls')!;
+    const controls = element.querySelector<HTMLElement>(
+      '.easy-global-controls',
+    )!;
     for (const width of [320, 1200]) {
       element.style.display = 'block';
       element.style.width = `${width}px`;
-      expect(controls.scrollWidth).withContext(`${width}px`).toBeLessThanOrEqual(
-        controls.clientWidth,
-      );
+      expect(controls.scrollWidth)
+        .withContext(`${width}px`)
+        .toBeLessThanOrEqual(controls.clientWidth);
     }
   });
   it('keeps every setting isolated and displays the selected file values', async () => {

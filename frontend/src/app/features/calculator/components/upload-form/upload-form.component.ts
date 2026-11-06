@@ -61,8 +61,10 @@ const MATERIAL_LABEL_KEYS: Readonly<Record<string, string>> = {
   flessibile: 'CALC.OPTION_FLEXIBLE',
   'uv resistant': 'CALC.MATERIAL_LABELS.UV_RESISTANT',
   'uv resistent': 'CALC.MATERIAL_LABELS.UV_RESISTANT',
-  'high temperature resistance': 'CALC.MATERIAL_LABELS.HIGH_TEMPERATURE_RESISTANCE',
-  'high temperature resistence': 'CALC.MATERIAL_LABELS.HIGH_TEMPERATURE_RESISTANCE',
+  'high temperature resistance':
+    'CALC.MATERIAL_LABELS.HIGH_TEMPERATURE_RESISTANCE',
+  'high temperature resistence':
+    'CALC.MATERIAL_LABELS.HIGH_TEMPERATURE_RESISTANCE',
   'very high temperature resistance':
     'CALC.MATERIAL_LABELS.VERY_HIGH_TEMPERATURE_RESISTANCE',
   'very high temperature resistence':
