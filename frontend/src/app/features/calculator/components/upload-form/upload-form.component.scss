@@ -210,6 +210,7 @@
 .easy-global-field {
   display: flex;
   flex-direction: column;
+  min-width: 0;
   gap: var(--space-1);
 
   span {
@@ -221,6 +222,7 @@
   }
 
   select {
+    min-width: 0;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     padding: 0.55rem 0.75rem;

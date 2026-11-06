@@ -217,6 +217,15 @@ float noise. The A1 and P2S profiles therefore include the full 256 × 256 × 25
 249, 250 and 256 mm cubes do not require splitting, while 257 and 270 mm cubes do.
 An unrelated slicer failure inside the volume must remain a processing failure.
 
+Placement retries also cover Orca's `found gcode in unprintable area` errors
+(including supports extending beyond the bed) and `gcode path conflicts found
+between` errors for overlapping objects in a 3MF. Reuse the existing arrangement,
+rotation and orientation attempts with support settings unchanged and all CLI
+checks enabled. Delete previous G-code before each attempt: failed post-slicing
+checks can leave rejected output that must never supply a later quote. Persistent
+object conflicts remain processing failures; only physical oversize requires
+splitting. See `SlicerPlacementRegressionTest` for recovery and output validation.
+
 ## Email transaction boundaries
 
 Order and contact-request creation publish domain events inside the service transaction.

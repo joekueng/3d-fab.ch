@@ -56,6 +56,22 @@ import {
   toNozzleKey,
 } from './upload-form-settings.util';
 
+const MATERIAL_LABEL_KEYS: Readonly<Record<string, string>> = {
+  flexible: 'CALC.OPTION_FLEXIBLE',
+  flessibile: 'CALC.OPTION_FLEXIBLE',
+  'uv resistant': 'CALC.MATERIAL_LABELS.UV_RESISTANT',
+  'uv resistent': 'CALC.MATERIAL_LABELS.UV_RESISTANT',
+  'high temperature resistance': 'CALC.MATERIAL_LABELS.HIGH_TEMPERATURE_RESISTANCE',
+  'high temperature resistence': 'CALC.MATERIAL_LABELS.HIGH_TEMPERATURE_RESISTANCE',
+  'very high temperature resistance':
+    'CALC.MATERIAL_LABELS.VERY_HIGH_TEMPERATURE_RESISTANCE',
+  'very high temperature resistence':
+    'CALC.MATERIAL_LABELS.VERY_HIGH_TEMPERATURE_RESISTANCE',
+  'high resistance': 'CALC.MATERIAL_LABELS.HIGH_RESISTANCE',
+  'high resistence': 'CALC.MATERIAL_LABELS.HIGH_RESISTANCE',
+  'food grade': 'CALC.MATERIAL_LABELS.FOOD_GRADE',
+};
+
 @Component({
   selector: 'app-upload-form',
   standalone: true,
@@ -1632,12 +1648,25 @@ export class UploadFormComponent implements OnInit {
 
   private localizeMaterialLabel(material: MaterialOption): string {
     const code = String(material.code || '').trim();
-    const backendLabel = String(material.label || '');
-    const typeKey = /\(Flexible\)$/i.test(backendLabel)
-      ? 'CALC.OPTION_FLEXIBLE'
-      : material.isTechnical
-        ? 'CALC.OPTION_TECHNICAL'
-        : 'CALC.OPTION_STANDARD';
+    const backendLabel = String(material.label || '').trim();
+    const prefix = `${code} (`;
+    const suffix =
+      backendLabel.startsWith(prefix) && backendLabel.endsWith(')')
+        ? backendLabel.slice(prefix.length, -1).trim()
+        : '';
+    const normalizedSuffix = suffix.toLowerCase().replace(/\s+/g, ' ');
+    const translationKey = Object.hasOwn(MATERIAL_LABEL_KEYS, normalizedSuffix)
+      ? MATERIAL_LABEL_KEYS[normalizedSuffix]
+      : undefined;
+    if (translationKey) {
+      return `${code} (${this.translate.instant(translationKey)})`;
+    }
+    if (suffix && !['standard', 'technical'].includes(normalizedSuffix)) {
+      return `${code} (${suffix})`;
+    }
+    const typeKey = material.isTechnical
+      ? 'CALC.OPTION_TECHNICAL'
+      : 'CALC.OPTION_STANDARD';
     return `${code} (${this.translate.instant(typeKey)})`;
   }
 

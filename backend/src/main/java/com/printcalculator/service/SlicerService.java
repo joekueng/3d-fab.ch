@@ -153,6 +153,10 @@ public class SlicerService {
                             + ": " + String.join(" ", processBuilder.command()));
 
                     Files.deleteIfExists(slicerLogPath);
+                    // Failed placement checks can leave complete but rejected G-code.
+                    // Never reuse it if the next attempt produces no output.
+                    Files.deleteIfExists(tempDir.resolve(basename + ".gcode"));
+                    Files.deleteIfExists(tempDir.resolve("plate_1.gcode"));
                     processBuilder.directory(tempDir.toFile());
                     processBuilder.redirectErrorStream(true);
                     processBuilder.redirectOutput(slicerLogPath.toFile());
@@ -173,8 +177,8 @@ public class SlicerService {
 
                     if (process.exitValue() != 0) {
                         boolean hasMorePlacementAttempts = attemptIndex < sliceAttempts.size() - 1;
-                        if (hasMorePlacementAttempts && isOutOfVolumeError(output)) {
-                            logger.warning("Slicer reported model out of printable area for " + inputVariant.label()
+                        if (hasMorePlacementAttempts && isPlacementError(output)) {
+                            logger.warning("Slicer reported a placement problem for " + inputVariant.label()
                                     + ", retrying" + sliceAttempts.get(attemptIndex + 1).logSuffix() + ".");
                             continue;
                         }
@@ -377,14 +381,22 @@ public class SlicerService {
         return BigDecimal.valueOf(Math.ceil(value)).stripTrailingZeros().toPlainString();
     }
 
+    private boolean isPlacementError(String errorLog) {
+        return isOutOfVolumeError(errorLog)
+                || (errorLog != null && errorLog.toLowerCase(java.util.Locale.ROOT)
+                .contains("gcode path conflicts found between"));
+    }
+
     private boolean isOutOfVolumeError(String errorLog) {
         if (errorLog == null || errorLog.isBlank()) {
             return false;
         }
 
-        String normalized = errorLog.toLowerCase();
+        String normalized = errorLog.toLowerCase(java.util.Locale.ROOT);
         return normalized.contains("nothing to be sliced")
-                || normalized.contains("no object is fully inside the print volume");
+                || normalized.contains("no object is fully inside the print volume")
+                || normalized.contains("found gcode in unprintable area of the printers")
+                || normalized.contains("found gcode in unprintable area of multi extruder printers");
     }
 
     private boolean isLargerThanPrintableVolume(File input, ObjectNode machineProfile) {

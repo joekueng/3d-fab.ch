@@ -769,6 +769,13 @@
     "OPTION_STANDARD": "Standard",
     "OPTION_FLEXIBLE": "Flexibel",
     "OPTION_TECHNICAL": "Technisch",
+    "MATERIAL_LABELS": {
+      "UV_RESISTANT": "UV-beständig",
+      "HIGH_TEMPERATURE_RESISTANCE": "Hohe Temperaturbeständigkeit",
+      "VERY_HIGH_TEMPERATURE_RESISTANCE": "Sehr hohe Temperaturbeständigkeit",
+      "HIGH_RESISTANCE": "Hohe Festigkeit",
+      "FOOD_GRADE": "Für Lebensmittel geeignet"
+    },
     "NOT_AVAILABLE": "N/V",
     "VALUE_ON": "Aktiviert",
     "VALUE_OFF": "Deaktiviert",

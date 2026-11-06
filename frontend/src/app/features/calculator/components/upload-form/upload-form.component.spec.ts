@@ -5,6 +5,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideTranslateService, TranslateService } from '@ngx-translate/core';
 import { NEVER, Subject, firstValueFrom, of, finalize } from 'rxjs';
 import deTranslations from '../../../../../assets/i18n/de.json';
+import enTranslations from '../../../../../assets/i18n/en.json';
+import frTranslations from '../../../../../assets/i18n/fr.json';
 import itTranslations from '../../../../../assets/i18n/it.json';
 import { LanguageService } from '../../../../core/services/language.service';
 import {
@@ -54,6 +56,20 @@ describe('UploadFormComponent', () => {
         isTechnical: false,
         variants: [],
       },
+      ...[
+        ['ASA', 'UV Resistent'],
+        ['PA12-CF', 'Very High Temperature resistence'],
+        ['PC-ABS', 'High Temperature resistance'],
+        ['PET-CF', 'High Resistence'],
+        ['PETG-FOOD', 'Food Grade'],
+        ['TPU 85A', 'Flessibile'],
+        ['CUSTOM', 'Workshop label (custom)'],
+      ].map(([code, label]) => ({
+        code,
+        label: `${code} (${label})`,
+        isTechnical: true,
+        variants: [],
+      })),
     ],
     qualities: [
       { id: 'draft', label: 'Draft' },
@@ -115,6 +131,8 @@ describe('UploadFormComponent', () => {
     translate.setFallbackLang('it');
     translate.setTranslation('de', deTranslations);
     translate.setTranslation('it', itTranslations);
+    translate.setTranslation('en', enTranslations);
+    translate.setTranslation('fr', frTranslations);
     await firstValueFrom(translate.use('de'));
 
     fixture = TestBed.createComponent(UploadFormComponent);
@@ -145,6 +163,77 @@ describe('UploadFormComponent', () => {
     ]);
     expect(component.infillPatterns()[0]?.label).toBe('Griglia');
     expect(component.form.get('quality')?.value).toBe('extra_fine');
+  });
+
+  it('renders configured material labels in every locale and preserves selections', async () => {
+    component.setFiles([new File(['model'], 'material.3mf')]);
+    component.form.get('material')?.setValue('ASA');
+    const expectedByLocale = {
+      it: [
+        'ASA (Resistente ai raggi UV)',
+        'PA12-CF (Resistente a temperature molto elevate)',
+        'PC-ABS (Resistente alle alte temperature)',
+        'PET-CF (Alta resistenza)',
+        'PETG-FOOD (Per uso alimentare)',
+        'TPU 85A (Flessibile)',
+      ],
+      en: [
+        'ASA (UV resistant)',
+        'PA12-CF (Very high temperature resistance)',
+        'PC-ABS (High temperature resistance)',
+        'PET-CF (High resistance)',
+        'PETG-FOOD (Food grade)',
+        'TPU 85A (Flexible)',
+      ],
+      de: [
+        'ASA (UV-beständig)',
+        'PA12-CF (Sehr hohe Temperaturbeständigkeit)',
+        'PC-ABS (Hohe Temperaturbeständigkeit)',
+        'PET-CF (Hohe Festigkeit)',
+        'PETG-FOOD (Für Lebensmittel geeignet)',
+        'TPU 85A (Flexibel)',
+      ],
+      fr: [
+        'ASA (Résistant aux UV)',
+        'PA12-CF (Résistant aux très hautes températures)',
+        'PC-ABS (Résistant aux températures élevées)',
+        'PET-CF (Haute résistance)',
+        'PETG-FOOD (Pour usage alimentaire)',
+        'TPU 85A (Flexible)',
+      ],
+    };
+    for (const lang of ['it', 'en', 'de', 'fr'] as const) {
+      await firstValueFrom(translate.use(lang));
+      currentLang.set(lang);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const element: HTMLElement = fixture.nativeElement;
+      const labels = Array.from(
+        element.querySelectorAll('select[formControlName="material"] option'),
+        (option) => option.textContent?.trim(),
+      );
+      for (const label of expectedByLocale[lang]) {
+        expect(labels).withContext(lang).toContain(label);
+      }
+      expect(labels).toContain('CUSTOM (Workshop label (custom))');
+      expect(component.form.get('material')?.value).toBe('ASA');
+      expect(component.items()[0].material).toBe('ASA');
+    }
+  });
+
+  it('keeps long translated material labels within narrow and wide settings panels', () => {
+    component.setFiles([new File(['model'], 'material.3mf')]);
+    component.form.get('material')?.setValue('PA12-CF');
+    fixture.detectChanges();
+    const element: HTMLElement = fixture.nativeElement;
+    const controls = element.querySelector<HTMLElement>('.easy-global-controls')!;
+    for (const width of [320, 1200]) {
+      element.style.display = 'block';
+      element.style.width = `${width}px`;
+      expect(controls.scrollWidth).withContext(`${width}px`).toBeLessThanOrEqual(
+        controls.clientWidth,
+      );
+    }
   });
   it('keeps every setting isolated and displays the selected file values', async () => {
     fixture.componentRef.setInput('mode', 'advanced');

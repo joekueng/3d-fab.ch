@@ -214,6 +214,14 @@ options by ID as a fallback.
 Browser scenarios `UI-ADMIN-TRANSLATION-001/002` use simulated APIs and cover the
 header action, overwrite results, failure recovery, category/image editors and mobile.
 
+The calculator material selector preserves the configured suffix in the options
+API's `label` (`CODE (technical_type_label)`). `MATERIAL_LABEL_KEYS` in the upload
+form maps the existing workshop labels (including legacy spelling variants) to
+`CALC.MATERIAL_LABELS` in all four catalogs. Flexible/Flessibile uses the shared
+flexible translation. Unknown custom labels remain visible verbatim; add a mapping
+and all locale entries when introducing another translated workshop label.
+Generic Standard/Technical labels are used only when no custom suffix is supplied.
+
 ## Customer order tracking
 
 The order page keeps `PAID` (awaiting production) separate from `IN_PRODUCTION`.
