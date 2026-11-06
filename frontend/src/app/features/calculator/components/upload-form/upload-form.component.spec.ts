@@ -89,8 +89,8 @@ describe('UploadFormComponent', () => {
     nozzleDiameters: [
       { value: 0.4, label: '0.4 mm (Standard)' },
       { value: 0.8, label: '0.8 mm' },
-      {value: 0.2, label: '0.2 mm'},
-      {value: 0.6, label: '0.6 mm'},
+      { value: 0.2, label: '0.2 mm' },
+      { value: 0.6, label: '0.6 mm' },
     ],
     layerHeights: [0.08, 0.12, 0.16, 0.18, 0.2, 0.24, 0.28, 0.3].map(
       (value) => ({
@@ -435,7 +435,7 @@ describe('UploadFormComponent', () => {
     fixture.componentRef.setInput('mode', 'advanced');
     fixture.detectChanges();
     component.setFiles([new File(['model'], 'carbon.3mf')]);
-    component.form.patchValue({nozzleDiameter: 0.2, layerHeight: 0.12});
+    component.form.patchValue({ nozzleDiameter: 0.2, layerHeight: 0.12 });
     component.form.get('material')!.setValue('PLA-CF');
     expect(
       component.nozzleDiameters().map((option) => option.value),
@@ -444,7 +444,7 @@ describe('UploadFormComponent', () => {
       0.4,
     );
     expect(component.getCurrentRequestDraft().items[0].layerHeight).toBe(0.12);
-    component.setItemPrintSettingsByIndex(0, {nozzleDiameter: 0.2});
+    component.setItemPrintSettingsByIndex(0, { nozzleDiameter: 0.2 });
     expect(component.items()[0].nozzleDiameter).toBe(0.4);
     component.form.get('material')!.setValue('PLA');
     expect(component.nozzleDiameters().map((option) => option.value)).toContain(
