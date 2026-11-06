@@ -56,6 +56,24 @@ import {
   toNozzleKey,
 } from './upload-form-settings.util';
 
+const MATERIAL_LABEL_KEYS: Readonly<Record<string, string>> = {
+  flexible: 'CALC.OPTION_FLEXIBLE',
+  flessibile: 'CALC.OPTION_FLEXIBLE',
+  'uv resistant': 'CALC.MATERIAL_LABELS.UV_RESISTANT',
+  'uv resistent': 'CALC.MATERIAL_LABELS.UV_RESISTANT',
+  'high temperature resistance':
+    'CALC.MATERIAL_LABELS.HIGH_TEMPERATURE_RESISTANCE',
+  'high temperature resistence':
+    'CALC.MATERIAL_LABELS.HIGH_TEMPERATURE_RESISTANCE',
+  'very high temperature resistance':
+    'CALC.MATERIAL_LABELS.VERY_HIGH_TEMPERATURE_RESISTANCE',
+  'very high temperature resistence':
+    'CALC.MATERIAL_LABELS.VERY_HIGH_TEMPERATURE_RESISTANCE',
+  'high resistance': 'CALC.MATERIAL_LABELS.HIGH_RESISTANCE',
+  'high resistence': 'CALC.MATERIAL_LABELS.HIGH_RESISTANCE',
+  'food grade': 'CALC.MATERIAL_LABELS.FOOD_GRADE',
+};
+
 @Component({
   selector: 'app-upload-form',
   standalone: true,
@@ -139,7 +157,7 @@ export class UploadFormComponent implements OnInit {
   private layerHeightsByNozzle: Record<string, SimpleOption[]> = {};
   private isPatchingSettings = false;
   private nextItemKey = 0;
-  private readonly technicalMaterialMinLayerHeight = 0.12;
+  private readonly technicalMaterialLayerHeights = [0.16, 0.2, 0.24];
   private readonly technicalMaterialBlockedNozzles = [0.2, 0.8];
 
   acceptedFormats = '.stl,.3mf,.obj,.step,.stp';
@@ -170,6 +188,11 @@ export class UploadFormComponent implements OnInit {
       const materialCode = String(value || '');
       this.updateVariants(materialCode);
       this.updatePrintOptionsForMaterial(materialCode);
+      if (!this.isPatchingSettings && this.mode() === 'easy') {
+        this.applyEasyPresetFromQuality(
+          String(this.form.get('quality')?.value || 'standard'),
+        );
+      }
     });
 
     this.form.get('quality')?.valueChanges.subscribe((quality) => {
@@ -367,23 +390,9 @@ export class UploadFormComponent implements OnInit {
   }
 
   getLayerHeightOptionsForNozzle(nozzleRaw: unknown): SimpleOption[] {
-    const key = toNozzleKey(nozzleRaw);
-    const perNozzle = this.layerHeightsByNozzle[key];
-    const available =
-      perNozzle && perNozzle.length > 0
-        ? perNozzle
-        : this.allLayerHeights.length > 0
-          ? this.allLayerHeights
-          : [{ label: '0.20 mm', value: 0.2 }];
-
-    if (!this.isTechnicalMaterial(this.form.get('material')?.value)) {
-      return available;
-    }
-
-    return available.filter(
-      (option) =>
-        normalizeNumber(option.value, 0) >=
-        this.technicalMaterialMinLayerHeight,
+    return this.getLayerHeightOptionsForItem(
+      nozzleRaw,
+      String(this.form.get('material')?.value || ''),
     );
   }
 
@@ -1036,7 +1045,10 @@ export class UploadFormComponent implements OnInit {
   }
 
   private applyEasyPresetFromQuality(qualityRaw: string) {
-    const preset = easyModePresetForQuality(qualityRaw);
+    const preset = easyModePresetForQuality(
+      qualityRaw,
+      this.isTechnicalMaterial(this.form.get('material')?.value),
+    );
 
     this.isPatchingSettings = true;
     this.form.patchValue(
@@ -1059,7 +1071,10 @@ export class UploadFormComponent implements OnInit {
     const quality = normalizeQualityValue(this.form.get('quality')?.value);
 
     if (this.mode() === 'easy') {
-      const preset = easyModePresetForQuality(quality);
+      const preset = easyModePresetForQuality(
+        quality,
+        this.isTechnicalMaterial(material),
+      );
       return {
         material,
         quality: preset.quality,
@@ -1092,7 +1107,10 @@ export class UploadFormComponent implements OnInit {
     const quality = normalizeQualityValue(item.quality || defaults.quality);
 
     if (this.mode() === 'easy') {
-      const preset = easyModePresetForQuality(quality);
+      const preset = easyModePresetForQuality(
+        quality,
+        this.isTechnicalMaterial(item.material || defaults.material),
+      );
       return {
         clientModelKey: item.clientKey,
         modelUnit: item.modelUnit ?? 'mm',
@@ -1324,14 +1342,13 @@ export class UploadFormComponent implements OnInit {
   }
 
   private updatePrintOptionsForMaterial(materialCode: string) {
-    const nozzles = this.isTechnicalMaterial(materialCode)
-      ? this.allNozzleDiameters.filter(
-          (option) =>
-            !this.isTechnicalBlockedNozzle(
-              normalizeNumber(option.value, Number.NaN),
-            ),
-        )
-      : this.allNozzleDiameters;
+    const nozzles = this.allNozzleDiameters.filter(
+      (option) =>
+        !this.isBlockedNozzleForMaterial(
+          normalizeNumber(option.value, Number.NaN),
+          materialCode,
+        ),
+    );
     this.nozzleDiameters.set(nozzles);
 
     const currentNozzle = normalizeNumber(
@@ -1368,28 +1385,43 @@ export class UploadFormComponent implements OnInit {
     );
   }
 
-  private isTechnicalBlockedNozzle(nozzle: number): boolean {
-    return this.technicalMaterialBlockedNozzles.some(
-      (blocked) => Math.abs(nozzle - blocked) < 0.0001,
+  private isBlockedNozzleForMaterial(
+    nozzle: number,
+    materialCode: unknown,
+  ): boolean {
+    return (
+      (this.isTechnicalMaterial(materialCode) &&
+        this.technicalMaterialBlockedNozzles.some(
+          (blocked) => Math.abs(nozzle - blocked) < 0.0001,
+        )) ||
+      (normalizeText(materialCode) === 'pla-cf' &&
+        Math.abs(nozzle - 0.2) < 0.0001)
     );
   }
 
   private clampItemPrintSettings(item: FormItem): FormItem {
-    if (!this.isTechnicalMaterial(item.material)) {
+    if (
+      !this.isTechnicalMaterial(item.material) &&
+      normalizeText(item.material) !== 'pla-cf'
+    ) {
       return item;
     }
 
     const allowedNozzles = this.allNozzleDiameters.filter(
       (option) =>
-        !this.isTechnicalBlockedNozzle(
+        !this.isBlockedNozzleForMaterial(
           normalizeNumber(option.value, Number.NaN),
+          item.material,
         ),
     );
     const fallbackNozzle =
       allowedNozzles.find(
         (option) => Math.abs(normalizeNumber(option.value, 0) - 0.4) < 0.0001,
       ) || allowedNozzles[0];
-    const nozzleDiameter = this.isTechnicalBlockedNozzle(item.nozzleDiameter)
+    const nozzleDiameter = this.isBlockedNozzleForMaterial(
+      item.nozzleDiameter,
+      item.material,
+    )
       ? normalizeNumber(fallbackNozzle?.value, 0.4)
       : item.nozzleDiameter;
     const allowedLayers = this.getLayerHeightOptionsForItem(
@@ -1410,7 +1442,7 @@ export class UploadFormComponent implements OnInit {
         ? item.layerHeight
         : normalizeNumber(
             allowedLayers[0]?.value,
-            this.technicalMaterialMinLayerHeight,
+            this.technicalMaterialLayerHeights[0],
           ),
     };
   }
@@ -1421,14 +1453,19 @@ export class UploadFormComponent implements OnInit {
   ): SimpleOption[] {
     const perNozzle = this.layerHeightsByNozzle[toNozzleKey(nozzleRaw)];
     const available =
-      perNozzle && perNozzle.length > 0 ? perNozzle : this.allLayerHeights;
+      perNozzle && perNozzle.length > 0
+        ? perNozzle
+        : this.allLayerHeights.length > 0
+          ? this.allLayerHeights
+          : [{ label: '0.20 mm', value: 0.2 }];
     if (!this.isTechnicalMaterial(materialCode)) {
       return available;
     }
-    return available.filter(
-      (option) =>
-        normalizeNumber(option.value, 0) >=
-        this.technicalMaterialMinLayerHeight,
+    return available.filter((option) =>
+      this.technicalMaterialLayerHeights.some(
+        (allowed) =>
+          Math.abs(normalizeNumber(option.value, 0) - allowed) < 0.0001,
+      ),
     );
   }
 
@@ -1632,12 +1669,25 @@ export class UploadFormComponent implements OnInit {
 
   private localizeMaterialLabel(material: MaterialOption): string {
     const code = String(material.code || '').trim();
-    const backendLabel = String(material.label || '');
-    const typeKey = /\(Flexible\)$/i.test(backendLabel)
-      ? 'CALC.OPTION_FLEXIBLE'
-      : material.isTechnical
-        ? 'CALC.OPTION_TECHNICAL'
-        : 'CALC.OPTION_STANDARD';
+    const backendLabel = String(material.label || '').trim();
+    const prefix = `${code} (`;
+    const suffix =
+      backendLabel.startsWith(prefix) && backendLabel.endsWith(')')
+        ? backendLabel.slice(prefix.length, -1).trim()
+        : '';
+    const normalizedSuffix = suffix.toLowerCase().replace(/\s+/g, ' ');
+    const translationKey = Object.hasOwn(MATERIAL_LABEL_KEYS, normalizedSuffix)
+      ? MATERIAL_LABEL_KEYS[normalizedSuffix]
+      : undefined;
+    if (translationKey) {
+      return `${code} (${this.translate.instant(translationKey)})`;
+    }
+    if (suffix && !['standard', 'technical'].includes(normalizedSuffix)) {
+      return `${code} (${suffix})`;
+    }
+    const typeKey = material.isTechnical
+      ? 'CALC.OPTION_TECHNICAL'
+      : 'CALC.OPTION_STANDARD';
     return `${code} (${this.translate.instant(typeKey)})`;
   }
 

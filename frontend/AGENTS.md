@@ -63,6 +63,8 @@ For localized admin content and the bulk filament color action, follow
 For oversized models, follow [split consent and recalculation](README.md#oversized-models-and-split-consent).
 
 For calculator API changes, follow [calculator batch requests](README.md#calculator-batch-requests) and the linked backend admission contract.
+For technical-material presets and PLA-CF nozzle restrictions, follow
+[material print settings](README.md#material-print-settings).
 
 For model formats and generated STL previews, follow [model uploads and previews](README.md#model-uploads-and-previews).
 
