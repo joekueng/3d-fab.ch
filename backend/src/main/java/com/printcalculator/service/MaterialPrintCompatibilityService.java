@@ -15,11 +15,28 @@ public class MaterialPrintCompatibilityService {
             new BigDecimal("0.20"),
             new BigDecimal("0.80")
     );
-    private static final BigDecimal TECHNICAL_MATERIAL_MIN_LAYER_HEIGHT = new BigDecimal("0.120");
+    private static final Set<BigDecimal> TECHNICAL_MATERIAL_LAYER_HEIGHTS = Set.of(
+            new BigDecimal("0.160"),
+            new BigDecimal("0.200"),
+            new BigDecimal("0.240")
+    );
 
     public void validate(FilamentVariant variant, BigDecimal nozzleDiameter, BigDecimal layerHeight) {
         FilamentMaterialType materialType = variant != null ? variant.getFilamentMaterialType() : null;
-        if (materialType == null || !Boolean.TRUE.equals(materialType.getIsTechnical())) {
+        if (materialType == null) {
+            return;
+        }
+
+        if ("PLA-CF".equalsIgnoreCase(materialType.getMaterialCode() != null
+                ? materialType.getMaterialCode().trim() : "")
+                && nozzleDiameter != null && new BigDecimal("0.20").compareTo(nozzleDiameter) == 0) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "PLA-CF cannot be printed with a 0.2 mm nozzle"
+            );
+        }
+
+        if (!Boolean.TRUE.equals(materialType.getIsTechnical())) {
             return;
         }
 
@@ -31,10 +48,11 @@ public class MaterialPrintCompatibilityService {
             );
         }
 
-        if (layerHeight != null && layerHeight.compareTo(TECHNICAL_MATERIAL_MIN_LAYER_HEIGHT) < 0) {
+        if (layerHeight != null && TECHNICAL_MATERIAL_LAYER_HEIGHTS.stream()
+                .noneMatch(allowed -> allowed.compareTo(layerHeight) == 0)) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Technical materials require a layer height of at least 0.12 mm"
+                    "Technical materials require a layer height of 0.16, 0.20 or 0.24 mm"
             );
         }
     }

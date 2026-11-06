@@ -30,6 +30,23 @@ use their separate generation paths and remain available after payment.
 Information-area access is unchanged; its messages and attachments may contain
 customer-provided personal data.
 
+## Material print compatibility
+
+`MaterialPrintCompatibilityService` validates both quote-session uploads before
+slicing and existing print items during checkout. Materials marked Technical in
+the admin allow only 0.16, 0.20 or 0.24 mm layer heights and exclude 0.2 and 0.8 mm
+nozzles. PLA-CF excludes 0.2 mm independently of the Technical flag. Ordinary
+materials retain the global nozzle/layer policy. Match the
+[frontend presets and selectors](../frontend/README.md#material-print-settings).
+
+These restrictions require no schema migration or material reclassification.
+The global `nozzle_layer_height_option` seed already includes 0.16/0.20/0.24 mm
+for 0.4 mm nozzles; deployed active rules and compatible Orca process profiles
+must also contain the chosen layer. Do not remove 0.12/0.28 globally, since
+ordinary materials still use them. Existing technical quotes with newly excluded
+settings need recalculation before checkout. Deploy the updated frontend and
+backend together so quick-mode requests use the new presets.
+
 ## Calculator admission and slicing capacity
 
 `POST /api/quote-sessions` accepts an optional positive `itemCount`. Calculator

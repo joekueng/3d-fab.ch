@@ -142,6 +142,20 @@ Do not invent GTINs, reviews, shipping costs or return policies. Verify rendered
 HTML and variant changes when modifying this code; after deployment validate a
 public product URL with Google's Rich Results Test.
 
+## Material print settings
+
+Technical materials use exactly 0.16, 0.20 and 0.24 mm layers. Quick-mode quality
+presets in `easyModePresetForQuality` map High Definition to 0.16, Standard to 0.20
+and Draft to 0.24 mm; ordinary materials retain 0.12/0.20/0.28 mm. Apply the
+material-specific preset to displayed settings, each file and outgoing requests,
+including after changing material without changing quality.
+
+Advanced settings intersect the nozzle's API options with those three technical
+layers. Technical materials exclude 0.2 and 0.8 mm nozzles; PLA-CF excludes 0.2 mm
+even when its admin Technical flag is off. Keep per-file restoration and clamping
+consistent with the selector and the
+[backend compatibility validation](../backend/README.md#material-print-compatibility).
+
 ## Calculator batch requests
 
 The calculator sends `itemCount` when creating/reusing a quote session. The backend

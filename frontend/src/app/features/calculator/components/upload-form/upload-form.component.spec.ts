@@ -70,6 +70,12 @@ describe('UploadFormComponent', () => {
         isTechnical: true,
         variants: [],
       })),
+      {
+        code: 'PLA-CF',
+        label: 'PLA-CF (Standard)',
+        isTechnical: false,
+        variants: [],
+      },
     ],
     qualities: [
       { id: 'draft', label: 'Draft' },
@@ -83,18 +89,29 @@ describe('UploadFormComponent', () => {
     nozzleDiameters: [
       { value: 0.4, label: '0.4 mm (Standard)' },
       { value: 0.8, label: '0.8 mm' },
+      {value: 0.2, label: '0.2 mm'},
+      {value: 0.6, label: '0.6 mm'},
     ],
-    layerHeights: [
-      { value: 0.2, label: '0.20 mm' },
-      { value: 0.3, label: '0.30 mm' },
-    ],
+    layerHeights: [0.08, 0.12, 0.16, 0.18, 0.2, 0.24, 0.28, 0.3].map(
+      (value) => ({
+        value,
+        label: `${value.toFixed(2)} mm`,
+      }),
+    ),
     layerHeightsByNozzle: [
       {
         nozzleDiameter: 0.4,
-        layerHeights: [
-          { value: 0.2, label: '0.20 mm' },
-          { value: 0.3, label: '0.30 mm' },
-        ],
+        layerHeights: [0.08, 0.12, 0.16, 0.2, 0.24, 0.28, 0.3].map((value) => ({
+          value,
+          label: `${value.toFixed(2)} mm`,
+        })),
+      },
+      {
+        nozzleDiameter: 0.6,
+        layerHeights: [0.16, 0.18, 0.2, 0.24, 0.3].map((value) => ({
+          value,
+          label: `${value.toFixed(2)} mm`,
+        })),
       },
     ],
   };
@@ -226,13 +243,15 @@ describe('UploadFormComponent', () => {
     component.form.get('material')?.setValue('PA12-CF');
     fixture.detectChanges();
     const element: HTMLElement = fixture.nativeElement;
-    const controls = element.querySelector<HTMLElement>('.easy-global-controls')!;
+    const controls = element.querySelector<HTMLElement>(
+      '.easy-global-controls',
+    )!;
     for (const width of [320, 1200]) {
       element.style.display = 'block';
       element.style.width = `${width}px`;
-      expect(controls.scrollWidth).withContext(`${width}px`).toBeLessThanOrEqual(
-        controls.clientWidth,
-      );
+      expect(controls.scrollWidth)
+        .withContext(`${width}px`)
+        .toBeLessThanOrEqual(controls.clientWidth);
     }
   });
   it('keeps every setting isolated and displays the selected file values', async () => {
@@ -340,10 +359,96 @@ describe('UploadFormComponent', () => {
     expect(component.items()[0].nozzleDiameter).toBe(0.8);
     expect(component.items()[1].material).toBe('PA');
     expect(component.items()[1].nozzleDiameter).toBe(0.4);
+    expect(component.items()[1].layerHeight).toBe(0.16);
     component.selectFile(first);
     expect(component.form.get('nozzleDiameter')!.value).toBe(0.8);
     expect(component.nozzleDiameters().map((option) => option.value)).toContain(
       0.8,
+    );
+  });
+
+  it('uses material-specific quick quality presets in the form and outgoing request', () => {
+    component.setFiles([
+      new File(['model'], 'first.3mf'),
+      new File(['model'], 'second.3mf'),
+    ]);
+    for (const [quality, technicalLayer, standardLayer] of [
+      ['draft', 0.24, 0.28],
+      ['standard', 0.2, 0.2],
+      ['extra_fine', 0.16, 0.12],
+    ] as const) {
+      component.form.get('quality')!.setValue(quality);
+      for (const [material, layer] of [
+        ['PA', technicalLayer],
+        ['PLA', standardLayer],
+      ] as const) {
+        component.form.get('material')!.setValue(material);
+        expect(component.form.get('layerHeight')!.value)
+          .withContext(`${material} ${quality}`)
+          .toBe(layer);
+        const request = component.getCurrentRequestDraft();
+        expect(request.layerHeight).toBe(layer);
+        expect(request.items.map((item) => item.layerHeight)).toEqual([
+          layer,
+          layer,
+        ]);
+        expect(component.items().map((item) => item.layerHeight)).toEqual([
+          layer,
+          layer,
+        ]);
+      }
+    }
+  });
+
+  it('shows only the three technical layer heights in advanced mode for each nozzle', () => {
+    fixture.componentRef.setInput('mode', 'advanced');
+    fixture.detectChanges();
+    component.setFiles([new File(['model'], 'technical.3mf')]);
+    component.form.get('material')!.setValue('PA');
+    expect(component.nozzleDiameters().map((option) => option.value)).toEqual([
+      0.4, 0.6,
+    ]);
+    for (const nozzle of [0.4, 0.6]) {
+      component.form.get('nozzleDiameter')!.setValue(nozzle);
+      fixture.detectChanges();
+      expect(component.layerHeights().map((option) => option.value)).toEqual([
+        0.16, 0.2, 0.24,
+      ]);
+      const element: HTMLElement = fixture.nativeElement;
+      expect(
+        Array.from(
+          element.querySelectorAll(
+            'app-select[formControlName="layerHeight"] option',
+          ),
+          (option) => option.textContent?.trim(),
+        ),
+      ).toEqual(['0.16 mm', '0.20 mm', '0.24 mm']);
+    }
+    const request = component.getCurrentRequestDraft();
+    request.layerHeight = 0.28;
+    request.items[0].layerHeight = 0.12;
+    component.restoreRequestDraft(request);
+    expect(component.getCurrentRequestDraft().items[0].layerHeight).toBe(0.16);
+  });
+
+  it('excludes the 0.2 mm nozzle for non-technical PLA-CF without restricting ordinary PLA', () => {
+    fixture.componentRef.setInput('mode', 'advanced');
+    fixture.detectChanges();
+    component.setFiles([new File(['model'], 'carbon.3mf')]);
+    component.form.patchValue({nozzleDiameter: 0.2, layerHeight: 0.12});
+    component.form.get('material')!.setValue('PLA-CF');
+    expect(
+      component.nozzleDiameters().map((option) => option.value),
+    ).not.toContain(0.2);
+    expect(component.getCurrentRequestDraft().items[0].nozzleDiameter).toBe(
+      0.4,
+    );
+    expect(component.getCurrentRequestDraft().items[0].layerHeight).toBe(0.12);
+    component.setItemPrintSettingsByIndex(0, {nozzleDiameter: 0.2});
+    expect(component.items()[0].nozzleDiameter).toBe(0.4);
+    component.form.get('material')!.setValue('PLA');
+    expect(component.nozzleDiameters().map((option) => option.value)).toContain(
+      0.2,
     );
   });
 

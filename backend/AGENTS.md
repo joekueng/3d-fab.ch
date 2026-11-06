@@ -41,6 +41,8 @@ For the bulk Italian color translation action and propagation to existing shop
 variants, follow [filament and shop color translations](README.md#filament-and-shop-color-translations).
 
 For calculator batches, admission budgets and queue behavior, follow [calculator admission and slicing capacity](README.md#calculator-admission-and-slicing-capacity). Preserve admission before quote reset and session/IP-bound permit consumption.
+For technical-material layer heights and PLA-CF nozzle restrictions, follow
+[material print compatibility](README.md#material-print-compatibility).
 
 For accepted calculator formats, temporary preview conversion and original-file retention,
 follow [model conversion and previews](README.md#model-conversion-and-previews).
