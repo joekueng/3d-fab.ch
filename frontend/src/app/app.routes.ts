@@ -49,6 +49,28 @@ const appChildRoutes: Routes = [
     },
   },
   {
+    path: 'pricing',
+    loadComponent: () =>
+      import('./features/pricing/pricing-page.component').then(
+        (m) => m.PricingPageComponent,
+      ),
+    data: {
+      seoTitleKey: 'SEO.ROUTES.PRICING.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.PRICING.DESCRIPTION',
+    },
+  },
+  {
+    path: 'colors-finishes',
+    loadComponent: () =>
+      import('./features/colors-finishes/colors-finishes-page.component').then(
+        (m) => m.ColorsFinishesPageComponent,
+      ),
+    data: {
+      seoTitleKey: 'SEO.ROUTES.COLORS_FINISHES.TITLE',
+      seoDescriptionKey: 'SEO.ROUTES.COLORS_FINISHES.DESCRIPTION',
+    },
+  },
+  {
     path: 'materials',
     loadComponent: () =>
       import('./features/materials/materials-page.component').then(

@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -113,7 +114,11 @@ public class PublicMediaQueryService {
 
     private boolean isPublicReadyUsage(MediaUsage usage) {
         MediaAsset asset = usage.getMediaAsset();
-        return asset != null
+        return (!"PRICING_EXAMPLE".equals(usage.getUsageType())
+                || (usage.getPricingExample() != null && usage.getPricingExample().publishable()
+                    && Set.of("functional", "decorative", "series").contains(usage.getUsageKey())
+                    && Objects.equals(usage.getPricingExample().quantity(), "series".equals(usage.getUsageKey()) ? 10 : 1)))
+                && asset != null
                 && STATUS_READY.equals(asset.getStatus())
                 && VISIBILITY_PUBLIC.equals(asset.getVisibility());
     }
@@ -133,6 +138,7 @@ public class PublicMediaQueryService {
         dto.setUsageKey(usage.getUsageKey());
         dto.setSortOrder(usage.getSortOrder());
         dto.setIsPrimary(usage.getIsPrimary());
+        dto.setPricingExample("PRICING_EXAMPLE".equals(usage.getUsageType()) ? usage.getPricingExample() : null);
         dto.setThumb(buildPresetDto(variantsByPresetAndFormat.get("thumb")));
         dto.setCard(buildPresetDto(variantsByPresetAndFormat.get("card")));
         dto.setHero(buildPresetDto(variantsByPresetAndFormat.get("hero")));

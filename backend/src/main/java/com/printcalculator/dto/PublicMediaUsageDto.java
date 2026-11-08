@@ -3,6 +3,15 @@ package com.printcalculator.dto;
 import java.util.UUID;
 
 public class PublicMediaUsageDto {
+    private PricingExampleDto pricingExample;
+
+    public PricingExampleDto getPricingExample() {
+        return pricingExample;
+    }
+    public void setPricingExample(PricingExampleDto value) {
+        pricingExample = value;
+    }
+
     private UUID mediaAssetId;
     private String title;
     private String altText;
