@@ -226,7 +226,9 @@ describe('Admin orders responsive layout', () => {
     expect(element('.email-log-panel').textContent).toContain(
       'customer@example.com',
     );
-    expect(frame.contentDocument!.querySelector('.ui-banner--error')).toBeNull();
+    expect(
+      frame.contentDocument!.querySelector('.ui-banner--error'),
+    ).toBeNull();
   });
 
   it('shows an asynchronous review preview error and enables retry without another click', async () => {
@@ -263,7 +265,9 @@ describe('Admin orders responsive layout', () => {
     const refreshResponse = new Subject<AdminOrder>();
     spyOn(service, 'previewReviewRequest').and.returnValue(of(preview));
     spyOn(service, 'sendReviewRequest').and.returnValue(response);
-    const refreshCall = spyOn(service, 'getOrder').and.returnValue(refreshResponse);
+    const refreshCall = spyOn(service, 'getOrder').and.returnValue(
+      refreshResponse,
+    );
     fixture.componentInstance.selectedOrder = { ...order, status: 'SHIPPED' };
     fixture.changeDetectorRef.markForCheck();
     fixture.detectChanges();
