@@ -1,13 +1,16 @@
 import { EasyModePreset, FormItem } from './upload-form.types';
 
-export function easyModePresetForQuality(qualityRaw: string): EasyModePreset {
+export function easyModePresetForQuality(
+  qualityRaw: string,
+  isTechnical = false,
+): EasyModePreset {
   const quality = normalizeQualityValue(qualityRaw);
 
   if (quality === 'draft') {
     return {
       quality: 'draft',
       nozzleDiameter: 0.4,
-      layerHeight: 0.28,
+      layerHeight: isTechnical ? 0.24 : 0.28,
       infillDensity: 15,
       infillPattern: 'grid',
     };
@@ -17,7 +20,7 @@ export function easyModePresetForQuality(qualityRaw: string): EasyModePreset {
     return {
       quality: 'extra_fine',
       nozzleDiameter: 0.4,
-      layerHeight: 0.12,
+      layerHeight: isTechnical ? 0.16 : 0.12,
       infillDensity: 20,
       infillPattern: 'gyroid',
     };

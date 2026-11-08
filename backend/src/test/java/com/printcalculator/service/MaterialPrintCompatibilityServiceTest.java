@@ -33,29 +33,41 @@ class MaterialPrintCompatibilityServiceTest {
     }
 
     @Test
-    void rejectsLayersBelowMinimumForTechnicalMaterials() {
+    void rejectsEveryLayerOutsideTheThreeTechnicalPresets() {
         FilamentVariant variant = variant(true);
 
-        ResponseStatusException exception = assertThrows(
-                ResponseStatusException.class,
-                () -> service.validate(variant, new BigDecimal("0.4"), new BigDecimal("0.119"))
-        );
-
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+        for (String layer : new String[]{"0.08", "0.12", "0.159", "0.18", "0.241", "0.28", "0.30"}) {
+            ResponseStatusException exception = assertThrows(
+                    ResponseStatusException.class,
+                    () -> service.validate(variant, new BigDecimal("0.4"), new BigDecimal(layer))
+            );
+            assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+        }
     }
 
     @Test
     void acceptsBoundaryAndDoesNotRestrictStandardMaterials() {
-        assertDoesNotThrow(() -> service.validate(
-                variant(true),
-                new BigDecimal("0.4"),
-                new BigDecimal("0.120")
-        ));
+        for (String layer : new String[]{"0.16", "0.200", "0.240"}) {
+            assertDoesNotThrow(() -> service.validate(
+                    variant(true), new BigDecimal("0.4"), new BigDecimal(layer)
+            ));
+        }
         assertDoesNotThrow(() -> service.validate(
                 variant(false),
                 new BigDecimal("0.2"),
                 new BigDecimal("0.08")
         ));
+    }
+
+    @Test
+    void rejectsSmallNozzleForPlaCfEvenWhenNotMarkedTechnical() {
+        FilamentVariant carbon = variant(false);
+        carbon.getFilamentMaterialType().setMaterialCode(" pla-cf ");
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+                () -> service.validate(carbon, new BigDecimal("0.20"), new BigDecimal("0.12")));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+        assertDoesNotThrow(() -> service.validate(carbon, new BigDecimal("0.4"), new BigDecimal("0.12")));
+        assertDoesNotThrow(() -> service.validate(carbon, new BigDecimal("0.8"), new BigDecimal("0.28")));
     }
 
     private FilamentVariant variant(boolean technical) {

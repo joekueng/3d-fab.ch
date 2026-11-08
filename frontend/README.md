@@ -142,6 +142,20 @@ Do not invent GTINs, reviews, shipping costs or return policies. Verify rendered
 HTML and variant changes when modifying this code; after deployment validate a
 public product URL with Google's Rich Results Test.
 
+## Material print settings
+
+Technical materials use exactly 0.16, 0.20 and 0.24 mm layers. Quick-mode quality
+presets in `easyModePresetForQuality` map High Definition to 0.16, Standard to 0.20
+and Draft to 0.24 mm; ordinary materials retain 0.12/0.20/0.28 mm. Apply the
+material-specific preset to displayed settings, each file and outgoing requests,
+including after changing material without changing quality.
+
+Advanced settings intersect the nozzle's API options with those three technical
+layers. Technical materials exclude 0.2 and 0.8 mm nozzles; PLA-CF excludes 0.2 mm
+even when its admin Technical flag is off. Keep per-file restoration and clamping
+consistent with the selector and the
+[backend compatibility validation](../backend/README.md#material-print-compatibility).
+
 ## Calculator batch requests
 
 The calculator sends `itemCount` when creating/reusing a quote session. The backend
@@ -213,6 +227,14 @@ labels. Checkout print summaries use the session's localized labels, with filame
 options by ID as a fallback.
 Browser scenarios `UI-ADMIN-TRANSLATION-001/002` use simulated APIs and cover the
 header action, overwrite results, failure recovery, category/image editors and mobile.
+
+The calculator material selector preserves the configured suffix in the options
+API's `label` (`CODE (technical_type_label)`). `MATERIAL_LABEL_KEYS` in the upload
+form maps the existing workshop labels (including legacy spelling variants) to
+`CALC.MATERIAL_LABELS` in all four catalogs. Flexible/Flessibile uses the shared
+flexible translation. Unknown custom labels remain visible verbatim; add a mapping
+and all locale entries when introducing another translated workshop label.
+Generic Standard/Technical labels are used only when no custom suffix is supplied.
 
 ## Customer order tracking
 
