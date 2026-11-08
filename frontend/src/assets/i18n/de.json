@@ -1343,7 +1343,7 @@
   "HOME": {
     "JOURNEY": {
       "HERO_EYEBROW": "3D-Druck, gefertigt in der Schweiz",
-      "HERO_LINE_1": "Von deiner 3D-Datei.",
+      "HERO_LINE_1": "Von deiner Idee.",
       "HERO_LINE_2": "Zum fertigen Bauteil.",
       "HERO_LEAD": "Modell hochladen, Material und Qualität wählen und ein Angebot erhalten. Wir kümmern uns um Druck und Versand.",
       "START_FILE": "Kalkulator öffnen",
@@ -1389,7 +1389,7 @@
       "CUSTOM_DETAIL": "Beratung und Konstruktion auf Anfrage",
       "PRINT_LABEL": "Der 3D-Druck",
       "PRINT_TITLE": "Schicht für Schicht entsteht dein Teil.",
-      "PRINT_TEXT": "Nach Bestätigung von Bestellung und Zahlung bereiten wir die Produktion vor. Der Drucker fertigt dein Bauteil nach dem Modell und den gewählten Einstellungen.",
+      "PRINT_TEXT": "Nach Bestätigung der Bestellung bereiten wir die Produktion vor. Der Drucker fertigt dein Bauteil nach dem Modell und den gewählten Einstellungen.",
       "SHIP_LABEL": "Der Versand",
       "SHIP_TITLE": "Vom Druckbett auf den Weg zu dir.",
       "SHIP_TEXT": "Wir bereiten dein Bauteil für die Lieferung vor und verpacken es für den Transport. Auf der Bestellseite verfolgst du den Fortschritt.",

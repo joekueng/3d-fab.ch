@@ -8,9 +8,6 @@
     <h2 id="process-title" class="ui-section-display-title">
       {{ "HOME.JOURNEY.TITLE" | translate }}
     </h2>
-    <p class="ui-section-display-subtitle">
-      {{ "HOME.JOURNEY.INTRO" | translate }}
-    </p>
   </div>
 
   <div class="path-picker-guide">
@@ -22,7 +19,6 @@
     class="path-picker"
     role="group"
     [attr.aria-label]="'HOME.JOURNEY.PICKER_LABEL' | translate"
-    aria-describedby="home-path-summary"
   >
     <button
       type="button"
@@ -101,21 +97,16 @@
       >
     </button>
   </div>
-  <p
-    class="path-summary"
-    id="home-path-summary"
-    aria-live="polite"
-    aria-atomic="true"
-  >
-    <span aria-hidden="true">↳</span
-    ><span>{{
-      "HOME.JOURNEY." +
-        (startingPoint() === "file" ? "FILE_SUMMARY" : "IDEA_SUMMARY")
-        | translate
-    }}</span>
-  </p>
 
-  <div class="process-grid">
+  <div
+    class="process-grid"
+    [style.--process-first-hold.px]="initialHold()"
+    [style.--process-pin-top.px]="pinnedTop()"
+    [style.--process-story-height.px]="storyTrackHeight()"
+    [style.--process-final-top.px]="finalTextTop()"
+    [style.--process-final-box-height.px]="finalBoxHeight()"
+    [style.--process-ending-height.px]="endingTrackHeight()"
+  >
     <div class="process-visual">
       <div class="process-visual-head">
         <span class="ui-eyebrow ui-eyebrow--compact">{{
@@ -161,32 +152,42 @@
         />
 
         <g class="scene" [class.is-active]="activeStep().scene === 'upload'">
-          <path
-            d="M183 55h142l59 60v175a13 13 0 0 1-13 13H183a13 13 0 0 1-13-13V68a13 13 0 0 1 13-13Z"
-            fill="var(--color-bg-card)"
-            stroke="currentColor"
-            stroke-width="2"
-          />
-          <path
-            d="M325 55v60h59"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linejoin="round"
-          />
-          <svg
-            class="process-model-view"
-            x="178"
-            y="107"
-            width="195"
-            height="157"
-            viewBox="230 85 700 680"
-          >
-            <image
-              href="/assets/images/home/benchy-digital-grey.png"
-              width="1200"
-              height="800"
+          <g class="upload-file" [attr.transform]="uploadFileTransform()">
+            <path
+              d="M183 55h142l59 60v175a13 13 0 0 1-13 13H183a13 13 0 0 1-13-13V68a13 13 0 0 1 13-13Z"
+              fill="var(--color-bg-card)"
+              stroke="currentColor"
+              stroke-width="2"
             />
-          </svg>
+            <path
+              d="M325 55v60h59"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linejoin="round"
+            />
+            <g
+              class="upload-model"
+              [attr.opacity]="uploadModelProgress()"
+              [attr.transform]="
+                'translate(0 ' + 14 * (1 - uploadModelProgress()) + ')'
+              "
+            >
+              <svg
+                class="process-model-view"
+                x="178"
+                y="107"
+                width="195"
+                height="157"
+                viewBox="230 85 700 680"
+              >
+                <image
+                  href="/assets/images/home/benchy-digital-grey.png"
+                  width="1200"
+                  height="800"
+                />
+              </svg>
+            </g>
+          </g>
           <path
             d="M200 276h154"
             stroke="currentColor"
@@ -200,12 +201,30 @@
             stroke-width="5"
           />
           <circle cx="384" cy="254" r="29" fill="var(--color-brand)" />
+          <g
+            class="upload-arrow"
+            [attr.opacity]="1 - uploadReady()"
+            [attr.transform]="'translate(0 ' + -9 * uploadProgress() + ')'"
+          >
+            <path
+              d="M384 268v-27m-10 10 10-10 10 10"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </g>
           <path
-            d="M384 268v-27m-10 10 10-10 10 10"
+            class="upload-confirmation"
+            d="m370 254 10 10 19-21"
             stroke="currentColor"
             stroke-width="2.5"
             stroke-linecap="round"
             stroke-linejoin="round"
+            pathLength="1"
+            stroke-dasharray="1"
+            [attr.stroke-dashoffset]="1 - uploadReady()"
+            [attr.visibility]="uploadReady() > 0 ? 'visible' : 'hidden'"
           />
         </g>
 
@@ -216,26 +235,50 @@
             stroke="currentColor"
             stroke-width="2"
           />
-          <path
-            d="M159 119h122m-122 25h160m-160 25h92"
-            stroke="currentColor"
-            stroke-width="5"
-            stroke-linecap="round"
-            opacity=".16"
-          />
-          <path
-            d="M306 188h112a14 14 0 0 1 14 14v75a14 14 0 0 1-14 14h-17v25l-32-25h-63a14 14 0 0 1-14-14v-75a14 14 0 0 1 14-14Z"
-            fill="var(--color-brand)"
-            stroke="currentColor"
-            stroke-width="2"
-          />
-          <path
-            d="m337 240 17 17 34-37"
-            stroke="currentColor"
-            stroke-width="4"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
+          @for (line of briefLines; track $index; let i = $index) {
+            <path
+              class="brief-message-line"
+              [attr.d]="line"
+              stroke="currentColor"
+              stroke-width="5"
+              stroke-linecap="round"
+              opacity=".28"
+              pathLength="1"
+              stroke-dasharray="1"
+              [attr.stroke-dashoffset]="1 - briefLineProgress(i)"
+              [attr.visibility]="
+                briefLineProgress(i) > 0 ? 'visible' : 'hidden'
+              "
+            />
+          }
+          <g
+            class="brief-reply"
+            [attr.opacity]="briefReplyProgress()"
+            [attr.transform]="
+              'translate(0 ' + 12 * (1 - briefReplyProgress()) + ')'
+            "
+          >
+            <path
+              d="M306 188h112a14 14 0 0 1 14 14v75a14 14 0 0 1-14 14h-17v25l-32-25h-63a14 14 0 0 1-14-14v-75a14 14 0 0 1 14-14Z"
+              fill="var(--color-brand)"
+              stroke="currentColor"
+              stroke-width="2"
+            />
+            <path
+              class="brief-confirmation"
+              d="m337 240 17 17 34-37"
+              stroke="currentColor"
+              stroke-width="4"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              pathLength="1"
+              stroke-dasharray="1"
+              [attr.stroke-dashoffset]="1 - briefCheckProgress()"
+              [attr.visibility]="
+                briefCheckProgress() > 0 ? 'visible' : 'hidden'
+              "
+            />
+          </g>
         </g>
 
         <g class="scene" [class.is-active]="activeStep().scene === 'design'">
@@ -342,6 +385,43 @@
             stroke="currentColor"
             stroke-opacity=".12"
           />
+          <g class="quote-material" [attr.opacity]="quoteMaterialProgress()">
+            <circle
+              cx="317"
+              cy="134.5"
+              r="6"
+              fill="currentColor"
+              opacity=".25"
+            />
+            <circle
+              cx="338"
+              cy="134.5"
+              r="6"
+              fill="currentColor"
+              opacity=".6"
+            />
+            <circle cx="359" cy="134.5" r="6" fill="var(--color-brand)" />
+            <rect
+              class="quote-material-selection"
+              [attr.x]="307 + 42 * quoteMaterialProgress()"
+              y="124.5"
+              width="20"
+              height="20"
+              rx="10"
+              stroke="currentColor"
+              stroke-width="1.5"
+            />
+            <path
+              d="m397 135 4 4 8-9"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              pathLength="1"
+              stroke-dasharray="1"
+              [attr.stroke-dashoffset]="1 - quoteMaterialProgress()"
+            />
+          </g>
           <rect
             x="302"
             y="166"
@@ -352,20 +432,53 @@
             stroke="currentColor"
             stroke-opacity=".12"
           />
+          <rect
+            class="quote-quality"
+            x="308"
+            y="172"
+            [attr.width]="106 * quoteQualityProgress()"
+            height="17"
+            rx="3"
+            fill="var(--color-brand)"
+          />
           <path
-            d="M315 135h68m-68 46h46"
+            d="M315 178h67m-67 5h46"
             stroke="currentColor"
-            stroke-width="4"
-            opacity=".2"
+            stroke-width="1.5"
             stroke-linecap="round"
+            pathLength="1"
+            stroke-dasharray="1"
+            [attr.stroke-dashoffset]="1 - quoteQualityProgress()"
+            [attr.visibility]="
+              quoteQualityProgress() > 0 ? 'visible' : 'hidden'
+            "
           />
           <rect
             x="302"
             y="224"
-            [attr.width]="50 + fraction() * 69"
+            width="119"
+            height="12"
+            rx="3"
+            fill="var(--color-bg)"
+          />
+          <rect
+            class="quote-price"
+            x="302"
+            y="224"
+            [attr.width]="119 * quotePriceProgress()"
             height="12"
             rx="3"
             fill="var(--color-brand)"
+          />
+          <rect
+            class="quote-price-detail"
+            x="302"
+            y="244"
+            [attr.width]="78 * quotePriceProgress()"
+            height="4"
+            rx="2"
+            fill="currentColor"
+            opacity=".2"
           />
           <rect
             x="138"
@@ -373,14 +486,28 @@
             width="284"
             height="24"
             rx="5"
+            fill="var(--color-bg)"
+          />
+          <rect
+            class="quote-complete"
+            x="138"
+            y="269"
+            [attr.width]="284 * quoteReady()"
+            height="24"
+            rx="5"
             fill="var(--color-brand)"
           />
           <path
+            class="quote-confirmation"
             d="m273 282 5 5 9-11"
             stroke="currentColor"
             stroke-width="2"
             stroke-linecap="round"
             stroke-linejoin="round"
+            pathLength="1"
+            stroke-dasharray="1"
+            [attr.stroke-dashoffset]="1 - quoteReady()"
+            [attr.visibility]="quoteReady() > 0 ? 'visible' : 'hidden'"
           />
         </g>
 
@@ -661,53 +788,72 @@
       </nav>
     </div>
 
-    <div class="process-story">
-      @for (step of steps(); track step.key; let i = $index) {
-        <article
-          class="process-step"
-          [class.is-current]="activeIndex() === i"
-          [class.is-complete]="activeIndex() > i"
-        >
-          <span class="step-number" aria-hidden="true">0{{ i + 1 }}</span>
-          <div>
-            <p class="ui-eyebrow ui-eyebrow--compact">
-              {{ "HOME.JOURNEY." + step.key + "_LABEL" | translate }}
-            </p>
-            <h3>{{ "HOME.JOURNEY." + step.key + "_TITLE" | translate }}</h3>
-            <p class="step-copy">
-              {{ "HOME.JOURNEY." + step.key + "_TEXT" | translate }}
-            </p>
-            @if (step.scene === "upload") {
-              <span class="step-detail">STL · 3MF · OBJ · STEP / STP</span>
-            }
-            @if (step.scene === "quote") {
-              <span class="step-detail">{{
-                "HOME.JOURNEY." +
-                  (startingPoint() === "file"
-                    ? "QUOTE_DETAIL"
-                    : "CUSTOM_DETAIL") | translate
-              }}</span>
-            }
+    <div class="process-story-track">
+      <div class="process-story">
+        @for (step of steps(); track step.key; let i = $index) {
+          <div
+            class="process-step-track"
+            [class.is-ending]="i === steps().length - 1"
+          >
+            <div class="process-step-content">
+              <article
+                class="process-step"
+                [class.is-final]="i === steps().length - 1"
+                [class.is-current]="activeIndex() === i"
+                [class.is-complete]="activeIndex() > i"
+              >
+                <span class="step-number" aria-hidden="true">0{{ i + 1 }}</span>
+                <div>
+                  <p class="ui-eyebrow ui-eyebrow--compact">
+                    {{ "HOME.JOURNEY." + step.key + "_LABEL" | translate }}
+                  </p>
+                  <h3>
+                    {{ "HOME.JOURNEY." + step.key + "_TITLE" | translate }}
+                  </h3>
+                  <p class="step-copy">
+                    {{ "HOME.JOURNEY." + step.key + "_TEXT" | translate }}
+                  </p>
+                  @if (step.scene === "upload") {
+                    <span class="step-detail"
+                      >STL · 3MF · OBJ · STEP / STP</span
+                    >
+                  }
+                  @if (step.scene === "quote") {
+                    <span class="step-detail">{{
+                      "HOME.JOURNEY." +
+                        (startingPoint() === "file"
+                          ? "QUOTE_DETAIL"
+                          : "CUSTOM_DETAIL") | translate
+                    }}</span>
+                  }
+                </div>
+              </article>
+              @if (i === steps().length - 1) {
+                <div class="process-finish">
+                  <p>{{ "HOME.JOURNEY.READY" | translate }}</p>
+                  <a
+                    class="ui-button"
+                    [routerLink]="
+                      languageService.localizedPath(
+                        startingPoint() === 'file'
+                          ? '/calculator/basic'
+                          : '/contact'
+                      )
+                    "
+                  >
+                    {{
+                      "HOME.JOURNEY." +
+                        (startingPoint() === "file"
+                          ? "START_FILE"
+                          : "START_IDEA") | translate
+                    }}
+                    <span aria-hidden="true">↗</span></a
+                  >
+                </div>
+              }
+            </div>
           </div>
-        </article>
-      }
-      <div class="process-finish">
-        <p>{{ "HOME.JOURNEY.READY" | translate }}</p>
-        <a
-          class="ui-button"
-          [routerLink]="
-            languageService.localizedPath(
-              startingPoint() === 'file' ? '/calculator/basic' : '/contact'
-            )
-          "
-        >
-          {{
-            "HOME.JOURNEY." +
-              (startingPoint() === "file" ? "START_FILE" : "START_IDEA")
-              | translate
-          }}
-          <span aria-hidden="true">↗</span></a
-        >
+        }
       </div>
     </div>
   </div>

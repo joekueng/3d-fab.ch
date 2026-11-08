@@ -599,7 +599,7 @@
   "HOME": {
     "JOURNEY": {
       "HERO_EYEBROW": "Impression 3D, réalisée en Suisse",
-      "HERO_LINE_1": "De votre fichier 3D.",
+      "HERO_LINE_1": "De votre idée.",
       "HERO_LINE_2": "À la pièce finie.",
       "HERO_LEAD": "Importez votre modèle, choisissez le matériau et la qualité et obtenez un devis. Nous nous occupons de l’impression et de l’expédition.",
       "START_FILE": "Ouvrir le calculateur",
@@ -645,7 +645,7 @@
       "CUSTOM_DETAIL": "Conseil et conception sur demande",
       "PRINT_LABEL": "L’impression 3D",
       "PRINT_TITLE": "Couche après couche, la pièce prend forme.",
-      "PRINT_TEXT": "Après confirmation de la commande et du paiement, nous préparons la production. L’imprimante fabrique votre pièce selon le modèle et les réglages choisis.",
+      "PRINT_TEXT": "Après confirmation de la commande, nous préparons la production. L’imprimante fabrique votre pièce selon le modèle et les réglages choisis.",
       "SHIP_LABEL": "L’expédition",
       "SHIP_TITLE": "Du plateau d’impression jusqu’à vous.",
       "SHIP_TEXT": "Nous préparons et emballons votre pièce pour la livraison. Suivez l’avancement de votre commande sur sa page dédiée.",

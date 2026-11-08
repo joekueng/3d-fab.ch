@@ -1330,7 +1330,7 @@
   "HOME": {
     "JOURNEY": {
       "HERO_EYEBROW": "3D printing, made in Switzerland",
-      "HERO_LINE_1": "From your 3D file.",
+      "HERO_LINE_1": "From your idea.",
       "HERO_LINE_2": "To your finished part.",
       "HERO_LEAD": "Upload your model, choose material and quality, and get a quote. We take care of printing and shipping.",
       "START_FILE": "Open the calculator",
@@ -1376,7 +1376,7 @@
       "CUSTOM_DETAIL": "Consultation and design on request",
       "PRINT_LABEL": "3D printing",
       "PRINT_TITLE": "Layer by layer, it takes shape.",
-      "PRINT_TEXT": "Once your order and payment are confirmed, we prepare production. The printer builds your part from the model using the chosen settings.",
+      "PRINT_TEXT": "Once your order is confirmed, we prepare production. The printer builds your part from the model using the chosen settings.",
       "SHIP_LABEL": "Shipping",
       "SHIP_TITLE": "From the print bed, on its way to you.",
       "SHIP_TEXT": "We prepare and pack your part for delivery. Follow the progress of your order on its dedicated page.",

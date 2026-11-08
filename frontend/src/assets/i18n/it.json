@@ -592,7 +592,7 @@
   "HOME": {
     "JOURNEY": {
       "HERO_EYEBROW": "Stampa 3D, fatta in Svizzera",
-      "HERO_LINE_1": "Dal tuo file 3D.",
+      "HERO_LINE_1": "Dalla tua idea.",
       "HERO_LINE_2": "Al pezzo finito.",
       "HERO_LEAD": "Carica il modello, scegli materiale e qualità e scopri il preventivo. Alla stampa e alla spedizione pensiamo noi.",
       "START_FILE": "Apri il calcolatore",
@@ -638,7 +638,7 @@
       "CUSTOM_DETAIL": "Consulenza e progettazione su richiesta",
       "PRINT_LABEL": "La stampa 3D",
       "PRINT_TITLE": "Strato dopo strato, prende forma.",
-      "PRINT_TEXT": "Dopo la conferma dell’ordine e del pagamento, prepariamo la produzione. La stampante costruisce il tuo pezzo seguendo il modello e le impostazioni scelte.",
+      "PRINT_TEXT": "Dopo la conferma dell’ordine, prepariamo la produzione. La stampante costruisce il tuo pezzo seguendo il modello e le impostazioni scelte.",
       "SHIP_LABEL": "La spedizione",
       "SHIP_TITLE": "Dal piano di stampa, verso di te.",
       "SHIP_TEXT": "Prepariamo il pezzo per la consegna e lo imballiamo per il trasporto. Puoi seguire l’avanzamento dell’ordine dalla pagina dedicata.",

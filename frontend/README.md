@@ -406,3 +406,5 @@ To preview only the frontend, use Node 24 (see .nvmrc), run npm ci once in
 frontend/, then npm start, and open http://localhost:4200/it.
 The explanatory journey works without the backend. Live quotes, orders and
 server-managed media require the existing local stack documented above.
+
+The capability cards reuse the existing HOME_SECTION capability-prototyping, capability-custom-parts, capability-small-series and capability-cad usages. About reuses founders-gallery, including its existing variants and carousel. No media migration or upload is needed. For local frontend-only preview, home-media-preview.json contains public URL references captured from the current site in four languages; it does not copy photographs. Available local API media takes precedence. The preview references are disabled in production, where the existing live media assignments remain authoritative.

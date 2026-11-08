@@ -1,4 +1,4 @@
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common';
 import {
   Component,
   DestroyRef,
@@ -12,7 +12,9 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
-import { of } from 'rxjs';
+import { map, of } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { withHomeMediaPreview } from './home-media-preview';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
 import { HomeProcessComponent } from './home-process.component';
 import { SwipeCarouselDirective } from '../../shared/directives/swipe-carousel.directive';
@@ -33,7 +35,11 @@ import {
   HOME_CAPABILITY_CONFIGS,
   HOME_MEDIA_REQUESTS,
 } from './home-page.config';
-import { HomeCapabilityConfig, HomeProjectGlow } from './home-page.types';
+import {
+  HomeCapabilityCard,
+  HomeCapabilityConfig,
+  HomeProjectGlow,
+} from './home-page.types';
 import {
   extractHomeProjectGlow,
   mediaAvifUrl,
@@ -58,6 +64,7 @@ import {
 })
 export class HomeComponent {
   private readonly destroyRef = inject(DestroyRef);
+  private readonly document = inject(DOCUMENT);
   private readonly publicMediaService = inject(PublicMediaService);
   private readonly homeProjectService = inject(HomeProjectService);
   private readonly ngZone = inject(NgZone);
@@ -79,12 +86,18 @@ export class HomeComponent {
 
   private readonly mediaByUsage = toSignal(
     this.isBrowser
-      ? this.publicMediaService.getUsageCollections(
-          HOME_MEDIA_REQUESTS.filter(
-            ({ usageKey }) =>
-              usageKey === 'shop-gallery' || usageKey === 'founders-gallery',
-          ),
-        )
+      ? this.publicMediaService
+          .getUsageCollections(HOME_MEDIA_REQUESTS)
+          .pipe(
+            map((media) =>
+              environment.production
+                ? media
+                : withHomeMediaPreview(
+                    media,
+                    this.languageService.currentLang(),
+                  ),
+            ),
+          )
       : of(EMPTY_MEDIA_COLLECTIONS),
     { initialValue: EMPTY_MEDIA_COLLECTIONS },
   );
@@ -122,7 +135,21 @@ export class HomeComponent {
       ),
   );
 
-  readonly capabilityCards = computed(() => HOME_CAPABILITY_CONFIGS);
+  readonly capabilityCards = computed<readonly HomeCapabilityCard[]>(() =>
+    HOME_CAPABILITY_CONFIGS.map((config) => {
+      const image = this.publicMediaService.pickPrimaryUsage(
+        this.mediaByUsage()[
+          buildPublicMediaUsageScopeKey('HOME_SECTION', config.usageKey)
+        ] ?? [],
+      );
+      return {
+        ...config,
+        image: image
+          ? this.publicMediaService.toDisplayImage(image, 'card')
+          : null,
+      };
+    }),
+  );
 
   readonly homeProjectIndex = signal(0);
   readonly homeProjectGlowColors = signal<ReadonlyMap<string, HomeProjectGlow>>(
@@ -180,6 +207,30 @@ export class HomeComponent {
 
     this.destroyRef.onDestroy(() => {
       this.stopHomeProjectAutoplay();
+    });
+  }
+
+  scrollToProcess(event: MouseEvent): void {
+    if (
+      !this.isBrowser ||
+      event.button !== 0 ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey ||
+      event.altKey
+    )
+      return;
+    const target = this.document.getElementById('home-process');
+    const view = this.document.defaultView;
+    if (!target || !view) return;
+    // A plain fragment resolves against <base href="/"> and reloads the app.
+    // Keep this action in the current document, including on localized routes.
+    event.preventDefault();
+    target.scrollIntoView({
+      behavior: view.matchMedia('(prefers-reduced-motion: reduce)').matches
+        ? 'auto'
+        : 'smooth',
+      block: 'start',
     });
   }
 

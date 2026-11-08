@@ -38,7 +38,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.25rem;
-  margin-bottom: 1rem;
+  margin-bottom: 3rem;
 }
 .path-option.ui-button {
   display: grid;
@@ -136,18 +136,6 @@
 .path-option-action > span:last-child {
   font-size: 1.15rem;
 }
-.path-summary {
-  display: flex;
-  gap: 0.65rem;
-  color: var(--color-text-muted);
-  font-size: 0.8rem;
-  line-height: 1.6;
-  margin: 0 0 3rem;
-}
-.path-summary > span:first-child {
-  color: var(--color-text);
-  font-size: 1rem;
-}
 @media (max-width: 760px) {
   .path-picker {
     gap: 0.75rem;
@@ -169,7 +157,7 @@
   .path-option-action {
     font-size: 0.7rem;
   }
-  .path-summary {
+  .path-picker {
     margin-bottom: 2rem;
   }
 }
@@ -474,4 +462,49 @@
 
 .process-drawing text {
   font-family: var(--font-family-sans);
+}
+
+.process-story-track {
+  min-width: 0;
+}
+.process-step-track,
+.process-step-content {
+  display: contents;
+}
+@media (min-width: 761px) {
+  .process-story-track {
+    min-height: var(--process-story-height, 0px);
+  }
+  .process-story {
+    position: sticky;
+    top: var(--process-pin-top, 110px);
+  }
+  .process-step-track.is-ending {
+    display: block;
+    position: relative;
+    min-height: var(--process-ending-height, 0px);
+  }
+  // Bridge the normal track to the held final text. Its background masks the
+  // unused line below the final copy, keeping the existing compact CTA spacing.
+  .process-step-track.is-ending::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: var(--process-final-box-height, 0px);
+    left: 0;
+    width: 1px;
+    background: var(--color-border);
+    pointer-events: none;
+  }
+  .is-ending > .process-step-content {
+    display: block;
+    background: var(--color-bg);
+    position: sticky;
+    top: var(--process-final-top, 250px);
+    min-height: var(--process-final-box-height, 0px);
+  }
+  .process-step.is-final {
+    min-height: 0;
+    padding-bottom: 1.5rem;
+  }
 }
