@@ -1,0 +1,714 @@
+<section
+  class="process container"
+  id="home-process"
+  aria-labelledby="process-title"
+>
+  <div class="process-heading">
+    <p class="ui-eyebrow">{{ "HOME.JOURNEY.EYEBROW" | translate }}</p>
+    <h2 id="process-title" class="ui-section-display-title">
+      {{ "HOME.JOURNEY.TITLE" | translate }}
+    </h2>
+    <p class="ui-section-display-subtitle">
+      {{ "HOME.JOURNEY.INTRO" | translate }}
+    </p>
+  </div>
+
+  <div class="path-picker-guide">
+    <span aria-hidden="true">01</span>
+    <p>{{ "HOME.JOURNEY.CHOOSE_LABEL" | translate }}</p>
+    <span aria-hidden="true">↓</span>
+  </div>
+  <div
+    class="path-picker"
+    role="group"
+    [attr.aria-label]="'HOME.JOURNEY.PICKER_LABEL' | translate"
+    aria-describedby="home-path-summary"
+  >
+    <button
+      type="button"
+      class="ui-button path-option"
+      [class.is-selected]="startingPoint() === 'file'"
+      [attr.aria-pressed]="startingPoint() === 'file'"
+      (click)="selectStartingPoint('file')"
+    >
+      <span class="path-option-icon" aria-hidden="true"
+        ><svg viewBox="0 0 32 32" fill="none">
+          <path
+            d="M8 3h11l6 6v20H8Z"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M19 3v7h6M12 17h9m-9 5h6"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          /></svg
+      ></span>
+      <span class="path-option-copy"
+        ><strong>{{ "HOME.JOURNEY.FILE_LABEL" | translate }}</strong
+        ><small>{{ "HOME.JOURNEY.FILE_HINT" | translate }}</small></span
+      >
+      <span class="path-option-radio" aria-hidden="true"></span>
+      <span class="path-option-action"
+        ><span>{{
+          "HOME.JOURNEY." +
+            (startingPoint() === "file" ? "SELECTED" : "SELECT_PATH")
+            | translate
+        }}</span
+        ><span aria-hidden="true">{{
+          startingPoint() === "file" ? "✓" : "→"
+        }}</span></span
+      >
+    </button>
+    <button
+      type="button"
+      class="ui-button path-option"
+      [class.is-selected]="startingPoint() === 'idea'"
+      [attr.aria-pressed]="startingPoint() === 'idea'"
+      (click)="selectStartingPoint('idea')"
+    >
+      <span class="path-option-icon" aria-hidden="true"
+        ><svg viewBox="0 0 32 32" fill="none">
+          <path
+            d="m9 22 13-16 5 4-13 16-7 3Z"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linejoin="round"
+          />
+          <path
+            d="m19 10 5 4M5 9h7M8 5v8"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          /></svg
+      ></span>
+      <span class="path-option-copy"
+        ><strong>{{ "HOME.JOURNEY.IDEA_LABEL" | translate }}</strong
+        ><small>{{ "HOME.JOURNEY.IDEA_HINT" | translate }}</small></span
+      >
+      <span class="path-option-radio" aria-hidden="true"></span>
+      <span class="path-option-action"
+        ><span>{{
+          "HOME.JOURNEY." +
+            (startingPoint() === "idea" ? "SELECTED" : "SELECT_PATH")
+            | translate
+        }}</span
+        ><span aria-hidden="true">{{
+          startingPoint() === "idea" ? "✓" : "→"
+        }}</span></span
+      >
+    </button>
+  </div>
+  <p
+    class="path-summary"
+    id="home-path-summary"
+    aria-live="polite"
+    aria-atomic="true"
+  >
+    <span aria-hidden="true">↳</span
+    ><span>{{
+      "HOME.JOURNEY." +
+        (startingPoint() === "file" ? "FILE_SUMMARY" : "IDEA_SUMMARY")
+        | translate
+    }}</span>
+  </p>
+
+  <div class="process-grid">
+    <div class="process-visual">
+      <div class="process-visual-head">
+        <span class="ui-eyebrow ui-eyebrow--compact">{{
+          "HOME.JOURNEY.VISUAL_LABEL" | translate
+        }}</span>
+        <span class="phase-count"
+          >{{ activeIndex() + 1 }} / {{ steps().length }}</span
+        >
+      </div>
+      <svg
+        class="process-drawing"
+        viewBox="0 0 560 370"
+        fill="none"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <defs>
+          <pattern
+            id="home-process-grid"
+            width="28"
+            height="28"
+            patternUnits="userSpaceOnUse"
+          >
+            <circle cx="1" cy="1" r="1" fill="currentColor" opacity=".14" />
+          </pattern>
+          <clipPath id="home-process-print">
+            <rect
+              x="140"
+              [attr.y]="printTop()"
+              width="285"
+              [attr.height]="fraction() * 224"
+            />
+          </clipPath>
+        </defs>
+        <rect width="560" height="370" fill="url(#home-process-grid)" />
+        <ellipse
+          cx="280"
+          cy="316"
+          rx="156"
+          ry="17"
+          fill="currentColor"
+          opacity=".045"
+        />
+
+        <g class="scene" [class.is-active]="activeStep().scene === 'upload'">
+          <path
+            d="M183 55h142l59 60v175a13 13 0 0 1-13 13H183a13 13 0 0 1-13-13V68a13 13 0 0 1 13-13Z"
+            fill="var(--color-bg-card)"
+            stroke="currentColor"
+            stroke-width="2"
+          />
+          <path
+            d="M325 55v60h59"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linejoin="round"
+          />
+          <svg
+            class="process-model-view"
+            x="178"
+            y="107"
+            width="195"
+            height="157"
+            viewBox="230 85 700 680"
+          >
+            <image
+              href="/assets/images/home/benchy-digital-grey.png"
+              width="1200"
+              height="800"
+            />
+          </svg>
+          <path
+            d="M200 276h154"
+            stroke="currentColor"
+            opacity=".15"
+            stroke-width="3"
+          />
+          <path
+            d="M200 276"
+            [attr.d]="'M200 276h' + 154 * fraction()"
+            stroke="var(--color-brand)"
+            stroke-width="5"
+          />
+          <circle cx="384" cy="254" r="29" fill="var(--color-brand)" />
+          <path
+            d="M384 268v-27m-10 10 10-10 10 10"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </g>
+
+        <g class="scene" [class.is-active]="activeStep().scene === 'brief'">
+          <path
+            d="M137 76h209a15 15 0 0 1 15 15v105a15 15 0 0 1-15 15H206l-40 32v-32h-29a15 15 0 0 1-15-15V91a15 15 0 0 1 15-15Z"
+            fill="var(--color-bg-card)"
+            stroke="currentColor"
+            stroke-width="2"
+          />
+          <path
+            d="M159 119h122m-122 25h160m-160 25h92"
+            stroke="currentColor"
+            stroke-width="5"
+            stroke-linecap="round"
+            opacity=".16"
+          />
+          <path
+            d="M306 188h112a14 14 0 0 1 14 14v75a14 14 0 0 1-14 14h-17v25l-32-25h-63a14 14 0 0 1-14-14v-75a14 14 0 0 1 14-14Z"
+            fill="var(--color-brand)"
+            stroke="currentColor"
+            stroke-width="2"
+          />
+          <path
+            d="m337 240 17 17 34-37"
+            stroke="currentColor"
+            stroke-width="4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </g>
+
+        <g class="scene" [class.is-active]="activeStep().scene === 'design'">
+          <rect
+            x="85"
+            y="38"
+            width="390"
+            height="283"
+            rx="6"
+            fill="var(--color-bg-card)"
+            stroke="currentColor"
+            stroke-opacity=".15"
+          />
+          <svg
+            class="process-model-view"
+            x="100"
+            y="48"
+            width="360"
+            height="262"
+            viewBox="220 70 740 740"
+          >
+            <defs>
+              <mask
+                id="home-process-sketch"
+                maskUnits="userSpaceOnUse"
+                x="0"
+                y="0"
+                width="1200"
+                height="800"
+              >
+                @for (stroke of sketchStrokes; track $index; let i = $index) {
+                  <path
+                    class="sketch-stroke"
+                    [attr.d]="stroke"
+                    fill="none"
+                    stroke="white"
+                    stroke-width="68"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    pathLength="1"
+                    stroke-dasharray="1"
+                    [attr.stroke-dashoffset]="sketchStrokeOffset(i)"
+                  />
+                }
+              </mask>
+            </defs>
+            <image
+              class="benchy-sketch"
+              href="/assets/images/home/benchy-sketch-draft.png"
+              width="1200"
+              height="800"
+              mask="url(#home-process-sketch)"
+            />
+          </svg>
+          <text
+            x="280"
+            y="346"
+            text-anchor="middle"
+            fill="currentColor"
+            font-size="13"
+          >
+            {{ "HOME.JOURNEY.SKETCH_LABEL" | translate }}
+          </text>
+        </g>
+
+        <g class="scene" [class.is-active]="activeStep().scene === 'quote'">
+          <rect
+            x="109"
+            y="52"
+            width="342"
+            height="263"
+            rx="12"
+            fill="var(--color-bg-card)"
+            stroke="currentColor"
+            stroke-width="2"
+          />
+          <path
+            d="M109 85h342m-316-16h2m10 0h2m10 0h2"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"
+          />
+          <svg
+            class="process-model-view"
+            x="116"
+            y="115"
+            width="175"
+            height="143"
+            viewBox="230 85 700 680"
+          >
+            <image
+              href="/assets/images/home/benchy-digital-grey.png"
+              width="1200"
+              height="800"
+            />
+          </svg>
+          <rect
+            x="302"
+            y="120"
+            width="119"
+            height="29"
+            rx="5"
+            fill="var(--color-bg)"
+            stroke="currentColor"
+            stroke-opacity=".12"
+          />
+          <rect
+            x="302"
+            y="166"
+            width="119"
+            height="29"
+            rx="5"
+            fill="var(--color-bg)"
+            stroke="currentColor"
+            stroke-opacity=".12"
+          />
+          <path
+            d="M315 135h68m-68 46h46"
+            stroke="currentColor"
+            stroke-width="4"
+            opacity=".2"
+            stroke-linecap="round"
+          />
+          <rect
+            x="302"
+            y="224"
+            [attr.width]="50 + fraction() * 69"
+            height="12"
+            rx="3"
+            fill="var(--color-brand)"
+          />
+          <rect
+            x="138"
+            y="269"
+            width="284"
+            height="24"
+            rx="5"
+            fill="var(--color-brand)"
+          />
+          <path
+            d="m273 282 5 5 9-11"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </g>
+
+        <g class="scene" [class.is-active]="activeStep().scene === 'print'">
+          <path
+            d="M111 306V63a13 13 0 0 1 13-13h312a13 13 0 0 1 13 13v243"
+            stroke="currentColor"
+            stroke-width="9"
+            stroke-linecap="round"
+          />
+          <path
+            d="M137 67v237m286-237v237"
+            stroke="currentColor"
+            stroke-width="2"
+            opacity=".35"
+          />
+          <path
+            d="M143 299h274m-249 10h224"
+            stroke="currentColor"
+            stroke-width="6"
+            stroke-linecap="round"
+          />
+
+          <g clip-path="url(#home-process-print)">
+            <svg
+              class="process-model-view"
+              x="150"
+              y="88"
+              width="260"
+              height="224"
+              viewBox="230 85 700 680"
+            >
+              <image
+                href="/assets/images/home/benchy-printed-yellow.png"
+                width="1200"
+                height="800"
+              />
+            </svg>
+          </g>
+          <path
+            [attr.d]="'M137 ' + (printTop() - 17) + 'H423'"
+            stroke="currentColor"
+            stroke-width="3"
+          />
+          <g [attr.transform]="nozzleTransform()">
+            <rect
+              x="-17"
+              y="-12"
+              width="34"
+              height="27"
+              rx="4"
+              fill="currentColor"
+            />
+            <path d="m-7 15 7 10 7-10" fill="var(--color-brand)" />
+          </g>
+          <rect
+            x="99"
+            y="318"
+            width="362"
+            height="20"
+            rx="5"
+            fill="currentColor"
+          />
+          <circle cx="438" cy="328" r="3" fill="var(--color-brand)" />
+        </g>
+
+        <g class="scene" [class.is-active]="activeStep().scene === 'ship'">
+          <path
+            d="M43 288V176l34-24v24l34-24v24h39v112Z"
+            fill="var(--color-bg-card)"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M54 168v-45h18v32m46 133v-43h23v43M58 204h15v15H58Zm28 0h15v15H86Zm28 0h15v15h-15Z"
+            stroke="currentColor"
+            stroke-width="1.7"
+          />
+          <path
+            d="m389 205 60-51 61 51v83H389Z"
+            fill="var(--color-bg-card)"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M435 288v-49h27v49m-57-66h17v18h-17Zm73 0h17v18h-17Z"
+            stroke="currentColor"
+            stroke-width="1.7"
+          />
+          <path
+            d="M150 294h284"
+            stroke="currentColor"
+            stroke-opacity=".3"
+            stroke-width="1.5"
+            stroke-dasharray="4 7"
+          />
+          <circle
+            [attr.cx]="147 + fraction() * 282"
+            cy="294"
+            r="4"
+            fill="var(--color-brand)"
+          />
+          <g class="shipping-parcel" [attr.transform]="shippingTransform()">
+            <path
+              d="m166 160 114-56 114 56v112l-114 57-114-57Z"
+              fill="var(--color-bg-card)"
+              stroke="currentColor"
+              stroke-width="3.5"
+              stroke-linejoin="round"
+            />
+            <path
+              d="m166 160 114 57 114-57m-114 57v112"
+              stroke="currentColor"
+              stroke-width="3.5"
+            />
+            <path
+              d="m224 132 114 56v45l-28 14v-45l-114-56Z"
+              fill="var(--color-brand)"
+            />
+            <path
+              d="m308 267 40-20m-40 31 24-12"
+              stroke="currentColor"
+              stroke-width="4"
+              stroke-linecap="round"
+              opacity=".4"
+            />
+          </g>
+          <text
+            x="97"
+            y="331"
+            text-anchor="middle"
+            fill="currentColor"
+            font-size="12"
+          >
+            {{ "HOME.JOURNEY.PRODUCTION_LABEL" | translate }}
+          </text>
+          <text
+            x="449"
+            y="331"
+            text-anchor="middle"
+            fill="currentColor"
+            font-size="12"
+          >
+            {{ "HOME.JOURNEY.DESTINATION_LABEL" | translate }}
+          </text>
+        </g>
+
+        <g class="scene" [class.is-active]="activeStep().scene === 'arrive'">
+          <g
+            class="arrival-parcel"
+            stroke="currentColor"
+            stroke-linejoin="round"
+          >
+            <path
+              d="m166 160 114-56 114 56-114 57Z"
+              fill="var(--color-bg)"
+              stroke-width="2"
+            />
+            <g class="parcel-back-flaps" [attr.opacity]="unboxOpen()">
+              <path
+                [attr.d]="backLeftFlap()"
+                fill="var(--color-bg-card)"
+                stroke-width="2"
+              />
+              <path
+                [attr.d]="backRightFlap()"
+                fill="var(--color-bg-card)"
+                stroke-width="2"
+              />
+            </g>
+            <g
+              class="unboxed-part"
+              [attr.transform]="unboxTransform()"
+              [attr.opacity]="unboxLift()"
+            >
+              <svg
+                class="process-model-view"
+                x="184"
+                y="160"
+                width="192"
+                height="185"
+                viewBox="230 85 700 680"
+              >
+                <image
+                  href="/assets/images/home/benchy-printed-yellow.png"
+                  width="1200"
+                  height="800"
+                />
+              </svg>
+            </g>
+            <path
+              d="m166 160 114 57 114-57v112l-114 57-114-57Z"
+              fill="var(--color-bg-card)"
+              stroke-width="3.5"
+            />
+            <path d="M280 217v112" stroke-width="3.5" />
+            <path
+              d="m310 202 28-14v45l-28 14Z"
+              fill="var(--color-brand)"
+              stroke="none"
+            />
+            <path
+              d="m308 267 40-20m-40 31 24-12"
+              stroke-width="4"
+              stroke-linecap="round"
+              opacity=".4"
+            />
+            <g class="parcel-front-flaps" [attr.opacity]="unboxOpen()">
+              <path
+                [attr.d]="frontLeftFlap()"
+                fill="var(--color-bg-card)"
+                stroke-width="2"
+              />
+              <path
+                [attr.d]="frontRightFlap()"
+                fill="var(--color-bg-card)"
+                stroke-width="2"
+              />
+            </g>
+            <g class="parcel-closed-lid" [attr.opacity]="1 - unboxOpen()">
+              <path
+                d="m166 160 114-56 114 56-114 57Z"
+                fill="var(--color-bg-card)"
+                stroke-width="3.5"
+              />
+              <path
+                d="m224 132 114 56-28 14-114-56Z"
+                fill="var(--color-brand)"
+                stroke="none"
+              />
+            </g>
+          </g>
+          <g [attr.opacity]="unboxLift()">
+            <circle cx="423" cy="80" r="26" fill="var(--color-brand)" />
+            <path
+              d="m411 81 8 8 16-18"
+              stroke="currentColor"
+              stroke-width="3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </g>
+        </g>
+      </svg>
+      <div class="process-visual-foot">
+        <span class="process-status"
+          ><span aria-hidden="true"></span
+          >{{ "HOME.JOURNEY." + activeStep().key + "_LABEL" | translate }}</span
+        >
+        <span class="scroll-cue">{{ "HOME.JOURNEY.SCROLL" | translate }} </span>
+      </div>
+      <div class="process-meter" aria-hidden="true">
+        <span [style.transform]="'scaleX(' + progress() + ')'"></span>
+      </div>
+      <nav
+        class="process-nav"
+        [attr.aria-label]="'HOME.JOURNEY.STEP_NAV' | translate"
+      >
+        @for (step of steps(); track step.key; let i = $index) {
+          <button
+            type="button"
+            class="process-nav-item"
+            [class.is-current]="activeIndex() === i"
+            [class.is-complete]="activeIndex() > i"
+            [attr.aria-current]="activeIndex() === i ? 'step' : null"
+            [attr.aria-label]="
+              ('HOME.JOURNEY.GO_TO' | translate) +
+              ': ' +
+              ('HOME.JOURNEY.' + step.key + '_LABEL' | translate)
+            "
+            (click)="goToStep(i)"
+          >
+            {{ i + 1 }}
+          </button>
+        }
+      </nav>
+    </div>
+
+    <div class="process-story">
+      @for (step of steps(); track step.key; let i = $index) {
+        <article
+          class="process-step"
+          [class.is-current]="activeIndex() === i"
+          [class.is-complete]="activeIndex() > i"
+        >
+          <span class="step-number" aria-hidden="true">0{{ i + 1 }}</span>
+          <div>
+            <p class="ui-eyebrow ui-eyebrow--compact">
+              {{ "HOME.JOURNEY." + step.key + "_LABEL" | translate }}
+            </p>
+            <h3>{{ "HOME.JOURNEY." + step.key + "_TITLE" | translate }}</h3>
+            <p class="step-copy">
+              {{ "HOME.JOURNEY." + step.key + "_TEXT" | translate }}
+            </p>
+            @if (step.scene === "upload") {
+              <span class="step-detail">STL · 3MF · OBJ · STEP / STP</span>
+            }
+            @if (step.scene === "quote") {
+              <span class="step-detail">{{
+                "HOME.JOURNEY." +
+                  (startingPoint() === "file"
+                    ? "QUOTE_DETAIL"
+                    : "CUSTOM_DETAIL") | translate
+              }}</span>
+            }
+          </div>
+        </article>
+      }
+      <div class="process-finish">
+        <p>{{ "HOME.JOURNEY.READY" | translate }}</p>
+        <a
+          class="ui-button"
+          [routerLink]="
+            languageService.localizedPath(
+              startingPoint() === 'file' ? '/calculator/basic' : '/contact'
+            )
+          "
+        >
+          {{
+            "HOME.JOURNEY." +
+              (startingPoint() === "file" ? "START_FILE" : "START_IDEA")
+              | translate
+          }}
+          <span aria-hidden="true">↗</span></a
+        >
+      </div>
+    </div>
+  </div>
+</section>

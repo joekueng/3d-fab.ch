@@ -12,6 +12,7 @@ This is a modern Angular standalone application organised around Core, Shared, a
 ## Getting Started
 
 1. **Install Dependencies**:
+
    ```bash
    npm install
    ```
@@ -380,3 +381,28 @@ select the split-consent checkbox, then calculate the quote again. Label these
 files as requiring splitting; reserve manual-review copy for failed estimates.
 Keep the checkbox label concise; the split-review card explains the surcharge
 and manual-review fallback. Stack its full-width action buttons with a consistent gap.
+
+## Interactive homepage process
+
+The home-only redesign retains the shared layout, typography, semantic tokens
+and UI controls. Its light opening uses a full-width, centered headline and
+calculator action, following the quoting-first hierarchy reviewed on
+[Xometry](https://www.xometry.com/). [Fictiv](https://www.fictiv.com/) and
+[Protolabs Network](https://www.hubs.com/3d-printing/) were also reviewed for the
+clear upload, quote and manufacturing journey. The opening uses the shared subtle grid pattern and contains no decorative
+workflow illustration. Benchy renders remain within the interactive process.
+
+The process uses the classic 3DBenchy in three states: a rough pencil draft, a smooth gray digital model and an isolated photographic illustration of a yellow FDM print. See src/assets/images/home/ATTRIBUTION.md for provenance. Existing path cards, buttons and page layout are retained.
+
+HomeProcessComponent offers file and CAD-design paths, with explicit selection labels, a polite journey summary and keyboard navigation. A sticky diagram follows normal page scrolling without intercepting wheel or touch events. The pencil draft reveals contour by contour through an SVG mask. The quote and upload scenes use the smooth gray model. The printer starts with an empty clip and builds the yellow print from the bottom up, without a full-model ghost. During shipping, the original parcel moves from production to a house. On arrival its flaps open before the printed part rises out. Reduced motion shows complete illustrations and removes animated transitions. Scroll work is scheduled once per frame outside Angular, and listeners are removed on destruction.
+
+Copy lives under HOME.JOURNEY in the four locale catalogs. The About section
+matches the original homepage, without an added placeholder. The compact shop
+teaser is last; the approved services and calculator call-to-action are retained.
+Existing projects and media retain their API flows. The calculator and contact
+links open their existing pages; the backend is unchanged.
+
+To preview only the frontend, use Node 24 (see .nvmrc), run npm ci once in
+frontend/, then npm start, and open http://localhost:4200/it.
+The explanatory journey works without the backend. Live quotes, orders and
+server-managed media require the existing local stack documented above.
