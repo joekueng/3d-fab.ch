@@ -458,7 +458,7 @@
   display: block;
 
   .process-visual {
-    top: 74px;
+    top: var(--space-2);
     z-index: 5;
   }
 
@@ -531,6 +531,14 @@
   }
 
   .process-finish {
-    padding: 0.25rem 0 0 1rem;
+    padding: 0.25rem 0 0.5rem 1rem;
+  }
+
+  .process-finish .ui-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    max-width: 100%;
+    text-decoration: none;
   }
 }
