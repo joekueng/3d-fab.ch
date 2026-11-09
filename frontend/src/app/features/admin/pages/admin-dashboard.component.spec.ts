@@ -33,6 +33,20 @@ describe('Admin orders responsive layout', () => {
     items: [],
     emailLogs: [],
   };
+  const preview: ReviewRequestPreview = {
+    recipient: 'customer@example.com',
+    subject: 'Review request',
+    headline: 'Thank you',
+    greeting: 'Hello,',
+    intro: 'Thank you for your order.',
+    request: 'Tell us honestly about your experience.',
+    photoNote: 'You may add photos.',
+    actionText: 'Write a review',
+    reviewUrl: 'https://g.page/r/CXamfIi-St1wEAI/review',
+    closing: 'Thank you.',
+    signature: 'Joe and Matteo',
+    footer: '3D-Fab',
+  };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -144,24 +158,13 @@ describe('Admin orders responsive layout', () => {
     ).not.toBeNull();
   });
 
-  it('shows the request before sending and records the manual result', () => {
+  it('opens the review dialog after the preview response and records the asynchronous send result', async () => {
+    fixture.autoDetectChanges();
     const service = TestBed.inject(AdminOrdersService);
-    const preview: ReviewRequestPreview = {
-      recipient: 'customer@example.com',
-      subject: 'Review request',
-      headline: 'Thank you',
-      greeting: 'Hello,',
-      intro: 'Thank you for your order.',
-      request: 'Tell us honestly about your experience.',
-      photoNote: 'You may add photos.',
-      actionText: 'Write a review',
-      reviewUrl: 'https://g.page/r/CXamfIi-St1wEAI/review',
-      closing: 'Thank you.',
-      signature: 'Joe and Matteo',
-      footer: '3D-Fab',
-    };
+    const previewResponse = new Subject<ReviewRequestPreview>();
+    const sendResponse = new Subject<AdminOrder>();
     const previewCall = spyOn(service, 'previewReviewRequest').and.returnValue(
-      of(preview),
+      previewResponse,
     );
     const sentOrder: AdminOrder = {
       ...order,
@@ -180,20 +183,107 @@ describe('Admin orders responsive layout', () => {
       ],
     };
     const sendCall = spyOn(service, 'sendReviewRequest').and.returnValue(
-      of(sentOrder),
+      sendResponse,
     );
     fixture.componentInstance.selectedOrder = { ...order, status: 'SHIPPED' };
+    fixture.changeDetectorRef.markForCheck();
+    fixture.detectChanges();
 
-    fixture.componentInstance.openReviewRequestPreview();
+    const previewButton = element(
+      '.review-request-panel button',
+    ) as HTMLButtonElement;
+    previewButton.click();
+    await fixture.whenStable();
     expect(previewCall).toHaveBeenCalledWith(order.id);
     expect(sendCall).not.toHaveBeenCalled();
-    expect(fixture.componentInstance.reviewRequestPreview?.reviewUrl).toBe(
-      preview.reviewUrl,
-    );
+    expect(previewButton.disabled).toBeTrue();
+    expect(frame.contentDocument!.querySelector('app-dialog')).toBeNull();
 
-    fixture.componentInstance.sendReviewRequest();
+    previewResponse.next(preview);
+    previewResponse.complete();
+    await fixture.whenStable();
+    const dialog = frame.contentDocument!.querySelector('app-dialog dialog');
+    expect(dialog).not.toBeNull();
+    expect(dialog?.hasAttribute('open')).toBeTrue();
+    expect(dialog?.textContent).toContain(preview.recipient);
+    expect(dialog?.textContent).toContain(preview.subject);
+    expect(previewButton.disabled).toBeFalse();
+    expect(sendCall).not.toHaveBeenCalled();
+
+    const sendButton = element(
+      '.review-preview app-button button',
+    ) as HTMLButtonElement;
+    sendButton.click();
+    await fixture.whenStable();
     expect(sendCall).toHaveBeenCalledWith(order.id);
-    expect(fixture.componentInstance.canRequestReview(sentOrder)).toBeFalse();
+    expect(sendButton.disabled).toBeTrue();
+    sendResponse.next(sentOrder);
+    sendResponse.complete();
+    await fixture.whenStable();
+    expect(frame.contentDocument!.querySelector('app-dialog')).toBeNull();
+    expect(previewButton.disabled).toBeTrue();
+    expect(element('.email-log-panel').textContent).toContain('Review request');
+    expect(element('.email-log-panel').textContent).toContain(
+      'customer@example.com',
+    );
+    expect(frame.contentDocument!.querySelector('.ui-banner--error')).toBeNull();
+  });
+
+  it('shows an asynchronous review preview error and enables retry without another click', async () => {
+    fixture.autoDetectChanges();
+    const response = new Subject<ReviewRequestPreview>();
+    const previewCall = spyOn(
+      TestBed.inject(AdminOrdersService),
+      'previewReviewRequest',
+    ).and.returnValue(response);
+    fixture.componentInstance.selectedOrder = { ...order, status: 'SHIPPED' };
+    fixture.changeDetectorRef.markForCheck();
+    fixture.detectChanges();
+
+    const button = element('.review-request-panel button') as HTMLButtonElement;
+    button.click();
+    await fixture.whenStable();
+    expect(button.disabled).toBeTrue();
+    response.error(new Error('Preview unavailable'));
+    await fixture.whenStable();
+
+    expect(button.disabled).toBeFalse();
+    expect(element('.ui-banner--error').textContent).toContain(
+      'ADMIN_ORDERS.REVIEW_PREVIEW_ERROR',
+    );
+    expect(frame.contentDocument!.querySelector('app-dialog')).toBeNull();
+    button.click();
+    expect(previewCall).toHaveBeenCalledTimes(2);
+  });
+
+  it('closes the dialog and shows a send error while the order refresh is pending', async () => {
+    fixture.autoDetectChanges();
+    const service = TestBed.inject(AdminOrdersService);
+    const response = new Subject<AdminOrder>();
+    const refreshResponse = new Subject<AdminOrder>();
+    spyOn(service, 'previewReviewRequest').and.returnValue(of(preview));
+    spyOn(service, 'sendReviewRequest').and.returnValue(response);
+    const refreshCall = spyOn(service, 'getOrder').and.returnValue(refreshResponse);
+    fixture.componentInstance.selectedOrder = { ...order, status: 'SHIPPED' };
+    fixture.changeDetectorRef.markForCheck();
+    fixture.detectChanges();
+
+    element('.review-request-panel button').click();
+    await fixture.whenStable();
+    element('.review-preview app-button button').click();
+    await fixture.whenStable();
+    response.error(new Error('Send unavailable'));
+    await fixture.whenStable();
+
+    expect(frame.contentDocument!.querySelector('app-dialog')).toBeNull();
+    expect(fixture.componentInstance.reviewSending).toBeFalse();
+    expect(element('.ui-banner--error').textContent).toContain(
+      'ADMIN_ORDERS.REVIEW_SEND_ERROR',
+    );
+    expect(refreshCall).toHaveBeenCalledWith(order.id);
+    refreshResponse.next(order);
+    refreshResponse.complete();
+    await fixture.whenStable();
   });
 
   it('keeps desktop cells under their headers and filters visible', () => {

@@ -1136,11 +1136,15 @@ CREATE TABLE IF NOT EXISTS media_usage
     alt_text_en       text,
     alt_text_de       text,
     alt_text_fr       text,
+    pricing_example   jsonb,
     created_at        timestamptz NOT NULL DEFAULT now()
 );
 
 CREATE INDEX IF NOT EXISTS ix_media_usage_scope
     ON media_usage (usage_type, usage_key, is_active, sort_order);
+
+ALTER TABLE media_usage
+    ADD COLUMN IF NOT EXISTS pricing_example jsonb;
 
 ALTER TABLE media_usage
     ADD COLUMN IF NOT EXISTS title_it text;

@@ -1,7 +1,13 @@
+import type { PricingExample } from '../../../core/services/public-media.service';
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+
+/** Draft pricing data can be incomplete; public reads return only complete examples. */
+export type AdminPricingExample = {
+  [Key in keyof PricingExample]?: PricingExample[Key] | null;
+};
 
 export type AdminMediaLanguage = 'it' | 'en' | 'de' | 'fr';
 
@@ -25,6 +31,7 @@ export interface AdminMediaVariant {
 }
 
 export interface AdminMediaUsage {
+  pricingExample?: AdminPricingExample | null;
   id: string;
   usageType: string;
   usageKey: string;
@@ -63,6 +70,7 @@ export interface AdminMediaUploadPayload {
 }
 
 export interface AdminCreateMediaUsagePayload {
+  pricingExample?: AdminPricingExample | null;
   usageType: string;
   usageKey: string;
   ownerId?: string | null;
@@ -74,6 +82,7 @@ export interface AdminCreateMediaUsagePayload {
 }
 
 export interface AdminUpdateMediaUsagePayload {
+  pricingExample?: AdminPricingExample | null;
   usageType?: string;
   usageKey?: string;
   ownerId?: string | null;

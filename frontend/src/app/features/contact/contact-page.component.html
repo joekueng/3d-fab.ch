@@ -7,6 +7,27 @@
   </div>
 
   <div class="container content ui-page-surface__body">
+    <aside class="ui-guide-section">
+      <h2 class="ui-guide-title">
+        {{ "GUIDE_LINKS.BEFORE_STARTING" | translate }}
+      </h2>
+      <p>{{ "GUIDE_LINKS.FREE_CONSULTATION" | translate }}</p>
+      <nav
+        class="ui-row ui-row--wrap"
+        [attr.aria-label]="'GUIDE_LINKS.LABEL' | translate"
+      >
+        <a
+          class="ui-button ui-button--text"
+          [routerLink]="languageService.localizedPath('/pricing')"
+          >{{ "GUIDE_LINKS.PRICING" | translate }}</a
+        >
+        <a
+          class="ui-button ui-button--text"
+          [routerLink]="languageService.localizedPath('/colors-finishes')"
+          >{{ "GUIDE_LINKS.COLORS" | translate }}</a
+        >
+      </nav>
+    </aside>
     <app-card>
       <app-contact-form></app-contact-form>
     </app-card>

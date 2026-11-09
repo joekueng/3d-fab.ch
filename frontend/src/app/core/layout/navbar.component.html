@@ -11,17 +11,29 @@
       />
     </a>
 
-    <div
+    <button
+      #mobileTrigger
+      type="button"
       class="mobile-toggle"
+      aria-controls="main-navigation"
+      [attr.aria-expanded]="isMenuOpen"
+      [attr.aria-label]="
+        (isMenuOpen ? 'NAV.CLOSE_MENU' : 'NAV.OPEN_MENU') | translate
+      "
       (click)="toggleMenu()"
       [class.active]="isMenuOpen"
     >
-      <span></span>
-      <span></span>
-      <span></span>
-    </div>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </button>
 
-    <nav class="nav-links" [class.open]="isMenuOpen">
+    <nav
+      id="main-navigation"
+      class="nav-links"
+      [class.open]="isMenuOpen"
+      [attr.aria-label]="'NAV.MAIN_NAVIGATION' | translate"
+    >
       <a
         [routerLink]="langService.localizedPath('/')"
         routerLinkActive="active"
@@ -42,12 +54,45 @@
         (click)="closeMenu()"
         >{{ "NAV.SHOP" | translate }}</a
       >
-      <a
-        [routerLink]="langService.localizedPath('/materials')"
+      <div
+        #guidesGroup
+        class="nav-guides"
         routerLinkActive="active"
-        (click)="closeMenu()"
-        >{{ "NAV.MATERIALS" | translate }}</a
+        (focusout)="onGuidesFocusOut($event)"
+        (pointerenter)="onGuidesPointerEnter($event)"
+        (pointerleave)="onGuidesPointerLeave($event)"
       >
+        <button
+          #guidesTrigger
+          type="button"
+          class="guides-trigger"
+          aria-controls="print-guide-navigation"
+          [attr.aria-expanded]="isGuidesOpen()"
+          (click)="toggleGuides($event)"
+        >
+          {{ "NAV.PRINT_GUIDES" | translate }}
+          <span
+            class="guides-chevron"
+            [class.is-open]="isGuidesOpen()"
+            aria-hidden="true"
+          ></span>
+        </button>
+        <div
+          id="print-guide-navigation"
+          class="guide-links"
+          [hidden]="!isGuidesOpen()"
+        >
+          @for (link of guideLinks; track link.path) {
+            <a
+              [routerLink]="langService.localizedPath(link.path)"
+              routerLinkActive="active"
+              ariaCurrentWhenActive="page"
+              (click)="closeMenu()"
+              >{{ link.labelKey | translate }}</a
+            >
+          }
+        </div>
+      </div>
       <a
         [routerLink]="langService.localizedPath('/about')"
         routerLinkActive="active"

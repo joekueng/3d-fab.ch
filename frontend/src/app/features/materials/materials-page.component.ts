@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import {
   PublicMediaDisplayImage,
   PublicMediaService,
@@ -450,7 +451,7 @@ const MAX_COMPARE_COUNT = 6;
 @Component({
   selector: 'app-materials-page',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe, RouterLink],
   templateUrl: './materials-page.component.html',
   styleUrl: './materials-page.component.scss',
 })

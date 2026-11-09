@@ -54,6 +54,36 @@ describe('serverOriginInterceptor', () => {
     delete testGlobal.__SSR_INTERNAL_API_ORIGIN__;
   });
 
+  it('uses the internal origin only for catalogue/media reads on informative pages', () => {
+    testGlobal.__SSR_INTERNAL_API_ORIGIN__ = 'http://backend:8000';
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(withInterceptors([serverOriginInterceptor])),
+        provideHttpClientTesting(),
+        {
+          provide: REQUEST,
+          useValue: {
+            protocol: 'https',
+            url: '/fr/colors-finishes',
+            headers: { host: 'dev.3d-fab.ch' },
+          },
+        },
+      ],
+    });
+    http = TestBed.inject(HttpClient);
+    httpMock = TestBed.inject(HttpTestingController);
+    for (const path of [
+      '/api/calculator/options',
+      '/api/public/media/usages?usageType=FILAMENT_VARIANT&usageKey=12',
+    ]) {
+      http.get(path).subscribe();
+      httpMock.expectOne('http://backend:8000' + path).flush({});
+    }
+    http.post('/api/quote-sessions', {}).subscribe();
+    httpMock.expectOne('https://dev.3d-fab.ch/api/quote-sessions').flush({});
+  });
+
   it('rewrites relative SSR URLs to the incoming origin and forwards auth headers', () => {
     http.get('/api/shop/products/by-path/example?lang=de').subscribe();
 

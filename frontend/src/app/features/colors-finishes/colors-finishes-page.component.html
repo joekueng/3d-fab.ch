@@ -1,0 +1,190 @@
+<main class="ui-page-surface ui-guide-page">
+  <div class="container ui-simple-hero">
+    <h1 class="ui-simple-hero__title">
+      {{ "COLORS_FINISHES.TITLE" | translate }}
+    </h1>
+    <p class="ui-simple-hero__subtitle">
+      {{ "COLORS_FINISHES.INTRO" | translate }}
+    </p>
+  </div>
+  <div class="container ui-page-surface__body ui-guide-body catalogue">
+    <div class="filters">
+      <app-select
+        size="small"
+        [compact]="true"
+        [id]="'catalog-material'"
+        [label]="'COLORS_FINISHES.MATERIAL' | translate"
+        [options]="materialOptions()"
+        [ngModel]="material()"
+        (ngModelChange)="changeMaterial($event)"
+      />
+      <app-select
+        size="small"
+        [compact]="true"
+        [id]="'catalog-finish'"
+        [label]="'COLORS_FINISHES.FINISH' | translate"
+        [options]="finishOptions()"
+        [ngModel]="finish()"
+        (ngModelChange)="finish.set($event)"
+      />
+    </div>
+    @if (state().loading) {
+      <p role="status">{{ "COLORS_FINISHES.LOADING" | translate }}</p>
+    } @else if (state().error) {
+      <app-alert type="error"
+        >{{ "COLORS_FINISHES.ERROR" | translate }}
+        <app-button variant="outline" (click)="retry()">{{
+          "COLORS_FINISHES.RETRY" | translate
+        }}</app-button>
+      </app-alert>
+    } @else {
+      @if (comparison().length) {
+        <section class="ui-guide-section" aria-labelledby="compare-title">
+          <h2 class="ui-guide-title" id="compare-title">
+            {{ "COLORS_FINISHES.COMPARE_TITLE" | translate }}
+          </h2>
+          <div class="comparison">
+            @for (variant of comparison(); track variant.id) {
+              <ng-container
+                *ngTemplateOutlet="
+                  variantCard;
+                  context: { $implicit: variant, comparison: true }
+                "
+              />
+            }
+          </div>
+        </section>
+      }
+      <section class="catalog-section" aria-labelledby="catalog-title">
+        <header class="catalog-header">
+          <h2 class="ui-guide-title" id="catalog-title">
+            {{ "COLORS_FINISHES.CATALOG_TITLE" | translate }}
+          </h2>
+          <p role="status">
+            {{
+              "COLORS_FINISHES.RESULTS"
+                | translate: { count: filteredVariants().length }
+            }}
+          </p>
+        </header>
+        <p class="ui-guide-note compare-hint">
+          {{
+            "COLORS_FINISHES.COMPARE_HINT"
+              | translate: { count: comparison().length }
+          }}
+        </p>
+        <div class="variants">
+          @for (variant of filteredVariants(); track variant.id) {
+            <ng-container
+              *ngTemplateOutlet="
+                variantCard;
+                context: { $implicit: variant, comparison: false }
+              "
+            />
+          } @empty {
+            <p>{{ "COLORS_FINISHES.EMPTY" | translate }}</p>
+          }
+        </div>
+      </section>
+    }
+    <section
+      class="ui-guide-section appearance"
+      aria-labelledby="appearance-title"
+    >
+      <h2 class="ui-guide-title" id="appearance-title">
+        {{ "COLORS_FINISHES.APPEARANCE_TITLE" | translate }}
+      </h2>
+      <p>{{ "COLORS_FINISHES.APPEARANCE" | translate }}</p>
+      <p>{{ "COLORS_FINISHES.LAYERS" | translate }}</p>
+      <p class="ui-guide-note">
+        {{ "COLORS_FINISHES.SCREEN_NOTE" | translate }}
+      </p>
+    </section>
+    <nav
+      class="ui-inline-actions ui-guide-links"
+      [attr.aria-label]="'GUIDE_LINKS.LABEL' | translate"
+    >
+      <a
+        class="ui-button"
+        [routerLink]="languageService.localizedPath('/calculator/basic')"
+        >{{ "GUIDE_LINKS.CALCULATE" | translate }}</a
+      >
+      <a
+        class="ui-button ui-button--text"
+        [routerLink]="languageService.localizedPath('/pricing')"
+        >{{ "GUIDE_LINKS.PRICING" | translate }}</a
+      >
+      <a
+        class="ui-button ui-button--text"
+        [routerLink]="languageService.localizedPath('/materials')"
+        >{{ "FOOTER.MATERIALS" | translate }}</a
+      >
+      <a
+        class="ui-button ui-button--text"
+        [routerLink]="languageService.localizedPath('/contact')"
+        >{{ "GUIDE_LINKS.CONSULT" | translate }}</a
+      >
+    </nav>
+  </div>
+</main>
+
+<ng-template #variantCard let-variant let-comparison="comparison">
+  <article
+    class="variant"
+    [attr.aria-label]="variant.materialLabel + ' ' + colorLabel(variant)"
+  >
+    <div class="variant-heading">
+      <span
+        class="swatch"
+        [style.background-color]="swatch(variant)"
+        aria-hidden="true"
+      ></span>
+      <h3>{{ colorLabel(variant) }}</h3>
+    </div>
+    <p>{{ variant.materialLabel }} · {{ finishLabel(variant.finishType) }}</p>
+    <p class="availability">
+      {{
+        (variant.isOutOfStock
+          ? "COLORS_FINISHES.OUT_OF_STOCK"
+          : "COLORS_FINISHES.AVAILABLE"
+        ) | translate
+      }}
+    </p>
+    @if (images(variant); as photos) {
+      @if (photos.length) {
+        <div class="photos">
+          @for (photo of photos; track photo.mediaAssetId) {
+            <app-image-preview
+              [src]="photo.source.fallbackUrl"
+              [alt]="
+                photo.altText ||
+                variant.materialLabel + ' ' + colorLabel(variant)
+              "
+              (loadFailed)="imageFailed(photo.source.fallbackUrl)"
+            />
+          }
+        </div>
+      } @else {
+        <div class="photo-fallback">
+          <span
+            class="sample-swatch"
+            [style.background-color]="swatch(variant)"
+            aria-hidden="true"
+          ></span>
+          <p class="ui-guide-note">
+            {{ "COLORS_FINISHES.NO_PHOTO" | translate }}
+          </p>
+        </div>
+      }
+    }
+    <app-checkbox
+      [id]="(comparison ? 'compare-' : 'catalog-') + variant.id"
+      [label]="'COLORS_FINISHES.COMPARE' | translate"
+      [ngModel]="selectedIds().includes(variant.id)"
+      (ngModelChange)="toggleCompare(variant.id, $event)"
+      [disabled]="
+        selectedIds().length >= 2 && !selectedIds().includes(variant.id)
+      "
+    />
+  </article>
+</ng-template>

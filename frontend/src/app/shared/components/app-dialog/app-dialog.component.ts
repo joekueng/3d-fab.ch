@@ -1,5 +1,7 @@
+import { DOCUMENT } from '@angular/common';
 import {
   afterNextRender,
+  inject,
   Component,
   ElementRef,
   OnDestroy,
@@ -23,16 +25,24 @@ export class AppDialogComponent implements OnDestroy {
   readonly size = input<'small' | 'default' | 'large'>('default');
   readonly fullscreenOnMobile = input(false);
   readonly dismissed = output<void>();
+  private readonly document = inject(DOCUMENT);
+  private previousFocus: HTMLElement | null = null;
   private readonly dialog =
     viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
 
   constructor() {
-    afterNextRender(() => this.dialog().nativeElement.showModal());
+    afterNextRender(() => {
+      const activeElement = this.document.activeElement;
+      this.previousFocus =
+        activeElement instanceof HTMLElement ? activeElement : null;
+      this.dialog().nativeElement.showModal();
+    });
   }
 
   ngOnDestroy(): void {
     const dialog = this.dialog().nativeElement;
     if (dialog.open) dialog.close();
+    if (this.previousFocus?.isConnected) this.previousFocus.focus();
   }
 
   cancel(event: Event): void {
