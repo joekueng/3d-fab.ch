@@ -12,6 +12,7 @@ This is a modern Angular standalone application organised around Core, Shared, a
 ## Getting Started
 
 1. **Install Dependencies**:
+
    ```bash
    npm install
    ```
@@ -421,3 +422,54 @@ Browser coverage is `UI-NAV-GUIDES-001`–`004` in
 `e2e/ui-states/navigation-guides.spec.ts`, including four locales, navigation
 without document reloads, footer grouping, keyboard controls and 320 px width.
 Run Playwright suites sequentially when they share the same artifact directory.
+
+## Interactive homepage process
+
+The home-only redesign retains the shared layout, typography, semantic tokens
+and UI controls. Its light opening uses a full-width, centered headline and
+calculator action, following the quoting-first hierarchy reviewed on
+[Xometry](https://www.xometry.com/). [Fictiv](https://www.fictiv.com/) and
+[Protolabs Network](https://www.hubs.com/3d-printing/) were also reviewed for the
+clear upload, quote and manufacturing journey. The opening uses the shared subtle grid pattern and contains no decorative
+workflow illustration. Benchy renders remain within the interactive process.
+
+The process uses the classic 3DBenchy in three states: a rough pencil draft, a smooth gray digital model and an isolated photographic illustration of a yellow FDM print. See src/assets/images/home/ATTRIBUTION.md for provenance. Existing path cards, buttons and page layout are retained.
+
+HomeProcessComponent offers file and CAD-design paths, with explicit selection labels and keyboard navigation. A sticky diagram follows normal page scrolling without intercepting wheel or touch events. The pencil draft reveals contour by contour through an SVG mask. The quote and upload scenes use the smooth gray model. The printer starts with an empty clip and builds the yellow print from the bottom up, without a full-model ghost. During shipping, the original parcel moves from production to a house. On arrival its flaps open before the printed part rises out. Reduced motion shows complete illustrations and removes animated transitions. Scroll work is scheduled once per frame outside Angular, and listeners are removed on destruction.
+
+The decorative quote scene follows `calculator-page.component.html`: the left
+card contains the mode selector, model preview, file quantity/colour and basic
+material/quality settings; the right card follows `app-price-breakdown`, the
+time/material summary cards and order actions. Keep this miniature aligned with
+the calculator when its layout changes. SVG marks stand in for text and controls
+so the illustration stays legible at small sizes without adding interactive forms.
+
+Through 960 px, the diagram sits above the complete scrolling story. Only the
+compact diagram is sticky; every description and the final action remain in
+normal page flow. Step heights come from their text and modest spacing. Never
+add a mobile scroll runway, viewport-based minimum heights, hidden description
+panels, or a sticky container around both diagram and text: the remaining screen
+must show adjacent steps or subsequent page sections.
+
+Both layouts retain the same numbered step buttons and timeline markers. Mobile
+buttons are sized to fit six phases in one row. The animation follows the text
+passing beneath the diagram in either scroll direction. The mobile story is
+clipped at the diagram's bottom edge so passed text cannot reappear above it;
+clipping preserves the story's layout and reverses on scroll. Numbered links and
+Up/Down/Home/End keys scroll to the corresponding text. Reduced motion shows
+completed illustrations. Desktop keeps its existing two-column layout and holds.
+Verify all locales, both paths, narrow/short viewports and that following content
+actually fills the space below the selected text.
+
+Copy lives under HOME.JOURNEY in the four locale catalogs. The About section
+matches the original homepage, without an added placeholder. The compact shop
+teaser is last; the approved services and calculator call-to-action are retained.
+Existing projects and media retain their API flows. The calculator and contact
+links open their existing pages; the backend is unchanged.
+
+To preview only the frontend, use Node 24 (see .nvmrc), run npm ci once in
+frontend/, then npm start, and open http://localhost:4200/it.
+The explanatory journey works without the backend. Live quotes, orders and
+server-managed media require the existing local stack documented above.
+
+The capability cards reuse the existing HOME_SECTION capability-prototyping, capability-custom-parts, capability-small-series and capability-cad usages. About reuses founders-gallery, including its existing variants and carousel. No media migration or upload is needed. For local frontend-only preview, home-media-preview.json contains public URL references captured from the current site in four languages; it does not copy photographs. Available local API media takes precedence. The preview references are disabled in production, where the existing live media assignments remain authoritative.

@@ -1,4 +1,4 @@
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common';
 import {
   Component,
   DestroyRef,
@@ -12,9 +12,11 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
-import { of } from 'rxjs';
+import { map, of } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { withHomeMediaPreview } from './home-media-preview';
 import { AppButtonComponent } from '../../shared/components/app-button/app-button.component';
-import { AppCardComponent } from '../../shared/components/app-card/app-card.component';
+import { HomeProcessComponent } from './home-process.component';
 import { SwipeCarouselDirective } from '../../shared/directives/swipe-carousel.directive';
 import { LanguageService } from '../../core/services/language.service';
 import {
@@ -54,7 +56,7 @@ import {
     RouterLink,
     TranslatePipe,
     AppButtonComponent,
-    AppCardComponent,
+    HomeProcessComponent,
     SwipeCarouselDirective,
   ],
   templateUrl: './home.component.html',
@@ -62,19 +64,16 @@ import {
 })
 export class HomeComponent {
   private readonly destroyRef = inject(DestroyRef);
+  private readonly document = inject(DOCUMENT);
   private readonly publicMediaService = inject(PublicMediaService);
   private readonly homeProjectService = inject(HomeProjectService);
   private readonly ngZone = inject(NgZone);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private homeProjectAutoplayId: number | null = null;
-  private shopGalleryAutoplayId: number | null = null;
   readonly languageService = inject(LanguageService);
   readonly homeProjectAutoplayMs = 12000;
   readonly homeProjectAutoplayDuration = `${this.homeProjectAutoplayMs}ms`;
-  readonly shopGalleryAutoplayMs = 5000;
-  readonly shopGalleryAutoplayDuration = `${this.shopGalleryAutoplayMs}ms`;
   readonly homeProjectAutoplayPaused = signal(false);
-  readonly shopGalleryAutoplayPaused = signal(false);
 
   readonly homeProjects = toSignal(
     this.isBrowser
@@ -87,7 +86,18 @@ export class HomeComponent {
 
   private readonly mediaByUsage = toSignal(
     this.isBrowser
-      ? this.publicMediaService.getUsageCollections([...HOME_MEDIA_REQUESTS])
+      ? this.publicMediaService
+          .getUsageCollections(HOME_MEDIA_REQUESTS)
+          .pipe(
+            map((media) =>
+              environment.production
+                ? media
+                : withHomeMediaPreview(
+                    media,
+                    this.languageService.currentLang(),
+                  ),
+            ),
+          )
       : of(EMPTY_MEDIA_COLLECTIONS),
     { initialValue: EMPTY_MEDIA_COLLECTIONS },
   );
@@ -126,7 +136,19 @@ export class HomeComponent {
   );
 
   readonly capabilityCards = computed<readonly HomeCapabilityCard[]>(() =>
-    HOME_CAPABILITY_CONFIGS.map((config) => this.buildCapabilityCard(config)),
+    HOME_CAPABILITY_CONFIGS.map((config) => {
+      const image = this.publicMediaService.pickPrimaryUsage(
+        this.mediaByUsage()[
+          buildPublicMediaUsageScopeKey('HOME_SECTION', config.usageKey)
+        ] ?? [],
+      );
+      return {
+        ...config,
+        image: image
+          ? this.publicMediaService.toDisplayImage(image, 'card')
+          : null,
+      };
+    }),
   );
 
   readonly homeProjectIndex = signal(0);
@@ -135,10 +157,6 @@ export class HomeComponent {
   );
   readonly homeProjectTrackTransform = computed(
     () => `translateX(-${this.homeProjectIndex() * 100}%)`,
-  );
-  readonly shopGalleryIndex = signal(0);
-  readonly shopGalleryTrackTransform = computed(
-    () => `translateX(-${this.shopGalleryIndex() * 100}%)`,
   );
   readonly founderImageIndex = signal(0);
   readonly currentFounderImage = computed<PublicMediaDisplayImage | null>(
@@ -174,27 +192,6 @@ export class HomeComponent {
     });
 
     effect(() => {
-      const images = this.shopGalleryImages();
-      const currentIndex = this.shopGalleryIndex();
-      const isAutoplayPaused = this.shopGalleryAutoplayPaused();
-      if (images.length === 0) {
-        this.stopShopGalleryAutoplay();
-        if (currentIndex !== 0) {
-          this.shopGalleryIndex.set(0);
-        }
-        return;
-      }
-      if (currentIndex >= images.length) {
-        this.shopGalleryIndex.set(0);
-      }
-      if (images.length > 1 && !isAutoplayPaused) {
-        this.startShopGalleryAutoplay();
-      } else {
-        this.stopShopGalleryAutoplay();
-      }
-    });
-
-    effect(() => {
       const images = this.founderImages();
       const currentIndex = this.founderImageIndex();
       if (images.length === 0) {
@@ -210,7 +207,30 @@ export class HomeComponent {
 
     this.destroyRef.onDestroy(() => {
       this.stopHomeProjectAutoplay();
-      this.stopShopGalleryAutoplay();
+    });
+  }
+
+  scrollToProcess(event: MouseEvent): void {
+    if (
+      !this.isBrowser ||
+      event.button !== 0 ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey ||
+      event.altKey
+    )
+      return;
+    const target = this.document.getElementById('home-process');
+    const view = this.document.defaultView;
+    if (!target || !view) return;
+    // A plain fragment resolves against <base href="/"> and reloads the app.
+    // Keep this action in the current document, including on localized routes.
+    event.preventDefault();
+    target.scrollIntoView({
+      behavior: view.matchMedia('(prefers-reduced-motion: reduce)').matches
+        ? 'auto'
+        : 'smooth',
+      block: 'start',
     });
   }
 
@@ -328,45 +348,6 @@ export class HomeComponent {
     });
   }
 
-  selectShopGalleryImage(index: number): void {
-    const totalImages = this.shopGalleryImages().length;
-    if (index < 0 || index >= totalImages) {
-      return;
-    }
-    this.shopGalleryIndex.set(index);
-    this.restartShopGalleryAutoplay();
-  }
-
-  showPreviousShopGalleryImage(): void {
-    const totalImages = this.shopGalleryImages().length;
-    if (totalImages <= 1) {
-      return;
-    }
-    this.shopGalleryIndex.set(
-      this.shopGalleryIndex() === 0
-        ? totalImages - 1
-        : this.shopGalleryIndex() - 1,
-    );
-    this.restartShopGalleryAutoplay();
-  }
-
-  showNextShopGalleryImage(): void {
-    this.advanceShopGalleryImage();
-    this.restartShopGalleryAutoplay();
-  }
-
-  toggleShopGalleryAutoplay(event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
-    const shouldPause = !this.shopGalleryAutoplayPaused();
-    this.shopGalleryAutoplayPaused.set(shouldPause);
-    if (shouldPause) {
-      this.stopShopGalleryAutoplay();
-    } else {
-      this.startShopGalleryAutoplay();
-    }
-  }
-
   prevFounderImage(): void {
     const totalImages = this.founderImages().length;
     if (totalImages <= 1) {
@@ -395,7 +376,7 @@ export class HomeComponent {
     return image.mediaAssetId;
   }
 
-  trackCapability(_: number, card: HomeCapabilityCard): string {
+  trackCapability(_: number, card: HomeCapabilityConfig): string {
     return card.usageKey;
   }
 
@@ -438,23 +419,6 @@ export class HomeComponent {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
-  }
-
-  private buildCapabilityCard(
-    config: HomeCapabilityConfig,
-  ): HomeCapabilityCard {
-    const items =
-      this.mediaByUsage()[
-        buildPublicMediaUsageScopeKey('HOME_SECTION', config.usageKey)
-      ] ?? [];
-    const primaryImage = this.publicMediaService.pickPrimaryUsage(items);
-
-    return {
-      ...config,
-      image: primaryImage
-        ? this.publicMediaService.toDisplayImage(primaryImage, 'card')
-        : null,
-    };
   }
 
   private advanceHomeProject(): void {
@@ -504,55 +468,6 @@ export class HomeComponent {
     }
     window.clearInterval(this.homeProjectAutoplayId);
     this.homeProjectAutoplayId = null;
-  }
-
-  private advanceShopGalleryImage(): void {
-    const totalImages = this.shopGalleryImages().length;
-    if (totalImages <= 1) {
-      return;
-    }
-    this.shopGalleryIndex.set(
-      this.shopGalleryIndex() === totalImages - 1
-        ? 0
-        : this.shopGalleryIndex() + 1,
-    );
-  }
-
-  private restartShopGalleryAutoplay(): void {
-    this.stopShopGalleryAutoplay();
-    this.startShopGalleryAutoplay();
-  }
-
-  private startShopGalleryAutoplay(): void {
-    if (
-      !this.isBrowser ||
-      this.shopGalleryAutoplayId !== null ||
-      this.shopGalleryAutoplayPaused() ||
-      this.shopGalleryImages().length <= 1 ||
-      this.prefersReducedMotion()
-    ) {
-      return;
-    }
-
-    this.ngZone.runOutsideAngular(() => {
-      this.shopGalleryAutoplayId = window.setInterval(() => {
-        this.ngZone.run(() => {
-          if (this.shopGalleryAutoplayPaused()) {
-            this.stopShopGalleryAutoplay();
-            return;
-          }
-          this.advanceShopGalleryImage();
-        });
-      }, this.shopGalleryAutoplayMs);
-    });
-  }
-
-  private stopShopGalleryAutoplay(): void {
-    if (!this.isBrowser || this.shopGalleryAutoplayId === null) {
-      return;
-    }
-    window.clearInterval(this.shopGalleryAutoplayId);
-    this.shopGalleryAutoplayId = null;
   }
 
   private prefersReducedMotion(): boolean {
