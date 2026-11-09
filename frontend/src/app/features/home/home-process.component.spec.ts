@@ -455,7 +455,9 @@ describe('HomeProcessComponent', () => {
     const story = host.querySelector<HTMLElement>('.process-story')!;
     const storyTrack = host.querySelector<HTMLElement>('.process-story-track')!;
     let storyTop = 120;
-    spyOn(panel, 'getBoundingClientRect').and.returnValue(new DOMRect(0, 74, 360, 200));
+    spyOn(panel, 'getBoundingClientRect').and.returnValue(
+      new DOMRect(0, 74, 360, 200),
+    );
     spyOn(storyTrack, 'getBoundingClientRect').and.callFake(
       () => new DOMRect(0, storyTop, 360, 1500),
     );
@@ -465,14 +467,14 @@ describe('HomeProcessComponent', () => {
     spyOnProperty(panel, 'offsetHeight', 'get').and.returnValue(200);
     await fixture.whenStable();
     const line = 274 + Number.parseFloat(getComputedStyle(story).paddingTop);
-    let shift = 260 + 260 * 0.85 / 2;
+    let shift = 260 + (260 * 0.85) / 2;
     const rows = host.querySelectorAll<HTMLElement>('.process-step');
     rows.forEach((row, index) =>
       spyOn(row, 'getBoundingClientRect').and.callFake(
         () => new DOMRect(0, line + index * 260 - shift, 360, 260),
       ),
     );
-    const event = new Event('scroll', {cancelable: true});
+    const event = new Event('scroll', { cancelable: true });
     window.dispatchEvent(event);
     await nextFrame();
     await fixture.whenStable();
@@ -483,7 +485,11 @@ describe('HomeProcessComponent', () => {
     expect(host.querySelector('.process-scroll-track')).toBeNull();
     expect(component.storyTrackHeight()).toBe(0);
     expect(component.mobileStoryClip()).toBe(154);
-    expect(Array.from(host.querySelectorAll('.process-nav-item')).map(e => e.textContent?.trim())).toEqual(['1', '2', '3', '4', '5']);
+    expect(
+      Array.from(host.querySelectorAll('.process-nav-item')).map((e) =>
+        e.textContent?.trim(),
+      ),
+    ).toEqual(['1', '2', '3', '4', '5']);
     shift = 0;
     storyTop = 300;
     window.dispatchEvent(new Event('scroll'));
@@ -503,20 +509,26 @@ describe('HomeProcessComponent', () => {
     spyOnProperty(panel, 'offsetHeight', 'get').and.returnValue(200);
     await fixture.whenStable();
     const rows = host.querySelectorAll<HTMLElement>('.process-step');
-    spyOn(rows[2], 'getBoundingClientRect').and.returnValue(new DOMRect(0, 500, 360, 260));
-    spyOn(rows[4], 'getBoundingClientRect').and.returnValue(new DOMRect(0, 1000, 360, 260));
+    spyOn(rows[2], 'getBoundingClientRect').and.returnValue(
+      new DOMRect(0, 500, 360, 260),
+    );
+    spyOn(rows[4], 'getBoundingClientRect').and.returnValue(
+      new DOMRect(0, 1000, 360, 260),
+    );
     const line = 274 + Number.parseFloat(getComputedStyle(story).paddingTop);
     const scroll = spyOn(window, 'scrollTo');
     component.goToStep(2);
     expect(scroll.calls.mostRecent().args[0] as unknown).toEqual({
       top: window.scrollY + 500 - line + 2,
-      behavior: 'smooth'
+      behavior: 'smooth',
     });
     component.reducedMotion.set(true);
-    grid.dispatchEvent(new KeyboardEvent('keydown', {key: 'End', bubbles: true}));
+    grid.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'End', bubbles: true }),
+    );
     expect(scroll.calls.mostRecent().args[0] as unknown).toEqual({
       top: window.scrollY + 1000 - line + 2,
-      behavior: 'auto'
+      behavior: 'auto',
     });
   });
 });

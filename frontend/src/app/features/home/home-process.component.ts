@@ -288,7 +288,11 @@ export class HomeProcessComponent {
     if (!view || !step) return;
     if (this.mobileLayout()) {
       view.scrollTo({
-        top: view.scrollY + step.getBoundingClientRect().top - this.readingLine(view) + 2,
+        top:
+          view.scrollY +
+          step.getBoundingClientRect().top -
+          this.readingLine(view) +
+          2,
         behavior: this.reducedMotion() ? 'auto' : 'smooth',
       });
       return;
@@ -332,7 +336,12 @@ export class HomeProcessComponent {
   }
 
   onMobileKeydown(event: KeyboardEvent): void {
-    if (!this.mobileLayout() || event.altKey || event.ctrlKey || event.metaKey) {
+    if (
+      !this.mobileLayout() ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey
+    ) {
       return;
     }
     const index = {
@@ -362,12 +371,19 @@ export class HomeProcessComponent {
       const storyTrack = this.host.nativeElement.querySelector<HTMLElement>(
         '.process-story-track',
       );
-      const storyClip = this.mobileLayout() && panel && storyTrack
-        ? Math.ceil(Math.max(0, Math.min(
-          storyTrack.offsetHeight,
-          panel.getBoundingClientRect().bottom - storyTrack.getBoundingClientRect().top,
-        )))
-        : 0;
+      const storyClip =
+        this.mobileLayout() && panel && storyTrack
+          ? Math.ceil(
+              Math.max(
+                0,
+                Math.min(
+                  storyTrack.offsetHeight,
+                  panel.getBoundingClientRect().bottom -
+                    storyTrack.getBoundingClientRect().top,
+                ),
+              ),
+            )
+          : 0;
       const ending = this.host.nativeElement.querySelector<HTMLElement>(
         '.process-step-track.is-ending',
       );
