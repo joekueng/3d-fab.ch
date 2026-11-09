@@ -57,7 +57,7 @@ For live order updates, follow [customer order tracking](README.md#customer-orde
 
 For asynchronous view updates, follow [change detection conventions](README.md#asynchronous-view-updates).
 
-For the home journey's responsive scroll layout and calculator illustration,
+For the home journey's compact diagram, numbered navigation and scrolling text,
 follow [interactive homepage process](README.md#interactive-homepage-process).
 
 For localized admin content and the bulk filament color action, follow

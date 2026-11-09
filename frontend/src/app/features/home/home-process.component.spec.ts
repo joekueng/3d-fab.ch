@@ -17,6 +17,14 @@ describe('HomeProcessComponent', () => {
     new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
   beforeEach(async () => {
+    const nativeMatchMedia = window.matchMedia.bind(window);
+    spyOn(window, 'matchMedia').and.callFake((query) => {
+      const media = nativeMatchMedia(query);
+      if (query === '(max-width: 960px)') {
+        spyOnProperty(media, 'matches').and.returnValue(false);
+      }
+      return media;
+    });
     await TestBed.configureTestingModule({
       imports: [HomeProcessComponent],
       providers: [
@@ -48,7 +56,7 @@ describe('HomeProcessComponent', () => {
     fixture.autoDetectChanges();
     await fixture.whenStable();
     // Keep the unit fixture beside the text, independently of Karma's iframe size.
-    // The real stacked/mobile layout is covered by the browser regression check.
+    // The mobile cards are also covered by the browser regression check.
     const panel = host.querySelector<HTMLElement>('.process-visual')!;
     const grid = host.querySelector<HTMLElement>('.process-grid')!;
     panel.style.position = 'sticky';
@@ -438,5 +446,77 @@ describe('HomeProcessComponent', () => {
     fixture.destroy();
     expect(remove).toHaveBeenCalledWith('scroll', jasmine.any(Function));
     expect(remove).toHaveBeenCalledWith('resize', jasmine.any(Function));
+  });
+
+  it('follows the scrolling mobile descriptions without hiding adjacent steps or adding a runway', async () => {
+    component.mobileLayout.set(true);
+    const panel = host.querySelector<HTMLElement>('.process-visual')!;
+    const grid = host.querySelector<HTMLElement>('.process-grid')!;
+    const story = host.querySelector<HTMLElement>('.process-story')!;
+    const storyTrack = host.querySelector<HTMLElement>('.process-story-track')!;
+    let storyTop = 120;
+    spyOn(panel, 'getBoundingClientRect').and.returnValue(new DOMRect(0, 74, 360, 200));
+    spyOn(storyTrack, 'getBoundingClientRect').and.callFake(
+      () => new DOMRect(0, storyTop, 360, 1500),
+    );
+    spyOnProperty(storyTrack, 'offsetHeight', 'get').and.returnValue(1500);
+    grid.style.display = 'block';
+    panel.style.top = '74px';
+    spyOnProperty(panel, 'offsetHeight', 'get').and.returnValue(200);
+    await fixture.whenStable();
+    const line = 274 + Number.parseFloat(getComputedStyle(story).paddingTop);
+    let shift = 260 + 260 * 0.85 / 2;
+    const rows = host.querySelectorAll<HTMLElement>('.process-step');
+    rows.forEach((row, index) =>
+      spyOn(row, 'getBoundingClientRect').and.callFake(
+        () => new DOMRect(0, line + index * 260 - shift, 360, 260),
+      ),
+    );
+    const event = new Event('scroll', {cancelable: true});
+    window.dispatchEvent(event);
+    await nextFrame();
+    await fixture.whenStable();
+    expect(component.activeIndex()).toBe(1);
+    expect(component.stepFraction()).toBeCloseTo(0.5, 2);
+    expect(event.defaultPrevented).toBeFalse();
+    expect(host.querySelectorAll('.process-step-track[inert]').length).toBe(0);
+    expect(host.querySelector('.process-scroll-track')).toBeNull();
+    expect(component.storyTrackHeight()).toBe(0);
+    expect(component.mobileStoryClip()).toBe(154);
+    expect(Array.from(host.querySelectorAll('.process-nav-item')).map(e => e.textContent?.trim())).toEqual(['1', '2', '3', '4', '5']);
+    shift = 0;
+    storyTop = 300;
+    window.dispatchEvent(new Event('scroll'));
+    await nextFrame();
+    expect(component.activeIndex()).toBe(0);
+    expect(component.stepFraction()).toBe(0);
+    expect(component.mobileStoryClip()).toBe(0);
+  });
+
+  it('aligns numbered mobile links below the diagram and supports keyboard navigation', async () => {
+    component.mobileLayout.set(true);
+    const panel = host.querySelector<HTMLElement>('.process-visual')!;
+    const grid = host.querySelector<HTMLElement>('.process-grid')!;
+    const story = host.querySelector<HTMLElement>('.process-story')!;
+    grid.style.display = 'block';
+    panel.style.top = '74px';
+    spyOnProperty(panel, 'offsetHeight', 'get').and.returnValue(200);
+    await fixture.whenStable();
+    const rows = host.querySelectorAll<HTMLElement>('.process-step');
+    spyOn(rows[2], 'getBoundingClientRect').and.returnValue(new DOMRect(0, 500, 360, 260));
+    spyOn(rows[4], 'getBoundingClientRect').and.returnValue(new DOMRect(0, 1000, 360, 260));
+    const line = 274 + Number.parseFloat(getComputedStyle(story).paddingTop);
+    const scroll = spyOn(window, 'scrollTo');
+    component.goToStep(2);
+    expect(scroll.calls.mostRecent().args[0] as unknown).toEqual({
+      top: window.scrollY + 500 - line + 2,
+      behavior: 'smooth'
+    });
+    component.reducedMotion.set(true);
+    grid.dispatchEvent(new KeyboardEvent('keydown', {key: 'End', bubbles: true}));
+    expect(scroll.calls.mostRecent().args[0] as unknown).toEqual({
+      top: window.scrollY + 1000 - line + 2,
+      behavior: 'auto'
+    });
   });
 });

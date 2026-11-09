@@ -403,13 +403,22 @@ time/material summary cards and order actions. Keep this miniature aligned with
 the calculator when its layout changes. SVG marks stand in for text and controls
 so the illustration stays legible at small sizes without adding interactive forms.
 
-The journey stacks its sticky illustration above the text through 960 px, with
-an illustration height tied to the viewport and 44 px step navigation targets.
-Short landscape screens from 640 px use two columns to leave room for the copy;
-very small screens below 640 px and 600 px high release the sticky panel.
-Desktop text holds and their CSS media queries must match the side-by-side
-layout: `HomeProcessComponent` measures the computed grid and sticky positions.
-Verify both paths, step links, viewport resizing and long translations together.
+Through 960 px, the diagram sits above the complete scrolling story. Only the
+compact diagram is sticky; every description and the final action remain in
+normal page flow. Step heights come from their text and modest spacing. Never
+add a mobile scroll runway, viewport-based minimum heights, hidden description
+panels, or a sticky container around both diagram and text: the remaining screen
+must show adjacent steps or subsequent page sections.
+
+Both layouts retain the same numbered step buttons and timeline markers. Mobile
+buttons are sized to fit six phases in one row. The animation follows the text
+passing beneath the diagram in either scroll direction. The mobile story is
+clipped at the diagram's bottom edge so passed text cannot reappear above it;
+clipping preserves the story's layout and reverses on scroll. Numbered links and
+Up/Down/Home/End keys scroll to the corresponding text. Reduced motion shows
+completed illustrations. Desktop keeps its existing two-column layout and holds.
+Verify all locales, both paths, narrow/short viewports and that following content
+actually fills the space below the selected text.
 
 Copy lives under HOME.JOURNEY in the four locale catalogs. The About section
 matches the original homepage, without an added placeholder. The compact shop

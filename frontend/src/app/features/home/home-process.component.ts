@@ -64,6 +64,8 @@ export class HomeProcessComponent {
   readonly activeIndex = signal(0);
   readonly stepFraction = signal(0);
   readonly reducedMotion = signal(false);
+  readonly mobileLayout = signal(false);
+  readonly mobileStoryClip = signal(0);
   readonly storyTrackHeight = signal(0);
   readonly endingTrackHeight = signal(0);
   readonly pinnedTop = signal(0);
@@ -226,9 +228,16 @@ export class HomeProcessComponent {
       if (!view) return;
       this.window = view;
       const motion = view.matchMedia('(prefers-reduced-motion: reduce)');
+      const layout = view.matchMedia('(max-width: 960px)');
       const updateMotion = () => this.reducedMotion.set(motion.matches);
+      const updateLayout = () => {
+        this.mobileLayout.set(layout.matches);
+        this.queueMeasurement();
+      };
       updateMotion();
+      updateLayout();
       motion.addEventListener('change', updateMotion);
+      layout.addEventListener('change', updateLayout);
       this.zone.runOutsideAngular(() => {
         view.addEventListener('scroll', this.queueMeasurement, {
           passive: true,
@@ -242,6 +251,8 @@ export class HomeProcessComponent {
           const panel =
             this.host.nativeElement.querySelector('.process-visual');
           if (panel) this.observer.observe(panel);
+          const card = this.host.nativeElement.querySelector('.process-grid');
+          if (card) this.observer.observe(card);
           const story = this.host.nativeElement.querySelector('.process-story');
           if (story) this.observer.observe(story);
         }
@@ -251,6 +262,7 @@ export class HomeProcessComponent {
         view.removeEventListener('scroll', this.queueMeasurement);
         view.removeEventListener('resize', this.queueMeasurement);
         motion.removeEventListener('change', updateMotion);
+        layout.removeEventListener('change', updateLayout);
         this.observer?.disconnect();
         if (this.frame !== null) view.cancelAnimationFrame(this.frame);
         this.window = null;
@@ -267,12 +279,20 @@ export class HomeProcessComponent {
   }
 
   goToStep(index: number): void {
+    if (index < 0 || index >= this.steps().length) return;
     const view = this.window;
     const step =
       this.host.nativeElement.querySelectorAll<HTMLElement>('.process-step')[
         index
       ];
     if (!view || !step) return;
+    if (this.mobileLayout()) {
+      view.scrollTo({
+        top: view.scrollY + step.getBoundingClientRect().top - this.readingLine(view) + 2,
+        behavior: this.reducedMotion() ? 'auto' : 'smooth',
+      });
+      return;
+    }
     const grid =
       this.host.nativeElement.querySelector<HTMLElement>('.process-grid');
     const story =
@@ -311,6 +331,21 @@ export class HomeProcessComponent {
     });
   }
 
+  onMobileKeydown(event: KeyboardEvent): void {
+    if (!this.mobileLayout() || event.altKey || event.ctrlKey || event.metaKey) {
+      return;
+    }
+    const index = {
+      ArrowUp: this.activeIndex() - 1,
+      ArrowDown: this.activeIndex() + 1,
+      Home: 0,
+      End: this.steps().length - 1,
+    }[event.key];
+    if (index === undefined) return;
+    event.preventDefault();
+    this.goToStep(index);
+  }
+
   private readonly queueMeasurement = (): void => {
     const view = this.window;
     if (!view || this.frame !== null) return;
@@ -324,6 +359,15 @@ export class HomeProcessComponent {
         this.host.nativeElement.querySelector<HTMLElement>('.process-grid');
       const story =
         this.host.nativeElement.querySelector<HTMLElement>('.process-story');
+      const storyTrack = this.host.nativeElement.querySelector<HTMLElement>(
+        '.process-story-track',
+      );
+      const storyClip = this.mobileLayout() && panel && storyTrack
+        ? Math.ceil(Math.max(0, Math.min(
+          storyTrack.offsetHeight,
+          panel.getBoundingClientRect().bottom - storyTrack.getBoundingClientRect().top,
+        )))
+        : 0;
       const ending = this.host.nativeElement.querySelector<HTMLElement>(
         '.process-step-track.is-ending',
       );
@@ -414,10 +458,12 @@ export class HomeProcessComponent {
       if (
         index !== this.activeIndex() ||
         rounded !== this.stepFraction() ||
+        storyClip !== this.mobileStoryClip() ||
         layoutChanged ||
         firstTextOffset !== this.firstTextOffset()
       ) {
         this.zone.run(() => {
+          this.mobileStoryClip.set(storyClip);
           this.pinnedTop.set(pinnedTop);
           this.finalTextTop.set(finalTextTop);
           this.finalBoxHeight.set(finalBoxHeight);

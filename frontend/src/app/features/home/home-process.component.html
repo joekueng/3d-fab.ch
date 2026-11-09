@@ -100,6 +100,12 @@
 
   <div
     class="process-grid"
+    (keydown)="onMobileKeydown($event)"
+    [attr.role]="mobileLayout() ? 'region' : null"
+    [attr.tabindex]="mobileLayout() ? 0 : null"
+    [class.is-mobile-layout]="mobileLayout()"
+    [style.--process-story-clip.px]="mobileStoryClip()"
+    aria-labelledby="process-title"
     [style.--process-first-hold.px]="initialHold()"
     [style.--process-pin-top.px]="pinnedTop()"
     [style.--process-story-height.px]="storyTrackHeight()"
@@ -949,6 +955,8 @@
           </button>
         }
       </nav>
+
+
     </div>
 
     <div class="process-story-track">
@@ -1019,5 +1027,6 @@
         }
       </div>
     </div>
+
   </div>
 </section>
