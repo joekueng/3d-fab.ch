@@ -29,6 +29,7 @@
 .hero-copy {
   max-width: 1120px;
   margin: 0 auto;
+  overflow-wrap: anywhere;
 }
 .hero-eyebrow {
   display: flex;
@@ -72,6 +73,7 @@
 .hero-actions .ui-button {
   gap: 1.25rem;
   text-decoration: none;
+  white-space: normal;
 }
 .hero-note {
   margin: 1rem 0 0;
@@ -90,15 +92,6 @@
 .hero a:focus-visible {
   outline: 2px solid var(--color-text);
   outline-offset: 5px;
-}
-.hero-scene > svg {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-.hero-scene-foot strong {
-  font-weight: 600;
-  color: var(--color-text);
 }
 .hero-calculator-note {
   display: flex;
@@ -140,11 +133,6 @@
     font-size: 0.85rem;
     padding: 0.85rem 1rem;
   }
-  .hero-scene > svg {
-    width: 135%;
-    max-width: none;
-    margin-left: -17.5%;
-  }
 }
 @media (max-width: 400px) {
   .hero-eyebrow {
@@ -168,6 +156,8 @@
   gap: 1.5rem;
 }
 .cap-card {
+  min-width: 0;
+  overflow-wrap: anywhere;
   padding-top: 1rem;
   border-top: 2px solid var(--color-border);
 }
@@ -240,7 +230,7 @@
   margin: auto;
   padding: 0 1rem;
   display: grid;
-  grid-template-columns: 1fr 1.1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
   gap: 3rem;
   align-items: center;
 }
@@ -322,7 +312,7 @@
   opacity: 0.3;
 }
 .conversion {
-  padding: 4rem 0;
+  padding-block: 4rem;
 }
 .conversion-band {
   display: flex;
@@ -350,6 +340,11 @@
 .conversion-band .ui-button {
   flex-shrink: 0;
   gap: 1.5rem;
+  white-space: normal;
+}
+.conversion-band > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .shop {
   padding: 3rem 0 4rem;
@@ -359,9 +354,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 2rem;
-  padding: 1.5rem 0;
+  padding-block: 1.5rem;
 }
 .shop-copy {
+  min-width: 0;
   max-width: 420px;
 }
 .shop-copy h2 {
@@ -389,6 +385,7 @@
 .shop-compact .ui-button {
   flex-shrink: 0;
   gap: 1rem;
+  white-space: normal;
 }
 @media (max-width: 960px) {
   .cap-cards {
@@ -401,6 +398,20 @@
   }
   .shop-previews img:nth-child(n + 3) {
     display: none;
+  }
+  .conversion-band {
+    flex-wrap: wrap;
+    padding: 2rem;
+  }
+  .shop-compact {
+    flex-wrap: wrap;
+  }
+  .shop-copy {
+    flex: 1 1 100%;
+    max-width: none;
+  }
+  .shop-previews {
+    margin-left: 0;
   }
 }
 @media (max-width: 760px) {
@@ -432,7 +443,7 @@
     font-size: 1.8rem;
   }
   .conversion {
-    padding: 3rem 0;
+    padding-block: 3rem;
   }
   .conversion-band {
     flex-direction: column;
@@ -448,7 +459,7 @@
   .shop-compact {
     flex-wrap: wrap;
     gap: 1.25rem;
-    padding: 0;
+    padding-block: 0;
   }
   .shop-copy {
     width: 100%;
@@ -458,13 +469,24 @@
     margin: 0;
   }
 }
-@media (max-width: 400px) {
+@media (max-width: 540px) {
   .cap-cards {
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
   .cap-card-number {
     margin-bottom: 0.75rem;
+  }
+  .hero-actions,
+  .hero-actions .ui-button {
+    width: 100%;
+  }
+  .hero-actions .ui-button {
+    justify-content: center;
+  }
+  .conversion-band .ui-button {
+    width: 100%;
+    justify-content: space-between;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -513,13 +535,8 @@
   }
 }
 
-@media (max-width: 760px) {
-}
-
 .hero-actions a,
 .conversion-band a,
 .shop a {
   text-decoration: none;
-}
-@media (max-width: 760px) {
 }

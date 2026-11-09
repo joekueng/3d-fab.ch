@@ -345,170 +345,333 @@
         </g>
 
         <g class="scene" [class.is-active]="activeStep().scene === 'quote'">
+          <!-- Decorative miniature of calculator-workspace: upload/settings on
+               the left, price breakdown, metrics and order action on the right. -->
           <rect
-            x="109"
-            y="52"
-            width="342"
-            height="263"
+            x="38"
+            y="30"
+            width="484"
+            height="302"
             rx="12"
-            fill="var(--color-bg-card)"
+            fill="var(--color-bg)"
             stroke="currentColor"
             stroke-width="2"
           />
           <path
-            d="M109 85h342m-316-16h2m10 0h2m10 0h2"
+            d="M38 58h484m-465-14h2m10 0h2m10 0h2"
             stroke="currentColor"
             stroke-width="3"
             stroke-linecap="round"
           />
-          <svg
-            class="process-model-view"
-            x="116"
-            y="115"
-            width="175"
-            height="143"
-            viewBox="230 85 700 680"
-          >
-            <image
-              href="/assets/images/home/benchy-digital-grey.png"
-              width="1200"
-              height="800"
-            />
-          </svg>
-          <rect
-            x="302"
-            y="120"
-            width="119"
-            height="29"
-            rx="5"
-            fill="var(--color-bg)"
-            stroke="currentColor"
-            stroke-opacity=".12"
-          />
-          <g class="quote-material" [attr.opacity]="quoteMaterialProgress()">
-            <circle
-              cx="317"
-              cy="134.5"
-              r="6"
-              fill="currentColor"
-              opacity=".25"
-            />
-            <circle
-              cx="338"
-              cy="134.5"
-              r="6"
-              fill="currentColor"
-              opacity=".6"
-            />
-            <circle cx="359" cy="134.5" r="6" fill="var(--color-brand)" />
+
+          <g class="quote-input-panel">
             <rect
-              class="quote-material-selection"
-              [attr.x]="307 + 42 * quoteMaterialProgress()"
-              y="124.5"
-              width="20"
-              height="20"
-              rx="10"
-              stroke="currentColor"
-              stroke-width="1.5"
+              x="52"
+              y="72"
+              width="270"
+              height="245"
+              rx="8"
+              fill="var(--color-bg-card)"
+              stroke="var(--color-border)"
+            />
+            <!-- Basic/advanced mode selector, as in the calculator. -->
+            <rect
+              x="64"
+              y="84"
+              width="246"
+              height="23"
+              rx="5"
+              fill="var(--color-neutral-100)"
+            />
+            <rect
+              x="67"
+              y="87"
+              width="119"
+              height="17"
+              rx="3"
+              fill="var(--color-brand)"
             />
             <path
-              d="m397 135 4 4 8-9"
+              d="M101 95h51m70 0h53"
               stroke="currentColor"
-              stroke-width="1.7"
+              stroke-width="3"
+              stroke-linecap="round"
+              opacity=".5"
+            />
+            <rect
+              x="64"
+              y="117"
+              width="246"
+              height="91"
+              rx="5"
+              fill="var(--color-bg)"
+              stroke="var(--color-border)"
+            />
+            <svg
+              class="process-model-view"
+              x="131"
+              y="118"
+              width="112"
+              height="89"
+              viewBox="230 85 700 680"
+            >
+              <image
+                href="/assets/images/home/benchy-digital-grey.png"
+                width="1200"
+                height="800"
+              />
+            </svg>
+            <!-- File row with quantity and per-file colour. -->
+            <rect
+              x="64"
+              y="215"
+              width="246"
+              height="28"
+              rx="4"
+              stroke="var(--color-border)"
+            />
+            <path
+              d="M75 225h68m-68 8h43"
+              stroke="currentColor"
+              stroke-width="3"
+              stroke-linecap="round"
+              opacity=".35"
+            />
+            <path
+              d="M210 229h5m9-3v6m-3-3h6"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            />
+            <g class="quote-material" [attr.opacity]="quoteMaterialProgress()">
+              <circle
+                cx="253"
+                cy="229"
+                r="5"
+                fill="currentColor"
+                opacity=".25"
+              />
+              <circle
+                cx="272"
+                cy="229"
+                r="5"
+                fill="currentColor"
+                opacity=".6"
+              />
+              <circle
+                cx="291"
+                cy="229"
+                r="5"
+                fill="var(--color-brand)"
+              />
+              <rect
+                class="quote-material-selection"
+                [attr.x]="245 + 38 * quoteMaterialProgress()"
+                y="221"
+                width="16"
+                height="16"
+                rx="8"
+                stroke="currentColor"
+                stroke-width="1.5"
+              />
+            </g>
+            <!-- Material and quality fields share the same row in basic mode. -->
+            <path
+              d="M65 253h39m87 0h35"
+              stroke="currentColor"
+              stroke-width="3"
+              stroke-linecap="round"
+              opacity=".3"
+            />
+            <rect
+              x="64"
+              y="260"
+              width="118"
+              height="21"
+              rx="4"
+              fill="var(--color-bg)"
+              stroke="var(--color-border)"
+            />
+            <rect
+              x="191"
+              y="260"
+              width="119"
+              height="21"
+              rx="4"
+              fill="var(--color-bg)"
+              stroke="var(--color-border)"
+            />
+            <g [attr.opacity]="quoteMaterialProgress()">
+              <path
+                d="M73 270h38m57-2 3 3 3-3"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </g>
+            <rect
+              class="quote-quality"
+              x="197"
+              y="265"
+              [attr.width]="106 * quoteQualityProgress()"
+              height="11"
+              rx="2"
+              fill="var(--color-brand)"
+            />
+            <path
+              d="m296 268 3 3 3-3"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            />
+            <rect
+              x="64"
+              y="291"
+              width="246"
+              height="15"
+              rx="4"
+              fill="var(--color-brand)"
+              [attr.opacity]="quoteQualityProgress()"
+            />
+            <path
+              d="M157 298h60"
+              stroke="currentColor"
+              stroke-width="3"
+              stroke-linecap="round"
+              [attr.opacity]="quoteQualityProgress()"
+            />
+          </g>
+
+          <g class="quote-result-panel">
+            <rect
+              x="334"
+              y="72"
+              width="174"
+              height="245"
+              rx="8"
+              fill="var(--color-bg-card)"
+              stroke="var(--color-border)"
+            />
+            <path
+              d="M348 91h84"
+              stroke="currentColor"
+              stroke-width="4"
+              stroke-linecap="round"
+            />
+            <!-- Shared price-breakdown treatment: neutral panel, rows, divider and total. -->
+            <rect
+              x="346"
+              y="105"
+              width="150"
+              height="96"
+              rx="5"
+              fill="var(--color-neutral-100)"
+              stroke="var(--color-border)"
+            />
+            <g
+              [attr.opacity]="quotePriceProgress()"
+              stroke="currentColor"
+              stroke-linecap="round"
+            >
+              <path
+                d="M356 119h56m54 0h20m-130 14h43m67 0h20m-130 14h62m48 0h20"
+                stroke-width="3"
+                opacity=".4"
+              />
+              <path
+                d="M355 161h132"
+                stroke="var(--color-border)"
+                stroke-width="2"
+              />
+              <path d="M356 176h37m65 0h28" stroke-width="4" />
+            </g>
+            <rect
+              class="quote-price"
+              x="356"
+              y="185"
+              [attr.width]="119 * quotePriceProgress()"
+              height="4"
+              rx="2"
+              fill="var(--color-brand)"
+            />
+            <!-- Print time and material summary cards. -->
+            <rect
+              x="346"
+              y="211"
+              width="71"
+              height="30"
+              rx="4"
+              fill="var(--color-neutral-100)"
+            />
+            <rect
+              x="425"
+              y="211"
+              width="71"
+              height="30"
+              rx="4"
+              fill="var(--color-neutral-100)"
+            />
+            <g
+              [attr.opacity]="quotePriceProgress()"
+              stroke="currentColor"
+              stroke-width="3"
+              stroke-linecap="round"
+            >
+              <path d="M355 220h29m50 0h29" opacity=".3" />
+              <path d="M355 232h44m35 0h44" />
+            </g>
+            <path
+              d="M347 253h110m-110 7h80M346 272h150"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              opacity=".15"
+            />
+            <path
+              d="M347 284h45m86 0h17"
+              stroke="currentColor"
+              stroke-width="3"
+              stroke-linecap="round"
+              opacity=".4"
+            />
+            <rect
+              x="346"
+              y="295"
+              width="46"
+              height="11"
+              rx="3"
+              fill="var(--color-neutral-100)"
+            />
+            <rect
+              x="400"
+              y="295"
+              width="96"
+              height="11"
+              rx="3"
+              fill="var(--color-bg)"
+            />
+            <rect
+              class="quote-complete"
+              x="400"
+              y="295"
+              [attr.width]="96 * quoteReady()"
+              height="11"
+              rx="3"
+              fill="var(--color-brand)"
+            />
+            <path
+              class="quote-confirmation"
+              d="m443 300 3 3 6-6"
+              stroke="currentColor"
+              stroke-width="1.5"
               stroke-linecap="round"
               stroke-linejoin="round"
               pathLength="1"
               stroke-dasharray="1"
-              [attr.stroke-dashoffset]="1 - quoteMaterialProgress()"
+              [attr.stroke-dashoffset]="1 - quoteReady()"
+              [attr.visibility]="quoteReady() > 0 ? 'visible' : 'hidden'"
             />
           </g>
-          <rect
-            x="302"
-            y="166"
-            width="119"
-            height="29"
-            rx="5"
-            fill="var(--color-bg)"
-            stroke="currentColor"
-            stroke-opacity=".12"
-          />
-          <rect
-            class="quote-quality"
-            x="308"
-            y="172"
-            [attr.width]="106 * quoteQualityProgress()"
-            height="17"
-            rx="3"
-            fill="var(--color-brand)"
-          />
-          <path
-            d="M315 178h67m-67 5h46"
-            stroke="currentColor"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            pathLength="1"
-            stroke-dasharray="1"
-            [attr.stroke-dashoffset]="1 - quoteQualityProgress()"
-            [attr.visibility]="
-              quoteQualityProgress() > 0 ? 'visible' : 'hidden'
-            "
-          />
-          <rect
-            x="302"
-            y="224"
-            width="119"
-            height="12"
-            rx="3"
-            fill="var(--color-bg)"
-          />
-          <rect
-            class="quote-price"
-            x="302"
-            y="224"
-            [attr.width]="119 * quotePriceProgress()"
-            height="12"
-            rx="3"
-            fill="var(--color-brand)"
-          />
-          <rect
-            class="quote-price-detail"
-            x="302"
-            y="244"
-            [attr.width]="78 * quotePriceProgress()"
-            height="4"
-            rx="2"
-            fill="currentColor"
-            opacity=".2"
-          />
-          <rect
-            x="138"
-            y="269"
-            width="284"
-            height="24"
-            rx="5"
-            fill="var(--color-bg)"
-          />
-          <rect
-            class="quote-complete"
-            x="138"
-            y="269"
-            [attr.width]="284 * quoteReady()"
-            height="24"
-            rx="5"
-            fill="var(--color-brand)"
-          />
-          <path
-            class="quote-confirmation"
-            d="m273 282 5 5 9-11"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            pathLength="1"
-            stroke-dasharray="1"
-            [attr.stroke-dashoffset]="1 - quoteReady()"
-            [attr.visibility]="quoteReady() > 0 ? 'visible' : 'hidden'"
-          />
         </g>
 
         <g class="scene" [class.is-active]="activeStep().scene === 'print'">

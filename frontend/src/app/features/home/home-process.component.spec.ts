@@ -328,7 +328,7 @@ describe('HomeProcessComponent', () => {
     component.reducedMotion.set(true);
     await fixture.whenStable();
     expect(width('.quote-price')).toBe(119);
-    expect(width('.quote-complete')).toBe(284);
+    expect(width('.quote-complete')).toBe(96);
     expect(
       host
         .querySelector('.upload-confirmation')
