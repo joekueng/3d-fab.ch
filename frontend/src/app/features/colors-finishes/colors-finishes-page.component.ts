@@ -15,6 +15,7 @@ import { LanguageService } from '../../core/services/language.service';
 import {
   filamentFinishLabelKey,
   resolveLocalizedColorLabel,
+  compareColorHex,
 } from '../../core/constants/colors.const';
 import {
   PublicMediaService,
@@ -103,7 +104,7 @@ export class ColorsFinishesPageComponent {
         materialCode: material.code,
         materialLabel: material.label,
       })),
-    ),
+    ).sort((a, b) => compareColorHex(a.hexColor, b.hexColor)),
   );
   private readonly mediaByUsage = toSignal(
     toObservable(this.variants).pipe(

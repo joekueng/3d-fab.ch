@@ -13,6 +13,40 @@ export interface ColorCategory {
 
 const DEFAULT_BRAND_COLOR = '#facf0a';
 
+/** Order near-white colors first, then hues from red to violet, then dark neutrals. */
+export function compareColorHex(
+  a: string | null | undefined,
+  b: string | null | undefined,
+): number {
+  const key = (hex: string | null | undefined): [number, number, number] => {
+    const match = /^#([\da-f]{6})$/i.exec(String(hex ?? '').trim());
+    if (!match) return [3, 0, 0];
+    const value = parseInt(match[1], 16);
+    const r = ((value >> 16) & 255) / 255;
+    const g = ((value >> 8) & 255) / 255;
+    const b = (value & 255) / 255;
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const delta = max - min;
+    const lightness = (max + min) / 2;
+    const saturation =
+      delta === 0 ? 0 : delta / (1 - Math.abs(2 * lightness - 1));
+    if (saturation < 0.15) {
+      return [lightness >= 0.8 ? 0 : 2, -lightness, 0];
+    }
+    const hue =
+      max === r
+        ? ((g - b) / delta + 6) % 6
+        : max === g
+          ? (b - r) / delta + 2
+          : (r - g) / delta + 4;
+    return [1, hue, -lightness];
+  };
+  const left = key(a);
+  const right = key(b);
+  return left[0] - right[0] || left[1] - right[1] || left[2] - right[2];
+}
+
 export const PRODUCT_COLORS: ColorCategory[] = [
   {
     name: 'COLOR.CATEGORY_GLOSSY',

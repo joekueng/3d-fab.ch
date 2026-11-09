@@ -11,7 +11,10 @@ import {
 } from '../services/admin-operations.service';
 import { forkJoin, switchMap } from 'rxjs';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { getColorHex } from '../../../core/constants/colors.const';
+import {
+  compareColorHex,
+  getColorHex,
+} from '../../../core/constants/colors.const';
 import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
 import { AppCheckboxComponent } from '../../../shared/components/app-checkbox/app-checkbox.component';
 import { AppInputComponent } from '../../../shared/components/app-input/app-input.component';
@@ -505,8 +508,9 @@ export class AdminFilamentStockComponent implements OnInit {
       if (byMaterial !== 0) {
         return byMaterial;
       }
-      return (a.variantDisplayName || '').localeCompare(
-        b.variantDisplayName || '',
+      return (
+        compareColorHex(this.getVariantColorHex(a), this.getVariantColorHex(b)) ||
+        (a.variantDisplayName || '').localeCompare(b.variantDisplayName || '')
       );
     });
   }

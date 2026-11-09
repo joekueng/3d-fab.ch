@@ -1,4 +1,5 @@
 import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common';
+import {compareColorHex} from '../../../core/constants/colors.const';
 import {
   ChangeDetectorRef,
   Component,
@@ -847,7 +848,8 @@ export class AdminShopComponent implements OnInit, OnDestroy {
   }
 
   materialColorPreview(materialCode: string): string[] {
-    return this.stockVariantsForMaterial(materialCode)
+    return [...this.stockVariantsForMaterial(materialCode)]
+      .sort((a, b) => compareColorHex(a.colorHex, b.colorHex))
       .map((variant) => variant.colorName.trim())
       .filter(Boolean)
       .slice(0, 6);
@@ -857,16 +859,16 @@ export class AdminShopComponent implements OnInit, OnDestroy {
     materialCode: string,
   ): Array<{ key: string; label: string }> {
     const normalizedMaterialCode = materialCode.trim().toUpperCase();
-    return this.stockVariantsForMaterial(normalizedMaterialCode).map(
-      (variant) => ({
+    return [...this.stockVariantsForMaterial(normalizedMaterialCode)]
+      .sort((a, b) => compareColorHex(a.colorHex, b.colorHex))
+      .map((variant) => ({
         key: this.variantKey(
           normalizedMaterialCode,
           variant.colorName,
           variant.colorHex,
         ),
         label: this.stockVariantLabel(variant),
-      }),
-    );
+      }));
   }
 
   onModelFileSelected(event: Event): void {

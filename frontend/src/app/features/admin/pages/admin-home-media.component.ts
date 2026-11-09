@@ -1,5 +1,6 @@
 import { TranslatePipe } from '@ngx-translate/core';
 import { CalculatorOptionsService } from '../../calculator/services/calculator-options.service';
+import {compareColorHex} from '../../../core/constants/colors.const';
 import type { PricingExample } from '../../../core/services/public-media.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
@@ -434,16 +435,18 @@ export class AdminHomeMediaComponent implements OnInit, OnDestroy {
         this.sectionConfigs = [
           ...this.staticSectionConfigs,
           ...(options?.materials ?? []).flatMap((material) =>
-            material.variants.map((variant) => ({
-              id: `FILAMENT_VARIANT::${variant.id}`,
-              usageType: 'FILAMENT_VARIANT' as const,
-              usageKey: String(variant.id),
-              collectionId: 'filaments' as const,
-              groupId: 'filament-variants',
-              title: `${material.label} · ${variant.name || variant.colorName} · #${variant.id}`,
-              description: 'ADMIN_GUIDES.FILAMENTS_DESCRIPTION',
-              preferredVariantName: 'card' as const,
-            })),
+            [...material.variants]
+              .sort((a, b) => compareColorHex(a.hexColor, b.hexColor))
+              .map((variant) => ({
+                id: `FILAMENT_VARIANT::${variant.id}`,
+                usageType: 'FILAMENT_VARIANT' as const,
+                usageKey: String(variant.id),
+                collectionId: 'filaments' as const,
+                groupId: 'filament-variants',
+                title: `${material.label} · ${variant.name || variant.colorName} · #${variant.id}`,
+                description: 'ADMIN_GUIDES.FILAMENTS_DESCRIPTION',
+                preferredVariantName: 'card' as const,
+              })),
           ),
         ];
         this.changeDetector.markForCheck();

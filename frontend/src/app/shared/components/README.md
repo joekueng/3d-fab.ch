@@ -15,6 +15,10 @@ Read [frontend/AGENTS.md](../../../../AGENTS.md) and [frontend/README.md](../../
 | File selection/drop                | `app-dropzone`: set `accept`, `multiple`, `disabled`, `label`, and `subtext`; handle `filesDropped` in the feature. Use `showFileNames=false` when the feature already owns the preview list. File validation, attachment persistence, preview URLs, and removal belong to the feature. The native `accept` attribute is only a picker hint.                                                                                                   |
 | Quantity and color for print items | `app-print-item-controls`, already shared by calculator and checkout.                                                                                                                                                                                                                                                                                                                                                                          |
 
+Color lists use `compareColorHex` in `core/constants/colors.const.ts`: near-white
+comes first, followed by rainbow hues, then darker neutrals and invalid colors.
+Keep existing material and finish groups, and sort a copy of caller-owned arrays.
+
 Checkout uses `app-print-item-controls` with `showColorLabel=true` and
 `quantityLabelKey="CALC.QUANTITY"` and `stacked=true` in both summary views. Quantity
 and color each occupy a full row. The normal summary additionally uses

@@ -54,9 +54,9 @@ describe('ColorSelectorComponent', () => {
     const overlay = TestBed.inject(OverlayContainer).getContainerElement();
     const options = overlay.querySelectorAll<HTMLButtonElement>('.color-item');
     expect(options.length).toBe(3);
-    options[2].click();
-    expect(selected).not.toHaveBeenCalled();
     options[0].click();
+    expect(selected).not.toHaveBeenCalled();
+    options[1].click();
     fixture.detectChanges();
     expect(selected).toHaveBeenCalledWith('product-a');
     expect(overlay.querySelector('.color-popup')).toBeNull();
