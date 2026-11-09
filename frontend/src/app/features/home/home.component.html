@@ -1,71 +1,136 @@
 <main class="home-page">
   <section class="hero">
-    <div
-      class="container hero-grid ui-content-grid ui-content-grid--spacious ui-content-grid--split"
-    >
+    <div class="container hero-stack">
       <div class="hero-copy">
-        <p class="eyebrow ui-eyebrow">{{ "HOME.HERO_EYEBROW" | translate }}</p>
-        <h1
-          class="hero-title ui-hero-display"
-          [innerHTML]="'HOME.HERO_TITLE' | translate"
-        ></h1>
+        <p class="ui-eyebrow hero-eyebrow">
+          <svg
+            class="swiss-mark"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <rect width="24" height="24" rx="2.7" fill="#d52b1e" />
+            <path d="M10 5h4v5h5v4h-5v5h-4v-5H5v-4h5Z" fill="white" /></svg
+          >{{ "HOME.JOURNEY.HERO_EYEBROW" | translate }}
+        </p>
+        <h1 class="hero-title ui-hero-display">
+          {{ "HOME.JOURNEY.HERO_LINE_1" | translate }}
+          <span>{{ "HOME.JOURNEY.HERO_LINE_2" | translate }}</span>
+        </h1>
         <p class="hero-lead ui-copy-lead">
-          {{ "HOME.HERO_LEAD" | translate }}
+          {{ "HOME.JOURNEY.HERO_LEAD" | translate }}
         </p>
-        <p class="hero-subtitle ui-copy-subtitle">
-          {{ "HOME.HERO_SUBTITLE" | translate }}
-        </p>
-        <div class="hero-actions ui-inline-actions ui-inline-actions--wide">
-          <app-button
-            variant="primary"
+        <div class="hero-actions ui-inline-actions">
+          <a
+            class="ui-button"
             [routerLink]="languageService.localizedPath('/calculator/basic')"
-            >{{ "HOME.BTN_CALCULATE" | translate }}</app-button
-          >
-          <app-button
-            variant="outline"
-            [routerLink]="languageService.localizedPath('/shop')"
-            >{{ "HOME.BTN_SHOP" | translate }}</app-button
-          >
-          <app-button
-            variant="text"
-            [routerLink]="languageService.localizedPath('/contact')"
-            >{{ "HOME.BTN_CONTACT" | translate }}</app-button
+            >{{ "HOME.JOURNEY.START_FILE" | translate }}
+            <span aria-hidden="true">↗</span></a
+          ><a
+            class="ui-button ui-button--outline"
+            [attr.href]="languageService.localizedPath('/') + '#home-process'"
+            (click)="scrollToProcess($event)"
+            >{{ "HOME.JOURNEY.DISCOVER" | translate }}
+            <span aria-hidden="true">↓</span></a
           >
         </div>
-      </div>
-      <aside class="hero-swiss-card">
-        <div class="hero-swiss-head">
-          <span class="hero-swiss-emblem" aria-hidden="true">
-            <span class="hero-swiss-cross"></span>
-          </span>
-          <p class="hero-swiss-kicker ui-eyebrow ui-eyebrow--compact">
-            {{ "HOME.HERO_SWISS_TITLE" | translate }}
-          </p>
-        </div>
-        <p class="hero-swiss-copy">
-          {{ "HOME.HERO_SWISS_COPY" | translate }}
+        <p class="hero-calculator-note">
+          <span
+            ><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+              <path
+                d="m4 10 4 4 8-8"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              /></svg
+            >{{ "HOME.JOURNEY.TRUST_1" | translate }}</span
+          >
+          <span
+            ><svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+              <path
+                d="m3 7 7-4 7 4-7 4Zm0 4 7 4 7-4M3 15l7 4 7-4"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              /></svg
+            >{{ "HOME.JOURNEY.TRUST_2" | translate }}</span
+          >
         </p>
-        <div class="hero-swiss-locations">
-          <span class="hero-swiss-chip">{{
-            "HOME.HERO_SWISS_LOCATION_1" | translate
-          }}</span>
-          <span class="hero-swiss-chip">{{
-            "HOME.HERO_SWISS_LOCATION_2" | translate
-          }}</span>
-          <span class="hero-swiss-chip">{{
-            "HOME.HERO_SWISS_LOCATION_3" | translate
-          }}</span>
-        </div>
-      </aside>
+        <p class="hero-note">
+          <span>{{ "HOME.JOURNEY.NO_FILE_NOTE" | translate }}</span
+          ><a [routerLink]="languageService.localizedPath('/contact')"
+            >{{ "HOME.JOURNEY.NO_FILE_LINK" | translate }}
+            <span aria-hidden="true">↗</span></a
+          >
+        </p>
+      </div>
     </div>
   </section>
 
+  <app-home-process></app-home-process>
+
+  <section class="section capabilities ui-section-block">
+    <div class="container">
+      <div class="ui-section-head">
+        <p class="ui-eyebrow">
+          {{ "HOME.JOURNEY.SERVICES_EYEBROW" | translate }}
+        </p>
+        <h2 class="ui-section-display-title">
+          {{ "HOME.JOURNEY.SERVICES_TITLE" | translate }}
+        </h2>
+      </div>
+      <div class="cap-cards">
+        <article
+          class="cap-card"
+          *ngFor="
+            let card of capabilityCards();
+            let i = index;
+            trackBy: trackCapability
+          "
+        >
+          <span class="cap-card-number" aria-hidden="true">0{{ i + 1 }}</span>
+          @if (card.image; as image) {
+            <picture class="cap-card-media ui-media-frame">
+              @if (image.source.avifUrl) {
+                <source [srcset]="image.source.avifUrl" type="image/avif" />
+              }
+              @if (image.source.webpUrl) {
+                <source [srcset]="image.source.webpUrl" type="image/webp" />
+              }
+              <img
+                [src]="image.source.fallbackUrl"
+                [alt]="image.altText || (card.titleKey | translate)"
+                width="640"
+                height="400"
+                loading="lazy"
+                decoding="async"
+              />
+            </picture>
+          }
+          <h3>{{ card.titleKey | translate }}</h3>
+          <p>{{ "HOME.JOURNEY.CAP_" + (i + 1) | translate }}</p>
+        </article>
+      </div>
+    </div>
+  </section>
   @if (homeProjects().length) {
     <section
       class="section home-projects ui-section-block"
       [class.is-carousel-autoplay-paused]="homeProjectAutoplayPaused()"
       [style.--ui-carousel-duration]="homeProjectAutoplayDuration"
     >
+      <div class="container ui-section-head">
+        <p class="ui-eyebrow">
+          {{ "HOME.JOURNEY.PROJECTS_EYEBROW" | translate }}
+        </p>
+        <h2 class="ui-section-display-title">
+          {{ "HOME.JOURNEY.PROJECTS_TITLE" | translate }}
+        </h2>
+      </div>
       <div class="home-project-shell">
         <div
           class="home-project-viewport"
@@ -232,237 +297,19 @@
     </section>
   }
 
-  <section class="section capabilities ui-section-block">
-    <div class="capabilities-bg"></div>
-    <div class="container">
-      <div class="section-head ui-section-head">
-        <h2 class="section-title ui-section-display-title">
-          {{ "HOME.SEC_CAP_TITLE" | translate }}
-        </h2>
-        <p class="section-subtitle ui-section-display-subtitle">
-          {{ "HOME.SEC_CAP_SUBTITLE" | translate }}
-        </p>
+  <section class="conversion container">
+    <div class="conversion-band">
+      <div>
+        <p class="ui-eyebrow">{{ "HOME.JOURNEY.CTA_EYEBROW" | translate }}</p>
+        <h2>{{ "HOME.JOURNEY.CTA_TITLE" | translate }}</h2>
+        <p>{{ "HOME.JOURNEY.CTA_TEXT" | translate }}</p>
       </div>
-      <div class="cap-cards">
-        <app-card
-          *ngFor="let card of capabilityCards(); trackBy: trackCapability"
-        >
-          <div class="card-image-placeholder ui-bleed-media">
-            @if (card.image; as image) {
-              <picture>
-                @if (image.source.avifUrl) {
-                  <source [srcset]="image.source.avifUrl" type="image/avif" />
-                }
-                @if (image.source.webpUrl) {
-                  <source [srcset]="image.source.webpUrl" type="image/webp" />
-                }
-                <img
-                  [src]="image.source.fallbackUrl"
-                  [attr.alt]="image.altText || (card.titleKey | translate)"
-                  width="640"
-                  height="400"
-                />
-              </picture>
-            } @else {
-              <div class="card-image-fallback ui-bleed-media__fallback">
-                <span>{{ card.titleKey | translate }}</span>
-              </div>
-            }
-          </div>
-          <h3>{{ card.titleKey | translate }}</h3>
-          <p class="text-muted ui-text-muted">{{ card.textKey | translate }}</p>
-        </app-card>
-      </div>
-    </div>
-  </section>
-
-  <section class="section calculator ui-section-block">
-    <div
-      class="container calculator-grid ui-content-grid ui-content-grid--start ui-content-grid--split"
-    >
-      <div class="calculator-copy">
-        <h2 class="section-title ui-section-display-title">
-          {{ "HOME.SEC_CALC_TITLE" | translate }}
-        </h2>
-        <p class="section-subtitle ui-section-display-subtitle">
-          {{ "HOME.SEC_CALC_SUBTITLE" | translate }}
-        </p>
-        <ul class="calculator-list">
-          <li>{{ "HOME.SEC_CALC_LIST_1" | translate }}</li>
-        </ul>
-      </div>
-      <app-card class="quote-card">
-        <div class="quote-header ui-row ui-row--between">
-          <div>
-            <p class="quote-eyebrow ui-eyebrow ui-eyebrow--compact">
-              {{ "HOME.CARD_CALC_EYEBROW" | translate }}
-            </p>
-            <h3 class="quote-title">
-              {{ "HOME.CARD_CALC_TITLE" | translate }}
-            </h3>
-          </div>
-          <span class="quote-tag ui-pill ui-pill--accent">{{
-            "HOME.CARD_CALC_TAG" | translate
-          }}</span>
-        </div>
-        <ul class="quote-steps ui-feature-list ui-feature-list--bullets">
-          <li>{{ "HOME.CARD_CALC_STEP_1" | translate }}</li>
-          <li>{{ "HOME.CARD_CALC_STEP_2" | translate }}</li>
-          <li>{{ "HOME.CARD_CALC_STEP_3" | translate }}</li>
-        </ul>
-        <div class="quote-actions ui-actions ui-actions--stack">
-          <app-button
-            variant="primary"
-            [fullWidth]="true"
-            [routerLink]="languageService.localizedPath('/calculator/basic')"
-            >{{ "HOME.BTN_OPEN_CALC" | translate }}</app-button
-          >
-          <app-button
-            variant="outline"
-            [fullWidth]="true"
-            [routerLink]="languageService.localizedPath('/contact')"
-            >{{ "HOME.BTN_CONTACT" | translate }}</app-button
-          >
-        </div>
-      </app-card>
-    </div>
-  </section>
-
-  <section class="section shop ui-section-block">
-    <div
-      class="container split ui-content-grid ui-content-grid--start ui-content-grid--split"
-    >
-      <div class="shop-copy">
-        <h2 class="section-title ui-section-display-title">
-          {{ "HOME.SEC_SHOP_TITLE" | translate }}
-        </h2>
-        <p>
-          {{ "HOME.SEC_SHOP_TEXT" | translate }}
-        </p>
-        <ul class="shop-list">
-          <li>{{ "HOME.SEC_SHOP_LIST_1" | translate }}</li>
-          <li>{{ "HOME.SEC_SHOP_LIST_2" | translate }}</li>
-          <li>{{ "HOME.SEC_SHOP_LIST_3" | translate }}</li>
-        </ul>
-        <div class="shop-actions ui-inline-actions">
-          <app-button
-            variant="primary"
-            [routerLink]="languageService.localizedPath('/shop')"
-            >{{ "HOME.BTN_DISCOVER" | translate }}</app-button
-          >
-          <app-button
-            variant="outline"
-            [routerLink]="languageService.localizedPath('/contact')"
-            >{{ "HOME.BTN_REQ_SOLUTION" | translate }}</app-button
-          >
-        </div>
-      </div>
-      <div
-        class="shop-gallery shop-carousel"
-        [class.is-carousel-autoplay-paused]="shopGalleryAutoplayPaused()"
-        [appSwipeCarousel]="shopGalleryImages().length > 1"
-        [style.--ui-carousel-duration]="shopGalleryAutoplayDuration"
-        [attr.aria-label]="'HOME.SHOP_GALLERY_ARIA' | translate"
-        (swipeCarouselPrevious)="showPreviousShopGalleryImage()"
-        (swipeCarouselNext)="showNextShopGalleryImage()"
+      <a
+        class="ui-button"
+        [routerLink]="languageService.localizedPath('/calculator/basic')"
+        >{{ "HOME.JOURNEY.START_FILE" | translate }}
+        <span aria-hidden="true">↗</span></a
       >
-        <div class="shop-carousel-viewport">
-          <div
-            class="shop-carousel-track"
-            [style.transform]="shopGalleryTrackTransform()"
-          >
-            <figure
-              class="shop-gallery-item shop-carousel-slide ui-gallery-card"
-              *ngFor="
-                let image of shopGalleryImages();
-                let i = index;
-                trackBy: trackMediaAsset
-              "
-              [attr.aria-hidden]="i === shopGalleryIndex() ? null : 'true'"
-            >
-              <picture>
-                <source
-                  *ngIf="image.source.avifUrl"
-                  [srcset]="image.source.avifUrl"
-                  type="image/avif"
-                />
-                <source
-                  *ngIf="image.source.webpUrl"
-                  [srcset]="image.source.webpUrl"
-                  type="image/webp"
-                />
-                <img
-                  [src]="image.source.fallbackUrl"
-                  [attr.alt]="
-                    image.altText || ('HOME.SEC_SHOP_TITLE' | translate)
-                  "
-                />
-              </picture>
-            </figure>
-          </div>
-        </div>
-        <div
-          class="ui-carousel-indicators"
-          *ngIf="shopGalleryImages().length > 1"
-        >
-          <button
-            type="button"
-            class="ui-carousel-dot"
-            *ngFor="
-              let image of shopGalleryImages();
-              let i = index;
-              trackBy: trackMediaAsset
-            "
-            [class.is-active]="i === shopGalleryIndex()"
-            [attr.aria-current]="i === shopGalleryIndex() ? 'true' : null"
-            [attr.aria-label]="
-              ('HOME.SHOP_GALLERY_ARIA' | translate) + ' ' + (i + 1)
-            "
-            (click)="selectShopGalleryImage(i)"
-          ></button>
-          <button
-            type="button"
-            class="ui-carousel-dot home-carousel-autoplay-toggle"
-            [class.is-paused]="shopGalleryAutoplayPaused()"
-            [attr.aria-pressed]="shopGalleryAutoplayPaused()"
-            [attr.aria-label]="
-              (shopGalleryAutoplayPaused()
-                ? 'HOME.SHOP_GALLERY_AUTOPLAY_RESUME_ARIA'
-                : 'HOME.SHOP_GALLERY_AUTOPLAY_PAUSE_ARIA'
-              ) | translate
-            "
-            [attr.title]="
-              (shopGalleryAutoplayPaused()
-                ? 'HOME.SHOP_GALLERY_AUTOPLAY_RESUME_ARIA'
-                : 'HOME.SHOP_GALLERY_AUTOPLAY_PAUSE_ARIA'
-              ) | translate
-            "
-            (click)="toggleShopGalleryAutoplay($event)"
-          >
-            <span class="home-carousel-autoplay-icon" aria-hidden="true"></span>
-          </button>
-        </div>
-      </div>
-      <div class="shop-cards">
-        <app-card>
-          <h3>{{ "HOME.CARD_SHOP_1_TITLE" | translate }}</h3>
-          <p class="text-muted ui-text-muted">
-            {{ "HOME.CARD_SHOP_1_TEXT" | translate }}
-          </p>
-        </app-card>
-        <app-card>
-          <h3>{{ "HOME.CARD_SHOP_2_TITLE" | translate }}</h3>
-          <p class="text-muted ui-text-muted">
-            {{ "HOME.CARD_SHOP_2_TEXT" | translate }}
-          </p>
-        </app-card>
-        <app-card>
-          <h3>{{ "HOME.CARD_SHOP_3_TITLE" | translate }}</h3>
-          <p class="text-muted ui-text-muted">
-            {{ "HOME.CARD_SHOP_3_TEXT" | translate }}
-          </p>
-        </app-card>
-      </div>
     </div>
   </section>
 
@@ -531,6 +378,35 @@
           }
         </div>
       </div>
+    </div>
+  </section>
+
+  <section class="section shop">
+    <div class="container shop-compact">
+      <div class="shop-copy">
+        <h2>{{ "HOME.JOURNEY.SHOP_TITLE" | translate }}</h2>
+        <p>{{ "HOME.JOURNEY.SHOP_TEXT" | translate }}</p>
+      </div>
+      @if (shopGalleryImages().length) {
+        <div class="shop-previews" aria-hidden="true">
+          <img
+            *ngFor="
+              let image of shopGalleryImages().slice(0, 3);
+              trackBy: trackMediaAsset
+            "
+            [src]="image.source.fallbackUrl"
+            alt=""
+            width="72"
+            height="72"
+            loading="lazy"
+          />
+        </div>
+      }
+      <a
+        class="ui-button ui-button--outline"
+        [routerLink]="languageService.localizedPath('/shop')"
+        >{{ "HOME.BTN_SHOP" | translate }} <span aria-hidden="true">↗</span></a
+      >
     </div>
   </section>
 </main>
