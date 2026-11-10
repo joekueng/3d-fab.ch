@@ -72,6 +72,10 @@ OpenCascade box. The same STEP fixture is uploaded under both STEP and STP names
 These cases exercise real scanning, conversion and slicing; they compare physical
 STL bounds and downloaded original bytes, preserve OBJ units after session resume,
 and retain invalid CAD files for review. No external CAD file or customer data is used.
+The disposable backend inherits the Orca version/checksum from `backend/Dockerfile`;
+do not override it in the E2E Compose file. Backend CLI arguments are version-specific.
+CALC-002 checks the line-item response before waiting for the rendered quote so a
+slicing error fails immediately with its domain error rather than a long visibility timeout.
 `admin/cad-invoice-lifecycle.spec.ts` (ADMIN-CAD-001/002) exercises real persistence,
 anonymous/CSRF rejection, editing, deletion, replacement and both saved-link entry points.
 

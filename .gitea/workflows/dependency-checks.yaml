@@ -8,6 +8,9 @@ on:
       - frontend/package.json
       - frontend/package-lock.json
       - backend/build.gradle
+      - backend/Dockerfile
+      - backend/orcaslicer-release.json
+      - docker-compose.e2e.yml
       - scripts/check-external-packages.mjs
       - scripts/check-frontend-audit.mjs
       - scripts/check-frontend-audit.test.mjs
