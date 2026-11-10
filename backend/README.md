@@ -321,16 +321,34 @@ mapping and native time increases. `PA12_ASA_CAPTURE_DIR` optionally retains the
 job configurations/G-code for local diagnosis. Desktop comparisons also require
 matching filament/process profiles, palette, orientation and support settings.
 
-Database provisioning is a separate reviewed step: use
-[enable-x2d-asa-supports.sql](../scripts/enable-x2d-asa-supports.sql) in DataGrip
-against each intended connection after deploying the code/profiles. Supply the
-measured X2D costing power and fleet weight. The transaction adds only missing
-X2D 0.4/0.6 profiles and existing-material PA12-CF/PET-CF/ASA mappings, preserving
-custom mappings, variants, costs, stock and classifications. It does not create
-sample production filament prices or reactivate deliberately disabled records.
+Database provisioning is a separate step: run
+[prepare-x2d-asa-supports.sql](../scripts/prepare-x2d-asa-supports.sql) in DataGrip
+against each intended connection. It adds missing X2D/P2S machines **inactive**,
+0.4/0.6 profiles and existing-material PA12-CF/PET-CF/ASA mappings. It repairs
+identity sequences left behind manually seeded IDs, only advancing them.
+Existing custom mappings, variants, costs, stock and classifications are preserved.
+New machine reference powers are 550 W for X2D (official steady-state PC at 25 C)
+and 200 W for P2S (official steady-state PLA), with initial fleet weight 1.000.
+These are not measured PA12-CF/ASA consumption figures; review them before production use.
+Sources: [X2D specifications](https://bambulab.cn/zh-cn/x2d/specs),
+[P2S specifications](https://bambulab.cn/zh-cn/p2s/specs), checked 2026-11-10.
+After deploying and checking the backend/Orca 2.4.2/profile bundle, run
+[enable-x2d-asa-supports.sql](../scripts/enable-x2d-asa-supports.sql). It checks
+both machines' active profiles/material maps before activating the machines.
+Disabled profiles/maps are not reactivated. Neither script seeds production prices.
 PA12-CF/PET-CF must have active catalogue variants and the appropriate Technical
 classification. No schema migration is required. Existing sessions need
 recalculation after rollout.
+
+For local Docker only, `bash scripts/seed-local-x2d-asa-supports.sh` provisions
+missing PET-CF/ASA types, a PET-CF test variant copying the existing local PA12-CF
+cost, the mappings, and an active X2D. Existing P2S values are preserved. The script
+rejects remote Docker endpoints and requires the `printcalc` database in the exact
+local `print-calculator-db` container. Start the updated local backend before using it.
+API verification on the supplied STL: automatic selection returned X2D machine 4,
+PA12-CF Draft/ASA 17,338 s and 78.58 g; PET-CF Draft/ASA 17,417 s and 94.01 g.
+Before X2D provisioning the same PA12-CF API request selected P2S machine 3 and
+returned 31,902 s and 113.50 g. Both new sessions and their totals were read back.
 
 Validation on 2026-11-10: 617 backend tests passed and two opt-in tests were
 skipped; both separate native macOS material cases passed on the supplied STL.
