@@ -249,6 +249,117 @@ checks can leave rejected output that must never supply a later quote. Persisten
 object conflicts remain processing failures; only physical oversize requires
 splitting. See `SlicerPlacementRegressionTest` for recovery and output validation.
 
+### X2D and ASA supports
+
+PA12-CF and PET-CF quote-session jobs with supports enabled use ASA for both
+support base and interface. Material-code matching ignores case, spaces, hyphens
+and underscores. Other materials and support-disabled jobs keep their existing
+selection path. All grams continue to be priced at the selected model variant's
+rate; this change does not introduce separate ASA pricing or rewrite old quotes.
+
+`QuoteSessionSettingsService.resolveAsaSupportMachineCandidates` tries compatible
+active X2D profiles first, then compatible P2S profiles if X2D slicing fails or X2D
+is unavailable. An explicitly selected X2D also permits P2S fallback; a selected
+P2S remains the chosen printer. A1 is excluded from
+this enclosed-printer recipe. `OrcaProfileResolver` reuses active material mappings
+and selects matching X2D PA-CF/PET-CF/ASA fallbacks when no map is configured.
+A failed X2D job must never supply stale G-code to the P2S attempt.
+
+`SlicerProfilePreparation.prepareAsaSupports` assigns the model to filament 1 and
+support base/interface to ASA in slot 2, with supports allowed to start on the
+model. CLI project options explicitly pin Manual mapping: `1,2` on X2D, `1,1` on
+P2S. X2D uses the original Direct Drive/Bowden variants, default nozzle volume
+types, temperatures, flow limits and speed arrays. These project options must be
+passed on the command line because loading them only from a process preset can
+restore Auto For Flush and reverse the filament/nozzle mapping.
+
+The shared X2D print area is the intersection of both nozzle areas/heights:
+235.5 × 256 × 256 mm for the imported profiles. The prime-tower anchor is offset
+into that shared area; Orca's raw-mesh x=15 default is outside the auxiliary
+nozzle's reach. The prime tower remains enabled, mixed-material flushing into the
+model/supports stays disabled, and ASA keeps its ordinary filament classification.
+Uploaded 3MFs use converted geometry for these recipes so per-object overrides
+cannot undo the material policy. Originals remain stored. Virtual-volume split
+estimates extend both temporary nozzle volumes consistently.
+
+The palette uses the selected variant's hex color and the ASA preset color
+(`filament_colour`/`default_filament_colour`, white when unspecified). Orca computes
+purging and machine/nozzle changes. Only these offline quote jobs use
+`--allow-mix-temp` because the two profiles' recommended temperature ranges differ;
+profile temperatures are preserved. The generated G-code is used solely for
+statistics and deleted, never sent to a printer or exposed as a downloadable print
+file. This is not a physical-print validation. `GCodeParser` always prefers total
+estimated time over model-only or generic time, independent of metadata order.
+
+OrcaSlicer **2.4.2** is pinned in `orcaslicer-release.json`, the local setup helper
+and the Dockerfile. `--logfile` captures the new CLI's native log separately from
+stdout so placement failures still trigger the established retries. The isolated,
+flattened [X2D profile bundle](profiles/x2d/README.md) comes from the exact release
+commit and does not replace existing printer presets. Regenerate it with
+`python3 scripts/import-orca-x2d-profiles.py`; source/output hashes and the upstream
+license are retained. `node scripts/check-external-packages.mjs` verifies the stable
+GitHub release, official asset digests, source commit and Docker pin.
+
+Evidence checked 2026-11-10: official [2.4.2 release](https://github.com/OrcaSlicer/OrcaSlicer/releases/tag/v2.4.2),
+[CLI source](https://github.com/OrcaSlicer/OrcaSlicer/blob/v2.4.2/src/OrcaSlicer.cpp),
+[configuration definitions](https://github.com/OrcaSlicer/OrcaSlicer/blob/v2.4.2/src/libslic3r/PrintConfig.cpp)
+and the downloaded, SHA-256-verified macOS CLI help. `--load-filaments` accepts a
+semicolon-separated profile list; `filament_map` uses one-based logical extruder
+IDs. The version's X2D G-code intentionally emits `H-1`; verify the configured
+`filament_map` and physical-extruder map rather than interpreting H-1 as an error.
+
+The opt-in `Pa12AsaNativeSlicingTest` compares both materials on P2S and X2D using a
+local STL requiring supports. Set `SLICER_PATH` to 2.4.2 and `PA12_ASA_MODEL_PATH`
+to that STL, then run:
+
+```bash
+./gradlew test --tests '*Pa12AsaNativeSlicingTest' --rerun-tasks
+```
+
+It verifies two positive filament consumptions, actual tool commands, Manual
+mapping and native time increases. `PA12_ASA_CAPTURE_DIR` optionally retains the
+job configurations/G-code for local diagnosis. Desktop comparisons also require
+matching filament/process profiles, palette, orientation and support settings.
+
+Database provisioning is a separate step: run
+[prepare-x2d-asa-supports.sql](../scripts/prepare-x2d-asa-supports.sql) in DataGrip
+against each intended connection. It adds missing X2D/P2S machines **inactive**,
+0.4/0.6 profiles and existing-material PA12-CF/PET-CF/ASA mappings. It repairs
+identity sequences left behind manually seeded IDs, only advancing them.
+Existing custom mappings, variants, costs, stock and classifications are preserved.
+New machine reference powers are 550 W for X2D (official steady-state PC at 25 C)
+and 200 W for P2S (official steady-state PLA), with initial fleet weight 1.000.
+These are not measured PA12-CF/ASA consumption figures; review them before production use.
+Sources: [X2D specifications](https://bambulab.cn/zh-cn/x2d/specs),
+[P2S specifications](https://bambulab.cn/zh-cn/p2s/specs), checked 2026-11-10.
+After deploying and checking the backend/Orca 2.4.2/profile bundle, run
+[enable-x2d-asa-supports.sql](../scripts/enable-x2d-asa-supports.sql). It checks
+both machines' active profiles/material maps before activating the machines.
+Disabled profiles/maps are not reactivated. Neither script seeds production prices.
+PA12-CF/PET-CF must have active catalogue variants and the appropriate Technical
+classification. No schema migration is required. Existing sessions need
+recalculation after rollout.
+
+For local Docker only, `bash scripts/seed-local-x2d-asa-supports.sh` provisions
+missing PET-CF/ASA types, a PET-CF test variant copying the existing local PA12-CF
+cost, the mappings, and an active X2D. Existing P2S values are preserved. The script
+rejects remote Docker endpoints and requires the `printcalc` database in the exact
+local `print-calculator-db` container. Start the updated local backend before using it.
+API verification on the supplied STL: automatic selection returned X2D machine 4,
+PA12-CF Draft/ASA 17,338 s and 78.58 g; PET-CF Draft/ASA 17,417 s and 94.01 g.
+Before X2D provisioning the same PA12-CF API request selected P2S machine 3 and
+returned 31,902 s and 113.50 g. Both new sessions and their totals were read back.
+
+Validation on 2026-11-10: 617 backend tests passed and two opt-in tests were
+skipped; both separate native macOS material cases passed on the supplied STL.
+The final suite used isolated caches and `--no-watch-fs` because the host's mounted
+filesystem enumeration blocked Gradle's watcher. The local installer and cached
+startup path were exercised; the metadata check passed 46/46. Both official binary
+downloads matched their pinned SHA-256 digests. The isolated Linux smoke test did
+not start in Docker Desktop (container remained Created) and was cleaned up;
+the rebuilt Linux image must still be exercised before production deployment.
+No application database or remote deployment was changed in this verification.
+
 ## Email transaction boundaries
 
 Order and contact-request creation publish domain events inside the service transaction.

@@ -56,7 +56,15 @@ public class SlicerService {
 
     public PrintStats slice(File inputStl, String machineName, String filamentName, String processName,
                             Map<String, String> machineOverrides, Map<String, String> processOverrides) throws IOException {
-        return sliceInternal(inputStl, machineName, filamentName, processName, machineOverrides, processOverrides, Optional.empty());
+        return sliceInternal(inputStl, machineName, filamentName, processName, machineOverrides, processOverrides,
+                Optional.empty(), null, null);
+    }
+
+    public PrintStats slice(File inputStl, String machineName, String filamentName, String processName,
+                            Map<String, String> machineOverrides, Map<String, String> processOverrides,
+                            String supportFilamentName, String modelFilamentColor) throws IOException {
+        return sliceInternal(inputStl, machineName, filamentName, processName, machineOverrides, processOverrides,
+                Optional.empty(), supportFilamentName, modelFilamentColor);
     }
 
     public PrintStats sliceForOversizedEstimate(File inputStl,
@@ -66,7 +74,17 @@ public class SlicerService {
                                                 Optional<ModelDimensions> modelDimensions,
                                                 Map<String, String> processOverrides) throws IOException {
         Optional<ModelDimensions> dimensions = modelDimensions != null ? modelDimensions : Optional.empty();
-        return sliceInternal(inputStl, machineName, filamentName, processName, null, processOverrides, dimensions);
+        return sliceForOversizedEstimate(inputStl, machineName, filamentName, processName, dimensions,
+                processOverrides, null, null);
+    }
+
+    public PrintStats sliceForOversizedEstimate(File inputStl, String machineName, String filamentName,
+                                                String processName, Optional<ModelDimensions> modelDimensions,
+                                                Map<String, String> processOverrides, String supportFilamentName,
+                                                String modelFilamentColor)
+            throws IOException {
+        return sliceInternal(inputStl, machineName, filamentName, processName, null, processOverrides,
+                modelDimensions != null ? modelDimensions : Optional.empty(), supportFilamentName, modelFilamentColor);
     }
 
     private PrintStats sliceInternal(File inputStl,
@@ -75,7 +93,8 @@ public class SlicerService {
                                      String processName,
                                      Map<String, String> machineOverrides,
                                      Map<String, String> processOverrides,
-                                     Optional<ModelDimensions> oversizedEstimateDimensions) throws IOException {
+                                     Optional<ModelDimensions> oversizedEstimateDimensions,
+                                     String supportFilamentName, String modelFilamentColor) throws IOException {
         ObjectNode machineProfile = profileManager.getMergedProfile(machineName, "machine");
         ObjectNode filamentProfile = profileManager.getMergedProfile(filamentName, "filament");
         ObjectNode processProfile = profileManager.getMergedProfile(processName, "process");
@@ -92,8 +111,19 @@ public class SlicerService {
         if (processOverrides != null) {
             processOverrides.forEach(processProfile::put);
         }
-        SlicerProfilePreparation.prepare(machineProfile, filamentProfile, processProfile,
-                !inputStl.getName().toLowerCase(java.util.Locale.ROOT).endsWith(".3mf"));
+        ObjectNode supportFilamentProfile = supportFilamentName == null ? null
+                : profileManager.getMergedProfile(supportFilamentName, "filament");
+        if (supportFilamentProfile != null) {
+            SlicerProfilePreparation.prepareAsaSupports(machineProfile, filamentProfile, supportFilamentProfile, processProfile,
+                    modelFilamentColor);
+        }
+        boolean meshInput = supportFilamentProfile != null
+                || !inputStl.getName().toLowerCase(java.util.Locale.ROOT).endsWith(".3mf");
+        // Prepare both filaments against the original printer variants before normalizing the machine.
+        if (supportFilamentProfile != null) {
+            SlicerProfilePreparation.prepare(machineProfile.deepCopy(), supportFilamentProfile, processProfile, meshInput);
+        }
+        SlicerProfilePreparation.prepare(machineProfile, filamentProfile, processProfile, meshInput);
         validateMinimumModelSize(inputStl, machineProfile);
         oversizedEstimateDimensions.ifPresent(dimensions -> applyOversizedEstimateVolume(machineProfile, dimensions));
 
@@ -106,9 +136,14 @@ public class SlicerService {
             mapper.writeValue(machineFile, machineProfile);
             mapper.writeValue(filamentFile, filamentProfile);
             mapper.writeValue(processFile, processProfile);
+            File supportFilamentFile = tempDir.resolve("support-filament.json").toFile();
+            if (supportFilamentProfile != null) {
+                mapper.writeValue(supportFilamentFile, supportFilamentProfile);
+            }
 
             String basename = stripKnownModelExtension(inputStl.getName());
             Path slicerLogPath = tempDir.resolve("orcaslicer.log");
+            Path nativeLogPath = tempDir.resolve("orcaslicer-native.log");
             String machineProfilePath = SlicerFileSupport.requireSafeArgument(
                     machineFile.getAbsolutePath(),
                     "machine profile path"
@@ -121,6 +156,10 @@ public class SlicerService {
                     filamentFile.getAbsolutePath(),
                     "filament profile path"
             );
+            if (supportFilamentProfile != null) {
+                filamentProfilePath += ";" + SlicerFileSupport.requireSafeArgument(
+                        supportFilamentFile.getAbsolutePath(), "support filament profile path");
+            }
             String outputDirPath = SlicerFileSupport.requireSafeArgument(
                     tempDir.toAbsolutePath().toString(),
                     "output directory path"
@@ -130,7 +169,8 @@ public class SlicerService {
                     "input model path"
             );
 
-            List<SlicerInputVariant> slicerInputVariants = resolveSlicerInputVariants(inputStl, inputModelPath, tempDir);
+            List<SlicerInputVariant> slicerInputVariants = resolveSlicerInputVariants(
+                    inputStl, inputModelPath, tempDir, supportFilamentProfile != null);
             List<SliceAttempt> sliceAttempts = buildSliceAttempts();
             ModelProcessingException lastFailure = null;
 
@@ -146,13 +186,21 @@ public class SlicerService {
                             processProfilePath,
                             filamentProfilePath,
                             outputDirPath,
-                            inputVariant
+                            inputVariant,
+                            nativeLogPath,
+                            supportFilamentProfile != null,
+                            machineProfile.path("nozzle_diameter").size() == 2
+                                    ? machineProfile.path("default_nozzle_volume_type").path(0).asText("Standard") + ","
+                                      + machineProfile.path("default_nozzle_volume_type").path(1).asText("Standard")
+                                    : null,
+                            processProfile.path("wipe_tower_x").path(0).asText(null)
                     );
 
                     logger.info("Executing Slicer" + attempt.logSuffix() + " using " + inputVariant.label()
                             + ": " + String.join(" ", processBuilder.command()));
 
                     Files.deleteIfExists(slicerLogPath);
+                    Files.deleteIfExists(nativeLogPath);
                     // Failed placement checks can leave complete but rejected G-code.
                     // Never reuse it if the next attempt produces no output.
                     Files.deleteIfExists(tempDir.resolve(basename + ".gcode"));
@@ -174,6 +222,9 @@ public class SlicerService {
                     String output = Files.exists(slicerLogPath)
                             ? Files.readString(slicerLogPath, StandardCharsets.UTF_8)
                             : "";
+                    if (Files.exists(nativeLogPath)) {
+                        output += "\n" + Files.readString(nativeLogPath, StandardCharsets.UTF_8);
+                    }
 
                     if (process.exitValue() != 0) {
                         boolean hasMorePlacementAttempts = attemptIndex < sliceAttempts.size() - 1;
@@ -282,6 +333,18 @@ public class SlicerService {
         machineProfile.put("printable_height", formatProfileMillimeters(heightMm));
         machineProfile.putArray("bed_exclude_area");
         machineProfile.putArray("head_wrap_detect_zone");
+        if (machineProfile.path("extruder_printable_area").isArray()) {
+            int nozzles = machineProfile.path("extruder_printable_area").size();
+            String polygon = "0x0," + formatProfileMillimeters(sideMm) + "x0,"
+                    + formatProfileMillimeters(sideMm) + "x" + formatProfileMillimeters(sideMm)
+                    + ",0x" + formatProfileMillimeters(sideMm);
+            ArrayNode areas = machineProfile.putArray("extruder_printable_area");
+            ArrayNode heights = machineProfile.putArray("extruder_printable_height");
+            for (int nozzle = 0; nozzle < nozzles; nozzle++) {
+                areas.add(polygon);
+                heights.add(formatProfileMillimeters(heightMm));
+            }
+        }
 
         logger.info("Using virtual build volume for oversized estimate: "
                 + formatProfileMillimeters(sideMm) + " x "
@@ -335,18 +398,46 @@ public class SlicerService {
                                              String processProfilePath,
                                              String filamentProfilePath,
                                              String outputDirPath,
-                                             SlicerInputVariant inputVariant) {
+                                             SlicerInputVariant inputVariant,
+                                             Path nativeLogPath,
+                                             boolean asaSupports,
+                                             String nozzleVolumeTypes,
+                                             String wipeTowerX) {
         ProcessBuilder processBuilder = new ProcessBuilder();
         List<String> command = processBuilder.command();
         command.add(trustedSlicerPath);
         command.add("--debug");
         command.add("2");
+        command.add("--logfile");
+        command.add(nativeLogPath.toString());
         command.add("--load-settings");
         command.add(machineProfilePath);
         command.add("--load-settings");
         command.add(processProfilePath);
         command.add("--load-filaments");
         command.add(filamentProfilePath);
+        // These offline quote recipes cross the profiles' temperature ranges. The generated
+        // G-code is parsed for statistics and deleted, never sent to a printer or exposed as a print file.
+        // Retain actual profile temperatures; keep Orca's normal restriction for other jobs.
+        if (asaSupports) {
+            command.add("--allow-mix-temp");
+        }
+        // These are project settings: CLI priority is needed because preset loading otherwise
+        // restores Auto For Flush and can swap the two materials onto the wrong X2D nozzles.
+        if (asaSupports || nozzleVolumeTypes != null) {
+            command.add("--filament-map-mode");
+            command.add("Manual");
+            command.add("--filament-map");
+            command.add(asaSupports ? (nozzleVolumeTypes != null ? "1,2" : "1,1") : "1");
+        }
+        if (nozzleVolumeTypes != null) {
+            command.add("--nozzle-volume-type");
+            command.add(nozzleVolumeTypes);
+            if (asaSupports && wipeTowerX != null) {
+                command.add("--wipe-tower-x");
+                command.add(wipeTowerX);
+            }
+        }
         command.add("--ensure-on-bed");
         // Omitting this flag enables automatic arrangement, whose 1 mm edge
         // margin rejects models that use the printer's full physical volume.
@@ -429,14 +520,17 @@ public class SlicerService {
         return filename;
     }
 
-    private List<SlicerInputVariant> resolveSlicerInputVariants(File inputModel, String inputModelPath, Path tempDir)
+    private List<SlicerInputVariant> resolveSlicerInputVariants(File inputModel, String inputModelPath, Path tempDir,
+                                                                boolean geometryOnly)
             throws IOException, InterruptedException {
         if (!inputModel.getName().toLowerCase().endsWith(".3mf")) {
             return List.of(new SlicerInputVariant(List.of(inputModelPath), "original model"));
         }
 
         List<SlicerInputVariant> variants = new ArrayList<>();
-        variants.add(new SlicerInputVariant(List.of(inputModelPath), "original 3MF project"));
+        if (!geometryOnly) {
+            variants.add(new SlicerInputVariant(List.of(inputModelPath), "original 3MF project"));
+        }
 
         try {
             List<String> convertedStlPaths = modelConversionSupport.convert3mfToStlInputPaths(inputModel, tempDir);
@@ -445,6 +539,10 @@ public class SlicerService {
         } catch (InterruptedException e) {
             throw e;
         } catch (Exception e) {
+            if (geometryOnly) {
+                throw new ModelProcessingException("MODEL_CONVERSION_FAILED",
+                        "Unable to prepare this model for PA12-CF/PET-CF and ASA support slicing.");
+            }
             logger.warning("Failed to prepare converted 3MF fallback for " + inputModel.getName() + ": " + e.getMessage());
         }
 

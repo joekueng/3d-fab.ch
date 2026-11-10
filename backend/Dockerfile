@@ -11,9 +11,9 @@ RUN ./gradlew bootJar -x test --no-daemon
 # Stage 2: Runtime Environment
 FROM eclipse-temurin:21-jre-noble
 LABEL ch.printcalculator.project="print-calculator"
-ARG ORCA_VERSION=2.3.2
+ARG ORCA_VERSION=2.4.2
 ARG ORCA_DOWNLOAD_URL
-ARG ORCA_SHA256=c64336ceec37d941766e675cbaaaf5124e184402bf18177fbf81ba5102734ad8
+ARG ORCA_SHA256=d12fb8c8eac1aecd2dfb6377acd48f994f8fa439ed5292fa532dd82880f029fd
 ARG FFMPEG_STATIC_URL=https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
 
 # Install system dependencies for OrcaSlicer and media processing.

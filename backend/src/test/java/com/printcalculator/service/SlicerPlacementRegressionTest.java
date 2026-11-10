@@ -63,7 +63,14 @@ class SlicerPlacementRegressionTest {
                 cat process.json >> '%s'
                 case " $* " in
                   *" --arrange 0 "*)
-                    echo '%s'
+                    previous=''
+                    for argument in "$@"; do
+                      if [ "$previous" = '--logfile' ]; then
+                        echo '%s' > "$argument"
+                        break
+                      fi
+                      previous="$argument"
+                    done
                     exit 154
                     ;;
                 esac
