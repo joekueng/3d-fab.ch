@@ -1,5 +1,4 @@
 # Print Calculator (OrcaSlicer Edition)
-
 A full-stack application (Angular + Spring Boot) for calculating accurate 3D-printing quotes with **OrcaSlicer** running headlessly.
 
 ## Contributing and AI agents: preserve project conventions
