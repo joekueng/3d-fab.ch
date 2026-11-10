@@ -41,6 +41,89 @@ describe('QuoteEstimatorService', () => {
     httpTesting.verify();
   });
 
+  for (const [quality, technicalLayer, plaLayer] of [
+    ['draft', 0.24, 0.28],
+    ['standard', 0.2, 0.2],
+    ['extra_fine', 0.16, 0.12],
+  ] as const) {
+    it(`preserves per-file material layers in ${quality} multipart uploads`, async () => {
+      const subscription = service
+        .calculate({
+          mode: 'easy',
+          material: 'PLA',
+          quality,
+          layerHeight: plaLayer,
+          items: [
+            {
+              file: new File(['mesh'], 'technical.stl'),
+              quantity: 1,
+              material: 'PA12-CF',
+              filamentVariantId: 12,
+              layerHeight: technicalLayer,
+            },
+            { file: new File(['mesh'], 'pla.stl'), quantity: 1 },
+          ],
+        })
+        .subscribe();
+      await Promise.resolve();
+      await Promise.resolve();
+      httpTesting
+        .expectOne(`${environment.apiUrl}/api/quote-sessions`)
+        .flush({ id: 'material-session', calculationId: 'permit' });
+      const url = `${environment.apiUrl}/api/quote-sessions/material-session/line-items`;
+      const technicalUpload = httpTesting.expectOne(url);
+      const technicalSettings = JSON.parse(
+        await (
+          (technicalUpload.request.body as FormData).get('settings') as Blob
+        ).text(),
+      ) as Record<string, unknown>;
+      expect(technicalSettings).toEqual(
+        jasmine.objectContaining({
+          material: 'PA12-CF',
+          filamentVariantId: 12,
+          quality,
+          layerHeight: technicalLayer,
+          complexityMode: 'BASIC',
+          nozzleDiameter: 0.4,
+        }),
+      );
+      technicalUpload.flush({ status: 'READY' });
+      const plaUpload = httpTesting.expectOne(url);
+      const plaSettings = JSON.parse(
+        await (
+          (plaUpload.request.body as FormData).get('settings') as Blob
+        ).text(),
+      ) as Record<string, unknown>;
+      expect(plaSettings['layerHeight']).toBe(plaLayer);
+      subscription.unsubscribe();
+    });
+
+    it(`preserves the global technical layer for ${quality}`, async () => {
+      const subscription = service
+        .calculate({
+          mode: 'easy',
+          material: 'PA12-CF',
+          quality,
+          layerHeight: technicalLayer,
+          items: [{ file: new File(['mesh'], 'technical.stl'), quantity: 1 }],
+        })
+        .subscribe();
+      await Promise.resolve();
+      await Promise.resolve();
+      httpTesting
+        .expectOne(`${environment.apiUrl}/api/quote-sessions`)
+        .flush({ id: 'global-session', calculationId: 'permit' });
+      const upload = httpTesting.expectOne(
+        `${environment.apiUrl}/api/quote-sessions/global-session/line-items`,
+      );
+      const settings = JSON.parse(
+        await ((upload.request.body as FormData).get('settings') as Blob).text(),
+      ) as Record<string, unknown>;
+      expect(settings['layerHeight']).toBe(technicalLayer);
+      subscription.unsubscribe();
+    });
+  }
+
   it('sends each OBJ unit with its original file and the calculation permit', async () => {
     const file = new File(['v 0 0 0'], 'inches.obj');
     const subscription = service

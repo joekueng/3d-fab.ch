@@ -44,22 +44,24 @@ public class QuoteSessionSettingsService {
         this.profileManager = profileManager;
     }
 
-    public void applyPrintSettings(PrintSettingsDto settings) {
+    public void applyPrintSettings(PrintSettingsDto settings, FilamentVariant variant) {
         if (settings.getNozzleDiameter() == null) {
             settings.setNozzleDiameter(0.40);
         }
 
         if ("BASIC".equalsIgnoreCase(settings.getComplexityMode())) {
+            boolean technical = variant != null && variant.getFilamentMaterialType() != null
+                    && Boolean.TRUE.equals(variant.getFilamentMaterialType().getIsTechnical());
             String quality = settings.getQuality() != null ? settings.getQuality().toLowerCase() : "standard";
 
             switch (quality) {
                 case "draft" -> {
-                    settings.setLayerHeight(0.28);
+                    settings.setLayerHeight(technical ? 0.24 : 0.28);
                     settings.setInfillDensity(15.0);
                     settings.setInfillPattern("grid");
                 }
                 case "extra_fine", "high_definition", "high" -> {
-                    settings.setLayerHeight(0.12);
+                    settings.setLayerHeight(technical ? 0.16 : 0.12);
                     settings.setInfillDensity(20.0);
                     settings.setInfillPattern("gyroid");
                 }

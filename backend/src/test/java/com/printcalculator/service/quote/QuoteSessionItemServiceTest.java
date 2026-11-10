@@ -146,7 +146,7 @@ class QuoteSessionItemServiceTest {
                 .thenAnswer(invocation -> invocation.getArgument(0, Path.class).toString());
 
         when(clamAVService.scan(any(InputStream.class))).thenReturn(true);
-        doNothing().when(settingsService).applyPrintSettings(settings);
+        doNothing().when(settingsService).applyPrintSettings(settings, variant);
 
         BigDecimal nozzle = new BigDecimal("0.40");
         BigDecimal layer = new BigDecimal("0.200");
@@ -287,7 +287,7 @@ class QuoteSessionItemServiceTest {
         when(quoteStorageService.toStoredPath(any(Path.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0, Path.class).toString());
         when(clamAVService.scan(any(InputStream.class))).thenReturn(true);
-        doNothing().when(settingsService).applyPrintSettings(settings);
+        doNothing().when(settingsService).applyPrintSettings(settings, variant);
         when(settingsService.resolveNozzleAndLayer(settings))
                 .thenReturn(new QuoteSessionSettingsService.NozzleLayerSettings(nozzle, layer));
         when(settingsService.resolveFilamentVariant(settings)).thenReturn(variant);
@@ -362,7 +362,7 @@ class QuoteSessionItemServiceTest {
         when(quoteStorageService.toStoredPath(any(Path.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0, Path.class).toString());
         when(clamAVService.scan(any(InputStream.class))).thenReturn(true);
-        doNothing().when(settingsService).applyPrintSettings(settings);
+        doNothing().when(settingsService).applyPrintSettings(settings, variant);
         when(settingsService.resolveNozzleAndLayer(settings))
                 .thenReturn(new QuoteSessionSettingsService.NozzleLayerSettings(nozzle, layer));
         when(settingsService.resolveFilamentVariant(settings)).thenReturn(variant);

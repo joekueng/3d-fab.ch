@@ -47,11 +47,3 @@ export interface PrintSettingsSnapshot {
   infillPattern: string;
   supportEnabled: boolean;
 }
-
-export interface EasyModePreset {
-  quality: string;
-  nozzleDiameter: number;
-  layerHeight: number;
-  infillDensity: number;
-  infillPattern: string;
-}
