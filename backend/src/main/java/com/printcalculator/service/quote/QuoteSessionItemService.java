@@ -122,12 +122,13 @@ public class QuoteSessionItemService {
             BigDecimal layerHeight = nozzleAndLayer.layerHeight();
             materialPrintCompatibilityService.validate(selectedVariant, nozzleDiameter, layerHeight);
             String qualityHint = settingsService.resolveQuality(settings, layerHeight);
-            List<PrinterMachine> candidateMachines = settingsService.resolvePrinterMachineCandidates(
-                    settings.getPrinterMachineId(),
-                    nozzleDiameter,
-                    layerHeight,
-                    qualityHint
-            );
+            boolean asaSupports = OrcaProfileResolver.requiresAsaSupports(
+                    selectedVariant, Boolean.TRUE.equals(settings.getSupportsEnabled()));
+            List<PrinterMachine> candidateMachines = asaSupports
+                    ? settingsService.resolveAsaSupportMachineCandidates(
+                    settings.getPrinterMachineId(), nozzleDiameter, layerHeight, qualityHint)
+                    : settingsService.resolvePrinterMachineCandidates(
+                    settings.getPrinterMachineId(), nozzleDiameter, layerHeight, qualityHint);
 
             validateCadMaterialLock(session, cadSession, selectedVariant);
 
@@ -171,6 +172,8 @@ public class QuoteSessionItemService {
             for (PrinterMachine machine : candidateMachines) {
                 try {
                     OrcaProfileResolver.ResolvedProfiles profiles = orcaProfileResolver.resolve(machine, nozzleDiameter, selectedVariant);
+                    Optional<String> supportProfile = orcaProfileResolver.resolveAsaSupportProfile(
+                            profiles, selectedVariant, Boolean.TRUE.equals(settings.getSupportsEnabled()));
                     String processProfile = resolveProcessProfile(
                             settings,
                             profiles.machineProfileName(),
@@ -186,7 +189,10 @@ public class QuoteSessionItemService {
                     boolean requiresSplitPrinting = false;
                     PrintStats stats;
                     try {
-                        stats = slicerService.slice(
+                        stats = supportProfile.isPresent() ? slicerService.slice(
+                                slicerInputPath.toFile(), profiles.machineProfileName(), profiles.filamentProfileName(),
+                                processProfile, null, processOverrides, supportProfile.get(), selectedVariant.getColorHex()
+                        ) : slicerService.slice(
                                 slicerInputPath.toFile(),
                                 profiles.machineProfileName(),
                                 profiles.filamentProfileName(),
@@ -203,7 +209,10 @@ public class QuoteSessionItemService {
                         }
                         oversizedEstimateAttempted = true;
                         try {
-                            stats = slicerService.sliceForOversizedEstimate(
+                            stats = supportProfile.isPresent() ? slicerService.sliceForOversizedEstimate(
+                                    slicerInputPath.toFile(), profiles.machineProfileName(), profiles.filamentProfileName(),
+                                    processProfile, modelDimensions, processOverrides, supportProfile.get(), selectedVariant.getColorHex()
+                            ) : slicerService.sliceForOversizedEstimate(
                                     slicerInputPath.toFile(),
                                     profiles.machineProfileName(),
                                     profiles.filamentProfileName(),

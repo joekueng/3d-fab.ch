@@ -46,6 +46,7 @@ build/
 .gradle/
 .mvn/
 /.angular/
+/.tools/
 
 ./storage_orders
 ./storage_quotes

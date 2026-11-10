@@ -33,6 +33,9 @@ follow [Docker maintenance](docs/unraid-docker.md).
 - `docs/uml/en/` — English architecture diagrams; matching source diagrams are under `docs/uml/`.
 - `scripts/` — repository-level local checks and diagnostic scripts.
 
+For repeatable local filament fixtures and calculator visibility, follow the
+[local setup instructions](README.md#start-the-complete-local-environment).
+
 ## Consistency is required for every implementation
 
 - Read the [contribution workflow in README.md](README.md#contributing-and-ai-agents-preserve-project-conventions) and the relevant module README before implementing a feature.

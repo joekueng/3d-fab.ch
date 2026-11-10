@@ -11,6 +11,25 @@ import static org.junit.jupiter.api.Assertions.*;
 class GCodeParserTest {
 
     @Test
+    void keepsTheTotalWhenModelOrGenericTimeOccursLaterInTheFile() throws IOException {
+        var file = java.nio.file.Files.createTempFile("total_time_priority", ".gcode");
+        try {
+            java.nio.file.Files.writeString(file, """
+                    ; total estimated time: 5h 46m
+                    ; model printing time: 5h 29m
+                    ; estimated printing time = 2h 51m
+                    ; filament used [g] = 53.06, 32.38
+                    """);
+            var stats = new GCodeParser().parse(file.toFile());
+            assertEquals(20760, stats.printTimeSeconds());
+            assertEquals("5h 46m", stats.printTimeFormatted());
+            assertEquals(85.44, stats.filamentWeightGrams(), 0.001);
+        } finally {
+            java.nio.file.Files.deleteIfExists(file);
+        }
+    }
+
+    @Test
     void multiFilament3mfStatisticsRemainUsableForShipping() throws IOException {
         var path = java.nio.file.Files.createTempFile("multi_filament", ".gcode");
         try {

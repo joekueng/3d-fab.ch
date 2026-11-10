@@ -172,6 +172,40 @@ public class QuoteSessionSettingsService {
         );
     }
 
+    public List<PrinterMachine> resolveAsaSupportMachineCandidates(Long printerMachineId,
+                                                                   BigDecimal nozzleDiameter,
+                                                                   BigDecimal layerHeight,
+                                                                   String qualityHint) {
+        List<PrinterMachine> available = new java.util.ArrayList<>(resolvePrinterMachineCandidates(
+                printerMachineId, nozzleDiameter, layerHeight, qualityHint));
+        if (printerMachineId != null && available.stream().anyMatch(machine ->
+                orcaProfileResolver.resolveMachineProfile(machine, nozzleDiameter)
+                        .filter(profile -> OrcaProfileResolver.isX2dProfile(profile.getOrcaMachineProfileName()))
+                        .isPresent())) {
+            resolvePrinterMachineCandidates(null, nozzleDiameter, layerHeight, qualityHint).stream()
+                    .filter(machine -> orcaProfileResolver.resolveMachineProfile(machine, nozzleDiameter)
+                            .map(profile -> profile.getOrcaMachineProfileName().startsWith("Bambu Lab P2S "))
+                            .orElse(false))
+                    .filter(machine -> !available.contains(machine))
+                    .forEach(available::add);
+        }
+        List<PrinterMachine> candidates = available.stream()
+                .filter(machine -> orcaProfileResolver.resolveMachineProfile(machine, nozzleDiameter)
+                        .map(profile -> OrcaProfileResolver.isX2dProfile(profile.getOrcaMachineProfileName())
+                                || profile.getOrcaMachineProfileName().startsWith("Bambu Lab P2S "))
+                        .orElse(false))
+                .sorted(java.util.Comparator.comparingInt(machine ->
+                        orcaProfileResolver.resolveMachineProfile(machine, nozzleDiameter)
+                                .filter(profile -> OrcaProfileResolver.isX2dProfile(profile.getOrcaMachineProfileName()))
+                                .isPresent() ? 0 : 1))
+                .toList();
+        if (candidates.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "PA12-CF/PET-CF with ASA supports requires an active X2D or P2S profile for this nozzle and layer height");
+        }
+        return candidates;
+    }
+
     public FilamentVariant resolveFilamentVariant(PrintSettingsDto settings) {
         if (settings.getFilamentVariantId() != null) {
             FilamentVariant variant = variantRepo.findById(settings.getFilamentVariantId())

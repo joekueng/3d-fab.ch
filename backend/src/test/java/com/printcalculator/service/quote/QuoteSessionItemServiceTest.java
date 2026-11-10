@@ -100,8 +100,9 @@ class QuoteSessionItemServiceTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"3mf,false", "obj,false", "step,false", "stp,false", "obj,true"})
-    void addItemToSession_preservesOriginalAndStoresConvertedStlForPreview(String extension, boolean fallback) throws Exception {
+    @CsvSource({"3mf,false,false", "obj,false,false", "step,false,false", "stp,false,false", "obj,true,false",
+            "obj,false,true", "3mf,false,true", "obj,true,true"})
+    void addItemToSession_preservesOriginalAndStoresConvertedStlForPreview(String extension, boolean fallback, boolean asaSupports) throws Exception {
         QuoteSession session = new QuoteSession();
         session.setId(UUID.randomUUID());
         session.setStatus("ACTIVE");
@@ -121,18 +122,20 @@ class QuoteSessionItemServiceTest {
         );
 
         FilamentMaterialType materialType = new FilamentMaterialType();
-        materialType.setMaterialCode("PLA");
+        materialType.setMaterialCode(asaSupports ? "PA12-CF" : "PLA");
 
         FilamentVariant variant = new FilamentVariant();
         variant.setFilamentMaterialType(materialType);
         variant.setColorName("White");
+        variant.setColorHex("#FFFFFF");
 
         PrinterMachine machine = new PrinterMachine();
         machine.setId(7L);
-        machine.setPrinterDisplayName(fallback ? "BambuLab P2S" : "BambuLab A1");
-        String machineProfile = fallback ? "Bambu Lab P2S 0.4 nozzle" : "Bambu Lab A1 0.4 nozzle";
-        String filamentProfile = fallback ? "Bambu PLA Basic @BBL P2S" : "Bambu PLA Basic @BBL A1";
-        String processProfile = fallback ? "0.20mm Standard @BBL P2S" : "0.20mm Standard @BBL A1";
+        machine.setPrinterDisplayName(fallback ? "BambuLab P2S" : asaSupports ? "BambuLab X2D" : "BambuLab A1");
+        String machineProfile = fallback ? "Bambu Lab P2S 0.4 nozzle" : asaSupports ? "Bambu Lab X2D 0.4 nozzle" : "Bambu Lab A1 0.4 nozzle";
+        String filamentProfile = asaSupports ? "Generic PA-CF" : fallback ? "Bambu PLA Basic @BBL P2S" : "Bambu PLA Basic @BBL A1";
+        String processProfile = fallback ? "0.20mm Standard @BBL P2S" : asaSupports ? "0.20mm Standard @BBL X2D" : "0.20mm Standard @BBL A1";
+        String asaProfile = machineProfile.contains("X2D") ? "Generic ASA @BBL X2D 0.4 nozzle" : "Generic ASA";
 
         PrintStats stats = fallback ? new PrintStats(546, "9m 6s", 42, 1000)
                 : new PrintStats(3600, "1h", 42.0, 1000.0);
@@ -154,18 +157,34 @@ class QuoteSessionItemServiceTest {
                 .thenReturn(new QuoteSessionSettingsService.NozzleLayerSettings(nozzle, layer));
         when(settingsService.resolveFilamentVariant(settings)).thenReturn(variant);
         when(settingsService.resolveQuality(settings, layer)).thenReturn("standard");
+        if (asaSupports) {
+            when(orcaProfileResolver.resolveAsaSupportProfile(any(), eq(variant), eq(true))).thenCallRealMethod();
+        }
         if (fallback) {
-            var a1 = new PrinterMachine();
-            a1.setId(1L);
-            when(settingsService.resolvePrinterMachineCandidates(settings.getPrinterMachineId(), nozzle, layer, "standard"))
-                    .thenReturn(java.util.List.of(a1, machine));
-            when(orcaProfileResolver.resolve(a1, nozzle, variant)).thenReturn(new OrcaProfileResolver.ResolvedProfiles(
-                    "Bambu Lab A1 0.4 nozzle", "Bambu PLA Basic @BBL A1", null));
-            when(profileManager.findCompatibleProcessProfileName("Bambu Lab A1 0.4 nozzle", layer, "standard"))
-                    .thenReturn(Optional.of("0.20mm Standard @BBL A1"));
-            when(slicerService.slice(any(File.class), eq("Bambu Lab A1 0.4 nozzle"),
-                    eq("Bambu PLA Basic @BBL A1"), eq("0.20mm Standard @BBL A1"), isNull(), anyMap()))
-                    .thenThrow(new java.io.IOException("A1 unavailable"));
+            var first = new PrinterMachine();
+            first.setId(1L);
+            String firstMachine = asaSupports ? "Bambu Lab X2D 0.4 nozzle" : "Bambu Lab A1 0.4 nozzle";
+            String firstFilament = asaSupports ? "Generic PA-CF @BBL X2D 0.4 nozzle" : "Bambu PLA Basic @BBL A1";
+            String firstProcess = asaSupports ? "0.20mm Standard @BBL X2D" : "0.20mm Standard @BBL A1";
+            if (asaSupports) {
+                when(settingsService.resolveAsaSupportMachineCandidates(settings.getPrinterMachineId(), nozzle, layer, "standard"))
+                        .thenReturn(java.util.List.of(first, machine));
+                when(slicerService.slice(any(File.class), eq(firstMachine), eq(firstFilament), eq(firstProcess),
+                        isNull(), anyMap(), eq("Generic ASA @BBL X2D 0.4 nozzle"), eq("#FFFFFF")))
+                        .thenThrow(new java.io.IOException("X2D unavailable"));
+            } else {
+                when(settingsService.resolvePrinterMachineCandidates(settings.getPrinterMachineId(), nozzle, layer, "standard"))
+                        .thenReturn(java.util.List.of(first, machine));
+                when(slicerService.slice(any(File.class), eq(firstMachine), eq(firstFilament), eq(firstProcess), isNull(), anyMap()))
+                        .thenThrow(new java.io.IOException("A1 unavailable"));
+            }
+            when(orcaProfileResolver.resolve(first, nozzle, variant)).thenReturn(new OrcaProfileResolver.ResolvedProfiles(
+                    firstMachine, firstFilament, null));
+            when(profileManager.findCompatibleProcessProfileName(firstMachine, layer, "standard"))
+                    .thenReturn(Optional.of(firstProcess));
+        } else if (asaSupports) {
+            when(settingsService.resolveAsaSupportMachineCandidates(settings.getPrinterMachineId(), nozzle, layer, "standard"))
+                    .thenReturn(java.util.List.of(machine));
         } else {
             when(settingsService.resolvePrinterMachineCandidates(settings.getPrinterMachineId(), nozzle, layer, "standard"))
                     .thenReturn(java.util.List.of(machine));
@@ -186,14 +205,13 @@ class QuoteSessionItemServiceTest {
             when(slicerService.convertModelToPersistentStl(any(File.class), any(Path.class), any()))
                     .thenAnswer(invocation -> invocation.getArgument(1, Path.class));
         }
-        when(slicerService.slice(
-                any(File.class),
-                eq(machineProfile),
-                eq(filamentProfile),
-                eq(processProfile),
-                isNull(),
-                anyMap()
-        )).thenReturn(stats);
+        if (asaSupports) {
+            when(slicerService.slice(any(File.class), eq(machineProfile), eq(filamentProfile), eq(processProfile),
+                    isNull(), anyMap(), eq(asaProfile), eq("#FFFFFF"))).thenReturn(stats);
+        } else {
+            when(slicerService.slice(any(File.class), eq(machineProfile), eq(filamentProfile), eq(processProfile),
+                    isNull(), anyMap())).thenReturn(stats);
+        }
         when(slicerService.inspectModelDimensions(any(File.class)))
                 .thenAnswer(invocation -> {
                     File inspected = invocation.getArgument(0, File.class);
@@ -219,14 +237,14 @@ class QuoteSessionItemServiceTest {
         ArgumentCaptor<File> sliceInputCaptor = ArgumentCaptor.forClass(File.class);
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Map<String, String>> processOverridesCaptor = ArgumentCaptor.forClass(Map.class);
-        verify(slicerService).slice(
-                sliceInputCaptor.capture(),
-                eq(machineProfile),
-                eq(filamentProfile),
-                eq(processProfile),
-                isNull(),
-                processOverridesCaptor.capture()
-        );
+        if (asaSupports) {
+            verify(slicerService).slice(sliceInputCaptor.capture(), eq(machineProfile), eq(filamentProfile),
+                    eq(processProfile), isNull(), processOverridesCaptor.capture(), eq(asaProfile), eq("#FFFFFF"));
+            verify(slicerService, never()).slice(any(), anyString(), anyString(), anyString(), any(), any());
+        } else {
+            verify(slicerService).slice(sliceInputCaptor.capture(), eq(machineProfile), eq(filamentProfile),
+                    eq(processProfile), isNull(), processOverridesCaptor.capture());
+        }
 
         assertTrue(sliceInputCaptor.getValue().getName().endsWith("3mf".equals(extension) ? ".3mf" : ".stl"));
         assertEquals("1", processOverridesCaptor.getValue().get("enable_support"));

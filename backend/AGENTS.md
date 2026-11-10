@@ -49,6 +49,8 @@ follow [model conversion and previews](README.md#model-conversion-and-previews).
 
 For native CLI compatibility and full-bed fit checks, follow
 [CLI printer profiles and usable volume](README.md#cli-printer-profiles-and-usable-volume).
+For PA12-CF/PET-CF jobs with ASA support base/interface, X2D nozzle mapping, P2S fallback and native time validation,
+follow [X2D and ASA supports](README.md#x2d-and-asa-supports).
 
 ## Testing and checks
 
