@@ -42,7 +42,15 @@ test('CALC-002: a real model produces a quote and a resumable session', async ({
   await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.goto('/it/calculator/basic');
   await uploadCube(page);
+  const processed = page.waitForResponse(response =>
+    /\/api\/quote-sessions\/[^/]+\/line-items$/.test(new URL(response.url()).pathname)
+    && response.request().method() === 'POST', {timeout: 210_000},
+  );
   await page.locator('app-upload-form app-button[type="submit"] button').click();
+  const response = await processed;
+  expect(response.ok()).toBe(true);
+  const item = await response.json() as { status: string; errorCode?: string; errorMessage?: string };
+  expect(item.status, JSON.stringify({errorCode: item.errorCode, errorMessage: item.errorMessage})).toBe('READY');
   await expect(page.locator('app-quote-result')).toBeVisible({ timeout: 210_000 });
   await expect(page.locator('app-quote-result .file-name')).toHaveText('e2e-cube.stl');
   await expect(page.locator('app-quote-result app-price-breakdown')).toContainText('CHF');

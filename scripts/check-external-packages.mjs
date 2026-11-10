@@ -32,6 +32,8 @@ check(`OrcaSlicer ${orca.version}: official assets and source`, async () => {
     const dockerfile = read('backend/Dockerfile');
     requireThat(dockerfile.includes(`ARG ORCA_VERSION=${orca.version}`)
         && dockerfile.includes(`ARG ORCA_SHA256=${orca.assets['linux-amd64'].sha256}`), 'Docker Orca pin differs from release metadata');
+    requireThat(!/^\s+ORCA_(?:VERSION|DOWNLOAD_URL|SHA256)\s*:/m.test(read('docker-compose.e2e.yml')),
+        'E2E must inherit the verified Orca version/checksum from backend/Dockerfile');
     return 'official stable release, pinned source and asset SHA-256 digests';
 });
 
