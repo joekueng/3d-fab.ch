@@ -117,7 +117,9 @@ describe('QuoteEstimatorService', () => {
         `${environment.apiUrl}/api/quote-sessions/global-session/line-items`,
       );
       const settings = JSON.parse(
-        await ((upload.request.body as FormData).get('settings') as Blob).text(),
+        await (
+          (upload.request.body as FormData).get('settings') as Blob
+        ).text(),
       ) as Record<string, unknown>;
       expect(settings['layerHeight']).toBe(technicalLayer);
       subscription.unsubscribe();
