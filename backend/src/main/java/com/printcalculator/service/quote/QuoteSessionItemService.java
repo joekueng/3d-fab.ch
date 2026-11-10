@@ -111,14 +111,15 @@ public class QuoteSessionItemService {
 
             if (cadSession) {
                 settingsService.enforceCadPrintSettings(session, settings);
-            } else {
-                settingsService.applyPrintSettings(settings);
+            }
+            FilamentVariant selectedVariant = settingsService.resolveFilamentVariant(settings);
+            if (!cadSession) {
+                settingsService.applyPrintSettings(settings, selectedVariant);
             }
 
             QuoteSessionSettingsService.NozzleLayerSettings nozzleAndLayer = settingsService.resolveNozzleAndLayer(settings);
             BigDecimal nozzleDiameter = nozzleAndLayer.nozzleDiameter();
             BigDecimal layerHeight = nozzleAndLayer.layerHeight();
-            FilamentVariant selectedVariant = settingsService.resolveFilamentVariant(settings);
             materialPrintCompatibilityService.validate(selectedVariant, nozzleDiameter, layerHeight);
             String qualityHint = settingsService.resolveQuality(settings, layerHeight);
             List<PrinterMachine> candidateMachines = settingsService.resolvePrinterMachineCandidates(

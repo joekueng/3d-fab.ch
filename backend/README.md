@@ -39,6 +39,12 @@ nozzles. PLA-CF excludes 0.2 mm independently of the Technical flag. Ordinary
 materials retain the global nozzle/layer policy. Match the
 [frontend presets and selectors](../frontend/README.md#material-print-settings).
 
+For BASIC uploads, resolve the filament variant before applying quality presets in
+`QuoteSessionSettingsService`. Its material's Technical flag selects 0.16/0.20/0.24 mm
+instead of the ordinary 0.12/0.20/0.28 mm; never overwrite technical settings with
+ordinary defaults before compatibility validation. ADVANCED settings remain explicit
+and must pass the same validation.
+
 These restrictions require no schema migration or material reclassification.
 The global `nozzle_layer_height_option` seed already includes 0.16/0.20/0.24 mm
 for 0.4 mm nozzles; deployed active rules and compatible Orca process profiles

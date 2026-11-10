@@ -145,10 +145,13 @@ public product URL with Google's Rich Results Test.
 ## Material print settings
 
 Technical materials use exactly 0.16, 0.20 and 0.24 mm layers. Quick-mode quality
-presets in `easyModePresetForQuality` map High Definition to 0.16, Standard to 0.20
+presets in `utils/print-settings-presets.ts` (`easyModePresetForQuality`) map High Definition to 0.16, Standard to 0.20
 and Draft to 0.24 mm; ordinary materials retain 0.12/0.20/0.28 mm. Apply the
 material-specific preset to displayed settings, each file and outgoing requests,
 including after changing material without changing quality.
+`QuoteEstimatorService` preserves the resolved per-file layer (then the global layer)
+in multipart settings; the shared ordinary preset supplies only the missing-layer
+fallback. The backend independently applies presets using the selected variant.
 
 Advanced settings intersect the nozzle's API options with those three technical
 layers. Technical materials exclude 0.2 and 0.8 mm nozzles; PLA-CF excludes 0.2 mm
