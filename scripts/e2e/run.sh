@@ -11,6 +11,8 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 compose_file="$repo_root/docker-compose.e2e.yml"
 run_dir="$(mktemp -d "${TMPDIR:-/tmp}/printcalc-e2e.XXXXXX")"
 run_id="e2e-$(basename "$run_dir" | tr '[:upper:].' '[:lower:]-')"
+# Survives a killed harness so the workflow's always() step can clean this run.
+printf '%s\n' "$run_id" > "$repo_root/.e2e-project"
 export COMPOSE_PROJECT_NAME="$run_id"
 export E2E_PORT="$(python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1",0)); print(s.getsockname()[1]); s.close()')"
 export E2E_MAIL_PORT="$(python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1",0)); print(s.getsockname()[1]); s.close()')"
@@ -33,19 +35,20 @@ cleanup() {
   mkdir -p "$repo_root/frontend/test-results"
   cp "$run_dir/run.txt" "$repo_root/frontend/test-results/e2e-run.txt" 2>/dev/null || true
   cp "$run_dir/build.log" "$repo_root/frontend/test-results/e2e-build.log" 2>/dev/null || true
-  compose logs --no-color > "$repo_root/frontend/test-results/e2e-services.log" 2>&1 || true
-  compose down --volumes --remove-orphans >/dev/null 2>&1 || true
-  # Each run builds unique tags; Compose down alone leaves those images behind.
-  for service in backend frontend proxy; do
-    if docker image inspect "${run_id}-${service}:latest" >/dev/null 2>&1; then
-      docker image rm "${run_id}-${service}:latest" >/dev/null 2>&1 ||
-        echo "Could not remove E2E image ${run_id}-${service}:latest; inspect it after the run." >&2
-    fi
-  done
+  compose logs --no-color --tail 300 > "$repo_root/frontend/test-results/e2e-services.log" 2>&1 || true
+  if ! compose down --timeout 10 --volumes --remove-orphans; then
+    echo "Compose cleanup failed for $run_id; retrying by project labels." >&2
+  fi
+  if ! bash "$repo_root/scripts/e2e/cleanup-stack.sh" --project "$run_id" --delete; then
+    echo "E2E cleanup incomplete for $run_id; retry cleanup-stack.sh for this project." >&2
+    [[ "$result" -ne 0 ]] || result=1
+  fi
   rm -rf "$run_dir"
   exit "$result"
 }
-trap cleanup EXIT INT TERM
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 if ! docker info >/dev/null 2>&1; then
   echo 'Docker daemon is unavailable. Start Docker and grant access to its socket.' >&2

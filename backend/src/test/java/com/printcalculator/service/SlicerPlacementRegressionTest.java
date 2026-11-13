@@ -63,7 +63,14 @@ class SlicerPlacementRegressionTest {
                 cat process.json >> '%s'
                 case " $* " in
                   *" --arrange 0 "*)
-                    echo '%s'
+                    previous=''
+                    for argument in "$@"; do
+                      if [ "$previous" = '--logfile' ]; then
+                        echo '%s' > "$argument"
+                        break
+                      fi
+                      previous="$argument"
+                    done
                     exit 154
                     ;;
                 esac
@@ -156,6 +163,40 @@ class SlicerPlacementRegressionTest {
 
         assertEquals("SLICER_EXECUTION_FAILED", failure.getCode());
         assertEquals(errorLog.startsWith("gcode path conflicts") ? 4 : 1, Files.readAllLines(attempts).size());
+    }
+
+    @Test
+    void converted3mfPlacementFailureUsesLayoutBoundsInsteadOfTheFirstProjectObject() throws Exception {
+        Path executable = Files.writeString(tempDir.resolve("slicer"), """
+                #!/bin/sh
+                echo 'No object is fully inside the print volume'
+                exit 1
+                """);
+        assertTrue(executable.toFile().setExecutable(true));
+        var slicer = configuredSlicer(executable, 509);
+        doAnswer(invocation -> {
+            java.io.File model = invocation.getArgument(0);
+            return Optional.of(model.getName().endsWith(".3mf")
+                    ? new ModelDimensions(194.5, 86.5, 3)
+                    : new ModelDimensions(509.2, 399.6, 40));
+        }).when(slicer).inspectModelDimensions(any());
+        Path input = tempDir.resolve("multi-plate.3mf");
+        try (var zip = new java.util.zip.ZipOutputStream(Files.newOutputStream(input))) {
+            zip.putNextEntry(new java.util.zip.ZipEntry("3D/3dmodel.model"));
+            zip.write("""
+                    <model unit="millimeter" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">
+                      <resources><object id="1" type="model"><mesh>
+                        <vertices><vertex x="0" y="0" z="0"/><vertex x="2" y="0" z="0"/><vertex x="0" y="3" z="1"/></vertices>
+                        <triangles><triangle v1="0" v2="1" v3="2"/></triangles>
+                      </mesh></object></resources>
+                      <build><item objectid="1"/><item objectid="1" transform="1 0 0 0 1 0 0 0 1 500 300 0"/></build>
+                    </model>
+                    """.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        }
+        var failure = assertThrows(ModelProcessingException.class,
+                () -> slicer.slice(input.toFile(), "machine", "filament", "process", null, null));
+        assertEquals("MODEL_OUT_OF_PRINT_VOLUME", failure.getCode());
+        assertTrue(failure.getMessage().contains("509.2 x 399.6 x 40"));
     }
 
     @Test

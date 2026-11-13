@@ -175,6 +175,12 @@ if [ "$CLEAN" -eq 1 ]; then
   clean_environment
 fi
 
+if [ -z "${SLICER_PATH:-}" ]; then
+  log "Preparing the pinned local OrcaSlicer..."
+  SLICER_PATH="$(bash "$PROJECT_ROOT/scripts/setup-orcaslicer.sh")" || fail "Could not prepare OrcaSlicer. See backend/README.md."
+  export SLICER_PATH
+fi
+
 log "Preparing the local STEP/STP converter..."
 bash "$PROJECT_ROOT/backend/scripts/setup-step-converter.sh" || fail "Could not prepare the STEP converter. See backend/README.md."
 export STEP_PYTHON_PATH="${STEP_PYTHON_PATH:-$PROJECT_ROOT/backend/venv/bin/python}"

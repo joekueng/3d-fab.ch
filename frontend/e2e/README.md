@@ -20,7 +20,11 @@ The seed in `scripts/e2e/seed.sql` contains synthetic pricing, printer, shop,
 CAD and order data. Tests that write data must use unique IDs or names and
 must never reset shared state. Pending orders are separate for each browser project and retry so reporting a
 payment in one browser cannot alter another browser's starting state.
-The harness drops its project volumes on exit.
+The harness drops its project volumes on exit. It records its exact project in
+ignored `.e2e-project`; CI retries cleanup in an `always()` step. Cleanup errors
+are reported and fail an otherwise successful run. Browser containers carry the
+project label so this second cleanup can find them too. For interrupted jobs and
+Unraid recovery, follow [scoped E2E stack cleanup](../../docs/unraid-docker.md#recover-leftover-e2e-stacks).
 Do not point `e2e:full` at a non-disposable local database. The QR mutation
 spec requires `E2E_DISPOSABLE_STACK=1` from the harness.
 
@@ -72,6 +76,10 @@ OpenCascade box. The same STEP fixture is uploaded under both STEP and STP names
 These cases exercise real scanning, conversion and slicing; they compare physical
 STL bounds and downloaded original bytes, preserve OBJ units after session resume,
 and retain invalid CAD files for review. No external CAD file or customer data is used.
+The disposable backend inherits the Orca version/checksum from `backend/Dockerfile`;
+do not override it in the E2E Compose file. Backend CLI arguments are version-specific.
+CALC-002 checks the line-item response before waiting for the rendered quote so a
+slicing error fails immediately with its domain error rather than a long visibility timeout.
 `admin/cad-invoice-lifecycle.spec.ts` (ADMIN-CAD-001/002) exercises real persistence,
 anonymous/CSRF rejection, editing, deletion, replacement and both saved-link entry points.
 

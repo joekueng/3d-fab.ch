@@ -32,12 +32,39 @@ customer-provided personal data.
 
 ## Material print compatibility
 
+Calculator visibility requires both an active filament variant and an active
+material mapping on an active printer profile. Admin inventory alone is not
+sufficient. `scripts/restore-calculator-materials.sql` restores missing PLA,
+PETG, PLA-CF and TPU 95A HF mappings on the existing A1 0.4/0.6 profiles without
+changing inventory, prices or existing/disabled mappings. It is repeatable.
+Do not disable the options filter or silently fall back to PLA for another polymer.
+
+For PC-ABS and TPU 85A, deploy the profile bundles and matching frontend/backend
+before running `scripts/enable-stock-material-profiles.sql`. The initial
+[PC-ABS recipe](profiles/custom/README.md) records its published inputs and
+unmeasured flow assumption; the [TPU 85A bundle](profiles/materials/README.md)
+preserves the official 2.4.2 P2S/X2D presets. The configured TPU 85A quote path
+uses P2S 0.6 or 0.8 mm, with 0.24 mm quick layers for every quality. Quick mode
+defaults to 0.6 mm and preserves a selected 0.8 mm nozzle. Other nozzles are
+rejected independently of the admin Technical flag. The activation script adds
+the missing P2S 0.8 profile and its 0.24 mm layer rule without re-enabling disabled rows.
+These are configuration and additive validation changes; no schema migration.
+The special-material resolver rejects unsupported printer fallbacks instead of
+substituting Generic PLA; enabled P2S mappings remain authoritative.
+
 `MaterialPrintCompatibilityService` validates both quote-session uploads before
 slicing and existing print items during checkout. Materials marked Technical in
 the admin allow only 0.16, 0.20 or 0.24 mm layer heights and exclude 0.2 and 0.8 mm
-nozzles. PLA-CF excludes 0.2 mm independently of the Technical flag. Ordinary
+nozzles, except TPU 85A which explicitly permits 0.8 mm. PLA-CF excludes 0.2 mm independently of the Technical flag.
+Ordinary
 materials retain the global nozzle/layer policy. Match the
 [frontend presets and selectors](../frontend/README.md#material-print-settings).
+
+For BASIC uploads, resolve the filament variant before applying quality presets in
+`QuoteSessionSettingsService`. Its material's Technical flag selects 0.16/0.20/0.24 mm
+instead of the ordinary 0.12/0.20/0.28 mm; never overwrite technical settings with
+ordinary defaults before compatibility validation. ADVANCED settings remain explicit
+and must pass the same validation.
 
 These restrictions require no schema migration or material reclassification.
 The global `nozzle_layer_height_option` seed already includes 0.16/0.20/0.24 mm
@@ -242,6 +269,197 @@ checks enabled. Delete previous G-code before each attempt: failed post-slicing
 checks can leave rejected output that must never supply a later quote. Persistent
 object conflicts remain processing failures; only physical oversize requires
 splitting. See `SlicerPlacementRegressionTest` for recovery and output validation.
+
+For 3MF geometry fallbacks, classify placement errors against the converted STL
+that actually failed, rather than the original project's first `--info` object.
+Orca reports separate object-local bounds for a multi-object 3MF; these can hide
+the larger layout created by its build transforms. Quote dimensions use the
+stored complete STL; the original upload remains available for download.
+
+### 3MF print plates
+
+`ModelConversionSupport.convert3mfPlates` reads Orca/Bambu assignments from
+`Metadata/model_settings.config`: `plate/plater_id` and each `model_instance`'s
+`object_id`/zero-based `instance_id` identify root build instances. Match repeated
+instances in build order and retain their transforms, nested component geometry
+and plate grouping. Ignore non-printable instances and empty plates. The current
+plate path supports millimetre projects and at most 32 declared plates. Reject
+unknown, duplicate or unassigned printable instances rather than omitting or
+double-counting geometry. Projects without plate metadata retain the established
+original-project/geometry fallback; do not infer plates from coordinate gaps or
+from an STL, which has no plate assignments.
+
+`SlicerService` slices temporary geometry for each plate sequentially through the
+existing printer, material, support and process settings, keeping the capacity
+lease around the complete upload. Imported project settings and embedded G-code
+do not supply estimates. Sum each successful plate's complete G-code statistics,
+including its own startup time. Any failed plate fails the project calculation;
+never price a partial set. Physical volume checks apply per plate, so a wide
+multi-plate workspace needs no split consent when all its plates fit. After
+explicit consent, use a virtual volume only for genuinely oversized plates.
+This estimate does not generate cut geometry or automatically repack new plates.
+
+Keep one original attachment and one quote item. Quantity repeats the complete
+project. `PrintStats.plates` carries per-plate time/weight/length; the existing JSON
+pricing breakdown stores `plateCount` and `plates` alongside aggregate item totals.
+These are additive JSON fields; there is no schema migration or change to pricing
+rules. Old sessions require recalculation to obtain plate totals. Temporary plate
+STLs and G-code are deleted; the complete preview STL follows existing storage.
+
+The assignment format was checked on 2026-11-13 against the official
+[OrcaSlicer 2.4.2 importer/exporter](https://github.com/OrcaSlicer/OrcaSlicer/blob/v2.4.2/src/libslic3r/Format/bbs_3mf.cpp).
+No dependency or new CLI flag is introduced. `ThreeMfPlateSlicingTest` verifies
+instance mapping, complete totals, failure handling and per-plate split consent;
+`QuoteSessionItemServiceTest` verifies one persisted item with the plate breakdown.
+Opt-in native verification compares a project's aggregate with independently
+slicing each plate, without checking customer models into the repository:
+
+```bash
+MULTIPLATE_3MF_PATH=/path/to/project.3mf SLICER_PATH=/path/to/OrcaSlicer \
+  ./gradlew test --tests com.printcalculator.service.ThreeMfPlateNativeTest
+```
+
+A four-plate project passed that comparison locally with OrcaSlicer 2.5.0 and
+the pinned 2.4.2 binary on 2026-11-13. The 2.4.2 P2S/ASA 0.4 mm, 0.20 mm-layer
+check returned 18,575 seconds and 131.92 g, matching the four independent plates.
+Production browser validation still requires deployment and recalculation.
+
+### X2D and ASA supports
+
+PA12-CF and PET-CF quote-session jobs with supports enabled use ASA for both
+support base and interface. Material-code matching ignores case, spaces, hyphens
+and underscores. Other materials and support-disabled jobs keep their existing
+selection path. All grams continue to be priced at the selected model variant's
+rate; this change does not introduce separate ASA pricing or rewrite old quotes.
+
+`QuoteSessionSettingsService.resolveAsaSupportMachineCandidates` tries compatible
+active X2D profiles first, then compatible P2S profiles if X2D slicing fails or X2D
+is unavailable. An explicitly selected X2D also permits P2S fallback; a selected
+P2S remains the chosen printer. A1 is excluded from
+this enclosed-printer recipe. `OrcaProfileResolver` reuses active material mappings
+and selects matching X2D PA-CF/PET-CF/ASA fallbacks when no map is configured.
+A failed X2D job must never supply stale G-code to the P2S attempt.
+
+Orca 2.4.2 has scalar process acceleration options: loading a BBL array does not
+apply different normal accelerations to the Direct Drive and Bowden nozzles.
+`SlicerProfilePreparation` therefore selects the active Standard/High Flow entries
+from `print_extruder_id`/`print_extruder_variant`, preserves explicit accelerations
+for model walls, infill, top surfaces and bridges, and uses the lower selected
+normal acceleration for support extrusion. Percentage values are resolved against
+the original model normal acceleration; bridge percentages use outer-wall
+acceleration, matching Orca's native definition. The bundled 0.4 mm Bowden value
+is 1,000 mm/s²; the 0.6 mm value is 4,000 mm/s², not a hard-coded shared value.
+P2S and support-disabled jobs keep their existing acceleration settings.
+The scalar normal acceleration also covers gap fill and the shared prime tower;
+this is a compatibility approximation, not complete per-nozzle process support.
+It does not make Orca's support geometry or prime tower identical to Bambu Studio.
+Native validation of this compatibility adjustment on the supplied STL returned
+18,759 s (5h12m39s), 78.58 g for PA12-CF and 18,838 s (5h13m58s), 94.01 g for
+PET-CF at 0.4 mm/Draft. All 621 regular backend tests passed (two opt-in cases
+skipped), then both native material cases passed separately. Positive support and
+interface moves were checked in the generated G-code, not only its configuration
+header. A Bambu Studio 2.9.1 project of the same mesh still generated different
+support/tower geometry and material use; these values are not desktop parity.
+
+`SlicerProfilePreparation.prepareAsaSupports` assigns the model to filament 1 and
+support base/interface to ASA in slot 2, with supports allowed to start on the
+model. CLI project options explicitly pin Manual mapping: `1,2` on X2D, `1,1` on
+P2S. X2D uses the original Direct Drive/Bowden variants, default nozzle volume
+types, temperatures, flow limits and speed arrays. These project options must be
+passed on the command line because loading them only from a process preset can
+restore Auto For Flush and reverse the filament/nozzle mapping.
+
+The shared X2D print area is the intersection of both nozzle areas/heights:
+235.5 × 256 × 256 mm for the imported profiles. The prime-tower anchor is offset
+into that shared area; Orca's raw-mesh x=15 default is outside the auxiliary
+nozzle's reach. The prime tower remains enabled, mixed-material flushing into the
+model/supports stays disabled, and ASA keeps its ordinary filament classification.
+Uploaded 3MFs use converted geometry for these recipes so per-object overrides
+cannot undo the material policy. Originals remain stored. Virtual-volume split
+estimates extend both temporary nozzle volumes consistently.
+
+The palette uses the selected variant's hex color and the ASA preset color
+(`filament_colour`/`default_filament_colour`, white when unspecified). Orca computes
+purging and machine/nozzle changes. Only these offline quote jobs use
+`--allow-mix-temp` because the two profiles' recommended temperature ranges differ;
+profile temperatures are preserved. The generated G-code is used solely for
+statistics and deleted, never sent to a printer or exposed as a downloadable print
+file. This is not a physical-print validation. `GCodeParser` always prefers total
+estimated time over model-only or generic time, independent of metadata order.
+
+OrcaSlicer **2.4.2** is pinned in `orcaslicer-release.json`, the local setup helper
+and the Dockerfile. `--logfile` captures the new CLI's native log separately from
+stdout so placement failures still trigger the established retries. The isolated,
+flattened [X2D profile bundle](profiles/x2d/README.md) comes from the exact release
+commit and does not replace existing printer presets. Regenerate it with
+`python3 scripts/import-orca-x2d-profiles.py`; source/output hashes and the upstream
+license are retained. `node scripts/check-external-packages.mjs` verifies the stable
+GitHub release, official asset digests, source commit and Docker pin.
+
+Evidence checked 2026-11-10: official [2.4.2 release](https://github.com/OrcaSlicer/OrcaSlicer/releases/tag/v2.4.2),
+[CLI source](https://github.com/OrcaSlicer/OrcaSlicer/blob/v2.4.2/src/OrcaSlicer.cpp),
+[configuration definitions](https://github.com/OrcaSlicer/OrcaSlicer/blob/v2.4.2/src/libslic3r/PrintConfig.cpp)
+and the downloaded, SHA-256-verified macOS CLI help. `--load-filaments` accepts a
+semicolon-separated profile list; `filament_map` uses one-based logical extruder
+IDs. The version's X2D G-code intentionally emits `H-1`; verify the configured
+`filament_map` and physical-extruder map rather than interpreting H-1 as an error.
+
+The opt-in `Pa12AsaNativeSlicingTest` compares both materials on P2S and X2D using a
+local STL requiring supports. Set `SLICER_PATH` to 2.4.2 and `PA12_ASA_MODEL_PATH`
+to that STL, then run:
+
+```bash
+./gradlew test --tests '*Pa12AsaNativeSlicingTest' --rerun-tasks
+```
+
+It verifies two positive filament consumptions, actual tool commands, Manual
+mapping, native time increases, and actual positive ASA support/interface extrusion
+at no more than the 0.4 mm Bowden's 1,000 mm/s². `PA12_ASA_CAPTURE_DIR` optionally retains the
+job configurations/G-code for local diagnosis. Desktop comparisons also require
+matching filament/process profiles, palette, orientation and support settings.
+
+Database provisioning is a separate step: run
+[prepare-x2d-asa-supports.sql](../scripts/prepare-x2d-asa-supports.sql) in DataGrip
+against each intended connection. It adds missing X2D/P2S machines **inactive**,
+0.4/0.6 profiles and existing-material PA12-CF/PET-CF/ASA mappings. It repairs
+identity sequences left behind manually seeded IDs, only advancing them.
+Existing custom mappings, variants, costs, stock and classifications are preserved.
+New machine reference powers are 550 W for X2D (official steady-state PC at 25 C)
+and 200 W for P2S (official steady-state PLA), with initial fleet weight 1.000.
+These are not measured PA12-CF/ASA consumption figures; review them before production use.
+Sources: [X2D specifications](https://bambulab.cn/zh-cn/x2d/specs),
+[P2S specifications](https://bambulab.cn/zh-cn/p2s/specs), checked 2026-11-10.
+After deploying and checking the backend/Orca 2.4.2/profile bundle, run
+[enable-x2d-asa-supports.sql](../scripts/enable-x2d-asa-supports.sql). It checks
+both machines' active profiles/material maps before activating the machines.
+Disabled profiles/maps are not reactivated. Neither script seeds production prices.
+PA12-CF/PET-CF must have active catalogue variants and the appropriate Technical
+classification. No schema migration is required. Existing sessions need
+recalculation after rollout.
+
+For local Docker only, `bash scripts/seed-local-x2d-asa-supports.sh` provisions
+missing PET-CF/ASA types, a PET-CF test variant copying the existing local PA12-CF
+cost, the mappings, and an active X2D. Existing P2S values are preserved. The script
+rejects remote Docker endpoints and requires the `printcalc` database in the exact
+local `print-calculator-db` container. Start the updated local backend before using it.
+API verification on the supplied STL: automatic selection returned X2D machine 4,
+PA12-CF Draft/ASA 17,338 s and 78.58 g; PET-CF Draft/ASA 17,417 s and 94.01 g.
+Before X2D provisioning the same PA12-CF API request selected P2S machine 3 and
+returned 31,902 s and 113.50 g. Both new sessions and their totals were read back.
+
+Validation on 2026-11-10: 617 backend tests passed and two opt-in tests were
+skipped; both separate native macOS material cases passed on the supplied STL.
+The final suite used isolated caches and `--no-watch-fs` because the host's mounted
+filesystem enumeration blocked Gradle's watcher. The local installer and cached
+startup path were exercised; the metadata check passed 46/46. Both official binary
+downloads matched their pinned SHA-256 digests. The initial Linux probe did not
+start in Docker Desktop and was cleaned up. Subsequent disposable Linux E2E
+verification rebuilt the backend with 2.4.2 and passed CALC-002 through CALC-005:
+five Chromium tests in 16.5 seconds without retries, covering a real A1 quote,
+session resume, OBJ units, STEP/STP and invalid-CAD review. E2E inherits the
+Dockerfile Orca pins; an old 2.3.2 Compose override rejected `--logfile`.
+Native X2D dual-material timing was verified on macOS; the Linux E2E fixture uses
+A1/PLA. Production database/deployment were unchanged by these checks.
 
 ## Email transaction boundaries
 

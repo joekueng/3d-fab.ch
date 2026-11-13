@@ -1,5 +1,4 @@
 # Print Calculator (OrcaSlicer Edition)
-
 A full-stack application (Angular + Spring Boot) for calculating accurate 3D-printing quotes with **OrcaSlicer** running headlessly.
 
 ## Contributing and AI agents: preserve project conventions
@@ -65,6 +64,14 @@ It also prepares the pinned STEP/STP converter in `backend/venv` on first start
 Press `Ctrl+C` to stop the three local processes. The Docker containers remain
 running and can be stopped separately with `docker compose down`.
 
+On macOS, startup also prepares the pinned OrcaSlicer **2.4.2** under
+`.tools/orcaslicer/2.4.2/`, verifies the official installer SHA-256, and exports
+`SLICER_PATH` for the backend. It leaves `/Applications/OrcaSlicer.app` untouched.
+For an IDE launch, run `bash scripts/setup-orcaslicer.sh` once and use the returned
+path (the backend default assumes a working directory of `backend/`). On other
+local operating systems, set `SLICER_PATH` to a compatible 2.4.2 executable.
+Docker pins the same release and its Linux asset checksum.
+
 To remove local dependencies and build caches and reinstall them before
 starting, run `./start.sh --clean`. It deletes `frontend/node_modules`, the
 Angular caches, and `backend/build`, reinstalls the frontend packages with
@@ -76,6 +83,21 @@ The services are available at:
 - frontend: `http://localhost:4200`
 - backend: `http://localhost:8000`
 - image server: `http://localhost:8081`
+
+To complete the local filament catalogue for calculator tests, run:
+
+```bash
+bash scripts/seed-local-filaments.sh
+```
+
+This repeatable command targets only the local Docker `print-calculator-db`
+database. It adds missing ABS, CARBON PLA, Nylon, PA12-CF, PC, PETG, PLA,
+PLA TOUGH and TPU materials, a stocked black test variant where there are no
+active variants, and missing Orca mappings for active A1/P2S 0.4/0.6 mm profiles.
+It preserves existing classifications, colors, prices, stock and mappings.
+The inserted costs and stock are sample test data. Refresh the calculator after
+running it; no backend restart is needed. Material records alone do not make a
+calculator option: an active variant and a matching active Orca mapping are needed.
 
 The following sections describe the equivalent manual startup.
 
@@ -206,7 +228,10 @@ See [LICENSE](./LICENSE).
 ## Troubleshooting
 
 ### OrcaSlicer path
-Ensure that `slicer.path` points to the correct binary. On macOS it is usually `/Applications/OrcaSlicer.app/Contents/MacOS/OrcaSlicer`. On Linux it is the path to the AppImage, extracted or otherwise.
+
+Ensure that `slicer.path` points to the pinned binary. On macOS, `bash scripts/setup-orcaslicer.sh` prepares it under
+`.tools/orcaslicer/2.4.2/`; `start.sh` exports that path automatically. On other local systems, set `SLICER_PATH` to the
+extracted OrcaSlicer 2.4.2 executable. The Docker image sets its own verified `/opt/orcaslicer/AppRun` path.
 
 ### FFmpeg and public media
 Check that `MEDIA_FFMPEG_PATH` points to an `ffmpeg` build with JPEG, WebP, and AVIF support (AVIF encoder and muxer). The backend container default is `/usr/local/bin/ffmpeg-media`; use `/usr/bin/ffmpeg` if it is compatible, otherwise install a static AVIF-capable fallback. If media URLs returned by admin APIs are unreachable, verify that `APP_FRONTEND_BASE_URL` uses the correct domain, Nginx exposes `location /media/`, and the `storage_media` volume is mounted correctly.

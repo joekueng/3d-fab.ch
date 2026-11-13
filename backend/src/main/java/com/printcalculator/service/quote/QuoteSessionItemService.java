@@ -111,22 +111,24 @@ public class QuoteSessionItemService {
 
             if (cadSession) {
                 settingsService.enforceCadPrintSettings(session, settings);
-            } else {
-                settingsService.applyPrintSettings(settings);
+            }
+            FilamentVariant selectedVariant = settingsService.resolveFilamentVariant(settings);
+            if (!cadSession) {
+                settingsService.applyPrintSettings(settings, selectedVariant);
             }
 
             QuoteSessionSettingsService.NozzleLayerSettings nozzleAndLayer = settingsService.resolveNozzleAndLayer(settings);
             BigDecimal nozzleDiameter = nozzleAndLayer.nozzleDiameter();
             BigDecimal layerHeight = nozzleAndLayer.layerHeight();
-            FilamentVariant selectedVariant = settingsService.resolveFilamentVariant(settings);
             materialPrintCompatibilityService.validate(selectedVariant, nozzleDiameter, layerHeight);
             String qualityHint = settingsService.resolveQuality(settings, layerHeight);
-            List<PrinterMachine> candidateMachines = settingsService.resolvePrinterMachineCandidates(
-                    settings.getPrinterMachineId(),
-                    nozzleDiameter,
-                    layerHeight,
-                    qualityHint
-            );
+            boolean asaSupports = OrcaProfileResolver.requiresAsaSupports(
+                    selectedVariant, Boolean.TRUE.equals(settings.getSupportsEnabled()));
+            List<PrinterMachine> candidateMachines = asaSupports
+                    ? settingsService.resolveAsaSupportMachineCandidates(
+                    settings.getPrinterMachineId(), nozzleDiameter, layerHeight, qualityHint)
+                    : settingsService.resolvePrinterMachineCandidates(
+                    settings.getPrinterMachineId(), nozzleDiameter, layerHeight, qualityHint);
 
             validateCadMaterialLock(session, cadSession, selectedVariant);
 
@@ -170,6 +172,8 @@ public class QuoteSessionItemService {
             for (PrinterMachine machine : candidateMachines) {
                 try {
                     OrcaProfileResolver.ResolvedProfiles profiles = orcaProfileResolver.resolve(machine, nozzleDiameter, selectedVariant);
+                    Optional<String> supportProfile = orcaProfileResolver.resolveAsaSupportProfile(
+                            profiles, selectedVariant, Boolean.TRUE.equals(settings.getSupportsEnabled()));
                     String processProfile = resolveProcessProfile(
                             settings,
                             profiles.machineProfileName(),
@@ -178,14 +182,20 @@ public class QuoteSessionItemService {
                             qualityHint
                     );
 
-                    Optional<ModelDimensions> modelDimensions = slicerService.inspectModelDimensions(slicerInputPath.toFile());
-                    if (modelDimensions.isEmpty() && convertedPersistentPath != null) {
-                        modelDimensions = slicerService.inspectModelDimensions(convertedPersistentPath.toFile());
+                    // The converted STL contains all 3MF instances with their build transforms.
+                    // Native 3MF --info reports separate, untransformed objects instead.
+                    Path geometryPath = convertedPersistentPath != null ? convertedPersistentPath : slicerInputPath;
+                    Optional<ModelDimensions> modelDimensions = slicerService.inspectModelDimensions(geometryPath.toFile());
+                    if (modelDimensions.isEmpty() && !geometryPath.equals(slicerInputPath)) {
+                        modelDimensions = slicerService.inspectModelDimensions(slicerInputPath.toFile());
                     }
                     boolean requiresSplitPrinting = false;
                     PrintStats stats;
                     try {
-                        stats = slicerService.slice(
+                        stats = supportProfile.isPresent() ? slicerService.slice(
+                                slicerInputPath.toFile(), profiles.machineProfileName(), profiles.filamentProfileName(),
+                                processProfile, null, processOverrides, supportProfile.get(), selectedVariant.getColorHex()
+                        ) : slicerService.slice(
                                 slicerInputPath.toFile(),
                                 profiles.machineProfileName(),
                                 profiles.filamentProfileName(),
@@ -201,9 +211,14 @@ public class QuoteSessionItemService {
                             throw buildSplitCustomQuoteFailure(ex);
                         }
                         oversizedEstimateAttempted = true;
+                        // Retain 3MF plate membership when estimating only the oversized plates.
+                        Path estimateInput = "3mf".equals(ext) ? persistentPath : geometryPath;
                         try {
-                            stats = slicerService.sliceForOversizedEstimate(
-                                    slicerInputPath.toFile(),
+                            stats = supportProfile.isPresent() ? slicerService.sliceForOversizedEstimate(
+                                    estimateInput.toFile(), profiles.machineProfileName(), profiles.filamentProfileName(),
+                                    processProfile, modelDimensions, processOverrides, supportProfile.get(), selectedVariant.getColorHex()
+                            ) : slicerService.sliceForOversizedEstimate(
+                                    estimateInput.toFile(),
                                     profiles.machineProfileName(),
                                     profiles.filamentProfileName(),
                                     processProfile,
@@ -428,6 +443,13 @@ public class QuoteSessionItemService {
         breakdown.put("setup_fee", 0);
         breakdown.put("modelUnit", com.printcalculator.model.ModelUnit.parse(settings.getModelUnit()).code());
         breakdown.put("requiresSplitPrinting", requiresSplitPrinting);
+        if (!stats.plates().isEmpty()) {
+            breakdown.put("plateCount", stats.plates().size());
+            breakdown.put("plates", stats.plates().stream().map(plate -> Map.of(
+                    "plateNumber", plate.plateNumber(), "printTimeSeconds", plate.printTimeSeconds(),
+                    "materialGrams", plate.filamentWeightGrams(), "filamentLengthMm", plate.filamentLengthMm()
+            )).toList());
+        }
         if (machine != null && machine.getId() != null) {
             breakdown.put("printerMachineId", machine.getId());
         }
