@@ -3,7 +3,9 @@
   "commit": "8500fcdccaa10b5099ac20d252af3a7c560046f1",
   "source_sha256": {
     "LICENSE.txt": "57c8ff33c9c0cfc3ef00e650a1cc910d7ee479a8bc509f6c9209a7c2a11399d6",
+    "resources/profiles/BBL/filament/Bambu TPU 85A @BBL P2S 0.8 nozzle.json": "907e225af88b5a7b5d44cc2baa92dfd9491537eb991fea9d874e6dc68416b0f6",
     "resources/profiles/BBL/filament/Bambu TPU 85A @BBL P2S.json": "c8302a9ae17c3bbc98921e5a6fe3d0579b030098450064021795da4bf1db7892",
+    "resources/profiles/BBL/filament/Bambu TPU 85A @BBL X2D 0.8 nozzle.json": "931c8d33191c1afe6d83d6e698cf90887c579981483f61779422647ba76c2c85",
     "resources/profiles/BBL/filament/Bambu TPU 85A @BBL X2D.json": "68ff90a171897c8aa8ffbc2ff792a49a1f45b3c49dfa00b66df10730e76310f4",
     "resources/profiles/BBL/filament/Bambu TPU 85A @base.json": "872b008b5450aefdc45d6fc356af8e3d13475ea98f43b22971aa57ce97fc3df7",
     "resources/profiles/BBL/filament/fdm_filament_common.json": "05725cc129f96ea903dc77c40d248fa1bd0137cfc41216d09d952cfdd37d3683",
@@ -43,7 +45,9 @@
   },
   "output_sha256": {
     "UPSTREAM-LICENSE.txt": "57c8ff33c9c0cfc3ef00e650a1cc910d7ee479a8bc509f6c9209a7c2a11399d6",
+    "filament/Bambu TPU 85A @BBL P2S 0.8 nozzle.json": "bf934347c8484a7df12a90962acef02d8f276b0b04e1e0801e5c3b4de0047db5",
     "filament/Bambu TPU 85A @BBL P2S.json": "3468806c9ae403a3e51ad264d2c68dc3a4dd8e0f31ffdc1766e7131397ab99d8",
+    "filament/Bambu TPU 85A @BBL X2D 0.8 nozzle.json": "4443d4c8955508e7f84d899145e00bd8bf5529e098850db93b5bf6489ae474d9",
     "filament/Bambu TPU 85A @BBL X2D.json": "f8a55d02f8f55be9e5d5c5dd93306273f520374ad240aa7736d7ea2a4343eae0"
   }
 }

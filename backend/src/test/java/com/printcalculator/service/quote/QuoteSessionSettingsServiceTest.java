@@ -66,6 +66,10 @@ class QuoteSessionSettingsServiceTest {
             service.applyPrintSettings(settings, variant);
             assertEquals(0.6, settings.getNozzleDiameter());
             assertEquals(0.24, settings.getLayerHeight());
+            settings.setNozzleDiameter(0.8);
+            service.applyPrintSettings(settings, variant);
+            assertEquals(0.8, settings.getNozzleDiameter());
+            assertEquals(0.24, settings.getLayerHeight());
         }
     }
 

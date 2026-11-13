@@ -44,8 +44,10 @@ before running `scripts/enable-stock-material-profiles.sql`. The initial
 [PC-ABS recipe](profiles/custom/README.md) records its published inputs and
 unmeasured flow assumption; the [TPU 85A bundle](profiles/materials/README.md)
 preserves the official 2.4.2 P2S/X2D presets. The configured TPU 85A quote path
-uses P2S 0.6 mm, with 0.24 mm quick layers for every quality. Advanced requests
-with another nozzle are rejected independently of the admin Technical flag.
+uses P2S 0.6 or 0.8 mm, with 0.24 mm quick layers for every quality. Quick mode
+defaults to 0.6 mm and preserves a selected 0.8 mm nozzle. Other nozzles are
+rejected independently of the admin Technical flag. The activation script adds
+the missing P2S 0.8 profile and its 0.24 mm layer rule without re-enabling disabled rows.
 These are configuration and additive validation changes; no schema migration.
 The special-material resolver rejects unsupported printer fallbacks instead of
 substituting Generic PLA; enabled P2S mappings remain authoritative.
@@ -53,7 +55,8 @@ substituting Generic PLA; enabled P2S mappings remain authoritative.
 `MaterialPrintCompatibilityService` validates both quote-session uploads before
 slicing and existing print items during checkout. Materials marked Technical in
 the admin allow only 0.16, 0.20 or 0.24 mm layer heights and exclude 0.2 and 0.8 mm
-nozzles. PLA-CF excludes 0.2 mm independently of the Technical flag. Ordinary
+nozzles, except TPU 85A which explicitly permits 0.8 mm. PLA-CF excludes 0.2 mm independently of the Technical flag.
+Ordinary
 materials retain the global nozzle/layer policy. Match the
 [frontend presets and selectors](../frontend/README.md#material-print-settings).
 

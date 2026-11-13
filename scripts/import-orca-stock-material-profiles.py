@@ -11,6 +11,9 @@ importer = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(importer)
 importer.DESTINATION = importer.ROOT / 'backend/profiles/materials'
 importer.MACHINES = set()
-importer.FILAMENTS = {'Bambu TPU 85A @BBL P2S', 'Bambu TPU 85A @BBL X2D'}
+importer.FILAMENTS = {
+    f'Bambu TPU 85A @BBL {machine}{suffix}'
+    for machine in ('P2S', 'X2D') for suffix in ('', ' 0.8 nozzle')
+}
 if __name__ == '__main__':
     importer.main()

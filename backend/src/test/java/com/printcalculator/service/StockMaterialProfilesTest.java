@@ -39,6 +39,14 @@ class StockMaterialProfilesTest {
     }
 
     @Test
+    void pointEightTpu85aUsesItsOwnOfficialPreset() throws Exception {
+        var profile = profiles.getMergedProfile("Bambu TPU 85A @BBL P2S 0.8 nozzle", "filament");
+        assertEquals("Bambu Lab P2S 0.8 nozzle", profile.path("compatible_printers").path(0).asText());
+        assertEquals(1, profile.path("compatible_printers").size());
+        assertTrue(profile.path("filament_max_volumetric_speed").path(0).asDouble() > 0);
+    }
+
+    @Test
     @EnabledIfEnvironmentVariable(named = "STOCK_MATERIAL_NATIVE", matches = "true")
     void initialRecipesProducePositiveNativeStatistics() throws Exception {
         String executable = System.getenv("SLICER_PATH");
@@ -59,7 +67,8 @@ class StockMaterialProfilesTest {
         }
         Files.writeString(cube, stl.append("endsolid cube\n").toString());
         for (String[] recipe : new String[][]{{"Polymaker PC-ABS @BBL P2S", "0.4", "0.20"},
-                {"Bambu TPU 85A @BBL P2S", "0.6", "0.24"}}) {
+                {"Bambu TPU 85A @BBL P2S", "0.6", "0.24"},
+                {"Bambu TPU 85A @BBL P2S 0.8 nozzle", "0.8", "0.24"}}) {
             String machine = "Bambu Lab P2S " + recipe[1] + " nozzle";
             String process = profiles.findCompatibleProcessProfileName(machine, new BigDecimal(recipe[2]), "standard").orElseThrow();
             var stats = slicer.slice(cube.toFile(), machine, recipe[0], process, null,

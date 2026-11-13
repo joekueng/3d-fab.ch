@@ -33,9 +33,12 @@ public class MaterialPrintCompatibilityService {
             return;
         }
 
-        if (isTpu85a(variant) && nozzleDiameter != null && nozzleDiameter.compareTo(new BigDecimal("0.60")) != 0) {
+        boolean tpu85a = isTpu85a(variant);
+        if (tpu85a && nozzleDiameter != null
+                && nozzleDiameter.compareTo(new BigDecimal("0.60")) != 0
+                && nozzleDiameter.compareTo(new BigDecimal("0.80")) != 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "TPU 85A requires the configured 0.6 mm nozzle profile");
+                    "TPU 85A requires a configured 0.6 mm or 0.8 mm nozzle profile");
         }
 
         if ("PLA-CF".equalsIgnoreCase(materialType.getMaterialCode() != null
@@ -51,7 +54,7 @@ public class MaterialPrintCompatibilityService {
             return;
         }
 
-        if (nozzleDiameter != null && TECHNICAL_MATERIAL_BLOCKED_NOZZLES.stream()
+        if (!tpu85a && nozzleDiameter != null && TECHNICAL_MATERIAL_BLOCKED_NOZZLES.stream()
                 .anyMatch(blocked -> blocked.compareTo(nozzleDiameter) == 0)) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,

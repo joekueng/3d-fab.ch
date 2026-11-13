@@ -66,7 +66,8 @@ class OrcaProfileResolverTest {
 
     @ParameterizedTest
     @CsvSource({"PC-ABS,BambuLab P2S,0.4,Polymaker PC-ABS @BBL P2S",
-            "TPU 85A,BambuLab P2S,0.6,Bambu TPU 85A @BBL P2S"})
+            "TPU 85A,BambuLab P2S,0.6,Bambu TPU 85A @BBL P2S",
+            "TPU 85A,BambuLab P2S,0.8,Bambu TPU 85A @BBL P2S 0.8 nozzle"})
     void specialStockMaterialsNeverFallBackToGenericPla(String material, String printer, String nozzle, String expected) {
         var machine = new com.printcalculator.entity.PrinterMachine();
         machine.setPrinterDisplayName(printer);

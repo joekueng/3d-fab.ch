@@ -77,7 +77,7 @@ public class QuoteSessionSettingsService {
                 }
             }
             if (com.printcalculator.service.MaterialPrintCompatibilityService.isTpu85a(variant)) {
-                settings.setNozzleDiameter(0.60);
+                if (Math.abs(settings.getNozzleDiameter() - 0.80) > 0.0001) settings.setNozzleDiameter(0.60);
                 settings.setLayerHeight(0.24);
             }
         } else {

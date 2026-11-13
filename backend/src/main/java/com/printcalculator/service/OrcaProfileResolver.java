@@ -170,8 +170,9 @@ public class OrcaProfileResolver {
         }
         if ("TPU85A".equals(normalized)) {
             if ("Bambu Lab P2S 0.6 nozzle".equals(machineProfileName)) return "Bambu TPU 85A @BBL P2S";
+            if ("Bambu Lab P2S 0.8 nozzle".equals(machineProfileName)) return "Bambu TPU 85A @BBL P2S 0.8 nozzle";
             throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.BAD_REQUEST, "TPU 85A requires its configured P2S 0.6 mm profile");
+                    org.springframework.http.HttpStatus.BAD_REQUEST, "TPU 85A requires its configured P2S 0.6 mm or 0.8 mm profile");
         }
         if (isX2dProfile(machineProfileName) && "PA12CF".equals(normalized)) {
             return x2dFilamentProfile("PA-CF", machineProfileName);

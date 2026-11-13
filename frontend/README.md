@@ -144,7 +144,8 @@ public product URL with Google's Rich Results Test.
 
 ## Material print settings
 
-TPU 85A uses the verified 0.6 mm nozzle and 0.24 mm quick layer for every quality.
+TPU 85A permits the verified 0.6 and 0.8 mm nozzles and a 0.24 mm quick layer for
+every quality. Quick mode defaults to 0.6 mm and preserves a selected 0.8 mm nozzle.
 The shared preset helper receives the material code; use the same resolved
 preset in the form, per-file defaults and outgoing requests. Advanced and restored
 per-file settings also clamp unsupported nozzles. Deploy these controls together

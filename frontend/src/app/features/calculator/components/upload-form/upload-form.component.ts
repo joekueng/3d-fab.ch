@@ -1050,6 +1050,7 @@ export class UploadFormComponent implements OnInit {
       qualityRaw,
       this.isTechnicalMaterial(this.form.get('material')?.value),
       this.form.get('material')?.value,
+      Number(this.form.get('nozzleDiameter')?.value),
     );
 
     this.isPatchingSettings = true;
@@ -1077,6 +1078,7 @@ export class UploadFormComponent implements OnInit {
         quality,
         this.isTechnicalMaterial(material),
         material,
+        Number(this.form.get('nozzleDiameter')?.value),
       );
       return {
         material,
@@ -1114,6 +1116,7 @@ export class UploadFormComponent implements OnInit {
         quality,
         this.isTechnicalMaterial(item.material || defaults.material),
         item.material || defaults.material,
+        item.nozzleDiameter,
       );
       return {
         clientModelKey: item.clientKey,
@@ -1369,6 +1372,8 @@ export class UploadFormComponent implements OnInit {
     if (!nozzleAllowed && nozzles.length > 0) {
       const standardNozzle = nozzles.find(
         (option) => Math.abs(normalizeNumber(option.value, 0) - 0.4) < 0.0001,
+      ) || nozzles.find(
+        (option) => Math.abs(normalizeNumber(option.value, 0) - 0.6) < 0.0001,
       );
       effectiveNozzle = Number((standardNozzle || nozzles[0]).value);
       this.isPatchingSettings = true;
@@ -1393,8 +1398,10 @@ export class UploadFormComponent implements OnInit {
     nozzle: number,
     materialCode: unknown,
   ): boolean {
+    if (isTpu85aMaterial(materialCode)) {
+      return Math.abs(nozzle - 0.6) > 0.0001 && Math.abs(nozzle - 0.8) > 0.0001;
+    }
     return (
-      (isTpu85aMaterial(materialCode) && Math.abs(nozzle - 0.6) > 0.0001) ||
       (this.isTechnicalMaterial(materialCode) &&
         this.technicalMaterialBlockedNozzles.some(
           (blocked) => Math.abs(nozzle - blocked) < 0.0001,
@@ -1423,6 +1430,8 @@ export class UploadFormComponent implements OnInit {
     const fallbackNozzle =
       allowedNozzles.find(
         (option) => Math.abs(normalizeNumber(option.value, 0) - 0.4) < 0.0001,
+      ) || allowedNozzles.find(
+        (option) => Math.abs(normalizeNumber(option.value, 0) - 0.6) < 0.0001,
       ) || allowedNozzles[0];
     const nozzleDiameter = this.isBlockedNozzleForMaterial(
       item.nozzleDiameter,

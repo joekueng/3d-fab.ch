@@ -10,13 +10,14 @@ export function easyModePresetForQuality(
   qualityRaw: string,
   isTechnical = false,
   materialCode: unknown = '',
+  preferredNozzle?: number,
 ): EasyModePreset {
   const quality = normalizeQualityValue(qualityRaw);
 
   if (isTpu85aMaterial(materialCode)) {
     return {
       quality,
-      nozzleDiameter: 0.6,
+      nozzleDiameter: preferredNozzle === 0.8 ? 0.8 : 0.6,
       layerHeight: 0.24,
       infillDensity: quality === 'extra_fine' ? 20 : 15,
       infillPattern: quality === 'extra_fine' ? 'gyroid' : 'grid',
