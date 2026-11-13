@@ -54,7 +54,11 @@ export function easyModePresetForQuality(
 }
 
 export function isTpu85aMaterial(value: unknown): boolean {
-  return String(value || '').toUpperCase().replace(/[\s_-]/g, '') === 'TPU85A';
+  return (
+    String(value || '')
+      .toUpperCase()
+      .replace(/[\s_-]/g, '') === 'TPU85A'
+  );
 }
 
 export function normalizeQualityValue(value: unknown): string {

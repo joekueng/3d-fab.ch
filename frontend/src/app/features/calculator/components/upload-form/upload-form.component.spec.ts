@@ -447,11 +447,16 @@ describe('UploadFormComponent', () => {
     }
     fixture.componentRef.setInput('mode', 'advanced');
     fixture.detectChanges();
-    component.setItemPrintSettingsByIndex(0, {nozzleDiameter: 0.4});
+    component.setItemPrintSettingsByIndex(0, { nozzleDiameter: 0.4 });
     expect(component.items()[0].nozzleDiameter).toBe(0.6);
-    component.setItemPrintSettingsByIndex(0, {nozzleDiameter: 0.8, layerHeight: 0.24});
+    component.setItemPrintSettingsByIndex(0, {
+      nozzleDiameter: 0.8,
+      layerHeight: 0.24,
+    });
     expect(component.items()[0].nozzleDiameter).toBe(0.8);
-    expect(component.getCurrentRequestDraft().items[0].nozzleDiameter).toBe(0.8);
+    expect(component.getCurrentRequestDraft().items[0].nozzleDiameter).toBe(
+      0.8,
+    );
   });
 
   it('excludes the 0.2 mm nozzle for non-technical PLA-CF without restricting ordinary PLA', () => {

@@ -1370,11 +1370,13 @@ export class UploadFormComponent implements OnInit {
 
     let effectiveNozzle = currentNozzle;
     if (!nozzleAllowed && nozzles.length > 0) {
-      const standardNozzle = nozzles.find(
-        (option) => Math.abs(normalizeNumber(option.value, 0) - 0.4) < 0.0001,
-      ) || nozzles.find(
-        (option) => Math.abs(normalizeNumber(option.value, 0) - 0.6) < 0.0001,
-      );
+      const standardNozzle =
+        nozzles.find(
+          (option) => Math.abs(normalizeNumber(option.value, 0) - 0.4) < 0.0001,
+        ) ||
+        nozzles.find(
+          (option) => Math.abs(normalizeNumber(option.value, 0) - 0.6) < 0.0001,
+        );
       effectiveNozzle = Number((standardNozzle || nozzles[0]).value);
       this.isPatchingSettings = true;
       this.form
@@ -1430,9 +1432,11 @@ export class UploadFormComponent implements OnInit {
     const fallbackNozzle =
       allowedNozzles.find(
         (option) => Math.abs(normalizeNumber(option.value, 0) - 0.4) < 0.0001,
-      ) || allowedNozzles.find(
+      ) ||
+      allowedNozzles.find(
         (option) => Math.abs(normalizeNumber(option.value, 0) - 0.6) < 0.0001,
-      ) || allowedNozzles[0];
+      ) ||
+      allowedNozzles[0];
     const nozzleDiameter = this.isBlockedNozzleForMaterial(
       item.nozzleDiameter,
       item.material,
