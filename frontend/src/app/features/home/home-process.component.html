@@ -13,7 +13,14 @@
   <div class="path-picker-guide">
     <span aria-hidden="true">01</span>
     <p>{{ "HOME.JOURNEY.CHOOSE_LABEL" | translate }}</p>
-    <span aria-hidden="true">↓</span>
+    <svg
+      aria-hidden="true"
+      class="ui-direction-icon"
+      focusable="false"
+      viewBox="0 0 24 24"
+    >
+      <path d="M12 4v16m-7-7 7 7 7-7"/>
+    </svg>
   </div>
   <div
     class="path-picker"
@@ -53,10 +60,20 @@
             (startingPoint() === "file" ? "SELECTED" : "SELECT_PATH")
             | translate
         }}</span
-        ><span aria-hidden="true">{{
-          startingPoint() === "file" ? "✓" : "→"
-        }}</span></span
+      ><svg
+        aria-hidden="true"
+        class="ui-direction-icon"
+        focusable="false"
+        viewBox="0 0 24 24"
       >
+          <path
+            [attr.d]="
+              startingPoint() === 'file'
+                ? 'm5 12 4 4 10-10'
+                : 'M4 12h16m-7-7 7 7-7 7'
+            "
+          /></svg
+      ></span>
     </button>
     <button
       type="button"
@@ -91,10 +108,20 @@
             (startingPoint() === "idea" ? "SELECTED" : "SELECT_PATH")
             | translate
         }}</span
-        ><span aria-hidden="true">{{
-          startingPoint() === "idea" ? "✓" : "→"
-        }}</span></span
+      ><svg
+        aria-hidden="true"
+        class="ui-direction-icon"
+        focusable="false"
+        viewBox="0 0 24 24"
       >
+          <path
+            [attr.d]="
+              startingPoint() === 'idea'
+                ? 'm5 12 4 4 10-10'
+                : 'M4 12h16m-7-7 7 7-7 7'
+            "
+          /></svg
+      ></span>
     </button>
   </div>
 
@@ -1011,8 +1038,16 @@
                           ? "START_FILE"
                           : "START_IDEA") | translate
                     }}
-                    <span aria-hidden="true">↗</span></a
-                  >
+                    <svg
+                      aria-hidden="true"
+                      class="ui-direction-icon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M5 19 19 5M5 5h14v14"/>
+                    </svg
+                    >
+                  </a>
                 </div>
               }
             </div>

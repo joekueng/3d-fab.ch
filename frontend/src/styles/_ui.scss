@@ -1420,3 +1420,17 @@ select.ui-form-control {
 .ui-upload-privacy-note {
   margin-top: calc(var(--space-2) * -1);
 }
+
+// Decorative direction marks use geometry rather than platform font glyphs.
+.ui-direction-icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+  vertical-align: -0.125em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

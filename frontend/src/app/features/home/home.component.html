@@ -25,14 +25,30 @@
             class="ui-button"
             [routerLink]="languageService.localizedPath('/calculator/basic')"
             >{{ "HOME.JOURNEY.START_FILE" | translate }}
-            <span aria-hidden="true">↗</span></a
+            <svg
+              aria-hidden="true"
+              class="ui-direction-icon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path d="M5 19 19 5M5 5h14v14"/>
+            </svg>
+          </a
           ><a
             class="ui-button ui-button--outline"
             [attr.href]="languageService.localizedPath('/') + '#home-process'"
             (click)="scrollToProcess($event)"
             >{{ "HOME.JOURNEY.DISCOVER" | translate }}
-            <span aria-hidden="true">↓</span></a
+          <svg
+            aria-hidden="true"
+            class="ui-direction-icon"
+            focusable="false"
+            viewBox="0 0 24 24"
           >
+            <path d="M12 4v16m-7-7 7 7 7-7"/>
+          </svg
+          >
+        </a>
         </div>
         <p class="hero-calculator-note">
           <span
@@ -64,8 +80,16 @@
           <span>{{ "HOME.JOURNEY.NO_FILE_NOTE" | translate }}</span
           ><a [routerLink]="languageService.localizedPath('/contact')"
             >{{ "HOME.JOURNEY.NO_FILE_LINK" | translate }}
-            <span aria-hidden="true">↗</span></a
+          <svg
+            aria-hidden="true"
+            class="ui-direction-icon"
+            focusable="false"
+            viewBox="0 0 24 24"
           >
+            <path d="M5 19 19 5M5 5h14v14"/>
+          </svg
+          >
+        </a>
         </p>
       </div>
     </div>
@@ -150,30 +174,7 @@
                 trackBy: trackHomeProject
               "
               [attr.aria-hidden]="i === homeProjectIndex() ? null : 'true'"
-              [style.--home-project-glow-top]="homeProjectGlow(project).top"
-              [style.--home-project-glow-right]="homeProjectGlow(project).right"
-              [style.--home-project-glow-bottom]="
-                homeProjectGlow(project).bottom
-              "
-              [style.--home-project-glow-left]="homeProjectGlow(project).left"
-              [style.--home-project-glow-top-left]="
-                homeProjectGlow(project).topLeft
-              "
-              [style.--home-project-glow-top-right]="
-                homeProjectGlow(project).topRight
-              "
-              [style.--home-project-glow-bottom-right]="
-                homeProjectGlow(project).bottomRight
-              "
-              [style.--home-project-glow-bottom-left]="
-                homeProjectGlow(project).bottomLeft
-              "
             >
-              <div
-                class="home-project-ambilight"
-                aria-hidden="true"
-                [style.background-image]="homeProjectAmbilightImage(project)"
-              ></div>
               <div class="home-project-content">
                 <div class="home-project-copy">
                   @if (project.eyebrow) {
@@ -236,7 +237,6 @@
                         "
                         width="1200"
                         height="800"
-                        (load)="updateHomeProjectGlow(project, $event)"
                       />
                     </picture>
                   } @else {
@@ -308,8 +308,16 @@
         class="ui-button"
         [routerLink]="languageService.localizedPath('/calculator/basic')"
         >{{ "HOME.JOURNEY.START_FILE" | translate }}
-        <span aria-hidden="true">↗</span></a
-      >
+        <svg
+          aria-hidden="true"
+          class="ui-direction-icon"
+          focusable="false"
+          viewBox="0 0 24 24"
+        >
+          <path d="M5 19 19 5M5 5h14v14"/>
+        </svg
+        >
+      </a>
     </div>
   </section>
 
@@ -405,8 +413,17 @@
       <a
         class="ui-button ui-button--outline"
         [routerLink]="languageService.localizedPath('/shop')"
-        >{{ "HOME.BTN_SHOP" | translate }} <span aria-hidden="true">↗</span></a
-      >
+      >{{ "HOME.BTN_SHOP" | translate }}
+        <svg
+          aria-hidden="true"
+          class="ui-direction-icon"
+          focusable="false"
+          viewBox="0 0 24 24"
+        >
+          <path d="M5 19 19 5M5 5h14v14"/>
+        </svg
+        >
+      </a>
     </div>
   </section>
 </main>

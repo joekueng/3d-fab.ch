@@ -1,5 +1,5 @@
 import { PublicMediaUsageCollectionMap } from '../../core/services/public-media.service';
-import { HomeCapabilityConfig, HomeProjectGlow } from './home-page.types';
+import {HomeCapabilityConfig} from './home-page.types';
 
 export const EMPTY_MEDIA_COLLECTIONS: PublicMediaUsageCollectionMap = {};
 
@@ -40,14 +40,3 @@ export const HOME_MEDIA_REQUESTS = [
     usageKey: config.usageKey,
   })),
 ] as const;
-
-export const DEFAULT_HOME_PROJECT_GLOW: HomeProjectGlow = {
-  top: '#b8cbd0',
-  right: '#9c7d55',
-  bottom: '#757f65',
-  left: '#d8d3c6',
-  topLeft: '#d8d3c6',
-  topRight: '#b58a5c',
-  bottomRight: '#6f5f4c',
-  bottomLeft: '#8b8d78',
-};

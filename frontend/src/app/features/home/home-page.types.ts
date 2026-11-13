@@ -15,20 +15,3 @@ export interface HomeCapabilityConfig {
 export interface HomeCapabilityCard extends HomeCapabilityConfig {
   image: PublicMediaDisplayImage | null;
 }
-
-export type Rgb = {
-  r: number;
-  g: number;
-  b: number;
-};
-
-export type HomeProjectGlow = {
-  top: string;
-  right: string;
-  bottom: string;
-  left: string;
-  topLeft: string;
-  topRight: string;
-  bottomRight: string;
-  bottomLeft: string;
-};

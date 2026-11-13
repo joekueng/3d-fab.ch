@@ -133,7 +133,8 @@
 .is-selected .path-option-action {
   border-color: color-mix(in srgb, var(--color-text) 20%, transparent);
 }
-.path-option-action > span:last-child {
+
+.path-option-action > .ui-direction-icon {
   font-size: 1.15rem;
 }
 @media (max-width: 760px) {

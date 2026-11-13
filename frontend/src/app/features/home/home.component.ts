@@ -30,18 +30,12 @@ import {
   PublicMediaService,
 } from '../../core/services/public-media.service';
 import {
-  DEFAULT_HOME_PROJECT_GLOW,
   EMPTY_MEDIA_COLLECTIONS,
   HOME_CAPABILITY_CONFIGS,
   HOME_MEDIA_REQUESTS,
 } from './home-page.config';
+import {HomeCapabilityCard, HomeCapabilityConfig} from './home-page.types';
 import {
-  HomeCapabilityCard,
-  HomeCapabilityConfig,
-  HomeProjectGlow,
-} from './home-page.types';
-import {
-  extractHomeProjectGlow,
   mediaAvifUrl,
   mediaFallbackUrl,
   mediaTransparentFallbackUrl,
@@ -152,9 +146,6 @@ export class HomeComponent {
   );
 
   readonly homeProjectIndex = signal(0);
-  readonly homeProjectGlowColors = signal<ReadonlyMap<string, HomeProjectGlow>>(
-    new Map(),
-  );
   readonly homeProjectTrackTransform = computed(
     () => `translateX(-${this.homeProjectIndex() * 100}%)`,
   );
@@ -285,11 +276,6 @@ export class HomeComponent {
     return mediaWebpUrl(project.image);
   }
 
-  homeProjectAmbilightImage(project: HomeProject): string | null {
-    const imageUrl = this.homeProjectImageFallbackUrl(project);
-    return imageUrl ? `url("${this.escapeCssUrl(imageUrl)}")` : null;
-  }
-
   homeProjectDescriptionHtml(project: HomeProject): string {
     const description = String(project.description ?? '').trim();
     if (!description) {
@@ -318,34 +304,6 @@ export class HomeComponent {
 
   homeProjectDetailImageWebpUrl(project: HomeProject): string | null {
     return mediaWebpUrl(project.detailImage);
-  }
-
-  homeProjectGlow(project: HomeProject): HomeProjectGlow {
-    return (
-      this.homeProjectGlowColors().get(this.homeProjectGlowKey(project)) ??
-      DEFAULT_HOME_PROJECT_GLOW
-    );
-  }
-
-  updateHomeProjectGlow(project: HomeProject, event: Event): void {
-    if (!this.isBrowser || !(event.target instanceof HTMLImageElement)) {
-      return;
-    }
-
-    const glow = extractHomeProjectGlow(event.target);
-    if (!glow) {
-      return;
-    }
-
-    const projectKey = this.homeProjectGlowKey(project);
-    this.homeProjectGlowColors.update((colors) => {
-      if (colors.get(projectKey) === glow) {
-        return colors;
-      }
-      const nextColors = new Map(colors);
-      nextColors.set(projectKey, glow);
-      return nextColors;
-    });
   }
 
   prevFounderImage(): void {
@@ -381,10 +339,10 @@ export class HomeComponent {
   }
 
   readonly trackHomeProject = (_: number, project: HomeProject): string => {
-    return this.homeProjectGlowKey(project);
+    return this.homeProjectKey(project);
   };
 
-  private homeProjectGlowKey(project: HomeProject): string {
+  private homeProjectKey(project: HomeProject): string {
     return [
       project.id,
       project.slug,
@@ -393,19 +351,6 @@ export class HomeComponent {
     ]
       .filter(Boolean)
       .join('::');
-  }
-
-  private escapeCssUrl(url: string): string {
-    return url.replace(/["\\\n\r\f]/g, (match) => {
-      switch (match) {
-        case '"':
-          return '\\"';
-        case '\\':
-          return '\\\\';
-        default:
-          return '';
-      }
-    });
   }
 
   private containsHtmlMarkup(value: string): boolean {
