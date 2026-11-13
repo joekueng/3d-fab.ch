@@ -16,6 +16,16 @@ describe('HomeProcessComponent', () => {
   const nextFrame = () =>
     new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
+  const settleArtwork = async () => {
+    const deadline = performance.now() + 600;
+    while (component.stepFraction() !== component.scrollFraction()) {
+      if (performance.now() > deadline)
+        throw new Error('Artwork did not settle');
+      await nextFrame();
+    }
+    await fixture.whenStable();
+  };
+
   beforeEach(async () => {
     const nativeMatchMedia = window.matchMedia.bind(window);
     spyOn(window, 'matchMedia').and.callFake((query) => {
@@ -70,8 +80,18 @@ describe('HomeProcessComponent', () => {
       const rows = host.querySelectorAll<HTMLElement>('.process-step');
       return rows[rows.length - 1].getBoundingClientRect();
     });
+    host
+      .querySelectorAll<HTMLElement>('.process-step-track.is-held')
+      .forEach((track) => {
+        spyOn(track, 'getBoundingClientRect').and.callFake(() =>
+          track
+            .querySelector<HTMLElement>('.process-step')!
+            .getBoundingClientRect(),
+        );
+      });
     await nextFrame();
     await nextFrame();
+    await settleArtwork();
     await fixture.whenStable();
   });
 
@@ -140,6 +160,7 @@ describe('HomeProcessComponent', () => {
     );
     window.dispatchEvent(new Event('scroll'));
     await nextFrame();
+    await settleArtwork();
     await fixture.whenStable();
     expect(component.activeIndex()).toBe(0);
     expect(component.stepFraction()).toBe(0);
@@ -147,11 +168,13 @@ describe('HomeProcessComponent', () => {
     distance = 0;
     window.dispatchEvent(new Event('scroll'));
     await nextFrame();
+    await settleArtwork();
     await fixture.whenStable();
     expect(component.stepFraction()).toBe(0);
     distance = -170;
     window.dispatchEvent(new Event('scroll'));
     await nextFrame();
+    await settleArtwork();
     await fixture.whenStable();
     expect(component.activeIndex()).toBe(0);
     expect(component.stepFraction()).toBeCloseTo(0.5, 2);
@@ -161,11 +184,13 @@ describe('HomeProcessComponent', () => {
     distance = -402;
     window.dispatchEvent(new Event('scroll'));
     await nextFrame();
+    await settleArtwork();
     await fixture.whenStable();
     expect(component.activeIndex()).toBe(1);
     distance = 30;
     window.dispatchEvent(new Event('scroll'));
     await nextFrame();
+    await settleArtwork();
     await fixture.whenStable();
     expect(component.progress()).toBe(0);
   });
@@ -175,6 +200,7 @@ describe('HomeProcessComponent', () => {
     spyOnProperty(panel, 'offsetHeight', 'get').and.returnValue(580);
     window.dispatchEvent(new Event('resize'));
     await nextFrame();
+    await settleArtwork();
     await fixture.whenStable();
     expect(component.finalTextTop() + component.finalBoxHeight()).toBe(690);
     expect(component.endingTrackHeight()).toBeGreaterThan(
@@ -184,24 +210,66 @@ describe('HomeProcessComponent', () => {
     grid.style.display = 'block';
     window.dispatchEvent(new Event('resize'));
     await nextFrame();
+    await settleArtwork();
     await fixture.whenStable();
     expect(component.endingTrackHeight()).toBe(0);
     expect(component.storyTrackHeight()).toBe(0);
     expect(component.initialHold()).toBe(0);
   });
 
+  it('advances the quote from its track while its description is pinned', async () => {
+    const rows = host.querySelectorAll<HTMLElement>('.process-step');
+    const track = host.querySelector<HTMLElement>(
+      '.process-step-track.is-held',
+    )!;
+    const line = Math.max(110, Math.min(window.innerHeight * 0.25, 240));
+    let fraction = 0.25;
+    rows.forEach((row, index) =>
+      spyOn(row, 'getBoundingClientRect').and.returnValue(
+        new DOMRect(0, line + (index - 1) * 400, 400, 400),
+      ),
+    );
+    (track.getBoundingClientRect as jasmine.Spy).and.callFake(
+      () =>
+        new DOMRect(
+          0,
+          line - component.middleHold() * 0.85 * fraction,
+          400,
+          700,
+        ),
+    );
+    window.dispatchEvent(new Event('scroll'));
+    await nextFrame();
+    await settleArtwork();
+    expect(component.activeStep().scene).toBe('quote');
+    expect(component.scrollFraction()).toBeCloseTo(0.25, 2);
+    fraction = 0.75;
+    window.dispatchEvent(new Event('scroll'));
+    await nextFrame();
+    await settleArtwork();
+    expect(component.activeStep().scene).toBe('quote');
+    expect(component.scrollFraction()).toBeCloseTo(0.75, 2);
+    expect(rows[1].getBoundingClientRect().top).toBe(line);
+  });
+
   it('scrubs the print reveal from the reading position without capturing wheel events', async () => {
     const panel = host.querySelector<HTMLElement>('.process-visual')!;
-    const line = Math.min(window.innerHeight * 0.5, 460);
+    const line = Math.max(110, Math.min(window.innerHeight * 0.25, 240));
     const rows = host.querySelectorAll<HTMLElement>('.process-step');
     rows.forEach((row, index) =>
       spyOn(row, 'getBoundingClientRect').and.returnValue(
-        new DOMRect(0, (index - 2) * 400 + line - 170, 400, 400),
+        new DOMRect(
+          0,
+          (index - 2) * 400 + line - component.middleHold() * 0.425,
+          400,
+          400,
+        ),
       ),
     );
     const scrollEvent = new Event('scroll', { cancelable: true });
     window.dispatchEvent(scrollEvent);
     await nextFrame();
+    await settleArtwork();
     await fixture.whenStable();
     expect(component.activeStep().scene).toBe('print');
     expect(component.stepFraction()).toBeCloseTo(0.5, 2);
@@ -214,9 +282,9 @@ describe('HomeProcessComponent', () => {
 
   it('moves the existing parcel from production to the house with scroll progress', async () => {
     const panel = host.querySelector<HTMLElement>('.process-visual')!;
-    const line = Math.min(window.innerHeight * 0.5, 460);
+    const line = Math.max(110, Math.min(window.innerHeight * 0.25, 240));
     const rows = host.querySelectorAll<HTMLElement>('.process-step');
-    let offset = 34;
+    let offset = component.middleHold() * 0.085;
     rows.forEach((row, index) =>
       spyOn(row, 'getBoundingClientRect').and.callFake(
         () => new DOMRect(0, (index - 3) * 400 + line - offset, 400, 400),
@@ -224,14 +292,16 @@ describe('HomeProcessComponent', () => {
     );
     window.dispatchEvent(new Event('scroll'));
     await nextFrame();
+    await settleArtwork();
     await fixture.whenStable();
     const initial = host
       .querySelector('.shipping-parcel')
       ?.getAttribute('transform');
     expect(component.activeStep().scene).toBe('ship');
-    offset = 272;
+    offset = component.middleHold() * 0.68;
     window.dispatchEvent(new Event('scroll'));
     await nextFrame();
+    await settleArtwork();
     await fixture.whenStable();
     const final = host
       .querySelector('.shipping-parcel')
@@ -477,6 +547,7 @@ describe('HomeProcessComponent', () => {
     const event = new Event('scroll', { cancelable: true });
     window.dispatchEvent(event);
     await nextFrame();
+    await settleArtwork();
     await fixture.whenStable();
     expect(component.activeIndex()).toBe(1);
     expect(component.stepFraction()).toBeCloseTo(0.5, 2);
@@ -495,6 +566,7 @@ describe('HomeProcessComponent', () => {
     window.dispatchEvent(new Event('scroll'));
     await nextFrame();
     expect(component.activeIndex()).toBe(0);
+    await settleArtwork();
     expect(component.stepFraction()).toBe(0);
     expect(component.mobileStoryClip()).toBe(0);
   });
@@ -530,5 +602,92 @@ describe('HomeProcessComponent', () => {
       top: window.scrollY + 1000 - line + 2,
       behavior: 'auto',
     });
+  });
+  it('eases artwork for 250 ms, reverses from the displayed frame and skips distant phases', async () => {
+    const callbacks = new Map<number, FrameRequestCallback>();
+    let nextId = 0;
+    let now = 1000;
+    spyOn(performance, 'now').and.callFake(() => now);
+    spyOn(window, 'requestAnimationFrame').and.callFake((callback) => {
+      callbacks.set(++nextId, callback);
+      return nextId;
+    });
+    spyOn(window, 'cancelAnimationFrame').and.callFake((id) => {
+      callbacks.delete(id);
+    });
+    const advance = (ms: number) => {
+      now += ms;
+      const pending = [...callbacks.values()];
+      callbacks.clear();
+      pending.forEach((callback) => callback(now));
+    };
+    const panel = host.querySelector<HTMLElement>('.process-visual')!;
+    spyOn(panel, 'getBoundingClientRect').and.returnValue(
+      new DOMRect(0, 110, 600, 400),
+    );
+    const rows = host.querySelectorAll<HTMLElement>('.process-step');
+    const line = Math.max(110, Math.min(window.innerHeight * 0.25, 240));
+    let phase = 2;
+    let fraction = 0.2;
+    rows.forEach((row, index) =>
+      spyOn(row, 'getBoundingClientRect').and.callFake(
+        () =>
+          new DOMRect(
+            0,
+            (index - phase) * 400 +
+            line -
+            fraction * component.middleHold() * 0.85,
+            400,
+            400,
+          ),
+      ),
+    );
+    const measure = () => {
+      window.dispatchEvent(new Event('scroll'));
+      advance(0);
+    };
+    measure();
+    expect(component.activeIndex()).toBe(2);
+    expect(component.stepFraction()).toBeCloseTo(0.2, 3);
+    fraction = 0.8;
+    measure();
+    expect(component.scrollFraction()).toBeCloseTo(0.8, 3);
+    expect(component.stepFraction()).toBeCloseTo(0.2, 3);
+    expect(component.progress()).toBeCloseTo(2.8 / 5, 3);
+    advance(125);
+    const midway = component.stepFraction();
+    expect(midway).toBeGreaterThan(0.2);
+    expect(midway).toBeLessThan(0.8);
+    fraction = 0.1;
+    measure();
+    expect(component.stepFraction()).toBeCloseTo(midway, 3);
+    advance(125);
+    expect(component.stepFraction()).toBeLessThan(midway);
+    expect(component.stepFraction()).toBeGreaterThan(0.1);
+    advance(125);
+    expect(component.stepFraction()).toBeCloseTo(0.1, 3);
+    expect(callbacks.size).toBe(0);
+    phase = 0;
+    fraction = 0.5;
+    // The first pinned phase reads from the grid rather than the row.
+    const grid = host.querySelector<HTMLElement>('.process-grid')!;
+    spyOn(grid, 'getBoundingClientRect').and.returnValue(
+      new DOMRect(0, 110 - 170, 800, 2400),
+    );
+    measure();
+    expect(component.activeIndex()).toBe(0);
+    expect(component.stepFraction()).toBeCloseTo(component.scrollFraction(), 3);
+    component.reducedMotion.set(true);
+    fraction = 0.9;
+    phase = 1;
+    measure();
+    expect(component.stepFraction()).toBe(component.scrollFraction());
+    expect(component.fraction()).toBe(1);
+    component.reducedMotion.set(false);
+    fraction = 0.3;
+    measure();
+    expect(callbacks.size).toBeGreaterThan(0);
+    fixture.destroy();
+    expect(callbacks.size).toBe(0);
   });
 });

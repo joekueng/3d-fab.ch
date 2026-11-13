@@ -57,12 +57,18 @@ export class HomeProcessComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private frame: number | null = null;
+  readonly scrollFraction = signal(0);
+  readonly holdLine = signal(0);
+  readonly middleHold = signal(0);
   private observer: ResizeObserver | null = null;
   private window: Window | null = null;
 
   readonly startingPoint = signal<StartingPoint>('file');
   readonly activeIndex = signal(0);
   readonly stepFraction = signal(0);
+  readonly progress = computed(
+    () => (this.activeIndex() + this.scrollFraction()) / this.steps().length,
+  );
   readonly reducedMotion = signal(false);
   readonly mobileLayout = signal(false);
   readonly mobileStoryClip = signal(0);
@@ -72,6 +78,8 @@ export class HomeProcessComponent {
   readonly finalTextTop = signal(0);
   readonly finalBoxHeight = signal(0);
   readonly initialHold = signal(0);
+  private motionFrame: number | null = null;
+  private motionIndex = 0;
   readonly firstTextOffset = signal(0);
   readonly steps = computed(() =>
     this.startingPoint() === 'file' ? FILE_STEPS : IDEA_STEPS,
@@ -217,9 +225,7 @@ export class HomeProcessComponent {
       'Z'
     );
   });
-  readonly progress = computed(
-    () => (this.activeIndex() + this.stepFraction()) / this.steps().length,
-  );
+  private motionTarget = 0;
 
   constructor() {
     afterNextRender(() => {
@@ -229,7 +235,10 @@ export class HomeProcessComponent {
       this.window = view;
       const motion = view.matchMedia('(prefers-reduced-motion: reduce)');
       const layout = view.matchMedia('(max-width: 960px)');
-      const updateMotion = () => this.reducedMotion.set(motion.matches);
+      const updateMotion = () => {
+        this.reducedMotion.set(motion.matches);
+        this.queueMeasurement();
+      };
       const updateLayout = () => {
         this.mobileLayout.set(layout.matches);
         this.queueMeasurement();
@@ -265,6 +274,8 @@ export class HomeProcessComponent {
         layout.removeEventListener('change', updateLayout);
         this.observer?.disconnect();
         if (this.frame !== null) view.cancelAnimationFrame(this.frame);
+        if (this.motionFrame !== null)
+          view.cancelAnimationFrame(this.motionFrame);
         this.window = null;
       });
     });
@@ -272,6 +283,12 @@ export class HomeProcessComponent {
 
   selectStartingPoint(value: StartingPoint): void {
     if (value === this.startingPoint()) return;
+    if (this.motionFrame !== null)
+      this.window?.cancelAnimationFrame(this.motionFrame);
+    this.motionFrame = null;
+    this.motionIndex = 0;
+    this.motionTarget = 0;
+    this.scrollFraction.set(0);
     this.startingPoint.set(value);
     this.activeIndex.set(0);
     this.stepFraction.set(0);
@@ -316,10 +333,11 @@ export class HomeProcessComponent {
     const ending = this.host.nativeElement.querySelector<HTMLElement>(
       '.process-step-track.is-ending',
     );
+    const heldTrack = step.closest<HTMLElement>('.process-step-track.is-held');
     const target =
       index === this.steps().length - 1 && this.initialHold() > 0 && ending
         ? ending
-        : step;
+        : (heldTrack ?? step);
     const targetTop = firstPinnedStep
       ? grid.getBoundingClientRect().top
       : target.getBoundingClientRect().top +
@@ -400,6 +418,9 @@ export class HomeProcessComponent {
         : 0;
       // CSS owns the text holds so browser scrolling never waits for Angular.
       const initialHold = sideBySide ? Math.max(0, line - pinnedTop) : 0;
+      const middleHold = sideBySide
+        ? Math.min(300, Math.max(180, view.innerHeight * 0.3))
+        : 0;
       const firstTextOffset =
         sideBySide && grid && story
           ? Math.max(
@@ -442,6 +463,8 @@ export class HomeProcessComponent {
             initialHold
           : 0;
       const layoutChanged =
+        line !== this.holdLine() ||
+        middleHold !== this.middleHold() ||
         initialHold !== this.initialHold() ||
         pinnedTop !== this.pinnedTop() ||
         finalTextTop !== this.finalTextTop() ||
@@ -453,15 +476,23 @@ export class HomeProcessComponent {
       rows.forEach((row, i) => {
         const rect = row.getBoundingClientRect();
         const firstPinnedRow = i === 0 && sideBySide;
+        const heldTrack = sideBySide
+          ? row.closest<HTMLElement>('.process-step-track.is-held')
+          : null;
         const startLine = firstPinnedRow ? pinnedTop : line;
         const rowTop =
           firstPinnedRow && grid
             ? grid.getBoundingClientRect().top
             : sideBySide && i === rows.length - 1 && ending
               ? ending.getBoundingClientRect().top
-              : rect.top;
-        const duration =
-          sideBySide && i === rows.length - 1 ? normalStepHeight : rect.height;
+              : heldTrack
+                ? heldTrack.getBoundingClientRect().top
+                : rect.top;
+        const duration = heldTrack
+          ? middleHold
+          : sideBySide && i === rows.length - 1
+            ? normalStepHeight
+            : rect.height;
         if (rowTop <= startLine) {
           index = i;
           fraction = Math.min(
@@ -473,7 +504,7 @@ export class HomeProcessComponent {
       const rounded = Math.round(fraction * 1000) / 1000;
       if (
         index !== this.activeIndex() ||
-        rounded !== this.stepFraction() ||
+        rounded !== this.scrollFraction() ||
         storyClip !== this.mobileStoryClip() ||
         layoutChanged ||
         firstTextOffset !== this.firstTextOffset()
@@ -486,14 +517,71 @@ export class HomeProcessComponent {
           this.endingTrackHeight.set(endingTrackHeight);
           this.storyTrackHeight.set(storyTrackHeight);
           this.initialHold.set(initialHold);
+          this.holdLine.set(line);
+          this.middleHold.set(middleHold);
           this.firstTextOffset.set(firstTextOffset);
           this.activeIndex.set(index);
-          this.stepFraction.set(rounded);
+          this.scrollFraction.set(rounded);
         });
         if (layoutChanged) this.queueMeasurement();
       }
+      const panelRect = panel?.getBoundingClientRect();
+      this.followScroll(
+        index,
+        rounded,
+        !panelRect ||
+        panelRect.bottom <= 0 ||
+        panelRect.top >= view.innerHeight,
+      );
     });
   };
+
+  // Only the artwork eases; reading position, navigation and layout stay native.
+  // Retarget from the displayed frame so reversing direction never queues work.
+  private followScroll(
+    index: number,
+    target: number,
+    offscreen: boolean,
+  ): void {
+    const view = this.window;
+    if (!view) return;
+    const previousIndex = this.motionIndex;
+    const changedStep = index !== previousIndex;
+    const snap =
+      this.reducedMotion() || offscreen || Math.abs(index - previousIndex) > 1;
+    if (!snap && !changedStep && target === this.motionTarget) return;
+    if (this.motionFrame !== null) view.cancelAnimationFrame(this.motionFrame);
+    this.motionFrame = null;
+    this.motionIndex = index;
+    this.motionTarget = target;
+    if (snap) {
+      this.zone.run(() => this.stepFraction.set(target));
+      return;
+    }
+    if (changedStep) {
+      this.zone.run(() => this.stepFraction.set(index > previousIndex ? 0 : 1));
+    }
+    const from = this.stepFraction();
+    if (Math.abs(target - from) < 0.001) {
+      this.zone.run(() => this.stepFraction.set(target));
+      return;
+    }
+    const started = view.performance.now();
+    const tick = (now: number): void => {
+      this.motionFrame = null;
+      const elapsed = Math.min(1, Math.max(0, (now - started) / 250));
+      const eased = 1 - Math.pow(1 - elapsed, 3);
+      this.zone.run(() =>
+        this.stepFraction.set(
+          elapsed === 1 ? target : from + (target - from) * eased,
+        ),
+      );
+      if (elapsed < 1) this.motionFrame = view.requestAnimationFrame(tick);
+    };
+    this.zone.runOutsideAngular(() => {
+      this.motionFrame = view.requestAnimationFrame(tick);
+    });
+  }
 
   private readingLine(view: Window): number {
     const panel =
@@ -513,7 +601,7 @@ export class HomeProcessComponent {
             Number.parseFloat(view.getComputedStyle(story).paddingTop) || 0;
           return top + panel.offsetHeight + storyPadding;
         }
-        return Math.min(view.innerHeight * 0.5, 460);
+        return Math.max(top, Math.min(view.innerHeight * 0.25, 240));
       }
     }
     return Math.min(view.innerHeight * 0.5, 460);

@@ -423,6 +423,31 @@
     position: sticky;
     top: var(--process-pin-top, 110px);
   }
+  // Each intermediate copy stays alongside the diagram for a short scroll hold.
+  .process-step-track.is-held {
+    display: block;
+    position: relative;
+  }
+  .process-step-track.is-held::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 1px;
+    background: var(--color-border);
+    pointer-events: none;
+  }
+  .process-step-track.is-held::after {
+    content: "";
+    display: block;
+    height: var(--process-middle-hold, 0px);
+  }
+  .is-held > .process-step-content {
+    display: block;
+    position: sticky;
+    top: var(--process-reading-line, 460px);
+    z-index: 1;
+    background: var(--color-bg);
+  }
   .process-step-track.is-ending {
     display: block;
     position: relative;

@@ -132,6 +132,8 @@
     [attr.tabindex]="mobileLayout() ? 0 : null"
     [class.is-mobile-layout]="mobileLayout()"
     [style.--process-story-clip.px]="mobileStoryClip()"
+    [style.--process-middle-hold.px]="middleHold()"
+    [style.--process-reading-line.px]="holdLine()"
     aria-labelledby="process-title"
     [style.--process-first-hold.px]="initialHold()"
     [style.--process-pin-top.px]="pinnedTop()"
@@ -985,6 +987,7 @@
           <div
             class="process-step-track"
             [class.is-ending]="i === steps().length - 1"
+            [class.is-held]="i > 0 && i < steps().length - 1"
           >
             <div class="process-step-content">
               <article
@@ -1045,8 +1048,7 @@
                       viewBox="0 0 24 24"
                     >
                       <path d="M5 19 19 5M5 5h14v14"/>
-                    </svg
-                    >
+                    </svg>
                   </a>
                 </div>
               }
