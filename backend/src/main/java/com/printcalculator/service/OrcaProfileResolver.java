@@ -163,6 +163,16 @@ public class OrcaProfileResolver {
                 : "PLA";
 
         String normalized = materialCode.replaceAll("[\\s_-]", "");
+        if ("PCABS".equals(normalized)) {
+            if (machineProfileName.startsWith("Bambu Lab P2S ")) return "Polymaker PC-ABS @BBL P2S";
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST, "PC-ABS requires its configured P2S profile");
+        }
+        if ("TPU85A".equals(normalized)) {
+            if ("Bambu Lab P2S 0.6 nozzle".equals(machineProfileName)) return "Bambu TPU 85A @BBL P2S";
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST, "TPU 85A requires its configured P2S 0.6 mm profile");
+        }
         if (isX2dProfile(machineProfileName) && "PA12CF".equals(normalized)) {
             return x2dFilamentProfile("PA-CF", machineProfileName);
         }

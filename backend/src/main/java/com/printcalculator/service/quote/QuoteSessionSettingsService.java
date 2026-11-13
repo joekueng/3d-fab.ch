@@ -76,6 +76,10 @@ public class QuoteSessionSettingsService {
                     settings.setInfillPattern("grid");
                 }
             }
+            if (com.printcalculator.service.MaterialPrintCompatibilityService.isTpu85a(variant)) {
+                settings.setNozzleDiameter(0.60);
+                settings.setLayerHeight(0.24);
+            }
         } else {
             if (settings.getInfillDensity() == null) {
                 settings.setInfillDensity(20.0);

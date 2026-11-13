@@ -47,6 +47,7 @@ import {
 } from './upload-form.types';
 import {
   easyModePresetForQuality,
+  isTpu85aMaterial,
   normalizeFileName,
   normalizeNumber,
   normalizeQualityValue,
@@ -1048,6 +1049,7 @@ export class UploadFormComponent implements OnInit {
     const preset = easyModePresetForQuality(
       qualityRaw,
       this.isTechnicalMaterial(this.form.get('material')?.value),
+      this.form.get('material')?.value,
     );
 
     this.isPatchingSettings = true;
@@ -1074,6 +1076,7 @@ export class UploadFormComponent implements OnInit {
       const preset = easyModePresetForQuality(
         quality,
         this.isTechnicalMaterial(material),
+        material,
       );
       return {
         material,
@@ -1110,6 +1113,7 @@ export class UploadFormComponent implements OnInit {
       const preset = easyModePresetForQuality(
         quality,
         this.isTechnicalMaterial(item.material || defaults.material),
+        item.material || defaults.material,
       );
       return {
         clientModelKey: item.clientKey,
@@ -1390,6 +1394,7 @@ export class UploadFormComponent implements OnInit {
     materialCode: unknown,
   ): boolean {
     return (
+      (isTpu85aMaterial(materialCode) && Math.abs(nozzle - 0.6) > 0.0001) ||
       (this.isTechnicalMaterial(materialCode) &&
         this.technicalMaterialBlockedNozzles.some(
           (blocked) => Math.abs(nozzle - blocked) < 0.0001,
@@ -1402,6 +1407,7 @@ export class UploadFormComponent implements OnInit {
   private clampItemPrintSettings(item: FormItem): FormItem {
     if (
       !this.isTechnicalMaterial(item.material) &&
+      !isTpu85aMaterial(item.material) &&
       normalizeText(item.material) !== 'pla-cf'
     ) {
       return item;

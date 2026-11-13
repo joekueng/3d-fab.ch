@@ -55,6 +55,21 @@ class QuoteSessionSettingsServiceTest {
     }
 
     @Test
+    void basicTpu85aUsesTheVerifiedPointSixPresetForEveryQuality() {
+        var variant = variant(true);
+        variant.getFilamentMaterialType().setMaterialCode("TPU 85A");
+        for (String quality : new String[]{"draft", "standard", "extra_fine"}) {
+            var settings = new PrintSettingsDto();
+            settings.setComplexityMode("BASIC");
+            settings.setQuality(quality);
+            settings.setNozzleDiameter(0.4);
+            service.applyPrintSettings(settings, variant);
+            assertEquals(0.6, settings.getNozzleDiameter());
+            assertEquals(0.24, settings.getLayerHeight());
+        }
+    }
+
+    @Test
     void advancedSettingsStillRejectAnIncompatibleTechnicalLayer() {
         FilamentVariant variant = variant(true);
         PrintSettingsDto settings = new PrintSettingsDto();

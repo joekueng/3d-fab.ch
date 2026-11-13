@@ -21,10 +21,21 @@ public class MaterialPrintCompatibilityService {
             new BigDecimal("0.240")
     );
 
+    public static boolean isTpu85a(FilamentVariant variant) {
+        String code = variant != null && variant.getFilamentMaterialType() != null
+                ? variant.getFilamentMaterialType().getMaterialCode() : null;
+        return code != null && "TPU85A".equals(code.toUpperCase(java.util.Locale.ROOT).replaceAll("[\\s_-]", ""));
+    }
+
     public void validate(FilamentVariant variant, BigDecimal nozzleDiameter, BigDecimal layerHeight) {
         FilamentMaterialType materialType = variant != null ? variant.getFilamentMaterialType() : null;
         if (materialType == null) {
             return;
+        }
+
+        if (isTpu85a(variant) && nozzleDiameter != null && nozzleDiameter.compareTo(new BigDecimal("0.60")) != 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "TPU 85A requires the configured 0.6 mm nozzle profile");
         }
 
         if ("PLA-CF".equalsIgnoreCase(materialType.getMaterialCode() != null

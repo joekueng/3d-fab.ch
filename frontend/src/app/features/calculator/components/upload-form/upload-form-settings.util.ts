@@ -1,6 +1,7 @@
 import { FormItem } from './upload-form.types';
 export {
   easyModePresetForQuality,
+  isTpu85aMaterial,
   normalizeQualityValue,
 } from '../../utils/print-settings-presets';
 

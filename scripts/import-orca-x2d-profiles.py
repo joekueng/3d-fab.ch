@@ -96,7 +96,7 @@ def main():
         "release": "2.4.2", "commit": COMMIT,
         "source_sha256": dict(sorted(sources.items())), "output_sha256": dict(sorted(outputs.items())),
     }, indent=2) + "\n")
-    print(f"Imported {len(outputs)} flattened X2D profiles from {COMMIT}")
+    print(f"Imported {len(outputs)} flattened profile files from {COMMIT} into {DESTINATION}")
 
 
 if __name__ == "__main__":

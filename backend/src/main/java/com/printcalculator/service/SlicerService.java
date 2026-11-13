@@ -56,14 +56,14 @@ public class SlicerService {
 
     public PrintStats slice(File inputStl, String machineName, String filamentName, String processName,
                             Map<String, String> machineOverrides, Map<String, String> processOverrides) throws IOException {
-        return sliceInternal(inputStl, machineName, filamentName, processName, machineOverrides, processOverrides,
+        return sliceWithPlates(inputStl, machineName, filamentName, processName, machineOverrides, processOverrides,
                 Optional.empty(), null, null);
     }
 
     public PrintStats slice(File inputStl, String machineName, String filamentName, String processName,
                             Map<String, String> machineOverrides, Map<String, String> processOverrides,
                             String supportFilamentName, String modelFilamentColor) throws IOException {
-        return sliceInternal(inputStl, machineName, filamentName, processName, machineOverrides, processOverrides,
+        return sliceWithPlates(inputStl, machineName, filamentName, processName, machineOverrides, processOverrides,
                 Optional.empty(), supportFilamentName, modelFilamentColor);
     }
 
@@ -83,8 +83,62 @@ public class SlicerService {
                                                 Map<String, String> processOverrides, String supportFilamentName,
                                                 String modelFilamentColor)
             throws IOException {
-        return sliceInternal(inputStl, machineName, filamentName, processName, null, processOverrides,
+        return sliceWithPlates(inputStl, machineName, filamentName, processName, null, processOverrides,
                 modelDimensions != null ? modelDimensions : Optional.empty(), supportFilamentName, modelFilamentColor);
+    }
+
+    private PrintStats sliceWithPlates(File input, String machine, String filament, String process,
+                                       Map<String, String> machineOverrides, Map<String, String> processOverrides,
+                                       Optional<ModelDimensions> estimateDimensions, String supportFilament,
+                                       String color) throws IOException {
+        if (!input.getName().toLowerCase(java.util.Locale.ROOT).endsWith(".3mf")) {
+            return sliceInternal(input, machine, filament, process, machineOverrides, processOverrides,
+                    estimateDimensions, supportFilament, color);
+        }
+        Path directory = Files.createTempDirectory("slicer_plates_");
+        try {
+            var plates = modelConversionSupport.convert3mfPlates(input, directory);
+            if (plates.isEmpty()) {
+                // Keep the established original-project/fallback flow for projects without plate metadata.
+                File geometry = input;
+                if (estimateDimensions.isPresent()) {
+                    geometry = modelConversionSupport.convert3mfToPersistentStl(input, directory.resolve("estimate.stl")).toFile();
+                }
+                return sliceInternal(geometry, machine, filament, process, machineOverrides, processOverrides,
+                        estimateDimensions, supportFilament, color);
+            }
+            List<PrintStats.PlateStats> results = new ArrayList<>();
+            long seconds = 0;
+            double grams = 0;
+            double length = 0;
+            for (var plate : plates) {
+                PrintStats stats;
+                try {
+                    stats = sliceInternal(plate.path().toFile(), machine, filament, process, machineOverrides,
+                            processOverrides, Optional.empty(), supportFilament, color);
+                } catch (ModelProcessingException failure) {
+                    if (estimateDimensions.isEmpty() || !"MODEL_OUT_OF_PRINT_VOLUME".equals(failure.getCode()))
+                        throw failure;
+                    // Consent applies only to plates that really exceed the physical volume.
+                    var dimensions = inspectModelDimensions(plate.path().toFile());
+                    if (dimensions.isEmpty()) throw failure;
+                    stats = sliceInternal(plate.path().toFile(), machine, filament, process, machineOverrides,
+                            processOverrides, dimensions, supportFilament, color);
+                }
+                seconds = Math.addExact(seconds, stats.printTimeSeconds());
+                grams += stats.filamentWeightGrams();
+                length += stats.filamentLengthMm();
+                results.add(new PrintStats.PlateStats(plate.number(), stats.printTimeSeconds(),
+                        stats.filamentWeightGrams(), stats.filamentLengthMm()));
+            }
+            if (seconds > Integer.MAX_VALUE || !Double.isFinite(grams) || !Double.isFinite(length)) {
+                throw new ModelProcessingException("SLICER_STATS_UNAVAILABLE", "Invalid combined plate statistics.");
+            }
+            return new PrintStats(seconds, (seconds / 3600) + "h " + ((seconds % 3600) / 60) + "m "
+                    + (seconds % 60) + "s", grams, length, results);
+        } finally {
+            SlicerFileSupport.deleteRecursively(directory, logger);
+        }
     }
 
     private PrintStats sliceInternal(File inputStl,
@@ -234,10 +288,13 @@ public class SlicerService {
                             continue;
                         }
 
+                        // A 3MF --info response describes individual objects without build transforms.
+                        // Classify the geometry that actually failed, including its converted layout.
+                        File attemptedModel = new File(inputVariant.inputPaths().getFirst());
                         boolean oversized = isOutOfVolumeError(output)
-                                && isLargerThanPrintableVolume(inputStl, machineProfile);
+                                && isLargerThanPrintableVolume(attemptedModel, machineProfile);
                         lastFailure = oversized
-                                ? buildOutOfVolumeFailure(inputStl, machineName, machineProfile)
+                                ? buildOutOfVolumeFailure(attemptedModel, machineName, machineProfile)
                                 : new ModelProcessingException(
                                 "SLICER_EXECUTION_FAILED",
                                 "Unable to process this model. Try another format or contact us directly via Request Consultation."

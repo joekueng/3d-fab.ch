@@ -431,6 +431,24 @@ describe('UploadFormComponent', () => {
     expect(component.getCurrentRequestDraft().items[0].layerHeight).toBe(0.16);
   });
 
+  it('keeps TPU 85A on the verified nozzle in quick presets and per-file settings', () => {
+    component.setFiles([new File(['model'], 'flexible.3mf')]);
+    component.form.get('material')!.setValue('TPU 85A');
+    expect(component.nozzleDiameters().map((option) => option.value)).toEqual([0.6]);
+    for (const quality of ['draft', 'standard', 'extra_fine']) {
+      component.form.get('quality')!.setValue(quality);
+      const request = component.getCurrentRequestDraft();
+      expect(request.nozzleDiameter).toBe(0.6);
+      expect(request.layerHeight).toBe(0.24);
+      expect(request.items[0].nozzleDiameter).toBe(0.6);
+      expect(request.items[0].layerHeight).toBe(0.24);
+    }
+    fixture.componentRef.setInput('mode', 'advanced');
+    fixture.detectChanges();
+    component.setItemPrintSettingsByIndex(0, {nozzleDiameter: 0.4});
+    expect(component.items()[0].nozzleDiameter).toBe(0.6);
+  });
+
   it('excludes the 0.2 mm nozzle for non-technical PLA-CF without restricting ordinary PLA', () => {
     fixture.componentRef.setInput('mode', 'advanced');
     fixture.detectChanges();

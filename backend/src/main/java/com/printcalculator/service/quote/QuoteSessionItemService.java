@@ -182,9 +182,12 @@ public class QuoteSessionItemService {
                             qualityHint
                     );
 
-                    Optional<ModelDimensions> modelDimensions = slicerService.inspectModelDimensions(slicerInputPath.toFile());
-                    if (modelDimensions.isEmpty() && convertedPersistentPath != null) {
-                        modelDimensions = slicerService.inspectModelDimensions(convertedPersistentPath.toFile());
+                    // The converted STL contains all 3MF instances with their build transforms.
+                    // Native 3MF --info reports separate, untransformed objects instead.
+                    Path geometryPath = convertedPersistentPath != null ? convertedPersistentPath : slicerInputPath;
+                    Optional<ModelDimensions> modelDimensions = slicerService.inspectModelDimensions(geometryPath.toFile());
+                    if (modelDimensions.isEmpty() && !geometryPath.equals(slicerInputPath)) {
+                        modelDimensions = slicerService.inspectModelDimensions(slicerInputPath.toFile());
                     }
                     boolean requiresSplitPrinting = false;
                     PrintStats stats;
@@ -208,12 +211,14 @@ public class QuoteSessionItemService {
                             throw buildSplitCustomQuoteFailure(ex);
                         }
                         oversizedEstimateAttempted = true;
+                        // Retain 3MF plate membership when estimating only the oversized plates.
+                        Path estimateInput = "3mf".equals(ext) ? persistentPath : geometryPath;
                         try {
                             stats = supportProfile.isPresent() ? slicerService.sliceForOversizedEstimate(
-                                    slicerInputPath.toFile(), profiles.machineProfileName(), profiles.filamentProfileName(),
+                                    estimateInput.toFile(), profiles.machineProfileName(), profiles.filamentProfileName(),
                                     processProfile, modelDimensions, processOverrides, supportProfile.get(), selectedVariant.getColorHex()
                             ) : slicerService.sliceForOversizedEstimate(
-                                    slicerInputPath.toFile(),
+                                    estimateInput.toFile(),
                                     profiles.machineProfileName(),
                                     profiles.filamentProfileName(),
                                     processProfile,
@@ -438,6 +443,13 @@ public class QuoteSessionItemService {
         breakdown.put("setup_fee", 0);
         breakdown.put("modelUnit", com.printcalculator.model.ModelUnit.parse(settings.getModelUnit()).code());
         breakdown.put("requiresSplitPrinting", requiresSplitPrinting);
+        if (!stats.plates().isEmpty()) {
+            breakdown.put("plateCount", stats.plates().size());
+            breakdown.put("plates", stats.plates().stream().map(plate -> Map.of(
+                    "plateNumber", plate.plateNumber(), "printTimeSeconds", plate.printTimeSeconds(),
+                    "materialGrams", plate.filamentWeightGrams(), "filamentLengthMm", plate.filamentLengthMm()
+            )).toList());
+        }
         if (machine != null && machine.getId() != null) {
             breakdown.put("printerMachineId", machine.getId());
         }

@@ -144,6 +144,12 @@ public product URL with Google's Rich Results Test.
 
 ## Material print settings
 
+TPU 85A uses the verified 0.6 mm nozzle and 0.24 mm quick layer for every quality.
+The shared preset helper receives the material code; use the same resolved
+preset in the form, per-file defaults and outgoing requests. Advanced and restored
+per-file settings also clamp unsupported nozzles. Deploy these controls together
+with the backend validation before enabling the TPU 85A database mapping.
+
 Technical materials use exactly 0.16, 0.20 and 0.24 mm layers. Quick-mode quality
 presets in `utils/print-settings-presets.ts` (`easyModePresetForQuality`) map High Definition to 0.16, Standard to 0.20
 and Draft to 0.24 mm; ordinary materials retain 0.12/0.20/0.28 mm. Apply the
