@@ -1,6 +1,6 @@
 import { TranslatePipe } from '@ngx-translate/core';
 import { CalculatorOptionsService } from '../../calculator/services/calculator-options.service';
-import {compareColorHex} from '../../../core/constants/colors.const';
+import { compareColorHex } from '../../../core/constants/colors.const';
 import type { PricingExample } from '../../../core/services/public-media.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {

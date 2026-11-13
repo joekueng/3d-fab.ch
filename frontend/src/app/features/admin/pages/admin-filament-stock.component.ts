@@ -509,7 +509,10 @@ export class AdminFilamentStockComponent implements OnInit {
         return byMaterial;
       }
       return (
-        compareColorHex(this.getVariantColorHex(a), this.getVariantColorHex(b)) ||
+        compareColorHex(
+          this.getVariantColorHex(a),
+          this.getVariantColorHex(b),
+        ) ||
         (a.variantDisplayName || '').localeCompare(b.variantDisplayName || '')
       );
     });

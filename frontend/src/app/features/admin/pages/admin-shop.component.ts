@@ -1,5 +1,5 @@
 import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common';
-import {compareColorHex} from '../../../core/constants/colors.const';
+import { compareColorHex } from '../../../core/constants/colors.const';
 import {
   ChangeDetectorRef,
   Component,
