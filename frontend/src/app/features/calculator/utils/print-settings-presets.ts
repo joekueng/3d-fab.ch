@@ -9,8 +9,20 @@ export interface EasyModePreset {
 export function easyModePresetForQuality(
   qualityRaw: string,
   isTechnical = false,
+  materialCode: unknown = '',
+  preferredNozzle?: number,
 ): EasyModePreset {
   const quality = normalizeQualityValue(qualityRaw);
+
+  if (isTpu85aMaterial(materialCode)) {
+    return {
+      quality,
+      nozzleDiameter: preferredNozzle === 0.8 ? 0.8 : 0.6,
+      layerHeight: 0.24,
+      infillDensity: quality === 'extra_fine' ? 20 : 15,
+      infillPattern: quality === 'extra_fine' ? 'gyroid' : 'grid',
+    };
+  }
 
   if (quality === 'draft') {
     return {
@@ -39,6 +51,14 @@ export function easyModePresetForQuality(
     infillDensity: 15,
     infillPattern: 'grid',
   };
+}
+
+export function isTpu85aMaterial(value: unknown): boolean {
+  return (
+    String(value || '')
+      .toUpperCase()
+      .replace(/[\s_-]/g, '') === 'TPU85A'
+  );
 }
 
 export function normalizeQualityValue(value: unknown): string {

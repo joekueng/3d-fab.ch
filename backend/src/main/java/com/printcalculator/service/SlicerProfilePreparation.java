@@ -53,6 +53,7 @@ final class SlicerProfilePreparation {
             throw new IOException("The X2D profile must contain both physical nozzles");
         }
         if (dualNozzle) {
+            prepareX2dAccelerations(machineProfile, processProfile);
             double minX = restrictToDualNozzleVolume(machineProfile);
             // Orca's raw-mesh tower anchor defaults to x=15 in absolute bed coordinates.
             // The auxiliary nozzle starts at x=20.5, so offset the anchor into the shared area.
@@ -75,6 +76,61 @@ final class SlicerProfilePreparation {
         processProfile.putArray("filament_colour")
                 .add(resolveFilamentColor(filamentProfile, modelFilamentColor))
                 .add(resolveFilamentColor(supportFilamentProfile, null));
+    }
+
+    private static void prepareX2dAccelerations(ObjectNode machine, ObjectNode process) throws IOException {
+        JsonNode acceleration = process.path("default_acceleration");
+        if (!acceleration.isArray()) return;
+        int modelVariant = selectedProcessVariant(machine, process, 1);
+        int supportVariant = selectedProcessVariant(machine, process, 2);
+        double modelAcceleration = positiveAcceleration(acceleration.path(modelVariant).asText(), "model");
+        double supportAcceleration = positiveAcceleration(acceleration.path(supportVariant).asText(), "support");
+
+        // Orca 2.4.2 reads process acceleration arrays as a scalar (first entry).
+        // Supports use the global normal acceleration; restore explicit model-role
+        // values before lowering it to the auxiliary nozzle's actual preset value.
+        for (String key : List.of("inner_wall_acceleration", "outer_wall_acceleration", "top_surface_acceleration",
+                "sparse_infill_acceleration", "internal_solid_infill_acceleration", "bridge_acceleration")) {
+            JsonNode configured = process.path(key);
+            // Native defaults: bridge 50% of outer-wall acceleration, infill 100%
+            // of normal acceleration; zero-valued roles inherit normal acceleration.
+            String fallback = "bridge_acceleration".equals(key) ? "50%" : "100%";
+            String value = configured.isArray() ? configured.path(modelVariant).asText(fallback)
+                    : configured.asText(fallback);
+            try {
+                boolean percentage = value.endsWith("%");
+                double number = Double.parseDouble(percentage ? value.substring(0, value.length() - 1) : value);
+                double reference = "bridge_acceleration".equals(key)
+                        ? process.path("outer_wall_acceleration").asDouble(modelAcceleration) : modelAcceleration;
+                double resolved = number == 0 ? modelAcceleration
+                        : percentage ? number * reference / 100 : number;
+                if (!Double.isFinite(resolved) || resolved <= 0) throw new NumberFormatException();
+                process.put(key, Double.toString(resolved));
+            } catch (NumberFormatException ex) {
+                throw new IOException("Invalid X2D acceleration: " + key, ex);
+            }
+        }
+        process.put("default_acceleration", Double.toString(Math.min(modelAcceleration, supportAcceleration)));
+    }
+
+    private static int selectedProcessVariant(ObjectNode machine, ObjectNode process, int nozzle) throws IOException {
+        String volume = machine.path("default_nozzle_volume_type").path(nozzle - 1).asText("Standard");
+        JsonNode ids = process.path("print_extruder_id");
+        JsonNode variants = process.path("print_extruder_variant");
+        for (int i = 0; i < ids.size(); i++) {
+            if (ids.path(i).asInt() == nozzle && variants.path(i).asText().endsWith(" " + volume)) return i;
+        }
+        throw new IOException("Missing X2D process acceleration variant for nozzle " + nozzle);
+    }
+
+    private static double positiveAcceleration(String value, String role) throws IOException {
+        try {
+            double number = Double.parseDouble(value);
+            if (!Double.isFinite(number) || number <= 0) throw new NumberFormatException();
+            return number;
+        } catch (NumberFormatException ex) {
+            throw new IOException("Invalid X2D " + role + " normal acceleration", ex);
+        }
     }
 
     private static String resolveFilamentColor(ObjectNode filament, String selectedColor) {

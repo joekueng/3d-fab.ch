@@ -27,7 +27,9 @@ cleanup() {
   rm -rf "$browser_dir"
   exit "$result"
 }
-trap cleanup EXIT INT TERM
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 # Build context and reports travel through the Docker API, never host bind mounts.
 docker build --iidfile "$browser_dir/image" \
@@ -39,6 +41,8 @@ while IFS= read -r name; do
   esac
 done < <(compgen -e)
 browser_container="$(docker create --network "container:$proxy" --shm-size 1g \
+  --label "com.docker.compose.project=${COMPOSE_PROJECT_NAME:?Missing E2E project}" \
+  --label ch.3d-fab.e2e.browser=true \
   "${env_args[@]}" "$(cat "$browser_dir/image")" \
   bash -c 'npm run e2e:typecheck && exec "$@"' bash "${command[@]}")"
 docker start --attach "$browser_container"

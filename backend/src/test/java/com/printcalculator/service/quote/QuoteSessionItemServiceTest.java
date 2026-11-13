@@ -35,6 +35,7 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.nio.file.Files;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -43,6 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -138,6 +140,9 @@ class QuoteSessionItemServiceTest {
         String asaProfile = machineProfile.contains("X2D") ? "Generic ASA @BBL X2D 0.4 nozzle" : "Generic ASA";
 
         PrintStats stats = fallback ? new PrintStats(546, "9m 6s", 42, 1000)
+                : "3mf".equals(extension) ? new PrintStats(3600, "1h", 42, 1000,
+                java.util.List.of(new PrintStats.PlateStats(1, 1200, 12, 300),
+                        new PrintStats.PlateStats(2, 2400, 30, 700)))
                 : new PrintStats(3600, "1h", 42.0, 1000.0);
         QuoteResult result = new QuoteResult(12.5, "CHF", stats);
 
@@ -232,6 +237,11 @@ class QuoteSessionItemServiceTest {
         assertFalse(saved.getPricingBreakdown().containsKey("quoteTimeFactor"));
         assertFalse(saved.getPricingBreakdown().containsKey("quoteTimeCalibration"));
         assertEquals(42, saved.getMaterialGrams().doubleValue());
+        if ("3mf".equals(extension)) {
+            assertEquals(2, saved.getPricingBreakdown().get("plateCount"));
+            assertEquals(2, ((java.util.List<?>) saved.getPricingBreakdown().get("plates")).size());
+            verify(lineItemRepo).save(any(QuoteLineItem.class));
+        }
         assertEquals(12.5, saved.getUnitPriceChf().doubleValue());
 
         ArgumentCaptor<File> sliceInputCaptor = ArgumentCaptor.forClass(File.class);
@@ -250,7 +260,7 @@ class QuoteSessionItemServiceTest {
         assertEquals("1", processOverridesCaptor.getValue().get("enable_support"));
 
         ArgumentCaptor<File> inspectCaptor = ArgumentCaptor.forClass(File.class);
-        verify(slicerService, times(("3mf".equals(extension) ? 2 : 1) + (fallback ? 1 : 0)))
+        verify(slicerService, times(1 + (fallback ? 1 : 0)))
                 .inspectModelDimensions(inspectCaptor.capture());
         assertTrue(inspectCaptor.getValue().getName().endsWith(".stl"));
         assertEquals(file.getOriginalFilename(), saved.getOriginalFilename());
@@ -342,8 +352,9 @@ class QuoteSessionItemServiceTest {
                 any(File.class), anyString(), anyString(), anyString(), any(), anyMap());
     }
 
-    @Test
-    void addItemToSession_withAcceptedSplitPrinting_createsOrderableEstimate() throws Exception {
+    @ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"stl", "3mf"})
+    void addItemToSession_withAcceptedSplitPrinting_createsOrderableEstimate(String extension) throws Exception {
         QuoteSession session = new QuoteSession();
         session.setId(UUID.randomUUID());
         session.setStatus("ACTIVE");
@@ -357,7 +368,7 @@ class QuoteSessionItemServiceTest {
         settings.setAllowSplitForOversized(true);
 
         MockMultipartFile file = new MockMultipartFile(
-                "file", "large.stl", "model/stl", "solid large".getBytes(StandardCharsets.UTF_8));
+                "file", "large." + extension, "application/octet-stream", "solid large".getBytes(StandardCharsets.UTF_8));
 
         FilamentMaterialType materialType = new FilamentMaterialType();
         materialType.setMaterialCode("PLA");
@@ -373,7 +384,11 @@ class QuoteSessionItemServiceTest {
         PrintStats stats = new PrintStats(7200, "2h", 84.0, 1000.0);
         QuoteResult result = new QuoteResult(25.0, "CHF", stats);
 
-        when(quoteStorageService.getSafeExtension(file.getOriginalFilename(), "")).thenReturn("stl");
+        when(quoteStorageService.getSafeExtension(file.getOriginalFilename(), "")).thenReturn(extension);
+        if ("3mf".equals(extension)) {
+            when(slicerService.convert3mfToPersistentStl(any(File.class), any(Path.class)))
+                    .thenAnswer(invocation -> Files.writeString(invocation.getArgument(1, Path.class), "converted geometry"));
+        }
         when(quoteStorageService.sessionStorageDir(session.getId())).thenReturn(tempDir);
         when(quoteStorageService.resolveSessionPath(eq(tempDir), anyString()))
                 .thenAnswer(invocation -> tempDir.resolve(invocation.getArgument(1, String.class)));
@@ -392,7 +407,9 @@ class QuoteSessionItemServiceTest {
         when(orcaProfileResolver.resolve(machine, nozzle, variant))
                 .thenReturn(new OrcaProfileResolver.ResolvedProfiles(
                         "Bambu Lab A1 0.4 nozzle", "Bambu PLA Basic @BBL A1", null));
-        when(slicerService.inspectModelDimensions(any(File.class))).thenReturn(Optional.of(dimensions));
+        when(slicerService.inspectModelDimensions(any(File.class))).thenAnswer(invocation ->
+                Optional.of(invocation.getArgument(0, File.class).getName().endsWith(".3mf")
+                        ? new ModelDimensions(194.5, 86.5, 3) : dimensions));
         when(slicerService.slice(
                 any(File.class),
                 eq("Bambu Lab A1 0.4 nozzle"),
@@ -418,6 +435,12 @@ class QuoteSessionItemServiceTest {
         assertEquals("READY", saved.getStatus());
         assertTrue(Boolean.TRUE.equals(saved.getRequiresSplitPrinting()));
         assertEquals(0, BigDecimal.valueOf(188.0).compareTo(saved.getBoundingBoxXMm()));
+        if ("3mf".equals(extension)) {
+            verify(slicerService, never()).inspectModelDimensions(argThat(model -> model.getName().endsWith(".3mf")));
+            verify(slicerService).sliceForOversizedEstimate(
+                    argThat(model -> model.getName().endsWith(".3mf")),
+                    anyString(), anyString(), anyString(), eq(Optional.of(dimensions)), anyMap());
+        }
         verify(slicerService).sliceForOversizedEstimate(
                 any(File.class),
                 eq("Bambu Lab A1 0.4 nozzle"),

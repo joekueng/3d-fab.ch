@@ -64,6 +64,19 @@ class OrcaProfileResolverTest {
         return variant;
     }
 
+    @ParameterizedTest
+    @CsvSource({"PC-ABS,BambuLab P2S,0.4,Polymaker PC-ABS @BBL P2S",
+            "TPU 85A,BambuLab P2S,0.6,Bambu TPU 85A @BBL P2S",
+            "TPU 85A,BambuLab P2S,0.8,Bambu TPU 85A @BBL P2S 0.8 nozzle"})
+    void specialStockMaterialsNeverFallBackToGenericPla(String material, String printer, String nozzle, String expected) {
+        var machine = new com.printcalculator.entity.PrinterMachine();
+        machine.setPrinterDisplayName(printer);
+        assertEquals(expected, resolver.resolve(machine, new java.math.BigDecimal(nozzle), variant(material)).filamentProfileName());
+        machine.setPrinterDisplayName("BambuLab A1");
+        assertThrows(org.springframework.web.server.ResponseStatusException.class,
+                () -> resolver.resolve(machine, new java.math.BigDecimal(nozzle), variant(material)));
+    }
+
     private MaterialOrcaProfileMap mapping(String material, String profile) {
         var mapping = new MaterialOrcaProfileMap();
         mapping.setFilamentMaterialType(variant(material).getFilamentMaterialType());

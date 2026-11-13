@@ -76,6 +76,7 @@ class Pa12AsaNativeSlicingTest {
         assertTrue(x2dMulti.printTimeSeconds() > x2dSingle.printTimeSeconds());
         String gcode = Files.readString(captured);
         assertTrue(gcode.contains("filament_map = 1,2"));
+        assertAuxiliarySupportAcceleration(gcode);
         System.out.println("X2D tool commands: " + gcode.lines().filter(line -> line.matches("T[01] H.*"))
                 .distinct().toList());
         assertTrue(java.util.regex.Pattern.compile("(?m)^T0(?:\\s|$)").matcher(gcode).find(),
@@ -90,5 +91,27 @@ class Pa12AsaNativeSlicingTest {
         assertTrue(Double.parseDouble(weights[0].trim()) > 0);
         assertTrue(Double.parseDouble(weights[1].trim()) > 0, "ASA must actually be extruded");
         assertTrue(multi.printTimeSeconds() > single.printTimeSeconds(), "Use actual Orca tool-change time");
+    }
+
+    private void assertAuxiliarySupportAcceleration(String gcode) {
+        int tool = -1;
+        String feature = "";
+        double acceleration = Double.NaN;
+        int supportMoves = 0;
+        var extrusion = java.util.regex.Pattern.compile("\\bE(-?[\\d.]+)");
+        for (String line : gcode.lines().toList()) {
+            if (line.matches("T[01](?:\\s.*)?")) tool = line.charAt(1) - '0';
+            if (line.startsWith("; FEATURE: ")) feature = line.substring(11);
+            if (line.startsWith("M204 S")) acceleration = Double.parseDouble(line.substring(6).split("[ ;]", 2)[0]);
+            var amount = extrusion.matcher(line);
+            if (tool == 1 && (feature.equals("Support") || feature.equals("Support interface")) && line.matches("G[123] .*")) {
+                if (amount.find() && Double.parseDouble(amount.group(1)) > 0 &&
+                        (line.contains(" X") || line.contains(" Y"))) {
+                    assertTrue(acceleration <= 1000, "ASA support move must respect Bowden acceleration: " + line);
+                    supportMoves++;
+                }
+            }
+        }
+        assertTrue(supportMoves > 0, "Verify real support extrusion, not only a profile header");
     }
 }
