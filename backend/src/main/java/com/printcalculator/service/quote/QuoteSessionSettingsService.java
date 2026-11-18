@@ -44,22 +44,24 @@ public class QuoteSessionSettingsService {
         this.profileManager = profileManager;
     }
 
-    public void applyPrintSettings(PrintSettingsDto settings) {
+    public void applyPrintSettings(PrintSettingsDto settings, FilamentVariant variant) {
         if (settings.getNozzleDiameter() == null) {
             settings.setNozzleDiameter(0.40);
         }
 
         if ("BASIC".equalsIgnoreCase(settings.getComplexityMode())) {
+            boolean technical = variant != null && variant.getFilamentMaterialType() != null
+                    && Boolean.TRUE.equals(variant.getFilamentMaterialType().getIsTechnical());
             String quality = settings.getQuality() != null ? settings.getQuality().toLowerCase() : "standard";
 
             switch (quality) {
                 case "draft" -> {
-                    settings.setLayerHeight(0.28);
+                    settings.setLayerHeight(technical ? 0.24 : 0.28);
                     settings.setInfillDensity(15.0);
                     settings.setInfillPattern("grid");
                 }
                 case "extra_fine", "high_definition", "high" -> {
-                    settings.setLayerHeight(0.12);
+                    settings.setLayerHeight(technical ? 0.16 : 0.12);
                     settings.setInfillDensity(20.0);
                     settings.setInfillPattern("gyroid");
                 }
@@ -73,6 +75,10 @@ public class QuoteSessionSettingsService {
                     settings.setInfillDensity(15.0);
                     settings.setInfillPattern("grid");
                 }
+            }
+            if (com.printcalculator.service.MaterialPrintCompatibilityService.isTpu85a(variant)) {
+                if (Math.abs(settings.getNozzleDiameter() - 0.80) > 0.0001) settings.setNozzleDiameter(0.60);
+                settings.setLayerHeight(0.24);
             }
         } else {
             if (settings.getInfillDensity() == null) {
@@ -168,6 +174,40 @@ public class QuoteSessionSettingsService {
                         + " and layer height "
                         + layerHeight.stripTrailingZeros().toPlainString()
         );
+    }
+
+    public List<PrinterMachine> resolveAsaSupportMachineCandidates(Long printerMachineId,
+                                                                   BigDecimal nozzleDiameter,
+                                                                   BigDecimal layerHeight,
+                                                                   String qualityHint) {
+        List<PrinterMachine> available = new java.util.ArrayList<>(resolvePrinterMachineCandidates(
+                printerMachineId, nozzleDiameter, layerHeight, qualityHint));
+        if (printerMachineId != null && available.stream().anyMatch(machine ->
+                orcaProfileResolver.resolveMachineProfile(machine, nozzleDiameter)
+                        .filter(profile -> OrcaProfileResolver.isX2dProfile(profile.getOrcaMachineProfileName()))
+                        .isPresent())) {
+            resolvePrinterMachineCandidates(null, nozzleDiameter, layerHeight, qualityHint).stream()
+                    .filter(machine -> orcaProfileResolver.resolveMachineProfile(machine, nozzleDiameter)
+                            .map(profile -> profile.getOrcaMachineProfileName().startsWith("Bambu Lab P2S "))
+                            .orElse(false))
+                    .filter(machine -> !available.contains(machine))
+                    .forEach(available::add);
+        }
+        List<PrinterMachine> candidates = available.stream()
+                .filter(machine -> orcaProfileResolver.resolveMachineProfile(machine, nozzleDiameter)
+                        .map(profile -> OrcaProfileResolver.isX2dProfile(profile.getOrcaMachineProfileName())
+                                || profile.getOrcaMachineProfileName().startsWith("Bambu Lab P2S "))
+                        .orElse(false))
+                .sorted(java.util.Comparator.comparingInt(machine ->
+                        orcaProfileResolver.resolveMachineProfile(machine, nozzleDiameter)
+                                .filter(profile -> OrcaProfileResolver.isX2dProfile(profile.getOrcaMachineProfileName()))
+                                .isPresent() ? 0 : 1))
+                .toList();
+        if (candidates.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "PA12-CF/PET-CF with ASA supports requires an active X2D or P2S profile for this nozzle and layer height");
+        }
+        return candidates;
     }
 
     public FilamentVariant resolveFilamentVariant(PrintSettingsDto settings) {

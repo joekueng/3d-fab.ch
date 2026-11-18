@@ -49,6 +49,11 @@ follow [model conversion and previews](README.md#model-conversion-and-previews).
 
 For native CLI compatibility and full-bed fit checks, follow
 [CLI printer profiles and usable volume](README.md#cli-printer-profiles-and-usable-volume).
+For a single 3MF attachment containing several print plates, follow
+[3MF print plates](README.md#3mf-print-plates): preserve instance assignments,
+slice every plate and persist only complete aggregate quotes.
+For PA12-CF/PET-CF jobs with ASA support base/interface, X2D nozzle mapping, P2S fallback and native time validation,
+follow [X2D and ASA supports](README.md#x2d-and-asa-supports).
 
 ## Testing and checks
 

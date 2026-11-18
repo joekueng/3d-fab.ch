@@ -46,6 +46,54 @@ Expected: UID/GID 10001. Repeat the documented upload/slicing checks and use
 `int` or `prod` for their respective environments. This migration concerns the
 backend; PostgreSQL, ClamAV and other images retain their own supported users.
 
+## Recover leftover E2E stacks
+
+Each test run creates its own `e2e-printcalc-e2e-…` Compose project. Inventory
+in Unraid can include both an active test run and abandoned runs; a running
+container alone does not distinguish them. Pause E2E jobs and check the Gitea job
+history before deleting an old project. In a checkout with the updated helpers:
+
+```bash
+bash scripts/e2e/cleanup-stack.sh --list
+bash scripts/e2e/cleanup-stack.sh --project e2e-printcalc-e2e-ofd0sw
+```
+
+The first command discovers projects from container, volume and network labels;
+the second previews the resources of one project. After checking the preview,
+remove that abandoned test project, including its disposable database:
+
+```bash
+bash scripts/e2e/cleanup-stack.sh --project e2e-printcalc-e2e-ofd0sw --delete
+```
+
+Repeat for each confirmed abandoned project. The helper needs only Bash and
+Docker, so it can also be copied to Unraid and invoked directly with `bash`.
+It requires an explicit harness project for deletion, selects resources by exact
+Compose project label, and removes that run's backend/frontend/proxy image tags.
+It does not use global Docker pruning. It reports removal failures and is safe
+to repeat. Old unlabelled browser containers with random names need separate
+inspection; their names alone do not establish that they belong to E2E.
+
+The harness records the project in ignored `.e2e-project` before startup, reports
+Compose cleanup errors and retries cleanup by labels. Both CI workflows also
+run this helper in an `always()` step using that manifest. New browser containers
+carry the same project label, allowing cleanup even when their process is killed.
+No shell trap or workflow step can run after a host/runner crash or forced
+termination of the whole job container; use the explicit recovery command then.
+Never automatically sweep every E2E project while other jobs may be running.
+
+Run `node --test scripts/e2e/cleanup-stack.test.mjs` to verify project isolation,
+preview mode, repeat cleanup, visible failures and cleanup after partial startup
+with a simulated Docker CLI. These tests do not mutate a Docker daemon.
+
+Docker CLI options were checked against the official
+[container filters](https://docs.docker.com/reference/cli/docker/container/ls/),
+[container labels](https://docs.docker.com/reference/cli/docker/container/create/),
+[volume filters](https://docs.docker.com/reference/cli/docker/volume/ls/),
+[network filters](https://docs.docker.com/reference/cli/docker/network/ls/), and
+[Compose teardown](https://docs.docker.com/reference/cli/docker/compose/down/)
+documentation on 2026-11-13. No package or image version changes are required.
+
 ## Recover the old E2E images
 
 Pause E2E jobs first. No repository checkout is needed on Unraid. Paste this

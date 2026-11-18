@@ -36,6 +36,7 @@ public class GCodeParser {
         Double totalWeightG = null;
         double lengthMm = 0;
         String timeFormatted = "";
+        int timePriority = 0;
 
         try (BufferedReader reader = new BufferedReader(new FileReader(gcodeFile))) {
             String line;
@@ -55,24 +56,33 @@ public class GCodeParser {
 
                 Matcher totalTimeMatcher = TOTAL_ESTIMATED_TIME_PATTERN.matcher(line);
                 if (totalTimeMatcher.find()) {
-                    timeFormatted = totalTimeMatcher.group(1).trim();
-                    seconds = parseTimeString(timeFormatted);
-                    System.out.println("GCodeParser: Found total estimated time: " + timeFormatted + " (" + seconds + "s)");
+                    String value = totalTimeMatcher.group(1).trim();
+                    long parsed = parseTimeString(value);
+                    if (parsed > 0) {
+                        timeFormatted = value;
+                        seconds = parsed;
+                        timePriority = 3;
+                    }
                     continue;
                 }
 
                 Matcher modelTimeMatcher = MODEL_PRINTING_TIME_PATTERN.matcher(line);
                 if (modelTimeMatcher.find()) {
-                    timeFormatted = modelTimeMatcher.group(1).trim();
-                    seconds = parseTimeString(timeFormatted);
-                    System.out.println("GCodeParser: Found model printing time: " + timeFormatted + " (" + seconds + "s)");
+                    String value = modelTimeMatcher.group(1).trim();
+                    long parsed = parseTimeString(value);
+                    if (timePriority <= 2 && parsed > 0) {
+                        timeFormatted = value;
+                        seconds = parsed;
+                        timePriority = 2;
+                    }
                     continue;
                 }
 
                 Matcher timeMatcher = TIME_PATTERN.matcher(line);
-                if (timeMatcher.find()) {
+                if (timePriority <= 1 && timeMatcher.find()) {
                     timeFormatted = timeMatcher.group(1).trim();
                     seconds = parseTimeString(timeFormatted);
+                    timePriority = 1;
                     System.out.println("GCodeParser: Found time: " + timeFormatted + " (" + seconds + "s)");
                 }
 

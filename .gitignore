@@ -46,6 +46,7 @@ build/
 .gradle/
 .mvn/
 /.angular/
+/.tools/
 
 ./storage_orders
 ./storage_quotes
@@ -67,3 +68,5 @@ backend/.qodana/
 /docs/security-audits/
 /private-security/
 /Desktop
+# Exact disposable project recorded for workflow cleanup after cancellation.
+.e2e-project

@@ -47,6 +47,7 @@ import {
 } from './upload-form.types';
 import {
   easyModePresetForQuality,
+  isTpu85aMaterial,
   normalizeFileName,
   normalizeNumber,
   normalizeQualityValue,
@@ -1048,6 +1049,8 @@ export class UploadFormComponent implements OnInit {
     const preset = easyModePresetForQuality(
       qualityRaw,
       this.isTechnicalMaterial(this.form.get('material')?.value),
+      this.form.get('material')?.value,
+      Number(this.form.get('nozzleDiameter')?.value),
     );
 
     this.isPatchingSettings = true;
@@ -1074,6 +1077,8 @@ export class UploadFormComponent implements OnInit {
       const preset = easyModePresetForQuality(
         quality,
         this.isTechnicalMaterial(material),
+        material,
+        Number(this.form.get('nozzleDiameter')?.value),
       );
       return {
         material,
@@ -1110,6 +1115,8 @@ export class UploadFormComponent implements OnInit {
       const preset = easyModePresetForQuality(
         quality,
         this.isTechnicalMaterial(item.material || defaults.material),
+        item.material || defaults.material,
+        item.nozzleDiameter,
       );
       return {
         clientModelKey: item.clientKey,
@@ -1363,9 +1370,13 @@ export class UploadFormComponent implements OnInit {
 
     let effectiveNozzle = currentNozzle;
     if (!nozzleAllowed && nozzles.length > 0) {
-      const standardNozzle = nozzles.find(
-        (option) => Math.abs(normalizeNumber(option.value, 0) - 0.4) < 0.0001,
-      );
+      const standardNozzle =
+        nozzles.find(
+          (option) => Math.abs(normalizeNumber(option.value, 0) - 0.4) < 0.0001,
+        ) ||
+        nozzles.find(
+          (option) => Math.abs(normalizeNumber(option.value, 0) - 0.6) < 0.0001,
+        );
       effectiveNozzle = Number((standardNozzle || nozzles[0]).value);
       this.isPatchingSettings = true;
       this.form
@@ -1389,6 +1400,9 @@ export class UploadFormComponent implements OnInit {
     nozzle: number,
     materialCode: unknown,
   ): boolean {
+    if (isTpu85aMaterial(materialCode)) {
+      return Math.abs(nozzle - 0.6) > 0.0001 && Math.abs(nozzle - 0.8) > 0.0001;
+    }
     return (
       (this.isTechnicalMaterial(materialCode) &&
         this.technicalMaterialBlockedNozzles.some(
@@ -1402,6 +1416,7 @@ export class UploadFormComponent implements OnInit {
   private clampItemPrintSettings(item: FormItem): FormItem {
     if (
       !this.isTechnicalMaterial(item.material) &&
+      !isTpu85aMaterial(item.material) &&
       normalizeText(item.material) !== 'pla-cf'
     ) {
       return item;
@@ -1417,7 +1432,11 @@ export class UploadFormComponent implements OnInit {
     const fallbackNozzle =
       allowedNozzles.find(
         (option) => Math.abs(normalizeNumber(option.value, 0) - 0.4) < 0.0001,
-      ) || allowedNozzles[0];
+      ) ||
+      allowedNozzles.find(
+        (option) => Math.abs(normalizeNumber(option.value, 0) - 0.6) < 0.0001,
+      ) ||
+      allowedNozzles[0];
     const nozzleDiameter = this.isBlockedNozzleForMaterial(
       item.nozzleDiameter,
       item.material,

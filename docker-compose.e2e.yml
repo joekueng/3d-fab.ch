@@ -34,10 +34,8 @@ services:
       context: ./backend
       platforms:
         - linux/amd64
-      args:
-        ORCA_VERSION: "2.3.2"
-        ORCA_DOWNLOAD_URL: https://github.com/OrcaSlicer/OrcaSlicer/releases/download/v2.3.2/OrcaSlicer_Linux_AppImage_Ubuntu2404_V2.3.2.AppImage
-        ORCA_SHA256: c64336ceec37d941766e675cbaaaf5124e184402bf18177fbf81ba5102734ad8
+      # Inherit the verified Orca version/checksum from backend/Dockerfile.
+      # An older override breaks the backend's version-specific CLI arguments.
     environment:
       DB_URL: jdbc:postgresql://db:5432/printcalc_e2e
       DB_USERNAME: e2e

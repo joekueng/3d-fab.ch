@@ -77,4 +77,18 @@ class MaterialPrintCompatibilityServiceTest {
         variant.setFilamentMaterialType(materialType);
         return variant;
     }
+
+    @Test
+    void tpu85aUsesOnlyTheVerifiedNozzleIndependentlyOfAdminClassification() {
+        for (boolean technical : new boolean[]{true, false}) {
+            var variant = variant(technical);
+            variant.getFilamentMaterialType().setMaterialCode("TPU 85A");
+            for (String nozzle : new String[]{"0.2", "0.4"}) {
+                assertThrows(ResponseStatusException.class,
+                        () -> service.validate(variant, new BigDecimal(nozzle), new BigDecimal("0.24")));
+            }
+            assertDoesNotThrow(() -> service.validate(variant, new BigDecimal("0.6"), new BigDecimal("0.24")));
+            assertDoesNotThrow(() -> service.validate(variant, new BigDecimal("0.8"), new BigDecimal("0.24")));
+        }
+    }
 }

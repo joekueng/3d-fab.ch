@@ -18,6 +18,25 @@ async function request(url) {
   return response;
 }
 
+const orca = JSON.parse(read('backend/orcaslicer-release.json'));
+check(`OrcaSlicer ${orca.version}: official assets and source`, async () => {
+    requireThat(orca.repository === 'OrcaSlicer/OrcaSlicer', 'Unexpected OrcaSlicer publisher');
+    const release = await (await request(`https://api.github.com/repos/${orca.repository}/releases/tags/v${orca.version}`)).json();
+    requireThat(release.tag_name === `v${orca.version}` && !release.prerelease && !release.draft, 'Expected an official stable release');
+    for (const asset of Object.values(orca.assets)) {
+        const published = release.assets.find((entry) => entry.name === asset.name);
+        requireThat(published?.digest === `sha256:${asset.sha256}`, `Orca asset digest mismatch: ${asset.name}`);
+    }
+    const commit = await (await request(`https://api.github.com/repos/${orca.repository}/commits/v${orca.version}`)).json();
+    requireThat(commit.sha === orca.sourceCommit, 'Orca source commit differs from the pinned release');
+    const dockerfile = read('backend/Dockerfile');
+    requireThat(dockerfile.includes(`ARG ORCA_VERSION=${orca.version}`)
+        && dockerfile.includes(`ARG ORCA_SHA256=${orca.assets['linux-amd64'].sha256}`), 'Docker Orca pin differs from release metadata');
+    requireThat(!/^\s+ORCA_(?:VERSION|DOWNLOAD_URL|SHA256)\s*:/m.test(read('docker-compose.e2e.yml')),
+        'E2E must inherit the verified Orca version/checksum from backend/Dockerfile');
+    return 'official stable release, pinned source and asset SHA-256 digests';
+});
+
 for (const section of ['dependencies', 'devDependencies', 'optionalDependencies']) {
   requireThat(isDeepStrictEqual(manifest[section] ?? {}, lock.packages?.['']?.[section] ?? {}),
     `${section}: package.json and lockfile disagree; regenerate with npm, never hand-edit integrity`);
@@ -104,6 +123,6 @@ for (let offset = 0; offset < checks.length; offset += 4) {
   });
 }
 console.log(`${checks.length - failures.length}/${checks.length} metadata checks passed.`);
-console.log('Scope: direct locked npm packages, literal versioned Maven coordinates, versioned Gradle plugins, pinned STEP Python wheels.');
+console.log('Scope: direct locked npm packages, literal versioned Maven coordinates, versioned Gradle plugins, pinned STEP Python wheels, OrcaSlicer release/assets/source.');
 console.log('Publication is not proof of trusted ownership, API compatibility or absence of vulnerabilities.');
 process.exitCode = failures.length ? 1 : 0;

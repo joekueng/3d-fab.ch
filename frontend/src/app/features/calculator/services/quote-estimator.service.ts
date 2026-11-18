@@ -19,6 +19,10 @@ import {
 } from 'rxjs';
 import { OrderInformationService } from '../../order-information/order-information.service';
 import { environment } from '../../../../environments/environment';
+import {
+  easyModePresetForQuality,
+  normalizeQualityValue,
+} from '../utils/print-settings-presets';
 
 export type ModelUnit = 'mm' | 'cm' | 'm' | 'in';
 
@@ -807,12 +811,12 @@ export class QuoteEstimatorService {
     request: QuoteRequest,
     item: QuoteRequestItem,
   ): any {
-    const normalizedQuality = this.normalizeQuality(
+    const normalizedQuality = normalizeQualityValue(
       item.quality || request.quality,
     );
     const easyPreset =
       request.mode === 'easy'
-        ? this.buildEasyModePreset(normalizedQuality)
+        ? easyModePresetForQuality(normalizedQuality)
         : null;
 
     return {
@@ -825,10 +829,11 @@ export class QuoteEstimatorService {
       filamentVariantId: item.filamentVariantId,
       quality: easyPreset ? easyPreset.quality : normalizedQuality,
       supportsEnabled: item.supportEnabled ?? request.supportEnabled ?? false,
+      // The form resolves material-specific layers; ordinary presets are only a fallback.
       layerHeight:
-        easyPreset?.layerHeight ??
         item.layerHeight ??
         request.layerHeight ??
+        easyPreset?.layerHeight ??
         0.2,
       infillDensity:
         easyPreset?.infillDensity ??
@@ -855,53 +860,5 @@ export class QuoteEstimatorService {
       return 1;
     }
     return Math.floor(numeric);
-  }
-
-  private normalizeQuality(value: string | undefined): string {
-    const normalized = String(value || 'standard')
-      .trim()
-      .toLowerCase();
-    if (normalized === 'high' || normalized === 'high_definition') {
-      return 'extra_fine';
-    }
-    return normalized || 'standard';
-  }
-
-  private buildEasyModePreset(quality: string): {
-    quality: string;
-    layerHeight: number;
-    infillDensity: number;
-    infillPattern: string;
-    nozzleDiameter: number;
-  } {
-    const normalized = this.normalizeQuality(quality);
-
-    if (normalized === 'draft') {
-      return {
-        quality: 'draft',
-        layerHeight: 0.28,
-        infillDensity: 15,
-        infillPattern: 'grid',
-        nozzleDiameter: 0.4,
-      };
-    }
-
-    if (normalized === 'extra_fine') {
-      return {
-        quality: 'extra_fine',
-        layerHeight: 0.12,
-        infillDensity: 20,
-        infillPattern: 'gyroid',
-        nozzleDiameter: 0.4,
-      };
-    }
-
-    return {
-      quality: 'standard',
-      layerHeight: 0.2,
-      infillDensity: 15,
-      infillPattern: 'grid',
-      nozzleDiameter: 0.4,
-    };
   }
 }

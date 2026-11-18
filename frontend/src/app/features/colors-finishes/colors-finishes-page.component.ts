@@ -98,13 +98,15 @@ export class ColorsFinishesPageComponent {
     },
   );
   readonly variants = computed<CatalogVariant[]>(() =>
-    this.state().materials.flatMap((material) =>
-      material.variants.map((variant) => ({
-        ...variant,
-        materialCode: material.code,
-        materialLabel: material.label,
-      })),
-    ).sort((a, b) => compareColorHex(a.hexColor, b.hexColor)),
+    this.state()
+      .materials.flatMap((material) =>
+        material.variants.map((variant) => ({
+          ...variant,
+          materialCode: material.code,
+          materialLabel: material.label,
+        })),
+      )
+      .sort((a, b) => compareColorHex(a.hexColor, b.hexColor)),
   );
   private readonly mediaByUsage = toSignal(
     toObservable(this.variants).pipe(

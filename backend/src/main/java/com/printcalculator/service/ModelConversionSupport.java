@@ -384,6 +384,94 @@ final class ModelConversionSupport {
         return triangleCount[0];
     }
 
+    /**
+     * Extract only explicitly assigned Orca/Bambu plates; never guess from spatial gaps.
+     */
+    List<PlateModel> convert3mfPlates(File input, Path outputDirectory) throws IOException {
+        try (ZipFile archive = new ZipFile(input)) {
+            ZipEntry settings = archive.getEntry("Metadata/model_settings.config");
+            if (settings == null) return List.of();
+            List<Element> plates = findChildrenByLocalName(parseXmlDocument(archive, settings).getDocumentElement(), "plate");
+            if (plates.isEmpty()) return List.of();
+            if (plates.size() > 32) throw new IOException("At most 32 plates can be quoted in one file");
+
+            Map<String, ThreeMfModelDocument> cache = new HashMap<>();
+            var root = loadThreeMfModel(archive, cache, "3D/3dmodel.model");
+            String unit = root.rootElement().getAttribute("unit");
+            if (!unit.isBlank() && !"millimeter".equals(unit)) {
+                throw new IOException("Unsupported units in Orca/Bambu plate metadata");
+            }
+            Element build = findFirstChildByLocalName(root.rootElement(), "build");
+            if (build == null) throw new IOException("Missing 3MF build");
+            Map<String, Integer> instanceCounts = new HashMap<>();
+            Map<BuildInstance, Element> printable = new java.util.LinkedHashMap<>();
+            for (Element item : findChildrenByLocalName(build, "item")) {
+                String objectId = getAttributeByLocalName(item, "objectid");
+                int instance = instanceCounts.merge(objectId, 1, Integer::sum) - 1;
+                if (!"0".equals(getAttributeByLocalName(item, "printable"))) {
+                    printable.put(new BuildInstance(objectId, instance), item);
+                }
+            }
+            Map<Integer, List<Element>> assigned = new java.util.TreeMap<>();
+            Set<BuildInstance> seen = new HashSet<>();
+            for (Element plate : plates) {
+                int id = Integer.parseInt(metadataValue(plate, "plater_id"));
+                if (id < 1 || assigned.putIfAbsent(id, new ArrayList<>()) != null) {
+                    throw new IOException("Invalid or duplicate 3MF plate ID");
+                }
+                for (Element instance : findChildrenByLocalName(plate, "model_instance")) {
+                    var key = new BuildInstance(metadataValue(instance, "object_id"),
+                            Integer.parseInt(metadataValue(instance, "instance_id")));
+                    if (key.instance() < 0 || key.instance() >= instanceCounts.getOrDefault(key.objectId(), 0)) {
+                        throw new IOException("Unknown 3MF plate instance");
+                    }
+                    Element item = printable.get(key);
+                    if (item == null) continue; // Non-printable instances are intentionally excluded.
+                    if (!seen.add(key)) throw new IOException("3MF instance assigned to multiple plates");
+                    assigned.get(id).add(item);
+                }
+            }
+            if (!seen.equals(printable.keySet())) throw new IOException("Unassigned printable 3MF instances");
+            List<PlateModel> result = new ArrayList<>();
+            Files.createDirectories(outputDirectory);
+            for (var plate : assigned.entrySet()) {
+                if (plate.getValue().isEmpty()) continue;
+                Path output = outputDirectory.resolve("plate-" + plate.getKey() + ".stl");
+                long[] triangles = {0};
+                try (var writer = Files.newBufferedWriter(output, StandardCharsets.UTF_8)) {
+                    writer.write("solid plate\n");
+                    for (Element item : plate.getValue()) {
+                        long previous = triangles[0];
+                        writeObjectTriangles(archive, cache, root.modelPath(), getAttributeByLocalName(item, "objectid"),
+                                parseTransform(getAttributeByLocalName(item, "transform")), writer, triangles, new HashSet<>(), 0);
+                        if (triangles[0] == previous)
+                            throw new IOException("Missing geometry for a 3MF plate instance");
+                    }
+                    writer.write("endsolid plate\n");
+                }
+                result.add(new PlateModel(plate.getKey(), output));
+            }
+            if (result.isEmpty()) throw new IOException("No printable 3MF plates");
+            return List.copyOf(result);
+        } catch (Exception failure) {
+            throw new ModelProcessingException("MODEL_PLATE_LAYOUT_INVALID",
+                    "Unable to read all print plates. Check the project or upload the plates as separate files.", failure);
+        }
+    }
+
+    private String metadataValue(Element parent, String key) throws IOException {
+        for (Element metadata : findChildrenByLocalName(parent, "metadata")) {
+            if (key.equals(metadata.getAttribute("key"))) return metadata.getAttribute("value");
+        }
+        throw new IOException("Missing 3MF plate metadata: " + key);
+    }
+
+    record PlateModel(int number, Path path) {
+    }
+
+    private record BuildInstance(String objectId, int instance) {
+    }
+
     private void writeObjectTriangles(
             ZipFile zipFile,
             Map<String, ThreeMfModelDocument> modelCache,
