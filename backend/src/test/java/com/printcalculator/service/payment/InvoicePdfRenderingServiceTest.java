@@ -107,6 +107,7 @@ class InvoicePdfRenderingServiceTest {
         order.setSubtotalChf(new BigDecimal("186.80"));
         order.setTotalChf(new BigDecimal("188.80"));
         var realQr = new QrBillService();
+        assertEquals("CH2608307000480269300", realQr.createBillFromOrder(order).getAccount());
         String[] languages = {"it", "en", "de", "fr"};
         String[] receiptLabels = {"Ricevuta", "Receipt", "Empfangsschein", "Récépissé"};
         for (int i = 0; i < languages.length; i++) {

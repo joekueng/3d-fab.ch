@@ -30,6 +30,10 @@ use their separate generation paths and remain available after payment.
 Information-area access is unchanged; its messages and attachments may contain
 customer-provided personal data.
 
+QR bills use the creditor IBAN configured by `QR_BILL_IBAN`, defaulting to
+`CH2608307000480269300`. Changing it affects newly generated documents; PDFs
+already sent or saved retain their original payment details.
+
 ## Material print compatibility
 
 Calculator visibility requires both an active filament variant and an active
