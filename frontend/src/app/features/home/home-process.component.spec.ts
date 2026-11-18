@@ -635,8 +635,8 @@ describe('HomeProcessComponent', () => {
           new DOMRect(
             0,
             (index - phase) * 400 +
-            line -
-            fraction * component.middleHold() * 0.85,
+              line -
+              fraction * component.middleHold() * 0.85,
             400,
             400,
           ),

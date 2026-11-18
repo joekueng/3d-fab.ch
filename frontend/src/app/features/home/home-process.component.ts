@@ -530,8 +530,8 @@ export class HomeProcessComponent {
         index,
         rounded,
         !panelRect ||
-        panelRect.bottom <= 0 ||
-        panelRect.top >= view.innerHeight,
+          panelRect.bottom <= 0 ||
+          panelRect.top >= view.innerHeight,
       );
     });
   };
