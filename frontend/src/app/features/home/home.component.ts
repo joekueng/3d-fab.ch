@@ -34,7 +34,7 @@ import {
   HOME_CAPABILITY_CONFIGS,
   HOME_MEDIA_REQUESTS,
 } from './home-page.config';
-import {HomeCapabilityCard, HomeCapabilityConfig} from './home-page.types';
+import { HomeCapabilityCard, HomeCapabilityConfig } from './home-page.types';
 import {
   mediaAvifUrl,
   mediaFallbackUrl,
