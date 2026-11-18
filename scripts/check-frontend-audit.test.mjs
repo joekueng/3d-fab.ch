@@ -7,62 +7,73 @@ function fixture() {
     report: {
       auditReportVersion: 2,
       vulnerabilities: {
-        braces: { name: 'braces', nodes: ['node_modules/braces'], via: [
-          { name: 'braces', url: 'https://github.com/advisories/GHSA-vfj7-8cjw-p6xm' },
+        picomatch: { name: 'picomatch', nodes: ['node_modules/picomatch'], via: [
+          { name: 'picomatch', url: 'https://github.com/advisories/GHSA-fc5q-39xc-vjpf' },
         ] },
-        karma: { name: 'karma', nodes: ['node_modules/karma'], via: ['braces'] },
+        karma: { name: 'karma', nodes: ['node_modules/karma'], via: ['picomatch'] },
       },
     },
     lock: { packages: {
-      'node_modules/braces': { version: '3.0.3', dev: true },
+      'node_modules/picomatch': { version: '4.0.7', dev: true },
       'node_modules/karma': { version: '6.4.4', dev: true },
     } },
   };
 }
-const today = new Date('2026-10-05T00:00:00Z');
+const today = new Date('2026-11-18T00:00:00Z');
 
-test('allows the specific development-only advisory and its dependent test package', () => {
+test('allows the specific development-only advisory and its dependent development package', () => {
   const { report, lock } = fixture();
-  assert.deepEqual(checkAudit(report, lock, today), { allowed: ['braces', 'karma'], blocked: [] });
+  assert.deepEqual(checkAudit(report, lock, today), { allowed: ['picomatch', 'karma'], blocked: [] });
 });
 
 test('blocks a new advisory even when the existing advisory is also present', () => {
   const { report, lock } = fixture();
-  report.vulnerabilities.braces.via.push({ name: 'braces', url: 'https://github.com/advisories/GHSA-new' });
-  assert.deepEqual(checkAudit(report, lock, today).blocked, ['braces', 'karma']);
+  report.vulnerabilities.picomatch.via.push({ name: 'picomatch', url: 'https://github.com/advisories/GHSA-new' });
+  assert.deepEqual(checkAudit(report, lock, today).blocked, ['picomatch', 'karma']);
 });
 
 test('blocks runtime dependencies and dependencies missing from the lockfile', () => {
-  for (const entry of [{ version: '3.0.3', dev: false }, undefined]) {
+  for (const entry of [{ version: '4.0.7', dev: false }, undefined]) {
     const { report, lock } = fixture();
-    lock.packages['node_modules/braces'] = entry;
-    assert.deepEqual(checkAudit(report, lock, today).blocked, ['braces', 'karma']);
+    lock.packages['node_modules/picomatch'] = entry;
+    assert.deepEqual(checkAudit(report, lock, today).blocked, ['picomatch', 'karma']);
   }
   const { report, lock } = fixture();
   lock.packages['node_modules/karma'].dev = false;
   assert.deepEqual(checkAudit(report, lock, today).blocked, ['karma']);
 });
 
-test('blocks changed package versions and use outside the reviewed test packages', () => {
+test('blocks changed package versions and use outside the reviewed development packages', () => {
   const { report, lock } = fixture();
-  lock.packages['node_modules/braces'].version = '3.0.4';
-  assert.deepEqual(checkAudit(report, lock, today).blocked, ['braces', 'karma']);
+  lock.packages['node_modules/picomatch'].version = '4.0.8';
+  assert.deepEqual(checkAudit(report, lock, today).blocked, ['picomatch', 'karma']);
+  const changedDependent = fixture();
+  changedDependent.lock.packages['node_modules/karma'].version = '6.4.5';
+  assert.deepEqual(checkAudit(changedDependent.report, changedDependent.lock, today).blocked, ['karma']);
   const other = fixture();
-  other.report.vulnerabilities.unrelated = { name: 'unrelated', nodes: ['node_modules/karma'], via: ['braces'] };
+  other.report.vulnerabilities.unrelated = { name: 'unrelated', nodes: ['node_modules/karma'], via: ['picomatch'] };
   assert.deepEqual(checkAudit(other.report, other.lock, today).blocked, ['unrelated']);
+});
+
+test('blocks unreviewed installations of the same package', () => {
+  const { report, lock } = fixture();
+  const node = 'node_modules/other/node_modules/picomatch';
+  lock.packages[node] = { version: '4.0.7', dev: true };
+  report.vulnerabilities.picomatch.nodes.push(node);
+  assert.deepEqual(checkAudit(report, lock, today).blocked, ['picomatch', 'karma']);
 });
 
 test('the exception expires at the specified UTC time', () => {
   const { report, lock } = fixture();
-  assert.deepEqual(checkAudit(report, lock, new Date('2026-11-04T00:00:00Z')).blocked, ['braces', 'karma']);
+  assert.deepEqual(checkAudit(report, lock, new Date('2026-11-25T00:00:00Z')).blocked, ['picomatch', 'karma']);
 });
 
 test('blocks missing causes, cycles, and malformed or failed audit responses', () => {
   const { report, lock } = fixture();
-  report.vulnerabilities.braces.via = ['karma'];
-  assert.deepEqual(checkAudit(report, lock, today).blocked, ['braces', 'karma']);
-  report.vulnerabilities.braces.via = ['missing'];
-  assert.deepEqual(checkAudit(report, lock, today).blocked, ['braces', 'karma']);
+  report.vulnerabilities.picomatch.via = ['karma'];
+  assert.deepEqual(checkAudit(report, lock, today).blocked, ['picomatch', 'karma']);
+  report.vulnerabilities.picomatch.via = ['missing'];
+  assert.deepEqual(checkAudit(report, lock, today).blocked, ['picomatch', 'karma']);
   for (const invalid of [{}, { ...report, error: { code: 'NETWORK' } }, { ...report, vulnerabilities: [] }]) {
     assert.throws(() => checkAudit(invalid, lock, today), /Invalid npm audit report/);
   }
