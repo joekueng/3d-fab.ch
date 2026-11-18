@@ -483,3 +483,24 @@ The explanatory journey works without the backend. Live quotes, orders and
 server-managed media require the existing local stack documented above.
 
 The capability cards reuse the existing HOME_SECTION capability-prototyping, capability-custom-parts, capability-small-series and capability-cad usages. About reuses founders-gallery, including its existing variants and carousel. No media migration or upload is needed. For local frontend-only preview, home-media-preview.json contains public URL references captured from the current site in four languages; it does not copy photographs. Available local API media takes precedence. The preview references are disabled in production, where the existing live media assignments remain authoritative.
+
+Home action arrows and path-selection marks use inline SVG with the shared
+`ui-direction-icon` primitive in `src/styles/_ui.scss`. Do not use Unicode arrow
+or checkmark glyphs for these icons: their appearance depends on platform fonts.
+Project slides use the page's `--color-bg`, without blurred image backdrops, so
+the carousel remains visually continuous with its heading and adjacent sections.
+
+The process artwork eases toward the measured scroll fraction over 250 ms,
+retargeting from its current frame on every change. Text, clipping, numbered
+navigation and the progress bar follow the native reading position immediately.
+Adjacent scenes start at their entering boundary; jumps across multiple phases
+snap to the visible phase rather than replaying skipped scenes. Offscreen and
+reduced-motion updates settle immediately. The separate artwork frame loop reads
+no layout and is cancelled when switching paths or destroying the component.
+
+On desktop, the reading line sits at one quarter of the viewport height (capped at
+240 px from the top and never above the diagram). Each intermediate process
+description also sticks at this line for 30% of the viewport height (180–300 px of native scroll). The artwork
+advances from the unpinned track position during this hold, then the copy releases
+normally. Numbered navigation targets the track start, including when its copy
+is already pinned. These additional holds are disabled through 960 px.
