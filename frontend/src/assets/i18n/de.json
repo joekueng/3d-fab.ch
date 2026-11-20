@@ -1879,6 +1879,7 @@
     "AVAILABLE": "Im Rechner verfügbar",
     "OUT_OF_STOCK": "Zurzeit nicht auf Lager",
     "NO_PHOTO": "Foto noch nicht verfügbar",
+    "PHOTO_CREDIT": "Bildquelle:",
     "APPEARANCE_TITLE": "Eine gedruckte Oberfläche beurteilen",
     "APPEARANCE": "Matte Oberflächen dämpfen Reflexionen; glänzende betonen sie und verändern sich mit dem Licht. Textur, Pigmente und Wandstärke beeinflussen Deckkraft und Lichtdurchlässigkeit. Der Katalog zeigt Filamentoberflächen, keine Lackierung oder Politur.",
     "LAYERS": "FDM-Schichten bleiben sichtbar, besonders auf Rundungen und schrägen Flächen. Ausrichtung, Schichthöhe und das Entfernen von Stützen beeinflussen die Textur. Bei konkreten optischen Anforderungen beraten wir dich zu deinem Modell."

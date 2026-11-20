@@ -1874,6 +1874,7 @@
     "AVAILABLE": "Disponible dans le calculateur",
     "OUT_OF_STOCK": "Actuellement épuisé",
     "NO_PHOTO": "Photo pas encore disponible",
+    "PHOTO_CREDIT": "Source des photos :",
     "APPEARANCE_TITLE": "Comprendre une surface imprimée",
     "APPEARANCE": "Les finitions mates atténuent les reflets ; les finitions brillantes les accentuent et changent avec la lumière. Texture, pigments et épaisseur des parois influencent l’opacité et la translucidité. Ce catalogue montre les finitions du filament, pas des traitements de peinture ou de polissage.",
     "LAYERS": "Les couches FDM restent visibles, surtout sur les courbes et surfaces inclinées. L’orientation, la hauteur de couche et le retrait des supports influencent la texture finale. Pour des exigences esthétiques précises, demande-nous conseil sur ton modèle."

@@ -100,31 +100,42 @@
         {{ "COLORS_FINISHES.SCREEN_NOTE" | translate }}
       </p>
     </section>
-    <nav
-      class="ui-inline-actions ui-guide-links"
-      [attr.aria-label]="'GUIDE_LINKS.LABEL' | translate"
-    >
-      <a
-        class="ui-button"
-        [routerLink]="languageService.localizedPath('/calculator/basic')"
-        >{{ "GUIDE_LINKS.CALCULATE" | translate }}</a
+    <div>
+      <p class="ui-guide-note">
+        {{ "COLORS_FINISHES.PHOTO_CREDIT" | translate }}
+        <a
+          href="https://bambulab-eu.myshopify.com/pages/bambu-filament-overview"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Bambu Lab</a
+        >
+      </p>
+      <nav
+        class="ui-inline-actions ui-guide-links"
+        [attr.aria-label]="'GUIDE_LINKS.LABEL' | translate"
       >
-      <a
-        class="ui-button ui-button--text"
-        [routerLink]="languageService.localizedPath('/pricing')"
-        >{{ "GUIDE_LINKS.PRICING" | translate }}</a
-      >
-      <a
-        class="ui-button ui-button--text"
-        [routerLink]="languageService.localizedPath('/materials')"
-        >{{ "FOOTER.MATERIALS" | translate }}</a
-      >
-      <a
-        class="ui-button ui-button--text"
-        [routerLink]="languageService.localizedPath('/contact')"
-        >{{ "GUIDE_LINKS.CONSULT" | translate }}</a
-      >
-    </nav>
+        <a
+          class="ui-button"
+          [routerLink]="languageService.localizedPath('/calculator/basic')"
+          >{{ "GUIDE_LINKS.CALCULATE" | translate }}</a
+        >
+        <a
+          class="ui-button ui-button--text"
+          [routerLink]="languageService.localizedPath('/pricing')"
+          >{{ "GUIDE_LINKS.PRICING" | translate }}</a
+        >
+        <a
+          class="ui-button ui-button--text"
+          [routerLink]="languageService.localizedPath('/materials')"
+          >{{ "FOOTER.MATERIALS" | translate }}</a
+        >
+        <a
+          class="ui-button ui-button--text"
+          [routerLink]="languageService.localizedPath('/contact')"
+          >{{ "GUIDE_LINKS.CONSULT" | translate }}</a
+        >
+      </nav>
+    </div>
   </div>
 </main>
 

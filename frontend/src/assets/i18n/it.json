@@ -1867,6 +1867,7 @@
     "AVAILABLE": "Disponibile nel calcolatore",
     "OUT_OF_STOCK": "Al momento esaurito",
     "NO_PHOTO": "Foto non ancora disponibile",
+    "PHOTO_CREDIT": "Fonte foto:",
     "APPEARANCE_TITLE": "Come leggere una superficie stampata",
     "APPEARANCE": "Le finiture opache attenuano i riflessi; quelle lucide li rendono più evidenti e cambiano aspetto con la luce. Texture, pigmenti e spessore delle pareti possono influenzare opacità e trasparenza. Il catalogo mostra le finiture del filamento, non trattamenti di verniciatura o lucidatura.",
     "LAYERS": "Gli strati della stampa FDM restano visibili, soprattutto su curve e superfici inclinate. Orientamento, altezza dello strato e rimozione dei supporti influenzano la texture finale. Per esigenze estetiche precise, chiedici un consiglio sul tuo modello."

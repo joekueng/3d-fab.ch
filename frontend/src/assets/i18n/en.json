@@ -1866,6 +1866,7 @@
     "AVAILABLE": "Available in the calculator",
     "OUT_OF_STOCK": "Currently out of stock",
     "NO_PHOTO": "Photo not yet available",
+    "PHOTO_CREDIT": "Photo credit:",
     "APPEARANCE_TITLE": "Understanding a printed surface",
     "APPEARANCE": "Matte finishes soften reflections; glossy finishes make them more visible and change with the light. Texture, pigments and wall thickness can affect opacity and translucency. This catalogue shows filament finishes, not painting or polishing treatments.",
     "LAYERS": "FDM layers remain visible, especially on curves and sloped surfaces. Orientation, layer height and support removal affect the final texture. Ask us about your model if you have specific appearance requirements."
