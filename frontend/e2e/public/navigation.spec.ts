@@ -58,3 +58,13 @@ test('PUBLIC-003: contact form validates required fields without submitting', as
   await expect(privacy).toBeVisible();
   await expect(privacy).toHaveAttribute('target', '_blank');
 });
+
+test('PUBLIC-005: the hero jump moves keyboard focus into the process section', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/it');
+  await expect(page.locator('.site-intro')).toHaveCount(0);
+  await page.locator('a[href="/it#home-process"]').press('Enter');
+  await expect(page.locator('#process-title')).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('#home-process .path-picker button').first()).toBeFocused();
+});

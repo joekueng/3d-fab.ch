@@ -15,6 +15,10 @@ Read [frontend/AGENTS.md](../../../../AGENTS.md) and [frontend/README.md](../../
 | File selection/drop                | `app-dropzone`: set `accept`, `multiple`, `disabled`, `label`, and `subtext`; handle `filesDropped` in the feature. Use `showFileNames=false` when the feature already owns the preview list. File validation, attachment persistence, preview URLs, and removal belong to the feature. The native `accept` attribute is only a picker hint.                                                                                                   |
 | Quantity and color for print items | `app-print-item-controls`, already shared by calculator and checkout.                                                                                                                                                                                                                                                                                                                                                                          |
 
+Color lists use `compareColorHex` in `core/constants/colors.const.ts`: near-white
+comes first, followed by rainbow hues, then darker neutrals and invalid colors.
+Keep existing material and finish groups, and sort a copy of caller-owned arrays.
+
 Checkout uses `app-print-item-controls` with `showColorLabel=true` and
 `quantityLabelKey="CALC.QUANTITY"` and `stacked=true` in both summary views. Quantity
 and color each occupy a full row. The normal summary additionally uses
@@ -62,3 +66,9 @@ For a viewer filling a grid cell with a height defined by adjacent content, omit
 on the containing preview. The existing ResizeObserver adapts its canvas/camera.
 Checkout uses this in the normal summary so the preview matches the controls;
 the expanded summary retains square thumbnails.
+
+`app-dialog` explicitly restores focus to the connected element that opened it
+when destroyed, after closing the native dialog. Preserve this behavior for
+keyboard users; the sample catalogue browser tests exercise Enter, Tab and Escape.
+Image thumbnails use native lazy loading; `app-image-preview.loadFailed` lets the
+owning feature replace unavailable sources with its localized fallback.

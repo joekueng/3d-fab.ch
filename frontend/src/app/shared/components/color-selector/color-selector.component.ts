@@ -20,6 +20,8 @@ import {
   getColorHex,
   ColorOption,
   resolveLocalizedColorLabel,
+  filamentFinishLabelKey,
+  compareColorHex,
 } from '../../../core/constants/colors.const';
 import { VariantOption } from '../../../features/calculator/services/quote-estimator.service';
 import { LanguageService } from '../../../core/services/language.service';
@@ -75,7 +77,12 @@ export class ColorSelectorComponent {
   isOpen = signal(false);
 
   categories = computed<ColorSelectorGroup[]>(() => {
-    if (this.groups() !== null) return this.groups()!;
+    if (this.groups() !== null) {
+      return this.groups()!.map((group) => ({
+        ...group,
+        colors: [...group.colors].sort((a, b) => compareColorHex(a.hex, b.hex)),
+      }));
+    }
     const vars = this.variants();
     if (vars && vars.length > 0) {
       const byFinish = new Map<string, ColorOption[]>();
@@ -101,10 +108,13 @@ export class ColorSelectorComponent {
 
       return Array.from(byFinish.entries()).map(([finish, colors]) => ({
         name: finish,
-        colors,
+        colors: colors.sort((a, b) => compareColorHex(a.hex, b.hex)),
       }));
     }
-    return PRODUCT_COLORS;
+    return PRODUCT_COLORS.map((group) => ({
+      ...group,
+      colors: [...group.colors].sort((a, b) => compareColorHex(a.hex, b.hex)),
+    }));
   });
 
   constructor() {
@@ -151,12 +161,7 @@ export class ColorSelectorComponent {
   }
 
   private finishCategoryLabel(finishType: string): string {
-    const normalized = String(finishType || '')
-      .trim()
-      .toLowerCase();
-    if (normalized === 'glossy') return 'COLOR.CATEGORY_GLOSSY';
-    if (normalized === 'matte') return 'COLOR.CATEGORY_MATTE';
-    return 'COLOR.AVAILABLE_COLORS';
+    return filamentFinishLabelKey(finishType);
   }
 
   onEscape(event: Event): void {

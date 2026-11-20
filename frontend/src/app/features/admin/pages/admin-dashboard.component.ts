@@ -447,12 +447,14 @@ export class AdminDashboardComponent implements OnInit {
         this.reviewPreviewLoading = false;
         if (this.selectedOrder?.id === orderId)
           this.reviewRequestPreview = preview;
+        this.changeDetector.markForCheck();
       },
       error: () => {
         this.reviewPreviewLoading = false;
         this.errorMessage = this.translate.instant(
           'ADMIN_ORDERS.REVIEW_PREVIEW_ERROR',
         );
+        this.changeDetector.markForCheck();
       },
     });
   }
@@ -482,6 +484,7 @@ export class AdminDashboardComponent implements OnInit {
             );
           }
         }
+        this.changeDetector.markForCheck();
       },
       error: () => {
         this.reviewSending = false;
@@ -491,6 +494,7 @@ export class AdminDashboardComponent implements OnInit {
         );
         if (this.selectedOrder?.id === orderId)
           this.openDetails(orderId, false);
+        this.changeDetector.markForCheck();
       },
     });
   }

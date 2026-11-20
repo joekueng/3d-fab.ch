@@ -1,0 +1,91 @@
+.factors {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-8) var(--space-12);
+  margin: 0;
+}
+.factor dt,
+.example h3 {
+  margin: 0 0 var(--space-3);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+.factor dd {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}
+.cad-guidance {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-8);
+}
+.cad-guidance p {
+  max-width: 44rem;
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}
+.cad-guidance > a {
+  justify-self: start;
+}
+.cad-guidance p + p {
+  margin-top: var(--space-4);
+}
+.examples {
+  display: grid;
+  gap: var(--space-12);
+  margin-top: var(--space-8);
+}
+.example {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-6) var(--space-10);
+  align-items: start;
+}
+.example-copy {
+  grid-column: 1 / -1;
+}
+.example-price {
+  margin: 0;
+}
+.example-facts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: var(--space-4);
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.example-facts dt {
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+.example-facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.consultation p {
+  max-width: 44rem;
+  margin: 0 0 var(--space-6);
+  line-height: 1.7;
+  color: var(--color-text-muted);
+}
+app-image-preview {
+  --image-preview-height: 300px;
+}
+@media (max-width: 640px) {
+  .factors,
+  .cad-guidance,
+  .example {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .example-facts {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-1);
+  }
+  .example-facts dd {
+    margin-bottom: var(--space-3);
+  }
+}

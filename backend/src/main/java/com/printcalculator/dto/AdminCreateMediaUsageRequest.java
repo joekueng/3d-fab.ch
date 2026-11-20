@@ -1,9 +1,20 @@
 package com.printcalculator.dto;
 
+import jakarta.validation.Valid;
 import java.util.UUID;
 import java.util.Map;
 
 public class AdminCreateMediaUsageRequest {
+    @Valid
+    private PricingExampleDto pricingExample;
+
+    public PricingExampleDto getPricingExample() {
+        return pricingExample;
+    }
+    public void setPricingExample(PricingExampleDto value) {
+        pricingExample = value;
+    }
+
     private String usageType;
     private String usageKey;
     private UUID ownerId;

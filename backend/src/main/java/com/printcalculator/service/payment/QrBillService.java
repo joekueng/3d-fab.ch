@@ -3,10 +3,14 @@ package com.printcalculator.service.payment;
 import com.printcalculator.entity.Order;
 import net.codecrete.qrbill.generator.Bill;
 import net.codecrete.qrbill.generator.QRBill;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class QrBillService {
+
+    @Value("${QR_BILL_IBAN:CH2608307000480269300}")
+    private String creditorIban = "CH2608307000480269300";
 
     public byte[] generateQrBillSvg(Order order) {
         Bill bill = createBillFromOrder(order);
@@ -21,7 +25,7 @@ public class QrBillService {
         bill.getFormat().setOutputSize(net.codecrete.qrbill.generator.OutputSize.QR_BILL_ONLY);
 
         // Creditor (Merchant)
-        bill.setAccount("CH7409000000154821581"); // TODO: Configurable IBAN
+        bill.setAccount(creditorIban);
         bill.setCreditor(createAddress(
                 "Joe Küng",
                 "Via Camischolas Sura 23",

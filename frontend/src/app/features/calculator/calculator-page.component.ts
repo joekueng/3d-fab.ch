@@ -212,7 +212,7 @@ export class CalculatorPageComponent
     private estimator: QuoteEstimatorService,
     private router: Router,
     private route: ActivatedRoute,
-    private languageService: LanguageService,
+    readonly languageService: LanguageService,
     private translate: TranslateService,
     @Optional() @Inject(PLATFORM_ID) platformId?: Object,
   ) {

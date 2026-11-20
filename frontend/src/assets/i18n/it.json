@@ -12,6 +12,10 @@
     "INVALID_SESSION": "Inserisci un ID sessione del calcolatore valido oppure lascia il campo vuoto."
   },
   "NAV": {
+    "PRINT_GUIDES": "Guide alla stampa",
+    "OPEN_MENU": "Apri menu",
+    "CLOSE_MENU": "Chiudi menu",
+    "MAIN_NAVIGATION": "Navigazione principale",
     "HOME": "Home",
     "CALCULATOR": "Calcolatore",
     "SHOP": "Shop",
@@ -21,6 +25,7 @@
     "LANGUAGE_SELECTOR": "Selettore lingua"
   },
   "FOOTER": {
+    "INFORMATION": "Informazioni",
     "PRIVACY": "Privacy",
     "TERMS": "Termini & Condizioni",
     "MATERIALS": "Qualita e Materiali",
@@ -91,6 +96,14 @@
         "EMAIL_STATUS_UNKNOWN": "Esito incerto",
         "TITLE": "Admin | 3D fab",
         "DESCRIPTION": "Area amministrativa riservata di 3D fab."
+      },
+      "PRICING": {
+        "TITLE": "Prezzi stampa 3D in CHF | 3D fab",
+        "DESCRIPTION": "Scopri cosa determina il prezzo della stampa 3D: materiale, quantità, qualità e tempo. Calcola un preventivo in CHF o richiedi un primo confronto gratuito."
+      },
+      "COLORS_FINISHES": {
+        "TITLE": "Colori e finiture stampa 3D | 3D fab",
+        "DESCRIPTION": "Esplora i colori e le finiture disponibili nel calcolatore, guarda i campioni e confronta due varianti per il tuo progetto di stampa 3D."
       }
     }
   },
@@ -590,6 +603,84 @@
     }
   },
   "HOME": {
+    "JOURNEY": {
+      "HERO_EYEBROW": "Stampa 3D, fatta in Svizzera",
+      "HERO_LINE_1": "Dalla tua idea.",
+      "HERO_LINE_2": "Al pezzo finito.",
+      "HERO_LEAD": "Carica il modello, scegli materiale e qualità e scopri il preventivo. Alla stampa e alla spedizione pensiamo noi.",
+      "START_FILE": "Apri il calcolatore",
+      "START_IDEA": "Parliamo della tua idea",
+      "DISCOVER": "Scopri come funziona",
+      "NO_FILE_NOTE": "Non hai ancora il file?",
+      "NO_FILE_LINK": "Lo progettiamo insieme.",
+      "OBJECT_LABEL": "Dal digitale al reale",
+      "OBJECT_FILE": "Il tuo modello",
+      "OBJECT_QUOTE": "Il preventivo",
+      "OBJECT_PART": "Il tuo pezzo",
+      "TRUST_1": "Senza registrazione",
+      "TRUST_2": "Preventivo con vero slicing",
+      "TRUST_3": "Produzione in Svizzera",
+      "EYEBROW": "Un percorso semplice",
+      "TITLE": "Da dove parte il tuo prossimo pezzo?",
+      "INTRO": "Scegli una delle due opzioni: il percorso qui sotto cambia in base a ciò che hai. Poi scorri e scopri ogni passaggio.",
+      "PICKER_LABEL": "Scegli il tuo punto di partenza",
+      "FILE_LABEL": "Ho già il file 3D",
+      "FILE_HINT": "Dal modello al preventivo online",
+      "IDEA_LABEL": "Ho un’idea, mi serve il progetto",
+      "IDEA_HINT": "Partiamo dalla progettazione CAD",
+      "VISUAL_LABEL": "Il percorso del tuo pezzo",
+      "SCROLL": "Continua a scorrere",
+      "STEP_NAV": "Navigazione tra le fasi del processo",
+      "GO_TO": "Vai alla fase",
+      "UPLOAD_LABEL": "Il tuo file",
+      "UPLOAD_TITLE": "Un modello sullo schermo. Il primo passo è qui.",
+      "UPLOAD_TEXT": "Apri il calcolatore e carica il tuo file 3D. Puoi vedere l’anteprima del modello prima di scegliere come stamparlo.",
+      "QUOTE_LABEL": "Il preventivo",
+      "QUOTE_TITLE": "Scegli come farlo. Scopri quanto costa.",
+      "QUOTE_TEXT": "Scegli materiale, qualità e quantità. Il calcolatore usa il vero slicing per stimare tempi, materiale e prezzo: puoi confrontare le impostazioni prima di ordinare.",
+      "QUOTE_DETAIL": "Prezzo in CHF · Nessuna registrazione",
+      "BRIEF_LABEL": "La tua idea",
+      "BRIEF_TITLE": "Un problema da risolvere? Partiamo da lì.",
+      "BRIEF_TEXT": "Raccontaci cosa ti serve. Un disegno, una foto, le misure o un pezzo da sostituire ci aiutano a capire insieme la soluzione.",
+      "DESIGN_LABEL": "La progettazione",
+      "DESIGN_TITLE": "Diamo una forma digitale alla tua idea.",
+      "DESIGN_TEXT": "Trasformiamo le esigenze in un modello CAD e definiamo con te forma, misure e materiale. Il progetto viene concordato prima di passare alla produzione.",
+      "CUSTOM_QUOTE_LABEL": "La proposta",
+      "CUSTOM_QUOTE_TITLE": "Progetto chiaro. Preventivo concordato.",
+      "CUSTOM_QUOTE_TEXT": "Definiamo insieme il preventivo per progettazione e stampa. Quando la proposta è confermata, il modello è pronto per diventare un oggetto.",
+      "CUSTOM_DETAIL": "Consulenza e progettazione su richiesta",
+      "PRINT_LABEL": "La stampa 3D",
+      "PRINT_TITLE": "Strato dopo strato, prende forma.",
+      "PRINT_TEXT": "Dopo la conferma dell’ordine, prepariamo la produzione. La stampante costruisce il tuo pezzo seguendo il modello e le impostazioni scelte.",
+      "SHIP_LABEL": "La spedizione",
+      "SHIP_TITLE": "Dal piano di stampa, verso di te.",
+      "SHIP_TEXT": "Prepariamo il pezzo per la consegna e lo imballiamo per il trasporto. Puoi seguire l’avanzamento dell’ordine dalla pagina dedicata.",
+      "ARRIVE_LABEL": "Il pezzo finito",
+      "ARRIVE_TITLE": "Ora il tuo progetto si può toccare.",
+      "ARRIVE_TEXT": "Un prototipo da provare, un ricambio da montare o una piccola serie da utilizzare. Quello che era un file diventa una soluzione concreta.",
+      "READY": "Il prossimo pezzo potrebbe essere il tuo.",
+      "SERVICES_EYEBROW": "Pensato per quello che ti serve",
+      "SERVICES_TITLE": "Piccole idee. Possibilità concrete.",
+      "CAP_1": "Verifica la forma, gli incastri e il funzionamento prima di passare alla produzione.",
+      "CAP_2": "Ricambi, adattatori e componenti progettati per risolvere un’esigenza precisa.",
+      "CAP_3": "Più pezzi dello stesso progetto, per test, attività e produzioni su misura.",
+      "CAP_4": "Dall’idea al modello 3D, con un confronto diretto su forma, utilizzo e materiale.",
+      "PROJECTS_EYEBROW": "Dal digitale alla quotidianità",
+      "PROJECTS_TITLE": "Pezzi reali. Problemi risolti.",
+      "CTA_EYEBROW": "Dal tuo schermo al tuo prossimo progetto",
+      "CTA_TITLE": "Hai il file? Il prossimo passo è semplice.",
+      "CTA_TEXT": "Prova le impostazioni e scopri il preventivo, senza creare un account.",
+      "SHOP_TITLE": "Cerchi qualcosa di già progettato?",
+      "SHOP_TEXT": "Una selezione di oggetti e soluzioni nel nostro shop.",
+      "CHOOSE_LABEL": "Fai clic su un’opzione per cambiare il percorso.",
+      "SELECT_PATH": "Scegli questo percorso",
+      "SELECTED": "Percorso selezionato",
+      "FILE_SUMMARY": "Percorso selezionato: file 3D → preventivo → stampa e consegna.",
+      "IDEA_SUMMARY": "Percorso selezionato: idea → progetto CAD → stampa e consegna.",
+      "PRODUCTION_LABEL": "Produzione",
+      "DESTINATION_LABEL": "Casa tua",
+      "SKETCH_LABEL": "Il primo schizzo"
+    },
     "HERO_EYEBROW": "Stampa 3D tecnica per aziende, freelance e maker",
     "HERO_TITLE": "Servizio di stampa 3D.<br>Dal file al pezzo finito.",
     "HERO_LEAD": "Con il calcolatore più avanzato per le tue stampe 3D: precisione assoluta e zero sorprese.",
@@ -1484,6 +1575,11 @@
     }
   },
   "COLOR": {
+    "CATEGORY_MARBLE": "Marmorizzata",
+    "CATEGORY_SILK": "Setosa",
+    "CATEGORY_TRANSLUCENT": "Traslucida",
+    "CATEGORY_SPECIAL": "Speciale",
+    "CATEGORY_OTHER": "Altra finitura",
     "AVAILABLE_COLORS": "Colori disponibili",
     "CATEGORY_GLOSSY": "Lucidi",
     "CATEGORY_MATTE": "Opachi",
@@ -1685,5 +1781,113 @@
     "EMPTY": "Nessun campo da tradurre o aggiornare.",
     "COLORS_HINT": "Traduce tutti i colori salvati dall’italiano, sostituisce EN, DE e FR e salva le traduzioni per filamenti e shop.",
     "COLORS_SAVED": "Traduzioni dei colori salvate per filamenti e shop."
+  },
+  "GUIDE_LINKS": {
+    "LABEL": "Guide per il tuo progetto",
+    "PRICING": "Prezzi",
+    "COLORS": "Colori e finiture",
+    "CALCULATE": "Calcola il tuo prezzo",
+    "CONSULT": "Richiedi una consulenza",
+    "FREE_CONSULTATION": "Primo confronto gratuito per capire il progetto; eventuali attività successive vengono preventivate e concordate prima di iniziare.",
+    "BEFORE_STARTING": "Prima di iniziare",
+    "PRICING_HINT": "Come si forma il prezzo? Apri la guida in una nuova scheda.",
+    "COLORS_HINT": "Guarda colori e finiture in una nuova scheda."
+  },
+  "PRICING": {
+    "CAD_TITLE": "Progettazione e supporto CAD",
+    "CAD_CTA": "Richiedi supporto CAD",
+    "CAD_BILLING": "La prima consulenza è gratuita e serve a capire il progetto. Le eventuali attività successive di progettazione e supporto CAD vengono fatturate sulla base di un preventivo, concordato con te prima di iniziare.",
+    "TITLE": "Il prezzo del tuo progetto",
+    "INTRO": "Ogni modello richiede materiale, preparazione e tempo diversi. Carica il tuo file nel calcolatore per un preventivo in CHF basato sulle impostazioni scelte.",
+    "FACTORS_TITLE": "Cosa determina il costo",
+    "FACTORS": {
+      "material": {
+        "TITLE": "Materiale",
+        "TEXT": "Il tipo di filamento e la quantità consumata, compresi supporti e scarti di lavorazione, contribuiscono al costo."
+      },
+      "geometry": {
+        "TITLE": "Geometria",
+        "TEXT": "Dimensioni, forma e orientamento influenzano il percorso di stampa e la preparazione. Due oggetti dello stesso peso possono richiedere tempi diversi."
+      },
+      "quantity": {
+        "TITLE": "Quantità",
+        "TEXT": "Più pezzi nello stesso progetto possono condividere parte della preparazione. Il calcolatore mostra il totale per la quantità richiesta."
+      },
+      "quality": {
+        "TITLE": "Qualità e riempimento",
+        "TEXT": "Strati più sottili e un riempimento maggiore possono aumentare il tempo e il materiale necessari. Scegli in base alla funzione e all’aspetto desiderati."
+      },
+      "supports": {
+        "TITLE": "Supporti",
+        "TEXT": "Sporgenze e parti sospese possono richiedere strutture temporanee. La loro stampa e rimozione incidono sul lavoro e possono lasciare segni sulla superficie."
+      },
+      "time": {
+        "TITLE": "Tempo di stampa e preparazione",
+        "TEXT": "Il tempo macchina e le operazioni di preparazione entrano nel preventivo. Eventuali lavorazioni aggiuntive vengono concordate in base al progetto."
+      }
+    },
+    "CASES_TITLE": "Tre modi di usare la stampa 3D",
+    "CASES": {
+      "functional": {
+        "TITLE": "Piccolo componente funzionale",
+        "TEXT": "Un ricambio, una staffa o un adattatore: parti dall’uso previsto e dalle misure. Resistenza e orientamento contano quanto le dimensioni."
+      },
+      "decorative": {
+        "TITLE": "Oggetto decorativo",
+        "TEXT": "Un oggetto da esporre o regalare: colore, finitura e visibilità degli strati guidano la scelta. Verifica l’aspetto nella guida Colori e finiture."
+      },
+      "series": {
+        "TITLE": "Serie di dieci componenti uguali",
+        "TEXT": "Una piccola serie per montaggi o prove: imposta dieci pezzi dello stesso modello per vedere il costo totale. Quantità e disposizione influenzano la lavorazione."
+      }
+    },
+    "CASES_NOTE": "Per conoscere il prezzo del tuo oggetto, usa il tuo file e le impostazioni desiderate nel calcolatore. Per un progetto senza modello 3D, contattaci.",
+    "EXAMPLES_TITLE": "Esempi da preventivi reali",
+    "EXAMPLES_NOTE": "Prezzi indicativi in CHF per le specifiche e la data indicate. I costi inclusi sono riportati in ogni esempio; il tuo preventivo può variare.",
+    "CONSULTATION_TITLE": "Parliamo del tuo progetto"
+  },
+  "COLORS_FINISHES": {
+    "TITLE": "Colori e finiture",
+    "INTRO": "Esplora le varianti attive del calcolatore e confronta due campioni. Per proprietà meccaniche e scelta tecnica consulta la guida Materiali.",
+    "SCREEN_NOTE": "La resa sullo schermo è indicativa: luce, orientamento e impostazioni di stampa possono modificare colore e riflessi. Le campiture non sostituiscono una fotografia del campione.",
+    "MATERIAL": "Materiale",
+    "FINISH": "Finitura",
+    "ALL_MATERIALS": "Tutti i materiali",
+    "ALL_FINISHES": "Tutte le finiture",
+    "OTHER_FINISH": "Altra finitura",
+    "LOADING": "Caricamento del catalogo…",
+    "ERROR": "Il catalogo non è disponibile. Riprova fra poco.",
+    "RETRY": "Riprova",
+    "COMPARE_TITLE": "Confronta due varianti",
+    "COMPARE_HINT": "Seleziona fino a due varianti dal catalogo. Selezionate: {{count}}/2. Il confronto resta visibile quando cambi filtro.",
+    "COMPARE": "Confronta questa variante",
+    "CATALOG_TITLE": "Catalogo dei campioni",
+    "RESULTS": "Varianti: {{count}}",
+    "EMPTY": "Nessuna variante per questi filtri. Prova un altro materiale o un’altra finitura.",
+    "AVAILABLE": "Disponibile nel calcolatore",
+    "OUT_OF_STOCK": "Al momento esaurito",
+    "NO_PHOTO": "Foto non ancora disponibile",
+    "PHOTO_CREDIT": "Fonte foto:",
+    "APPEARANCE_TITLE": "Come leggere una superficie stampata",
+    "APPEARANCE": "Le finiture opache attenuano i riflessi; quelle lucide li rendono più evidenti e cambiano aspetto con la luce. Texture, pigmenti e spessore delle pareti possono influenzare opacità e trasparenza. Il catalogo mostra le finiture del filamento, non trattamenti di verniciatura o lucidatura.",
+    "LAYERS": "Gli strati della stampa FDM restano visibili, soprattutto su curve e superfici inclinate. Orientamento, altezza dello strato e rimozione dei supporti influenzano la texture finale. Per esigenze estetiche precise, chiedici un consiglio sul tuo modello."
+  },
+  "ADMIN_GUIDES": {
+    "FILAMENTS_TITLE": "Campioni filamento",
+    "FILAMENTS_DESCRIPTION": "Fotografie reali delle varianti attive: vista generale, obliqua e dettaglio. La primaria apre la galleria; le altre seguono l’ordinamento.",
+    "PRICING_TITLE": "Esempi di prezzo",
+    "PRICING_DESCRIPTION": "Aggiungi una fotografia reale e i dati del preventivo. Gli esempi non verificati restano nascosti al pubblico.",
+    "PRICE_HINT": "Per pubblicare: foto reale, titolo e alt nelle quattro lingue, materiale, dimensioni in mm, quantità (1 oppure 10 per la serie), totale CHF, data del preventivo, impostazioni e costi inclusi in tutte le lingue. Specifica sempre IVA e spedizione nei costi inclusi. Conserva la prova del preventivo internamente; non inserire dati del cliente.",
+    "MATERIAL": "Materiale",
+    "DIMENSIONS": "Dimensioni (L × P × H)",
+    "QUANTITY": "Quantità",
+    "PRICE": "Prezzo totale indicativo (CHF)",
+    "DATE": "Data del preventivo",
+    "SETTINGS": "Impostazioni di stampa",
+    "COSTS": "Costi inclusi ed esclusi (IVA, spedizione, preparazione)",
+    "VERIFIED": "Confermo foto reale e dati verificati dal preventivo; pubblica quando completi.",
+    "CATALOG_ERROR": "Impossibile caricare le varianti. Ricarica i Media per riprovare.",
+    "EDIT": "Modifica / sostituisci",
+    "SAVE": "Salva modifiche"
   }
 }

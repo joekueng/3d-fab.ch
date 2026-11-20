@@ -12,6 +12,7 @@ This is a modern Angular standalone application organised around Core, Shared, a
 ## Getting Started
 
 1. **Install Dependencies**:
+
    ```bash
    npm install
    ```
@@ -390,3 +391,116 @@ select the split-consent checkbox, then calculate the quote again. Label these
 files as requiring splitting; reserve manual-review copy for failed estimates.
 Keep the checkbox label concise; the split-review card explains the surcharge
 and manual-review fallback. Stack its full-width action buttons with a consistent gap.
+
+## Pricing and filament sample pages
+
+See [pricing and samples](../docs/pricing-and-samples.md) for the Media scopes,
+publication gate, photo protocol and back-office workflow. Read-only catalogue
+consumers use `CalculatorOptionsService`; session creation remains in the quote
+service. Shared finish terminology lives in `filamentFinishLabelKey` in
+`core/constants/colors.const.ts`, used by both the calculator and sample catalogue.
+`app-image-preview` emits `loadFailed` so owners can provide a missing-photo state.
+Verify production HTML with `npm run build && npm run check:guides-ssr`.
+`UI-GUIDES-001`–`003` in `e2e/ui-states/guides.spec.ts` use explicit synthetic
+catalogue/media responses for filters, comparison, keyboard, recovery and locales.
+
+Public informational guides use the open typography of About/legal pages and the
+shared public hero. The `ui-guide-*` primitives in `styles/_ui.scss` provide a
+reading width, section dividers and spacing without card surfaces or shadows.
+Keep factors and examples in semantic lists/articles, catalogue availability as
+plain text, and use existing controls for filtering, comparison and previews.
+
+## Public guide navigation
+
+Header and footer share the three localized destinations in
+`core/layout/print-guide-links.ts`, in the order Materials, Colors and finishes,
+Pricing. The header uses a small disclosure labelled Printing guides, opening on mouse
+hover on desktop as well as click/keyboard. A pointer bridge spans the gap to
+the flyout, so entering its links does not close it. The mobile
+hamburger opens that group so its choices are immediately available. Keep native
+buttons for navigation disclosures and `RouterLink` anchors for destinations.
+Escape restores focus to the trigger; outside clicks, leaving the disclosure by
+keyboard and navigation close it. Preserve the same destinations in the footer’s
+labelled group, alongside a separate information group.
+
+`RouterLinkActive` marks the group and current links, with
+`ariaCurrentWhenActive="page"` on destinations. This input and ancestor-group
+behavior were verified on 2026-10-26 against the installed Angular Router 22.2.3
+types and the [official API](https://angular.dev/api/router/RouterLinkActive).
+No dependency was added or updated; the external package check passed 45/45.
+Browser coverage is `UI-NAV-GUIDES-001`–`004` in
+`e2e/ui-states/navigation-guides.spec.ts`, including four locales, navigation
+without document reloads, footer grouping, keyboard controls and 320 px width.
+Run Playwright suites sequentially when they share the same artifact directory.
+
+## Interactive homepage process
+
+The home-only redesign retains the shared layout, typography, semantic tokens
+and UI controls. Its light opening uses a full-width, centered headline and
+calculator action, following the quoting-first hierarchy reviewed on
+[Xometry](https://www.xometry.com/). [Fictiv](https://www.fictiv.com/) and
+[Protolabs Network](https://www.hubs.com/3d-printing/) were also reviewed for the
+clear upload, quote and manufacturing journey. The opening uses the shared subtle grid pattern and contains no decorative
+workflow illustration. Benchy renders remain within the interactive process.
+
+The process uses the classic 3DBenchy in three states: a rough pencil draft, a smooth gray digital model and an isolated photographic illustration of a yellow FDM print. See src/assets/images/home/ATTRIBUTION.md for provenance. Existing path cards, buttons and page layout are retained.
+
+HomeProcessComponent offers file and CAD-design paths, with explicit selection labels and keyboard navigation. A sticky diagram follows normal page scrolling without intercepting wheel or touch events. The pencil draft reveals contour by contour through an SVG mask. The quote and upload scenes use the smooth gray model. The printer starts with an empty clip and builds the yellow print from the bottom up, without a full-model ghost. During shipping, the original parcel moves from production to a house. On arrival its flaps open before the printed part rises out. Reduced motion shows complete illustrations and removes animated transitions. Scroll work is scheduled once per frame outside Angular, and listeners are removed on destruction.
+
+The decorative quote scene follows `calculator-page.component.html`: the left
+card contains the mode selector, model preview, file quantity/colour and basic
+material/quality settings; the right card follows `app-price-breakdown`, the
+time/material summary cards and order actions. Keep this miniature aligned with
+the calculator when its layout changes. SVG marks stand in for text and controls
+so the illustration stays legible at small sizes without adding interactive forms.
+
+Through 960 px, the diagram sits above the complete scrolling story. Only the
+compact diagram is sticky; every description and the final action remain in
+normal page flow. Step heights come from their text and modest spacing. Never
+add a mobile scroll runway, viewport-based minimum heights, hidden description
+panels, or a sticky container around both diagram and text: the remaining screen
+must show adjacent steps or subsequent page sections.
+
+Both layouts retain the same numbered step buttons and timeline markers. Mobile
+buttons are sized to fit six phases in one row. The animation follows the text
+passing beneath the diagram in either scroll direction. The mobile story is
+clipped at the diagram's bottom edge so passed text cannot reappear above it;
+clipping preserves the story's layout and reverses on scroll. Numbered links and
+Up/Down/Home/End keys scroll to the corresponding text. Reduced motion shows
+completed illustrations. Desktop keeps its existing two-column layout and holds.
+Verify all locales, both paths, narrow/short viewports and that following content
+actually fills the space below the selected text.
+
+Copy lives under HOME.JOURNEY in the four locale catalogs. The About section
+matches the original homepage, without an added placeholder. The compact shop
+teaser is last; the approved services and calculator call-to-action are retained.
+Existing projects and media retain their API flows. The calculator and contact
+links open their existing pages; the backend is unchanged.
+
+To preview only the frontend, use Node 24 (see .nvmrc), run npm ci once in
+frontend/, then npm start, and open http://localhost:4200/it.
+The explanatory journey works without the backend. Live quotes, orders and
+server-managed media require the existing local stack documented above.
+
+The capability cards reuse the existing HOME_SECTION capability-prototyping, capability-custom-parts, capability-small-series and capability-cad usages. About reuses founders-gallery, including its existing variants and carousel. No media migration or upload is needed. For local frontend-only preview, home-media-preview.json contains public URL references captured from the current site in four languages; it does not copy photographs. Available local API media takes precedence. The preview references are disabled in production, where the existing live media assignments remain authoritative.
+
+Home action arrows and path-selection marks use inline SVG with the shared
+`ui-direction-icon` primitive in `src/styles/_ui.scss`. Do not use Unicode arrow
+or checkmark glyphs for these icons: their appearance depends on platform fonts.
+Project slides use the page's `--color-bg`, without blurred image backdrops, so
+the carousel remains visually continuous with its heading and adjacent sections.
+
+The process artwork eases toward the measured scroll fraction over 250 ms,
+retargeting from its current frame on every change. Text, clipping, numbered
+navigation and the progress bar follow the native reading position immediately.
+Adjacent scenes start at their entering boundary; jumps across multiple phases
+snap to the visible phase rather than replaying skipped scenes. Offscreen and
+reduced-motion updates settle immediately. The separate artwork frame loop reads
+no layout and is cancelled when switching paths or destroying the component.
+
+On desktop, the reading line sits at one quarter of the viewport height (capped at
+240 px from the top and never above the diagram). Each intermediate process
+description also sticks at this line for 30% of the viewport height (180–300 px of native scroll). The artwork
+advances from the unpinned track position during this hold, then the copy releases
+normally. Numbered navigation targets the track start, including when its copy
+is already pinned. These additional holds are disabled through 960 px.

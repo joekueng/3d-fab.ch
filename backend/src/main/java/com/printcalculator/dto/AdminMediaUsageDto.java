@@ -5,6 +5,15 @@ import java.util.Map;
 import java.util.UUID;
 
 public class AdminMediaUsageDto {
+    private PricingExampleDto pricingExample;
+
+    public PricingExampleDto getPricingExample() {
+        return pricingExample;
+    }
+    public void setPricingExample(PricingExampleDto value) {
+        pricingExample = value;
+    }
+
     private UUID id;
     private String usageType;
     private String usageKey;

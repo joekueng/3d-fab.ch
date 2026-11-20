@@ -1,3 +1,4 @@
+import { PRINT_GUIDE_LINKS } from './print-guide-links';
 import {
   CommonModule,
   DOCUMENT,
@@ -8,6 +9,9 @@ import {
   afterNextRender,
   Component,
   DestroyRef,
+  ElementRef,
+  HostListener,
+  viewChild,
   PLATFORM_ID,
   computed,
   inject,
@@ -62,6 +66,17 @@ export class NavbarComponent {
   readonly shopService = inject(ShopService);
   private pageScrollLockState: PageScrollLockState | null = null;
 
+  readonly guideLinks = PRINT_GUIDE_LINKS;
+  readonly isGuidesOpen = signal(false);
+  private guidesOpenedByHover = false;
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly guidesGroup =
+    viewChild<ElementRef<HTMLElement>>('guidesGroup');
+  private readonly guidesTrigger =
+    viewChild<ElementRef<HTMLButtonElement>>('guidesTrigger');
+  private readonly mobileTrigger =
+    viewChild<ElementRef<HTMLButtonElement>>('mobileTrigger');
+
   isMenuOpen = false;
   readonly isCartOpen = signal(false);
   readonly cartMutating = signal(false);
@@ -113,11 +128,91 @@ export class NavbarComponent {
   }
 
   toggleMenu() {
+    this.closeCart();
     this.isMenuOpen = !this.isMenuOpen;
+    this.isGuidesOpen.set(this.isMenuOpen);
   }
 
   closeMenu() {
+    this.guidesOpenedByHover = false;
     this.isMenuOpen = false;
+    this.isGuidesOpen.set(false);
+  }
+
+  toggleGuides(event: MouseEvent): void {
+    // The first mouse click keeps a hover-opened menu available for selection.
+    if (event.detail > 0 && this.guidesOpenedByHover && this.isGuidesOpen()) {
+      this.guidesOpenedByHover = false;
+      return;
+    }
+    this.guidesOpenedByHover = false;
+    this.isGuidesOpen.update((open) => !open);
+  }
+
+  onGuidesPointerEnter(event: PointerEvent): void {
+    if (
+      this.isBrowser &&
+      event.pointerType === 'mouse' &&
+      window.matchMedia(
+        '(min-width: 1181px) and (hover: hover) and (pointer: fine)',
+      ).matches &&
+      !this.isGuidesOpen()
+    ) {
+      this.guidesOpenedByHover = true;
+      this.isGuidesOpen.set(true);
+    }
+  }
+
+  onGuidesPointerLeave(event: PointerEvent): void {
+    if (event.pointerType === 'mouse' && this.guidesOpenedByHover) {
+      this.guidesOpenedByHover = false;
+      if (
+        !this.guidesGroup()?.nativeElement.contains(
+          this.documentRef.activeElement,
+        )
+      ) {
+        this.isGuidesOpen.set(false);
+      }
+    }
+  }
+
+  onGuidesFocusOut(event: FocusEvent): void {
+    const target = event.relatedTarget;
+    if (
+      !(target instanceof Node) ||
+      !this.guidesGroup()?.nativeElement.contains(target)
+    ) {
+      this.isGuidesOpen.set(false);
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target;
+    if (
+      !(target instanceof Node) ||
+      !this.host.nativeElement.contains(target)
+    ) {
+      this.closeMenu();
+    } else if (
+      !this.guidesGroup()?.nativeElement.contains(target) &&
+      !this.mobileTrigger()?.nativeElement.contains(target)
+    ) {
+      this.isGuidesOpen.set(false);
+    }
+  }
+
+  @HostListener('document:keydown.escape', ['$event'])
+  onEscape(event: Event): void {
+    if (this.isGuidesOpen()) {
+      event.preventDefault();
+      this.isGuidesOpen.set(false);
+      this.guidesTrigger()?.nativeElement.focus();
+    } else if (this.isMenuOpen) {
+      event.preventDefault();
+      this.closeMenu();
+      this.mobileTrigger()?.nativeElement.focus();
+    }
   }
 
   toggleCart(): void {

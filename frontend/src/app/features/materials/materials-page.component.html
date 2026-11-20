@@ -151,6 +151,21 @@
               </li>
             }
           </ul>
+          <nav
+            class="ui-actions"
+            [attr.aria-label]="'GUIDE_LINKS.LABEL' | translate"
+          >
+            <a
+              class="ui-button"
+              [routerLink]="languageService.localizedPath('/pricing')"
+              >{{ "GUIDE_LINKS.PRICING" | translate }}</a
+            >
+            <a
+              class="ui-button"
+              [routerLink]="languageService.localizedPath('/colors-finishes')"
+              >{{ "GUIDE_LINKS.COLORS" | translate }}</a
+            >
+          </nav>
         </article>
       </div>
     </div>

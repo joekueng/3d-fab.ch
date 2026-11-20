@@ -1,3 +1,4 @@
+import { CalculatorOptionsService } from '../../calculator/services/calculator-options.service';
 import { provideZonelessChangeDetection, Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideTranslateService } from '@ngx-translate/core';
@@ -28,6 +29,10 @@ describe('Admin asynchronous loading', () => {
   it('renders media after the HTTP response and clears loading', async () => {
     const assets = new Subject<never[]>();
     const fixture = setup(AdminHomeMediaComponent, [
+      {
+        provide: CalculatorOptionsService,
+        useValue: { getOptions: () => of({ materials: [] }) },
+      },
       { provide: AdminMediaService, useValue: { listAssets: () => assets } },
       { provide: AdminTranslationService, useValue: {} },
     ]);

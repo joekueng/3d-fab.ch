@@ -30,6 +30,10 @@ use their separate generation paths and remain available after payment.
 Information-area access is unchanged; its messages and attachments may contain
 customer-provided personal data.
 
+QR bills use the creditor IBAN configured by `QR_BILL_IBAN`, defaulting to
+`CH2608307000480269300`. Changing it affects newly generated documents; PDFs
+already sent or saved retain their original payment details.
+
 ## Material print compatibility
 
 Calculator visibility requires both an active filament variant and an active
@@ -871,3 +875,10 @@ Until then the old checkout is unavailable. A redirect reservation cannot be
 reactivated by an ordinary edit. The new nullable `deleted_redirect_path` column
 is additive under Hibernate schema update; matching DDL is in `db.sql` and needs
 no backfill. Existing instructions retain their normal draft retention policy.
+
+## Media pricing examples
+
+The [pricing and sample guide](../docs/pricing-and-samples.md) documents the optional
+`media_usage.pricing_example` JSON field, additive rollout and publication rules.
+Reuse the existing Media endpoints. Public reads must exclude unverified or
+incomplete pricing data; never add quote credentials or customer references to it.

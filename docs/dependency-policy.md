@@ -52,12 +52,12 @@ If dependency declaration syntax changes, update its coverage in the same change
 
 Gitea keeps the runtime audit fully blocking, then runs
 `node scripts/check-frontend-audit.mjs` for the complete lockfile audit.
-The checker temporarily accepts only GHSA-vfj7-8cjw-p6xm for `braces` 3.0.3
-and its reviewed Karma test dependency chain. Every affected lockfile node
-must be development-only. Other advisories, runtime nodes, changed versions,
-invalid reports and audit errors remain blocking. The exception expires at
-2026-11-04 00:00 UTC and must be removed after a compatible upstream fix or
-the migration away from Karma; expiry requires a new review, not automatic renewal.
+The checker temporarily accepts only the withdrawn advisory GHSA-fc5q-39xc-vjpf
+for `picomatch` while npm still reports it. Every affected node must match an
+explicitly reviewed lockfile path and version and be development-only. Other
+advisories, runtime nodes, changed versions, invalid reports and audit errors
+remain blocking. The exception expires at 2026-11-25 00:00 UTC. Remove it when
+npm stops reporting the advisory. Expiry requires a new review.
 Detailed review records remain private under `private-security/`.
 
 Run `node --test scripts/check-frontend-audit.test.mjs` when changing audit policy.

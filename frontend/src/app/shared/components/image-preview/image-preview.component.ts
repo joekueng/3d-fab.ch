@@ -1,4 +1,4 @@
-import { Component, input, signal } from '@angular/core';
+import { Component, input, output, signal } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AppButtonComponent } from '../app-button/app-button.component';
 import { AppDialogComponent } from '../app-dialog/app-dialog.component';
@@ -13,6 +13,7 @@ import { AppDialogComponent } from '../app-dialog/app-dialog.component';
 export class ImagePreviewComponent {
   readonly src = input.required<string>();
   readonly alt = input.required<string>();
+  readonly loadFailed = output<void>();
   readonly open = signal(false);
   readonly zoomed = signal(false);
 

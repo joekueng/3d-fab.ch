@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { LanguageService } from '../../core/services/language.service';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ContactFormComponent } from './components/contact-form/contact-form.component';
@@ -10,6 +12,7 @@ import { FeaturePanelComponent } from '../../shared/components/feature-panel/fea
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     TranslatePipe,
     ContactFormComponent,
     AppCardComponent,
@@ -18,4 +21,6 @@ import { FeaturePanelComponent } from '../../shared/components/feature-panel/fea
   templateUrl: './contact-page.component.html',
   styleUrl: './contact-page.component.scss',
 })
-export class ContactPageComponent {}
+export class ContactPageComponent {
+  readonly languageService = inject(LanguageService);
+}

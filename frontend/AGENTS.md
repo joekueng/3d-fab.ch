@@ -57,6 +57,9 @@ For live order updates, follow [customer order tracking](README.md#customer-orde
 
 For asynchronous view updates, follow [change detection conventions](README.md#asynchronous-view-updates).
 
+For the home journey's compact diagram, numbered navigation and scrolling text,
+follow [interactive homepage process](README.md#interactive-homepage-process).
+
 For localized admin content and the bulk filament color action, follow
 [admin content translation](README.md#admin-content-translation).
 
@@ -94,3 +97,9 @@ rg -n "<(input|select|textarea|button)\\b" src/app/features/admin/pages --glob '
 Raw controls found by the second command are allowed only for the special-purpose exceptions above. Verify responsive behavior for user-facing UI changes.
 
 For editable service rows and interim invoice groups, follow [service invoice administration](README.md#service-invoice-administration).
+
+For pricing examples, filament photographs and shared catalogue terminology, follow
+[pricing and filament sample pages](README.md#pricing-and-filament-sample-pages).
+
+For the shared header/footer guide links and their mobile disclosure, follow
+[public guide navigation](README.md#public-guide-navigation).

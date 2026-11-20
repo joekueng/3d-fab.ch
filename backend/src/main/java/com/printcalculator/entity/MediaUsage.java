@@ -1,5 +1,8 @@
 package com.printcalculator.entity;
 
+import com.printcalculator.dto.PricingExampleDto;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -80,6 +83,17 @@ public class MediaUsage {
     @ColumnDefault("now()")
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "pricing_example")
+    private PricingExampleDto pricingExample;
+
+    public PricingExampleDto getPricingExample() {
+        return pricingExample;
+    }
+    public void setPricingExample(PricingExampleDto value) {
+        pricingExample = value;
+    }
 
     public UUID getId() {
         return id;

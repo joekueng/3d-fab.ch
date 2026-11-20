@@ -111,6 +111,31 @@ class PublicMediaQueryServiceTest {
         assertTrue(result.get(0).getIsPrimary());
     }
 
+    @Test
+    void pricingExamplesExposeOnlyVerifiedCompletePublicSamples() {
+        var asset = buildAsset("READY", "PUBLIC", "Sample", "Printed sample");
+        var draft = buildUsage(asset, "PRICING_EXAMPLE", "functional", 0, false, true);
+        var incomplete = buildUsage(asset, "PRICING_EXAMPLE", "functional", 1, false, true);
+        incomplete.setPricingExample(new com.printcalculator.dto.PricingExampleDto("PLA", "20 × 20 × 10", 1,
+                new java.math.BigDecimal("12.50"), java.time.LocalDate.now(), java.util.Map.of("it", "settings"), java.util.Map.of(), true));
+        var verified = buildUsage(asset, "PRICING_EXAMPLE", "functional", 2, true, true);
+        var translated = java.util.Map.of("it", "text", "en", "text", "de", "text", "fr", "text");
+        verified.setPricingExample(new com.printcalculator.dto.PricingExampleDto("PLA", "20 × 20 × 10", 1,
+                new java.math.BigDecimal("12.50"), java.time.LocalDate.now(), translated, translated, true));
+        var privateUsage = buildUsage(buildAsset("READY", "PRIVATE", "Private", "Private"), "PRICING_EXAMPLE", "functional", 3, false, true);
+        privateUsage.setPricingExample(verified.getPricingExample());
+        when(mediaUsageRepository.findActiveByUsageTypeAndUsageKeys("PRICING_EXAMPLE", List.of("functional")))
+                .thenReturn(List.of(draft, incomplete, verified, privateUsage));
+        when(mediaVariantRepository.findByMediaAsset_IdIn(List.of(asset.getId())))
+                .thenReturn(List.of(buildVariant(asset, "card", "JPEG", "example/card.jpg")));
+        var result = service.getUsageMedia("PRICING_EXAMPLE", "functional", "en");
+        assertEquals(1, result.size());
+        assertEquals(verified.getPricingExample(), result.getFirst().getPricingExample());
+        when(mediaUsageRepository.findActiveByUsageTypeAndUsageKeys("PRICING_EXAMPLE", List.of("series")))
+                .thenReturn(List.of(buildUsage(asset, "PRICING_EXAMPLE", "series", 0, true, true)));
+        assertTrue(service.getUsageMedia("PRICING_EXAMPLE", "series", "en").isEmpty());
+    }
+
     private MediaAsset buildAsset(String status, String visibility, String title, String altText) {
         MediaAsset asset = new MediaAsset();
         asset.setId(UUID.randomUUID());

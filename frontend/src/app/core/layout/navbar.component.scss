@@ -45,6 +45,68 @@
   }
 }
 
+.nav-guides {
+  position: relative;
+}
+.guides-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.guides-trigger:hover,
+.nav-guides.active .guides-trigger {
+  color: var(--color-brand);
+}
+.guides-chevron {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+}
+.guides-chevron.is-open {
+  transform: translateY(1px) rotate(225deg);
+}
+.guide-links {
+  position: absolute;
+  top: calc(100% + var(--space-5));
+  left: calc(-1 * var(--space-4));
+  min-width: 15rem;
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-card);
+  box-shadow: var(--shadow-sm);
+}
+.guide-links[hidden] {
+  display: none;
+}
+.nav-links .guide-links a {
+  padding: var(--space-3) var(--space-2);
+}
+.nav-links .guide-links a:hover,
+.nav-links .guide-links a.active {
+  color: var(--color-text);
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-sm);
+}
+.guides-trigger:focus-visible,
+.nav-links a:focus-visible,
+.mobile-toggle:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 4px;
+}
+
 .actions {
   display: flex;
   align-items: center;
@@ -308,6 +370,10 @@
 
 /* Mobile Toggle */
 .mobile-toggle {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  flex-shrink: 0;
   display: none;
   flex-direction: column;
   justify-content: space-between;
@@ -396,6 +462,38 @@
     }
   }
 
+  .nav-links {
+    max-height: calc(100dvh - 64px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .nav-guides {
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--color-neutral-100);
+  }
+  .guides-trigger {
+    width: 100%;
+    justify-content: space-between;
+    padding-block: var(--space-2);
+    font-size: 1.1rem;
+  }
+  .guide-links {
+    position: static;
+    min-width: 0;
+    margin: var(--space-2) 0 0;
+    padding: 0 0 0 var(--space-4);
+    border: 0;
+    border-left: 1px solid var(--color-border);
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .nav-links .guide-links a {
+    padding: var(--space-2);
+    border: 0;
+    font-size: 1rem;
+    white-space: normal;
+  }
+
   .cart-line-actions {
     align-items: start;
     flex-direction: column;
@@ -410,5 +508,33 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@media (max-width: 380px) {
+  .brand-logo {
+    width: min(10.5rem, 43vw);
+  }
+  .actions {
+    gap: var(--space-2);
+  }
+  .mobile-toggle {
+    margin-left: var(--space-3);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-links.open {
+    animation: none;
+  }
+}
+
+// Keep the mouse inside the disclosure while it crosses the gap to the flyout.
+@media (min-width: 1181px) and (hover: hover) and (pointer: fine) {
+  .guide-links::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: 100%;
+    height: var(--space-5);
   }
 }

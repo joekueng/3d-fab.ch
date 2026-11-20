@@ -1,0 +1,133 @@
+<main class="ui-page-surface ui-guide-page">
+  <div class="container ui-simple-hero">
+    <h1 class="ui-simple-hero__title">{{ "PRICING.TITLE" | translate }}</h1>
+    <p class="ui-simple-hero__subtitle">{{ "PRICING.INTRO" | translate }}</p>
+    <div class="ui-simple-hero__actions ui-inline-actions">
+      <a
+        class="ui-button"
+        [routerLink]="languageService.localizedPath('/calculator/basic')"
+        >{{ "GUIDE_LINKS.CALCULATE" | translate }}</a
+      >
+      <a
+        class="ui-button ui-button--outline"
+        [routerLink]="languageService.localizedPath('/contact')"
+        [queryParams]="{ requestType: 'consult' }"
+        >{{ "GUIDE_LINKS.CONSULT" | translate }}</a
+      >
+    </div>
+  </div>
+  <div class="container ui-page-surface__body ui-guide-body pricing-content">
+    <section class="ui-guide-section" aria-labelledby="cost-title">
+      <h2 class="ui-guide-title" id="cost-title">
+        {{ "PRICING.FACTORS_TITLE" | translate }}
+      </h2>
+      <dl class="factors">
+        @for (factor of factors; track factor) {
+          <div class="factor">
+            <dt>{{ "PRICING.FACTORS." + factor + ".TITLE" | translate }}</dt>
+            <dd>{{ "PRICING.FACTORS." + factor + ".TEXT" | translate }}</dd>
+          </div>
+        }
+      </dl>
+    </section>
+    <section class="ui-guide-section cad-guidance" aria-labelledby="cad-title">
+      <div>
+        <h2 class="ui-guide-title" id="cad-title">
+          {{ "PRICING.CAD_TITLE" | translate }}
+        </h2>
+        <p>{{ "CONTACT.CAD_NOTE_TEXT" | translate }}</p>
+        <p>{{ "PRICING.CAD_BILLING" | translate }}</p>
+      </div>
+      <a
+        class="ui-button"
+        [routerLink]="languageService.localizedPath('/contact')"
+        [queryParams]="{ requestType: 'consult' }"
+        >{{ "PRICING.CAD_CTA" | translate }}</a
+      >
+    </section>
+    @if (examples().length) {
+      <section class="ui-guide-section" aria-labelledby="examples-title">
+        <h2 class="ui-guide-title" id="examples-title">
+          {{ "PRICING.EXAMPLES_TITLE" | translate }}
+        </h2>
+        <p class="ui-guide-note">{{ "PRICING.EXAMPLES_NOTE" | translate }}</p>
+        <div class="examples">
+          @for (example of examples(); track example.key) {
+            <article class="example">
+              <div class="example-copy">
+                <h3>
+                  {{
+                    example.image.title ||
+                      ("PRICING.CASES." + example.key + ".TITLE" | translate)
+                  }}
+                </h3>
+                <p class="example-price ui-copy-lead">
+                  {{ money(example.details.priceChf) }}
+                </p>
+              </div>
+              <div class="example-media">
+                @if (!failedImages().has(example.image.mediaAssetId)) {
+                  <app-image-preview
+                    [src]="example.image.source.fallbackUrl"
+                    [alt]="example.image.altText || example.image.title || ''"
+                    (loadFailed)="imageFailed(example.image)"
+                  />
+                } @else {
+                  <p>{{ "COLORS_FINISHES.NO_PHOTO" | translate }}</p>
+                }
+              </div>
+              <dl class="example-facts">
+                <dt>{{ "COLORS_FINISHES.MATERIAL" | translate }}</dt>
+                <dd>{{ example.details.material }}</dd>
+                <dt>{{ "ADMIN_GUIDES.DIMENSIONS" | translate }}</dt>
+                <dd>{{ example.details.dimensionsMm }} mm</dd>
+                <dt>{{ "ADMIN_GUIDES.QUANTITY" | translate }}</dt>
+                <dd>{{ example.details.quantity }}</dd>
+                <dt>{{ "ADMIN_GUIDES.SETTINGS" | translate }}</dt>
+                <dd>{{ localized(example.details.settings) }}</dd>
+                <dt>{{ "ADMIN_GUIDES.DATE" | translate }}</dt>
+                <dd>
+                  <time [attr.datetime]="example.details.quotedOn">{{
+                    example.details.quotedOn
+                  }}</time>
+                </dd>
+                <dt>{{ "ADMIN_GUIDES.COSTS" | translate }}</dt>
+                <dd>{{ localized(example.details.costsIncluded) }}</dd>
+              </dl>
+            </article>
+          }
+        </div>
+      </section>
+    }
+    <section
+      class="ui-guide-section consultation"
+      aria-labelledby="consultation-title"
+    >
+      <h2 class="ui-guide-title" id="consultation-title">
+        {{ "PRICING.CONSULTATION_TITLE" | translate }}
+      </h2>
+      <p>{{ "GUIDE_LINKS.FREE_CONSULTATION" | translate }}</p>
+      <a
+        class="ui-button ui-button--outline"
+        [routerLink]="languageService.localizedPath('/contact')"
+        [queryParams]="{ requestType: 'consult' }"
+        >{{ "GUIDE_LINKS.CONSULT" | translate }}</a
+      >
+    </section>
+    <nav
+      class="ui-inline-actions ui-guide-links"
+      [attr.aria-label]="'GUIDE_LINKS.LABEL' | translate"
+    >
+      <a
+        class="ui-button ui-button--text"
+        [routerLink]="languageService.localizedPath('/colors-finishes')"
+        >{{ "GUIDE_LINKS.COLORS" | translate }}</a
+      >
+      <a
+        class="ui-button ui-button--text"
+        [routerLink]="languageService.localizedPath('/materials')"
+        >{{ "FOOTER.MATERIALS" | translate }}</a
+      >
+    </nav>
+  </div>
+</main>

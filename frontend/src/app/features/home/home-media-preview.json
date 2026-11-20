@@ -1,0 +1,590 @@
+{
+  "it": {
+    "HOME_SECTION::capability-prototyping": [
+      {
+        "altText": "Contenitore nero stampato in 3D con scheda elettronica inserita.",
+        "card": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/card.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/card.jpg",
+          "pngUrl": null,
+          "webpUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/card.webp"
+        },
+        "hero": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/hero.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/hero.jpg",
+          "pngUrl": null,
+          "webpUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/hero.webp"
+        },
+        "isPrimary": false,
+        "mediaAssetId": "9b4e5c52-e790-44ae-a014-8f536871c82a",
+        "sortOrder": 1,
+        "thumb": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/thumb.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/thumb.jpg",
+          "pngUrl": null,
+          "webpUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/thumb.webp"
+        },
+        "title": "Contenitore 3D per elettronica",
+        "usageKey": "capability-prototyping",
+        "usageType": "HOME_SECTION"
+      }
+    ],
+    "HOME_SECTION::capability-custom-parts": [
+      {
+        "altText": "Confronto tra un componente stampato in 3D e il pezzo originale",
+        "card": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/card.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/card.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/card.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/card.webp"
+        },
+        "hero": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/hero.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/hero.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/hero.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/hero.webp"
+        },
+        "isPrimary": true,
+        "mediaAssetId": "3fb86573-9232-48ba-82d4-ecc16a264160",
+        "sortOrder": 0,
+        "thumb": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/thumb.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/thumb.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/thumb.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/thumb.webp"
+        },
+        "title": "Confronto tra pezzo stampato e originale",
+        "usageKey": "capability-custom-parts",
+        "usageType": "HOME_SECTION"
+      }
+    ],
+    "HOME_SECTION::capability-small-series": [
+      {
+        "altText": "Serie di pezzi stampati in 3D dopo il processo di stampa",
+        "card": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/card.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/card.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/card.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/card.webp"
+        },
+        "hero": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/hero.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/hero.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/hero.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/hero.webp"
+        },
+        "isPrimary": true,
+        "mediaAssetId": "bfc0e158-597f-4983-bbb3-4e2b4b61cff8",
+        "sortOrder": 0,
+        "thumb": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/thumb.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/thumb.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/thumb.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/thumb.webp"
+        },
+        "title": "Pezzi stampati in 3D in produzione",
+        "usageKey": "capability-small-series",
+        "usageType": "HOME_SECTION"
+      }
+    ],
+    "HOME_SECTION::capability-cad": [
+      {
+        "altText": "Persona che lavora alla progettazione CAD di un componente al computer",
+        "card": {
+          "avifUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/card.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/card.jpg",
+          "pngUrl": null,
+          "webpUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/card.webp"
+        },
+        "hero": {
+          "avifUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/hero.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/hero.jpg",
+          "pngUrl": null,
+          "webpUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/hero.webp"
+        },
+        "isPrimary": true,
+        "mediaAssetId": "2141ef86-a4ce-4a26-bf11-db6e977a1f04",
+        "sortOrder": 0,
+        "thumb": {
+          "avifUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/thumb.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/thumb.jpg",
+          "pngUrl": null,
+          "webpUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/thumb.webp"
+        },
+        "title": "Progettazione CAD al computer",
+        "usageKey": "capability-cad",
+        "usageType": "HOME_SECTION"
+      }
+    ],
+    "HOME_SECTION::founders-gallery": [
+      {
+        "altText": "Foto fondatori",
+        "card": {
+          "avifUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/card.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/card.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/card.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/card.webp"
+        },
+        "hero": {
+          "avifUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/hero.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/hero.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/hero.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/hero.webp"
+        },
+        "isPrimary": true,
+        "mediaAssetId": "71b2354c-f276-4367-aee8-19a7c5eee4d0",
+        "sortOrder": 0,
+        "thumb": {
+          "avifUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/thumb.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/thumb.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/thumb.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/thumb.webp"
+        },
+        "title": "Fondatori",
+        "usageKey": "founders-gallery",
+        "usageType": "HOME_SECTION"
+      }
+    ]
+  },
+  "en": {
+    "HOME_SECTION::capability-prototyping": [
+      {
+        "altText": "Black 3D-printed enclosure with an electronic circuit board inside.",
+        "card": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/card.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/card.jpg",
+          "pngUrl": null,
+          "webpUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/card.webp"
+        },
+        "hero": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/hero.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/hero.jpg",
+          "pngUrl": null,
+          "webpUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/hero.webp"
+        },
+        "isPrimary": false,
+        "mediaAssetId": "9b4e5c52-e790-44ae-a014-8f536871c82a",
+        "sortOrder": 1,
+        "thumb": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/thumb.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/thumb.jpg",
+          "pngUrl": null,
+          "webpUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/thumb.webp"
+        },
+        "title": "3D-printed electronics enclosure",
+        "usageKey": "capability-prototyping",
+        "usageType": "HOME_SECTION"
+      }
+    ],
+    "HOME_SECTION::capability-custom-parts": [
+      {
+        "altText": "Comparison between a 3D printed component and the original part",
+        "card": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/card.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/card.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/card.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/card.webp"
+        },
+        "hero": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/hero.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/hero.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/hero.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/hero.webp"
+        },
+        "isPrimary": true,
+        "mediaAssetId": "3fb86573-9232-48ba-82d4-ecc16a264160",
+        "sortOrder": 0,
+        "thumb": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/thumb.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/thumb.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/thumb.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/thumb.webp"
+        },
+        "title": "Comparison between printed part and original",
+        "usageKey": "capability-custom-parts",
+        "usageType": "HOME_SECTION"
+      }
+    ],
+    "HOME_SECTION::capability-small-series": [
+      {
+        "altText": "Series of 3D printed parts during the printing process",
+        "card": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/card.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/card.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/card.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/card.webp"
+        },
+        "hero": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/hero.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/hero.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/hero.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/hero.webp"
+        },
+        "isPrimary": true,
+        "mediaAssetId": "bfc0e158-597f-4983-bbb3-4e2b4b61cff8",
+        "sortOrder": 0,
+        "thumb": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/thumb.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/thumb.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/thumb.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/thumb.webp"
+        },
+        "title": "3D printed parts in production",
+        "usageKey": "capability-small-series",
+        "usageType": "HOME_SECTION"
+      }
+    ],
+    "HOME_SECTION::capability-cad": [
+      {
+        "altText": "Person working on the CAD design of a component on a computer",
+        "card": {
+          "avifUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/card.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/card.jpg",
+          "pngUrl": null,
+          "webpUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/card.webp"
+        },
+        "hero": {
+          "avifUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/hero.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/hero.jpg",
+          "pngUrl": null,
+          "webpUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/hero.webp"
+        },
+        "isPrimary": true,
+        "mediaAssetId": "2141ef86-a4ce-4a26-bf11-db6e977a1f04",
+        "sortOrder": 0,
+        "thumb": {
+          "avifUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/thumb.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/thumb.jpg",
+          "pngUrl": null,
+          "webpUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/thumb.webp"
+        },
+        "title": "CAD design on computer",
+        "usageKey": "capability-cad",
+        "usageType": "HOME_SECTION"
+      }
+    ],
+    "HOME_SECTION::founders-gallery": [
+      {
+        "altText": "photo founders",
+        "card": {
+          "avifUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/card.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/card.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/card.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/card.webp"
+        },
+        "hero": {
+          "avifUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/hero.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/hero.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/hero.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/hero.webp"
+        },
+        "isPrimary": true,
+        "mediaAssetId": "71b2354c-f276-4367-aee8-19a7c5eee4d0",
+        "sortOrder": 0,
+        "thumb": {
+          "avifUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/thumb.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/thumb.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/thumb.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/thumb.webp"
+        },
+        "title": "Founders",
+        "usageKey": "founders-gallery",
+        "usageType": "HOME_SECTION"
+      }
+    ]
+  },
+  "de": {
+    "HOME_SECTION::capability-prototyping": [
+      {
+        "altText": "Schwarzes 3D-gedrucktes Gehäuse mit eingesetzter Elektronikplatine.",
+        "card": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/card.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/card.jpg",
+          "pngUrl": null,
+          "webpUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/card.webp"
+        },
+        "hero": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/hero.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/hero.jpg",
+          "pngUrl": null,
+          "webpUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/hero.webp"
+        },
+        "isPrimary": false,
+        "mediaAssetId": "9b4e5c52-e790-44ae-a014-8f536871c82a",
+        "sortOrder": 1,
+        "thumb": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/thumb.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/thumb.jpg",
+          "pngUrl": null,
+          "webpUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/thumb.webp"
+        },
+        "title": "3D-gedrucktes Elektronikgehäuse",
+        "usageKey": "capability-prototyping",
+        "usageType": "HOME_SECTION"
+      }
+    ],
+    "HOME_SECTION::capability-custom-parts": [
+      {
+        "altText": "Vergleich zwischen einem 3D-gedruckten Bauteil und dem Originalteil",
+        "card": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/card.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/card.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/card.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/card.webp"
+        },
+        "hero": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/hero.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/hero.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/hero.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/hero.webp"
+        },
+        "isPrimary": true,
+        "mediaAssetId": "3fb86573-9232-48ba-82d4-ecc16a264160",
+        "sortOrder": 0,
+        "thumb": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/thumb.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/thumb.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/thumb.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/thumb.webp"
+        },
+        "title": "Vergleich zwischen gedrucktem Teil und Original",
+        "usageKey": "capability-custom-parts",
+        "usageType": "HOME_SECTION"
+      }
+    ],
+    "HOME_SECTION::capability-small-series": [
+      {
+        "altText": "Mehrere 3D-gedruckte Teile während des Druckvorgangs",
+        "card": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/card.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/card.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/card.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/card.webp"
+        },
+        "hero": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/hero.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/hero.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/hero.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/hero.webp"
+        },
+        "isPrimary": true,
+        "mediaAssetId": "bfc0e158-597f-4983-bbb3-4e2b4b61cff8",
+        "sortOrder": 0,
+        "thumb": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/thumb.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/thumb.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/thumb.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/thumb.webp"
+        },
+        "title": "3D-gedruckte Teile in Produktion",
+        "usageKey": "capability-small-series",
+        "usageType": "HOME_SECTION"
+      }
+    ],
+    "HOME_SECTION::capability-cad": [
+      {
+        "altText": "Person arbeitet am Computer an der CAD-Konstruktion eines Bauteils",
+        "card": {
+          "avifUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/card.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/card.jpg",
+          "pngUrl": null,
+          "webpUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/card.webp"
+        },
+        "hero": {
+          "avifUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/hero.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/hero.jpg",
+          "pngUrl": null,
+          "webpUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/hero.webp"
+        },
+        "isPrimary": true,
+        "mediaAssetId": "2141ef86-a4ce-4a26-bf11-db6e977a1f04",
+        "sortOrder": 0,
+        "thumb": {
+          "avifUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/thumb.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/thumb.jpg",
+          "pngUrl": null,
+          "webpUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/thumb.webp"
+        },
+        "title": "CAD-Konstruktion am Computer",
+        "usageKey": "capability-cad",
+        "usageType": "HOME_SECTION"
+      }
+    ],
+    "HOME_SECTION::founders-gallery": [
+      {
+        "altText": "Foto Gründer",
+        "card": {
+          "avifUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/card.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/card.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/card.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/card.webp"
+        },
+        "hero": {
+          "avifUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/hero.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/hero.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/hero.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/hero.webp"
+        },
+        "isPrimary": true,
+        "mediaAssetId": "71b2354c-f276-4367-aee8-19a7c5eee4d0",
+        "sortOrder": 0,
+        "thumb": {
+          "avifUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/thumb.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/thumb.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/thumb.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/thumb.webp"
+        },
+        "title": "Gründer",
+        "usageKey": "founders-gallery",
+        "usageType": "HOME_SECTION"
+      }
+    ]
+  },
+  "fr": {
+    "HOME_SECTION::capability-prototyping": [
+      {
+        "altText": "Boîtier noir imprimé en 3D avec une carte électronique intégrée.",
+        "card": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/card.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/card.jpg",
+          "pngUrl": null,
+          "webpUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/card.webp"
+        },
+        "hero": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/hero.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/hero.jpg",
+          "pngUrl": null,
+          "webpUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/hero.webp"
+        },
+        "isPrimary": false,
+        "mediaAssetId": "9b4e5c52-e790-44ae-a014-8f536871c82a",
+        "sortOrder": 1,
+        "thumb": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/thumb.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/thumb.jpg",
+          "pngUrl": null,
+          "webpUrl": "https://3d-fab.ch/media/2026/05/24d3cd27-9728-4576-a58a-8628480f6a9b/thumb.webp"
+        },
+        "title": "Boîtier électronique imprimé en 3D",
+        "usageKey": "capability-prototyping",
+        "usageType": "HOME_SECTION"
+      }
+    ],
+    "HOME_SECTION::capability-custom-parts": [
+      {
+        "altText": "Comparaison entre un composant imprimé en 3D et la pièce originale",
+        "card": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/card.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/card.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/card.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/card.webp"
+        },
+        "hero": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/hero.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/hero.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/hero.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/hero.webp"
+        },
+        "isPrimary": true,
+        "mediaAssetId": "3fb86573-9232-48ba-82d4-ecc16a264160",
+        "sortOrder": 0,
+        "thumb": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/thumb.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/thumb.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/thumb.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/05/9bb9f66b-0b21-4b62-ab1b-c97958ef8f4e/thumb.webp"
+        },
+        "title": "Comparaison entre pièce imprimée et originale",
+        "usageKey": "capability-custom-parts",
+        "usageType": "HOME_SECTION"
+      }
+    ],
+    "HOME_SECTION::capability-small-series": [
+      {
+        "altText": "Série de pièces imprimées en 3D pendant le processus d’impression",
+        "card": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/card.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/card.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/card.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/card.webp"
+        },
+        "hero": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/hero.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/hero.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/hero.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/hero.webp"
+        },
+        "isPrimary": true,
+        "mediaAssetId": "bfc0e158-597f-4983-bbb3-4e2b4b61cff8",
+        "sortOrder": 0,
+        "thumb": {
+          "avifUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/thumb.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/thumb.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/thumb.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/05/4ae2d164-467b-4965-adfc-1bf68893ac44/thumb.webp"
+        },
+        "title": "Pièces imprimées en 3D en production",
+        "usageKey": "capability-small-series",
+        "usageType": "HOME_SECTION"
+      }
+    ],
+    "HOME_SECTION::capability-cad": [
+      {
+        "altText": "Personne travaillant sur la conception CAO d’un composant sur ordinateur",
+        "card": {
+          "avifUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/card.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/card.jpg",
+          "pngUrl": null,
+          "webpUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/card.webp"
+        },
+        "hero": {
+          "avifUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/hero.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/hero.jpg",
+          "pngUrl": null,
+          "webpUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/hero.webp"
+        },
+        "isPrimary": true,
+        "mediaAssetId": "2141ef86-a4ce-4a26-bf11-db6e977a1f04",
+        "sortOrder": 0,
+        "thumb": {
+          "avifUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/thumb.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/thumb.jpg",
+          "pngUrl": null,
+          "webpUrl": "https://3d-fab.ch/media/2026/03/a63edd2b-01bd-4ae4-b544-5fb67d6c70f7/thumb.webp"
+        },
+        "title": "Conception CAO sur ordinateur",
+        "usageKey": "capability-cad",
+        "usageType": "HOME_SECTION"
+      }
+    ],
+    "HOME_SECTION::founders-gallery": [
+      {
+        "altText": "fondateurs photo",
+        "card": {
+          "avifUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/card.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/card.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/card.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/card.webp"
+        },
+        "hero": {
+          "avifUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/hero.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/hero.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/hero.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/hero.webp"
+        },
+        "isPrimary": true,
+        "mediaAssetId": "71b2354c-f276-4367-aee8-19a7c5eee4d0",
+        "sortOrder": 0,
+        "thumb": {
+          "avifUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/thumb.avif",
+          "jpegUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/thumb.jpg",
+          "pngUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/thumb.png",
+          "webpUrl": "https://3d-fab.ch/media/2026/09/f412d164-066a-4135-b5d3-f74673969620/thumb.webp"
+        },
+        "title": "fondateurs",
+        "usageKey": "founders-gallery",
+        "usageType": "HOME_SECTION"
+      }
+    ]
+  }
+}

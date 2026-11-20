@@ -22,6 +22,7 @@ public interface MediaUsageRepository extends JpaRepository<MediaUsage, UUID> {
 
     @Query("""
             select usage from MediaUsage usage
+            join fetch usage.mediaAsset
             where usage.usageType = :usageType
               and usage.usageKey in :usageKeys
               and usage.isActive = true

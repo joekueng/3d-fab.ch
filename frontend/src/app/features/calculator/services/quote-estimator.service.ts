@@ -1,3 +1,4 @@
+import { CalculatorOptionsService } from './calculator-options.service';
 import { Injectable, inject, signal } from '@angular/core';
 import {
   HttpClient,
@@ -190,6 +191,7 @@ export interface SimpleOption {
 })
 export class QuoteEstimatorService {
   private http = inject(HttpClient);
+  private readonly options = inject(CalculatorOptionsService);
   private information = inject(OrderInformationService);
 
   private pendingConsultation = signal<{
@@ -199,13 +201,7 @@ export class QuoteEstimatorService {
   private pendingCalculatorDraft = signal<PendingCalculatorDraft | null>(null);
 
   getOptions(): Observable<OptionsResponse> {
-    const headers: any = {};
-    return this.http.get<OptionsResponse>(
-      `${environment.apiUrl}/api/calculator/options`,
-      {
-        headers,
-      },
-    );
+    return this.options.getOptions();
   }
 
   getQuoteSession(sessionId: string): Observable<any> {

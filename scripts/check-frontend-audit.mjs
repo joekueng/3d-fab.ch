@@ -3,11 +3,31 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 
-const advisory = 'https://github.com/advisories/GHSA-vfj7-8cjw-p6xm';
-const expires = '2026-11-04T00:00:00Z';
-const testPackages = new Set(['braces', 'chokidar', 'karma', 'karma-jasmine', '@angular/build']);
+const advisory = 'https://github.com/advisories/GHSA-fc5q-39xc-vjpf';
+const expires = '2026-11-25T00:00:00Z';
+const reviewedNodes = new Map([
+  ['node_modules/@angular-devkit/architect', '0.2202.3'],
+  ['node_modules/@angular-devkit/core', '22.2.3'],
+  ['node_modules/@angular-devkit/schematics', '22.2.3'],
+  ['node_modules/@angular/build', '22.2.3'],
+  ['node_modules/@angular/cli', '22.2.3'],
+  ['node_modules/@parcel/watcher', '2.6.0'],
+  ['node_modules/@schematics/angular', '22.2.3'],
+  ['node_modules/@vitejs/plugin-basic-ssl', '2.3.0'],
+  ['node_modules/anymatch', '3.1.3'],
+  ['node_modules/anymatch/node_modules/picomatch', '2.3.2'],
+  ['node_modules/fdir', '6.5.0'],
+  ['node_modules/karma', '6.4.4'],
+  ['node_modules/karma-jasmine', '5.1.0'],
+  ['node_modules/karma/node_modules/chokidar', '3.6.0'],
+  ['node_modules/karma/node_modules/picomatch', '2.3.2'],
+  ['node_modules/karma/node_modules/readdirp', '3.6.0'],
+  ['node_modules/picomatch', '4.0.7'],
+  ['node_modules/tinyglobby', '0.2.17'],
+  ['node_modules/vite', '8.3.3'],
+]);
 
-// Temporary triage for one development-only advisory. Unknown data fails closed.
+// npm still reports this withdrawn advisory. Unknown findings fail closed.
 export function checkAudit(report, lock, now = new Date()) {
   if (report.auditReportVersion !== 2 || report.error || !report.vulnerabilities ||
       typeof report.vulnerabilities !== 'object' || Array.isArray(report.vulnerabilities)) {
@@ -16,15 +36,19 @@ export function checkAudit(report, lock, now = new Date()) {
   const vulnerabilities = report.vulnerabilities;
   function accepted(name, visiting = new Set()) {
     const finding = vulnerabilities[name];
-    if (!(now < new Date(expires)) || !testPackages.has(name) || visiting.has(name) ||
+    if (!(now < new Date(expires)) || visiting.has(name) ||
         finding?.name !== name || !Array.isArray(finding.nodes) || !finding.nodes.length ||
         !Array.isArray(finding.via) || !finding.via.length) return false;
-    if (!finding.nodes.every(node => lock.packages?.[node]?.dev === true)) return false;
+    if (!finding.nodes.every(node => {
+      if (typeof node !== 'string' || !reviewedNodes.has(node) ||
+          !('/' + node).endsWith('/node_modules/' + name)) return false;
+      const entry = lock.packages?.[node];
+      return entry?.dev === true && entry.version === reviewedNodes.get(node);
+    })) return false;
     const next = new Set([...visiting, name]);
     return finding.via.every(cause => {
       if (typeof cause === 'string') return accepted(cause, next);
-      return name === 'braces' && cause?.name === 'braces' && cause.url === advisory &&
-        finding.nodes.every(node => lock.packages[node].version === '3.0.3');
+      return name === 'picomatch' && cause?.name === name && cause.url === advisory;
     });
   }
   const allowed = [], blocked = [];
@@ -46,7 +70,7 @@ function main() {
   if (result.status === 1 && !allowed.length && !blocked.length) throw new Error('npm audit failed without findings');
   if (allowed.length) {
     console.log(`Temporary development-only exception: ${advisory}; expires ${expires}`);
-    console.log(`Affected test packages: ${allowed.join(', ')}`);
+    console.log(`Affected development packages: ${allowed.join(', ')}`);
   }
   if (blocked.length) {
     console.error(`Unaccepted audit findings: ${blocked.join(', ')}`);

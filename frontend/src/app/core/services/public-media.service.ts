@@ -8,10 +8,24 @@ import {
   of,
   catchError,
   distinctUntilChanged,
+  from,
+  mergeMap,
+  scan,
   switchMap,
 } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { LanguageService } from './language.service';
+
+export interface PricingExample {
+  material: string;
+  dimensionsMm: string;
+  quantity: number;
+  priceChf: number;
+  quotedOn: string;
+  settings: Record<'it' | 'en' | 'de' | 'fr', string>;
+  costsIncluded: Record<'it' | 'en' | 'de' | 'fr', string>;
+  verified: boolean;
+}
 
 export type PublicMediaUsageType = string;
 export type PublicMediaPreset = 'thumb' | 'card' | 'hero';
@@ -24,6 +38,7 @@ export interface PublicMediaVariantDto {
 }
 
 export interface PublicMediaUsageDto {
+  pricingExample?: PricingExample | null;
   mediaAssetId: string;
   title: string | null;
   altText: string | null;
@@ -51,6 +66,7 @@ export interface PublicMediaResolvedSourceSet
 }
 
 export interface PublicMediaImage {
+  pricingExample?: PricingExample | null;
   mediaAssetId: string;
   title: string | null;
   altText: string | null;
@@ -77,6 +93,8 @@ export type PublicMediaUsageCollectionMap = Record<
   string,
   readonly PublicMediaImage[]
 >;
+
+const MAX_USAGE_KEYS_PER_BATCH = 50;
 
 export function buildPublicMediaUsageScopeKey(
   usageType: string,
@@ -114,11 +132,7 @@ export class PublicMediaService {
         return this.http
           .get<PublicMediaUsageDto[]>(`${this.baseUrl}/usages`, { params })
           .pipe(
-            map((items) =>
-              items
-                .map((item) => this.mapUsageDto(item))
-                .filter((item) => this.hasAnyFallback(item)),
-            ),
+            map((items) => this.mapUsageItems(items)),
             catchError(() => of([])),
           );
       }),
@@ -157,6 +171,62 @@ export class PublicMediaService {
     );
   }
 
+  getUsageCollectionsBatch(
+    usageType: PublicMediaUsageType,
+    usageKeys: readonly string[],
+  ): Observable<PublicMediaUsageCollectionMap> {
+    const uniqueKeys = [...new Set(usageKeys)];
+    if (uniqueKeys.length === 0) {
+      return of({});
+    }
+
+    const batches: string[][] = [];
+    for (
+      let index = 0;
+      index < uniqueKeys.length;
+      index += MAX_USAGE_KEYS_PER_BATCH
+    ) {
+      batches.push(uniqueKeys.slice(index, index + MAX_USAGE_KEYS_PER_BATCH));
+    }
+
+    return this.selectedLang$.pipe(
+      switchMap((lang) =>
+        from(batches).pipe(
+          mergeMap((keys) => {
+            const params = new HttpParams({
+              fromObject: { usageType, usageKeys: keys, lang },
+            });
+            return this.http
+              .get<
+                Record<string, PublicMediaUsageDto[]>
+              >(`${this.baseUrl}/usages`, { params })
+              .pipe(
+                map((itemsByKey) =>
+                  keys.map(
+                    (key) =>
+                      [
+                        buildPublicMediaUsageScopeKey(usageType, key),
+                        this.mapUsageItems(
+                          Object.hasOwn(itemsByKey, key) ? itemsByKey[key] : [],
+                        ),
+                      ] as const,
+                  ),
+                ),
+                catchError(() => of([])),
+              );
+          }, 4),
+          scan(
+            (collections: PublicMediaUsageCollectionMap, entries) => ({
+              ...collections,
+              ...Object.fromEntries(entries),
+            }),
+            {},
+          ),
+        ),
+      ),
+    );
+  }
+
   pickPrimaryUsage(
     items: readonly PublicMediaImage[],
   ): PublicMediaImage | null {
@@ -176,6 +246,7 @@ export class PublicMediaService {
     }
 
     return {
+      pricingExample: item.pricingExample ?? null,
       mediaAssetId: item.mediaAssetId,
       title: item.title,
       altText: item.altText,
@@ -187,8 +258,17 @@ export class PublicMediaService {
     };
   }
 
+  private mapUsageItems(
+    items: readonly PublicMediaUsageDto[],
+  ): PublicMediaImage[] {
+    return items
+      .map((item) => this.mapUsageDto(item))
+      .filter((item) => this.hasAnyFallback(item));
+  }
+
   private mapUsageDto(item: PublicMediaUsageDto): PublicMediaImage {
     return {
+      pricingExample: item.pricingExample ?? null,
       mediaAssetId: item.mediaAssetId,
       title: item.title ?? null,
       altText: item.altText ?? null,
