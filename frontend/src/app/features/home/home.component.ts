@@ -217,6 +217,9 @@ export class HomeComponent {
     // A plain fragment resolves against <base href="/"> and reloads the app.
     // Keep this action in the current document, including on localized routes.
     event.preventDefault();
+    target
+      .querySelector<HTMLElement>('#process-title')
+      ?.focus({ preventScroll: true });
     target.scrollIntoView({
       behavior: view.matchMedia('(prefers-reduced-motion: reduce)').matches
         ? 'auto'

@@ -44,6 +44,9 @@ interface CatalogVariant extends VariantOption {
   materialLabel: string;
 }
 
+const ALL_MATERIALS_KEY = 'COLORS_FINISHES.ALL_MATERIALS';
+const ALL_FINISHES_KEY = 'COLORS_FINISHES.ALL_FINISHES';
+
 @Component({
   selector: 'app-colors-finishes-page',
   imports: [
@@ -111,38 +114,48 @@ export class ColorsFinishesPageComponent {
   private readonly mediaByUsage = toSignal(
     toObservable(this.variants).pipe(
       switchMap((variants) =>
-        this.media.getUsageCollections(
-          variants.map((variant) => ({
-            usageType: 'FILAMENT_VARIANT',
-            usageKey: String(variant.id),
-          })),
+        this.media.getUsageCollectionsBatch(
+          'FILAMENT_VARIANT',
+          variants.map((variant) => String(variant.id)),
         ),
       ),
     ),
     { initialValue: {} as PublicMediaUsageCollectionMap },
   );
-  readonly materialOptions = computed(() => {
-    this.languageService.currentLang();
-    return [
-      {
-        value: '',
-        label: this.translate.instant('COLORS_FINISHES.ALL_MATERIALS'),
-      },
-      ...this.state().materials.map((material) => ({
-        value: material.code,
-        label: material.label,
-      })),
-    ];
-  });
+  private readonly filterLabelKeys = computed(() => [
+    ALL_MATERIALS_KEY,
+    ALL_FINISHES_KEY,
+    ...new Set(
+      this.variants().map((variant) =>
+        filamentFinishLabelKey(variant.finishType),
+      ),
+    ),
+  ]);
+  private readonly filterLabels = toSignal(
+    toObservable(this.filterLabelKeys).pipe(
+      switchMap((keys) => this.translate.stream(keys)),
+      map((labels) => labels as Record<string, string>),
+    ),
+    { initialValue: {} as Record<string, string> },
+  );
+  readonly materialOptions = computed(() => [
+    {
+      value: '',
+      label: this.filterLabel(ALL_MATERIALS_KEY),
+    },
+    ...this.state().materials.map((material) => ({
+      value: material.code,
+      label: material.label,
+    })),
+  ]);
   readonly finishOptions = computed(() => {
-    this.languageService.currentLang();
     const variants = this.variants().filter(
       (variant) => !this.material() || variant.materialCode === this.material(),
     );
     return [
       {
         value: '',
-        label: this.translate.instant('COLORS_FINISHES.ALL_FINISHES'),
+        label: this.filterLabel(ALL_FINISHES_KEY),
       },
       ...[...new Set(variants.map((variant) => variant.finishType))]
         .sort()
@@ -181,7 +194,11 @@ export class ColorsFinishesPageComponent {
     );
   }
   finishLabel(value: string): string {
-    return this.translate.instant(filamentFinishLabelKey(value));
+    return this.filterLabel(filamentFinishLabelKey(value));
+  }
+
+  private filterLabel(key: string): string {
+    return this.filterLabels()[key] ?? key;
   }
 
   swatch(variant: VariantOption): string {

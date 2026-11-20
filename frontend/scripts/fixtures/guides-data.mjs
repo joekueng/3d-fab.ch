@@ -118,3 +118,17 @@ export function mediaUsage(type, key, lang = "it") {
     }),
   );
 }
+
+export function mediaUsageResponse(params, transform = (items) => items) {
+  const type = params.get("usageType");
+  const lang = params.get("lang") ?? "it";
+  const keys = params.getAll("usageKeys");
+  if (keys.length === 0) {
+    return transform(mediaUsage(type, params.get("usageKey"), lang));
+  }
+  return Object.fromEntries(
+    keys
+      .map((key) => [key, transform(mediaUsage(type, key, lang))])
+      .filter(([, items]) => items.length > 0),
+  );
+}

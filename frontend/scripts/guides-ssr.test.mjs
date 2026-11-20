@@ -49,6 +49,16 @@ test("informative pages render all locales, real metadata contracts and error st
           assert.match(body, /catalog-102/); // out-of-stock remains visible, matching calculator catalogue.
           assert.match(body, /catalog-201/);
           assert.match(body, /sample-1.svg/);
+          const filamentRequests = fixture.requests.filter(
+            (request) =>
+              request.type === "FILAMENT_VARIANT" && request.lang === lang,
+          );
+          assert.equal(filamentRequests.length, 1);
+          assert.deepEqual(filamentRequests[0].keys.toSorted(), [
+            "101",
+            "102",
+            "201",
+          ]);
         } else {
           assert.match(body, /id="cad-title"/);
           assert.doesNotMatch(body, /id="projects-title"/);

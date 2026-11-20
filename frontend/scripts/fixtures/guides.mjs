@@ -2,7 +2,7 @@ import { createServer } from "node:http";
 import { once } from "node:events";
 import { pathToFileURL } from "node:url";
 
-import { options, mediaUsage } from "./guides-data.mjs";
+import { options, mediaUsageResponse } from "./guides-data.mjs";
 
 export async function startGuidesFixture() {
   const requests = [];
@@ -12,7 +12,8 @@ export async function startGuidesFixture() {
     requests.push({
       path: url.pathname,
       lang: url.searchParams.get("lang"),
-      key: url.searchParams.get("usageKey"),
+      type: url.searchParams.get("usageType"),
+      keys: url.searchParams.getAll("usageKeys"),
     });
     res.setHeader("Content-Type", "application/json");
     if (url.pathname === "/api/calculator/options") {
@@ -26,11 +27,7 @@ export async function startGuidesFixture() {
             (state.hideExamples &&
               url.searchParams.get("usageType") === "PRICING_EXAMPLE")
             ? []
-            : mediaUsage(
-                url.searchParams.get("usageType"),
-                url.searchParams.get("usageKey"),
-                url.searchParams.get("lang"),
-              ),
+            : mediaUsageResponse(url.searchParams),
         ),
       );
     } else {

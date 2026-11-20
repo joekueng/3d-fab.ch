@@ -40,6 +40,17 @@ Confrontare totali sullo stesso perimetro di imposte e consegna, senza confonder
 
 ## Contratto e distribuzione
 
+La guida Colori e finiture legge le foto con `GET /api/public/media/usages`,
+`usageType=FILAMENT_VARIANT` e un parametro `usageKeys` ripetuto per ciascuna
+variante, fino a 50 per richiesta. La risposta raggruppa i Media pubblici per
+chiave e omette le varianti senza foto. I client con `usageKey` al singolare
+continuano a ricevere una lista. Distribuire il backend prima del frontend per
+rendere disponibile la risposta raggruppata.
+
+Una bozza di prezzo può essere contrassegnata come primaria. Il salvataggio
+sostituisce l'esempio primario dello slot solo quando l'associazione è verificata,
+attiva e collegata a un'immagine pubblica pronta.
+
 `CalculatorOptionsService` legge le opzioni senza istanziare servizi di sessione; il calcolatore delega allo stesso servizio. La disponibilità usa esattamente `isOutOfStock` del catalogo, senza soglie di stock inventate. Le varianti non attive non sono catalogate; i Media restano conservati se una variante viene temporaneamente disattivata.
 
 `MediaUsage.pricing_example` è una colonna JSON nullable, coerente con il mapping già usato per le righe servizio. È una modifica additiva sotto `ddl-auto=update`: distribuire prima il backend, verificare l’aggiunta della colonna, poi il frontend. Le associazioni precedenti hanno null e mantengono il comportamento esistente; un rollback applicativo può lasciare la colonna. Non richiede riscrittura di prezzi, quote o inventario. Non eseguire DDL distruttivo. Gli endpoint Media esistenti accettano il campo opzionale `pricingExample`; `@Valid` e i controlli del servizio proteggono la pubblicazione. Le stesse protezioni admin/sessione/CSRF restano applicate.

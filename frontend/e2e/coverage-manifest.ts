@@ -19,6 +19,7 @@ export const scenarioCatalog: Record<string, {
   'PUBLIC-002': { spec: 'public/navigation.spec.ts', priority: 'standard', fixture: 'synthetic-stack' },
   'PUBLIC-003': { spec: 'public/navigation.spec.ts', priority: 'standard', fixture: 'synthetic-stack' },
   'PUBLIC-004': { spec: 'public/contact-submission.spec.ts', priority: 'critical', fixture: 'synthetic-stack' },
+  'PUBLIC-005': { spec: 'public/navigation.spec.ts', priority: 'standard', fixture: 'synthetic-stack' },
   'RENDER-001': { spec: 'rendering/ssr.spec.ts', priority: 'standard', fixture: 'synthetic-stack' },
   'RENDER-002': { spec: 'rendering/ssr.spec.ts', priority: 'standard', fixture: 'synthetic-stack' },
   'RENDER-003': { spec: 'rendering/ssr.spec.ts', priority: 'standard', fixture: 'synthetic-stack' },

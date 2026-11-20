@@ -6,3 +6,7 @@ export function mediaUsage(
   key: string,
   lang?: string,
 ): PublicMediaUsageDto[];
+export function mediaUsageResponse(
+  params: URLSearchParams,
+  transform?: (items: PublicMediaUsageDto[]) => PublicMediaUsageDto[],
+): PublicMediaUsageDto[] | Record<string, PublicMediaUsageDto[]>;

@@ -16,6 +16,7 @@ import com.printcalculator.repository.MediaVariantRepository;
 import com.printcalculator.service.media.MediaFfmpegService;
 import com.printcalculator.service.media.MediaImageInspector;
 import com.printcalculator.service.media.MediaStorageService;
+import com.printcalculator.service.media.PublicMediaQueryService;
 import com.printcalculator.service.storage.ClamAVService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -268,10 +269,6 @@ public class AdminMediaControllerService {
         boolean isPrimary = Boolean.TRUE.equals(payload.getIsPrimary());
         Map<String, MediaTextTranslationDto> translations = requireTranslations(payload.getTranslations());
 
-        if (isPrimary) {
-            unsetPrimaryForScope(usageType, usageKey, payload.getOwnerId(), null);
-        }
-
         MediaUsage usage = new MediaUsage();
         usage.setUsageType(usageType);
         usage.setUsageKey(usageKey);
@@ -284,6 +281,7 @@ public class AdminMediaControllerService {
         applyTranslations(usage, translations);
         usage.setPricingExample(payload.getPricingExample());
         validatePricingExample(usage);
+        reassignPrimaryIfEligible(usage);
 
         MediaUsage saved = mediaUsageRepository.save(usage);
         return toUsageDto(saved);
@@ -326,10 +324,7 @@ public class AdminMediaControllerService {
             usage.setPricingExample(payload.getPricingExample());
         }
         validatePricingExample(usage);
-
-        if (Boolean.TRUE.equals(usage.getIsPrimary())) {
-            unsetPrimaryForScope(usage.getUsageType(), usage.getUsageKey(), usage.getOwnerId(), usage.getId());
-        }
+        reassignPrimaryIfEligible(usage);
 
         MediaUsage saved = mediaUsageRepository.save(usage);
         return toUsageDto(saved);
@@ -497,10 +492,16 @@ public class AdminMediaControllerService {
         }
     }
 
-    private void unsetPrimaryForScope(String usageType, String usageKey, UUID ownerId, UUID excludeUsageId) {
-        List<MediaUsage> existingUsages = mediaUsageRepository.findByUsageScope(usageType, usageKey, ownerId);
+    private void reassignPrimaryIfEligible(MediaUsage usage) {
+        if (!Boolean.TRUE.equals(usage.getIsPrimary())
+                || ("PRICING_EXAMPLE".equals(usage.getUsageType()) && !PublicMediaQueryService.isPublicReadyUsage(usage))) {
+            return;
+        }
+
+        List<MediaUsage> existingUsages = mediaUsageRepository.findByUsageScope(
+                usage.getUsageType(), usage.getUsageKey(), usage.getOwnerId());
         List<MediaUsage> usagesToUpdate = existingUsages.stream()
-                .filter(existing -> excludeUsageId == null || !existing.getId().equals(excludeUsageId))
+                .filter(existing -> !Objects.equals(existing.getId(), usage.getId()))
                 .filter(existing -> Boolean.TRUE.equals(existing.getIsPrimary()))
                 .peek(existing -> existing.setIsPrimary(false))
                 .toList();

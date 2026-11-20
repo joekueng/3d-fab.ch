@@ -76,7 +76,7 @@ public class PublicMediaQueryService {
         List<MediaUsage> usages = mediaUsageRepository
                 .findActiveByUsageTypeAndUsageKeys(normalizedUsageType, normalizedUsageKeys)
                 .stream()
-                .filter(this::isPublicReadyUsage)
+                .filter(PublicMediaQueryService::isPublicReadyUsage)
                 .sorted(Comparator
                         .comparing(MediaUsage::getUsageKey, Comparator.nullsLast(String::compareTo))
                         .thenComparing(MediaUsage::getSortOrder, Comparator.nullsLast(Integer::compareTo))
@@ -112,9 +112,10 @@ public class PublicMediaQueryService {
         return result;
     }
 
-    private boolean isPublicReadyUsage(MediaUsage usage) {
+    public static boolean isPublicReadyUsage(MediaUsage usage) {
         MediaAsset asset = usage.getMediaAsset();
-        return (!"PRICING_EXAMPLE".equals(usage.getUsageType())
+        return Boolean.TRUE.equals(usage.getIsActive())
+                && (!"PRICING_EXAMPLE".equals(usage.getUsageType())
                 || (usage.getPricingExample() != null && usage.getPricingExample().publishable()
                     && Set.of("functional", "decorative", "series").contains(usage.getUsageKey())
                     && Objects.equals(usage.getPricingExample().quantity(), "series".equals(usage.getUsageKey()) ? 10 : 1)))

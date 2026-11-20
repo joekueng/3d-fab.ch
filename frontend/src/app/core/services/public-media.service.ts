@@ -8,6 +8,9 @@ import {
   of,
   catchError,
   distinctUntilChanged,
+  from,
+  mergeMap,
+  scan,
   switchMap,
 } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -91,6 +94,8 @@ export type PublicMediaUsageCollectionMap = Record<
   readonly PublicMediaImage[]
 >;
 
+const MAX_USAGE_KEYS_PER_BATCH = 50;
+
 export function buildPublicMediaUsageScopeKey(
   usageType: string,
   usageKey: string,
@@ -127,11 +132,7 @@ export class PublicMediaService {
         return this.http
           .get<PublicMediaUsageDto[]>(`${this.baseUrl}/usages`, { params })
           .pipe(
-            map((items) =>
-              items
-                .map((item) => this.mapUsageDto(item))
-                .filter((item) => this.hasAnyFallback(item)),
-            ),
+            map((items) => this.mapUsageItems(items)),
             catchError(() => of([])),
           );
       }),
@@ -170,6 +171,62 @@ export class PublicMediaService {
     );
   }
 
+  getUsageCollectionsBatch(
+    usageType: PublicMediaUsageType,
+    usageKeys: readonly string[],
+  ): Observable<PublicMediaUsageCollectionMap> {
+    const uniqueKeys = [...new Set(usageKeys)];
+    if (uniqueKeys.length === 0) {
+      return of({});
+    }
+
+    const batches: string[][] = [];
+    for (
+      let index = 0;
+      index < uniqueKeys.length;
+      index += MAX_USAGE_KEYS_PER_BATCH
+    ) {
+      batches.push(uniqueKeys.slice(index, index + MAX_USAGE_KEYS_PER_BATCH));
+    }
+
+    return this.selectedLang$.pipe(
+      switchMap((lang) =>
+        from(batches).pipe(
+          mergeMap((keys) => {
+            const params = new HttpParams({
+              fromObject: { usageType, usageKeys: keys, lang },
+            });
+            return this.http
+              .get<
+                Record<string, PublicMediaUsageDto[]>
+              >(`${this.baseUrl}/usages`, { params })
+              .pipe(
+                map((itemsByKey) =>
+                  keys.map(
+                    (key) =>
+                      [
+                        buildPublicMediaUsageScopeKey(usageType, key),
+                        this.mapUsageItems(
+                          Object.hasOwn(itemsByKey, key) ? itemsByKey[key] : [],
+                        ),
+                      ] as const,
+                  ),
+                ),
+                catchError(() => of([])),
+              );
+          }, 4),
+          scan(
+            (collections: PublicMediaUsageCollectionMap, entries) => ({
+              ...collections,
+              ...Object.fromEntries(entries),
+            }),
+            {},
+          ),
+        ),
+      ),
+    );
+  }
+
   pickPrimaryUsage(
     items: readonly PublicMediaImage[],
   ): PublicMediaImage | null {
@@ -199,6 +256,14 @@ export class PublicMediaService {
       isPrimary: item.isPrimary,
       source,
     };
+  }
+
+  private mapUsageItems(
+    items: readonly PublicMediaUsageDto[],
+  ): PublicMediaImage[] {
+    return items
+      .map((item) => this.mapUsageDto(item))
+      .filter((item) => this.hasAnyFallback(item));
   }
 
   private mapUsageDto(item: PublicMediaUsageDto): PublicMediaImage {

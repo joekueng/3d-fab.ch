@@ -379,18 +379,33 @@ class AdminMediaControllerServiceTest {
         create.setUsageKey("series");
         create.setMediaAssetId(asset.getId());
         create.setTranslations(buildTranslations("Sample", "Real sample"));
+        var translated = Map.of("it", "text", "en", "text", "de", "text", "fr", "text");
+        var verifiedExample = new com.printcalculator.dto.PricingExampleDto("PLA", "20 × 20 × 10", 10,
+                new java.math.BigDecimal("12.50"), java.time.LocalDate.now(), translated, translated, true);
+        create.setIsPrimary(true);
+        create.setPricingExample(verifiedExample);
+        var existingPrimary = service.createUsage(create);
+
+        create.setPricingExample(null);
         var draft = service.createUsage(create);
         assertNull(draft.getPricingExample());
-        var translated = Map.of("it", "text", "en", "text", "de", "text", "fr", "text");
+        assertTrue(usages.get(existingPrimary.getId()).getIsPrimary());
+
         var update = new com.printcalculator.dto.AdminUpdateMediaUsageRequest();
+        update.setIsPrimary(true);
+        service.updateUsage(draft.getId(), update);
+        assertTrue(usages.get(existingPrimary.getId()).getIsPrimary());
+
         update.setPricingExample(new com.printcalculator.dto.PricingExampleDto("PLA", "20 × 20 × 10", 1,
                 new java.math.BigDecimal("12.50"), java.time.LocalDate.now(), translated, translated, true));
         assertThrows(ResponseStatusException.class, () -> service.updateUsage(draft.getId(), update));
-        update.setPricingExample(new com.printcalculator.dto.PricingExampleDto("PLA", "20 × 20 × 10", 10,
-                new java.math.BigDecimal("12.50"), java.time.LocalDate.now(), translated, translated, true));
+        update.setIsPrimary(null);
+        update.setPricingExample(verifiedExample);
         var published = service.updateUsage(draft.getId(), update);
         assertEquals(10, published.getPricingExample().quantity());
         assertTrue(published.getPricingExample().publishable());
+        assertTrue(published.getIsPrimary());
+        assertFalse(usages.get(existingPrimary.getId()).getIsPrimary());
         assertEquals(asset.getId(), published.getMediaAssetId());
         update.setPricingExample(new com.printcalculator.dto.PricingExampleDto("PLA", "20 × 20 × 10", 10,
                 new java.math.BigDecimal("12.50"), java.time.LocalDate.now(), translated, translated, false));

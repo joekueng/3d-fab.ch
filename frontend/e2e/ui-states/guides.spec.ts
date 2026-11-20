@@ -1,5 +1,8 @@
 import { expect, test } from '@playwright/test';
-import { mediaUsage, options } from '../../scripts/fixtures/guides-data.mjs';
+import {
+  mediaUsageResponse,
+  options,
+} from '../../scripts/fixtures/guides-data.mjs';
 
 // All catalogue/photo/price responses here are explicitly synthetic doubles.
 test('UI-GUIDES-001: synthetic catalogue filters, compares two variants and opens a keyboard gallery', async ({
@@ -12,11 +15,7 @@ test('UI-GUIDES-001: synthetic catalogue filters, compares two variants and open
   await page.route('**/api/public/media/usages?**', (route) => {
     const url = new URL(route.request().url());
     return route.fulfill({
-      json: mediaUsage(
-        url.searchParams.get('usageType')!,
-        url.searchParams.get('usageKey')!,
-        url.searchParams.get('lang')!,
-      ),
+      json: mediaUsageResponse(url.searchParams),
     });
   });
   await page.route('**/__fixtures/sample-*.svg', (route) =>
@@ -129,27 +128,25 @@ test('UI-GUIDES-002: simulated options and photo failures show fallbacks and ret
   await page.route('**/api/public/media/usages?**', (route) => {
     const url = new URL(route.request().url());
     return route.fulfill({
-      json: mediaUsage(
-        url.searchParams.get('usageType')!,
-        url.searchParams.get('usageKey')!,
-        'it',
-      ).map((item) => ({
-        ...item,
-        card: item.card
-          ? {
-              ...item.card,
-              jpegUrl:
-                item.card.jpegUrl?.replace('.svg', '-broken.svg') ?? null,
-            }
-          : null,
-        hero: item.hero
-          ? {
-              ...item.hero,
-              jpegUrl:
-                item.hero.jpegUrl?.replace('.svg', '-broken.svg') ?? null,
-            }
-          : null,
-      })),
+      json: mediaUsageResponse(url.searchParams, (items) =>
+        items.map((item) => ({
+          ...item,
+          card: item.card
+            ? {
+                ...item.card,
+                jpegUrl:
+                  item.card.jpegUrl?.replace('.svg', '-broken.svg') ?? null,
+              }
+            : null,
+          hero: item.hero
+            ? {
+                ...item.hero,
+                jpegUrl:
+                  item.hero.jpegUrl?.replace('.svg', '-broken.svg') ?? null,
+              }
+            : null,
+        })),
+      ),
     });
   });
   await page.route('**/__fixtures/sample-*.svg', (route) =>
@@ -189,11 +186,7 @@ test('UI-GUIDES-003: synthetic pricing data renders all locales and consultation
     await page.route('**/api/public/media/usages?**', (route) => {
       const url = new URL(route.request().url());
       return route.fulfill({
-        json: mediaUsage(
-          url.searchParams.get('usageType')!,
-          url.searchParams.get('usageKey')!,
-          url.searchParams.get('lang')!,
-        ),
+        json: mediaUsageResponse(url.searchParams),
       });
     });
     await page.locator(`footer a[href="/${lang}/pricing"]`).click();
