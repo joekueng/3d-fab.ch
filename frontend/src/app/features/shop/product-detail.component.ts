@@ -10,6 +10,7 @@ import {
   Injector,
   PLATFORM_ID,
   QueryList,
+  ViewChild,
   ViewChildren,
   computed,
   effect,
@@ -93,10 +94,13 @@ export class ProductDetailComponent {
   private readonly shopRouteService = inject(ShopRouteService);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly responseInit = inject(RESPONSE_INIT, { optional: true });
+  @ViewChild('heroImage')
+  private heroImage?: ElementRef<HTMLImageElement>;
   @ViewChildren('thumbButton')
   private thumbButtons?: QueryList<ElementRef<HTMLButtonElement>>;
   readonly shopService = inject(ShopService);
   private thumbScrollFrame: number | null = null;
+  private readonly loadedPortraitUrl = signal<string | null>(null);
 
   readonly routeCategorySlug = signal<string | null>(
     this.readRouteParam('categorySlug'),
@@ -228,6 +232,13 @@ export class ProductDetailComponent {
     );
   });
 
+  readonly heroImageUrl = computed(() => this.imageUrl(this.selectedImage()));
+
+  readonly isPortraitHeroImage = computed(() => {
+    const url = this.heroImageUrl();
+    return !!url && this.loadedPortraitUrl() === url;
+  });
+
   readonly selectedImageIndex = computed(() => {
     const images = this.galleryImages();
     const selectedAssetId = this.selectedImageAssetId();
@@ -267,6 +278,11 @@ export class ProductDetailComponent {
       );
     });
     afterNextRender(() => {
+      const image = this.heroImage?.nativeElement;
+      const url = this.heroImageUrl();
+      if (image?.complete && url) {
+        this.onHeroImageLoad(url, image);
+      }
       this.scheduleCartWarmup();
     });
     this.destroyRef.onDestroy(() => {
@@ -376,6 +392,14 @@ export class ProductDetailComponent {
       this.shopService.resolveMediaUrl(image.hero) ??
       this.shopService.resolveMediaUrl(image.card) ??
       this.shopService.resolveMediaUrl(image.thumb)
+    );
+  }
+
+  onHeroImageLoad(url: string, image: HTMLImageElement): void {
+    this.loadedPortraitUrl.set(
+      image.naturalWidth > 0 && image.naturalHeight > image.naturalWidth
+        ? url
+        : null,
     );
   }
 

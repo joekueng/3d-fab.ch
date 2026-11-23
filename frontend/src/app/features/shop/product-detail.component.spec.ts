@@ -249,6 +249,35 @@ describe('ProductDetailComponent', () => {
     });
   }
 
+  it('uses the portrait frame only for the loaded vertical photo', () => {
+    const { component, fixture } = createComponent();
+    fixture.detectChanges();
+    const product = buildProduct();
+    const portrait = product.images[0];
+    component.product.set({
+      ...product,
+      images: [
+        portrait,
+        {
+          ...portrait,
+          mediaAssetId: 'image-2',
+          hero: { ...portrait.hero!, jpegUrl: '/media/landscape.jpg' },
+        },
+      ],
+    });
+
+    const image = document.createElement('img');
+    Object.defineProperties(image, {
+      naturalWidth: { value: 900 },
+      naturalHeight: { value: 1200 },
+    });
+    expect(component.isPortraitHeroImage()).toBeFalse();
+    component.onHeroImageLoad('/media/product.jpg', image);
+    expect(component.isPortraitHeroImage()).toBeTrue();
+    component.selectImage('image-2');
+    expect(component.isPortraitHeroImage()).toBeFalse();
+  });
+
   it('updates the offer with the selected variant without duplicating scripts', () => {
     const { component, fixture } = createComponent();
     fixture.detectChanges();

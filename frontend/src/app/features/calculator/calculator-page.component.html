@@ -99,15 +99,6 @@
 
     <!-- Right Column: Result or Info -->
     <div class="col-result" #resultCol>
-      <p>
-        <a
-          class="ui-button ui-button--text"
-          [href]="languageService.localizedPath('/pricing')"
-          target="_blank"
-          rel="noopener"
-          >{{ "GUIDE_LINKS.PRICING_HINT" | translate }}</a
-        >
-      </p>
       @if (loading()) {
         <app-card class="loading-state">
           <div class="loader-content">
@@ -268,16 +259,25 @@
     <section class="calculator-guide">
       <app-card class="guide-card">
         <div class="guide-header guide-header--compact">
-          <p class="guide-kicker">{{ "CALC.FAQ.KICKER" | translate }}</p>
           <h2>{{ "CALC.FAQ.TITLE" | translate }}</h2>
-          <p>{{ "CALC.FAQ.SUBTITLE" | translate }}</p>
         </div>
 
         <div class="faq-list">
-          @for (faqId of faqIds; track faqId) {
+          @for (faq of faqEntries; track faq.id) {
             <details class="faq-item">
-              <summary>{{ faqKey(faqId, "Q") | translate }}</summary>
-              <p>{{ faqKey(faqId, "A") | translate }}</p>
+              <summary>{{ faqKey(faq.id, "Q") | translate }}</summary>
+              <p>{{ faqKey(faq.id, "A") | translate }}</p>
+              @if (faq.guidePath; as guidePath) {
+                <p>
+                  <a
+                    [href]="languageService.localizedPath(guidePath)"
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    {{ faqKey(faq.id, "LINK") | translate }}
+                  </a>
+                </p>
+              }
             </details>
           }
         </div>

@@ -807,29 +807,37 @@
       }
     },
     "FAQ": {
-      "KICKER": "Questions frequentes",
-      "TITLE": "Mini FAQ",
-      "SUBTITLE": "Des reponses rapides aux questions qui bloquent le plus souvent les utilisateurs non techniques.",
+      "TITLE": "Questions fréquentes",
       "ITEMS": {
+        "PRICE": {
+          "Q": "Comment le prix de l’impression 3D est-il calculé ?",
+          "A": "Le calculateur détermine le prix de l’impression en fonction du matériau utilisé, du temps d’impression, de la quantité et des réglages choisis. Le récapitulatif affiche le total à payer, avec les frais de préparation et de livraison indiqués séparément lorsqu’ils s’appliquent.",
+          "LINK": "Comment nous calculons le prix"
+        },
+        "COLORS": {
+          "Q": "Où puis-je voir les couleurs et les finitions ?",
+          "A": "Dans le catalogue, vous pouvez filtrer les échantillons par matériau et par finition, puis comparer deux variantes. La couleur à l’écran est indicative et peut varier selon l’éclairage.",
+          "LINK": "Découvrir les couleurs et les finitions"
+        },
         "FILES": {
-          "Q": "Quels fichiers puis-je charger ?",
-          "A": "Vous pouvez téléverser des fichiers STL, 3MF, OBJ ou STEP/STP. Si vous téléchargez un modèle depuis un site externe, vérifiez qu’il s’agit d’un fichier 3D prêt à imprimer et pas seulement d’images ou de documentation."
+          "Q": "Quels fichiers puis-je téléverser ?",
+          "A": "Vous pouvez téléverser des fichiers STL, 3MF, OBJ et STEP/STP jusqu’à 200 Mo. Vérifiez au préalable que les dimensions du modèle correspondent à celles de la pièce que vous souhaitez imprimer."
+        },
+        "MULTIPLE_PARTS": {
+          "Q": "Puis-je commander plusieurs pièces dans une même commande ?",
+          "A": "Oui. Pour obtenir plusieurs exemplaires d’une même pièce, augmentez la quantité à côté du fichier. Pour imprimer des pièces différentes, téléversez un fichier par modèle. En mode Avancée, vous pouvez choisir des réglages différents pour chaque fichier."
         },
         "MODE": {
-          "Q": "Comment choisir entre Base et Avancee ?",
-          "A": "Choisissez Base si vous voulez un devis rapide pour un fichier deja pret. Choisissez Avancee si vous devez comparer des materiaux ou modifier des reglages qui influencent le temps, le poids et le prix."
+          "Q": "Quand utiliser le mode Base ou Avancée ?",
+          "A": "Choisissez Base pour obtenir rapidement un devis avec les réglages par défaut. Passez à Avancée pour comparer des matériaux ou voir l’effet du remplissage, de la hauteur de couche ou des supports sur le prix."
         },
         "NO_MODEL": {
-          "Q": "Et si je n ai pas encore de modele 3D ?",
-          "A": "Vous pouvez chercher sur les plateformes ci-dessus ou nous contacter si vous avez besoin d aide pour la conception ou l adaptation CAD."
+          "Q": "Et si je n’ai pas encore de modèle 3D ?",
+          "A": "Vous pouvez en chercher un sur les sites proposés ci-dessus. Si vous avez besoin d’une pièce sur mesure ou souhaitez adapter un modèle existant, contactez-nous pour un premier échange gratuit."
         },
-        "PRICE": {
-          "Q": "Le prix affiche est-il deja fiable ?",
-          "A": "C est une estimation automatique basee sur votre fichier et les reglages choisis. Le mode Avancee est plus precis car il tient compte d un plus grand nombre de parametres d impression."
-        },
-        "BEFORE_UPLOAD": {
-          "Q": "Que faut-il verifier avant le chargement ?",
-          "A": "Verifiez que le modele a la bonne echelle, que le fichier n est pas corrompu et que la geometrie correspond bien a la piece finale que vous voulez imprimer."
+        "OVERSIZED_MODEL": {
+          "Q": "Que se passe-t-il si mon modèle est trop grand pour l’imprimante ?",
+          "A": "Si le calculateur indique que le modèle doit être découpé en plusieurs parties, vous pouvez accepter sous la liste des fichiers, puis relancer le calcul du devis. Le nouveau total inclut un supplément de CHF 10 pour cette opération."
         }
       }
     },
@@ -852,7 +860,7 @@
     "SPLIT_ACCEPT_LABEL": "J'accepte que les modèles trop grands soient divisés pour l'impression",
     "SPLIT_RESULT_NOTE": "Ce devis inclut le supplément de CHF 10 pour diviser les modèles trop grands. Le fichier original reste associé à la commande.",
     "CALCULATE": "Calculer le devis",
-    "RESULT": "Devis estimé",
+    "RESULT": "Devis",
     "TIME": "Temps d'impression",
     "MACHINE_COST": "Coût machine",
     "COST": "Coût total",
@@ -1796,9 +1804,7 @@
     "CALCULATE": "Calcule ton prix",
     "CONSULT": "Demander un conseil",
     "FREE_CONSULTATION": "Le premier échange pour comprendre ton projet est gratuit ; toute prestation ultérieure fait l’objet d’un devis et d’un accord avant de commencer.",
-    "BEFORE_STARTING": "Avant de commencer",
-    "PRICING_HINT": "Comment le prix est-il calculé ? Ouvrir le guide dans un nouvel onglet.",
-    "COLORS_HINT": "Voir les couleurs et finitions dans un nouvel onglet."
+    "BEFORE_STARTING": "Avant de commencer"
   },
   "PRICING": {
     "CAD_TITLE": "Conception et assistance CAD",

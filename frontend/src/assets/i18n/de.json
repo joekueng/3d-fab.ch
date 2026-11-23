@@ -700,29 +700,37 @@
       }
     },
     "FAQ": {
-      "KICKER": "Hauefige Fragen",
-      "TITLE": "Mini-FAQ",
-      "SUBTITLE": "Kurze Antworten auf die Fragen, die nicht-technische Nutzer am haeufigsten ausbremsen.",
+      "TITLE": "Häufige Fragen",
       "ITEMS": {
+        "PRICE": {
+          "Q": "Wie wird der Preis für den 3D-Druck berechnet?",
+          "A": "Der Rechner bestimmt den Druckpreis anhand des Materialverbrauchs, der Druckzeit, der Stückzahl und deiner Einstellungen. In der Übersicht siehst du den Gesamtbetrag. Einrichtung und Versand werden bei Bedarf separat ausgewiesen.",
+          "LINK": "So berechnen wir den Preis"
+        },
+        "COLORS": {
+          "Q": "Wo sehe ich die Farben und Oberflächen?",
+          "A": "Im Katalog kannst du die Muster nach Material und Oberfläche filtern und zwei Varianten vergleichen. Die Farben auf dem Bildschirm dienen als Orientierung und können je nach Licht anders wirken.",
+          "LINK": "Farben und Oberflächen entdecken"
+        },
         "FILES": {
           "Q": "Welche Dateien kann ich hochladen?",
-          "A": "Du kannst STL-, 3MF-, OBJ- oder STEP/STP-Dateien hochladen. Wenn du ein Modell von einer externen Plattform herunterlädst, prüfe, ob es eine druckfertige 3D-Datei und nicht nur Bilder oder eine Anleitung ist."
+          "A": "Du kannst STL-, 3MF-, OBJ- und STEP/STP-Dateien bis 200 MB hochladen. Prüfe vor dem Hochladen, ob die Abmessungen des Modells dem gewünschten Bauteil entsprechen."
+        },
+        "MULTIPLE_PARTS": {
+          "Q": "Kann ich mehrere Teile in einer Bestellung bestellen?",
+          "A": "Ja. Wenn du mehrere Exemplare desselben Teils brauchst, erhöhe die Stückzahl neben der Datei. Lade für unterschiedliche Teile je eine Datei pro Modell hoch. Im Modus «Erweitert» kannst du die Einstellungen für jede Datei einzeln wählen."
         },
         "MODE": {
-          "Q": "Wie waehle ich zwischen Basis und Erweitert?",
-          "A": "Waehlen Sie Basis fuer ein schnelles Angebot zu einer fertigen Datei. Waehlen Sie Erweitert, wenn Sie Materialien vergleichen oder Einstellungen aendern moechten, die Zeit, Gewicht und Preis beeinflussen."
+          "Q": "Wann verwende ich «Basis» oder «Erweitert»?",
+          "A": "Mit «Basis» erhältst du schnell ein Angebot mit den Standardeinstellungen. Wechsle zu «Erweitert», wenn du Materialien vergleichen oder sehen möchtest, wie sich Füllung, Schichthöhe oder Stützen auf den Preis auswirken."
         },
         "NO_MODEL": {
           "Q": "Was, wenn ich noch kein 3D-Modell habe?",
-          "A": "Sie koennen auf den oben genannten Plattformen suchen oder uns kontaktieren, wenn Sie Hilfe bei CAD-Konstruktion oder Anpassungen brauchen."
+          "A": "Du kannst auf den oben genannten Plattformen nach einem Modell suchen. Wenn du ein individuelles Teil brauchst oder ein vorhandenes Modell anpassen möchtest, kontaktiere uns für ein kostenloses Erstgespräch."
         },
-        "PRICE": {
-          "Q": "Ist der angezeigte Preis schon verlaesslich?",
-          "A": "Es handelt sich um eine automatische Schaetzung auf Basis Ihrer Datei und der gewaehlten Einstellungen. Der erweiterte Modus ist genauer, weil mehr Druckparameter beruecksichtigt werden."
-        },
-        "BEFORE_UPLOAD": {
-          "Q": "Was sollte ich vor dem Hochladen pruefen?",
-          "A": "Pruefen Sie, ob das Modell den richtigen Massstab hat, die Datei nicht beschaedigt ist und die Geometrie wirklich dem finalen Bauteil entspricht, das Sie drucken moechten."
+        "OVERSIZED_MODEL": {
+          "Q": "Was passiert, wenn mein Modell zu gross für den Drucker ist?",
+          "A": "Wenn der Rechner meldet, dass dein Modell aufgeteilt werden muss, kannst du unter der Dateiliste zustimmen und das Angebot erneut berechnen. Im neuen Gesamtbetrag ist der Aufpreis von CHF 10 für die Aufteilung enthalten."
         }
       }
     },
@@ -743,7 +751,7 @@
     "SPLIT_ACCEPT_LABEL": "Ich akzeptiere, dass zu große Modelle für den Druck geteilt werden",
     "SPLIT_RESULT_NOTE": "Dieses Angebot enthält den Zuschlag von CHF 10 für die Teilung zu großer Modelle. Die Originaldatei bleibt der Bestellung zugeordnet.",
     "CALCULATE": "Angebot berechnen",
-    "RESULT": "Geschätztes Angebot",
+    "RESULT": "Angebot",
     "TIME": "Druckzeit",
     "MACHINE_COST": "Maschinenkosten",
     "COST": "Gesamtkosten",
@@ -1801,9 +1809,7 @@
     "CALCULATE": "Berechne deinen Preis",
     "CONSULT": "Beratung anfragen",
     "FREE_CONSULTATION": "Das erste Gespräch zum Verständnis deines Projekts ist kostenlos; weitere Arbeiten werden vor Beginn offeriert und vereinbart.",
-    "BEFORE_STARTING": "Bevor du startest",
-    "PRICING_HINT": "Wie entsteht der Preis? Ratgeber in einem neuen Tab öffnen.",
-    "COLORS_HINT": "Farben und Oberflächen in einem neuen Tab ansehen."
+    "BEFORE_STARTING": "Bevor du startest"
   },
   "PRICING": {
     "CAD_TITLE": "CAD-Konstruktion und Unterstützung",

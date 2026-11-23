@@ -1,13 +1,4 @@
 <form [formGroup]="form" (ngSubmit)="onSubmit()">
-  <p>
-    <a
-      class="ui-button ui-button--text"
-      [href]="languageService.localizedPath('/colors-finishes')"
-      target="_blank"
-      rel="noopener"
-      >{{ "GUIDE_LINKS.COLORS_HINT" | translate }}</a
-    >
-  </p>
   <div class="section">
     @if (selectedFile()) {
       <div class="viewer-wrapper">
