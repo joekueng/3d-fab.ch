@@ -32,6 +32,7 @@
             <section class="visual-column">
               <div
                 class="hero-media"
+                [class.hero-media--portrait]="isPortraitHeroImage()"
                 [appSwipeCarousel]="galleryImages().length > 1"
                 (swipeCarouselPrevious)="showPreviousImage()"
                 (swipeCarouselNext)="showNextImage()"
@@ -55,9 +56,11 @@
                   </button>
                 }
 
-                @if (imageUrl(selectedImage()); as imageUrl) {
+                @if (heroImageUrl(); as imageUrl) {
                   <img
+                    #heroImage
                     [src]="imageUrl"
+                    (load)="onHeroImageLoad(imageUrl, heroImage)"
                     [alt]="selectedImage().altText || p.name"
                     class="hero-image"
                   />

@@ -98,6 +98,12 @@
   box-shadow: 0 6px 14px rgba(16, 24, 32, 0.04);
 }
 
+.hero-media--portrait {
+  width: min(100%, 28rem);
+  aspect-ratio: 3 / 4;
+  justify-self: center;
+}
+
 .hero-image {
   width: 100%;
   height: 100%;
