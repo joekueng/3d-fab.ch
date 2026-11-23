@@ -800,29 +800,37 @@
       }
     },
     "FAQ": {
-      "KICKER": "Dubbi comuni",
-      "TITLE": "Mini FAQ",
-      "SUBTITLE": "Le risposte rapide alle domande che bloccano piu spesso chi non usa abitualmente la stampa 3D.",
+      "TITLE": "Domande frequenti",
       "ITEMS": {
+        "PRICE": {
+          "Q": "Come si calcola il prezzo della stampa 3D?",
+          "A": "Il calcolatore determina il prezzo della stampa in base al materiale utilizzato, al tempo di stampa, alla quantità e alle impostazioni che scegli. Nel riepilogo vedi il totale da pagare, con il costo di avvio e la spedizione indicati separatamente quando si applicano.",
+          "LINK": "Come calcoliamo il prezzo"
+        },
+        "COLORS": {
+          "Q": "Dove posso vedere i colori e le finiture?",
+          "A": "Nel catalogo puoi filtrare i campioni per materiale e finitura e confrontare due varianti. Il colore sullo schermo è indicativo e può variare con la luce.",
+          "LINK": "Esplora colori e finiture"
+        },
         "FILES": {
-          "Q": "Che file posso caricare?",
-          "A": "Puoi caricare file STL, 3MF, OBJ o STEP/STP. Se scarichi un modello da un portale esterno, verifica che sia già un file 3D pronto e non solo immagini o documentazione."
+          "Q": "Quali file posso caricare?",
+          "A": "Puoi caricare file STL, 3MF, OBJ e STEP/STP fino a 200 MB. Prima di caricare il file, controlla che le dimensioni del modello corrispondano a quelle del pezzo che vuoi stampare."
+        },
+        "MULTIPLE_PARTS": {
+          "Q": "Posso ordinare più pezzi nello stesso ordine?",
+          "A": "Sì. Se vuoi più copie dello stesso pezzo, aumenta la quantità accanto al file. Se vuoi stampare pezzi diversi, carica un file per ciascun modello. In modalità Avanzata puoi scegliere impostazioni diverse per ogni file."
         },
         "MODE": {
-          "Q": "Come scelgo tra Base e Avanzata?",
-          "A": "Scegli Base se vuoi un preventivo rapido per un file gia pronto. Scegli Avanzata se devi confrontare materiali o modificare impostazioni che cambiano tempo, peso e costo."
+          "Q": "Quando conviene usare Base o Avanzata?",
+          "A": "Usa Base per ottenere un preventivo rapido con le impostazioni predefinite. Passa ad Avanzata se vuoi confrontare materiali o vedere come cambiano i costi modificando riempimento, altezza degli strati o supporti."
         },
         "NO_MODEL": {
-          "Q": "E se non ho ancora il modello 3D?",
-          "A": "Puoi cercarlo nei portali suggeriti qui sopra oppure contattarci se ti serve aiuto con progettazione o adattamento CAD."
+          "Q": "E se non ho ancora un modello 3D?",
+          "A": "Puoi cercarne uno nei siti suggeriti qui sopra. Se ti serve un pezzo su misura o vuoi adattare un modello esistente, contattaci per un primo confronto gratuito."
         },
-        "PRICE": {
-          "Q": "Il prezzo mostrato e gia affidabile?",
-          "A": "E una stima automatica basata sul file e sulle impostazioni selezionate. In modalita Avanzata la stima e piu precisa perche considera piu parametri di stampa."
-        },
-        "BEFORE_UPLOAD": {
-          "Q": "Cosa conviene controllare prima del caricamento?",
-          "A": "Controlla che il modello abbia la scala corretta, che il file non sia corrotto e che la geometria sia davvero quella finale che vuoi stampare."
+        "OVERSIZED_MODEL": {
+          "Q": "Cosa succede se il mio modello è troppo grande per la stampante?",
+          "A": "Se il calcolatore segnala che il modello richiede una suddivisione, puoi accettarla sotto l’elenco dei file e premere di nuovo «Calcola preventivo». Il nuovo totale include il supplemento di CHF 10 per la suddivisione."
         }
       }
     },
@@ -845,7 +853,7 @@
     "SPLIT_ACCEPT_LABEL": "Accetto che i modelli troppo grandi vengano suddivisi per la stampa",
     "SPLIT_RESULT_NOTE": "Il preventivo include il supplemento di CHF 10 per suddividere i modelli troppo grandi. Il file originale resta associato all'ordine.",
     "CALCULATE": "Calcola Preventivo",
-    "RESULT": "Preventivo Stimato",
+    "RESULT": "Preventivo",
     "TIME": "Tempo Stampa",
     "MACHINE_COST": "Costo Macchina",
     "COST": "Costo Totale",
@@ -1789,9 +1797,7 @@
     "CALCULATE": "Calcola il tuo prezzo",
     "CONSULT": "Richiedi una consulenza",
     "FREE_CONSULTATION": "Primo confronto gratuito per capire il progetto; eventuali attività successive vengono preventivate e concordate prima di iniziare.",
-    "BEFORE_STARTING": "Prima di iniziare",
-    "PRICING_HINT": "Come si forma il prezzo? Apri la guida in una nuova scheda.",
-    "COLORS_HINT": "Guarda colori e finiture in una nuova scheda."
+    "BEFORE_STARTING": "Prima di iniziare"
   },
   "PRICING": {
     "CAD_TITLE": "Progettazione e supporto CAD",

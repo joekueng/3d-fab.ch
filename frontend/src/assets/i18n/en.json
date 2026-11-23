@@ -687,29 +687,37 @@
       }
     },
     "FAQ": {
-      "KICKER": "Common questions",
-      "TITLE": "Mini FAQ",
-      "SUBTITLE": "Quick answers to the questions that most often block non-technical users.",
+      "TITLE": "Frequently asked questions",
       "ITEMS": {
+        "PRICE": {
+          "Q": "How is the price of a 3D print calculated?",
+          "A": "The calculator determines the print price based on the material used, print time, quantity and settings you choose. The summary shows the total you will pay, with the setup fee and shipping listed separately when applicable.",
+          "LINK": "How we calculate the price"
+        },
+        "COLORS": {
+          "Q": "Where can I see the colors and finishes?",
+          "A": "In the catalog, you can filter samples by material and finish and compare two variants. Colors on screen are approximate and can look different depending on the lighting.",
+          "LINK": "Explore colors and finishes"
+        },
         "FILES": {
           "Q": "Which files can I upload?",
-          "A": "You can upload STL, 3MF, OBJ or STEP/STP files. If you download a model from an external site, check that it is a ready-to-print 3D file rather than just images or documentation."
+          "A": "You can upload STL, 3MF, OBJ and STEP/STP files up to 200 MB. Before uploading, check that the model dimensions match the part you want to print."
+        },
+        "MULTIPLE_PARTS": {
+          "Q": "Can I order multiple parts in one order?",
+          "A": "Yes. To print more copies of the same part, increase the quantity next to the file. To print different parts, upload one file for each model. In Advanced mode, you can choose different settings for each file."
         },
         "MODE": {
-          "Q": "How do I choose between Basic and Advanced?",
-          "A": "Choose Basic if you want a fast quote for a ready file. Choose Advanced if you need to compare materials or change settings that affect time, weight and price."
+          "Q": "When should I use Quick or Advanced?",
+          "A": "Use Quick to get a quote with the default settings. Switch to Advanced to compare materials or see how changing infill, layer height or supports affects the price."
         },
         "NO_MODEL": {
           "Q": "What if I do not have a 3D model yet?",
-          "A": "You can search on the platforms listed above or contact us if you need help with CAD design or adaptation."
+          "A": "You can look for one on the sites listed above. If you need a custom part or want to adapt an existing model, contact us for a free initial consultation."
         },
-        "PRICE": {
-          "Q": "Is the shown price already reliable?",
-          "A": "It is an automatic estimate based on your file and the selected settings. Advanced mode is more precise because it accounts for more print parameters."
-        },
-        "BEFORE_UPLOAD": {
-          "Q": "What should I check before uploading?",
-          "A": "Check that the model has the correct scale, that the file is not corrupted and that the geometry really matches the final part you want to print."
+        "OVERSIZED_MODEL": {
+          "Q": "What happens if my model is too large for the printer?",
+          "A": "If the calculator says your model needs to be split, you can agree to this below the file list and select “Calculate Quote” again. The new total includes the CHF 10 fee for splitting the model."
         }
       }
     },
@@ -730,7 +738,7 @@
     "SPLIT_ACCEPT_LABEL": "I accept that oversized models may be split for printing",
     "SPLIT_RESULT_NOTE": "This quote includes the CHF 10 supplement for splitting oversized models. The original file remains attached to the order.",
     "CALCULATE": "Calculate Quote",
-    "RESULT": "Estimated Quote",
+    "RESULT": "Quote",
     "TIME": "Print Time",
     "MACHINE_COST": "Machine Cost",
     "COST": "Total Cost",
@@ -1788,9 +1796,7 @@
     "CALCULATE": "Calculate your price",
     "CONSULT": "Request a consultation",
     "FREE_CONSULTATION": "The first discussion to understand your project is free; any further work is quoted and agreed before it begins.",
-    "BEFORE_STARTING": "Before getting started",
-    "PRICING_HINT": "How is the price calculated? Open the guide in a new tab.",
-    "COLORS_HINT": "View colors and finishes in a new tab."
+    "BEFORE_STARTING": "Before getting started"
   },
   "PRICING": {
     "CAD_TITLE": "CAD design and support",

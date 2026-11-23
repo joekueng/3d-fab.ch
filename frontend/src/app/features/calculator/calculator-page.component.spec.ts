@@ -409,12 +409,14 @@ describe('CalculatorPageComponent', () => {
       'CULTS3D',
       'YEGGI',
     ]);
-    expect(component.faqIds).toEqual([
-      'FILES',
-      'MODE',
-      'NO_MODEL',
-      'PRICE',
-      'BEFORE_UPLOAD',
+    expect(component.faqEntries).toEqual([
+      { id: 'PRICE', guidePath: '/pricing' },
+      { id: 'COLORS', guidePath: '/colors-finishes' },
+      { id: 'FILES' },
+      { id: 'MULTIPLE_PARTS' },
+      { id: 'MODE' },
+      { id: 'NO_MODEL' },
+      { id: 'OVERSIZED_MODEL' },
     ]);
   });
 

@@ -102,7 +102,7 @@
   width: 100%;
   height: 100%;
   display: block;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
   background: #f2eee5;
 }
@@ -579,10 +579,6 @@ app-card.purchase-shell {
   .material-summary {
     flex-direction: column;
     align-items: start;
-  }
-
-  .hero-media--portrait .hero-image {
-    object-fit: cover;
   }
 
   .thumb-strip {

@@ -137,13 +137,15 @@ export class CalculatorPageComponent
         (item) => item.requiresSplitPrinting === true,
       ),
   );
-  readonly faqIds = [
-    'FILES',
-    'MODE',
-    'NO_MODEL',
-    'PRICE',
-    'BEFORE_UPLOAD',
-  ] as const;
+  readonly faqEntries: readonly { id: string; guidePath?: string }[] = [
+    { id: 'PRICE', guidePath: '/pricing' },
+    { id: 'COLORS', guidePath: '/colors-finishes' },
+    { id: 'FILES' },
+    { id: 'MULTIPLE_PARTS' },
+    { id: 'MODE' },
+    { id: 'NO_MODEL' },
+    { id: 'OVERSIZED_MODEL' },
+  ];
   readonly modelSources = [
     {
       id: 'PRINTABLES',
@@ -312,7 +314,7 @@ export class CalculatorPageComponent
     return `CALC.MODEL_SOURCES.ITEMS.${id}`;
   }
 
-  faqKey(id: string, field: string): string {
+  faqKey(id: string, field: 'Q' | 'A' | 'LINK'): string {
     return `CALC.FAQ.ITEMS.${id}.${field}`;
   }
 
