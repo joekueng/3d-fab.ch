@@ -805,7 +805,9 @@
 <app-dialog
   *ngIf="showPrintDetails && selectedOrder"
   [title]="
-    ('ADMIN_ORDERS.PRINT_DETAILS' | translate) + ' · ' + selectedOrder.orderNumber
+    ('ADMIN_ORDERS.PRINT_DETAILS' | translate) +
+    ' · ' +
+    selectedOrder.orderNumber
   "
   [closeLabel]="'ADMIN_ORDERS.CLOSE' | translate"
   (dismissed)="closePrintDetails()"
@@ -844,7 +846,10 @@
 
     <h4>Parametri per file</h4>
     <div class="file-color-list">
-      <div class="file-color-row" *ngFor="let item of printItems(selectedOrder)">
+      <div
+        class="file-color-row"
+        *ngFor="let item of printItems(selectedOrder)"
+      >
         <span class="filename">{{ item.originalFilename }}</span>
         <span class="item-quantity">
           {{ "ADMIN_ORDERS.QUANTITY" | translate }}
@@ -852,9 +857,9 @@
         </span>
         <span class="file-color">
           {{ getItemMaterialLabel(item) }} | Colore:
-          {{ getItemColorLabel(item) }} | {{ item.nozzleDiameterMm ?? "-" }} mm |
-          {{ item.layerHeightMm ?? "-" }} mm | {{ item.infillPercent ?? "-" }}% |
-          {{ item.infillPattern || "-" }} |
+          {{ getItemColorLabel(item) }} | {{ item.nozzleDiameterMm ?? "-" }} mm
+          | {{ item.layerHeightMm ?? "-" }} mm |
+          {{ item.infillPercent ?? "-" }}% | {{ item.infillPattern || "-" }} |
           {{ formatSupportsState(item.supportsEnabled) }}
         </span>
       </div>
