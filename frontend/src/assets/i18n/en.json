@@ -1532,6 +1532,14 @@
     "DEFAULT_SUBTEXT": "Supports .stl, .3mf"
   },
   "ADMIN_ORDERS": {
+    "DETAIL_LOADING": "Loading order details…",
+    "SHIPPING_ADDRESS_MISSING": "The order does not have a complete shipping address.",
+    "NO_PRINT_ITEMS": "This order contains no items to print.",
+    "PRINT_DETAILS": "Print details",
+    "COPY_SHIPPING_ADDRESS": "Copy shipping address",
+    "SHIPPING_ADDRESS_COPIED": "Address copied.",
+    "SHIPPING_ADDRESS_COPY_FAILED": "Could not copy the address.",
+    "QUANTITY": "Quantity",
     "PAID_OR_COMPLETED_ORDERS": "paid or completed orders",
     "FILTERS": "Filters",
     "BACK_TO_ORDERS": "Back to orders",

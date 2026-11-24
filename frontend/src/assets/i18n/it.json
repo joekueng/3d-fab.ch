@@ -1545,6 +1545,14 @@
     "DEFAULT_SUBTEXT": "Supporta .STL, .3MF"
   },
   "ADMIN_ORDERS": {
+    "DETAIL_LOADING": "Caricamento del dettaglio ordine…",
+    "SHIPPING_ADDRESS_MISSING": "L’ordine non ha un indirizzo di spedizione completo.",
+    "NO_PRINT_ITEMS": "Questo ordine non contiene articoli da stampare.",
+    "PRINT_DETAILS": "Dettagli stampa",
+    "COPY_SHIPPING_ADDRESS": "Copia indirizzo di spedizione",
+    "SHIPPING_ADDRESS_COPIED": "Indirizzo copiato.",
+    "SHIPPING_ADDRESS_COPY_FAILED": "Impossibile copiare l’indirizzo.",
+    "QUANTITY": "Quantità",
     "PAID_OR_COMPLETED_ORDERS": "ordini pagati o completati",
     "FILTERS": "Filtri",
     "BACK_TO_ORDERS": "Torna agli ordini",

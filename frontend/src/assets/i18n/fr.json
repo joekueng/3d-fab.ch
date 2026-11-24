@@ -1552,6 +1552,14 @@
     "DEFAULT_SUBTEXT": "Prend en charge .STL, .3MF"
   },
   "ADMIN_ORDERS": {
+    "DETAIL_LOADING": "Chargement du détail de la commande…",
+    "SHIPPING_ADDRESS_MISSING": "L’adresse de livraison de la commande est incomplète.",
+    "NO_PRINT_ITEMS": "Cette commande ne contient aucun article à imprimer.",
+    "PRINT_DETAILS": "Détails d’impression",
+    "COPY_SHIPPING_ADDRESS": "Copier l’adresse de livraison",
+    "SHIPPING_ADDRESS_COPIED": "Adresse copiée.",
+    "SHIPPING_ADDRESS_COPY_FAILED": "Impossible de copier l’adresse.",
+    "QUANTITY": "Quantité",
     "PAID_OR_COMPLETED_ORDERS": "commandes payées ou terminées",
     "FILTERS": "Filtres",
     "BACK_TO_ORDERS": "Retour aux commandes",

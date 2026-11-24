@@ -1,4 +1,5 @@
 .admin-dashboard {
+  --order-tools-offset: calc(64px + var(--space-3));
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
@@ -8,6 +9,11 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--space-3);
+}
+
+.statistics-cards .ui-stat-chip {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .statistics-loading {
@@ -125,7 +131,6 @@ tbody tr.no-results:hover {
 }
 
 .order-table__email {
-  max-width: 240px;
   overflow: hidden;
   color: var(--color-text-muted);
   font-size: 0.78rem;
@@ -140,6 +145,8 @@ tbody tr.no-results:hover {
 
 .order-uuid code {
   font-size: 0.82rem;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .detail-header h2 {
@@ -592,6 +599,44 @@ tbody tr.no-results:hover {
   gap: var(--space-2);
 }
 
+.print-actions {
+  position: sticky;
+  top: var(--order-tools-offset);
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  padding-block: var(--space-2);
+  background: var(--color-bg-card);
+  overflow-wrap: anywhere;
+}
+
+.copy-address-status {
+  color: var(--color-text-muted);
+  font-size: 0.84rem;
+}
+
+.item-quantity {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-inline-start: auto;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-brand) 23%, var(--color-bg-card));
+  color: var(--color-text);
+  font-size: 0.84rem;
+  white-space: nowrap;
+}
+
+.item-quantity strong {
+  font-size: 1.4rem;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
 .file-name {
   margin: 0;
   font-size: 0.92rem;
@@ -696,7 +741,7 @@ h4 {
 
 .file-color-row {
   display: flex;
-  justify-content: space-between;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-2) var(--space-3);
@@ -710,14 +755,66 @@ h4 {
 
 .filename {
   font-size: 0.9rem;
+  overflow-wrap: anywhere;
 }
 
 .file-color {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  flex-basis: 100%;
   color: var(--color-text-muted);
   font-size: 0.88rem;
+}
+
+@media (min-width: 1025px) {
+  :host .admin-dashboard .workspace {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  }
+
+  .orders-table {
+    table-layout: fixed;
+  }
+
+  .orders-table th,
+  .orders-table td {
+    padding-inline: var(--space-2);
+  }
+
+  .orders-table th:nth-child(2),
+  .orders-table th:nth-child(3),
+  .orders-table th:nth-child(4) {
+    width: 24%;
+  }
+
+  .orders-table .order-status-badge,
+  .orders-table .order-type-badge {
+    max-width: 100%;
+    padding-inline: var(--space-1);
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .orders-table .order-type-badge {
+    display: inline-block;
+    text-transform: none;
+  }
+
+  .orders-table th:last-child {
+    text-align: right;
+  }
+
+  .order-priority-panel {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+}
+
+@media (min-width: 1025px) and (min-height: 680px) {
+  .list-panel {
+    position: sticky;
+    top: var(--order-tools-offset);
+  }
+
+  .list-panel .table-wrap {
+    max-height: calc(100dvh - 17rem);
+  }
 }
 
 @media (max-width: 1280px) {

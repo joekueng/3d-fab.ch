@@ -124,6 +124,7 @@
             <tr
               *ngFor="let order of filteredOrders"
               [class.selected]="isSelected(order.id)"
+              [attr.aria-current]="isSelected(order.id) ? 'true' : null"
               (click)="openDetails(order.id)"
               (keydown.enter)="openDetails(order.id)"
               tabindex="0"
@@ -217,7 +218,35 @@
             >{{ selectedOrder.id }}</code
           >
         </p>
-        <p *ngIf="detailLoading">Caricamento dettaglio...</p>
+        <p *ngIf="detailLoading">
+          {{ "ADMIN_ORDERS.DETAIL_LOADING" | translate }}
+        </p>
+      </div>
+
+      <div class="print-actions">
+        <app-button type="button" variant="ghost" (click)="openPrintDetails()">
+          {{ "ADMIN_ORDERS.PRINT_DETAILS" | translate }}
+        </app-button>
+        @let shippingAddressText = shippingAddressForCopy(selectedOrder);
+        <app-button
+          type="button"
+          variant="secondary"
+          [appCopyOnClick]="shippingAddressText"
+          (click)="onCopyShippingAddress(shippingAddressText)"
+          (copySucceeded)="shippingAddressCopyStatus = 'copied'"
+          (copyFailed)="shippingAddressCopyStatus = 'failed'"
+        >
+          {{ "ADMIN_ORDERS.COPY_SHIPPING_ADDRESS" | translate }}
+        </app-button>
+        <span class="copy-address-status" role="status">
+          @if (shippingAddressCopyStatus === "copied") {
+            {{ "ADMIN_ORDERS.SHIPPING_ADDRESS_COPIED" | translate }}
+          } @else if (shippingAddressCopyStatus === "failed") {
+            {{ "ADMIN_ORDERS.SHIPPING_ADDRESS_COPY_FAILED" | translate }}
+          } @else if (shippingAddressCopyStatus === "missing") {
+            {{ "ADMIN_ORDERS.SHIPPING_ADDRESS_MISSING" | translate }}
+          }
+        </span>
       </div>
 
       <section class="order-priority-panel">
@@ -306,9 +335,12 @@
                           : "Calcolatore"
                     }}
                   </span>
+                  <span class="item-quantity">
+                    {{ "ADMIN_ORDERS.QUANTITY" | translate }}
+                    <strong>{{ item.quantity }}</strong>
+                  </span>
                 </div>
                 <p class="item-meta">
-                  <span>Qta: {{ item.quantity }}</span>
                   <span *ngIf="showItemMaterial(item)">
                     Materiale: {{ getItemMaterialLabel(item) }}
                   </span>
@@ -367,14 +399,6 @@
               </div>
             </div>
           </div>
-          <app-button
-            type="button"
-            variant="ghost"
-            (click)="openPrintDetails()"
-            [disabled]="!hasPrintItems(selectedOrder)"
-          >
-            Dettagli stampa
-          </app-button>
         </div>
       </details>
 
@@ -780,54 +804,64 @@
 
 <app-dialog
   *ngIf="showPrintDetails && selectedOrder"
-  [title]="'Dettagli stampa ordine ' + selectedOrder.orderNumber"
-  closeLabel="Chiudi"
+  [title]="
+    ('ADMIN_ORDERS.PRINT_DETAILS' | translate) + ' · ' + selectedOrder.orderNumber
+  "
+  [closeLabel]="'ADMIN_ORDERS.CLOSE' | translate"
   (dismissed)="closePrintDetails()"
 >
-  <div class="modal-grid ui-meta-grid">
-    <div class="ui-meta-item">
-      <strong>Qualità</strong
-      ><span>{{ getQualityLabel(selectedOrder.printLayerHeightMm) }}</span>
+  @if (hasPrintItems(selectedOrder)) {
+    <div class="modal-grid ui-meta-grid">
+      <div class="ui-meta-item">
+        <strong>Qualità</strong
+        ><span>{{ getQualityLabel(selectedOrder.printLayerHeightMm) }}</span>
+      </div>
+      <div class="ui-meta-item">
+        <strong>Materiale</strong
+        ><span>{{ selectedOrder.printMaterialCode || "-" }}</span>
+      </div>
+      <div class="ui-meta-item">
+        <strong>Layer height</strong
+        ><span>{{ selectedOrder.printLayerHeightMm || "-" }} mm</span>
+      </div>
+      <div class="ui-meta-item">
+        <strong>Nozzle</strong
+        ><span>{{ selectedOrder.printNozzleDiameterMm || "-" }} mm</span>
+      </div>
+      <div class="ui-meta-item">
+        <strong>Infill pattern</strong
+        ><span>{{ selectedOrder.printInfillPattern || "-" }}</span>
+      </div>
+      <div class="ui-meta-item">
+        <strong>Infill %</strong
+        ><span>{{ selectedOrder.printInfillPercent ?? "-" }}</span>
+      </div>
+      <div class="ui-meta-item">
+        <strong>Supporti</strong
+        ><span>{{ selectedOrder.printSupportsEnabled ? "Sì" : "No" }}</span>
+      </div>
     </div>
-    <div class="ui-meta-item">
-      <strong>Materiale</strong
-      ><span>{{ selectedOrder.printMaterialCode || "-" }}</span>
-    </div>
-    <div class="ui-meta-item">
-      <strong>Layer height</strong
-      ><span>{{ selectedOrder.printLayerHeightMm || "-" }} mm</span>
-    </div>
-    <div class="ui-meta-item">
-      <strong>Nozzle</strong
-      ><span>{{ selectedOrder.printNozzleDiameterMm || "-" }} mm</span>
-    </div>
-    <div class="ui-meta-item">
-      <strong>Infill pattern</strong
-      ><span>{{ selectedOrder.printInfillPattern || "-" }}</span>
-    </div>
-    <div class="ui-meta-item">
-      <strong>Infill %</strong
-      ><span>{{ selectedOrder.printInfillPercent ?? "-" }}</span>
-    </div>
-    <div class="ui-meta-item">
-      <strong>Supporti</strong
-      ><span>{{ selectedOrder.printSupportsEnabled ? "Sì" : "No" }}</span>
-    </div>
-  </div>
 
-  <h4>Parametri per file</h4>
-  <div class="file-color-list">
-    <div class="file-color-row" *ngFor="let item of printItems(selectedOrder)">
-      <span class="filename">{{ item.originalFilename }}</span>
-      <span class="file-color">
-        {{ getItemMaterialLabel(item) }} | Colore:
-        {{ getItemColorLabel(item) }} | {{ item.nozzleDiameterMm ?? "-" }} mm |
-        {{ item.layerHeightMm ?? "-" }} mm | {{ item.infillPercent ?? "-" }}% |
-        {{ item.infillPattern || "-" }} |
-        {{ formatSupportsState(item.supportsEnabled) }}
-      </span>
+    <h4>Parametri per file</h4>
+    <div class="file-color-list">
+      <div class="file-color-row" *ngFor="let item of printItems(selectedOrder)">
+        <span class="filename">{{ item.originalFilename }}</span>
+        <span class="item-quantity">
+          {{ "ADMIN_ORDERS.QUANTITY" | translate }}
+          <strong>{{ item.quantity }}</strong>
+        </span>
+        <span class="file-color">
+          {{ getItemMaterialLabel(item) }} | Colore:
+          {{ getItemColorLabel(item) }} | {{ item.nozzleDiameterMm ?? "-" }} mm |
+          {{ item.layerHeightMm ?? "-" }} mm | {{ item.infillPercent ?? "-" }}% |
+          {{ item.infillPattern || "-" }} |
+          {{ formatSupportsState(item.supportsEnabled) }}
+        </span>
+      </div>
     </div>
-  </div>
+  } @else {
+    <p class="muted">{{ "ADMIN_ORDERS.NO_PRINT_ITEMS" | translate }}</p>
+  }
 </app-dialog>
 
 <app-dialog

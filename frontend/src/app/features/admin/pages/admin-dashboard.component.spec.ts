@@ -321,6 +321,84 @@ describe('Admin orders responsive layout', () => {
     expect(element('.filters-toggle').getBoundingClientRect().height).toBe(0);
   });
 
+  it('keeps the list and detail side by side at an intermediate desktop width', async () => {
+    frame.style.width = '1100px';
+    await waitForFrameLayout();
+
+    const list = element('.list-panel').getBoundingClientRect();
+    const detail = element('.detail-panel').getBoundingClientRect();
+    expect(list.right).toBeLessThan(detail.left);
+    expect(list.top).toBe(detail.top);
+    expect(detail.right).toBeLessThanOrEqual(1100);
+  });
+
+  it('copies the shipping address next to print details while customer details stay closed', async () => {
+    const clipboard = spyOn(navigator.clipboard, 'writeText').and.resolveTo();
+    fixture.componentInstance.selectedOrder = {
+      ...order,
+      shippingSameAsBilling: false,
+      billingAddress: { addressLine1: 'Billing street' },
+      shippingAddress: {
+        companyName: 'Example AG',
+        firstName: 'Gianni',
+        lastName: 'Esempio',
+        contactPerson: 'Gianni Esempio',
+        addressLine1: 'Viale Stazione 67',
+        addressLine2: 'c/o Ufficio',
+        zip: '6500',
+        city: 'Bellinzona',
+        countryCode: 'CH',
+      },
+    };
+    fixture.changeDetectorRef.markForCheck();
+    fixture.detectChanges();
+
+    const buttons = element('.print-actions').querySelectorAll('button');
+    expect(buttons.length).toBe(2);
+    expect(buttons[0].disabled).toBeFalse();
+    expect(buttons[1].disabled).toBeFalse();
+    buttons[1].click();
+    await fixture.whenStable();
+
+    expect(clipboard).toHaveBeenCalledOnceWith(
+      'Example AG\nGianni Esempio\nViale Stazione 67\nc/o Ufficio\n6500 Bellinzona',
+    );
+    expect(fixture.componentInstance.shippingAddressCopyStatus).toBe('copied');
+    expect(element('.address-grid').closest('details')?.open).toBeFalse();
+  });
+
+  it('keeps both actions available when an order has no shipping address or print items', () => {
+    const buttons = element('.print-actions').querySelectorAll('button');
+    expect(buttons[0].disabled).toBeFalse();
+    expect(buttons[1].disabled).toBeFalse();
+
+    buttons[1].click();
+    fixture.detectChanges();
+    expect(element('.copy-address-status').textContent).toContain(
+      'ADMIN_ORDERS.SHIPPING_ADDRESS_MISSING',
+    );
+
+    buttons[0].click();
+    fixture.detectChanges();
+    expect(frame.contentDocument!.body.textContent).toContain(
+      'ADMIN_ORDERS.NO_PRINT_ITEMS',
+    );
+  });
+
+  it('keeps the most recently selected order when detail responses arrive out of order', () => {
+    const nextOrder = { ...order, id: 'next', orderNumber: 'next' };
+    const firstResponse = new Subject<AdminOrder>();
+    const getOrder = spyOn(TestBed.inject(AdminOrdersService), 'getOrder');
+    getOrder.withArgs(order.id).and.returnValue(firstResponse);
+    getOrder.withArgs(nextOrder.id).and.returnValue(of(nextOrder));
+
+    fixture.componentInstance.openDetails(order.id, false);
+    fixture.componentInstance.openDetails(nextOrder.id, false);
+    firstResponse.next(order);
+
+    expect(fixture.componentInstance.selectedOrder?.id).toBe(nextOrder.id);
+  });
+
   it('shows reachable filters and cards without horizontal overflow on a phone', async () => {
     frame.style.width = '390px';
     await waitForFrameLayout();

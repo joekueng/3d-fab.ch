@@ -5,11 +5,13 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   ChangeDetectorRef,
   Component,
+  DestroyRef,
   HostListener,
   PLATFORM_ID,
   inject,
   OnInit,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import {
@@ -27,7 +29,7 @@ import { AppInputComponent } from '../../../shared/components/app-input/app-inpu
 import { AppSelectComponent } from '../../../shared/components/app-select/app-select.component';
 import { downloadBlobInBrowser } from '../../../core/utils/browser-download';
 import { StlViewerComponent } from '../../../shared/components/stl-viewer/stl-viewer.component';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -52,6 +54,8 @@ export class AdminDashboardComponent implements OnInit {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly adminOrdersService = inject(AdminOrdersService);
   private readonly changeDetector = inject(ChangeDetectorRef);
+  private readonly destroyRef = inject(DestroyRef);
+  private detailRequest?: Subscription;
 
   orders: AdminOrder[] = [];
   statistics: AdminOrderStatistics | null = null;
@@ -73,6 +77,7 @@ export class AdminDashboardComponent implements OnInit {
   loading = false;
   statisticsLoading = false;
   detailLoading = false;
+  shippingAddressCopyStatus: 'copied' | 'failed' | 'missing' | null = null;
   confirmingPayment = false;
   updatingStatus = false;
   uploadingCadFiles = false;
@@ -196,8 +201,7 @@ export class AdminDashboardComponent implements OnInit {
           } else if (this.filteredOrders.length > 0) {
             this.openDetails(this.filteredOrders[0].id, false);
           } else {
-            this.selectedOrder = null;
-            this.selectedStatus = '';
+            this.clearOrderSelection();
           }
         }
         this.loading = false;
@@ -248,16 +252,21 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   openDetails(orderId: string, revealOnMobile = true): void {
+    this.detailRequest?.unsubscribe();
     this.reviewRequestPreview = null;
+    this.shippingAddressCopyStatus = null;
+    if (this.selectedOrder?.id !== orderId) {
+      this.closePrintDetails();
+    }
+    const summaryOrder = this.orders.find((order) => order.id === orderId);
+    if (summaryOrder && this.selectedOrder?.id !== orderId) {
+      this.selectedOrder = summaryOrder;
+      this.selectedStatus = summaryOrder.status;
+      this.selectedPaymentMethod = summaryOrder.paymentMethod || 'OTHER';
+    }
     if (revealOnMobile && this.isMobileViewport()) {
       this.listScrollPosition = window.scrollY;
       this.mobileDetailOpen = true;
-      const summaryOrder = this.orders.find((order) => order.id === orderId);
-      if (summaryOrder) {
-        this.selectedOrder = summaryOrder;
-        this.selectedStatus = summaryOrder.status;
-        this.selectedPaymentMethod = summaryOrder.paymentMethod || 'OTHER';
-      }
       window.setTimeout(() => {
         document
           .querySelector('.detail-panel')
@@ -266,22 +275,23 @@ export class AdminDashboardComponent implements OnInit {
     }
     this.detailLoading = true;
     this.cadUploadFiles = [];
-    this.adminOrdersService.getOrder(orderId).subscribe({
-      next: (order) => {
-        this.selectedOrder = order;
-        this.selectedStatus = order.status;
-        this.selectedPaymentMethod = order.paymentMethod || 'OTHER';
-        this.showPrintDetails =
-          this.showPrintDetails && this.hasPrintItems(order);
-        this.detailLoading = false;
-        this.changeDetector.markForCheck();
-      },
-      error: () => {
-        this.detailLoading = false;
-        this.errorMessage = 'Impossibile caricare il dettaglio ordine.';
-        this.changeDetector.markForCheck();
-      },
-    });
+    this.detailRequest = this.adminOrdersService
+      .getOrder(orderId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (order) => {
+          this.selectedOrder = order;
+          this.selectedStatus = order.status;
+          this.selectedPaymentMethod = order.paymentMethod || 'OTHER';
+          this.detailLoading = false;
+          this.changeDetector.markForCheck();
+        },
+        error: () => {
+          this.detailLoading = false;
+          this.errorMessage = 'Impossibile caricare il dettaglio ordine.';
+          this.changeDetector.markForCheck();
+        },
+      });
   }
 
   backToOrders(): void {
@@ -627,10 +637,7 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   openPrintDetails(): void {
-    if (!this.selectedOrder || !this.hasPrintItems(this.selectedOrder)) {
-      return;
-    }
-    this.showPrintDetails = true;
+    this.showPrintDetails = this.selectedOrder !== null;
   }
 
   closePrintDetails(): void {
@@ -927,6 +934,38 @@ export class AdminDashboardComponent implements OnInit {
     return order.shippingSameAsBilling ? (order.billingAddress ?? null) : null;
   }
 
+  shippingAddressForCopy(order: AdminOrder): string | null {
+    const address = this.effectiveShippingAddress(order);
+    if (!address) return null;
+
+    const name = [address.firstName, address.lastName]
+      .map((part) => this.cleanValue(part))
+      .filter(Boolean)
+      .join(' ');
+    const recipients = [address.companyName, name, address.contactPerson]
+      .map((part) => this.cleanValue(part))
+      .filter(Boolean);
+    const street = this.cleanValue(address.addressLine1);
+    const zip = this.cleanValue(address.zip);
+    const city = this.cleanValue(address.city);
+    const country = this.cleanValue(address.countryCode).toUpperCase();
+    if (!recipients.length || !street || !zip || !city) return null;
+
+    return [
+      ...new Set(recipients),
+      street,
+      this.cleanValue(address.addressLine2),
+      `${zip} ${city}`,
+      country === 'CH' ? '' : country,
+    ]
+      .filter(Boolean)
+      .join('\n');
+  }
+
+  onCopyShippingAddress(address: string | null): void {
+    this.shippingAddressCopyStatus = address ? null : 'missing';
+  }
+
   preferredLanguageLabel(order: AdminOrder | null): string {
     const normalized = (order?.preferredLanguage || '').trim().toLowerCase();
     switch (normalized) {
@@ -1010,13 +1049,13 @@ export class AdminDashboardComponent implements OnInit {
     this.orders = this.orders.map((order) =>
       order.id === updatedOrder.id ? updatedOrder : order,
     );
+    if (this.selectedOrder?.id === updatedOrder.id) {
+      this.selectedOrder = updatedOrder;
+      this.selectedStatus = updatedOrder.status;
+      this.selectedPaymentMethod =
+        updatedOrder.paymentMethod || this.selectedPaymentMethod;
+    }
     this.applyListFiltersAndSelection();
-    this.selectedOrder = updatedOrder;
-    this.selectedStatus = updatedOrder.status;
-    this.selectedPaymentMethod =
-      updatedOrder.paymentMethod || this.selectedPaymentMethod;
-    this.showPrintDetails =
-      this.showPrintDetails && this.hasPrintItems(updatedOrder);
     this.loadStatistics();
     this.changeDetector.markForCheck();
   }
@@ -1025,8 +1064,7 @@ export class AdminDashboardComponent implements OnInit {
     this.refreshFilteredOrders();
 
     if (this.filteredOrders.length === 0) {
-      this.selectedOrder = null;
-      this.selectedStatus = '';
+      this.clearOrderSelection();
       return;
     }
 
@@ -1036,6 +1074,14 @@ export class AdminDashboardComponent implements OnInit {
     ) {
       this.openDetails(this.filteredOrders[0].id, false);
     }
+  }
+
+  private clearOrderSelection(): void {
+    this.detailRequest?.unsubscribe();
+    this.detailLoading = false;
+    this.closePrintDetails();
+    this.selectedOrder = null;
+    this.selectedStatus = '';
   }
 
   private refreshFilteredOrders(): void {
