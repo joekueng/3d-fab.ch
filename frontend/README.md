@@ -53,6 +53,10 @@ npm run check:ui-reuse
 
 Exercise the affected UI and compare it with the existing reference. Add behavior tests when needed; report what was verified and any remaining limitations.
 
+Orders and contact requests share their email history row and status styles through
+`.email-log-list` in [the admin stylesheet](src/styles/_admin.scss). Each page
+sets its panel layout and the breakpoint for stacking row actions.
+
 ## Asynchronous view updates
 
 Angular 22 uses OnPush by default. Prefer signals or AsyncPipe for data displayed
