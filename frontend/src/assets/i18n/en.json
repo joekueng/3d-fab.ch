@@ -1531,6 +1531,12 @@
     "DEFAULT_LABEL": "Drop files here or click to upload",
     "DEFAULT_SUBTEXT": "Supports .stl, .3mf"
   },
+  "PAGINATION": {
+    "LABEL": "Pagination",
+    "RANGE": "{{first}}–{{last}} of {{total}}",
+    "PREVIOUS": "Previous",
+    "NEXT": "Next"
+  },
   "ADMIN_ORDERS": {
     "DETAIL_LOADING": "Loading order details…",
     "SHIPPING_ADDRESS_MISSING": "The order does not have a complete shipping address.",

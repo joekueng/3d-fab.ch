@@ -1,0 +1,38 @@
+@if (pageInfo().totalElements > 0) {
+  <nav
+    class="ui-inline-actions"
+    [attr.aria-label]="'PAGINATION.LABEL' | translate"
+  >
+    <span role="status">
+      {{
+        "PAGINATION.RANGE"
+          | translate
+            : {
+                first: (first() | number),
+                last: (last() | number),
+                total: (pageInfo().totalElements | number),
+              }
+      }}
+    </span>
+    <div class="ui-inline-actions">
+      <app-button
+        size="sm"
+        variant="outline"
+        [keepFocusWhenDisabled]="true"
+        [disabled]="loading() || pageInfo().page === 0"
+        (click)="pageChange.emit(pageInfo().page - 1)"
+      >
+        {{ "PAGINATION.PREVIOUS" | translate }}
+      </app-button>
+      <app-button
+        size="sm"
+        variant="outline"
+        [keepFocusWhenDisabled]="true"
+        [disabled]="loading() || last() >= pageInfo().totalElements"
+        (click)="pageChange.emit(pageInfo().page + 1)"
+      >
+        {{ "PAGINATION.NEXT" | translate }}
+      </app-button>
+    </div>
+  </nav>
+}

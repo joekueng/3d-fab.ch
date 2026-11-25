@@ -1544,6 +1544,12 @@
     "DEFAULT_LABEL": "Trascina i file qui o clicca per caricare",
     "DEFAULT_SUBTEXT": "Supporta .STL, .3MF"
   },
+  "PAGINATION": {
+    "LABEL": "Paginazione",
+    "RANGE": "{{first}}–{{last}} di {{total}}",
+    "PREVIOUS": "Precedente",
+    "NEXT": "Successiva"
+  },
   "ADMIN_ORDERS": {
     "DETAIL_LOADING": "Caricamento del dettaglio ordine…",
     "SHIPPING_ADDRESS_MISSING": "L’ordine non ha un indirizzo di spedizione completo.",

@@ -45,6 +45,7 @@ export class AppInputComponent implements ControlValueAccessor {
   autocapitalize = input<string>('');
   min = input<string | number | null>(null);
   max = input<string | number | null>(null);
+  maxLength = input<number | null>(null);
   step = input<string | number | null>(null);
   inputmode = input<string>('');
   spellcheck = input<boolean | null>(null);

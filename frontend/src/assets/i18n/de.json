@@ -1544,6 +1544,12 @@
     "DEFAULT_LABEL": "Dateien hierher ziehen oder klicken zum Hochladen",
     "DEFAULT_SUBTEXT": "Unterstützt .STL, .3MF"
   },
+  "PAGINATION": {
+    "LABEL": "Seitennavigation",
+    "RANGE": "{{first}}–{{last}} von {{total}}",
+    "PREVIOUS": "Zurück",
+    "NEXT": "Weiter"
+  },
   "ADMIN_ORDERS": {
     "DETAIL_LOADING": "Bestelldetails werden geladen…",
     "SHIPPING_ADDRESS_MISSING": "Für diese Bestellung fehlt eine vollständige Lieferadresse.",

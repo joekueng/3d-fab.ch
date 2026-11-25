@@ -1551,6 +1551,12 @@
     "DEFAULT_LABEL": "Glissez les fichiers ici ou cliquez pour téléverser",
     "DEFAULT_SUBTEXT": "Prend en charge .STL, .3MF"
   },
+  "PAGINATION": {
+    "LABEL": "Pagination",
+    "RANGE": "{{first}}–{{last}} sur {{total}}",
+    "PREVIOUS": "Précédente",
+    "NEXT": "Suivante"
+  },
   "ADMIN_ORDERS": {
     "DETAIL_LOADING": "Chargement du détail de la commande…",
     "SHIPPING_ADDRESS_MISSING": "L’adresse de livraison de la commande est incomplète.",
