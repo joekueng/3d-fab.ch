@@ -60,9 +60,11 @@ describe('Admin orders responsive layout', () => {
         {
           provide: AdminOrdersService,
           useValue: {
-            listOrders: () => of([order]),
+            listOrders: () =>
+              of({ items: [order], page: 0, size: 25, totalElements: 51 }),
             getOrder: () => of(order),
             getStatistics: () => of(null),
+            getUnreadInformation: () => of([]),
             previewReviewRequest: () => of(null),
             sendReviewRequest: () => of(order),
             downloadOrderItemFile: () => of(new Blob()),
@@ -399,6 +401,82 @@ describe('Admin orders responsive layout', () => {
     expect(fixture.componentInstance.selectedOrder?.id).toBe(nextOrder.id);
   });
 
+  it('corrects an out-of-range page and keeps the active filters when refreshed', async () => {
+    const orders = TestBed.inject(AdminOrdersService);
+    const lastOrder = { ...order, id: 'last', orderNumber: 'last' };
+    spyOn(orders, 'getOrder').and.returnValue(of(lastOrder));
+    const load = spyOn(orders, 'listOrders').and.callFake((page) =>
+      of({
+        items: page === 1 ? [lastOrder] : [],
+        page,
+        size: 25,
+        totalElements: 26,
+      }),
+    );
+    fixture.componentInstance.orderStatusFilter = 'PAID';
+    fixture.componentInstance.goToPage(2);
+    await fixture.whenStable();
+
+    expect(load.calls.allArgs().map(([page]) => page)).toEqual([2, 1]);
+    expect(fixture.componentInstance.selectedOrder?.id).toBe(lastOrder.id);
+    expect(fixture.componentInstance.ordersPage?.page).toBe(1);
+
+    fixture.componentInstance.backToOrders();
+    fixture.componentInstance.loadOrders();
+    expect(load.calls.mostRecent().args).toEqual([
+      1,
+      { q: '', orderStatus: 'PAID', paymentStatus: 'ALL', orderType: 'ALL' },
+    ]);
+  });
+
+  it('ignores a stale list response when a filter changes', () => {
+    const oldPage = new Subject<
+      NonNullable<AdminDashboardComponent['ordersPage']>
+    >();
+    const load = spyOn(
+      TestBed.inject(AdminOrdersService),
+      'listOrders',
+    ).and.returnValues(
+      oldPage,
+      of({ items: [], page: 0, size: 25, totalElements: 0 }),
+    );
+    fixture.componentInstance.goToPage(1);
+    fixture.componentInstance.onPaymentStatusFilterChange('RECEIVED');
+    oldPage.next({ items: [order], page: 1, size: 25, totalElements: 51 });
+
+    expect(load.calls.mostRecent().args[0]).toBe(0);
+    expect(load.calls.mostRecent().args[1].paymentStatus).toBe('RECEIVED');
+    expect(fixture.componentInstance.ordersPage?.totalElements).toBe(0);
+    expect(fixture.componentInstance.selectedOrder).toBeNull();
+  });
+
+  it('keeps pagination focus while loading and at the last page', () => {
+    const response = new Subject<
+      NonNullable<AdminDashboardComponent['ordersPage']>
+    >();
+    const load = spyOn(
+      TestBed.inject(AdminOrdersService),
+      'listOrders',
+    ).and.returnValue(response);
+    const next = element('app-pagination app-button:last-child button');
+    next.focus();
+    next.click();
+    fixture.detectChanges();
+
+    expect(next.getAttribute('aria-disabled')).toBe('true');
+    expect(next.tabIndex).toBe(-1);
+    expect(frame.contentDocument!.activeElement).toBe(next);
+    next.click();
+    expect(load).toHaveBeenCalledTimes(1);
+
+    response.next({ items: [order], page: 1, size: 25, totalElements: 26 });
+    fixture.detectChanges();
+    expect(next.getAttribute('aria-disabled')).toBe('true');
+    expect(frame.contentDocument!.activeElement).toBe(next);
+    next.click();
+    expect(load).toHaveBeenCalledTimes(1);
+  });
+
   it('shows reachable filters and cards without horizontal overflow on a phone', async () => {
     frame.style.width = '390px';
     await waitForFrameLayout();
@@ -412,7 +490,14 @@ describe('Admin orders responsive layout', () => {
     expect(element('.filters-toggle').getAttribute('aria-expanded')).toBe(
       'true',
     );
+    const searchLabel = element(
+      'label[for="order-search"]',
+    ) as HTMLLabelElement;
+    expect(searchLabel.control).toBe(element('input#order-search'));
     expect(element('.orders-table').scrollWidth).toBeLessThanOrEqual(
+      element('.list-panel').clientWidth,
+    );
+    expect(element('app-pagination nav').scrollWidth).toBeLessThanOrEqual(
       element('.list-panel').clientWidth,
     );
     fixture.componentInstance.mobileDetailOpen = true;

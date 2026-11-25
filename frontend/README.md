@@ -74,6 +74,18 @@ See the [shared component guide](src/app/shared/components/README.md) for modal,
 
 `npm run check:ui-reuse` also rejects known copies of color popups, modal shells, consent text, and print-setting styles. It catches established regression patterns; code review still needs to assess new component duplication.
 
+## Admin lists and session statistics
+
+Orders and contact requests use the shared `app-pagination` control with the
+[paged admin API](../backend/README.md#admin-list-pagination-and-session-statistics).
+The displayed totals come from the response. The orders search works across
+all pages and combines with the status and type filters in the JSON request
+body. Search and filter changes request page zero, and list requests supersede
+earlier in-flight reads.
+Refresh keeps the current page and selection when possible and recovers an
+out-of-range page. On mobile, the order detail back action returns to the same
+list state. Session statistics can be retried independently of the sessions list.
+
 ## Adding a New Feature
 
 1. **Create Directory**: `src/app/features/my-feature`.

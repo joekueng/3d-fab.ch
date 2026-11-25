@@ -74,11 +74,12 @@ for (const area of ['orders', 'contact-requests', 'sessions']) {
             ? {status: 404, json: {message: 'Synthetic missing file'}}
             : {contentType: 'model/stl', body: stl},
         );
-      if (path === '/api/admin/orders') return route.fulfill({json: [order]});
+      if (path === '/api/admin/orders/search' && route.request().method() === 'POST')
+        return route.fulfill({json: {items: [order], page: 0, size: 25, totalElements: 1}});
       if (path === '/api/admin/orders/order')
         return route.fulfill({json: order});
       if (path === '/api/admin/contact-requests')
-        return route.fulfill({json: [request]});
+        return route.fulfill({json: {items: [request], page: 0, size: 25, totalElements: 1}});
       if (path === '/api/admin/contact-requests/request')
         return route.fulfill({json: request});
       if (path === '/api/admin/sessions')

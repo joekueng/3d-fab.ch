@@ -1550,7 +1550,21 @@
     "PREVIOUS": "Zurück",
     "NEXT": "Weiter"
   },
+  "ADMIN_CONTACT_REQUESTS": {
+    "LIST_LOADING": "Kontaktanfragen werden geladen…",
+    "DETAIL_LOADING": "Anfragedetails werden geladen…"
+  },
+  "ADMIN_SESSIONS": {
+    "PAID_CONVERSION": "Bezahlte Abschlüsse (Sitzungen mit Artikeln)",
+    "ITEMS_PER_SESSION_WITH_ITEMS": "Ø Artikel pro Sitzung mit Artikeln",
+    "STATISTICS_LOADING": "Statistiken werden geladen…",
+    "STATISTICS_ERROR": "Die Sitzungsstatistiken konnten nicht geladen werden.",
+    "RETRY_STATISTICS": "Erneut versuchen"
+  },
   "ADMIN_ORDERS": {
+    "SEARCH_LABEL": "Bestellung oder Kundschaft suchen",
+    "SEARCH_PLACEHOLDER": "Name, E-Mail, Firma oder Bestellnummer",
+    "LIST_LOADING": "Bestellungen werden geladen…",
     "DETAIL_LOADING": "Bestelldetails werden geladen…",
     "SHIPPING_ADDRESS_MISSING": "Für diese Bestellung fehlt eine vollständige Lieferadresse.",
     "NO_PRINT_ITEMS": "Diese Bestellung enthält keine Artikel zum Drucken.",

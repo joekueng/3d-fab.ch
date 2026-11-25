@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { AdminEmailLog } from './admin-email-log.model';
+import { AdminPage } from './admin-page.model';
 
 export interface AdminOrderItem {
   clientModelKey?: string;
@@ -107,6 +108,13 @@ export interface AdminOrderStatistics {
   uniqueCustomerCount: number;
 }
 
+export interface AdminOrderFilters {
+  q: string;
+  paymentStatus: string;
+  orderStatus: string;
+  orderType: string;
+}
+
 export interface AdminUpdateOrderStatusPayload {
   status: string;
 }
@@ -133,8 +141,15 @@ export class AdminOrdersService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/api/admin/orders`;
 
-  listOrders(): Observable<AdminOrder[]> {
-    return this.http.get<AdminOrder[]>(this.baseUrl, { withCredentials: true });
+  listOrders(
+    page: number,
+    filters: AdminOrderFilters,
+  ): Observable<AdminPage<AdminOrder>> {
+    return this.http.post<AdminPage<AdminOrder>>(
+      `${this.baseUrl}/search`,
+      { pagination: { page }, filters },
+      { withCredentials: true },
+    );
   }
 
   getStatistics(): Observable<AdminOrderStatistics> {

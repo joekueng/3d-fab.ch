@@ -1557,7 +1557,21 @@
     "PREVIOUS": "Précédente",
     "NEXT": "Suivante"
   },
+  "ADMIN_CONTACT_REQUESTS": {
+    "LIST_LOADING": "Chargement des demandes de contact…",
+    "DETAIL_LOADING": "Chargement du détail de la demande…"
+  },
+  "ADMIN_SESSIONS": {
+    "PAID_CONVERSION": "Conversion payée (sessions avec articles)",
+    "ITEMS_PER_SESSION_WITH_ITEMS": "Moyenne d’articles par session avec articles",
+    "STATISTICS_LOADING": "Chargement des statistiques…",
+    "STATISTICS_ERROR": "Impossible de charger les statistiques des sessions.",
+    "RETRY_STATISTICS": "Réessayer"
+  },
   "ADMIN_ORDERS": {
+    "SEARCH_LABEL": "Rechercher une commande ou un client",
+    "SEARCH_PLACEHOLDER": "Nom, e-mail, entreprise ou numéro de commande",
+    "LIST_LOADING": "Chargement des commandes…",
     "DETAIL_LOADING": "Chargement du détail de la commande…",
     "SHIPPING_ADDRESS_MISSING": "L’adresse de livraison de la commande est incomplète.",
     "NO_PRINT_ITEMS": "Cette commande ne contient aucun article à imprimer.",

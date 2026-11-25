@@ -2,10 +2,12 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   ChangeDetectorRef,
   Component,
+  DestroyRef,
   PLATFORM_ID,
   inject,
   OnInit,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   AdminOperationsService,
   AdminQuoteSession,
@@ -13,10 +15,11 @@ import {
   AdminSessionStatistics,
 } from '../services/admin-operations.service';
 import { CopyOnClickDirective } from '../../../shared/directives/copy-on-click.directive';
+import { AppAlertComponent } from '../../../shared/components/app-alert/app-alert.component';
 import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
 import { ModelPreviewDialogComponent } from '../../../shared/components/model-preview-dialog/model-preview-dialog.component';
 import { TranslatePipe } from '@ngx-translate/core';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-admin-sessions',
@@ -24,6 +27,7 @@ import { Observable } from 'rxjs';
   imports: [
     CommonModule,
     CopyOnClickDirective,
+    AppAlertComponent,
     AppButtonComponent,
     ModelPreviewDialogComponent,
     TranslatePipe,
@@ -53,12 +57,15 @@ export class AdminSessionsComponent implements OnInit {
   private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly adminOperationsService = inject(AdminOperationsService);
+  private readonly destroyRef = inject(DestroyRef);
+  private statisticsRequest?: Subscription;
 
   sessions: AdminQuoteSession[] = [];
   statistics: AdminSessionStatistics | null = null;
   sessionDetailsById: Record<string, AdminQuoteSessionDetail | undefined> = {};
   loading = false;
   statisticsLoading = false;
+  statisticsError = false;
   deletingSessionIds = new Set<string>();
   loadingDetailSessionIds = new Set<string>();
   expandedSessionId: string | null = null;
@@ -88,20 +95,26 @@ export class AdminSessionsComponent implements OnInit {
     });
   }
 
-  private loadStatistics(): void {
+  loadStatistics(): void {
+    this.statisticsRequest?.unsubscribe();
     this.statisticsLoading = true;
-    this.adminOperationsService.getSessionStatistics().subscribe({
-      next: (statistics) => {
-        this.changeDetector.markForCheck();
-        this.statistics = statistics;
-        this.statisticsLoading = false;
-      },
-      error: () => {
-        this.changeDetector.markForCheck();
-        this.statistics = null;
-        this.statisticsLoading = false;
-      },
-    });
+    this.statisticsError = false;
+    this.statisticsRequest = this.adminOperationsService
+      .getSessionStatistics()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (statistics) => {
+          this.changeDetector.markForCheck();
+          this.statistics = statistics;
+          this.statisticsLoading = false;
+        },
+        error: () => {
+          this.changeDetector.markForCheck();
+          this.statistics = null;
+          this.statisticsLoading = false;
+          this.statisticsError = true;
+        },
+      });
   }
 
   deleteSession(session: AdminQuoteSession): void {

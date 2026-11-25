@@ -37,13 +37,15 @@
           currentStatistics.paidConversionRatePercent | number: "1.0-2"
         }}%</strong
       >
-      <span>conversione pagata</span>
+      <span>{{ "ADMIN_SESSIONS.PAID_CONVERSION" | translate }}</span>
     </article>
     <article class="ui-stat-chip">
       <strong>{{
         currentStatistics.averageItemsPerActiveSession | number: "1.0-2"
       }}</strong>
-      <span>articoli per sessione</span>
+      <span>{{
+        "ADMIN_SESSIONS.ITEMS_PER_SESSION_WITH_ITEMS" | translate
+      }}</span>
     </article>
     <article class="ui-stat-chip">
       <strong>{{ currentStatistics.modifiedSessionCount }}</strong>
@@ -61,9 +63,20 @@
   </p>
 
   <ng-template #statisticsLoadingTpl>
-    <p class="statistics-loading" *ngIf="statisticsLoading">
-      Caricamento statistiche...
-    </p>
+    @if (statisticsLoading) {
+      <p class="statistics-loading" role="status">
+        {{ "ADMIN_SESSIONS.STATISTICS_LOADING" | translate }}
+      </p>
+    } @else if (statisticsError) {
+      <div class="ui-inline-actions">
+        <app-alert type="error">
+          {{ "ADMIN_SESSIONS.STATISTICS_ERROR" | translate }}
+        </app-alert>
+        <app-button variant="outline" size="sm" (click)="loadStatistics()">
+          {{ "ADMIN_SESSIONS.RETRY_STATISTICS" | translate }}
+        </app-button>
+      </div>
+    }
   </ng-template>
 
   <div class="table-wrap ui-table-wrap" *ngIf="!loading; else loadingTpl">

@@ -26,10 +26,12 @@ import { AdminEmailLog } from '../services/admin-email-log.model';
 import { CopyOnClickDirective } from '../../../shared/directives/copy-on-click.directive';
 import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
 import { AppInputComponent } from '../../../shared/components/app-input/app-input.component';
+import { AppPaginationComponent } from '../../../shared/components/app-pagination/app-pagination.component';
 import { AppSelectComponent } from '../../../shared/components/app-select/app-select.component';
 import { downloadBlobInBrowser } from '../../../core/utils/browser-download';
 import { StlViewerComponent } from '../../../shared/components/stl-viewer/stl-viewer.component';
-import { firstValueFrom, Subscription } from 'rxjs';
+import { of, Subscription, switchMap, timer } from 'rxjs';
+import { AdminPage, loadAdminPage } from '../services/admin-page.model';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -42,6 +44,7 @@ import { firstValueFrom, Subscription } from 'rxjs';
     CopyOnClickDirective,
     AppButtonComponent,
     AppInputComponent,
+    AppPaginationComponent,
     AppSelectComponent,
     StlViewerComponent,
     TranslatePipe,
@@ -56,10 +59,13 @@ export class AdminDashboardComponent implements OnInit {
   private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly destroyRef = inject(DestroyRef);
   private detailRequest?: Subscription;
+  private listRequest?: Subscription;
+  private statisticsRequest?: Subscription;
+  private unreadRequest?: Subscription;
+  private requestedPage = 0;
 
-  orders: AdminOrder[] = [];
+  ordersPage: AdminPage<AdminOrder> | null = null;
   statistics: AdminOrderStatistics | null = null;
-  filteredOrders: AdminOrder[] = [];
   selectedOrder: AdminOrder | null = null;
   selectedStatus = '';
   selectedPaymentMethod = 'OTHER';
@@ -168,87 +174,124 @@ export class AdminDashboardComponent implements OnInit {
       value: item.clientModelKey || item.id,
     }));
   }
-  async refreshUnreadInformation(): Promise<void> {
-    try {
-      this.unreadInformation = new Set(
-        await firstValueFrom(this.adminOrdersService.getUnreadInformation()),
-      );
-    } catch {
-      /* Order list remains available. */
-    }
+  refreshUnreadInformation(): void {
+    this.unreadRequest?.unsubscribe();
+    this.unreadRequest = this.adminOrdersService
+      .getUnreadInformation()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (unread) => {
+          this.unreadInformation = new Set(unread);
+          this.changeDetector.markForCheck();
+        },
+        error: () => {
+          /* Order list remains available. */
+        },
+      });
   }
+
   loadOrders(): void {
-    void this.refreshUnreadInformation();
+    this.refreshUnreadInformation();
+    this.loadStatistics();
+    this.requestOrders(this.requestedPage, { refreshDetails: true });
+  }
+
+  goToPage(page: number): void {
+    this.requestOrders(page);
+  }
+
+  private requestOrders(
+    page: number,
+    { delay = 0, refreshDetails = false } = {},
+  ): void {
+    this.listRequest?.unsubscribe();
+    this.requestedPage = page;
     this.loading = true;
     this.errorMessage = null;
-    this.loadStatistics();
-    this.adminOrdersService.listOrders().subscribe({
-      next: (orders) => {
-        this.orders = orders;
-        this.refreshFilteredOrders();
-
-        if (!this.selectedOrder && this.filteredOrders.length > 0) {
-          this.openDetails(this.filteredOrders[0].id, false);
-        } else if (this.selectedOrder) {
-          const exists = orders.find(
+    const filters = {
+      q: this.orderSearchTerm.trim(),
+      paymentStatus: this.paymentStatusFilter,
+      orderStatus: this.orderStatusFilter,
+      orderType: this.orderTypeFilter,
+    };
+    this.listRequest = (delay ? timer(delay) : of(0))
+      .pipe(
+        switchMap(() =>
+          loadAdminPage(
+            (index) => this.adminOrdersService.listOrders(index, filters),
+            page,
+          ),
+        ),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (result) => {
+          this.requestedPage = result.page;
+          this.ordersPage = result;
+          this.loading = false;
+          const retained = result.items.find(
             (order) => order.id === this.selectedOrder?.id,
           );
-          const selectedIsVisible = this.filteredOrders.some(
-            (order) => order.id === this.selectedOrder?.id,
-          );
-          if (exists && selectedIsVisible) {
-            this.openDetails(exists.id, false);
-          } else if (this.filteredOrders.length > 0) {
-            this.openDetails(this.filteredOrders[0].id, false);
+          if (retained) {
+            if (refreshDetails) {
+              this.openDetails(retained.id, false);
+            }
           } else {
             this.clearOrderSelection();
+            if (result.items.length > 0) {
+              this.openDetails(result.items[0].id, false);
+            }
           }
-        }
-        this.loading = false;
-        this.changeDetector.markForCheck();
-      },
-      error: () => {
-        this.loading = false;
-        this.errorMessage = 'Impossibile caricare gli ordini.';
-        this.changeDetector.markForCheck();
-      },
-    });
+          this.changeDetector.markForCheck();
+        },
+        error: () => {
+          this.loading = false;
+          this.ordersPage = null;
+          this.clearOrderSelection();
+          this.errorMessage = 'Impossibile caricare gli ordini.';
+          this.changeDetector.markForCheck();
+        },
+      });
   }
 
   private loadStatistics(): void {
+    this.statisticsRequest?.unsubscribe();
     this.statisticsLoading = true;
-    this.adminOrdersService.getStatistics().subscribe({
-      next: (statistics) => {
-        this.statistics = statistics;
-        this.statisticsLoading = false;
-        this.changeDetector.markForCheck();
-      },
-      error: () => {
-        this.statistics = null;
-        this.statisticsLoading = false;
-        this.changeDetector.markForCheck();
-      },
-    });
+    this.statisticsRequest = this.adminOrdersService
+      .getStatistics()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (statistics) => {
+          this.statistics = statistics;
+          this.statisticsLoading = false;
+          this.changeDetector.markForCheck();
+        },
+        error: () => {
+          this.statistics = null;
+          this.statisticsLoading = false;
+          this.changeDetector.markForCheck();
+        },
+      });
   }
 
   onSearchChange(value: string): void {
     this.orderSearchTerm = value;
-    this.applyListFiltersAndSelection();
+    this.requestOrders(0, { delay: 250 });
   }
 
   onPaymentStatusFilterChange(value: string): void {
     this.paymentStatusFilter = value || 'ALL';
-    this.applyListFiltersAndSelection();
+    this.requestOrders(0);
   }
 
   onOrderStatusFilterChange(value: string): void {
     this.orderStatusFilter = value || 'ALL';
-    this.applyListFiltersAndSelection();
+    this.requestOrders(0);
   }
 
   onOrderTypeFilterChange(value: string): void {
     this.orderTypeFilter = value || 'ALL';
-    this.applyListFiltersAndSelection();
+    this.requestOrders(0);
   }
 
   openDetails(orderId: string, revealOnMobile = true): void {
@@ -256,9 +299,12 @@ export class AdminDashboardComponent implements OnInit {
     this.reviewRequestPreview = null;
     this.shippingAddressCopyStatus = null;
     if (this.selectedOrder?.id !== orderId) {
+      this.closePreview();
       this.closePrintDetails();
     }
-    const summaryOrder = this.orders.find((order) => order.id === orderId);
+    const summaryOrder = this.ordersPage?.items.find(
+      (order) => order.id === orderId,
+    );
     if (summaryOrder && this.selectedOrder?.id !== orderId) {
       this.selectedOrder = summaryOrder;
       this.selectedStatus = summaryOrder.status;
@@ -1046,71 +1092,29 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   private applyOrderUpdate(updatedOrder: AdminOrder): void {
-    this.orders = this.orders.map((order) =>
-      order.id === updatedOrder.id ? updatedOrder : order,
-    );
     if (this.selectedOrder?.id === updatedOrder.id) {
+      this.detailRequest?.unsubscribe();
+      this.detailLoading = false;
       this.selectedOrder = updatedOrder;
       this.selectedStatus = updatedOrder.status;
       this.selectedPaymentMethod =
         updatedOrder.paymentMethod || this.selectedPaymentMethod;
     }
-    this.applyListFiltersAndSelection();
+    this.requestOrders(this.requestedPage);
     this.loadStatistics();
     this.changeDetector.markForCheck();
-  }
-
-  private applyListFiltersAndSelection(): void {
-    this.refreshFilteredOrders();
-
-    if (this.filteredOrders.length === 0) {
-      this.clearOrderSelection();
-      return;
-    }
-
-    if (
-      !this.selectedOrder ||
-      !this.filteredOrders.some((order) => order.id === this.selectedOrder?.id)
-    ) {
-      this.openDetails(this.filteredOrders[0].id, false);
-    }
   }
 
   private clearOrderSelection(): void {
     this.detailRequest?.unsubscribe();
     this.detailLoading = false;
+    this.mobileDetailOpen = false;
+    this.reviewRequestPreview = null;
+    this.cadUploadFiles = [];
+    this.closePreview();
     this.closePrintDetails();
     this.selectedOrder = null;
     this.selectedStatus = '';
-  }
-
-  private refreshFilteredOrders(): void {
-    const term = this.orderSearchTerm.trim().toLowerCase();
-    this.filteredOrders = this.orders.filter((order) => {
-      const fullUuid = order.id.toLowerCase();
-      const shortUuid = (order.orderNumber || '').toLowerCase();
-      const paymentStatus = (order.paymentStatus || 'PENDING').toUpperCase();
-      const orderStatus = (order.status || '').toUpperCase();
-
-      const matchesSearch =
-        !term || fullUuid.includes(term) || shortUuid.includes(term);
-      const matchesPayment =
-        this.paymentStatusFilter === 'ALL' ||
-        paymentStatus === this.paymentStatusFilter;
-      const matchesOrderStatus =
-        this.orderStatusFilter === 'ALL' ||
-        orderStatus === this.orderStatusFilter;
-      const matchesOrderType =
-        this.orderTypeFilter === 'ALL' ||
-        this.orderKind(order) === this.orderTypeFilter;
-
-      return (
-        matchesSearch &&
-        matchesPayment &&
-        matchesOrderStatus &&
-        matchesOrderType
-      );
-    });
   }
 
   private downloadBlob(blob: Blob, filename: string): void {

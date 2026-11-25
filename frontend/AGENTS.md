@@ -49,6 +49,8 @@ Component HTML, SCSS, and TypeScript must remain in separate files. Use explicit
 ## Data, API, and i18n rules
 
 For live order updates, follow [customer order tracking](README.md#customer-order-tracking).
+For paged admin lists and session statistics, follow
+[admin lists and session statistics](README.md#admin-lists-and-session-statistics).
 
 - Put API access in the relevant feature service; do not issue ad-hoc HTTP requests from presentational components.
 - Update strongly typed API models alongside backend contract changes. Keep public and admin behavior explicit.

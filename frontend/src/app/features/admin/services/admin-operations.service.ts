@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { AdminEmailLog } from './admin-email-log.model';
+import { AdminPage } from './admin-page.model';
 
 export interface AdminFilamentStockRow {
   filamentVariantId: number;
@@ -367,10 +368,10 @@ export class AdminOperationsService {
     );
   }
 
-  getContactRequests(): Observable<AdminContactRequest[]> {
-    return this.http.get<AdminContactRequest[]>(
+  getContactRequests(page: number): Observable<AdminPage<AdminContactRequest>> {
+    return this.http.get<AdminPage<AdminContactRequest>>(
       `${this.baseUrl}/contact-requests`,
-      { withCredentials: true },
+      { params: { page }, withCredentials: true },
     );
   }
 
