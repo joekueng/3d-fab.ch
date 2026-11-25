@@ -84,6 +84,14 @@ class AdminOperationsControllerServiceTest {
     private AdminOperationsControllerService service;
 
     @Test
+    void getSessionStatistics_returnsZeroRatiosForAnEmptyDatabase() {
+        AdminSessionStatisticsDto statistics = service.getSessionStatistics();
+
+        assertEquals(0, statistics.getAverageItemsPerActiveSession().signum());
+        assertEquals(0, statistics.getPaidConversionRatePercent().signum());
+    }
+
+    @Test
     void getSessionStatistics_shouldCalculateRatiosFromReadOnlyAggregates() {
         when(quoteSessionRepo.countAllForStatistics()).thenReturn(6L);
         when(quoteSessionRepo.countWithItemsForStatistics()).thenReturn(4L);

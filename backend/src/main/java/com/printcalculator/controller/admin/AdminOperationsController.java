@@ -8,6 +8,8 @@ import jakarta.validation.Valid;
 import com.printcalculator.dto.AdminContactRequestDetailDto;
 import com.printcalculator.dto.AdminContactRequestDto;
 import com.printcalculator.dto.AdminFilamentStockDto;
+import com.printcalculator.dto.AdminPageDto;
+import com.printcalculator.dto.AdminPageQuery;
 import com.printcalculator.dto.AdminQuoteSessionDto;
 import com.printcalculator.dto.AdminSessionStatisticsDto;
 import com.printcalculator.dto.AdminUpdateContactRequestStatusRequest;
@@ -17,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,9 +46,17 @@ public class AdminOperationsController {
         return ResponseEntity.ok(adminOperationsControllerService.getFilamentStock());
     }
 
-    @GetMapping("/contact-requests")
+    @GetMapping(value = "/contact-requests", params = {"!page", "!size"})
     public ResponseEntity<List<AdminContactRequestDto>> getContactRequests() {
         return ResponseEntity.ok(adminOperationsControllerService.getContactRequests());
+    }
+
+    @GetMapping("/contact-requests")
+    public ResponseEntity<AdminPageDto<AdminContactRequestDto>> getContactRequestsPage(
+            @Valid @ModelAttribute AdminPageQuery pagination
+    ) {
+        return ResponseEntity.ok(AdminPageDto.from(
+                adminOperationsControllerService.getContactRequests(pagination.toPageable())));
     }
 
     @GetMapping("/contact-requests/{requestId}")

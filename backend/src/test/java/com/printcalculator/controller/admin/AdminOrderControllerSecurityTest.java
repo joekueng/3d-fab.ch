@@ -3,6 +3,11 @@ package com.printcalculator.controller.admin;
 import com.printcalculator.config.AllowedOriginService;
 import com.printcalculator.config.CorsConfig;
 import com.printcalculator.config.SecurityConfig;
+import com.printcalculator.dto.AdminContactRequestDto;
+import com.printcalculator.dto.AdminOrderSearchQuery;
+import com.printcalculator.dto.AdminPageQuery;
+import com.printcalculator.dto.OrderDto;
+import com.printcalculator.service.admin.AdminOperationsControllerService;
 import com.printcalculator.service.order.AdminOrderControllerService;
 import com.printcalculator.security.AdminCsrfProtectionFilter;
 import com.printcalculator.security.AdminLoginThrottleService;
@@ -15,6 +20,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +33,7 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionStatus;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -34,9 +41,12 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = {AdminAuthController.class, AdminOrderController.class, AdminOrderInformationController.class})
+@WebMvcTest(controllers = {AdminAuthController.class, AdminOrderController.class,
+        AdminOrderInformationController.class, AdminOperationsController.class})
 @Import({
         CorsConfig.class,
         AllowedOriginService.class,
@@ -63,7 +73,85 @@ class AdminOrderControllerSecurityTest {
     private AdminOrderControllerService adminOrderControllerService;
 
     @MockitoBean
+    private AdminOperationsControllerService adminOperationsControllerService;
+
+    @MockitoBean
     private com.printcalculator.service.information.OrderInformationService informationService;
+
+    @Test
+    void orderSearch_requiresAdminSessionAndTrustedOriginAndReturnsFilteredPage() throws Exception {
+        String body = """
+                {"pagination":{},"filters":{"q":"Rossi","orderStatus":"PAID"}}
+                """;
+        mockMvc.perform(post("/api/admin/orders/search").header(HttpHeaders.ORIGIN, ALLOWED_ORIGIN)
+                        .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isUnauthorized());
+
+        Cookie admin = loginAndExtractCookie();
+        mockMvc.perform(post("/api/admin/orders/search").cookie(admin)
+                        .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("CSRF_INVALID"));
+
+        OrderDto order = new OrderDto();
+        order.setId(UUID.randomUUID());
+        var filters = new AdminOrderSearchQuery("Rossi", AdminOrderSearchQuery.OrderStatus.PAID, null, null);
+        var pageable = new AdminPageQuery(null, null).toPageable();
+        when(adminOrderControllerService.searchOrders(filters, pageable))
+                .thenReturn(new PageImpl<>(List.of(order), pageable, 1));
+        when(adminOrderControllerService.listOrders()).thenReturn(List.of(order));
+
+        mockMvc.perform(post("/api/admin/orders/search").cookie(admin).header(HttpHeaders.ORIGIN, ALLOWED_ORIGIN)
+                        .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-store"))
+                .andExpect(jsonPath("$.items[0].id").value(order.getId().toString()))
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(25))
+                .andExpect(jsonPath("$.totalElements").value(1));
+        mockMvc.perform(get("/api/admin/orders").cookie(admin))
+                .andExpect(status().isOk()).andExpect(jsonPath("$[0].id").value(order.getId().toString()));
+        mockMvc.perform(get("/api/admin/orders").cookie(admin).param("q", "Rossi"))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(post("/api/admin/orders/search").cookie(admin).header(HttpHeaders.ORIGIN, ALLOWED_ORIGIN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"pagination":{"page":-1},"filters":{"q":"%s"}}
+                                """.formatted("a".repeat(321))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.details.length()").value(2));
+        mockMvc.perform(post("/api/admin/orders/search").cookie(admin).header(HttpHeaders.ORIGIN, ALLOWED_ORIGIN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"pagination":{},"filters":{"paymentStatus":"UNKNOWN"}}
+                                """))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void contactRequests_supportsLegacyArrayAndPagedResponse() throws Exception {
+        mockMvc.perform(get("/api/admin/contact-requests").param("page", "1"))
+                .andExpect(status().isUnauthorized());
+
+        Cookie admin = loginAndExtractCookie();
+        AdminContactRequestDto request = new AdminContactRequestDto();
+        request.setId(UUID.randomUUID());
+        var pageable = new AdminPageQuery(1, 1).toPageable();
+        when(adminOperationsControllerService.getContactRequests(pageable))
+                .thenReturn(new PageImpl<>(List.of(request), pageable, 2));
+        when(adminOperationsControllerService.getContactRequests()).thenReturn(List.of(request));
+
+        mockMvc.perform(get("/api/admin/contact-requests").cookie(admin).param("page", "1").param("size", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].id").value(request.getId().toString()))
+                .andExpect(jsonPath("$.page").value(1))
+                .andExpect(jsonPath("$.size").value(1))
+                .andExpect(jsonPath("$.totalElements").value(2));
+        mockMvc.perform(get("/api/admin/contact-requests").cookie(admin))
+                .andExpect(status().isOk()).andExpect(jsonPath("$[0].id").value(request.getId().toString()));
+        mockMvc.perform(get("/api/admin/contact-requests").cookie(admin).param("size", "101"))
+                .andExpect(status().isBadRequest());
+    }
 
     @Test void reviewRequest_requiresAdminSession() throws Exception {
         UUID orderId = UUID.randomUUID();

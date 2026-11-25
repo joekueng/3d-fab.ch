@@ -38,6 +38,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -180,6 +182,10 @@ public class AdminOperationsControllerService {
                 .stream()
                 .map(this::toContactRequestDto)
                 .toList();
+    }
+
+    public Page<AdminContactRequestDto> getContactRequests(Pageable pageable) {
+        return customQuoteRequestRepo.findAll(pageable).map(this::toContactRequestDto);
     }
 
     public AdminContactRequestDetailDto getContactRequestDetail(UUID requestId) {

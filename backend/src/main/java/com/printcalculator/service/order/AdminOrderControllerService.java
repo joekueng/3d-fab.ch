@@ -1,6 +1,7 @@
 package com.printcalculator.service.order;
 
 import com.printcalculator.dto.AddressDto;
+import com.printcalculator.dto.AdminOrderSearchQuery;
 import com.printcalculator.dto.AdminOrderStatisticsDto;
 import com.printcalculator.dto.AdminOrderStatusUpdateRequest;
 import com.printcalculator.dto.OrderDto;
@@ -29,6 +30,8 @@ import com.printcalculator.service.storage.StorageService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -118,6 +121,11 @@ public class AdminOrderControllerService {
                 .stream()
                 .map(order -> toOrderDto(order, false))
                 .toList();
+    }
+
+    public Page<OrderDto> searchOrders(AdminOrderSearchQuery filters, Pageable pageable) {
+        return orderRepo.findAll(AdminOrderSearchSpecifications.from(filters), pageable)
+                .map(order -> toOrderDto(order, false));
     }
 
     public AdminOrderStatisticsDto getStatistics() {

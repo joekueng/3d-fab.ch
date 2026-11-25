@@ -28,6 +28,8 @@ Read [README.md](README.md) before extending backend features. For email changes
 
 For separate public/admin order DTOs and the scope of the JSON response boundary,
 follow [public and admin order responses](README.md#public-and-admin-order-responses).
+For the paged admin list contract and quote session metrics, follow
+[admin list pagination and session statistics](README.md#admin-list-pagination-and-session-statistics).
 
 ## Domain dependencies to preserve
 
