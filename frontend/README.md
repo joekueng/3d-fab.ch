@@ -53,6 +53,10 @@ npm run check:ui-reuse
 
 Exercise the affected UI and compare it with the existing reference. Add behavior tests when needed; report what was verified and any remaining limitations.
 
+Orders and contact requests share their email history row and status styles through
+`.email-log-list` in [the admin stylesheet](src/styles/_admin.scss). Each page
+sets its panel layout and the breakpoint for stacking row actions.
+
 ## Asynchronous view updates
 
 Angular 22 uses OnPush by default. Prefer signals or AsyncPipe for data displayed
@@ -69,6 +73,18 @@ response. Zone-based change detection alone does not mark an OnPush view dirty.
 See the [shared component guide](src/app/shared/components/README.md) for modal, color selection, file upload, legal consent, and form-control APIs. Reuse these in both public and admin features. Calculator global/per-file settings share `app-print-settings` within the calculator feature.
 
 `npm run check:ui-reuse` also rejects known copies of color popups, modal shells, consent text, and print-setting styles. It catches established regression patterns; code review still needs to assess new component duplication.
+
+## Admin lists and session statistics
+
+Orders and contact requests use the shared `app-pagination` control with the
+[paged admin API](../backend/README.md#admin-list-pagination-and-session-statistics).
+The displayed totals come from the response. The orders search works across
+all pages and combines with the status and type filters in the JSON request
+body. Search and filter changes request page zero, and list requests supersede
+earlier in-flight reads.
+Refresh keeps the current page and selection when possible and recovers an
+out-of-range page. On mobile, the order detail back action returns to the same
+list state. Session statistics can be retried independently of the sessions list.
 
 ## Adding a New Feature
 

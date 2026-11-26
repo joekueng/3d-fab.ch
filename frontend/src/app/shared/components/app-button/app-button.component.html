@@ -2,7 +2,9 @@
   [type]="type()"
   [attr.aria-label]="ariaLabel()"
   [class]="buttonClass()"
-  [disabled]="disabled() || loading()"
+  [disabled]="unavailable() && !keepFocusWhenDisabled()"
+  [attr.aria-disabled]="focusableDisabled() || null"
+  [attr.tabindex]="focusableDisabled() ? -1 : null"
   [attr.aria-busy]="loading() ? true : null"
   (click)="handleClick($event)"
 >

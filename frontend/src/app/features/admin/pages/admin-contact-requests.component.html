@@ -5,7 +5,7 @@
     </div>
     <div class="header-actions ui-inline-actions">
       <article class="ui-stat-chip">
-        <strong>{{ requests.length }}</strong>
+        <strong>{{ requestsPage?.totalElements ?? 0 | number }}</strong>
         <span>richieste</span>
       </article>
       <app-button type="button" (click)="loadRequests()" [disabled]="loading">
@@ -14,17 +14,17 @@
     </div>
   </header>
 
-  <p class="ui-banner ui-banner--error" *ngIf="errorMessage">
+  <p class="ui-banner ui-banner--error" role="alert" *ngIf="errorMessage">
     {{ errorMessage }}
   </p>
   <p class="ui-banner ui-banner--success" *ngIf="successMessage">
     {{ successMessage }}
   </p>
 
-  <div class="workspace ui-split-workspace" *ngIf="!loading; else loadingTpl">
+  <div class="workspace ui-split-workspace">
     <section class="list-panel">
       <h3>Lista richieste</h3>
-      <div class="table-wrap ui-table-wrap">
+      <div class="table-wrap ui-table-wrap" [attr.aria-busy]="loading || null">
         <table class="requests-table ui-data-table">
           <thead>
             <tr>
@@ -38,9 +38,12 @@
           </thead>
           <tbody>
             <tr
-              *ngFor="let request of requests"
+              *ngFor="let request of loading ? [] : requestsPage?.items"
               [class.selected]="isSelected(request.id)"
+              [attr.aria-current]="isSelected(request.id) ? 'true' : null"
               (click)="openDetails(request.id)"
+              (keydown.enter)="openDetails(request.id)"
+              tabindex="0"
             >
               <td class="created-at" data-label="Data">
                 {{ request.createdAt | date: "short" }}
@@ -75,12 +78,27 @@
                 >
               </td>
             </tr>
-            <tr class="empty-row" *ngIf="requests.length === 0">
-              <td colspan="6">Nessuna richiesta presente.</td>
-            </tr>
+            @if (loading) {
+              <tr class="empty-row">
+                <td colspan="6">
+                  {{ "ADMIN_CONTACT_REQUESTS.LIST_LOADING" | translate }}
+                </td>
+              </tr>
+            } @else if (requestsPage?.items?.length === 0) {
+              <tr class="empty-row">
+                <td colspan="6">Nessuna richiesta presente.</td>
+              </tr>
+            }
           </tbody>
         </table>
       </div>
+      @if (requestsPage; as page) {
+        <app-pagination
+          [pageInfo]="page"
+          [loading]="loading"
+          (pageChange)="loadRequests($event)"
+        />
+      }
     </section>
 
     <section class="detail-panel ui-detail-panel" *ngIf="selectedRequest">
@@ -112,8 +130,8 @@
         </div>
       </header>
 
-      <p class="loading-detail" *ngIf="detailLoading">
-        Caricamento dettaglio...
+      <p class="loading-detail" role="status" *ngIf="detailLoading">
+        {{ "ADMIN_CONTACT_REQUESTS.DETAIL_LOADING" | translate }}
       </p>
 
       <dl class="meta-grid ui-meta-grid">
@@ -276,15 +294,17 @@
       class="detail-panel ui-detail-panel ui-detail-panel--empty"
       *ngIf="!selectedRequest"
     >
-      <h3>Nessuna richiesta selezionata</h3>
-      <p>Seleziona una riga dalla lista per vedere il dettaglio.</p>
+      @if (detailLoading) {
+        <p class="loading-detail" role="status">
+          {{ "ADMIN_CONTACT_REQUESTS.DETAIL_LOADING" | translate }}
+        </p>
+      } @else {
+        <h3>Nessuna richiesta selezionata</h3>
+        <p>Seleziona una riga dalla lista per vedere il dettaglio.</p>
+      }
     </section>
   </div>
 </section>
-
-<ng-template #loadingTpl>
-  <p>Caricamento richieste...</p>
-</ng-template>
 
 @if (preview; as model) {
   <app-model-preview-dialog

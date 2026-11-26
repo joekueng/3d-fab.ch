@@ -2,10 +2,14 @@ package com.printcalculator.controller.admin;
 
 import com.printcalculator.dto.AdminOrderStatusUpdateRequest;
 import com.printcalculator.dto.AdminOrderStatisticsDto;
+import com.printcalculator.dto.AdminOrderSearchRequest;
+import com.printcalculator.dto.AdminPageDto;
 import com.printcalculator.dto.OrderDto;
 import com.printcalculator.dto.ReviewRequestPreviewDto;
 import com.printcalculator.service.order.AdminOrderControllerService;
+import jakarta.validation.Valid;
 import org.springframework.core.io.Resource;
+import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,9 +39,19 @@ public class AdminOrderController {
         this.adminOrderControllerService = adminOrderControllerService;
     }
 
-    @GetMapping
+    @GetMapping(params = {"!page", "!size", "!q", "!orderStatus", "!paymentStatus", "!orderType"})
     public ResponseEntity<List<OrderDto>> listOrders() {
         return ResponseEntity.ok(adminOrderControllerService.listOrders());
+    }
+
+    @PostMapping(path = "/search", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<AdminPageDto<OrderDto>> searchOrders(
+            @Valid @RequestBody AdminOrderSearchRequest request
+    ) {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(AdminPageDto.from(adminOrderControllerService.searchOrders(
+                        request.filters(), request.pagination().toPageable())));
     }
 
     @GetMapping("/statistics")

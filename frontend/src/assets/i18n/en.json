@@ -1531,7 +1531,35 @@
     "DEFAULT_LABEL": "Drop files here or click to upload",
     "DEFAULT_SUBTEXT": "Supports .stl, .3mf"
   },
+  "PAGINATION": {
+    "LABEL": "Pagination",
+    "RANGE": "{{first}}–{{last}} of {{total}}",
+    "PREVIOUS": "Previous",
+    "NEXT": "Next"
+  },
+  "ADMIN_CONTACT_REQUESTS": {
+    "LIST_LOADING": "Loading contact requests…",
+    "DETAIL_LOADING": "Loading request details…"
+  },
+  "ADMIN_SESSIONS": {
+    "PAID_CONVERSION": "Paid conversion (sessions with items)",
+    "ITEMS_PER_SESSION_WITH_ITEMS": "Average items per session with items",
+    "STATISTICS_LOADING": "Loading statistics…",
+    "STATISTICS_ERROR": "Could not load session statistics.",
+    "RETRY_STATISTICS": "Try again"
+  },
   "ADMIN_ORDERS": {
+    "SEARCH_LABEL": "Search orders or customers",
+    "SEARCH_PLACEHOLDER": "Name, email, company or order number",
+    "LIST_LOADING": "Loading orders…",
+    "DETAIL_LOADING": "Loading order details…",
+    "SHIPPING_ADDRESS_MISSING": "The order does not have a complete shipping address.",
+    "NO_PRINT_ITEMS": "This order contains no items to print.",
+    "PRINT_DETAILS": "Print details",
+    "COPY_SHIPPING_ADDRESS": "Copy shipping address",
+    "SHIPPING_ADDRESS_COPIED": "Address copied.",
+    "SHIPPING_ADDRESS_COPY_FAILED": "Could not copy the address.",
+    "QUANTITY": "Quantity",
     "PAID_OR_COMPLETED_ORDERS": "paid or completed orders",
     "FILTERS": "Filters",
     "BACK_TO_ORDERS": "Back to orders",

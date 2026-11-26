@@ -11,7 +11,7 @@
   min-height: calc(100dvh - 180px);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
-  overflow: hidden;
+  overflow: clip;
   background: var(--color-bg-card);
   box-shadow: var(--shadow-sm);
 }
@@ -59,16 +59,6 @@
   overflow-x: clip;
 }
 
-@media (max-width: 1240px) {
-  .admin-shell {
-    grid-template-columns: minmax(13rem, 14rem) minmax(0, 1fr);
-  }
-
-  .sidebar {
-    padding: var(--space-5);
-  }
-}
-
 @media (max-width: 1360px) {
   .admin-container {
     margin-top: var(--space-6);
@@ -76,7 +66,7 @@
   }
 
   .admin-shell {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     min-height: unset;
   }
 
@@ -86,19 +76,15 @@
     padding: var(--space-4);
   }
 
-  .menu-scroll {
-    overflow-x: auto;
-    overscroll-behavior-inline: contain;
-    padding-bottom: 2px;
-    margin: 0 calc(-1 * var(--space-1));
-    padding-inline: var(--space-1);
-    scrollbar-width: thin;
-  }
-
   .menu {
     flex-direction: row;
-    flex-wrap: nowrap;
-    min-width: max-content;
+    flex-wrap: wrap;
+  }
+
+  .menu .ui-admin-nav__item {
+    width: auto;
+    max-width: 100%;
+    white-space: normal;
   }
 
   .logout {

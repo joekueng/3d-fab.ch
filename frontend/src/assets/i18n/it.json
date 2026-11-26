@@ -1544,7 +1544,35 @@
     "DEFAULT_LABEL": "Trascina i file qui o clicca per caricare",
     "DEFAULT_SUBTEXT": "Supporta .STL, .3MF"
   },
+  "PAGINATION": {
+    "LABEL": "Paginazione",
+    "RANGE": "{{first}}–{{last}} di {{total}}",
+    "PREVIOUS": "Precedente",
+    "NEXT": "Successiva"
+  },
+  "ADMIN_CONTACT_REQUESTS": {
+    "LIST_LOADING": "Caricamento richieste…",
+    "DETAIL_LOADING": "Caricamento dettaglio…"
+  },
+  "ADMIN_SESSIONS": {
+    "PAID_CONVERSION": "Conversione pagata (sessioni con articoli)",
+    "ITEMS_PER_SESSION_WITH_ITEMS": "Media articoli per sessione con articoli",
+    "STATISTICS_LOADING": "Caricamento statistiche…",
+    "STATISTICS_ERROR": "Impossibile caricare le statistiche delle sessioni.",
+    "RETRY_STATISTICS": "Riprova"
+  },
   "ADMIN_ORDERS": {
+    "SEARCH_LABEL": "Cerca ordine o cliente",
+    "SEARCH_PLACEHOLDER": "Nome, email, azienda o numero ordine",
+    "LIST_LOADING": "Caricamento ordini…",
+    "DETAIL_LOADING": "Caricamento del dettaglio ordine…",
+    "SHIPPING_ADDRESS_MISSING": "L’ordine non ha un indirizzo di spedizione completo.",
+    "NO_PRINT_ITEMS": "Questo ordine non contiene articoli da stampare.",
+    "PRINT_DETAILS": "Dettagli stampa",
+    "COPY_SHIPPING_ADDRESS": "Copia indirizzo di spedizione",
+    "SHIPPING_ADDRESS_COPIED": "Indirizzo copiato.",
+    "SHIPPING_ADDRESS_COPY_FAILED": "Impossibile copiare l’indirizzo.",
+    "QUANTITY": "Quantità",
     "PAID_OR_COMPLETED_ORDERS": "ordini pagati o completati",
     "FILTERS": "Filtri",
     "BACK_TO_ORDERS": "Torna agli ordini",

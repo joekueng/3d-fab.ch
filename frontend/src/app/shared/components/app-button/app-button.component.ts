@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -25,8 +25,14 @@ export class AppButtonComponent {
   type = input<'button' | 'submit' | 'reset'>('button');
   disabled = input<boolean>(false);
   loading = input<boolean>(false);
+  keepFocusWhenDisabled = input(false);
   fullWidth = input<boolean>(false);
   ariaLabel = input<string | null>(null);
+
+  readonly unavailable = computed(() => this.disabled() || this.loading());
+  readonly focusableDisabled = computed(
+    () => this.unavailable() && this.keepFocusWhenDisabled(),
+  );
 
   buttonClass(): string {
     const variantClasses: Record<string, string> = {
@@ -52,7 +58,7 @@ export class AppButtonComponent {
   }
 
   handleClick(event: Event) {
-    if (this.disabled() || this.loading()) {
+    if (this.unavailable()) {
       event.preventDefault();
       event.stopPropagation();
     }

@@ -11,6 +11,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface QuoteSessionRepository extends JpaRepository<QuoteSession, UUID> {
+    String HAS_PAID_ORDER = """
+            exists (
+                select o.id from Order o
+                where o.sourceQuoteSession = s and
+            """ + OrderRepository.PAID_NON_CANCELLED + ")";
+
     boolean existsByCalculatorSession_Id(UUID id);
 
     @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
@@ -28,18 +34,20 @@ public interface QuoteSessionRepository extends JpaRepository<QuoteSession, UUID
 
     @Query("""
             select count(s) from QuoteSession s
-            where exists (
+            where s.status <> 'CAD_DELETED'
+              and exists (
                 select i.id from QuoteLineItem i where i.quoteSession = s
             )
             """)
     long countWithItemsForStatistics();
 
-    @Query("select count(i) from QuoteLineItem i")
+    @Query("select count(i) from QuoteLineItem i where i.quoteSession.status <> 'CAD_DELETED'")
     long countLineItemsForStatistics();
 
     @Query("""
             select count(s) from QuoteSession s
-            where exists (
+            where s.status <> 'CAD_DELETED'
+              and exists (
                 select o.id from Order o where o.sourceQuoteSession = s
             )
             """)
@@ -47,24 +55,18 @@ public interface QuoteSessionRepository extends JpaRepository<QuoteSession, UUID
 
     @Query("""
             select count(s) from QuoteSession s
-            where exists (
-                select i.id from QuoteLineItem i where i.quoteSession = s
-            )
+            where s.status <> 'CAD_DELETED'
               and exists (
-                select o.id from Order o
-                where o.sourceQuoteSession = s
-                  and o.status <> 'CANCELLED'
-                  and exists (
-                      select p.id from Payment p
-                      where p.order = o and p.status in ('RECEIVED', 'COMPLETED')
-                  )
-            )
-            """)
+                select i.id from QuoteLineItem i where i.quoteSession = s
+              )
+              and
+            """ + HAS_PAID_ORDER)
     long countPaidConvertedForStatistics();
 
     @Query("""
             select count(s) from QuoteSession s
-            where exists (
+            where s.status <> 'CAD_DELETED'
+              and exists (
                 select i.id from QuoteLineItem i
                 where i.quoteSession = s and i.updatedAt > i.createdAt
             )
@@ -73,19 +75,12 @@ public interface QuoteSessionRepository extends JpaRepository<QuoteSession, UUID
 
     @Query("""
             select count(s) from QuoteSession s
-            where s.expiresAt < :now
+            where s.status <> 'CAD_DELETED'
+              and s.expiresAt < :now
               and exists (
                   select i.id from QuoteLineItem i where i.quoteSession = s
               )
-              and not exists (
-                  select o.id from Order o
-                  where o.sourceQuoteSession = s
-                    and o.status <> 'CANCELLED'
-                    and exists (
-                        select p.id from Payment p
-                        where p.order = o and p.status in ('RECEIVED', 'COMPLETED')
-                    )
-              )
-            """)
+              and not
+            """ + HAS_PAID_ORDER)
     long countExpiredWithoutPaidConversionForStatistics(@Param("now") OffsetDateTime now);
 }

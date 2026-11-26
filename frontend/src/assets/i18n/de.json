@@ -1544,7 +1544,35 @@
     "DEFAULT_LABEL": "Dateien hierher ziehen oder klicken zum Hochladen",
     "DEFAULT_SUBTEXT": "Unterstützt .STL, .3MF"
   },
+  "PAGINATION": {
+    "LABEL": "Seitennavigation",
+    "RANGE": "{{first}}–{{last}} von {{total}}",
+    "PREVIOUS": "Zurück",
+    "NEXT": "Weiter"
+  },
+  "ADMIN_CONTACT_REQUESTS": {
+    "LIST_LOADING": "Kontaktanfragen werden geladen…",
+    "DETAIL_LOADING": "Anfragedetails werden geladen…"
+  },
+  "ADMIN_SESSIONS": {
+    "PAID_CONVERSION": "Bezahlte Abschlüsse (Sitzungen mit Artikeln)",
+    "ITEMS_PER_SESSION_WITH_ITEMS": "Ø Artikel pro Sitzung mit Artikeln",
+    "STATISTICS_LOADING": "Statistiken werden geladen…",
+    "STATISTICS_ERROR": "Die Sitzungsstatistiken konnten nicht geladen werden.",
+    "RETRY_STATISTICS": "Erneut versuchen"
+  },
   "ADMIN_ORDERS": {
+    "SEARCH_LABEL": "Bestellung oder Kundschaft suchen",
+    "SEARCH_PLACEHOLDER": "Name, E-Mail, Firma oder Bestellnummer",
+    "LIST_LOADING": "Bestellungen werden geladen…",
+    "DETAIL_LOADING": "Bestelldetails werden geladen…",
+    "SHIPPING_ADDRESS_MISSING": "Für diese Bestellung fehlt eine vollständige Lieferadresse.",
+    "NO_PRINT_ITEMS": "Diese Bestellung enthält keine Artikel zum Drucken.",
+    "PRINT_DETAILS": "Druckdetails",
+    "COPY_SHIPPING_ADDRESS": "Lieferadresse kopieren",
+    "SHIPPING_ADDRESS_COPIED": "Adresse kopiert.",
+    "SHIPPING_ADDRESS_COPY_FAILED": "Adresse konnte nicht kopiert werden.",
+    "QUANTITY": "Menge",
     "PAID_OR_COMPLETED_ORDERS": "bezahlte oder abgeschlossene Bestellungen",
     "FILTERS": "Filter",
     "BACK_TO_ORDERS": "Zurück zu den Bestellungen",

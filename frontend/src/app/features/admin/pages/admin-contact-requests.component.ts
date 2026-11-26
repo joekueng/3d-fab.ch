@@ -3,10 +3,12 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   ChangeDetectorRef,
   Component,
+  DestroyRef,
   PLATFORM_ID,
   inject,
   OnInit,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
   AdminContactRequest,
@@ -17,12 +19,14 @@ import {
 import { AdminEmailLog } from '../services/admin-email-log.model';
 import { CopyOnClickDirective } from '../../../shared/directives/copy-on-click.directive';
 import { AppButtonComponent } from '../../../shared/components/app-button/app-button.component';
+import { AppPaginationComponent } from '../../../shared/components/app-pagination/app-pagination.component';
 import { AppSelectComponent } from '../../../shared/components/app-select/app-select.component';
 import { downloadBlobInBrowser } from '../../../core/utils/browser-download';
 import { ModelPreviewDialogComponent } from '../../../shared/components/model-preview-dialog/model-preview-dialog.component';
 import { ModelPreviewService } from '../../calculator/services/model-preview.service';
 import { TranslatePipe } from '@ngx-translate/core';
-import { Observable, of, switchMap } from 'rxjs';
+import { Observable, of, Subscription, switchMap } from 'rxjs';
+import { AdminPage, loadAdminPage } from '../services/admin-page.model';
 
 @Component({
   selector: 'app-admin-contact-requests',
@@ -32,6 +36,7 @@ import { Observable, of, switchMap } from 'rxjs';
     FormsModule,
     CopyOnClickDirective,
     AppButtonComponent,
+    AppPaginationComponent,
     AppSelectComponent,
     ModelPreviewDialogComponent,
     TranslatePipe,
@@ -71,13 +76,17 @@ export class AdminContactRequestsComponent implements OnInit {
   private readonly translate = inject(TranslateService);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly adminOperationsService = inject(AdminOperationsService);
+  private readonly destroyRef = inject(DestroyRef);
+  private listRequest?: Subscription;
+  private detailRequest?: Subscription;
+  private requestedPage = 0;
 
   readonly statusOptions = ['NEW', 'PENDING', 'IN_PROGRESS', 'DONE', 'CLOSED'];
   readonly statusSelectOptions = this.statusOptions.map((status) => ({
     label: status,
     value: status,
   }));
-  requests: AdminContactRequest[] = [];
+  requestsPage: AdminPage<AdminContactRequest> | null = null;
   selectedRequest: AdminContactRequestDetail | null = null;
   selectedRequestId: string | null = null;
   loading = false;
@@ -92,52 +101,76 @@ export class AdminContactRequestsComponent implements OnInit {
     this.loadRequests();
   }
 
-  loadRequests(): void {
+  loadRequests(page = this.requestedPage): void {
+    this.listRequest?.unsubscribe();
+    this.requestedPage = page;
     this.loading = true;
     this.errorMessage = null;
     this.successMessage = null;
-    this.adminOperationsService.getContactRequests().subscribe({
-      next: (requests) => {
-        this.changeDetector.markForCheck();
-        this.requests = requests;
-        if (requests.length === 0) {
-          this.selectedRequest = null;
-          this.selectedRequestId = null;
-        } else if (
-          this.selectedRequestId &&
-          requests.some((r) => r.id === this.selectedRequestId)
-        ) {
-          this.openDetails(this.selectedRequestId);
-        } else {
-          this.openDetails(requests[0].id);
-        }
-        this.loading = false;
-      },
-      error: () => {
-        this.changeDetector.markForCheck();
-        this.loading = false;
-        this.errorMessage = 'Impossibile caricare le richieste di contatto.';
-      },
-    });
+    this.listRequest = loadAdminPage(
+      (index) => this.adminOperationsService.getContactRequests(index),
+      page,
+    )
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (result) => {
+          this.changeDetector.markForCheck();
+          this.requestedPage = result.page;
+          this.requestsPage = result;
+          this.loading = false;
+          const retained = result.items.find(
+            (request) => request.id === this.selectedRequestId,
+          );
+          const selected = retained ?? result.items[0];
+          if (selected) {
+            this.openDetails(selected.id);
+          } else {
+            this.clearSelection();
+          }
+        },
+        error: () => {
+          this.changeDetector.markForCheck();
+          this.loading = false;
+          this.requestsPage = null;
+          this.clearSelection();
+          this.errorMessage = 'Impossibile caricare le richieste di contatto.';
+        },
+      });
   }
 
   openDetails(requestId: string): void {
+    if (requestId !== this.selectedRequestId) {
+      this.clearSelection();
+    }
+    this.detailRequest?.unsubscribe();
     this.selectedRequestId = requestId;
     this.detailLoading = true;
     this.errorMessage = null;
-    this.adminOperationsService.getContactRequestDetail(requestId).subscribe({
-      next: (detail) => {
-        this.changeDetector.markForCheck();
-        this.selectedRequest = detail;
-        this.selectedStatus = detail.status || '';
-        this.detailLoading = false;
-      },
-      error: () => {
-        this.changeDetector.markForCheck();
-        this.detailLoading = false;
-        this.errorMessage = 'Impossibile caricare il dettaglio richiesta.';
-      },
-    });
+    this.detailRequest = this.adminOperationsService
+      .getContactRequestDetail(requestId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (detail) => {
+          this.changeDetector.markForCheck();
+          this.selectedRequest = detail;
+          this.selectedStatus = detail.status || '';
+          this.detailLoading = false;
+        },
+        error: () => {
+          this.changeDetector.markForCheck();
+          this.detailLoading = false;
+          this.errorMessage = 'Impossibile caricare il dettaglio richiesta.';
+        },
+      });
+  }
+
+  private clearSelection(): void {
+    this.detailRequest?.unsubscribe();
+    this.selectedRequest = null;
+    this.selectedRequestId = null;
+    this.selectedStatus = '';
+    this.detailLoading = false;
+    this.preview = null;
   }
 
   isSelected(requestId: string): boolean {
@@ -213,16 +246,17 @@ export class AdminContactRequestsComponent implements OnInit {
       .subscribe({
         next: (updated) => {
           this.changeDetector.markForCheck();
-          this.selectedRequest = updated;
-          this.selectedStatus = updated.status || this.selectedStatus;
-          this.requests = this.requests.map((request) =>
-            request.id === updated.id
-              ? {
-                  ...request,
-                  status: updated.status,
-                }
-              : request,
-          );
+          this.applyRequestDetail(updated);
+          if (this.requestsPage) {
+            this.requestsPage = {
+              ...this.requestsPage,
+              items: this.requestsPage.items.map((request) =>
+                request.id === updated.id
+                  ? { ...request, status: updated.status }
+                  : request,
+              ),
+            };
+          }
           this.updatingStatus = false;
           this.successMessage = 'Stato richiesta aggiornato.';
         },
@@ -253,8 +287,7 @@ export class AdminContactRequestsComponent implements OnInit {
         next: (updated) => {
           this.changeDetector.markForCheck();
           this.resendingEmailLogIds.delete(log.id);
-          this.selectedRequest = updated;
-          this.selectedStatus = updated.status || this.selectedStatus;
+          this.applyRequestDetail(updated);
           this.successMessage = 'Email reinviata.';
         },
         error: () => {
@@ -263,6 +296,15 @@ export class AdminContactRequestsComponent implements OnInit {
           this.errorMessage = 'Reinvio email non riuscito.';
         },
       });
+  }
+
+  private applyRequestDetail(updated: AdminContactRequestDetail): void {
+    if (this.selectedRequestId === updated.id) {
+      this.detailRequest?.unsubscribe();
+      this.detailLoading = false;
+      this.selectedRequest = updated;
+      this.selectedStatus = updated.status || this.selectedStatus;
+    }
   }
 
   emailLogs(request: AdminContactRequestDetail | null): AdminEmailLog[] {

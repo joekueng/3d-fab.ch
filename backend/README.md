@@ -34,6 +34,27 @@ QR bills use the creditor IBAN configured by `QR_BILL_IBAN`, defaulting to
 `CH2608307000480269300`. Changing it affects newly generated documents; PDFs
 already sent or saved retain their original payment details.
 
+## Admin list pagination and session statistics
+
+`POST /api/admin/orders/search` and paged `GET /api/admin/contact-requests`
+return `{items, page, size, totalElements}`. Both default to page 0 and size 25,
+accept sizes from 1 to 100, and order by creation time and ID descending.
+The legacy `GET /api/admin/orders` and `GET /api/admin/contact-requests`
+without list parameters return JSON arrays.
+
+Order search takes a JSON body with `pagination` (`page`, `size`) and
+`filters` (`q`, `orderStatus`, `paymentStatus`, `orderType`). Keep customer
+search terms in the request body to avoid exposing them in URL logs.
+The endpoint uses the admin session and CSRF protection and returns
+`Cache-Control: no-store`. The case-insensitive search matches UUID and display
+number, order email, and the billing name, company or contact person stored with
+the order. Filters combine with the search before pagination. `ALL` omits the
+corresponding filter.
+
+Session statistics exclude `CAD_DELETED` sessions from all aggregates. Paid
+conversion uses the same rule as the order dashboard and is divided by the
+number of sessions with at least one line item.
+
 ## Material print compatibility
 
 Calculator visibility requires both an active filament variant and an active

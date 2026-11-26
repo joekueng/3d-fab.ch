@@ -924,11 +924,12 @@ select.ui-form-control {
   color: var(--color-neutral-900);
 }
 
-.ui-button:hover:not(:disabled) {
+.ui-button:hover:not(:disabled, [aria-disabled="true"]) {
   background: var(--color-brand-hover);
 }
 
-.ui-button:disabled {
+.ui-button:disabled,
+.ui-button[aria-disabled="true"] {
   opacity: 0.65;
   cursor: default;
 }
@@ -949,7 +950,7 @@ select.ui-form-control {
   color: var(--color-neutral-900);
 }
 
-.ui-button--secondary:hover:not(:disabled) {
+.ui-button--secondary:hover:not(:disabled, [aria-disabled="true"]) {
   background: var(--color-neutral-300);
 }
 
@@ -960,7 +961,7 @@ select.ui-form-control {
   padding: calc(var(--space-2) - 1px) calc(var(--space-4) - 1px);
 }
 
-.ui-button--outline:hover:not(:disabled) {
+.ui-button--outline:hover:not(:disabled, [aria-disabled="true"]) {
   background: var(--color-brand);
 }
 
@@ -970,7 +971,7 @@ select.ui-form-control {
   padding: var(--space-2);
 }
 
-.ui-button--text:hover:not(:disabled) {
+.ui-button--text:hover:not(:disabled, [aria-disabled="true"]) {
   background: transparent;
   color: var(--color-text);
 }
@@ -981,7 +982,7 @@ select.ui-form-control {
   color: var(--color-text);
 }
 
-.ui-button--ghost:hover:not(:disabled) {
+.ui-button--ghost:hover:not(:disabled, [aria-disabled="true"]) {
   background: var(--color-surface-muted);
 }
 
@@ -990,7 +991,7 @@ select.ui-form-control {
   color: #fff;
 }
 
-.ui-button--danger:hover:not(:disabled) {
+.ui-button--danger:hover:not(:disabled, [aria-disabled="true"]) {
   background: #dc2626;
 }
 
@@ -1000,7 +1001,7 @@ select.ui-form-control {
   color: var(--color-text);
 }
 
-.ui-button--ghost-danger:hover:not(:disabled) {
+.ui-button--ghost-danger:hover:not(:disabled, [aria-disabled="true"]) {
   background: #fff0f0;
   border-color: #d9534f;
 }
